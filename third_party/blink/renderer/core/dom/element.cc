@@ -499,10 +499,6 @@ void EnqueueAutofocus(Element& element) {
 
 }  // namespace
 
-Element* Element::Create(const QualifiedName& tag_name, Document* document) {
-  return MakeGarbageCollected<Element>(tag_name, document, kCreateElement);
-}
-
 Element::Element(const QualifiedName& tag_name,
                  Document* document,
                  ConstructionType type)

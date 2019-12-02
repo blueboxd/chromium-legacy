@@ -68,6 +68,21 @@ class CrostiniExportImport : public KeyedService,
         bool in_progress) = 0;
   };
 
+  using TrackerFactory =
+      base::OnceCallback<CrostiniExportImportStatusTracker*(ExportImportType,
+                                                            base::FilePath)>;
+
+  struct OperationData {
+    OperationData(ExportImportType type,
+                  ContainerId id,
+                  TrackerFactory factory);
+    ~OperationData();
+
+    ExportImportType type;
+    ContainerId container_id;
+    TrackerFactory tracker_factory;
+  };
+
   static CrostiniExportImport* GetForProfile(Profile* profile);
 
   explicit CrostiniExportImport(Profile* profile);
@@ -122,13 +137,19 @@ class CrostiniExportImport : public KeyedService,
                            TestImportFailArchitecture);
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest, TestImportFailSpace);
 
+  OperationData* NewOperationData(ExportImportType type,
+                                  ContainerId id,
+                                  TrackerFactory cb);
+  OperationData* NewOperationData(ExportImportType type, ContainerId id);
+  OperationData* NewOperationData(ExportImportType type);
+
   // ui::SelectFileDialog::Listener implementation.
   void FileSelected(const base::FilePath& path,
                     int index,
                     void* params) override;
+  void FileSelectionCanceled(void* params) override;
 
-  void Start(ExportImportType type,
-             ContainerId container_id,
+  void Start(OperationData* params,
              base::FilePath path,
              CrostiniManager::CrostiniResultCallback callback);
 
@@ -175,20 +196,24 @@ class CrostiniExportImport : public KeyedService,
                         CrostiniManager::CrostiniResultCallback callback,
                         CrostiniResult result);
 
-  void OpenFileDialog(ExportImportType type,
+  void OpenFileDialog(OperationData* params,
                       content::WebContents* web_contents);
 
   std::string GetUniqueNotificationId();
 
-  CrostiniExportImportNotification& RemoveNotification(
-      std::map<ContainerId, CrostiniExportImportNotification*>::iterator it);
+  CrostiniExportImportStatusTracker& RemoveTracker(
+      std::map<ContainerId, CrostiniExportImportStatusTracker*>::iterator it);
 
   Profile* profile_;
   scoped_refptr<ui::SelectFileDialog> select_folder_dialog_;
-  std::map<ContainerId, CrostiniExportImportNotification*> notifications_;
-  // Notifications must have unique-per-profile identifiers.
+  std::map<ContainerId, CrostiniExportImportStatusTracker*> status_trackers_;
+  // |operation_data_storage_| persists the data required to complete an
+  // operation while the file selection dialog is open/operation is in progress.
+  std::unordered_map<OperationData*, std::unique_ptr<OperationData>>
+      operation_data_storage_;
+  // Trackers must have unique-per-profile identifiers.
   // A non-static member on a profile-keyed-service will suffice.
-  int next_notification_id_;
+  int next_status_tracker_id_;
   base::ObserverList<Observer> observers_;
   // weak_ptr_factory_ should always be last member.
   base::WeakPtrFactory<CrostiniExportImport> weak_ptr_factory_{this};

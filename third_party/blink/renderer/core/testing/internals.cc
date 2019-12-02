@@ -2065,15 +2065,24 @@ unsigned Internals::numberOfScrollableAreas(Document* document) {
 
   unsigned count = 0;
   LocalFrame* frame = document->GetFrame();
-  if (frame->View()->ScrollableAreas())
-    count += frame->View()->ScrollableAreas()->size();
+  if (frame->View()->ScrollableAreas()) {
+    for (const auto& scrollable_area : *frame->View()->ScrollableAreas()) {
+      if (scrollable_area->ScrollsOverflow())
+        count++;
+    }
+  }
 
   for (Frame* child = frame->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
     auto* child_local_frame = DynamicTo<LocalFrame>(child);
     if (child_local_frame && child_local_frame->View() &&
-        child_local_frame->View()->ScrollableAreas())
-      count += child_local_frame->View()->ScrollableAreas()->size();
+        child_local_frame->View()->ScrollableAreas()) {
+      for (const auto& scrollable_area :
+           *child_local_frame->View()->ScrollableAreas()) {
+        if (scrollable_area->ScrollsOverflow())
+          count++;
+      }
+    }
   }
 
   return count;

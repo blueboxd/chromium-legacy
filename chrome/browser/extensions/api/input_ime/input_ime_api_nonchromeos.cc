@@ -234,7 +234,8 @@ ExtensionFunction::ResponseAction InputImeActivateFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
   InputImeEventRouter* event_router = GetInputImeEventRouter(profile);
   if (!event_router)
-    return RespondNow(Error(kErrorEngineNotActive));
+    return RespondNow(
+        Error(InformativeError(kErrorEngineNotActive, function_name())));
 
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile);
 
@@ -263,7 +264,8 @@ ExtensionFunction::ResponseAction InputImeActivateFunction::Run() {
 
   // Otherwise, this API is only allowed to be called from a user action.
   if (!user_gesture())
-    return RespondNow(Error(kErrorNotCalledFromUserAction));
+    return RespondNow(Error(
+        InformativeError(kErrorNotCalledFromUserAction, function_name())));
 
   // Disable using the warning bubble for testing.
   if (disable_bubble_for_testing_) {
@@ -285,7 +287,8 @@ ExtensionFunction::ResponseAction InputImeActivateFunction::Run() {
   // TODO(azurewei): Remove the warning bubble related codes.
   Browser* browser = chrome::FindLastActiveWithProfile(profile);
   if (!browser)
-    return RespondNow(Error(kErrorCouldNotFindActiveBrowser));
+    return RespondNow(Error(
+        InformativeError(kErrorCouldNotFindActiveBrowser, function_name())));
 
   // Creates and shows the warning bubble. The ImeWarningBubble is self-owned,
   // it deletes itself when closed.
@@ -300,7 +303,7 @@ void InputImeActivateFunction::OnPermissionBubbleFinished(
   if (status == ImeWarningBubblePermissionStatus::DENIED ||
       status == ImeWarningBubblePermissionStatus::ABORTED) {
     // Fails to activate the extension.
-    Respond(Error(kErrorPermissionDenied));
+    Respond(Error(InformativeError(kErrorPermissionDenied, function_name())));
     return;
   }
 
@@ -311,7 +314,7 @@ void InputImeActivateFunction::OnPermissionBubbleFinished(
   Profile* profile = Profile::FromBrowserContext(browser_context());
   InputImeEventRouter* event_router = GetInputImeEventRouter(profile);
   if (!event_router) {
-    Respond(Error(kErrorEngineNotActive));
+    Respond(Error(InformativeError(kErrorEngineNotActive, function_name())));
     return;
   }
   event_router->SetActiveEngine(extension_id());
@@ -332,7 +335,7 @@ ExtensionFunction::ResponseAction InputImeDeactivateFunction::Run() {
   InputMethodEngine* engine =
       GetEngineIfActive(browser_context(), extension_id(), &error);
   if (!engine) {
-    return RespondNow(Error(error));
+    return RespondNow(Error(InformativeError(error, function_name())));
   }
   ui::IMEBridge::Get()->SetCurrentEngineHandler(nullptr);
   if (engine)
@@ -364,7 +367,7 @@ ExtensionFunction::ResponseAction InputImeCreateWindowFunction::Run() {
   InputMethodEngine* engine =
       GetEngineIfActive(browser_context(), extension_id(), &error);
   if (!engine)
-    return RespondNow(Error(error));
+    return RespondNow(Error(InformativeError(error, function_name())));
 
   int frame_id = engine->CreateImeWindow(
       extension(), render_frame_host(),
@@ -374,7 +377,7 @@ ExtensionFunction::ResponseAction InputImeCreateWindowFunction::Run() {
           : ui::ImeWindow::NORMAL,
       bounds, &error);
   if (!frame_id)
-    return RespondNow(Error(error));
+    return RespondNow(Error(InformativeError(error, function_name())));
 
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   result->Set("frameId", std::make_unique<base::Value>(frame_id));
@@ -387,7 +390,7 @@ ExtensionFunction::ResponseAction InputImeShowWindowFunction::Run() {
   InputMethodEngine* engine =
       GetEngineIfActive(browser_context(), extension_id(), &error);
   if (!engine)
-    return RespondNow(Error(error));
+    return RespondNow(Error(InformativeError(error, function_name())));
 
   std::unique_ptr<api::input_ime::ShowWindow::Params> params(
       api::input_ime::ShowWindow::Params::Create(*args_));
@@ -401,7 +404,7 @@ ExtensionFunction::ResponseAction InputImeHideWindowFunction::Run() {
   InputMethodEngine* engine =
       GetEngineIfActive(browser_context(), extension_id(), &error);
   if (!engine)
-    return RespondNow(Error(error));
+    return RespondNow(Error(InformativeError(error, function_name())));
 
   std::unique_ptr<api::input_ime::HideWindow::Params> params(
       api::input_ime::HideWindow::Params::Create(*args_));

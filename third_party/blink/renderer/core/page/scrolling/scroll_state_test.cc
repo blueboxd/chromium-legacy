@@ -8,6 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -23,7 +24,7 @@ ScrollState* CreateScrollState(double delta_x,
   scroll_state_data->delta_y = delta_y;
   scroll_state_data->is_beginning = beginning;
   scroll_state_data->is_ending = ending;
-  return ScrollState::Create(std::move(scroll_state_data));
+  return MakeGarbageCollected<ScrollState>(std::move(scroll_state_data));
 }
 
 class ScrollStateTest : public testing::Test {};
@@ -67,8 +68,8 @@ TEST_F(ScrollStateTest, ConsumeDeltaNative) {
 
 TEST_F(ScrollStateTest, CurrentNativeScrollingElement) {
   ScrollState* scroll_state = CreateScrollState(0, 0, false, false);
-  Element* element =
-      Element::Create(QualifiedName::Null(), MakeGarbageCollected<Document>());
+  auto* element = MakeGarbageCollected<Element>(
+      QualifiedName::Null(), MakeGarbageCollected<Document>());
   scroll_state->SetCurrentNativeScrollingNode(element);
 
   EXPECT_EQ(element, scroll_state->CurrentNativeScrollingNode());

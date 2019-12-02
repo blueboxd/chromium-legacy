@@ -83,7 +83,7 @@ VisualViewport::VisualViewport(Page& owner)
       track_pinch_zoom_stats_for_page_(false),
       needs_paint_property_update_(true) {
   UniqueObjectId unique_id = NewUniqueObjectId();
-  element_id_ = CompositorElementIdFromUniqueObjectId(
+  page_scale_element_id_ = CompositorElementIdFromUniqueObjectId(
       unique_id, CompositorElementIdNamespace::kPrimary);
   scroll_element_id_ = CompositorElementIdFromUniqueObjectId(
       unique_id, CompositorElementIdNamespace::kScroll);
@@ -175,7 +175,7 @@ PaintPropertyChangeType VisualViewport::UpdatePaintPropertyNodesIfNeeded(
         TransformationMatrix().Scale(Scale())};
     state.flags.in_subtree_of_page_scale = false;
     state.direct_compositing_reasons = CompositingReason::kWillChangeTransform;
-    state.compositor_element_id = GetCompositorElementId();
+    state.compositor_element_id = page_scale_element_id_;
 
     if (!page_scale_node_) {
       page_scale_node_ = TransformPaintPropertyNode::Create(
@@ -217,7 +217,7 @@ PaintPropertyChangeType VisualViewport::UpdatePaintPropertyNodesIfNeeded(
     state.user_scrollable_vertical = UserInputScrollable(kVerticalScrollbar);
     state.scrolls_inner_viewport = true;
     state.max_scroll_offset_affected_by_page_scale = true;
-    state.compositor_element_id = GetCompositorScrollElementId();
+    state.compositor_element_id = GetScrollElementId();
 
     if (MainFrame() && MainFrame()->GetDocument()) {
       Document* document = MainFrame()->GetDocument();
@@ -582,7 +582,7 @@ void VisualViewport::CreateLayers() {
   scroll_layer_ = cc::Layer::Create();
   scroll_layer_->SetScrollable(gfx::Size(size_));
   scroll_layer_->SetBounds(gfx::Size(ContentsSize()));
-  scroll_layer_->SetElementId(GetCompositorScrollElementId());
+  scroll_layer_->SetElementId(GetScrollElementId());
 
   ScrollingCoordinator* coordinator = GetPage().GetScrollingCoordinator();
   DCHECK(coordinator);
@@ -663,11 +663,7 @@ const Document* VisualViewport::GetDocument() const {
   return MainFrame() ? MainFrame()->GetDocument() : nullptr;
 }
 
-CompositorElementId VisualViewport::GetCompositorElementId() const {
-  return element_id_;
-}
-
-CompositorElementId VisualViewport::GetCompositorScrollElementId() const {
+CompositorElementId VisualViewport::GetScrollElementId() const {
   return scroll_element_id_;
 }
 

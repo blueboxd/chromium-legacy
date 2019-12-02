@@ -58,8 +58,8 @@ using chromeos::InputMethodEngine;
 
 namespace {
 const char kErrorEngineNotAvailable[] = "The engine is not available.";
-const char kErrorSetMenuItemsFail[] = "Could not create menu Items";
-const char kErrorUpdateMenuItemsFail[] = "Could not update menu Items";
+const char kErrorSetMenuItemsFail[] = "Could not create menu items.";
+const char kErrorUpdateMenuItemsFail[] = "Could not update menu items.";
 const char kErrorEngineNotActive[] = "The engine is not active.";
 const char kErrorRouterNotAvailable[] = "The router is not available.";
 
@@ -518,7 +518,7 @@ ExtensionFunction::ResponseAction InputImeClearCompositionFunction::Run() {
   InputMethodEngine* engine = GetEngineIfActive(
       Profile::FromBrowserContext(browser_context()), extension_id(), &error);
   if (!engine) {
-    return RespondNow(Error(error));
+    return RespondNow(Error(InformativeError(error, function_name())));
   }
 
   std::unique_ptr<ClearComposition::Params> parent_params(
@@ -530,8 +530,10 @@ ExtensionFunction::ResponseAction InputImeClearCompositionFunction::Run() {
   std::unique_ptr<base::ListValue> results =
       std::make_unique<base::ListValue>();
   results->Append(std::make_unique<base::Value>(success));
-  return RespondNow(success ? ArgumentList(std::move(results))
-                            : ErrorWithArguments(std::move(results), error));
+  return RespondNow(
+      success ? ArgumentList(std::move(results))
+              : ErrorWithArguments(std::move(results),
+                                   InformativeError(error, function_name())));
 }
 
 ExtensionFunction::ResponseAction InputImeHideInputViewFunction::Run() {
@@ -539,7 +541,7 @@ ExtensionFunction::ResponseAction InputImeHideInputViewFunction::Run() {
   InputMethodEngine* engine = GetEngineIfActive(
       Profile::FromBrowserContext(browser_context()), extension_id(), &error);
   if (!engine)
-    return RespondNow(Error(error));
+    return RespondNow(Error(InformativeError(error, function_name())));
   engine->HideInputView();
   return RespondNow(NoArguments());
 }
@@ -555,7 +557,7 @@ InputImeSetCandidateWindowPropertiesFunction::Run() {
   InputMethodEngine* engine =
       GetEngine(browser_context(), extension_id(), &error);
   if (!engine) {
-    return RespondNow(Error(error));
+    return RespondNow(Error(InformativeError(error, function_name())));
   }
 
   const SetCandidateWindowProperties::Params::Parameters::Properties&
@@ -566,7 +568,8 @@ InputImeSetCandidateWindowPropertiesFunction::Run() {
     std::unique_ptr<base::ListValue> results =
         std::make_unique<base::ListValue>();
     results->Append(std::make_unique<base::Value>(false));
-    return RespondNow(ErrorWithArguments(std::move(results), error));
+    return RespondNow(ErrorWithArguments(
+        std::move(results), InformativeError(error, function_name())));
   }
 
   InputMethodEngine::CandidateWindowProperty properties_out =
@@ -619,7 +622,7 @@ ExtensionFunction::ResponseAction InputImeSetCandidatesFunction::Run() {
   InputMethodEngine* engine = GetEngineIfActive(
       Profile::FromBrowserContext(browser_context()), extension_id(), &error);
   if (!engine) {
-    return RespondNow(Error(error));
+    return RespondNow(Error(InformativeError(error, function_name())));
   }
 
   std::unique_ptr<SetCandidates::Params> parent_params(
@@ -647,8 +650,10 @@ ExtensionFunction::ResponseAction InputImeSetCandidatesFunction::Run() {
   std::unique_ptr<base::ListValue> results =
       std::make_unique<base::ListValue>();
   results->Append(std::make_unique<base::Value>(success));
-  return RespondNow(success ? ArgumentList(std::move(results))
-                            : ErrorWithArguments(std::move(results), error));
+  return RespondNow(
+      success ? ArgumentList(std::move(results))
+              : ErrorWithArguments(std::move(results),
+                                   InformativeError(error, function_name())));
 }
 
 ExtensionFunction::ResponseAction InputImeSetCursorPositionFunction::Run() {
@@ -656,7 +661,7 @@ ExtensionFunction::ResponseAction InputImeSetCursorPositionFunction::Run() {
   InputMethodEngine* engine = GetEngineIfActive(
       Profile::FromBrowserContext(browser_context()), extension_id(), &error);
   if (!engine) {
-    return RespondNow(Error(error));
+    return RespondNow(Error(InformativeError(error, function_name())));
   }
 
   std::unique_ptr<SetCursorPosition::Params> parent_params(
@@ -669,8 +674,10 @@ ExtensionFunction::ResponseAction InputImeSetCursorPositionFunction::Run() {
   std::unique_ptr<base::ListValue> results =
       std::make_unique<base::ListValue>();
   results->Append(std::make_unique<base::Value>(success));
-  return RespondNow(success ? ArgumentList(std::move(results))
-                            : ErrorWithArguments(std::move(results), error));
+  return RespondNow(
+      success ? ArgumentList(std::move(results))
+              : ErrorWithArguments(std::move(results),
+                                   InformativeError(error, function_name())));
 }
 
 ExtensionFunction::ResponseAction InputImeSetMenuItemsFunction::Run() {
@@ -683,7 +690,7 @@ ExtensionFunction::ResponseAction InputImeSetMenuItemsFunction::Run() {
   InputMethodEngine* engine =
       GetEngine(browser_context(), extension_id(), &error);
   if (!engine) {
-    return RespondNow(Error(error));
+    return RespondNow(Error(InformativeError(error, function_name())));
   }
 
   std::vector<chromeos::input_method::InputMethodManager::MenuItem> items_out;
@@ -693,7 +700,8 @@ ExtensionFunction::ResponseAction InputImeSetMenuItemsFunction::Run() {
   }
 
   if (!engine->SetMenuItems(items_out))
-    return RespondNow(Error(kErrorSetMenuItemsFail));
+    return RespondNow(
+        Error(InformativeError(kErrorSetMenuItemsFail, function_name())));
   return RespondNow(NoArguments());
 }
 
@@ -707,7 +715,7 @@ ExtensionFunction::ResponseAction InputImeUpdateMenuItemsFunction::Run() {
   InputMethodEngine* engine =
       GetEngine(browser_context(), extension_id(), &error);
   if (!engine) {
-    return RespondNow(Error(error));
+    return RespondNow(Error(InformativeError(error, function_name())));
   }
 
   std::vector<chromeos::input_method::InputMethodManager::MenuItem> items_out;
@@ -717,7 +725,8 @@ ExtensionFunction::ResponseAction InputImeUpdateMenuItemsFunction::Run() {
   }
 
   if (!engine->UpdateMenuItems(items_out))
-    return RespondNow(Error(kErrorUpdateMenuItemsFail));
+    return RespondNow(
+        Error(InformativeError(kErrorUpdateMenuItemsFail, function_name())));
   return RespondNow(NoArguments());
 }
 
@@ -731,12 +740,14 @@ ExtensionFunction::ResponseAction InputImeDeleteSurroundingTextFunction::Run() {
   InputMethodEngine* engine =
       GetEngine(browser_context(), extension_id(), &error);
   if (!engine) {
-    return RespondNow(Error(error));
+    return RespondNow(Error(InformativeError(error, function_name())));
   }
 
   engine->DeleteSurroundingText(params.context_id, params.offset, params.length,
                                 &error);
-  return RespondNow(error.empty() ? NoArguments() : Error(error));
+  return RespondNow(error.empty()
+                        ? NoArguments()
+                        : Error(InformativeError(error, function_name())));
 }
 
 ExtensionFunction::ResponseAction
@@ -745,13 +756,15 @@ InputMethodPrivateFinishComposingTextFunction::Run() {
   InputMethodEngine* engine = GetEngineIfActive(
       Profile::FromBrowserContext(browser_context()), extension_id(), &error);
   if (!engine)
-    return RespondNow(Error(error));
+    return RespondNow(Error(InformativeError(error, function_name())));
   std::unique_ptr<FinishComposingText::Params> parent_params(
       FinishComposingText::Params::Create(*args_));
   const FinishComposingText::Params::Parameters& params =
       parent_params->parameters;
   engine->FinishComposingText(params.context_id, &error);
-  return RespondNow(error.empty() ? NoArguments() : Error(error));
+  return RespondNow(error.empty()
+                        ? NoArguments()
+                        : Error(InformativeError(error, function_name())));
 }
 
 ExtensionFunction::ResponseAction
@@ -768,12 +781,13 @@ InputMethodPrivateNotifyImeMenuItemActivatedFunction::Run() {
       GetEngineIfActive(Profile::FromBrowserContext(browser_context()),
                         active_extension_id, &error);
   if (!engine)
-    return RespondNow(Error(error));
+    return RespondNow(Error(InformativeError(error, function_name())));
 
   std::unique_ptr<NotifyImeMenuItemActivated::Params> params(
       NotifyImeMenuItemActivated::Params::Create(*args_));
   if (params->engine_id != engine->GetActiveComponentId())
-    return RespondNow(Error(kErrorEngineNotActive));
+    return RespondNow(
+        Error(InformativeError(kErrorEngineNotActive, function_name())));
   engine->PropertyActivate(params->name);
   return RespondNow(NoArguments());
 }
@@ -784,7 +798,7 @@ InputMethodPrivateGetCompositionBoundsFunction::Run() {
   InputMethodEngine* engine = GetEngineIfActive(
       Profile::FromBrowserContext(browser_context()), extension_id(), &error);
   if (!engine)
-    return RespondNow(Error(error));
+    return RespondNow(Error(InformativeError(error, function_name())));
 
   auto bounds_list = std::make_unique<base::ListValue>();
   for (const auto& bounds : engine->composition_bounds()) {

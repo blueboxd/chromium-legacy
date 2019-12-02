@@ -6,8 +6,8 @@
 
 #include <memory>
 #include <utility>
-
 #include "base/lazy_instance.h"
+#include "base/strings/stringprintf.h"
 #include "extensions/browser/extension_registry.h"
 #include "ui/base/ime/ime_bridge.h"
 
@@ -20,7 +20,7 @@ using input_method::InputMethodEngineBase;
 
 namespace {
 const char kErrorRouterNotAvailable[] = "The router is not available.";
-const char kErrorSetKeyEventsFail[] = "Could not send key events";
+const char kErrorSetKeyEventsFail[] = "Could not send key events.";
 
 InputMethodEngineBase* GetEngineIfActive(Profile* profile,
                                          const std::string& extension_id,
@@ -320,7 +320,7 @@ ExtensionFunction::ResponseAction InputImeKeyEventHandledFunction::Run() {
   InputMethodEngineBase* engine = GetEngineIfActive(
       Profile::FromBrowserContext(browser_context()), extension_id(), &error);
   if (!engine)
-    return RespondNow(Error(error));
+    return RespondNow(Error(InformativeError(error, function_name())));
 
   engine->KeyEventHandled(extension_id(), params->request_id, params->response);
   return RespondNow(NoArguments());
@@ -331,7 +331,7 @@ ExtensionFunction::ResponseAction InputImeSetCompositionFunction::Run() {
   InputMethodEngineBase* engine = GetEngineIfActive(
       Profile::FromBrowserContext(browser_context()), extension_id(), &error);
   if (!engine)
-    return RespondNow(Error(error));
+    return RespondNow(Error(InformativeError(error, function_name())));
 
   std::unique_ptr<SetComposition::Params> parent_params(
       SetComposition::Params::Create(*args_));
@@ -366,7 +366,8 @@ ExtensionFunction::ResponseAction InputImeSetCompositionFunction::Run() {
     std::unique_ptr<base::ListValue> results =
         std::make_unique<base::ListValue>();
     results->Append(std::make_unique<base::Value>(false));
-    return RespondNow(ErrorWithArguments(std::move(results), error));
+    return RespondNow(ErrorWithArguments(
+        std::move(results), InformativeError(error, function_name())));
   }
   return RespondNow(OneArgument(std::make_unique<base::Value>(true)));
 }
@@ -376,7 +377,7 @@ ExtensionFunction::ResponseAction InputImeCommitTextFunction::Run() {
   InputMethodEngineBase* engine = GetEngineIfActive(
       Profile::FromBrowserContext(browser_context()), extension_id(), &error);
   if (!engine)
-    return RespondNow(Error(error));
+    return RespondNow(Error(InformativeError(error, function_name())));
 
   std::unique_ptr<CommitText::Params> parent_params(
       CommitText::Params::Create(*args_));
@@ -385,7 +386,8 @@ ExtensionFunction::ResponseAction InputImeCommitTextFunction::Run() {
     std::unique_ptr<base::ListValue> results =
         std::make_unique<base::ListValue>();
     results->Append(std::make_unique<base::Value>(false));
-    return RespondNow(ErrorWithArguments(std::move(results), error));
+    return RespondNow(ErrorWithArguments(
+        std::move(results), InformativeError(error, function_name())));
   }
   return RespondNow(OneArgument(std::make_unique<base::Value>(true)));
 }
@@ -395,7 +397,7 @@ ExtensionFunction::ResponseAction InputImeSendKeyEventsFunction::Run() {
   InputMethodEngineBase* engine = GetEngineIfActive(
       Profile::FromBrowserContext(browser_context()), extension_id(), &error);
   if (!engine)
-    return RespondNow(Error(error));
+    return RespondNow(Error(InformativeError(error, function_name())));
 
   std::unique_ptr<SendKeyEvents::Params> parent_params(
       SendKeyEvents::Params::Create(*args_));
@@ -418,7 +420,8 @@ ExtensionFunction::ResponseAction InputImeSendKeyEventsFunction::Run() {
     event.caps_lock = key_event.caps_lock ? *(key_event.caps_lock) : false;
   }
   if (!engine->SendKeyEvents(params.context_id, key_data_out))
-    return RespondNow(Error(kErrorSetKeyEventsFail));
+    return RespondNow(
+        Error(InformativeError(kErrorSetKeyEventsFail, function_name())));
   return RespondNow(NoArguments());
 }
 
@@ -454,6 +457,11 @@ InputImeEventRouter* GetInputImeEventRouter(Profile* profile) {
   if (!profile)
     return nullptr;
   return InputImeEventRouterFactory::GetInstance()->GetRouter(profile);
+}
+
+std::string InformativeError(const std::string& error,
+                             const char* function_name) {
+  return base::StringPrintf("%s\nThrown by %s", error.c_str(), function_name);
 }
 
 }  // namespace extensions

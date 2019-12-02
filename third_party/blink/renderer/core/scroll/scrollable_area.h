@@ -329,7 +329,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual void ScrollbarStyleChanged() {}
   virtual bool ScrollbarsCanBeActive() const = 0;
 
-  virtual CompositorElementId GetCompositorElementId() const = 0;
+  virtual CompositorElementId GetScrollElementId() const = 0;
 
   virtual CompositorElementId GetScrollbarElementId(
       ScrollbarOrientation orientation);

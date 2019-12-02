@@ -74,7 +74,8 @@ DocumentType* DOMImplementation::createDocumentType(
                                     exception_state))
     return nullptr;
 
-  return DocumentType::Create(document_, qualified_name, public_id, system_id);
+  return MakeGarbageCollected<DocumentType>(document_, qualified_name,
+                                            public_id, system_id);
 }
 
 XMLDocument* DOMImplementation::createDocument(

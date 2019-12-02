@@ -42,12 +42,6 @@ ScrollState* ScrollState::Create(ScrollStateInit* init) {
   return scroll_state;
 }
 
-ScrollState* ScrollState::Create(std::unique_ptr<ScrollStateData> data) {
-  ScrollState* scroll_state =
-      MakeGarbageCollected<ScrollState>(std::move(data));
-  return scroll_state;
-}
-
 ScrollState::ScrollState(std::unique_ptr<ScrollStateData> data)
     : data_(std::move(data)) {}
 

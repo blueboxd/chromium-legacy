@@ -98,3 +98,17 @@ IN_PROC_BROWSER_TEST_F(WebAppGlassBrowserFrameViewTest, MaximizedLayout) {
   DCHECK_GT(glass_frame_view_->window_title_for_testing()->x(), 0);
   DCHECK_GT(glass_frame_view_->web_app_frame_toolbar_for_testing()->y(), 0);
 }
+
+IN_PROC_BROWSER_TEST_F(WebAppGlassBrowserFrameViewTest, RTLTopRightHitTest) {
+  base::i18n::SetRTLForTesting(true);
+  if (!InstallAndLaunchWebApp())
+    return;
+
+  static_cast<views::View*>(glass_frame_view_)->Layout();
+
+  // Avoid the top right resize corner.
+  constexpr int kInset = 10;
+  EXPECT_EQ(glass_frame_view_->NonClientHitTest(
+                gfx::Point(glass_frame_view_->width() - kInset, kInset)),
+            HTCAPTION);
+}

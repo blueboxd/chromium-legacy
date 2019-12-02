@@ -10,6 +10,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/crostini/crostini_export_import_status_tracker.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 
@@ -25,53 +26,24 @@ enum class ExportImportType;
 
 // Notification for Crostini export and import.
 class CrostiniExportImportNotification
-    : public message_center::NotificationObserver {
+    : public CrostiniExportImportStatusTracker,
+      public message_center::NotificationObserver {
  public:
-  enum class Status {
-    RUNNING,
-    CANCELLING,
-    DONE,
-    CANCELLED,
-    FAILED_UNKNOWN_REASON,
-    FAILED_ARCHITECTURE_MISMATCH,
-    FAILED_INSUFFICIENT_SPACE,
-    FAILED_CONCURRENT_OPERATION,
-  };
-
   // Used to construct CrostiniExportImportNotification to ensure it controls
   // its lifetime.
-  static CrostiniExportImportNotification* Create(
+  static CrostiniExportImportStatusTracker* Create(
       Profile* profile,
-      ExportImportType type,
+      ContainerId container_id,
       const std::string& notification_id,
-      base::FilePath path,
-      ContainerId container_id) {
+      ExportImportType type,
+      base::FilePath path) {
     return new CrostiniExportImportNotification(profile, type, notification_id,
                                                 std::move(path),
                                                 std::move(container_id));
   }
 
-  virtual ~CrostiniExportImportNotification();
+  ~CrostiniExportImportNotification() override;
 
-  // Can be used to draw attention to the notification without changing its
-  // status, even if it has been hidden.
-  void ForceRedisplay();
-
-  void SetStatusRunning(int progress_percent);
-  void SetStatusCancelling();
-  void SetStatusDone();
-  void SetStatusCancelled();
-  void SetStatusFailed();
-  void SetStatusFailedArchitectureMismatch(
-      const std::string& architecture_container,
-      const std::string& architecture_device);
-  void SetStatusFailedInsufficientSpace(uint64_t additional_required_space);
-  void SetStatusFailedConcurrentOperation(
-      ExportImportType in_progress_operation_type);
-
-  Status status() const { return status_; }
-  ExportImportType type() const { return type_; }
-  const base::FilePath& path() const { return path_; }
   // Getters for testing.
   message_center::Notification* get_notification() {
     return notification_.get();
@@ -89,13 +61,18 @@ class CrostiniExportImportNotification
                                    base::FilePath path,
                                    ContainerId container_id);
 
-  void SetStatusFailed(Status status, const base::string16& message);
+  // CrostiniExportImportStatusTracker:
+  void ForceRedisplay() override;
+  void SetStatusRunningUI(int progress_percent) override;
+  void SetStatusCancellingUI() override;
+  void SetStatusDoneUI() override;
+  void SetStatusCancelledUI() override;
+  void SetStatusFailedWithMessageUI(Status status,
+                                    const base::string16& message) override;
 
-  Profile* profile_;
-  ExportImportType type_;
-  base::FilePath path_;
+  Profile* profile_;  // Not owned.
   ContainerId container_id_;
-  Status status_ = Status::RUNNING;
+
   // Time when the operation started.  Used for estimating time remaining.
   base::TimeTicks started_ = base::TimeTicks::Now();
   std::unique_ptr<message_center::Notification> notification_;

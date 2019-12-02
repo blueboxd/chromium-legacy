@@ -35,8 +35,7 @@ suite('<app-management-managed-apps>', () => {
     // Select created app.
     app_management.Store.getInstance().dispatch(
         app_management.actions.updateSelectedAppId(app.id));
-    appDetailView =
-        document.createElement('app-management-pwa-permission-view');
+    appDetailView = document.createElement('app-management-pwa-detail-view');
     replaceBody(appDetailView);
     await test_util.flushTasks();
   });
@@ -44,7 +43,7 @@ suite('<app-management-managed-apps>', () => {
   // TODO(crbug.com/999412): rewrite test.
   test.skip('Uninstall button affected by policy', () => {
     const uninstallWrapper =
-        appDetailView.$$('app-management-permission-view-header')
+        appDetailView.$$('app-management-detail-view-header')
             .$$('#uninstall-wrapper');
     expectTrue(!!uninstallWrapper.querySelector('#policy-indicator'));
   });

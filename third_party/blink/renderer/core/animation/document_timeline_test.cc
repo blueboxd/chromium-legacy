@@ -73,7 +73,8 @@ class AnimationDocumentTimelineTest : public PageTestBase {
     document = &GetDocument();
     GetAnimationClock().ResetTimeForTesting();
     GetAnimationClock().SetAllowedToDynamicallyUpdateTime(false);
-    element = Element::Create(QualifiedName::Null(), document.Get());
+    element =
+        MakeGarbageCollected<Element>(QualifiedName::Null(), document.Get());
     platform_timing = MakeGarbageCollected<MockPlatformTiming>();
     timeline = document->Timeline();
     timeline->SetTimingForTesting(platform_timing);

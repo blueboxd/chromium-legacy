@@ -1860,7 +1860,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
         }
       }
 
-      state.compositor_element_id = scrollable_area->GetCompositorElementId();
+      state.compositor_element_id = scrollable_area->GetScrollElementId();
 
       state.overscroll_behavior = cc::OverscrollBehavior(
           static_cast<cc::OverscrollBehavior::OverscrollBehaviorType>(

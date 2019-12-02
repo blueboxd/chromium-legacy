@@ -155,13 +155,14 @@ TEST_F(CrostiniExportImportTest, TestNotAllowed) {
 // TODO(juwa): remove this once tremplin has been shipped.
 TEST_F(CrostiniExportImportTest, TestDeprecatedExportSuccess) {
   crostini_export_import_->FileSelected(
-      tarball_, 0, reinterpret_cast<void*>(ExportImportType::EXPORT));
+      tarball_, 0,
+      crostini_export_import_->NewOperationData(ExportImportType::EXPORT));
   task_environment_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
       crostini_export_import_->GetNotificationForTesting(container_id_);
   ASSERT_NE(notification, nullptr);
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::RUNNING);
+            CrostiniExportImportStatusTracker::Status::RUNNING);
   EXPECT_EQ(notification->get_notification()->progress(), 0);
   EXPECT_TRUE(notification->get_notification()->pinned());
 
@@ -170,7 +171,7 @@ TEST_F(CrostiniExportImportTest, TestDeprecatedExportSuccess) {
                          ExportLxdContainerProgressSignal_Status_EXPORTING_PACK,
                      {.progress_percent = 20});
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::RUNNING);
+            CrostiniExportImportStatusTracker::Status::RUNNING);
   EXPECT_EQ(notification->get_notification()->progress(), 10);
   EXPECT_TRUE(notification->get_notification()->pinned());
 
@@ -180,7 +181,7 @@ TEST_F(CrostiniExportImportTest, TestDeprecatedExportSuccess) {
           ExportLxdContainerProgressSignal_Status_EXPORTING_DOWNLOAD,
       {.progress_percent = 20});
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::RUNNING);
+            CrostiniExportImportStatusTracker::Status::RUNNING);
   EXPECT_EQ(notification->get_notification()->progress(), 60);
   EXPECT_TRUE(notification->get_notification()->pinned());
 
@@ -191,7 +192,7 @@ TEST_F(CrostiniExportImportTest, TestDeprecatedExportSuccess) {
           ExportLxdContainerProgressSignal_Status_EXPORTING_DOWNLOAD,
       {.progress_percent = 40});
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::RUNNING);
+            CrostiniExportImportStatusTracker::Status::RUNNING);
   EXPECT_EQ(notification->get_notification()->progress(), 60);
   EXPECT_TRUE(notification->get_notification()->pinned());
 
@@ -199,7 +200,7 @@ TEST_F(CrostiniExportImportTest, TestDeprecatedExportSuccess) {
   SendExportProgress(
       vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_DONE);
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::DONE);
+            CrostiniExportImportStatusTracker::Status::DONE);
   EXPECT_FALSE(notification->get_notification()->pinned());
   // CrostiniExportImport should've created the exported file.
   task_environment_.RunUntilIdle();
@@ -208,13 +209,14 @@ TEST_F(CrostiniExportImportTest, TestDeprecatedExportSuccess) {
 
 TEST_F(CrostiniExportImportTest, TestExportSuccess) {
   crostini_export_import_->FileSelected(
-      tarball_, 0, reinterpret_cast<void*>(ExportImportType::EXPORT));
+      tarball_, 0,
+      crostini_export_import_->NewOperationData(ExportImportType::EXPORT));
   task_environment_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
       crostini_export_import_->GetNotificationForTesting(container_id_);
   ASSERT_NE(notification, nullptr);
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::RUNNING);
+            CrostiniExportImportStatusTracker::Status::RUNNING);
   EXPECT_EQ(notification->get_notification()->progress(), 0);
   EXPECT_TRUE(notification->get_notification()->pinned());
 
@@ -227,7 +229,7 @@ TEST_F(CrostiniExportImportTest, TestExportSuccess) {
        .files_streamed = 30,
        .bytes_streamed = 10});
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::RUNNING);
+            CrostiniExportImportStatusTracker::Status::RUNNING);
   EXPECT_EQ(notification->get_notification()->progress(), 20);
   EXPECT_TRUE(notification->get_notification()->pinned());
 
@@ -240,7 +242,7 @@ TEST_F(CrostiniExportImportTest, TestExportSuccess) {
        .files_streamed = 55,
        .bytes_streamed = 66});
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::RUNNING);
+            CrostiniExportImportStatusTracker::Status::RUNNING);
   EXPECT_EQ(notification->get_notification()->progress(), 60);
   EXPECT_TRUE(notification->get_notification()->pinned());
 
@@ -254,7 +256,7 @@ TEST_F(CrostiniExportImportTest, TestExportSuccess) {
        .files_streamed = 90,
        .bytes_streamed = 85});
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::RUNNING);
+            CrostiniExportImportStatusTracker::Status::RUNNING);
   EXPECT_EQ(notification->get_notification()->progress(), 60);
   EXPECT_TRUE(notification->get_notification()->pinned());
 
@@ -262,7 +264,7 @@ TEST_F(CrostiniExportImportTest, TestExportSuccess) {
   SendExportProgress(
       vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_DONE);
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::DONE);
+            CrostiniExportImportStatusTracker::Status::DONE);
   EXPECT_FALSE(notification->get_notification()->pinned());
   // CrostiniExportImport should've created the exported file.
   task_environment_.RunUntilIdle();
@@ -271,7 +273,8 @@ TEST_F(CrostiniExportImportTest, TestExportSuccess) {
 
 TEST_F(CrostiniExportImportTest, TestExportFail) {
   crostini_export_import_->FileSelected(
-      tarball_, 0, reinterpret_cast<void*>(ExportImportType::EXPORT));
+      tarball_, 0,
+      crostini_export_import_->NewOperationData(ExportImportType::EXPORT));
   task_environment_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
       crostini_export_import_->GetNotificationForTesting(container_id_);
@@ -280,7 +283,7 @@ TEST_F(CrostiniExportImportTest, TestExportFail) {
   SendExportProgress(
       vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_FAILED);
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::FAILED_UNKNOWN_REASON);
+            CrostiniExportImportStatusTracker::Status::FAILED_UNKNOWN_REASON);
   EXPECT_FALSE(notification->get_notification()->pinned());
   // CrostiniExportImport should cleanup the file if an export fails.
   task_environment_.RunUntilIdle();
@@ -289,13 +292,14 @@ TEST_F(CrostiniExportImportTest, TestExportFail) {
 
 TEST_F(CrostiniExportImportTest, TestExportCancelled) {
   crostini_export_import_->FileSelected(
-      tarball_, 0, reinterpret_cast<void*>(ExportImportType::EXPORT));
+      tarball_, 0,
+      crostini_export_import_->NewOperationData(ExportImportType::EXPORT));
   task_environment_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
       crostini_export_import_->GetNotificationForTesting(container_id_);
   ASSERT_NE(notification, nullptr);
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::RUNNING);
+            CrostiniExportImportStatusTracker::Status::RUNNING);
   EXPECT_EQ(notification->get_notification()->progress(), 0);
   EXPECT_TRUE(notification->get_notification()->pinned());
 
@@ -303,7 +307,7 @@ TEST_F(CrostiniExportImportTest, TestExportCancelled) {
   crostini_export_import_->CancelOperation(ExportImportType::EXPORT,
                                            container_id_);
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::CANCELLING);
+            CrostiniExportImportStatusTracker::Status::CANCELLING);
   EXPECT_EQ(notification->get_notification()->progress(), -1);
   EXPECT_FALSE(notification->get_notification()->pinned());
   EXPECT_TRUE(base::PathExists(tarball_));
@@ -317,7 +321,7 @@ TEST_F(CrostiniExportImportTest, TestExportCancelled) {
        .files_streamed = 50,
        .bytes_streamed = 50});
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::CANCELLING);
+            CrostiniExportImportStatusTracker::Status::CANCELLING);
   EXPECT_EQ(notification->get_notification()->progress(), -1);
   EXPECT_FALSE(notification->get_notification()->pinned());
   EXPECT_TRUE(base::PathExists(tarball_));
@@ -333,13 +337,14 @@ TEST_F(CrostiniExportImportTest, TestExportCancelled) {
 
 TEST_F(CrostiniExportImportTest, TestExportDoneBeforeCancelled) {
   crostini_export_import_->FileSelected(
-      tarball_, 0, reinterpret_cast<void*>(ExportImportType::EXPORT));
+      tarball_, 0,
+      crostini_export_import_->NewOperationData(ExportImportType::EXPORT));
   task_environment_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
       crostini_export_import_->GetNotificationForTesting(container_id_);
   ASSERT_NE(notification, nullptr);
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::RUNNING);
+            CrostiniExportImportStatusTracker::Status::RUNNING);
   EXPECT_EQ(notification->get_notification()->progress(), 0);
   EXPECT_TRUE(notification->get_notification()->pinned());
 
@@ -347,7 +352,7 @@ TEST_F(CrostiniExportImportTest, TestExportDoneBeforeCancelled) {
   crostini_export_import_->CancelOperation(ExportImportType::EXPORT,
                                            container_id_);
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::CANCELLING);
+            CrostiniExportImportStatusTracker::Status::CANCELLING);
   EXPECT_EQ(notification->get_notification()->progress(), -1);
   EXPECT_FALSE(notification->get_notification()->pinned());
   EXPECT_TRUE(base::PathExists(tarball_));
@@ -363,13 +368,14 @@ TEST_F(CrostiniExportImportTest, TestExportDoneBeforeCancelled) {
 
 TEST_F(CrostiniExportImportTest, TestImportSuccess) {
   crostini_export_import_->FileSelected(
-      tarball_, 0, reinterpret_cast<void*>(ExportImportType::IMPORT));
+      tarball_, 0,
+      crostini_export_import_->NewOperationData(ExportImportType::IMPORT));
   task_environment_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
       crostini_export_import_->GetNotificationForTesting(container_id_);
   ASSERT_NE(notification, nullptr);
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::RUNNING);
+            CrostiniExportImportStatusTracker::Status::RUNNING);
   EXPECT_EQ(notification->get_notification()->progress(), 0);
   EXPECT_TRUE(notification->get_notification()->pinned());
 
@@ -379,7 +385,7 @@ TEST_F(CrostiniExportImportTest, TestImportSuccess) {
           ImportLxdContainerProgressSignal_Status_IMPORTING_UPLOAD,
       {.progress_percent = 20});
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::RUNNING);
+            CrostiniExportImportStatusTracker::Status::RUNNING);
   EXPECT_EQ(notification->get_notification()->progress(), 10);
   EXPECT_TRUE(notification->get_notification()->pinned());
 
@@ -389,7 +395,7 @@ TEST_F(CrostiniExportImportTest, TestImportSuccess) {
           ImportLxdContainerProgressSignal_Status_IMPORTING_UNPACK,
       {.progress_percent = 20});
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::RUNNING);
+            CrostiniExportImportStatusTracker::Status::RUNNING);
   EXPECT_EQ(notification->get_notification()->progress(), 60);
   EXPECT_TRUE(notification->get_notification()->pinned());
 
@@ -400,7 +406,7 @@ TEST_F(CrostiniExportImportTest, TestImportSuccess) {
           ImportLxdContainerProgressSignal_Status_IMPORTING_UNPACK,
       {.progress_percent = 40});
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::RUNNING);
+            CrostiniExportImportStatusTracker::Status::RUNNING);
   EXPECT_EQ(notification->get_notification()->progress(), 60);
   EXPECT_TRUE(notification->get_notification()->pinned());
 
@@ -408,13 +414,14 @@ TEST_F(CrostiniExportImportTest, TestImportSuccess) {
   SendImportProgress(
       vm_tools::cicerone::ImportLxdContainerProgressSignal_Status_DONE);
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::DONE);
+            CrostiniExportImportStatusTracker::Status::DONE);
   EXPECT_FALSE(notification->get_notification()->pinned());
 }
 
 TEST_F(CrostiniExportImportTest, TestImportFail) {
   crostini_export_import_->FileSelected(
-      tarball_, 0, reinterpret_cast<void*>(ExportImportType::IMPORT));
+      tarball_, 0,
+      crostini_export_import_->NewOperationData(ExportImportType::IMPORT));
   task_environment_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
       crostini_export_import_->GetNotificationForTesting(container_id_);
@@ -423,7 +430,7 @@ TEST_F(CrostiniExportImportTest, TestImportFail) {
   SendImportProgress(
       vm_tools::cicerone::ImportLxdContainerProgressSignal_Status_FAILED);
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::FAILED_UNKNOWN_REASON);
+            CrostiniExportImportStatusTracker::Status::FAILED_UNKNOWN_REASON);
   EXPECT_FALSE(notification->get_notification()->pinned());
   std::string msg("Restoring couldn't be completed due to an error");
   EXPECT_EQ(notification->get_notification()->message(),
@@ -432,13 +439,14 @@ TEST_F(CrostiniExportImportTest, TestImportFail) {
 
 TEST_F(CrostiniExportImportTest, TestImportCancelled) {
   crostini_export_import_->FileSelected(
-      tarball_, 0, reinterpret_cast<void*>(ExportImportType::IMPORT));
+      tarball_, 0,
+      crostini_export_import_->NewOperationData(ExportImportType::IMPORT));
   task_environment_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
       crostini_export_import_->GetNotificationForTesting(container_id_);
   ASSERT_NE(notification, nullptr);
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::RUNNING);
+            CrostiniExportImportStatusTracker::Status::RUNNING);
   EXPECT_EQ(notification->get_notification()->progress(), 0);
   EXPECT_TRUE(notification->get_notification()->pinned());
 
@@ -446,7 +454,7 @@ TEST_F(CrostiniExportImportTest, TestImportCancelled) {
   crostini_export_import_->CancelOperation(ExportImportType::IMPORT,
                                            container_id_);
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::CANCELLING);
+            CrostiniExportImportStatusTracker::Status::CANCELLING);
   EXPECT_EQ(notification->get_notification()->progress(), -1);
   EXPECT_FALSE(notification->get_notification()->pinned());
 
@@ -456,7 +464,7 @@ TEST_F(CrostiniExportImportTest, TestImportCancelled) {
           ImportLxdContainerProgressSignal_Status_IMPORTING_UPLOAD,
       {.progress_percent = 50});
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::CANCELLING);
+            CrostiniExportImportStatusTracker::Status::CANCELLING);
   EXPECT_EQ(notification->get_notification()->progress(), -1);
   EXPECT_FALSE(notification->get_notification()->pinned());
 
@@ -469,13 +477,14 @@ TEST_F(CrostiniExportImportTest, TestImportCancelled) {
 
 TEST_F(CrostiniExportImportTest, TestImportDoneBeforeCancelled) {
   crostini_export_import_->FileSelected(
-      tarball_, 0, reinterpret_cast<void*>(ExportImportType::IMPORT));
+      tarball_, 0,
+      crostini_export_import_->NewOperationData(ExportImportType::IMPORT));
   task_environment_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
       crostini_export_import_->GetNotificationForTesting(container_id_);
   ASSERT_NE(notification, nullptr);
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::RUNNING);
+            CrostiniExportImportStatusTracker::Status::RUNNING);
   EXPECT_EQ(notification->get_notification()->progress(), 0);
   EXPECT_TRUE(notification->get_notification()->pinned());
 
@@ -483,7 +492,7 @@ TEST_F(CrostiniExportImportTest, TestImportDoneBeforeCancelled) {
   crostini_export_import_->CancelOperation(ExportImportType::IMPORT,
                                            container_id_);
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::CANCELLING);
+            CrostiniExportImportStatusTracker::Status::CANCELLING);
   EXPECT_EQ(notification->get_notification()->progress(), -1);
   EXPECT_FALSE(notification->get_notification()->pinned());
 
@@ -491,13 +500,14 @@ TEST_F(CrostiniExportImportTest, TestImportDoneBeforeCancelled) {
   SendImportProgress(
       vm_tools::cicerone::ImportLxdContainerProgressSignal_Status_DONE);
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::DONE);
+            CrostiniExportImportStatusTracker::Status::DONE);
   EXPECT_FALSE(notification->get_notification()->pinned());
 }
 
 TEST_F(CrostiniExportImportTest, TestImportFailArchitecture) {
   crostini_export_import_->FileSelected(
-      tarball_, 0, reinterpret_cast<void*>(ExportImportType::IMPORT));
+      tarball_, 0,
+      crostini_export_import_->NewOperationData(ExportImportType::IMPORT));
   task_environment_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
       crostini_export_import_->GetNotificationForTesting(container_id_);
@@ -508,7 +518,7 @@ TEST_F(CrostiniExportImportTest, TestImportFailArchitecture) {
           ImportLxdContainerProgressSignal_Status_FAILED_ARCHITECTURE);
   EXPECT_EQ(
       notification->status(),
-      CrostiniExportImportNotification::Status::FAILED_ARCHITECTURE_MISMATCH);
+      CrostiniExportImportStatusTracker::Status::FAILED_ARCHITECTURE_MISMATCH);
   EXPECT_FALSE(notification->get_notification()->pinned());
   std::string msg(
       "Cannot import container architecture type arch_con with this device "
@@ -521,7 +531,8 @@ TEST_F(CrostiniExportImportTest, TestImportFailArchitecture) {
 
 TEST_F(CrostiniExportImportTest, TestImportFailSpace) {
   crostini_export_import_->FileSelected(
-      tarball_, 0, reinterpret_cast<void*>(ExportImportType::IMPORT));
+      tarball_, 0,
+      crostini_export_import_->NewOperationData(ExportImportType::IMPORT));
   task_environment_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
       crostini_export_import_->GetNotificationForTesting(container_id_);
@@ -535,7 +546,7 @@ TEST_F(CrostiniExportImportTest, TestImportFailSpace) {
       });
   EXPECT_EQ(
       notification->status(),
-      CrostiniExportImportNotification::Status::FAILED_INSUFFICIENT_SPACE);
+      CrostiniExportImportStatusTracker::Status::FAILED_INSUFFICIENT_SPACE);
   EXPECT_FALSE(notification->get_notification()->pinned());
   std::string msg =
       "Cannot restore due to lack of storage space. Free up 15.0 GB from the "

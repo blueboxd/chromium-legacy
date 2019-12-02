@@ -382,8 +382,10 @@ TEST_F(DocumentTest, DomTreeVersionForRemoval) {
   Document& doc = GetDocument();
   {
     DocumentFragment* fragment = DocumentFragment::Create(doc);
-    fragment->appendChild(Element::Create(html_names::kDivTag, &doc));
-    fragment->appendChild(Element::Create(html_names::kSpanTag, &doc));
+    fragment->appendChild(
+        MakeGarbageCollected<Element>(html_names::kDivTag, &doc));
+    fragment->appendChild(
+        MakeGarbageCollected<Element>(html_names::kSpanTag, &doc));
     uint64_t original_version = doc.DomTreeVersion();
     fragment->RemoveChildren();
     EXPECT_EQ(original_version + 1, doc.DomTreeVersion())
@@ -392,8 +394,9 @@ TEST_F(DocumentTest, DomTreeVersionForRemoval) {
 
   {
     DocumentFragment* fragment = DocumentFragment::Create(doc);
-    Node* child = Element::Create(html_names::kDivTag, &doc);
-    child->appendChild(Element::Create(html_names::kSpanTag, &doc));
+    Node* child = MakeGarbageCollected<Element>(html_names::kDivTag, &doc);
+    child->appendChild(
+        MakeGarbageCollected<Element>(html_names::kSpanTag, &doc));
     fragment->appendChild(child);
     uint64_t original_version = doc.DomTreeVersion();
     fragment->removeChild(child);

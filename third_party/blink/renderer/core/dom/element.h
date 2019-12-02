@@ -168,9 +168,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Element* Create(const QualifiedName&, Document*);
-
-  Element(const QualifiedName& tag_name, Document*, ConstructionType);
+  Element(const QualifiedName& tag_name,
+          Document*,
+          ConstructionType = kCreateElement);
 
   // Animatable implementation.
   Element* GetAnimationTarget() override;

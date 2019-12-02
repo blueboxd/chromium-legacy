@@ -24,6 +24,7 @@
 
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/named_node_map.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -45,7 +46,8 @@ Node::NodeType DocumentType::getNodeType() const {
 }
 
 Node* DocumentType::Clone(Document& factory, CloneChildrenFlag) const {
-  return Create(&factory, name_, public_id_, system_id_);
+  return MakeGarbageCollected<DocumentType>(&factory, name_, public_id_,
+                                            system_id_);
 }
 
 Node::InsertionNotificationRequest DocumentType::InsertedInto(

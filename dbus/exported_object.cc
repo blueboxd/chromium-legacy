@@ -89,24 +89,24 @@ void ExportedObject::ExportMethod(
     const std::string& interface_name,
     const std::string& method_name,
     const MethodCallCallback& method_call_callback,
-    OnExportedCallback on_exported_calback) {
+    OnExportedCallback on_exported_callback) {
   bus_->AssertOnOriginThread();
 
   base::OnceClosure task = base::BindOnce(
       &ExportedObject::ExportMethodInternal, this, interface_name, method_name,
-      method_call_callback, std::move(on_exported_calback));
+      method_call_callback, std::move(on_exported_callback));
   bus_->GetDBusTaskRunner()->PostTask(FROM_HERE, std::move(task));
 }
 
 void ExportedObject::UnexportMethod(
     const std::string& interface_name,
     const std::string& method_name,
-    OnUnexportedCallback on_unexported_calback) {
+    OnUnexportedCallback on_unexported_callback) {
   bus_->AssertOnOriginThread();
 
   base::OnceClosure task = base::BindOnce(
       &ExportedObject::UnexportMethodInternal, this, interface_name,
-      method_name, std::move(on_unexported_calback));
+      method_name, std::move(on_unexported_callback));
   bus_->GetDBusTaskRunner()->PostTask(FROM_HERE, std::move(task));
 }
 

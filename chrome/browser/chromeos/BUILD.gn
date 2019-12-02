@@ -820,6 +820,8 @@ source_set("chromeos") {
     "crostini/crostini_export_import.h",
     "crostini/crostini_export_import_notification.cc",
     "crostini/crostini_export_import_notification.h",
+    "crostini/crostini_export_import_status_tracker.cc",
+    "crostini/crostini_export_import_status_tracker.h",
     "crostini/crostini_features.cc",
     "crostini/crostini_features.h",
     "crostini/crostini_force_close_watcher.cc",

@@ -82,11 +82,11 @@ Polymer({
               state.apps[assert(state.currentPage.selectedAppId)].type;
           switch (selectedAppType) {
             case (AppType.kWeb):
-              return 'pwa-permission-view';
+              return 'pwa-detail-view';
             case (AppType.kExtension):
-              return 'chrome-app-permission-view';
+              return 'chrome-app-detail-view';
             case (AppType.kArc):
-              return 'arc-permission-view';
+              return 'arc-detail-view';
             default:
               assertNotReached();
           }

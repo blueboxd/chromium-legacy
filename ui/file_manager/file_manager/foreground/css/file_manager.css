@@ -155,7 +155,6 @@ html[class*='col-resize'] #directory-tree {
   align-items: center;
   border-inline-start-width: 0;
   border-radius: 0 20px 20px 0;
-  border: 1px solid transparent;
   box-sizing: border-box;
   color: var(--google-grey-700);
   display: flex;

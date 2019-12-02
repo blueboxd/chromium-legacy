@@ -552,7 +552,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   void DidScrollWithScrollbar(ScrollbarPart,
                               ScrollbarOrientation,
                               WebInputEvent::Type) override;
-  CompositorElementId GetCompositorElementId() const override;
+  CompositorElementId GetScrollElementId() const override;
 
   bool VisualViewportSuppliesScrollbars() const override;
 

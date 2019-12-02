@@ -792,7 +792,7 @@ void ScrollableArea::DidScroll(const FloatPoint& position) {
 
 CompositorElementId ScrollableArea::GetScrollbarElementId(
     ScrollbarOrientation orientation) {
-  CompositorElementId scrollable_element_id = GetCompositorElementId();
+  CompositorElementId scrollable_element_id = GetScrollElementId();
   DCHECK(scrollable_element_id);
   CompositorElementIdNamespace element_id_namespace =
       orientation == kHorizontalScrollbar
@@ -910,7 +910,7 @@ void ScrollableArea::InjectGestureScrollEvent(
   DCHECK(GetLayoutBox());
   GetChromeClient()->InjectGestureScrollEvent(
       *GetLayoutBox()->GetFrame(), device, delta, granularity,
-      GetCompositorElementId(), gesture_type);
+      GetScrollElementId(), gesture_type);
 }
 
 ScrollableArea* ScrollableArea::GetForScrolling(const LayoutBox* layout_box) {

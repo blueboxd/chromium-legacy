@@ -209,45 +209,45 @@ TEST_F('OSSettingsAppManagementPageTest', 'AllJsTests', () => {
   mocha.run();
 });
 
-// Test fixture for the app management pwa permission view element.
+// Test fixture for the app management pwa detail view element.
 // eslint-disable-next-line no-var
-var OSSettingsAppManagementPwaPermissionViewTest =
+var OSSettingsAppManagementPwaDetailViewTest =
     class extends OSSettingsAppManagementBrowserTest {
   /** @override */
   get browsePreload() {
-    return super.browsePreload + 'app_management/pwa_permission_view.html';
+    return super.browsePreload + 'app_management/pwa_detail_view.html';
   }
 
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      'app_management/pwa_permission_view_test.js',
+      'app_management/pwa_detail_view_test.js',
     ]);
   }
 };
 
-TEST_F('OSSettingsAppManagementPwaPermissionViewTest', 'AllJsTests', () => {
+TEST_F('OSSettingsAppManagementPwaDetailViewTest', 'AllJsTests', () => {
   mocha.run();
 });
 
-// Test fixture for the app management arc permission view element.
+// Test fixture for the app management arc detail view element.
 // eslint-disable-next-line no-var
-var OSSettingsAppManagementArcPermissionViewTest =
+var OSSettingsAppManagementArcDetailViewTest =
     class extends OSSettingsAppManagementBrowserTest {
   /** @override */
   get browsePreload() {
-    return super.browsePreload + 'app_management/arc_permission_view.html';
+    return super.browsePreload + 'app_management/arc_detail_view.html';
   }
 
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      'app_management/arc_permission_view_test.js',
+      'app_management/arc_detail_view_test.js',
     ]);
   }
 };
 
-TEST_F('OSSettingsAppManagementArcPermissionViewTest', 'AllJsTests', () => {
+TEST_F('OSSettingsAppManagementArcDetailViewTest', 'AllJsTests', () => {
   mocha.run();
 });
 
@@ -257,7 +257,7 @@ var OSSettingsAppManagementManagedAppTest =
     class extends OSSettingsAppManagementBrowserTest {
   /** @override */
   get browsePreload() {
-    return super.browsePreload + 'app_management/pwa_permission_view.html';
+    return super.browsePreload + 'app_management/pwa_detail_view.html';
   }
 
   /** @override */

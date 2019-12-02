@@ -227,6 +227,10 @@ struct BrowserContextFactoryDependencies<InputImeAPI> {
 
 InputImeEventRouter* GetInputImeEventRouter(Profile* profile);
 
+// Append the extension function name to the error message so that we know where
+// the error is from during debugging.
+std::string InformativeError(const std::string& error,
+                             const char* function_name);
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_INPUT_IME_INPUT_IME_API_H_

@@ -83,7 +83,7 @@ Element* V0CustomElementRegistrationContext::CreateCustomTagElement(
     element = MakeGarbageCollected<SVGUnknownElement>(tag_name, document);
   } else {
     // XML elements are not custom elements, so return early.
-    return Element::Create(tag_name, &document);
+    return MakeGarbageCollected<Element>(tag_name, &document);
   }
 
   element->SetV0CustomElementState(Element::kV0WaitingForUpgrade);

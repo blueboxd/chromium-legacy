@@ -47,12 +47,6 @@ class CORE_EXPORT MutationObserverRegistration final
     : public GarbageCollected<MutationObserverRegistration>,
       public NameClient {
  public:
-  static MutationObserverRegistration* Create(
-      MutationObserver&,
-      Node*,
-      MutationObserverOptions,
-      const HashSet<AtomicString>& attribute_filter);
-
   MutationObserverRegistration(MutationObserver&,
                                Node*,
                                MutationObserverOptions,

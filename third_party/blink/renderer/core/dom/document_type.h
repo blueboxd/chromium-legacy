@@ -33,14 +33,6 @@ class DocumentType final : public Node {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DocumentType* Create(Document* document,
-                              const String& name,
-                              const String& public_id,
-                              const String& system_id) {
-    return MakeGarbageCollected<DocumentType>(document, name, public_id,
-                                              system_id);
-  }
-
   DocumentType(Document*,
                const String& name,
                const String& public_id,

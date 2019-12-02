@@ -742,9 +742,11 @@ void Page::SettingsChanged(SettingsDelegate::ChangeType change_type) {
         if (LocalFrameView* view = local_frame->View()) {
           if (const auto* scrollable_areas = view->ScrollableAreas()) {
             for (const auto& scrollable_area : *scrollable_areas) {
-              if (auto* layout_box = scrollable_area->GetLayoutBox()) {
-                layout_box->SetNeedsLayout(
-                    layout_invalidation_reason::kScrollbarChanged);
+              if (scrollable_area->ScrollsOverflow()) {
+                if (auto* layout_box = scrollable_area->GetLayoutBox()) {
+                  layout_box->SetNeedsLayout(
+                      layout_invalidation_reason::kScrollbarChanged);
+                }
               }
             }
           }

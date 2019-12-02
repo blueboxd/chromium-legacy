@@ -113,7 +113,8 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   // Reinitializing the decoder is allowed if there are no pending decodes.
   if (current_decode_task_ || !decode_task_queue_.empty()) {
-    VLOGF(1) << "Don't call Initialize() while there are pending decode tasks";
+    LOG(ERROR)
+        << "Don't call Initialize() while there are pending decode tasks";
     std::move(init_cb).Run(false);
     return;
   }
@@ -157,7 +158,7 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
         std::make_unique<VaapiVP9Accelerator>(this, vaapi_wrapper_), profile,
         config.color_space_info()));
   } else {
-    VLOGF(1) << "Unsupported profile " << GetProfileName(profile);
+    LOG(ERROR) << "Unsupported profile " << GetProfileName(profile);
     std::move(init_cb).Run(false);
     return;
   }
@@ -277,15 +278,15 @@ void VaapiVideoDecoder::HandleDecodeTask() {
       SetState(State::kWaitingForOutput);
       break;
     case AcceleratedVideoDecoder::kNeedContextUpdate:
-      DVLOGF(3) << "Context updates not supported";
+      LOG(ERROR) << "Context updates not supported";
       SetState(State::kError);
       break;
     case AcceleratedVideoDecoder::kDecodeError:
-      DVLOGF(3) << "Error decoding stream";
+      LOG(ERROR) << "Error decoding stream";
       SetState(State::kError);
       break;
     case AcceleratedVideoDecoder::kTryAgain:
-      DVLOGF(3) << "Encrypted streams not supported";
+      LOG(ERROR) << "Encrypted streams not supported";
       SetState(State::kError);
       break;
   }
@@ -326,7 +327,7 @@ scoped_refptr<VASurface> VaapiVideoDecoder::CreateSurface() {
   scoped_refptr<VASurface> va_surface =
       vaapi_wrapper_->CreateVASurfaceForVideoFrame(frame.get());
   if (!va_surface || va_surface->id() == VA_INVALID_ID) {
-    VLOGF(1) << "Failed to create VASurface from VideoFrame";
+    LOG(ERROR) << "Failed to create VASurface from VideoFrame";
     SetState(State::kError);
     return nullptr;
   }
@@ -475,7 +476,7 @@ void VaapiVideoDecoder::FlushTask() {
   // Flush will block until SurfaceReady() has been called for every frame
   // currently decoding.
   if (!decoder_->Flush()) {
-    VLOGF(1) << "Failed to flush the decoder";
+    LOG(ERROR) << "Failed to flush the decoder";
     SetState(State::kError);
     return;
   }

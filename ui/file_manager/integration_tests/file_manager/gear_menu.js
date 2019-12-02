@@ -440,8 +440,7 @@ testcase.showSendFeedbackAction = async () => {
  * Tests that the link of the volume space info item in the gear menu is
  * disabled when the files app is opened on the Google Drive section, and active
  * otherwise. The volume space info item should only link to the storage
- * settings page when the user is navigating within local folders (i.e.
- * My files, Play files or Linux files).
+ * settings page when the user is navigating within local folders.
  */
 testcase.enableDisableStorageSettingsLink = async () => {
   const appId = await setupAndWaitUntilReady(

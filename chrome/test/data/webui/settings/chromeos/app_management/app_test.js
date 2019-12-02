@@ -33,7 +33,7 @@ suite('<app-management-app>', () => {
 
   /** @return {boolean} */
   function isDetailViewShown() {
-    return !!app.$$('app-management-pwa-permission-view');
+    return !!app.$$('app-management-pwa-detail-view');
   }
 
   setup(async () => {
@@ -81,8 +81,8 @@ suite('<app-management-app>', () => {
           });
 
           // Click back button to go to main page.
-          app.$$('app-management-pwa-permission-view')
-              .$$('app-management-permission-view-header')
+          app.$$('app-management-pwa-detail-view')
+              .$$('app-management-detail-view-header')
               .$$('#backButton')
               .click();
           test_util.flushTasks();

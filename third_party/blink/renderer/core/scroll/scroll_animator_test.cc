@@ -89,7 +89,7 @@ class MockScrollableAreaForAnimatorTest
   IntSize ScrollOffsetInt() const override { return IntSize(); }
   int VisibleHeight() const override { return 768; }
   int VisibleWidth() const override { return 1024; }
-  CompositorElementId GetCompositorElementId() const override {
+  CompositorElementId GetScrollElementId() const override {
     return CompositorElementId();
   }
   bool ScrollAnimatorEnabled() const override {

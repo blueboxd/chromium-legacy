@@ -38,12 +38,9 @@ CrostiniExportImportNotification::CrostiniExportImportNotification(
     const std::string& notification_id,
     base::FilePath path,
     ContainerId container_id)
-    : profile_(profile),
-      type_(type),
-      path_(std::move(path)),
+    : CrostiniExportImportStatusTracker(type, std::move(path)),
+      profile_(profile),
       container_id_(std::move(container_id)) {
-  DCHECK(type == ExportImportType::EXPORT || type == ExportImportType::IMPORT);
-
   message_center::RichNotificationData rich_notification_data;
   rich_notification_data.vector_small_image = &kNotificationLinuxIcon;
   rich_notification_data.accent_color = ash::kSystemNotificationColorNormal;
@@ -60,7 +57,6 @@ CrostiniExportImportNotification::CrostiniExportImportNotification(
       rich_notification_data,
       base::MakeRefCounted<message_center::ThunkNotificationDelegate>(
           weak_ptr_factory_.GetWeakPtr()));
-
   SetStatusRunning(0);
 }
 
@@ -74,17 +70,8 @@ void CrostiniExportImportNotification::ForceRedisplay() {
       /*metadata=*/nullptr);
 }
 
-void CrostiniExportImportNotification::SetStatusRunning(int progress_percent) {
-  DCHECK(status_ == Status::RUNNING || status_ == Status::CANCELLING);
-  // Progress updates can still be received while the notification is being
-  // cancelled. These should not be displayed, as the operation will eventually
-  // cancel (or fail to cancel).
-  if (status_ == Status::CANCELLING) {
-    return;
-  }
-
-  status_ = Status::RUNNING;
-
+void CrostiniExportImportNotification::SetStatusRunningUI(
+    int progress_percent) {
   if (hidden_) {
     return;
   }
@@ -92,7 +79,7 @@ void CrostiniExportImportNotification::SetStatusRunning(int progress_percent) {
   notification_->set_type(message_center::NOTIFICATION_TYPE_PROGRESS);
   notification_->set_accent_color(ash::kSystemNotificationColorNormal);
   notification_->set_title(l10n_util::GetStringUTF16(
-      type_ == ExportImportType::EXPORT
+      type() == ExportImportType::EXPORT
           ? IDS_CROSTINI_EXPORT_NOTIFICATION_TITLE_RUNNING
           : IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_RUNNING));
   notification_->set_message(
@@ -106,11 +93,7 @@ void CrostiniExportImportNotification::SetStatusRunning(int progress_percent) {
   ForceRedisplay();
 }
 
-void CrostiniExportImportNotification::SetStatusCancelling() {
-  DCHECK(status_ == Status::RUNNING);
-
-  status_ = Status::CANCELLING;
-
+void CrostiniExportImportNotification::SetStatusCancellingUI() {
   if (hidden_) {
     return;
   }
@@ -118,7 +101,7 @@ void CrostiniExportImportNotification::SetStatusCancelling() {
   notification_->set_type(message_center::NOTIFICATION_TYPE_PROGRESS);
   notification_->set_accent_color(ash::kSystemNotificationColorNormal);
   notification_->set_title(l10n_util::GetStringUTF16(
-      type_ == ExportImportType::EXPORT
+      type() == ExportImportType::EXPORT
           ? IDS_CROSTINI_EXPORT_NOTIFICATION_TITLE_CANCELLING
           : IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_CANCELLING));
   notification_->set_message({});
@@ -130,20 +113,15 @@ void CrostiniExportImportNotification::SetStatusCancelling() {
   ForceRedisplay();
 }
 
-void CrostiniExportImportNotification::SetStatusDone() {
-  DCHECK(status_ == Status::RUNNING ||
-         (type_ == ExportImportType::IMPORT && status_ == Status::CANCELLING));
-
-  status_ = Status::DONE;
-
+void CrostiniExportImportNotification::SetStatusDoneUI() {
   notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
   notification_->set_accent_color(ash::kSystemNotificationColorNormal);
   notification_->set_title(l10n_util::GetStringUTF16(
-      type_ == ExportImportType::EXPORT
+      type() == ExportImportType::EXPORT
           ? IDS_CROSTINI_EXPORT_NOTIFICATION_TITLE_DONE
           : IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_DONE));
   notification_->set_message(l10n_util::GetStringUTF16(
-      type_ == ExportImportType::EXPORT
+      type() == ExportImportType::EXPORT
           ? IDS_CROSTINI_EXPORT_NOTIFICATION_MESSAGE_DONE
           : IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_DONE));
   notification_->set_buttons({});
@@ -153,64 +131,18 @@ void CrostiniExportImportNotification::SetStatusDone() {
   ForceRedisplay();
 }
 
-void CrostiniExportImportNotification::SetStatusCancelled() {
-  DCHECK(status_ == Status::CANCELLING);
-
-  status_ = Status::CANCELLED;
-
+void CrostiniExportImportNotification::SetStatusCancelledUI() {
   NotificationDisplayService::GetForProfile(profile_)->Close(
       NotificationHandler::Type::TRANSIENT, notification_->id());
 }
 
-void CrostiniExportImportNotification::SetStatusFailed() {
-  SetStatusFailed(Status::FAILED_UNKNOWN_REASON,
-                  l10n_util::GetStringUTF16(
-                      type_ == ExportImportType::EXPORT
-                          ? IDS_CROSTINI_EXPORT_NOTIFICATION_MESSAGE_FAILED
-                          : IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_FAILED));
-}
-
-void CrostiniExportImportNotification::SetStatusFailedArchitectureMismatch(
-    const std::string& architecture_container,
-    const std::string& architecture_device) {
-  DCHECK(type_ == ExportImportType::IMPORT);
-  SetStatusFailed(
-      Status::FAILED_ARCHITECTURE_MISMATCH,
-      l10n_util::GetStringFUTF16(
-          IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_FAILED_ARCHITECTURE,
-          base::ASCIIToUTF16(architecture_container),
-          base::ASCIIToUTF16(architecture_device)));
-}
-
-void CrostiniExportImportNotification::SetStatusFailedInsufficientSpace(
-    uint64_t additional_required_space) {
-  DCHECK(type_ == ExportImportType::IMPORT);
-  SetStatusFailed(Status::FAILED_INSUFFICIENT_SPACE,
-                  l10n_util::GetStringFUTF16(
-                      IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_FAILED_SPACE,
-                      ui::FormatBytes(additional_required_space)));
-}
-
-void CrostiniExportImportNotification::SetStatusFailedConcurrentOperation(
-    ExportImportType in_progress_operation_type) {
-  SetStatusFailed(
-      Status::FAILED_CONCURRENT_OPERATION,
-      l10n_util::GetStringUTF16(
-          in_progress_operation_type == ExportImportType::EXPORT
-              ? IDS_CROSTINI_EXPORT_NOTIFICATION_MESSAGE_FAILED_IN_PROGRESS
-              : IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_FAILED_IN_PROGRESS));
-}
-
-void CrostiniExportImportNotification::SetStatusFailed(
+void CrostiniExportImportNotification::SetStatusFailedWithMessageUI(
     Status status,
     const base::string16& message) {
-  DCHECK(status_ == Status::RUNNING || status_ == Status::CANCELLING);
-  status_ = status;
-
   notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
   notification_->set_accent_color(ash::kSystemNotificationColorCriticalWarning);
   notification_->set_title(l10n_util::GetStringUTF16(
-      type_ == ExportImportType::EXPORT
+      type() == ExportImportType::EXPORT
           ? IDS_CROSTINI_EXPORT_NOTIFICATION_TITLE_FAILED
           : IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_FAILED));
   notification_->set_message(message);
@@ -222,7 +154,7 @@ void CrostiniExportImportNotification::SetStatusFailed(
 }
 
 void CrostiniExportImportNotification::Close(bool by_user) {
-  switch (status_) {
+  switch (status()) {
     case Status::RUNNING:
     case Status::CANCELLING:
       hidden_ = true;
@@ -243,18 +175,18 @@ void CrostiniExportImportNotification::Close(bool by_user) {
 void CrostiniExportImportNotification::Click(
     const base::Optional<int>& button_index,
     const base::Optional<base::string16>&) {
-  switch (status_) {
+  switch (status()) {
     case Status::RUNNING:
       if (button_index) {
         DCHECK(*button_index == 1);
         CrostiniExportImport::GetForProfile(profile_)->CancelOperation(
-            type_, container_id_);
+            type(), container_id_);
       }
       return;
     case Status::DONE:
       DCHECK(!button_index);
-      if (type_ == ExportImportType::EXPORT) {
-        platform_util::ShowItemInFolder(profile_, path_);
+      if (type() == ExportImportType::EXPORT) {
+        platform_util::ShowItemInFolder(profile_, path());
       }
       return;
     case Status::FAILED_UNKNOWN_REASON:

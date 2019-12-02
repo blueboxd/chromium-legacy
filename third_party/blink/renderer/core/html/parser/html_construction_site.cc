@@ -630,8 +630,8 @@ void HTMLConstructionSite::InsertDoctype(AtomicHTMLToken* token) {
       StringImpl::Create8BitIfPossible(token->PublicIdentifier());
   const String& system_id =
       StringImpl::Create8BitIfPossible(token->SystemIdentifier());
-  DocumentType* doctype =
-      DocumentType::Create(document_, token->GetName(), public_id, system_id);
+  auto* doctype = MakeGarbageCollected<DocumentType>(
+      document_, token->GetName(), public_id, system_id);
   AttachLater(attachment_root_, doctype);
 
   // DOCTYPE nodes are only processed when parsing fragments w/o

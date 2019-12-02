@@ -60,8 +60,8 @@ class ShortcutsBackendTest : public testing::Test,
   TemplateURLService* GetTemplateURLService();
 
  private:
-  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir profile_dir_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TemplateURLService> template_url_service_;
   std::unique_ptr<history::HistoryService> history_service_;
 
@@ -107,10 +107,10 @@ void ShortcutsBackendTest::SetSearchProvider() {
 }
 
 void ShortcutsBackendTest::SetUp() {
+  ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
   template_url_service_.reset(new TemplateURLService(nullptr, 0));
-  if (profile_dir_.CreateUniqueTempDir())
-    history_service_ =
-        history::CreateHistoryService(profile_dir_.GetPath(), true);
+  history_service_ =
+      history::CreateHistoryService(profile_dir_.GetPath(), true);
   ASSERT_TRUE(history_service_);
 
   base::FilePath shortcuts_database_path =
@@ -124,7 +124,18 @@ void ShortcutsBackendTest::SetUp() {
 
 void ShortcutsBackendTest::TearDown() {
   backend_->RemoveObserver(this);
+  backend_->ShutdownOnUIThread();
+  backend_.reset();
+
+  // Explicitly shut down the history service and wait for its backend to be
+  // destroyed to prevent resource leaks.
+  base::RunLoop run_loop;
+  history_service_->SetOnBackendDestroyTask(run_loop.QuitClosure());
+  history_service_->Shutdown();
+  run_loop.Run();
+
   task_environment_.RunUntilIdle();
+  EXPECT_TRUE(profile_dir_.Delete());
 }
 
 void ShortcutsBackendTest::OnShortcutsLoaded() {

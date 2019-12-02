@@ -317,8 +317,8 @@ TEST_F(NodeTest, HasMediaControlAncestor_MediaControls) {
 TEST_F(NodeTest, appendChildProcessingInstructionNoStyleRecalc) {
   UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
-  ProcessingInstruction* pi =
-      ProcessingInstruction::Create(GetDocument(), "A", "B");
+  auto* pi =
+      MakeGarbageCollected<ProcessingInstruction>(GetDocument(), "A", "B");
   GetDocument().body()->appendChild(pi, ASSERT_NO_EXCEPTION);
   EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
 }

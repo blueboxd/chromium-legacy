@@ -161,10 +161,6 @@ ChromeClientImpl::~ChromeClientImpl() {
   DCHECK(file_chooser_queue_.IsEmpty());
 }
 
-ChromeClientImpl* ChromeClientImpl::Create(WebViewImpl* web_view) {
-  return MakeGarbageCollected<ChromeClientImpl>(web_view);
-}
-
 void ChromeClientImpl::Trace(Visitor* visitor) {
   visitor->Trace(popup_opening_observers_);
   visitor->Trace(external_date_time_chooser_);

@@ -605,17 +605,14 @@ void LocalFrameView::PerformPreLayoutTasks() {
 
 void LocalFrameView::LayoutFromRootObject(LayoutObject& root) {
   LayoutState layout_state(root);
-  // Since we are starting layout from an arbitrary node, we need to notify all
-  // possible scroll anchors above us, as they aren't notified during layout.
-  for (auto* ancestor = root.Container(); ancestor;
-       ancestor = ancestor->Container()) {
-    if (ancestor->HasOverflowClip() && ancestor->IsLayoutBlock()) {
-      auto* scrollable_area =
-          ToLayoutBoxModelObject(ancestor)->GetScrollableArea();
-      DCHECK(scrollable_area);
-      scrollable_area->GetScrollAnchor()->NotifyBeforeLayout();
+  if (scrollable_areas_) {
+    for (auto& scrollable_area : *scrollable_areas_) {
+      if (scrollable_area->GetScrollAnchor() &&
+          scrollable_area->ShouldPerformScrollAnchoring())
+        scrollable_area->GetScrollAnchor()->NotifyBeforeLayout();
     }
   }
+
   root.UpdateLayout();
 }
 
@@ -3587,14 +3584,14 @@ ScrollableArea* LocalFrameView::ScrollableAreaWithElementId(
   // composited scrolling layers per crbug.com/784053, so we don't have to worry
   // about them.)
   ScrollableArea* viewport = LayoutViewport();
-  if (id == viewport->GetCompositorElementId())
+  if (id == viewport->GetScrollElementId())
     return viewport;
 
   if (scrollable_areas_) {
     // This requires iterating over all scrollable areas. We may want to store a
     // map of ElementId to ScrollableArea if this is an issue for performance.
     for (ScrollableArea* scrollable_area : *scrollable_areas_) {
-      if (id == scrollable_area->GetCompositorElementId())
+      if (id == scrollable_area->GetScrollElementId())
         return scrollable_area;
     }
   }

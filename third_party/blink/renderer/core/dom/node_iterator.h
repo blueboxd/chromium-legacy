@@ -38,12 +38,6 @@ class NodeIterator final : public ScriptWrappable, public NodeIteratorBase {
   USING_GARBAGE_COLLECTED_MIXIN(NodeIterator);
 
  public:
-  static NodeIterator* Create(Node* root_node,
-                              unsigned what_to_show,
-                              V8NodeFilter* filter) {
-    return MakeGarbageCollected<NodeIterator>(root_node, what_to_show, filter);
-  }
-
   NodeIterator(Node*, unsigned what_to_show, V8NodeFilter*);
 
   Node* nextNode(ExceptionState&);

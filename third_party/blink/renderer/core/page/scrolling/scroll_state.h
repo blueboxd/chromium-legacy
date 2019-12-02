@@ -23,7 +23,6 @@ class CORE_EXPORT ScrollState final : public ScriptWrappable {
 
  public:
   static ScrollState* Create(ScrollStateInit*);
-  static ScrollState* Create(std::unique_ptr<ScrollStateData>);
 
   explicit ScrollState(std::unique_ptr<ScrollStateData>);
   ~ScrollState() override = default;

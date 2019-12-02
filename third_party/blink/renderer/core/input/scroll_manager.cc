@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/core/scroll/scroll_customization.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
@@ -260,7 +261,8 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
   Deque<DOMNodeId> scroll_chain;
   std::unique_ptr<ScrollStateData> scroll_state_data =
       std::make_unique<ScrollStateData>();
-  ScrollState* scroll_state = ScrollState::Create(std::move(scroll_state_data));
+  auto* scroll_state =
+      MakeGarbageCollected<ScrollState>(std::move(scroll_state_data));
   RecomputeScrollChain(*node, *scroll_state, scroll_chain);
 
   while (!scroll_chain.IsEmpty()) {
@@ -472,7 +474,8 @@ WebInputEventResult ScrollManager::HandleGestureScrollBegin(
       gesture_event.SourceDevice() == WebGestureDevice::kTouchscreen;
   scroll_state_data->delta_consumed_for_scroll_sequence =
       delta_consumed_for_scroll_sequence_;
-  ScrollState* scroll_state = ScrollState::Create(std::move(scroll_state_data));
+  auto* scroll_state =
+      MakeGarbageCollected<ScrollState>(std::move(scroll_state_data));
   // For middle click autoscroll, only scrollable area for
   // |scroll_gesture_handling_node_| should receive and handle all scroll
   // events. It should not bubble up to the ancestor.
@@ -600,7 +603,8 @@ WebInputEventResult ScrollManager::HandleGestureScrollUpdate(
   scroll_state_data->from_user_input = true;
   scroll_state_data->delta_consumed_for_scroll_sequence =
       delta_consumed_for_scroll_sequence_;
-  ScrollState* scroll_state = ScrollState::Create(std::move(scroll_state_data));
+  auto* scroll_state =
+      MakeGarbageCollected<ScrollState>(std::move(scroll_state_data));
   if (previous_gesture_scrolled_node_) {
     // The ScrollState needs to know what the current
     // native scrolling element is, so that for an
@@ -689,8 +693,8 @@ WebInputEventResult ScrollManager::HandleGestureScrollEnd(
         gesture_event.SourceDevice() == WebGestureDevice::kTouchscreen;
     scroll_state_data->delta_consumed_for_scroll_sequence =
         delta_consumed_for_scroll_sequence_;
-    ScrollState* scroll_state =
-        ScrollState::Create(std::move(scroll_state_data));
+    auto* scroll_state =
+        MakeGarbageCollected<ScrollState>(std::move(scroll_state_data));
     CustomizedScroll(*scroll_state);
 
     // We add a callback to set the hover state dirty and send a scroll end
@@ -816,7 +820,8 @@ gfx::Vector2dF ScrollManager::ScrollByForSnapFling(
       static_cast<double>(ScrollGranularity::kScrollByPrecisePixel);
   scroll_state_data->delta_consumed_for_scroll_sequence =
       delta_consumed_for_scroll_sequence_;
-  ScrollState* scroll_state = ScrollState::Create(std::move(scroll_state_data));
+  auto* scroll_state =
+      MakeGarbageCollected<ScrollState>(std::move(scroll_state_data));
   scroll_state->SetCurrentNativeScrollingNode(previous_gesture_scrolled_node_);
 
   CustomizedScroll(*scroll_state);
@@ -843,7 +848,8 @@ void ScrollManager::ScrollEndForSnapFling() {
   scroll_state_data->from_user_input = true;
   scroll_state_data->delta_consumed_for_scroll_sequence =
       delta_consumed_for_scroll_sequence_;
-  ScrollState* scroll_state = ScrollState::Create(std::move(scroll_state_data));
+  auto* scroll_state =
+      MakeGarbageCollected<ScrollState>(std::move(scroll_state_data));
   CustomizedScroll(*scroll_state);
   NotifyScrollPhaseEndForCustomizedScroll();
   ClearGestureScrollState();
@@ -1016,7 +1022,7 @@ Node* ScrollManager::NodeTargetForScrollableAreaElementId(
   Page* page = frame_->GetPage();
   DCHECK(page);
   ScrollableArea* scrollable_area = nullptr;
-  if (page->GetVisualViewport().GetCompositorElementId() == element_id) {
+  if (page->GetVisualViewport().GetScrollElementId() == element_id) {
     // If the element_id is the visual viewport, redirect to the
     // root LocalFrameView's scrollable area (i.e. the RootFrameViewport).
     scrollable_area = frame_->LocalFrameRoot().View()->GetScrollableArea();

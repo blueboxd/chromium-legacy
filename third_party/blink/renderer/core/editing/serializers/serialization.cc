@@ -414,7 +414,8 @@ DocumentFragment* CreateFragmentFromMarkupWithContext(
       MakeGarbageCollected<Document>(DocumentInit::Create());
   tagged_document->SetContextFeatures(document.GetContextFeatures());
 
-  Element* root = Element::Create(QualifiedName::Null(), tagged_document);
+  auto* root =
+      MakeGarbageCollected<Element>(QualifiedName::Null(), tagged_document);
   root->AppendChild(tagged_fragment);
   tagged_document->AppendChild(root);
 

@@ -12765,7 +12765,7 @@ TEST_F(WebFrameTest, DidScrollCallbackAfterScrollableAreaChanges) {
   EXPECT_EQ(ScrollOffset(), scrollable_area->GetScrollOffset());
   cc::ScrollAndScaleSet scroll_and_scale_set;
   scroll_and_scale_set.scrolls.push_back(
-      {scrollable_area->GetCompositorElementId(), gfx::ScrollOffset(0, 1)});
+      {scrollable_area->GetScrollElementId(), gfx::ScrollOffset(0, 1)});
   cc_scroll_layer->layer_tree_host()->ApplyScrollAndScale(
       &scroll_and_scale_set);
   UpdateAllLifecyclePhases(web_view);

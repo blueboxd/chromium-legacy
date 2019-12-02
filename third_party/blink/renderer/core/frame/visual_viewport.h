@@ -201,7 +201,7 @@ class CORE_EXPORT VisualViewport final
   bool ScrollbarsCanBeActive() const override { return false; }
   bool UserInputScrollable(ScrollbarOrientation) const override;
   bool ShouldPlaceVerticalScrollbarOnLeft() const override { return false; }
-  CompositorElementId GetCompositorElementId() const override;
+  CompositorElementId GetScrollElementId() const override;
   bool ScrollAnimatorEnabled() const override;
   void ScrollControlWasSetNeedsPaintInvalidation() override {}
   void UpdateScrollOffset(const ScrollOffset&, ScrollType) override;
@@ -291,7 +291,6 @@ class CORE_EXPORT VisualViewport final
   }
 
   PaintArtifactCompositor* GetPaintArtifactCompositor() const;
-  CompositorElementId GetCompositorScrollElementId() const;
 
   std::unique_ptr<TracedValue> ViewportToTracedValue() const;
 
@@ -339,7 +338,11 @@ class CORE_EXPORT VisualViewport final
   // only to report statistics about pinch-zoom usage.
   float max_page_scale_;
   bool track_pinch_zoom_stats_for_page_;
-  CompositorElementId element_id_;
+
+  // For page scale animation on page_scale_node_.
+  CompositorElementId page_scale_element_id_;
+  // For scrolling, on scroll_layer_, scroll_node_, and scroll element ids of
+  // scrollbar layers.
   CompositorElementId scroll_element_id_;
 
   bool needs_paint_property_update_;

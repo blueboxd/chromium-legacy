@@ -448,7 +448,7 @@ WebInputEventResult GestureManager::HandleGestureShowPress() {
     return WebInputEventResult::kNotHandled;
   for (const PaintLayerScrollableArea* scrollable_area : *areas) {
     ScrollAnimatorBase* animator = scrollable_area->ExistingScrollAnimator();
-    if (animator)
+    if (scrollable_area->ScrollsOverflow() && animator)
       animator->CancelAnimation();
   }
   return WebInputEventResult::kNotHandled;

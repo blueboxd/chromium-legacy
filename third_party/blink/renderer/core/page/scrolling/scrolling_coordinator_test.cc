@@ -1501,7 +1501,7 @@ TEST_P(ScrollingCoordinatorTest, ScrollOffsetClobberedBeforeCompositingUpdate) {
   gfx::ScrollOffset compositor_delta(0, 100.f);
   cc::ScrollAndScaleSet scroll_and_scale_set;
   scroll_and_scale_set.scrolls.push_back(
-      {scroller->GetCompositorElementId(), compositor_delta});
+      {scroller->GetScrollElementId(), compositor_delta});
   cc_layer->layer_tree_host()->ApplyScrollAndScale(&scroll_and_scale_set);
   EXPECT_EQ(compositor_delta.y(), scroller->GetScrollOffset().Height());
   EXPECT_EQ(compositor_delta, cc_layer->CurrentScrollOffset());

@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -186,7 +187,7 @@ class ContentCaptureTest : public PageTestBase {
   void CreateTextNodeAndNotifyManager() {
     Document& doc = GetDocument();
     Node* node = doc.createTextNode("New Text");
-    Element* element = Element::Create(html_names::kPTag, &doc);
+    Element* element = MakeGarbageCollected<Element>(html_names::kPTag, &doc);
     element->appendChild(node);
     Element* div_element = GetElementById("d1");
     div_element->appendChild(element);
@@ -699,7 +700,7 @@ class ContentCaptureSimTest : public SimTest {
 
   void AddNodeToDocument(Document& doc, Vector<DOMNodeId>& buffer) {
     Node* node = doc.createTextNode("New Text");
-    Element* element = Element::Create(html_names::kPTag, &doc);
+    auto* element = MakeGarbageCollected<Element>(html_names::kPTag, &doc);
     element->appendChild(node);
     Element* div_element = doc.getElementById("d1");
     div_element->appendChild(element);

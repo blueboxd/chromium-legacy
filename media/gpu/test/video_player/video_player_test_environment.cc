@@ -65,8 +65,8 @@ void VideoPlayerTestEnvironment::SetUp() {
   // support import mode.
 #if defined(OS_CHROMEOS)
   constexpr const char* kImportModeBlacklist[] = {
-      "buddy",      "guado", "guado-kernelnext", "nyan_big", "nyan_blaze",
-      "nyan_kitty", "rikku"};
+      "buddy",      "guado",      "guado-cfm", "guado-kernelnext", "nyan_big",
+      "nyan_blaze", "nyan_kitty", "rikku",     "rikku-cfm"};
   const std::string board = base::SysInfo::GetLsbReleaseBoard();
   import_supported_ = (std::find(std::begin(kImportModeBlacklist),
                                  std::end(kImportModeBlacklist),

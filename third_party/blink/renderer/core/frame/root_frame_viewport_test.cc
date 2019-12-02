@@ -88,7 +88,7 @@ class ScrollableAreaStub : public GarbageCollected<ScrollableAreaStub>,
   }
 
  protected:
-  CompositorElementId GetCompositorElementId() const override {
+  CompositorElementId GetScrollElementId() const override {
     return CompositorElementId();
   }
   void UpdateScrollOffset(const ScrollOffset& offset, ScrollType) override {

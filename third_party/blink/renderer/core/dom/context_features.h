@@ -52,7 +52,6 @@ class ContextFeatures final : public GarbageCollected<ContextFeatures>,
   };
 
   static ContextFeatures& DefaultSwitch();
-  static ContextFeatures* Create(std::unique_ptr<ContextFeaturesClient>);
 
   static bool PagePopupEnabled(Document*);
   static bool MutationEventsEnabled(Document*);

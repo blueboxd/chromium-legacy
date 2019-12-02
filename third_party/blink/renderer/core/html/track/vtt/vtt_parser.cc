@@ -660,8 +660,9 @@ void VTTTreeBuilder::ConstructTreeFromToken(Document& document) {
     case VTTTokenTypes::kTimestampTag: {
       double parsed_time_stamp;
       if (VTTParser::CollectTimeStamp(token_.Characters(), parsed_time_stamp)) {
-        current_node_->ParserAppendChild(ProcessingInstruction::Create(
-            document, "timestamp", SerializeTimeStamp(parsed_time_stamp)));
+        current_node_->ParserAppendChild(
+            MakeGarbageCollected<ProcessingInstruction>(
+                document, "timestamp", SerializeTimeStamp(parsed_time_stamp)));
       }
       break;
     }

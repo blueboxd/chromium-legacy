@@ -1422,7 +1422,7 @@ Element* Document::CreateRawElement(const QualifiedName& qname,
       element = MakeGarbageCollected<MathMLElement>(qname, *this);
     saw_elements_in_known_namespaces_ = true;
   } else {
-    element = Element::Create(qname, this);
+    element = MakeGarbageCollected<Element>(qname, this);
   }
 
   if (element->prefix() != qname.Prefix())
@@ -1461,7 +1461,8 @@ Element* Document::CreateElementForBinding(const AtomicString& name,
       return RegistrationContext()->CreateCustomTagElement(*this, q_name);
     return MakeGarbageCollected<HTMLUnknownElement>(q_name, *this);
   }
-  return Element::Create(QualifiedName(g_null_atom, name, g_null_atom), this);
+  return MakeGarbageCollected<Element>(
+      QualifiedName(g_null_atom, name, g_null_atom), this);
 }
 
 AtomicString GetTypeExtension(
@@ -1786,7 +1787,7 @@ ProcessingInstruction* Document::createProcessingInstruction(
     UseCounter::Count(*this,
                       WebFeature::kHTMLDocumentCreateProcessingInstruction);
   }
-  return ProcessingInstruction::Create(*this, target, data);
+  return MakeGarbageCollected<ProcessingInstruction>(*this, target, data);
 }
 
 Text* Document::CreateEditingTextNode(const String& text) {

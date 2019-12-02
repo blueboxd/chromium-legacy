@@ -39,10 +39,6 @@ class CORE_EXPORT ProcessingInstruction final : public CharacterData,
   USING_GARBAGE_COLLECTED_MIXIN(ProcessingInstruction);
 
  public:
-  static ProcessingInstruction* Create(Document&,
-                                       const String& target,
-                                       const String& data);
-
   ProcessingInstruction(Document&, const String& target, const String& data);
   ~ProcessingInstruction() override;
   void Trace(Visitor*) override;

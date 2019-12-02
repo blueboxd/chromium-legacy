@@ -558,8 +558,8 @@ bool RootFrameViewport::ScrollAnimatorEnabled() const {
   return LayoutViewport().ScrollAnimatorEnabled();
 }
 
-CompositorElementId RootFrameViewport::GetCompositorElementId() const {
-  return LayoutViewport().GetCompositorElementId();
+CompositorElementId RootFrameViewport::GetScrollElementId() const {
+  return LayoutViewport().GetScrollElementId();
 }
 
 CompositorElementId RootFrameViewport::GetScrollbarElementId(

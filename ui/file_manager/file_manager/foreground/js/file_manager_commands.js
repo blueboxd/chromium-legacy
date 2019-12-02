@@ -2452,6 +2452,7 @@ CommandHandler.COMMANDS_['volume-storage'] = new class extends Command {
     if (!currentVolumeInfo) {
       return;
     }
+
     // Can execute only for local file systems.
     if (currentVolumeInfo.volumeType ==
             VolumeManagerCommon.VolumeType.MY_FILES ||

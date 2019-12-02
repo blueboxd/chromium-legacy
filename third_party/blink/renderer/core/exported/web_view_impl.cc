@@ -3309,7 +3309,7 @@ Node* WebViewImpl::FindNodeFromScrollableCompositorElementId(
   if (!GetPage())
     return nullptr;
 
-  if (element_id == GetPage()->GetVisualViewport().GetCompositorElementId()) {
+  if (element_id == GetPage()->GetVisualViewport().GetScrollElementId()) {
     // Return the Document in this case since the window.visualViewport DOM
     // object is not a node.
     if (MainFrameImpl())

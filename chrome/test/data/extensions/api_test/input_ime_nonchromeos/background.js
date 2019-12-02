@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var failToSendKeyEvents = 'Could not send key events';
+var failToSendKeyEvents = `Could not send key events.
+Thrown by input.ime.sendKeyEvents`;
 
 chrome.test.runTests([
   // Tests input.ime.activate and input.ime.onFocus APIs.

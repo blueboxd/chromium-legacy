@@ -330,8 +330,8 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
                                         DWMWA_CAPTION_BUTTON_BOUNDS,
                                         &button_bounds,
                                         sizeof(button_bounds)))) {
-      gfx::Rect buttons = gfx::ConvertRectToDIP(display::win::GetDPIScale(),
-                                                gfx::Rect(button_bounds));
+      gfx::Rect buttons = GetMirroredRect(gfx::ConvertRectToDIP(
+          display::win::GetDPIScale(), gfx::Rect(button_bounds)));
 
       // There is a small one-pixel strip right above the caption buttons in
       // which the resize border "peeks" through.

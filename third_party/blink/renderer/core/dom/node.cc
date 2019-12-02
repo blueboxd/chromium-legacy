@@ -119,6 +119,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
@@ -2745,8 +2746,8 @@ void Node::RegisterMutationObserver(
   }
 
   if (!registration) {
-    registration = MutationObserverRegistration::Create(observer, this, options,
-                                                        attribute_filter);
+    registration = MakeGarbageCollected<MutationObserverRegistration>(
+        observer, this, options, attribute_filter);
     EnsureRareData().EnsureMutationObserverData().AddRegistration(registration);
   }
 

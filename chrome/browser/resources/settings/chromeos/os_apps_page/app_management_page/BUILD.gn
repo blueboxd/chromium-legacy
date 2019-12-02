@@ -8,19 +8,19 @@ js_type_check("closure_compile") {
   deps = [
     ":actions",
     ":api_listener",
+    ":app_detail_view",
     ":app_item",
     ":app_management_page",
-    ":app_permission_view",
-    ":arc_permission_view",
+    ":arc_detail_view",
     ":browser_proxy",
-    ":chrome_app_permission_view",
+    ":chrome_app_detail_view",
     ":constants",
     ":dom_switch",
     ":fake_page_handler",
     ":main_view",
     ":permission_item",
     ":pin_to_shelf_item",
-    ":pwa_permission_view",
+    ":pwa_detail_view",
     ":reducers",
     ":store",
     ":store_client",
@@ -65,18 +65,18 @@ js_library("app_management_page") {
   ]
 }
 
-js_library("app_permission_view") {
+js_library("app_detail_view") {
   deps = [
-    ":arc_permission_view",
-    ":chrome_app_permission_view",
+    ":arc_detail_view",
+    ":chrome_app_detail_view",
     ":dom_switch",
-    ":pwa_permission_view",
+    ":pwa_detail_view",
     ":store_client",
     "../../..:route",
   ]
 }
 
-js_library("arc_permission_view") {
+js_library("arc_detail_view") {
   deps = [
     ":constants",
     ":fake_page_handler",
@@ -94,7 +94,7 @@ js_library("browser_proxy") {
   ]
 }
 
-js_library("chrome_app_permission_view") {
+js_library("chrome_app_detail_view") {
   deps = [
     ":fake_page_handler",
     ":pin_to_shelf_item",
@@ -145,7 +145,7 @@ js_library("pin_to_shelf_item") {
   ]
 }
 
-js_library("pwa_permission_view") {
+js_library("pwa_detail_view") {
   deps = [
     ":constants",
     ":fake_page_handler",

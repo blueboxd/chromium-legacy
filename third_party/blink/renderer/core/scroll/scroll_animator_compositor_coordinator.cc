@@ -254,7 +254,7 @@ bool ScrollAnimatorCompositorCoordinator::HasImplOnlyAnimationUpdate() const {
 CompositorElementId ScrollAnimatorCompositorCoordinator::GetScrollElementId()
     const {
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return GetScrollableArea()->GetCompositorElementId();
+    return GetScrollableArea()->GetScrollElementId();
 
   cc::Layer* layer = GetScrollableArea()->LayerForScrolling();
   return layer ? layer->element_id() : CompositorElementId();

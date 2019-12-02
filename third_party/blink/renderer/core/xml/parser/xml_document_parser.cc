@@ -1263,9 +1263,10 @@ void XMLDocumentParser::InternalSubset(const String& name,
     return;
   }
 
-  if (GetDocument())
-    GetDocument()->ParserAppendChild(
-        DocumentType::Create(GetDocument(), name, external_id, system_id));
+  if (GetDocument()) {
+    GetDocument()->ParserAppendChild(MakeGarbageCollected<DocumentType>(
+        GetDocument(), name, external_id, system_id));
+  }
 }
 
 static inline XMLDocumentParser* GetParser(void* closure) {

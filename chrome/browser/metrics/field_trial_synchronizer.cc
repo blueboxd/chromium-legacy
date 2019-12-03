@@ -72,9 +72,10 @@ void FieldTrialSynchronizer::OnFieldTrialGroupFinalized(
     return;
   }
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&FieldTrialSynchronizer::NotifyAllRenderers,
-                                this, field_trial_name, group_name));
+  RunOrPostTaskOnThread(
+      FROM_HERE, BrowserThread::UI,
+      base::BindOnce(&FieldTrialSynchronizer::NotifyAllRenderers, this,
+                     field_trial_name, group_name));
 }
 
 FieldTrialSynchronizer::~FieldTrialSynchronizer() {

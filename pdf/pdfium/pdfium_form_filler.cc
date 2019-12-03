@@ -424,15 +424,8 @@ FPDF_BOOL PDFiumFormFiller::Form_PostRequestURL(FPDF_FORMFILLINFO* param,
                                                 FPDF_WIDESTRING encode,
                                                 FPDF_WIDESTRING header,
                                                 FPDF_BSTR* response) {
-  std::string url_str = WideStringToString(url);
-  std::string data_str = WideStringToString(data);
-  std::string content_type_str = WideStringToString(content_type);
-  std::string encode_str = WideStringToString(encode);
-  std::string header_str = WideStringToString(header);
-
-  std::string javascript = "alert(\"Post:" + url_str + "," + data_str + "," +
-                           content_type_str + "," + encode_str + "," +
-                           header_str + "\")";
+  // NOTE: Think hard about the privacy implications before allowing
+  // a PDF file to perform this action, as it might be used for beaconing.
   return true;
 }
 
@@ -441,13 +434,8 @@ FPDF_BOOL PDFiumFormFiller::Form_PutRequestURL(FPDF_FORMFILLINFO* param,
                                                FPDF_WIDESTRING url,
                                                FPDF_WIDESTRING data,
                                                FPDF_WIDESTRING encode) {
-  std::string url_str = WideStringToString(url);
-  std::string data_str = WideStringToString(data);
-  std::string encode_str = WideStringToString(encode);
-
-  std::string javascript =
-      "alert(\"Put:" + url_str + "," + data_str + "," + encode_str + "\")";
-
+  // NOTE: Think hard about the privacy implications before allowing
+  // a PDF file to perform this action, as it might be used for beaconing.
   return true;
 }
 
@@ -456,8 +444,8 @@ void PDFiumFormFiller::Form_UploadTo(FPDF_FORMFILLINFO* param,
                                      FPDF_FILEHANDLER* file_handle,
                                      int file_flag,
                                      FPDF_WIDESTRING to) {
-  std::string to_str = WideStringToString(to);
-  // TODO: needs the full implementation of form uploading
+  // NOTE: Think hard about the privacy implications before allowing
+  // a PDF file to perform this action, as it might be used for beaconing.
 }
 
 // static
@@ -465,7 +453,8 @@ FPDF_LPFILEHANDLER PDFiumFormFiller::Form_DownloadFromURL(
     FPDF_FORMFILLINFO* param,
     FPDF_WIDESTRING url) {
   // NOTE: Think hard about the security implications before allowing
-  // a PDF file to perform this action.
+  // a PDF file to perform this action. Also think hard about the privacy
+  // implications, as it might be used for beaconing.
   return nullptr;
 }
 
@@ -483,8 +472,9 @@ FPDF_FILEHANDLER* PDFiumFormFiller::Form_OpenFile(FPDF_FORMFILLINFO* param,
 void PDFiumFormFiller::Form_GotoURL(FPDF_FORMFILLINFO* param,
                                     FPDF_DOCUMENT document,
                                     FPDF_WIDESTRING url) {
-  std::string url_str = WideStringToString(url);
-  // TODO: needs to implement GOTO URL action
+  // NOTE: Think hard about the security implications before allowing
+  // a PDF file to perform this action. Also think hard about the privacy
+  // implications, as it might be used for beaconing.
 }
 
 // static

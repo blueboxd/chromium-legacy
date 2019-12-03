@@ -515,10 +515,6 @@ class CC_EXPORT LayerTreeImpl {
   // Used for accessing the task runner and debug assertions.
   TaskRunnerProvider* task_runner_provider() const;
 
-  void ApplyScroll(ScrollNode* scroll_node, ScrollState* scroll_state) {
-    host_impl_->ApplyScroll(scroll_node, scroll_state);
-  }
-
   // Call this function when you expect there to be a swap buffer.
   // See swap_promise.h for how to use SwapPromise.
   //

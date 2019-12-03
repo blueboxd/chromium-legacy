@@ -28,6 +28,7 @@ class SyncSetupService : public KeyedService {
     kSyncServiceCouldNotConnect,
     kSyncServiceServiceUnavailable,
     kSyncServiceNeedsPassphrase,
+    kSyncServiceNeedsTrustedVaultKey,
     kSyncServiceUnrecoverableError,
     kSyncSettingsNotConfirmed,
     kLastSyncServiceError = kSyncServiceUnrecoverableError
@@ -84,6 +85,9 @@ class SyncSetupService : public KeyedService {
 
   // Returns the current sync service state.
   virtual SyncServiceState GetSyncServiceState();
+
+  // Returns whether all sync data is being encrypted.
+  virtual bool IsEncryptEverythingEnabled() const;
 
   // Returns true if the user has gone through the initial sync configuration.
   // This method is guaranteed not to start the sync backend so it can be

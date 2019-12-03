@@ -48,6 +48,7 @@ class AuthenticatorRequestSheetModel {
   virtual bool IsBackButtonVisible() const = 0;
 
   virtual bool IsCancelButtonVisible() const = 0;
+  virtual bool IsCancelButtonEnabled() const = 0;
   virtual base::string16 GetCancelButtonLabel() const = 0;
 
   virtual bool IsAcceptButtonVisible() const = 0;

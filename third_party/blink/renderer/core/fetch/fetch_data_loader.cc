@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/optional.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "third_party/blink/renderer/core/fetch/multipart_parser.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
@@ -422,7 +423,7 @@ class FetchDataLoaderAsFormData final : public FetchDataLoader,
         DCHECK(!string_builder_);
         const auto size = blob_data_->length();
         auto* file = MakeGarbageCollected<File>(
-            filename_, InvalidFileTime(),
+            filename_, base::nullopt,
             BlobDataHandle::Create(std::move(blob_data_), size));
         form_data->append(name_, file, filename_);
         return true;

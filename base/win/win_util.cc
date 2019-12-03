@@ -765,7 +765,7 @@ std::wstring GetWindowObjectName(HANDLE handle) {
 
   // Query the name of the object.
   if (!::GetUserObjectInformation(
-          handle, UOI_NAME, WriteIntoW(&object_name, size / sizeof(wchar_t)),
+          handle, UOI_NAME, WriteInto(&object_name, size / sizeof(wchar_t)),
           size, &size)) {
     DPCHECK(false);
   }

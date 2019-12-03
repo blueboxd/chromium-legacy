@@ -5,8 +5,8 @@
 #include "ui/display/manager/content_protection_manager.h"
 
 #include "base/containers/flat_map.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/fake/fake_display_snapshot.h"
 #include "ui/display/manager/test/action_logger_util.h"
@@ -111,7 +111,7 @@ class ContentProtectionManagerTest : public testing::Test {
     return manager_.TriggerDisplaySecurityTimeoutForTesting();
   }
 
-  base::MessageLoop message_loop_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   TestDisplayLayoutManager layout_manager_{{}, MULTIPLE_DISPLAY_STATE_INVALID};
 
   ActionLogger log_;

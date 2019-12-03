@@ -5,6 +5,8 @@
 #ifndef CHROME_COMMON_WEB_APPLICATION_INFO_H_
 #define CHROME_COMMON_WEB_APPLICATION_INFO_H_
 
+#include <iosfwd>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -18,14 +20,18 @@
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
+using SquareSizePx = int;
+
 struct WebApplicationIconInfo {
   WebApplicationIconInfo();
+  WebApplicationIconInfo(const WebApplicationIconInfo&);
+  WebApplicationIconInfo(WebApplicationIconInfo&&);
   ~WebApplicationIconInfo();
+  WebApplicationIconInfo& operator=(const WebApplicationIconInfo&);
+  WebApplicationIconInfo& operator=(WebApplicationIconInfo&&);
 
   GURL url;
-  int width;
-  int height;
-  SkBitmap data;
+  SquareSizePx square_size_px;
 };
 
 // Structure used when installing a web page as an app.
@@ -52,8 +58,11 @@ struct WebApplicationInfo {
   // Scope for the app. Dictates what URLs will be opened in the app.
   GURL scope;
 
-  // Set of available icons.
-  std::vector<WebApplicationIconInfo> icons;
+  // List of icon URLs with associated square size.
+  std::vector<WebApplicationIconInfo> icon_infos;
+
+  // Icon bitmaps keyed by their square size.
+  std::map<SquareSizePx, SkBitmap> icon_bitmaps;
 
   // Whether the page is marked as mobile-capable, including apple specific meta
   // tag.
@@ -78,5 +87,11 @@ struct WebApplicationInfo {
   // The extensions and mime types the app can handle.
   std::vector<blink::Manifest::FileHandler> file_handlers;
 };
+
+std::ostream& operator<<(std::ostream& out,
+                         const WebApplicationIconInfo& icon_info);
+
+bool operator==(const WebApplicationIconInfo& icon_info1,
+                const WebApplicationIconInfo& icon_info2);
 
 #endif  // CHROME_COMMON_WEB_APPLICATION_INFO_H_

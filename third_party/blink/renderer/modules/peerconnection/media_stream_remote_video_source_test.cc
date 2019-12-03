@@ -14,14 +14,15 @@
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/webrtc/track_observer.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_sink.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/web_rtc_cross_thread_copier.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_dependency_factory.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
+#include "third_party/blink/renderer/platform/webrtc/track_observer.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/webrtc/api/video/color_space.h"
 #include "third_party/webrtc/api/video/i420_buffer.h"
@@ -39,6 +40,7 @@ class MediaStreamRemoteVideoSourceUnderTest
   explicit MediaStreamRemoteVideoSourceUnderTest(
       std::unique_ptr<blink::TrackObserver> observer)
       : MediaStreamRemoteVideoSource(std::move(observer)) {}
+  using MediaStreamRemoteVideoSource::EncodedSinkInterfaceForTesting;
   using MediaStreamRemoteVideoSource::SinkInterfaceForTesting;
   using MediaStreamRemoteVideoSource::StartSourceImpl;
 };
@@ -47,7 +49,10 @@ class MediaStreamRemoteVideoSourceTest : public ::testing::Test {
  public:
   MediaStreamRemoteVideoSourceTest()
       : mock_factory_(new blink::MockPeerConnectionDependencyFactory()),
-        webrtc_video_track_(blink::MockWebRtcVideoTrack::Create("test")),
+        webrtc_video_source_(blink::MockWebRtcVideoTrackSource::Create(
+            /*supports_encoded_output=*/true)),
+        webrtc_video_track_(
+            blink::MockWebRtcVideoTrack::Create("test", webrtc_video_source_)),
         remote_source_(nullptr),
         number_of_successful_track_starts_(0),
         number_of_failed_track_starts_(0) {}
@@ -147,6 +152,7 @@ class MediaStreamRemoteVideoSourceTest : public ::testing::Test {
 
   ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
   std::unique_ptr<blink::MockPeerConnectionDependencyFactory> mock_factory_;
+  scoped_refptr<webrtc::VideoTrackSourceInterface> webrtc_video_source_;
   scoped_refptr<webrtc::VideoTrackInterface> webrtc_video_track_;
   // |remote_source_| is owned by |web_source_|.
   MediaStreamRemoteVideoSourceUnderTest* remote_source_;
@@ -232,6 +238,40 @@ TEST_F(MediaStreamRemoteVideoSourceTest, PreservesColorSpace) {
                               gfx::ColorSpace::MatrixID::SMPTE240M,
                               gfx::ColorSpace::RangeID::LIMITED));
   track->RemoveSink(&sink);
+}
+
+class TestEncodedVideoFrame : public webrtc::RecordableEncodedFrame {
+ public:
+  rtc::scoped_refptr<const webrtc::EncodedImageBufferInterface> encoded_buffer()
+      const override {
+    return nullptr;
+  }
+  absl::optional<webrtc::ColorSpace> color_space() const override {
+    return absl::nullopt;
+  }
+  webrtc::VideoCodecType codec() const override {
+    return webrtc::kVideoCodecVP8;
+  }
+  bool is_key_frame() const override { return true; }
+  EncodedResolution resolution() const override {
+    return EncodedResolution{0, 0};
+  }
+  webrtc::Timestamp render_time() const override {
+    return webrtc::Timestamp::ms(0);
+  }
+};
+
+TEST_F(MediaStreamRemoteVideoSourceTest, ForwardsEncodedVideoFrames) {
+  std::unique_ptr<blink::MediaStreamVideoTrack> track(CreateTrack());
+  blink::MockMediaStreamVideoSink sink;
+  track->AddEncodedSink(&sink, sink.GetDeliverEncodedVideoFrameCB());
+  base::RunLoop run_loop;
+  base::RepeatingClosure quit_closure = run_loop.QuitClosure();
+  EXPECT_CALL(sink, OnEncodedVideoFrame())
+      .WillOnce(RunClosure(std::move(quit_closure)));
+  source()->EncodedSinkInterfaceForTesting()->OnFrame(TestEncodedVideoFrame());
+  run_loop.Run();
+  track->RemoveEncodedSink(&sink);
 }
 
 }  // namespace blink

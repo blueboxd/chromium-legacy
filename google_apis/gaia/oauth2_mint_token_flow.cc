@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/containers/span.h"
 #include "base/json/json_reader.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -104,7 +105,14 @@ bool AreCookiesEqual(const std::unique_ptr<net::CanonicalCookie>& lhs,
   return lhs->IsEquivalent(*rhs);
 }
 
+void RecordApiCallResult(OAuth2MintTokenApiCallResult result) {
+  base::UmaHistogramEnumeration(kOAuth2MintTokenApiCallResultHistogram, result);
+}
+
 }  // namespace
+
+const char kOAuth2MintTokenApiCallResultHistogram[] =
+    "Signin.OAuth2MintToken.ApiCallResult";
 
 IssueAdviceInfoEntry::IssueAdviceInfoEntry() = default;
 IssueAdviceInfoEntry::~IssueAdviceInfoEntry() = default;
@@ -223,8 +231,10 @@ void OAuth2MintTokenFlow::ProcessApiCallSuccess(
   std::string response_body;
   if (body)
     response_body = std::move(*body);
+
   base::Optional<base::Value> value = base::JSONReader::Read(response_body);
   if (!value || !value->is_dict()) {
+    RecordApiCallResult(OAuth2MintTokenApiCallResult::kParseJsonFailure);
     ReportFailure(GoogleServiceAuthError::FromUnexpectedServiceResponse(
         "Not able to parse a JSON object from a service response."));
     return;
@@ -232,40 +242,54 @@ void OAuth2MintTokenFlow::ProcessApiCallSuccess(
 
   std::string* issue_advice_value = value->FindStringKey(kIssueAdviceKey);
   if (!issue_advice_value) {
+    RecordApiCallResult(
+        OAuth2MintTokenApiCallResult::kIssueAdviceKeyNotFoundFailure);
     ReportFailure(GoogleServiceAuthError::FromUnexpectedServiceResponse(
         "Not able to find an issueAdvice in a service response."));
     return;
   }
+
   if (*issue_advice_value == kIssueAdviceValueConsent) {
     IssueAdviceInfo issue_advice;
     if (ParseIssueAdviceResponse(&(*value), &issue_advice)) {
+      RecordApiCallResult(OAuth2MintTokenApiCallResult::kIssueAdviceSuccess);
       ReportIssueAdviceSuccess(issue_advice);
     } else {
+      RecordApiCallResult(
+          OAuth2MintTokenApiCallResult::kParseIssueAdviceFailure);
       ReportFailure(GoogleServiceAuthError::FromUnexpectedServiceResponse(
           "Not able to parse the contents of consent "
           "from a service response."));
     }
-  } else if (*issue_advice_value == kIssueAdviceValueRemoteConsent) {
+    return;
+  }
+
+  if (*issue_advice_value == kIssueAdviceValueRemoteConsent) {
     RemoteConsentResolutionData resolution_data;
     if (ParseRemoteConsentResponse(&(*value), &resolution_data)) {
+      RecordApiCallResult(OAuth2MintTokenApiCallResult::kRemoteConsentSuccess);
       ReportRemoteConsentSuccess(resolution_data);
     } else {
       // Fallback to the issue advice flow.
       // TODO(https://crbug.com/1026237): Remove the fallback after making sure
       // that the new flow works correctly.
+      RecordApiCallResult(OAuth2MintTokenApiCallResult::kRemoteConsentFallback);
       IssueAdviceInfo empty_issue_advice;
       ReportIssueAdviceSuccess(empty_issue_advice);
     }
+    return;
+  }
+
+  std::string access_token;
+  int time_to_live;
+  if (ParseMintTokenResponse(&(*value), &access_token, &time_to_live)) {
+    RecordApiCallResult(OAuth2MintTokenApiCallResult::kMintTokenSuccess);
+    ReportSuccess(access_token, time_to_live);
   } else {
-    std::string access_token;
-    int time_to_live;
-    if (ParseMintTokenResponse(&(*value), &access_token, &time_to_live)) {
-      ReportSuccess(access_token, time_to_live);
-    } else {
-      ReportFailure(GoogleServiceAuthError::FromUnexpectedServiceResponse(
-          "Not able to parse the contents of access token "
-          "from a service response."));
-    }
+    RecordApiCallResult(OAuth2MintTokenApiCallResult::kParseMintTokenFailure);
+    ReportFailure(GoogleServiceAuthError::FromUnexpectedServiceResponse(
+        "Not able to parse the contents of access token "
+        "from a service response."));
   }
 
   // |this| may be deleted!
@@ -275,6 +299,7 @@ void OAuth2MintTokenFlow::ProcessApiCallFailure(
     int net_error,
     const network::mojom::URLResponseHead* head,
     std::unique_ptr<std::string> body) {
+  RecordApiCallResult(OAuth2MintTokenApiCallResult::kApiCallFailure);
   ReportFailure(CreateAuthError(net_error, head, std::move(body)));
 }
 

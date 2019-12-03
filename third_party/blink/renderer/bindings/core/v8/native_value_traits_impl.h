@@ -17,6 +17,10 @@ namespace blink {
 
 class CallbackFunctionBase;
 
+namespace bindings {
+class DictionaryBase;
+}  // namespace bindings
+
 // Boolean
 template <>
 struct CORE_EXPORT NativeValueTraits<IDLBoolean>
@@ -655,6 +659,20 @@ struct NativeValueTraits<IDLRecord<K, V>>
     }
     // "5. Return result."
     return result;
+  }
+};
+
+// Dictionary
+template <typename T>
+struct NativeValueTraits<
+    T,
+    typename std::enable_if<
+        std::is_base_of<bindings::DictionaryBase, T>::value>::type>
+    : public NativeValueTraitsBase<T> {
+  static T* NativeValue(v8::Isolate* isolate,
+                        v8::Local<v8::Value> value,
+                        ExceptionState& exception_state) {
+    return T::Create(isolate, value, exception_state);
   }
 };
 

@@ -43,9 +43,16 @@ BLINK_COMMON_EXPORT GURL ManifestIconSelector::FindBestMatchingIcon(
     const auto& icon = icons[i];
 
     // Check for supported image MIME types.
-    if (!icon.type.empty() &&
-        !blink::IsSupportedImageMimeType(base::UTF16ToUTF8(icon.type))) {
-      continue;
+    if (!icon.type.empty()) {
+      std::string type = base::UTF16ToUTF8(icon.type);
+      if (!(blink::IsSupportedImageMimeType(base::UTF16ToUTF8(icon.type)) ||
+            // The following condition is intended to support image/svg+xml:
+            (base::StartsWith(base::UTF16ToUTF8(icon.type), "image/",
+                              base::CompareCase::SENSITIVE) &&
+             blink::IsSupportedNonImageMimeType(
+                 base::UTF16ToUTF8(icon.type))))) {
+        continue;
+      }
     }
 
     // Check for icon purpose.

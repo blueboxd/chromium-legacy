@@ -217,7 +217,8 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
     // connected on the other end, as we really don't want it to respond
     // anyways.
     mojo::Remote<viz::mojom::InputTargetClient> input_target_client;
-    ignore_result(input_target_client.BindNewPipeAndPassReceiver());
+    service_manager::InterfaceProvider().GetInterface(
+        input_target_client.BindNewPipeAndPassReceiver());
     widget_host_root_->SetInputTargetClient(std::move(input_target_client));
 
     EXPECT_EQ(view_root_.get(),

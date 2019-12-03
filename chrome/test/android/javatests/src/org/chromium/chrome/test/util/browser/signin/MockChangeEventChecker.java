@@ -18,8 +18,7 @@ import java.util.Map;
  */
 public final class MockChangeEventChecker
         implements SigninHelper.AccountChangeEventChecker {
-    private Map<String, List<String>> mEvents =
-            new HashMap<String, List<String>>();
+    private Map<String, List<String>> mEvents = new HashMap<>();
 
     @Override
     public List<String> getAccountChangeEvents(
@@ -36,7 +35,7 @@ public final class MockChangeEventChecker
     private List<String> getEventList(String account) {
         List<String> eventsList = mEvents.get(account);
         if (eventsList == null) {
-            eventsList = new ArrayList<String>();
+            eventsList = new ArrayList<>();
             mEvents.put(account, eventsList);
         }
         return eventsList;

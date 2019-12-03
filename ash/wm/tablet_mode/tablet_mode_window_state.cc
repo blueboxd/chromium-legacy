@@ -187,8 +187,7 @@ TabletModeWindowState::TabletModeWindowState(aura::Window* window,
       animate_bounds_on_attach_(animate_bounds_on_attach) {
   WindowState* state = WindowState::Get(window);
   current_state_type_ = state->GetStateType();
-  DCHECK(!snap || SplitViewController::Get(Shell::GetPrimaryRootWindow())
-                      ->CanSnapWindow(window));
+  DCHECK(!snap || CanSnapInSplitview(window));
   state_type_on_attach_ =
       snap ? current_state_type_ : GetMaximizedOrCenteredWindowType(state);
   // TODO(oshima|sammiequon): consider SplitView scenario.
@@ -457,8 +456,7 @@ WindowStateType TabletModeWindowState::GetSnappedWindowStateType(
     WindowStateType target_state) {
   DCHECK(target_state == WindowStateType::kLeftSnapped ||
          target_state == WindowStateType::kRightSnapped);
-  return SplitViewController::Get(Shell::GetPrimaryRootWindow())
-                 ->CanSnapWindow(window_state->window())
+  return CanSnapInSplitview(window_state->window())
              ? target_state
              : GetMaximizedOrCenteredWindowType(window_state);
 }

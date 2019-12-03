@@ -4,9 +4,21 @@
 
 #include "chrome/common/web_application_info.h"
 
-WebApplicationIconInfo::WebApplicationIconInfo() : width(0), height(0) {}
+WebApplicationIconInfo::WebApplicationIconInfo() : square_size_px(0) {}
+
+WebApplicationIconInfo::WebApplicationIconInfo(const WebApplicationIconInfo&) =
+    default;
+
+WebApplicationIconInfo::WebApplicationIconInfo(WebApplicationIconInfo&&) =
+    default;
 
 WebApplicationIconInfo::~WebApplicationIconInfo() = default;
+
+WebApplicationIconInfo& WebApplicationIconInfo::operator=(
+    const WebApplicationIconInfo&) = default;
+
+WebApplicationIconInfo& WebApplicationIconInfo::operator=(
+    WebApplicationIconInfo&&) = default;
 
 WebApplicationInfo::WebApplicationInfo()
     : mobile_capable(MOBILE_CAPABLE_UNSPECIFIED),
@@ -18,3 +30,15 @@ WebApplicationInfo::WebApplicationInfo(const WebApplicationInfo& other) =
     default;
 
 WebApplicationInfo::~WebApplicationInfo() = default;
+
+bool operator==(const WebApplicationIconInfo& icon_info1,
+                const WebApplicationIconInfo& icon_info2) {
+  return std::tie(icon_info1.url, icon_info1.square_size_px) ==
+         std::tie(icon_info2.url, icon_info2.square_size_px);
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const WebApplicationIconInfo& icon_info) {
+  return out << "url: " << icon_info.url
+             << " square_size_px: " << icon_info.square_size_px;
+}

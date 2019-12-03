@@ -75,6 +75,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   RestartAuthenticationFlowErrorItemType,
   ReauthDialogAsSyncIsInAuthErrorItemType,
   ShowPassphraseDialogErrorItemType,
+  SyncNeedsTrustedVaultKeyErrorItemType,
   SyncDisabledByAdministratorErrorItemType,
   SyncSettingsNotCofirmedErrorItemType,
   SyncChromeDataItemType,
@@ -378,6 +379,10 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
         type = ShowPassphraseDialogErrorItemType;
         hasError = YES;
         break;
+      case SyncSetupService::kSyncServiceNeedsTrustedVaultKey:
+        type = SyncNeedsTrustedVaultKeyErrorItemType;
+        hasError = YES;
+        break;
       case SyncSetupService::kSyncSettingsNotConfirmed:
         if (self.mode == GoogleServicesSettingsModeSettings) {
           type = SyncSettingsNotCofirmedErrorItemType;
@@ -527,6 +532,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       case RestartAuthenticationFlowErrorItemType:
       case ReauthDialogAsSyncIsInAuthErrorItemType:
       case ShowPassphraseDialogErrorItemType:
+      case SyncNeedsTrustedVaultKeyErrorItemType:
       case SyncDisabledByAdministratorErrorItemType:
       case SyncSettingsNotCofirmedErrorItemType:
       case SyncChromeDataItemType:
@@ -640,11 +646,13 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 //   + RestartAuthenticationFlowErrorItemType
 //   + ReauthDialogAsSyncIsInAuthErrorItemType
 //   + ShowPassphraseDialogErrorItemType
+//   + SyncNeedsTrustedVaultKeyErrorItemType
 //   + SyncSettingsNotCofirmedErrorItemType
 - (TableViewItem*)createSyncErrorItemWithItemType:(NSInteger)itemType {
   DCHECK(itemType == RestartAuthenticationFlowErrorItemType ||
          itemType == ReauthDialogAsSyncIsInAuthErrorItemType ||
          itemType == ShowPassphraseDialogErrorItemType ||
+         itemType == SyncNeedsTrustedVaultKeyErrorItemType ||
          itemType == SyncSettingsNotCofirmedErrorItemType);
   SettingsImageDetailTextItem* syncErrorItem =
       [[SettingsImageDetailTextItem alloc] initWithType:itemType];
@@ -659,6 +667,17 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
     // error message should be still be displayed in the first settings screen.
     syncErrorItem.detailText = GetNSString(
         IDS_IOS_GOOGLE_SERVICES_SETTINGS_ENTER_PASSPHRASE_TO_START_SYNC);
+  } else if (itemType == SyncNeedsTrustedVaultKeyErrorItemType) {
+    // Special case only for the sync encryption key error message. The regular
+    // error message should be still be displayed in the first settings screen.
+    syncErrorItem.detailText =
+        GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_ENCRYPTION_FIX_NOW);
+
+    // Also override the title to be more accurate, if only passwords are being
+    // encrypted.
+    if (!self.syncSetupService->IsEncryptEverythingEnabled()) {
+      syncErrorItem.text = GetNSString(IDS_IOS_SYNC_PASSWORDS_ERROR_TITLE);
+    }
   }
   syncErrorItem.image = [UIImage imageNamed:kGoogleServicesSyncErrorImage];
   return syncErrorItem;
@@ -777,6 +796,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
     case RestartAuthenticationFlowErrorItemType:
     case ReauthDialogAsSyncIsInAuthErrorItemType:
     case ShowPassphraseDialogErrorItemType:
+    case SyncNeedsTrustedVaultKeyErrorItemType:
     case SyncDisabledByAdministratorErrorItemType:
     case SyncSettingsNotCofirmedErrorItemType:
     case ManageSyncItemType:
@@ -805,6 +825,9 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       break;
     case ShowPassphraseDialogErrorItemType:
       [self.commandHandler openPassphraseDialog];
+      break;
+    case SyncNeedsTrustedVaultKeyErrorItemType:
+      // TODO(crbug.com/1019685): Open key retrieval dialog.
       break;
     case ManageSyncItemType:
       [self.commandHandler openManageSyncSettings];

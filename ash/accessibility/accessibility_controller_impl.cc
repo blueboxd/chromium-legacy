@@ -854,6 +854,11 @@ void AccessibilityControllerImpl::
   switch_access_event_handler_->set_ignore_virtual_key_events(should_ignore);
 }
 
+void AccessibilityControllerImpl::
+    DisablePolicyRecommendationRestorerForTesting() {
+  Shell::Get()->policy_recommendation_restorer()->DisableForTesting();
+}
+
 void AccessibilityControllerImpl::ForwardKeyEventsToSwitchAccess(
     bool should_forward) {
   switch_access_event_handler_->set_forward_key_events(should_forward);

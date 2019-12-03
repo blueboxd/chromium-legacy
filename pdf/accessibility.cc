@@ -56,6 +56,11 @@ bool GetEnclosingTextRunRangeForCharRange(
   return false;
 }
 
+template <typename T>
+bool CompareTextRuns(const T& a, const T& b) {
+  return a.text_run_index < b.text_run_index;
+}
+
 void GetAccessibilityLinkInfo(
     PDFEngine* engine,
     int32_t page_index,
@@ -103,6 +108,36 @@ void GetAccessibilityImageInfo(
     image_info.text_run_index = text_run_count;
     images->push_back(std::move(image_info));
   }
+}
+
+void GetAccessibilityHighlightInfo(
+    PDFEngine* engine,
+    int32_t page_index,
+    const std::vector<pp::PDF::PrivateAccessibilityTextRunInfo>& text_runs,
+    std::vector<pp::PDF::PrivateAccessibilityHighlightInfo>* highlights) {
+  std::vector<PDFEngine::AccessibilityHighlightInfo> engine_highlight_info =
+      engine->GetHighlightInfo(page_index);
+  for (size_t i = 0; i < engine_highlight_info.size(); ++i) {
+    auto& cur_highlight_info = engine_highlight_info[i];
+    pp::PDF::PrivateAccessibilityHighlightInfo highlight_info;
+    highlight_info.index_in_page = i;
+    highlight_info.bounds = std::move(cur_highlight_info.bounds);
+
+    if (!GetEnclosingTextRunRangeForCharRange(
+            text_runs, cur_highlight_info.start_char_index,
+            cur_highlight_info.char_count, &highlight_info.text_run_index,
+            &highlight_info.text_run_count)) {
+      // If a valid text run range is not found for the highlight, set the
+      // fallback values of |text_run_index| and |text_run_count| for
+      // |highlight_info|.
+      highlight_info.text_run_index = text_runs.size();
+      highlight_info.text_run_count = 0;
+    }
+    highlights->push_back(std::move(highlight_info));
+  }
+
+  std::sort(highlights->begin(), highlights->end(),
+            CompareTextRuns<pp::PDF::PrivateAccessibilityHighlightInfo>);
 }
 
 }  // namespace
@@ -191,7 +226,8 @@ bool GetAccessibilityInfo(
                            &page_objects->links);
   GetAccessibilityImageInfo(engine, page_index, page_info->text_run_count,
                             &page_objects->images);
-  // TODO(crbug.com/1008775): Populate highlights
+  GetAccessibilityHighlightInfo(engine, page_index, *text_runs,
+                                &page_objects->highlights);
   return true;
 }
 

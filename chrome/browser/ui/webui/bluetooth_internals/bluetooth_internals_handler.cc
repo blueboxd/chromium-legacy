@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/bluetooth/debug_logs_manager.h"
 #include "device/bluetooth/adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "url/gurl.h"
@@ -39,7 +38,7 @@ void BluetoothInternalsHandler::GetAdapter(GetAdapterCallback callback) {
 
 void BluetoothInternalsHandler::GetDebugLogsChangeHandler(
     GetDebugLogsChangeHandlerCallback callback) {
-  mojom::DebugLogsChangeHandlerPtr handler_ptr;
+  mojo::PendingRemote<mojom::DebugLogsChangeHandler> handler_remote;
   bool initial_toggle_value = false;
 
 #if defined(OS_CHROMEOS)
@@ -52,18 +51,18 @@ void BluetoothInternalsHandler::GetDebugLogsChangeHandler(
 
   switch (state) {
     case DebugLogsManager::DebugLogsState::kNotSupported:
-      // Leave |handler_ptr| null and |initial_toggle_value| false.
+      // Leave |handler_remote| NullRemote and |initial_toggle_value| false.
       break;
     case DebugLogsManager::DebugLogsState::kSupportedAndEnabled:
       initial_toggle_value = true;
       FALLTHROUGH;
     case DebugLogsManager::DebugLogsState::kSupportedButDisabled:
-      handler_ptr = debug_logs_manager_->GenerateInterfacePtr();
+      handler_remote = debug_logs_manager_->GenerateRemote();
       break;
   }
 #endif
 
-  std::move(callback).Run(std::move(handler_ptr), initial_toggle_value);
+  std::move(callback).Run(std::move(handler_remote), initial_toggle_value);
 }
 
 void BluetoothInternalsHandler::OnGetAdapter(

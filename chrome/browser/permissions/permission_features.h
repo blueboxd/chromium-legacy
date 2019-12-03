@@ -7,17 +7,6 @@
 
 #include "build/build_config.h"
 
-extern const char kQuietNotificationPromptsUIFlavorParameterName[];
-
-#if defined(OS_ANDROID)
-extern const char kQuietNotificationPromptsQuietNotification[];
-extern const char kQuietNotificationPromptsHeadsUpNotification[];
-extern const char kQuietNotificationPromptsMiniInfobar[];
-#else   // OS_ANDROID
-extern const char kQuietNotificationPromptsStaticIcon[];
-extern const char kQuietNotificationPromptsAnimatedIcon[];
-#endif  // OS_ANDROID
-
 extern const char kQuietNotificationPromptsActivationParameterName[];
 extern const char kQuietNotificationPromptsActivationNever[];
 extern const char kQuietNotificationPromptsActivationAdaptive[];

@@ -12,7 +12,6 @@ import android.content.res.AssetManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.v4.content.FileProvider;
 import android.util.SparseArray;
 import android.webkit.ValueCallback;
@@ -28,7 +27,6 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.components.embedder_support.application.ClassLoaderContextWrapperFactory;
@@ -43,7 +41,6 @@ import org.chromium.weblayer_private.interfaces.IRemoteFragmentClient;
 import org.chromium.weblayer_private.interfaces.IWebLayer;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
-import org.chromium.weblayer_private.interfaces.WebLayerVersion;
 import org.chromium.weblayer_private.metrics.UmaUtils;
 
 import java.io.File;
@@ -52,10 +49,8 @@ import java.lang.reflect.Method;
 
 /**
  * Root implementation class for WebLayer.
- * This is constructed by the client library using reflection.
  */
 @JNINamespace("weblayer")
-@UsedByReflection("WebLayer")
 public final class WebLayerImpl extends IWebLayer.Stub {
     // TODO: should there be one tag for all this code?
     private static final String TAG = "WebLayer";
@@ -80,20 +75,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         }
     }
 
-    @UsedByReflection("WebLayer")
-    public static IBinder create() {
-        return new WebLayerImpl();
-    }
-
-    private WebLayerImpl() {}
-
-    /**
-     * Returns true if the client and implementation versions are compatible.
-     */
-    @UsedByReflection("WebLayer")
-    public static boolean checkVersion(int clientVersion) {
-        return clientVersion == WebLayerVersion.sVersionNumber;
-    }
+    WebLayerImpl() {}
 
     @Override
     public void loadAsync(IObjectWrapper appContextWrapper, IObjectWrapper loadedCallbackWrapper) {

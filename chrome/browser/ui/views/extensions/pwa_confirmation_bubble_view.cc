@@ -34,11 +34,11 @@ bool g_auto_accept_pwa_for_testing = false;
 
 // Returns an ImageView containing the app icon.
 std::unique_ptr<views::ImageView> CreateIconView(
-    const std::vector<WebApplicationIconInfo>& icons) {
+    const WebApplicationInfo& web_app_info) {
   constexpr int kIconSize = 48;
-  gfx::ImageSkia image(
-      std::make_unique<WebAppInfoImageSource>(kIconSize, icons),
-      gfx::Size(kIconSize, kIconSize));
+  gfx::ImageSkia image(std::make_unique<WebAppInfoImageSource>(
+                           kIconSize, web_app_info.icon_bitmaps),
+                       gfx::Size(kIconSize, kIconSize));
 
   auto icon_image_view = std::make_unique<views::ImageView>();
   icon_image_view->SetImage(image);
@@ -109,7 +109,7 @@ PWAConfirmationBubbleView::PWAConfirmationBubbleView(
       views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
       icon_label_spacing));
 
-  AddChildView(CreateIconView(web_app_info_->icons).release());
+  AddChildView(CreateIconView(*web_app_info_).release());
 
   views::View* labels = new views::View();
   AddChildView(labels);

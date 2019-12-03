@@ -38,7 +38,6 @@ namespace cc {
 
 class LayerTreeImpl;
 class RenderSurfaceImpl;
-class ScrollState;
 struct ClipNode;
 struct EffectNode;
 struct ScrollAndScaleSet;
@@ -460,7 +459,6 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   const gfx::ScrollOffset GetScrollOffsetDeltaForTesting(ElementId id) const;
   void CollectScrollDeltasForTesting();
 
-  void DistributeScroll(ScrollNode* scroll_node, ScrollState* scroll_state);
   gfx::Vector2dF ScrollBy(ScrollNode* scroll_node,
                           const gfx::Vector2dF& scroll,
                           LayerTreeImpl* layer_tree_impl);

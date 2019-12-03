@@ -49,6 +49,7 @@ class ClickToCallContextMenuObserver : public RenderViewContextMenuObserver {
   void ExecuteCommand(int command_id) override;
 
   void BuildMenu(const std::string& phone_number,
+                 const std::string& selection_text,
                  SharingClickToCallEntryPoint entry_point);
 
  private:
@@ -72,6 +73,7 @@ class ClickToCallContextMenuObserver : public RenderViewContextMenuObserver {
   SubMenuDelegate sub_menu_delegate_{this};
 
   std::string phone_number_;
+  std::string selection_text_;
   base::Optional<SharingClickToCallEntryPoint> entry_point_;
 
   std::unique_ptr<ui::SimpleMenuModel> sub_menu_model_;

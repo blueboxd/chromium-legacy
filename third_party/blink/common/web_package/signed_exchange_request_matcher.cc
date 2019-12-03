@@ -410,6 +410,11 @@ SignedExchangeRequestMatcher::FindBestMatchingVariantKey(
                                     variant_key_list);
 }
 
+base::Optional<size_t> SignedExchangeRequestMatcher::FindBestMatchingIndex(
+    const std::string& variants) const {
+  return FindBestMatchingIndex(request_headers_, variants);
+}
+
 // Implements "Cache Behaviour" [1] when "stored-responses" is a singleton list
 // containing a response that has "Variants" header whose value is |variants|.
 // [1] https://httpwg.org/http-extensions/draft-ietf-httpbis-variants.html#cache
@@ -606,6 +611,48 @@ SignedExchangeRequestMatcher::FindBestMatchingVariantKey(
     }
   }
   return found_variant_key;
+}
+
+// static
+base::Optional<size_t> SignedExchangeRequestMatcher::FindBestMatchingIndex(
+    const net::HttpRequestHeaders& request_headers,
+    const std::string& variants) {
+  auto parsed_variants = ParseVariants(variants);
+  if (!parsed_variants)
+    return base::nullopt;
+
+  size_t best_match_index = 0;
+  for (const auto& variant_axis : *parsed_variants) {
+    const std::string field_name = base::ToLowerASCII(variant_axis.first);
+    std::unique_ptr<ContentNegotiationAlgorithm> negotiation_algorithm =
+        GetContentNegotiationAlgorithm(field_name);
+    if (!negotiation_algorithm)
+      return base::nullopt;
+    base::Optional<std::string> request_value;
+    std::string header_value;
+    if (request_headers.GetHeader(field_name, &header_value))
+      request_value = header_value;
+
+    std::vector<std::string> sorted_values =
+        negotiation_algorithm->run(variant_axis.second, request_value);
+    if (sorted_values.empty())
+      return base::nullopt;
+    auto it = std::find(variant_axis.second.begin(), variant_axis.second.end(),
+                        sorted_values.front());
+    if (it == variant_axis.second.end())
+      return base::nullopt;
+    size_t best_value_index = it - variant_axis.second.begin();
+
+    if (!base::CheckMul(best_match_index, variant_axis.second.size())
+             .AssignIfValid(&best_match_index)) {
+      return base::nullopt;
+    }
+    if (!base::CheckAdd(best_match_index, best_value_index)
+             .AssignIfValid(&best_match_index)) {
+      return base::nullopt;
+    }
+  }
+  return best_match_index;
 }
 
 }  // namespace blink

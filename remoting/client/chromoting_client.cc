@@ -215,6 +215,13 @@ void ChromotingClient::SetCursorShape(
   user_interface_->GetCursorShapeStub()->SetCursorShape(cursor_shape);
 }
 
+void ChromotingClient::SetKeyboardLayout(
+    const protocol::KeyboardLayout& layout) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  user_interface_->GetKeyboardLayoutStub()->SetKeyboardLayout(layout);
+}
+
 void ChromotingClient::OnConnectionState(
     protocol::ConnectionToHost::State state,
     protocol::ErrorCode error) {

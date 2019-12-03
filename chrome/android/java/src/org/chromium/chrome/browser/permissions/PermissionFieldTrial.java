@@ -19,9 +19,6 @@ import java.lang.annotation.RetentionPolicy;
  * Provides Field Trial support for the permissions field trial
  */
 public class PermissionFieldTrial {
-    // Keep in sync with "chrome/browser/permissions/permission_features.h"
-    private static final String QUIET_NOTIFICATION_PROMPTS_MINI_INFOBAR = "mini_infobar";
-
     @IntDef({UIFlavor.NONE, UIFlavor.MINI_INFOBAR})
     @Retention(RetentionPolicy.SOURCE)
     public @interface UIFlavor {

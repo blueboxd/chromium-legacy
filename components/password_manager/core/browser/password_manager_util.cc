@@ -22,7 +22,6 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
-#include "components/password_manager/core/browser/blacklisted_credentials_cleaner.h"
 #include "components/password_manager/core/browser/credentials_cleaner.h"
 #include "components/password_manager/core/browser/credentials_cleaner_runner.h"
 #include "components/password_manager/core/browser/http_credentials_cleaner.h"
@@ -196,10 +195,6 @@ void RemoveUselessCredentials(
             store, network_context_getter, prefs));
   }
 #endif  // !defined(OS_IOS)
-
-  cleaning_tasks_runner->MaybeAddCleaningTask(
-      std::make_unique<password_manager::BlacklistedCredentialsCleaner>(store,
-                                                                        prefs));
 
   if (cleaning_tasks_runner->HasPendingTasks()) {
     // The runner will delete itself once the clearing tasks are done, thus we

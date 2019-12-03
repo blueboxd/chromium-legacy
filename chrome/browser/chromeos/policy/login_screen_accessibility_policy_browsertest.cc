@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "ash/public/cpp/accessibility_controller.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -125,6 +126,11 @@ void LoginScreenAccessibilityPolicyBrowsertest::SetUpOnMainThread() {
   ASSERT_TRUE(magnification_manager);
   magnification_manager->SetProfileForTest(
       chromeos::ProfileHelper::GetSigninProfile());
+
+  // Disable PolicyRecommendationRestorer. See https://crbug.com/1015763#c13 for
+  // details.
+  ash::AccessibilityController::Get()
+      ->DisablePolicyRecommendationRestorerForTesting();
 }
 
 void LoginScreenAccessibilityPolicyBrowsertest::
@@ -919,9 +925,8 @@ IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
   EXPECT_FALSE(accessibility_manager->IsFocusHighlightEnabled());
 }
 
-// TODO(crbug.com/1015763): Flaky on ChromeOS.
 IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
-                       DISABLED_DeviceLoginScreenFullScreenMagnifier) {
+                       DeviceLoginScreenFullScreenMagnifier) {
   // Verifies that the state of the full-screen magnifier accessibility
   // feature on the login screen can be controlled through device policy.
   chromeos::MagnificationManager* magnification_manager =
@@ -968,15 +973,14 @@ IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
       ash::prefs::kAccessibilityScreenMagnifierEnabled);
 
   // Verify that the pref which controls the full-screen magnifier mode in the
-  // login profile is managed by the policy.
+  // login profile is set to the recommended value specified in the policy.
   EXPECT_FALSE(IsPrefManaged(ash::prefs::kAccessibilityScreenMagnifierEnabled));
   EXPECT_EQ(base::Value(true),
             GetPrefValue(ash::prefs::kAccessibilityScreenMagnifierEnabled));
 
-  // Verify that the full-screen magnifier mode cannot be enabled manually
-  // anymore.
+  // Verify that the full-screen magnifier mode can be disabled manually.
   prefs->SetBoolean(ash::prefs::kAccessibilityScreenMagnifierEnabled, false);
-  EXPECT_TRUE(
+  EXPECT_FALSE(
       prefs->GetBoolean(ash::prefs::kAccessibilityScreenMagnifierEnabled));
 }
 

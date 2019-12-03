@@ -30,6 +30,10 @@ namespace {
 
 constexpr base::TimeDelta kMessageCooldown = base::TimeDelta::FromDays(14);
 
+// This duration is the same as the "default browser" banner's duration.
+constexpr base::TimeDelta kMinimumDurationBeforeExpiryOnNavigation =
+    base::TimeDelta::FromSeconds(8);
+
 bool IsFlashDeprecationWarningCooldownActive(Profile* profile) {
   base::Time last_dismissal =
       profile->GetPrefs()->GetTime(prefs::kPluginsDeprecationInfobarLastShown);
@@ -90,7 +94,7 @@ bool FlashDeprecationInfoBarDelegate::ShouldDisplayFlashDeprecation(
 
 FlashDeprecationInfoBarDelegate::FlashDeprecationInfoBarDelegate(
     Profile* profile)
-    : profile_(profile) {}
+    : profile_(profile), display_start_(base::Time::Now()) {}
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 FlashDeprecationInfoBarDelegate::GetIdentifier() const {
@@ -138,4 +142,12 @@ GURL FlashDeprecationInfoBarDelegate::GetLinkURL() const {
 
 void FlashDeprecationInfoBarDelegate::InfoBarDismissed() {
   ActivateFlashDeprecationWarningCooldown(profile_);
+}
+
+bool FlashDeprecationInfoBarDelegate::ShouldExpire(
+    const NavigationDetails& details) const {
+  bool minimum_duration_elapsed = base::Time::Now() - display_start_ >
+                                  kMinimumDurationBeforeExpiryOnNavigation;
+  return minimum_duration_elapsed &&
+         ConfirmInfoBarDelegate::ShouldExpire(details);
 }

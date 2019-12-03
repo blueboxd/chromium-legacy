@@ -789,45 +789,15 @@ enum StringListAttribute {
   kCustomActionDescriptions,
 };
 
-// TODO(dmazzoni, nektar): make this list not grow exponentially as new
-// MarkerTypes are added
 enum MarkerType {
-  kNone,
-  // Assignments are ignored by the parser, but are kept here for clarity.
+  kNone = 0,
   kSpelling = 1,
   kGrammar = 2,
-  kSpellingGrammar = 3,
   kTextMatch = 4,
-  kSpellingTextMatch = 5,
-  kGrammarTextMatch = 6,
-  kSpellingGrammarTextMatch = 7,
   // DocumentMarker::MarkerType::Composition = 8 is ignored for accessibility
   // purposes
   kActiveSuggestion = 16,
-  kSpellingActiveSuggestion = 17,
-  kGrammarActiveSuggestion = 18,
-  kSpellingGrammarActiveSuggestion = 19,
-  kTextMatchActiveSuggestion = 20,
-  kSpellingTextMatchActiveSuggestion = 21,
-  kGrammarTextMatchActiveSuggestion = 22,
-  kSpellingGrammarTextMatchActiveSuggestion = 23,
   kSuggestion = 32,
-  kSpellingSuggestion = 33,
-  kGrammarSuggestion = 34,
-  kSpellingGrammarSuggestion = 35,
-  kTextMatchSuggestion = 36,
-  kSpellingTextMatchSuggestion = 37,
-  kGrammarTextMatchSuggestion = 38,
-  kSpellingGrammarTextMatchSuggestion = 39,
-  // We again skip over DocumentMarker::MarkerType::Composition = 8 here
-  kActiveSuggestionSuggestion = 48,
-  kSpellingActiveSuggestionSuggestion = 49,
-  kGrammarActiveSuggestionSuggestion = 50,
-  kSpellingGrammarActiveSuggestionSuggestion = 51,
-  kTextMatchActiveSuggestionSuggestion = 52,
-  kSpellingTextMatchActiveSuggestionSuggestion = 53,
-  kGrammarTextMatchActiveSuggestionSuggestion = 54,
-  kSpellingGrammarTextMatchActiveSuggestionSuggestion = 55,
 };
 
 enum ListStyle {

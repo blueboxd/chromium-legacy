@@ -621,12 +621,12 @@ void ClearQuotaData(content::StoragePartition* partition,
 
 void ClearQuotaDataWithOriginMatcher(
     content::StoragePartition* partition,
-    const StoragePartition::OriginMatcherFunction& origin_matcher,
+    StoragePartition::OriginMatcherFunction origin_matcher,
     const base::Time delete_begin,
     base::RunLoop* loop_to_quit) {
   partition->ClearData(kAllQuotaRemoveMask,
                        StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-                       origin_matcher, nullptr, false, delete_begin,
+                       std::move(origin_matcher), nullptr, false, delete_begin,
                        base::Time::Max(), loop_to_quit->QuitClosure());
 }
 
@@ -678,12 +678,12 @@ void ClearStuff(uint32_t remove_mask,
                 content::StoragePartition* partition,
                 const base::Time delete_begin,
                 const base::Time delete_end,
-                const StoragePartition::OriginMatcherFunction& origin_matcher,
+                StoragePartition::OriginMatcherFunction origin_matcher,
                 base::RunLoop* run_loop) {
   partition->ClearData(remove_mask,
                        StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-                       origin_matcher, nullptr, false, delete_begin, delete_end,
-                       run_loop->QuitClosure());
+                       std::move(origin_matcher), nullptr, false, delete_begin,
+                       delete_end, run_loop->QuitClosure());
 }
 
 void ClearData(content::StoragePartition* partition, base::RunLoop* run_loop) {

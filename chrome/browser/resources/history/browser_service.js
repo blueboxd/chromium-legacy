@@ -16,6 +16,10 @@ cr.define('history', function() {
       this.pendingDeletePromise_ = null;
     }
 
+    historyLoaded() {
+      chrome.send('historyLoaded');
+    }
+
     /**
      * @param {!Array<!HistoryEntry>} items
      * @return {Promise<!Array<!HistoryEntry>>}

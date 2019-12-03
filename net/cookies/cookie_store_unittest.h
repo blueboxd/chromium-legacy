@@ -127,9 +127,10 @@ class CookieStoreTest : public testing::Test {
         http_bar_com_("http://bar.com") {
     // This test may be used outside of the net test suite, and thus may not
     // have a task environment.
-    if (!base::MessageLoopCurrent::Get())
+    if (!base::MessageLoopCurrent::Get()) {
       task_environment_ =
           std::make_unique<base::test::SingleThreadTaskEnvironment>();
+    }
   }
 
   // Helper methods for the asynchronous Cookie Store API that call the

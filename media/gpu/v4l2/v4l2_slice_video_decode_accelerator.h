@@ -506,6 +506,9 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // Number of planes for GLImage.
   size_t gl_image_planes_count_;
 
+  // Reference to request queue to get free requests.
+  V4L2RequestsQueue* requests_queue_;
+
   // The WeakPtrFactory for |weak_this_|.
   base::WeakPtrFactory<V4L2SliceVideoDecodeAccelerator> weak_this_factory_;
 

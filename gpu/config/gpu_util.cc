@@ -512,7 +512,7 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
 
   std::set<int> enabled_driver_bug_workarounds;
   std::vector<std::string> driver_bug_disabled_extensions;
-  if (!gpu_preferences.disable_gpu_driver_bug_workarounds) {
+  if (!command_line->HasSwitch(switches::kDisableGpuDriverBugWorkarounds)) {
     std::unique_ptr<gpu::GpuDriverBugList> list(GpuDriverBugList::Create());
     unsigned target_test_group = 0u;
     if (command_line->HasSwitch(switches::kGpuDriverBugListTestGroup)) {

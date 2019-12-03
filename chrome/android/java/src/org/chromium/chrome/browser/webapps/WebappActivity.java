@@ -30,7 +30,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WarmupManager;
@@ -42,6 +41,7 @@ import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.features.ImmersiveModeController;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -179,8 +179,9 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     }
 
     @Override
-    public @ChromeActivity.ActivityType int getActivityType() {
-        return ChromeActivity.ActivityType.WEBAPP;
+    @ActivityType
+    public int getActivityType() {
+        return ActivityType.WEBAPP;
     }
 
     protected boolean loadUrlIfPostShareTarget(WebappInfo webappInfo) {

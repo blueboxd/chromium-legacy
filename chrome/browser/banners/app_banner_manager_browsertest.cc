@@ -262,6 +262,14 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
                 base::nullopt);
 }
 
+IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, WebAppBannerSvgIcon) {
+  std::unique_ptr<AppBannerManagerTest> manager(
+      CreateAppBannerManager(browser()));
+  RunBannerTest(browser(), manager.get(),
+                GetBannerURLWithManifest("/banners/manifest_svg_icon.json"),
+                base::nullopt);
+}
+
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, NoManifest) {
   std::unique_ptr<AppBannerManagerTest> manager(
       CreateAppBannerManager(browser()));

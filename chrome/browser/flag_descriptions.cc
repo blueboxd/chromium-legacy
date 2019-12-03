@@ -645,12 +645,6 @@ extern const char kDesktopPWAsLocalUpdatingDescription[] =
     "Enable installed PWAs to update their app manifest data when the site "
     "manifest data has changed.";
 
-const char kDesktopPWAsOmniboxInstallName[] =
-    "Desktop PWAs installable from the omnibox";
-const char kDesktopPWAsOmniboxInstallDescription[] =
-    "When on a site that passes PWA installation requirements show a button in "
-    "the omnibox for installing it.";
-
 const char kEnableSystemWebAppsName[] = "System Web Apps";
 const char kEnableSystemWebAppsDescription[] =
     "Experimental system for using the Desktop PWA framework for running System"

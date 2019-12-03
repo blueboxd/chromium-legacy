@@ -5,15 +5,15 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_ICON_MANAGER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_ICON_MANAGER_H_
 
+#include <map>
 #include <memory>
-#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "chrome/browser/web_applications/components/app_icon_manager.h"
+#include "chrome/common/web_application_info.h"
 
 class Profile;
-struct WebApplicationIconInfo;
 
 namespace web_app {
 
@@ -31,7 +31,7 @@ class WebAppIconManager : public AppIconManager {
   // Writes all data (icons) for an app.
   using WriteDataCallback = base::OnceCallback<void(bool success)>;
   void WriteData(AppId app_id,
-                 std::vector<WebApplicationIconInfo> icon_infos,
+                 std::map<SquareSizePx, SkBitmap> icon_bitmaps,
                  WriteDataCallback callback);
   void DeleteData(AppId app_id, WriteDataCallback callback);
 

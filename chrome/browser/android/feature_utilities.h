@@ -18,7 +18,19 @@ enum CustomTabsVisibilityHistogram {
   CUSTOM_TABS_VISIBILITY_MAX
 };
 
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.flags
+enum class ActivityType {
+  kTabbed,
+  kCustomTab,
+  kTrustedWebActivity,
+  kWebapp,
+  kWebApk,
+  kMaxValue = kWebApk,
+};
+
 CustomTabsVisibilityHistogram GetCustomTabsVisibleValue();
+
+ActivityType GetActivityType();
 
 bool GetIsInMultiWindowModeValue();
 

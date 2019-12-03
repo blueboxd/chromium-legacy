@@ -90,11 +90,6 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
   content::NavigationThrottle::ThrottleCheckResult WillRedirectRequest()
       override;
 
-  // Overridden for Chrome OS to allow asynchronous handling of ARC apps.
-  virtual void OnDeferredNavigationProcessed(
-      AppsNavigationAction action,
-      std::vector<IntentPickerAppInfo> apps) {}
-
  protected:
   // These enums are used to define the buckets for an enumerated UMA histogram
   // and need to be synced with the ArcIntentHandlerAction enum in enums.xml.
@@ -205,7 +200,7 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
                                             const GURL& previous_url,
                                             const GURL& current_url) {}
 
-  virtual bool ShouldDeferNavigationForArc(content::NavigationHandle* handle);
+  virtual bool ShouldDeferNavigation(content::NavigationHandle* handle);
 
   void ShowIntentPickerForApps(
       content::WebContents* web_contents,

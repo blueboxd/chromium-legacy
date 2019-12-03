@@ -689,15 +689,15 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
     DCHECK(!iter->output_frame);
 
     auto layout = VideoFrameLayout::Create(
-        Fourcc::FromV4L2PixFmt(output_format_fourcc_).ToVideoPixelFormat(),
-        coded_size_);
+        Fourcc::FromV4L2PixFmt(egl_image_format_fourcc_).ToVideoPixelFormat(),
+        egl_image_size_);
     if (!layout) {
       VLOGF(1) << "Cannot create layout!";
       NOTIFY_ERROR(INVALID_ARGUMENT);
       return;
     }
     iter->output_frame = VideoFrame::WrapExternalDmabufs(
-        *layout, gfx::Rect(visible_size_), visible_size_,
+        *layout, gfx::Rect(visible_size_), egl_image_size_,
         DuplicateFDs(dmabuf_fds), base::TimeDelta());
   }
 

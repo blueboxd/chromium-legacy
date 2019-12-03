@@ -129,7 +129,6 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/filename_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -2050,13 +2049,13 @@ AutotestPrivateBootstrapMachineLearningServiceFunction::Run() {
       ->LoadBuiltinModel(
           chromeos::machine_learning::mojom::BuiltinModelSpec::New(
               chromeos::machine_learning::mojom::BuiltinModelId::TEST_MODEL),
-          mojo::MakeRequest(&model_),
+          model_.BindNewPipeAndPassReceiver(),
           base::BindOnce(
               &AutotestPrivateBootstrapMachineLearningServiceFunction::
                   ModelLoaded,
               this));
-  model_.set_connection_error_handler(base::BindOnce(
-      &AutotestPrivateBootstrapMachineLearningServiceFunction::ConnectionError,
+  model_.set_disconnect_handler(base::BindOnce(
+      &AutotestPrivateBootstrapMachineLearningServiceFunction::OnMojoDisconnect,
       this));
   return RespondLater();
 }
@@ -2071,7 +2070,8 @@ void AutotestPrivateBootstrapMachineLearningServiceFunction::ModelLoaded(
   }
 }
 
-void AutotestPrivateBootstrapMachineLearningServiceFunction::ConnectionError() {
+void AutotestPrivateBootstrapMachineLearningServiceFunction::
+    OnMojoDisconnect() {
   Respond(Error("ML Service connection error"));
 }
 

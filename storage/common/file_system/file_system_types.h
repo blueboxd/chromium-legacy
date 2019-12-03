@@ -75,9 +75,6 @@ enum FileSystemType {
   // such as MTP or PTP.
   kFileSystemTypeDeviceMedia,
 
-  // Indicates a Drive filesystem which provides access to Google Drive.
-  kFileSystemTypeDrive,
-
   // Indicates a Syncable sandboxed filesystem which can be backed by a
   // cloud storage service.
   kFileSystemTypeSyncable,

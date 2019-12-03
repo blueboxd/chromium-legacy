@@ -35,6 +35,8 @@ enum class ForInstallableSite {
 };
 
 // Update the given WebApplicationInfo with information from the manifest.
+// Will sanitise the manifest fields to be suitable for installation to prevent
+// sites from using arbitrarily large amounts of disk space.
 void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
                                   WebApplicationInfo* web_app_info,
                                   ForInstallableSite installable_site);

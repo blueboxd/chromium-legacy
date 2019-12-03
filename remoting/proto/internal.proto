@@ -27,6 +27,7 @@ message ControlMessage {
   optional ExtensionMessage extension_message = 9;
   optional VideoLayout video_layout = 10;
   optional SelectDesktopDisplayRequest select_display = 11;
+  optional KeyboardLayout keyboard_layout = 12;
 }
 
 // Defines an event message on the event channel.

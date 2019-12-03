@@ -259,6 +259,10 @@ BrowsingHistoryHandler::BrowsingHistoryHandler()
 
 BrowsingHistoryHandler::~BrowsingHistoryHandler() {}
 
+void BrowsingHistoryHandler::OnJavascriptDisallowed() {
+  weak_factory_.InvalidateWeakPtrs();
+}
+
 void BrowsingHistoryHandler::RegisterMessages() {
   Profile* profile = GetProfile();
   HistoryService* local_history = HistoryServiceFactory::GetForProfile(
@@ -273,6 +277,10 @@ void BrowsingHistoryHandler::RegisterMessages() {
       profile, std::make_unique<FaviconSource>(
                    profile, chrome::FaviconUrlFormat::kFavicon2));
 
+  web_ui()->RegisterMessageCallback(
+      "historyLoaded",
+      base::BindRepeating(&BrowsingHistoryHandler::HandleHistoryLoaded,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "queryHistory",
       base::BindRepeating(&BrowsingHistoryHandler::HandleQueryHistory,
@@ -420,11 +428,24 @@ void BrowsingHistoryHandler::HistoryDeleted() {
   web_ui()->CallJavascriptFunctionUnsafe("historyDeleted");
 }
 
+void BrowsingHistoryHandler::HandleHistoryLoaded(const base::ListValue* args) {
+  AllowJavascript();
+  for (auto& callback : deferred_callbacks_) {
+    std::move(callback).Run();
+  }
+  deferred_callbacks_.clear();
+}
+
 void BrowsingHistoryHandler::HasOtherFormsOfBrowsingHistory(
     bool has_other_forms,
     bool has_synced_results) {
-  web_ui()->CallJavascriptFunctionUnsafe("showNotification",
-                                         base::Value(has_other_forms));
+  if (IsJavascriptAllowed()) {
+    FireWebUIListener("has-other-forms-changed", base::Value(has_other_forms));
+  } else {
+    deferred_callbacks_.push_back(base::BindOnce(
+        &BrowsingHistoryHandler::HasOtherFormsOfBrowsingHistory,
+        weak_factory_.GetWeakPtr(), has_other_forms, has_synced_results));
+  }
 }
 
 Profile* BrowsingHistoryHandler::GetProfile() {

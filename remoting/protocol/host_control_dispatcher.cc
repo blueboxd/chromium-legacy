@@ -78,6 +78,12 @@ void HostControlDispatcher::SetCursorShape(
   message_pipe()->Send(&message, base::Closure());
 }
 
+void HostControlDispatcher::SetKeyboardLayout(const KeyboardLayout& layout) {
+  ControlMessage message;
+  message.mutable_keyboard_layout()->CopyFrom(layout);
+  message_pipe()->Send(&message, base::Closure());
+}
+
 void HostControlDispatcher::OnIncomingMessage(
     std::unique_ptr<CompoundBuffer> buffer) {
   DCHECK(clipboard_stub_);

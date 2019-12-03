@@ -24,7 +24,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/web_isolated_world_info.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_language_detection_details.h"
@@ -449,7 +449,7 @@ void TranslateHelper::NotifyBrowserTranslationFailed(
 const mojo::Remote<mojom::ContentTranslateDriver>&
 TranslateHelper::GetTranslateHandler() {
   if (!translate_handler_) {
-    render_frame()->GetRemoteInterfaces()->GetInterface(
+    render_frame()->GetBrowserInterfaceBroker()->GetInterface(
         translate_handler_.BindNewPipeAndPassReceiver());
   }
 

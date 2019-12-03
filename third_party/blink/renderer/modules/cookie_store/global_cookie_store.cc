@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-blink.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -46,15 +46,13 @@ class GlobalCookieStoreImpl final
   CookieStore* GetCookieStore(T& scope) {
     if (!cookie_store_) {
       ExecutionContext* execution_context = scope.GetExecutionContext();
-
-      service_manager::InterfaceProvider* interface_provider =
-          execution_context->GetInterfaceProvider();
-      if (!interface_provider)
+      if (!execution_context->GetInterfaceProvider())
         return nullptr;
 
       mojo::Remote<network::mojom::blink::RestrictedCookieManager> backend;
-      interface_provider->GetInterface(backend.BindNewPipeAndPassReceiver(
-          execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+      execution_context->GetBrowserInterfaceBroker().GetInterface(
+          backend.BindNewPipeAndPassReceiver(
+              execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
       cookie_store_ = MakeGarbageCollected<CookieStore>(execution_context,
                                                         std::move(backend));
     }

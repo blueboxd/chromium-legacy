@@ -38,19 +38,11 @@ class MediaAppUiBrowserTest::TestCodeInjector
         GURL(chromeos::kChromeUIMediaAppGuestURL))
       return;
 
-    base::FilePath source_root;
-    ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root));
-    const auto script_path = source_root.AppendASCII(kTestScriptPath);
-
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    std::string injected_content;
-    ASSERT_TRUE(base::ReadFileToString(script_path, &injected_content));
-
     auto* render_frame_host = navigation_handle->GetRenderFrameHost();
 
     // Use ExecuteScript(), not ExecJs(), because of Content Security Policy
     // directive: "script-src chrome://resources 'self'"
-    ASSERT_TRUE(content::ExecuteScript(render_frame_host, injected_content));
+    ASSERT_TRUE(content::ExecuteScript(render_frame_host, AppJsTestLibrary()));
     TestNavigationObserver::OnDidFinishNavigation(navigation_handle);
   }
 };
@@ -58,6 +50,18 @@ class MediaAppUiBrowserTest::TestCodeInjector
 MediaAppUiBrowserTest::MediaAppUiBrowserTest() = default;
 
 MediaAppUiBrowserTest::~MediaAppUiBrowserTest() = default;
+
+// static
+std::string MediaAppUiBrowserTest::AppJsTestLibrary() {
+  base::FilePath source_root;
+  EXPECT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root));
+  const auto script_path = source_root.AppendASCII(kTestScriptPath);
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  std::string injected_content;
+  EXPECT_TRUE(base::ReadFileToString(script_path, &injected_content));
+  return injected_content;
+}
 
 void MediaAppUiBrowserTest::SetUpOnMainThread() {
   injector_ = std::make_unique<TestCodeInjector>();

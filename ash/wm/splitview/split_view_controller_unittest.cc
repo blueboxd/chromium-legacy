@@ -1459,28 +1459,27 @@ TEST_P(SplitViewControllerTest, ExitTabletModeEndSplitView) {
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 }
 
-// Test that |SplitViewController::CanSnapWindow| checks that the minimum size
-// of the window fits into the left or top, with the default divider position.
-// (If the work area length is odd, then the right or bottom will be one pixel
-// larger.)
+// Test that |CanSnapInSplitview| checks that the minimum size of the window
+// fits into the left or top, with the default divider position. (If the work
+// area length is odd, then the right or bottom will be one pixel larger.)
 TEST_P(SplitViewControllerTest, SnapWindowWithMinimumSizeTest) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
-  EXPECT_TRUE(split_view_controller()->CanSnapWindow(window1.get()));
+  EXPECT_TRUE(CanSnapInSplitview(window1.get()));
 
   UpdateDisplay("800x600");
   aura::test::TestWindowDelegate* delegate =
       static_cast<aura::test::TestWindowDelegate*>(window1->delegate());
   delegate->set_minimum_size(gfx::Size(396, 0));
-  EXPECT_TRUE(split_view_controller()->CanSnapWindow(window1.get()));
+  EXPECT_TRUE(CanSnapInSplitview(window1.get()));
   delegate->set_minimum_size(gfx::Size(397, 0));
-  EXPECT_FALSE(split_view_controller()->CanSnapWindow(window1.get()));
+  EXPECT_FALSE(CanSnapInSplitview(window1.get()));
 
   UpdateDisplay("799x600");
   delegate->set_minimum_size(gfx::Size(395, 0));
-  EXPECT_TRUE(split_view_controller()->CanSnapWindow(window1.get()));
+  EXPECT_TRUE(CanSnapInSplitview(window1.get()));
   delegate->set_minimum_size(gfx::Size(396, 0));
-  EXPECT_FALSE(split_view_controller()->CanSnapWindow(window1.get()));
+  EXPECT_FALSE(CanSnapInSplitview(window1.get()));
 }
 
 // Tests that the snapped window can not be moved outside of work area when its
@@ -1507,7 +1506,7 @@ TEST_P(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
   gfx::Rect display_bounds =
       screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           window1.get());
-  EXPECT_TRUE(split_view_controller()->CanSnapWindow(window1.get()));
+  EXPECT_TRUE(CanSnapInSplitview(window1.get()));
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   delegate1->set_minimum_size(
       gfx::Size(display_bounds.width() * 0.4f, display_bounds.height()));
@@ -1553,7 +1552,7 @@ TEST_P(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
           window1.get());
   delegate1->set_minimum_size(
       gfx::Size(display_bounds.width(), display_bounds.height() * 0.4f));
-  EXPECT_TRUE(split_view_controller()->CanSnapWindow(window1.get()));
+  EXPECT_TRUE(CanSnapInSplitview(window1.get()));
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   EXPECT_TRUE(window1->layer()->GetTargetTransform().IsIdentity());
   divider_bounds = split_view_divider()->GetDividerBoundsInScreen(false);
@@ -1583,7 +1582,7 @@ TEST_P(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
           window1.get());
   delegate1->set_minimum_size(
       gfx::Size(display_bounds.width() * 0.4f, display_bounds.height()));
-  EXPECT_TRUE(split_view_controller()->CanSnapWindow(window1.get()));
+  EXPECT_TRUE(CanSnapInSplitview(window1.get()));
   split_view_controller()->SnapWindow(window1.get(),
                                       SplitViewController::RIGHT);
   EXPECT_TRUE(window1->layer()->GetTargetTransform().IsIdentity());
@@ -1615,7 +1614,7 @@ TEST_P(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
           window1.get());
   delegate1->set_minimum_size(
       gfx::Size(display_bounds.width(), display_bounds.height() * 0.4f));
-  EXPECT_TRUE(split_view_controller()->CanSnapWindow(window1.get()));
+  EXPECT_TRUE(CanSnapInSplitview(window1.get()));
   split_view_controller()->SnapWindow(window1.get(),
                                       SplitViewController::RIGHT);
   EXPECT_TRUE(window1->layer()->GetTargetTransform().IsIdentity());
@@ -2936,7 +2935,7 @@ TEST_P(SplitViewTabDraggingTest, DragMaximizedWindow) {
       static_cast<aura::test::TestWindowDelegate*>(window1->delegate());
   delegate->set_minimum_size(
       gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
-  EXPECT_FALSE(split_view_controller()->CanSnapWindow(window1.get()));
+  EXPECT_FALSE(CanSnapInSplitview(window1.get()));
   resizer = StartDrag(window1.get(), window2.get());
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
   DragWindowTo(resizer.get(),

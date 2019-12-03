@@ -977,6 +977,15 @@ bool StyleResolver::PseudoStyleForElementInternal(
                                    state.Style());
     collector.SetPseudoElementStyleRequest(pseudo_style_request);
 
+    // The UA sheet is supposed to set some styles to ::marker pseudo-elements,
+    // but that would use a slow universal element selector. So instead we apply
+    // the styles here as an optimization.
+    if (pseudo_style_request.pseudo_id == kPseudoIdMarker) {
+      state.Style()->SetUnicodeBidi(UnicodeBidi::kIsolate);
+      state.Style()->SetFontVariantNumericSpacing(
+          FontVariantNumeric::kTabularNums);
+    }
+
     MatchUARules(collector);
     MatchUserRules(collector);
     MatchAuthorRules(state.GetElement(), collector);

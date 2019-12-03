@@ -64,6 +64,8 @@ class LogManager;
 class MigratableCreditCard;
 class PersonalDataManager;
 class StrikeDatabase;
+enum class WebauthnDialogCallbackType;
+enum class WebauthnDialogState;
 struct Suggestion;
 
 namespace payments {
@@ -215,10 +217,10 @@ class AutofillClient : public RiskDataLoader {
   typedef base::RepeatingCallback<void(const std::string&)>
       MigrationDeleteCardCallback;
 
-  // Callback to run if the OK button or the cancel button in the
-  // WebauthnOfferDialog is clicked. Will pass to CreditCardFIDOAuthenticator a
-  // bool indicating if offer was accepted or declined.
-  typedef base::RepeatingCallback<void(bool)> WebauthnOfferDialogCallback;
+  // Callback to run if the OK button or the cancel button in a
+  // Webauthn dialog is clicked.
+  typedef base::RepeatingCallback<void(WebauthnDialogCallbackType)>
+      WebauthnDialogCallback;
 
   ~AutofillClient() override {}
 
@@ -307,32 +309,34 @@ class AutofillClient : public RiskDataLoader {
       MigrationDeleteCardCallback delete_local_card_callback) = 0;
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // TODO(crbug.com/991037): Find a way to merge these two functions. Shouldn't
+  // use WebauthnDialogState as that state is a purely UI state (should not be
+  // accessible for managers?), and some of the states |KInactive| may be
+  // confusing here. Do we want to add another Enum?
+
   // Will show a dialog offering the option to use device's platform
   // authenticator in the future instead of CVC to verify the card being
   // unmasked. Runs |offer_dialog_callback| if the OK button or the cancel
-  // button in the dialog is clicked. This is only implemented on desktop.
+  // button in the dialog is clicked.
   virtual void ShowWebauthnOfferDialog(
-      WebauthnOfferDialogCallback offer_dialog_callback) = 0;
-
-  // Will update the WebAuthn offer dialog content to the error state.
-  // Implemented only on desktop.
-  virtual void UpdateWebauthnOfferDialogWithError() = 0;
-
-  // TODO(crbug.com/949269): Merge CloseWebauthnOfferDialog() and
-  // CloseWebauthnVerifyPendingDialog() into one function.
-  // Will close the WebAuthn offer dialog. Returns true if dialog was visible
-  // and has been closed. Implemented only on desktop.
-  virtual bool CloseWebauthnOfferDialog() = 0;
+      WebauthnDialogCallback offer_dialog_callback) = 0;
 
   // Will show a dialog indicating the card verification is in progress. It is
   // shown after verification starts only if the WebAuthn is enabled.
-  // Implemented only on desktop.
   virtual void ShowWebauthnVerifyPendingDialog(
-      base::OnceClosure cancel_card_verification_callback) = 0;
+      WebauthnDialogCallback verify_pending_dialog_callback) = 0;
 
-  // Close the verify pending dialog once the card verificiation is completed or
-  // verification falls back to CVC.
-  virtual void CloseWebauthnVerifyPendingDialog() = 0;
+  // Will update the WebAuthn dialog content when there is an error fetching the
+  // challenge.
+  virtual void UpdateWebauthnOfferDialogWithError() = 0;
+
+  // Will update the cancel button in the WebAuthn verify pending dialog.
+  virtual void UpdateWebauthnVerifyPendingCancelButton(
+      bool should_be_enabled) = 0;
+
+  // Will close the current visible WebAuthn dialog. Returns true if dialog was
+  // visible and has been closed.
+  virtual bool CloseWebauthnDialog() = 0;
 #endif
 
   // Runs |callback| if the |profile| should be imported as personal data.

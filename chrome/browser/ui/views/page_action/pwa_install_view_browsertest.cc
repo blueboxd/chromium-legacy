@@ -47,9 +47,6 @@ class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
   ~PwaInstallViewBrowserTest() override {}
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kDesktopPWAsOmniboxInstall);
-
     https_server_.AddDefaultHandlers(GetChromeTestDataDir());
     https_server_.RegisterRequestHandler(
         base::BindRepeating(&PwaInstallViewBrowserTest::RequestInterceptor,
@@ -198,8 +195,6 @@ class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
   }
 
  protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   net::EmbeddedTestServer https_server_;
   std::string intercept_request_path_;
   std::string intercept_request_response_;

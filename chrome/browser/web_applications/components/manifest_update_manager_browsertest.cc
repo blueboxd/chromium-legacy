@@ -551,9 +551,8 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest, CheckKeepsSameName) {
   EXPECT_EQ(GetProvider().registrar().GetAppShortName(app_id), "App name 1");
 }
 
-// TODO(crbug.com/926083): Implement icon URL change detection.
 IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
-                       DISABLED_CheckFindsIconUrlChange) {
+                       CheckFindsIconUrlChange) {
   constexpr char kManifestTemplate[] = R"(
     {
       "name": "Test app name",
@@ -567,11 +566,10 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
   AppId app_id = InstallWebApp();
 
   OverrideManifest(kManifestTemplate, {kAnotherInstallableIconList});
-  // TODO(crbug.com/926083): Implement icon updating.
   EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), &app_id),
-            ManifestUpdateResult::kAppUpdateFailed);
-  histogram_tester_.ExpectBucketCount(
-      kUpdateHistogramName, ManifestUpdateResult::kAppUpdateFailed, 1);
+            ManifestUpdateResult::kAppUpdated);
+  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
+                                      ManifestUpdateResult::kAppUpdated, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,

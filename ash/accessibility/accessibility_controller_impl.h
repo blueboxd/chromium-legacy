@@ -250,6 +250,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
       const std::string& path) override;
   void SetSwitchAccessIgnoreVirtualKeyEventForTesting(
       bool should_ignore) override;
+  void DisablePolicyRecommendationRestorerForTesting() override;
 
   // SessionObserver:
   void OnSigninScreenPrefServiceInitialized(PrefService* prefs) override;

@@ -84,7 +84,7 @@ class MlServiceClientImpl : public MlServiceClient {
   void OnMojoDisconnect();
 
   // Pointers used to execute functions in the ML service server end.
-  ::chromeos::machine_learning::mojom::ModelPtr model_;
+  mojo::Remote<::chromeos::machine_learning::mojom::Model> model_;
   mojo::Remote<::chromeos::machine_learning::mojom::GraphExecutor> executor_;
 
   base::WeakPtrFactory<MlServiceClientImpl> weak_factory_{this};
@@ -140,7 +140,7 @@ void MlServiceClientImpl::InitMlServiceHandlesIfNeeded() {
             : BuiltinModelId::SMART_DIM_20181115);
     chromeos::machine_learning::ServiceConnection::GetInstance()
         ->LoadBuiltinModel(
-            std::move(spec), mojo::MakeRequest(&model_),
+            std::move(spec), model_.BindNewPipeAndPassReceiver(),
             base::BindOnce(&MlServiceClientImpl::LoadModelCallback,
                            weak_factory_.GetWeakPtr()));
   }

@@ -144,16 +144,16 @@ class FileTasksNotifierTest : public testing::Test {
     ASSERT_TRUE(mount_points->RegisterFileSystem(
         "drivefs", storage::kFileSystemTypeDriveFs, {},
         base::FilePath("/media/fuse/drivefs")));
-    ASSERT_TRUE(
-        mount_points->RegisterFileSystem("drive", storage::kFileSystemTypeDrive,
-                                         {}, base::FilePath("/special/drive")));
+    ASSERT_TRUE(mount_points->RegisterFileSystem(
+        "arc-documents-provider", storage::kFileSystemTypeArcDocumentsProvider,
+        {}, base::FilePath("/special/arc-documents-provider")));
   }
 
   void TearDown() override {
     auto* mount_points = storage::ExternalMountPoints::GetSystemInstance();
     mount_points->RevokeFileSystem("downloads");
     mount_points->RevokeFileSystem("drivefs");
-    mount_points->RevokeFileSystem("drive");
+    mount_points->RevokeFileSystem("arc-documents-provider");
 
     observer_.reset();
     notifier_.reset();
@@ -226,11 +226,11 @@ TEST_F(FileTasksNotifierTest, FileTask_RemovableMedia) {
   notifier().NotifyFileTasks({CreateFileSystemUrl(path)});
 }
 
-TEST_F(FileTasksNotifierTest, FileTask_LegacyDrive) {
-  base::FilePath path("/special/drive/root/file");
+TEST_F(FileTasksNotifierTest, FileTask_ArcDocumentsProvider) {
+  base::FilePath path("/special/arc-documents-provider/root/file");
   EXPECT_CALL(observer(), OnFilesOpenedImpl(_, _)).Times(0);
-  notifier().NotifyFileTasks(
-      {CreateFileSystemUrl(path, storage::kFileSystemTypeDrive)});
+  notifier().NotifyFileTasks({CreateFileSystemUrl(
+      path, storage::kFileSystemTypeArcDocumentsProvider)});
 }
 
 TEST_F(FileTasksNotifierTest, FileTask_Multiple) {
@@ -240,7 +240,8 @@ TEST_F(FileTasksNotifierTest, FileTask_Multiple) {
   base::FilePath crostini_path("/media/fuse/crostini-abcdef/file");
   base::FilePath unknown_path("/some/other/path");
   base::FilePath removable_path("/media/removable/device/file");
-  base::FilePath legacy_drive_path("/special/drive/root/file");
+  base::FilePath arc_documents_provider_path(
+      "/special/arc-documents-provider/root/file");
   EXPECT_CALL(
       observer(),
       OnFilesOpenedImpl(local_path, FileTasksObserver::OpenType::kLaunch));
@@ -259,7 +260,7 @@ TEST_F(FileTasksNotifierTest, FileTask_Multiple) {
       CreateFileSystemUrl(crostini_path),
       CreateFileSystemUrl(unknown_path),
       CreateFileSystemUrl(removable_path),
-      CreateFileSystemUrl(legacy_drive_path),
+      CreateFileSystemUrl(arc_documents_provider_path),
   });
 }
 
@@ -321,8 +322,8 @@ TEST_F(FileTasksNotifierTest, DialogSelection_RemovableMedia) {
   notifier().NotifyFileDialogSelection({CreateSelectedFileInfo(path)}, false);
 }
 
-TEST_F(FileTasksNotifierTest, DialogSelection_LegacyDrive) {
-  base::FilePath path("/special/drive/root/file");
+TEST_F(FileTasksNotifierTest, DialogSelection_ArcDocumentsProvider) {
+  base::FilePath path("/special/arc-documents-provider/root/file");
   base::FilePath local_path =
       profile().GetPath().Append("GCache/v1/files/file");
   EXPECT_CALL(observer(), OnFilesOpenedImpl(_, _)).Times(0);
@@ -341,9 +342,8 @@ TEST_F(FileTasksNotifierTest, DialogSelection_Multiple) {
   base::FilePath crostini_path("/media/fuse/crostini-abcdef/file");
   base::FilePath unknown_path("/some/other/path");
   base::FilePath removable_path("/media/removable/device/file");
-  base::FilePath legacy_drive_path("/special/drive/root/file");
-  base::FilePath legacy_drive_local_path =
-      profile().GetPath().Append("GCache/v1/files/file");
+  base::FilePath arc_documents_provider_path(
+      "/special/arc-documents-provider/root/file");
   EXPECT_CALL(observer(), OnFilesOpenedImpl(
                               local_path, FileTasksObserver::OpenType::kOpen));
   EXPECT_CALL(
@@ -359,8 +359,7 @@ TEST_F(FileTasksNotifierTest, DialogSelection_Multiple) {
       {CreateSelectedFileInfo(local_path), CreateSelectedFileInfo(drivefs_path),
        CreateSelectedFileInfo(arc_path), CreateSelectedFileInfo(crostini_path),
        CreateSelectedFileInfo(unknown_path),
-       CreateSelectedFileInfo(legacy_drive_path, legacy_drive_local_path),
-       CreateSelectedFileInfo(legacy_drive_path),
+       CreateSelectedFileInfo(arc_documents_provider_path),
        CreateSelectedFileInfo(removable_path)},
       true);
 
@@ -380,8 +379,7 @@ TEST_F(FileTasksNotifierTest, DialogSelection_Multiple) {
       {CreateSelectedFileInfo(local_path), CreateSelectedFileInfo(drivefs_path),
        CreateSelectedFileInfo(arc_path), CreateSelectedFileInfo(crostini_path),
        CreateSelectedFileInfo(unknown_path),
-       CreateSelectedFileInfo(legacy_drive_path, legacy_drive_local_path),
-       CreateSelectedFileInfo(legacy_drive_path),
+       CreateSelectedFileInfo(arc_documents_provider_path),
        CreateSelectedFileInfo(removable_path)},
       false);
 }
@@ -422,12 +420,6 @@ TEST_F(FileTasksNotifierTest, Download_UnknownPath) {
 
 TEST_F(FileTasksNotifierTest, Download_RemovableMedia) {
   base::FilePath path("/media/removable/device/file");
-  EXPECT_CALL(observer(), OnFilesOpenedImpl(_, _)).Times(0);
-  notifier().OnDownloadUpdated(nullptr, CreateCompletedDownloadItem(path));
-}
-
-TEST_F(FileTasksNotifierTest, Download_LegacyDrive) {
-  base::FilePath path("/special/drive/root/file");
   EXPECT_CALL(observer(), OnFilesOpenedImpl(_, _)).Times(0);
   notifier().OnDownloadUpdated(nullptr, CreateCompletedDownloadItem(path));
 }
@@ -474,7 +466,7 @@ TEST_F(FileTasksNotifierTest, QueryFileAvailability_FileExists) {
 TEST_F(FileTasksNotifierTest, QueryFileAvailability_UnsupportedMountType) {
   base::RunLoop run_loop;
   notifier().QueryFileAvailability(
-      {base::FilePath("/special/drive/root/file")},
+      {base::FilePath("/special/arc-documents-provider/root/file")},
       base::BindLambdaForTesting(
           [&](std::vector<FileTasksNotifier::FileAvailability> results) {
             run_loop.Quit();
@@ -575,7 +567,7 @@ TEST_F(FileTasksNotifierTest, QueryFileAvailability_Multiple) {
   base::RunLoop run_loop;
   notifier().QueryFileAvailability(
       {my_files().Append("not_found"), my_files().Append("file"),
-       base::FilePath("/special/drive/root/file"),
+       base::FilePath("/special/arc-documents-provider/root/file"),
        base::FilePath("/media/fuse/crostini-abcdef/file"),
        base::FilePath("/media/fuse/drivefs/root/available_offline"),
        base::FilePath("/media/fuse/drivefs/root/unavailable_offline"),

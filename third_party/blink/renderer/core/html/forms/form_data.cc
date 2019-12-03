@@ -360,8 +360,7 @@ File* FormData::Entry::GetFile() const {
   String filename = filename_;
   if (filename.IsNull())
     filename = "blob";
-  return MakeGarbageCollected<File>(filename,
-                                    base::Time::Now().ToDoubleT() * 1000.0,
+  return MakeGarbageCollected<File>(filename, base::Time::Now(),
                                     GetBlob()->GetBlobDataHandle());
 }
 

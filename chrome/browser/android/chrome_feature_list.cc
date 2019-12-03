@@ -142,6 +142,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kEphemeralTab,
     &kEphemeralTabUsingBottomSheet,
     &kExploreSites,
+    &kFocusOmniboxInIncognitoTabIntents,
     &kHandleMediaIntents,
     &kHomepageLocation,
     &kHorizontalTabSwitcherAndroid,
@@ -266,6 +267,9 @@ const base::Feature kAndroidPayIntegrationV1{"AndroidPayIntegrationV1",
 
 const base::Feature kAllowNewIncognitoTabIntents{
     "AllowNewIncognitoTabIntents", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kFocusOmniboxInIncognitoTabIntents{
+    "FocusOmniboxInIncognitoTabIntents", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAllowRemoteContextForNotifications{
     "AllowRemoteContextForNotifications", base::FEATURE_ENABLED_BY_DEFAULT};

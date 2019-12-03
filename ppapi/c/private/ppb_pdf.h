@@ -34,7 +34,8 @@ struct PP_PrivateFindResult {
 };
 
 struct PP_PrivateAccessibilityViewportInfo {
-  double zoom_device_scale_factor;
+  double zoom;
+  double scale;
   struct PP_Point scroll;
   struct PP_Point offset;
   uint32_t selection_start_page_index;

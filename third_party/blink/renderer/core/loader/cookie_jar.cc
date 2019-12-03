@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/loader/cookie_jar.h"
 
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -54,7 +54,7 @@ bool CookieJar::CookiesEnabled() {
 void CookieJar::RequestRestrictedCookieManagerIfNeeded() {
   if (!backend_.is_bound() || !backend_.is_connected()) {
     backend_.reset();
-    document_->GetInterfaceProvider()->GetInterface(
+    document_->GetBrowserInterfaceBroker().GetInterface(
         backend_.BindNewPipeAndPassReceiver());
   }
 }

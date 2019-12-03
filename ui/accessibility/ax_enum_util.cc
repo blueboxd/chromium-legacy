@@ -2025,65 +2025,12 @@ const char* ToString(ax::mojom::MarkerType marker_type) {
       return "spelling";
     case ax::mojom::MarkerType::kGrammar:
       return "grammar";
-    case ax::mojom::MarkerType::kSpellingGrammar:
-      return "spellingGrammar";
     case ax::mojom::MarkerType::kTextMatch:
       return "textMatch";
-    case ax::mojom::MarkerType::kSpellingTextMatch:
-      return "spellingTextMatch";
-    case ax::mojom::MarkerType::kGrammarTextMatch:
-      return "grammarTextMatch";
-    case ax::mojom::MarkerType::kSpellingGrammarTextMatch:
-      return "spellingGrammarTextMatch";
     case ax::mojom::MarkerType::kActiveSuggestion:
       return "activeSuggestion";
-    case ax::mojom::MarkerType::kSpellingActiveSuggestion:
-      return "spellingActiveSuggestion";
-    case ax::mojom::MarkerType::kGrammarActiveSuggestion:
-      return "grammarActiveSuggestion";
-    case ax::mojom::MarkerType::kSpellingGrammarActiveSuggestion:
-      return "spellingGrammarActiveSuggestion";
-    case ax::mojom::MarkerType::kTextMatchActiveSuggestion:
-      return "textMatchActiveSuggestion";
-    case ax::mojom::MarkerType::kSpellingTextMatchActiveSuggestion:
-      return "spellingTextMatchActiveSuggestion";
-    case ax::mojom::MarkerType::kGrammarTextMatchActiveSuggestion:
-      return "grammarTextMatchActiveSuggestion";
-    case ax::mojom::MarkerType::kSpellingGrammarTextMatchActiveSuggestion:
-      return "spellingGrammarTextMatchActiveSuggestion";
     case ax::mojom::MarkerType::kSuggestion:
       return "suggestion";
-    case ax::mojom::MarkerType::kSpellingSuggestion:
-      return "spellingSuggestion";
-    case ax::mojom::MarkerType::kGrammarSuggestion:
-      return "grammarSuggestion";
-    case ax::mojom::MarkerType::kSpellingGrammarSuggestion:
-      return "spellingGrammarSuggestion";
-    case ax::mojom::MarkerType::kTextMatchSuggestion:
-      return "textMatchSuggestion";
-    case ax::mojom::MarkerType::kSpellingTextMatchSuggestion:
-      return "spellingTextMatchSuggestion";
-    case ax::mojom::MarkerType::kGrammarTextMatchSuggestion:
-      return "grammarTextMatchSuggestion";
-    case ax::mojom::MarkerType::kSpellingGrammarTextMatchSuggestion:
-      return "spellingGrammarTextMatchSuggestion";
-    case ax::mojom::MarkerType::kActiveSuggestionSuggestion:
-      return "activeSuggestionSuggestion";
-    case ax::mojom::MarkerType::kSpellingActiveSuggestionSuggestion:
-      return "spellingActiveSuggestionSuggestion";
-    case ax::mojom::MarkerType::kGrammarActiveSuggestionSuggestion:
-      return "grammarActiveSuggestionSuggestion";
-    case ax::mojom::MarkerType::kSpellingGrammarActiveSuggestionSuggestion:
-      return "spellingGrammarActiveSuggestionSuggestion";
-    case ax::mojom::MarkerType::kTextMatchActiveSuggestionSuggestion:
-      return "textMatchActiveSuggestionSuggestion";
-    case ax::mojom::MarkerType::kSpellingTextMatchActiveSuggestionSuggestion:
-      return "spellingTextMatchActiveSuggestionSuggestion";
-    case ax::mojom::MarkerType::kGrammarTextMatchActiveSuggestionSuggestion:
-      return "grammarTextMatchActiveSuggestionSuggestion";
-    case ax::mojom::MarkerType::
-        kSpellingGrammarTextMatchActiveSuggestionSuggestion:
-      return "spellingGrammarTextMatchActiveSuggestionSuggestion";
   }
 
   return "";
@@ -2096,66 +2043,12 @@ ax::mojom::MarkerType ParseMarkerType(const char* marker_type) {
     return ax::mojom::MarkerType::kSpelling;
   if (0 == strcmp(marker_type, "grammar"))
     return ax::mojom::MarkerType::kGrammar;
-  if (0 == strcmp(marker_type, "spellingGrammar"))
-    return ax::mojom::MarkerType::kSpellingGrammar;
   if (0 == strcmp(marker_type, "textMatch"))
     return ax::mojom::MarkerType::kTextMatch;
-  if (0 == strcmp(marker_type, "spellingTextMatch"))
-    return ax::mojom::MarkerType::kSpellingTextMatch;
-  if (0 == strcmp(marker_type, "grammarTextMatch"))
-    return ax::mojom::MarkerType::kGrammarTextMatch;
-  if (0 == strcmp(marker_type, "spellingGrammarTextMatch"))
-    return ax::mojom::MarkerType::kSpellingGrammarTextMatch;
   if (0 == strcmp(marker_type, "activeSuggestion"))
     return ax::mojom::MarkerType::kActiveSuggestion;
-  if (0 == strcmp(marker_type, "spellingActiveSuggestion"))
-    return ax::mojom::MarkerType::kSpellingActiveSuggestion;
-  if (0 == strcmp(marker_type, "grammarActiveSuggestion"))
-    return ax::mojom::MarkerType::kGrammarActiveSuggestion;
-  if (0 == strcmp(marker_type, "spellingGrammarActiveSuggestion"))
-    return ax::mojom::MarkerType::kSpellingGrammarActiveSuggestion;
-  if (0 == strcmp(marker_type, "textMatchActiveSuggestion"))
-    return ax::mojom::MarkerType::kTextMatchActiveSuggestion;
-  if (0 == strcmp(marker_type, "spellingTextMatchActiveSuggestion"))
-    return ax::mojom::MarkerType::kSpellingTextMatchActiveSuggestion;
-  if (0 == strcmp(marker_type, "grammarTextMatchActiveSuggestion"))
-    return ax::mojom::MarkerType::kGrammarTextMatchActiveSuggestion;
-  if (0 == strcmp(marker_type, "spellingGrammarTextMatchActiveSuggestion"))
-    return ax::mojom::MarkerType::kSpellingGrammarTextMatchActiveSuggestion;
   if (0 == strcmp(marker_type, "suggestion"))
     return ax::mojom::MarkerType::kSuggestion;
-  if (0 == strcmp(marker_type, "spellingSuggestion"))
-    return ax::mojom::MarkerType::kSpellingSuggestion;
-  if (0 == strcmp(marker_type, "grammarSuggestion"))
-    return ax::mojom::MarkerType::kGrammarSuggestion;
-  if (0 == strcmp(marker_type, "spellingGrammarSuggestion"))
-    return ax::mojom::MarkerType::kSpellingGrammarSuggestion;
-  if (0 == strcmp(marker_type, "textMatchSuggestion"))
-    return ax::mojom::MarkerType::kTextMatchSuggestion;
-  if (0 == strcmp(marker_type, "spellingTextMatchSuggestion"))
-    return ax::mojom::MarkerType::kSpellingTextMatchSuggestion;
-  if (0 == strcmp(marker_type, "grammarTextMatchSuggestion"))
-    return ax::mojom::MarkerType::kGrammarTextMatchSuggestion;
-  if (0 == strcmp(marker_type, "spellingGrammarTextMatchSuggestion"))
-    return ax::mojom::MarkerType::kSpellingGrammarTextMatchSuggestion;
-  if (0 == strcmp(marker_type, "activeSuggestionSuggestion"))
-    return ax::mojom::MarkerType::kActiveSuggestionSuggestion;
-  if (0 == strcmp(marker_type, "spellingActiveSuggestionSuggestion"))
-    return ax::mojom::MarkerType::kSpellingActiveSuggestionSuggestion;
-  if (0 == strcmp(marker_type, "grammarActiveSuggestionSuggestion"))
-    return ax::mojom::MarkerType::kGrammarActiveSuggestionSuggestion;
-  if (0 == strcmp(marker_type, "spellingGrammarActiveSuggestionSuggestion"))
-    return ax::mojom::MarkerType::kSpellingGrammarActiveSuggestionSuggestion;
-  if (0 == strcmp(marker_type, "textMatchActiveSuggestionSuggestion"))
-    return ax::mojom::MarkerType::kTextMatchActiveSuggestionSuggestion;
-  if (0 == strcmp(marker_type, "spellingTextMatchActiveSuggestionSuggestion"))
-    return ax::mojom::MarkerType::kSpellingTextMatchActiveSuggestionSuggestion;
-  if (0 == strcmp(marker_type, "grammarTextMatchActiveSuggestionSuggestion"))
-    return ax::mojom::MarkerType::kGrammarTextMatchActiveSuggestionSuggestion;
-  if (0 ==
-      strcmp(marker_type, "spellingGrammarTextMatchActiveSuggestionSuggestion"))
-    return ax::mojom::MarkerType::
-        kSpellingGrammarTextMatchActiveSuggestionSuggestion;
   return ax::mojom::MarkerType::kNone;
 }
 

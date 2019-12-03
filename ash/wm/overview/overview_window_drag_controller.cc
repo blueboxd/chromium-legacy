@@ -316,7 +316,7 @@ void OverviewWindowDragController::ActivateDraggedWindow() {
   if (!should_allow_split_view_ ||
       split_state == SplitViewController::State::kNoSnap) {
     overview_session_->SelectWindow(item_);
-  } else if (split_view_controller->CanSnapWindow(item_->GetWindow())) {
+  } else if (CanSnapInSplitview(item_->GetWindow())) {
     SnapWindow(split_state == SplitViewController::State::kLeftSnapped
                    ? SplitViewController::RIGHT
                    : SplitViewController::LEFT);
@@ -597,7 +597,7 @@ void OverviewWindowDragController::UpdateDragIndicatorsAndOverviewGrid(
   overview_session_->RearrangeDuringDrag(item_->GetWindow());
 }
 
-aura::Window* OverviewWindowDragController::GetRootWindowBeingDraggedIn()
+const aura::Window* OverviewWindowDragController::GetRootWindowBeingDraggedIn()
     const {
   return is_touch_dragging_
              ? item_->root_window()
@@ -692,8 +692,8 @@ SplitViewController::SnapPosition OverviewWindowDragController::GetSnapPosition(
   }
 
   return ::ash::GetSnapPosition(
-      GetRootWindowBeingDraggedIn(), item_->GetWindow(),
-      gfx::Point(location_in_screen.x(), location_in_screen.y()));
+      item_->GetWindow(),
+      gfx::Point(location_in_screen.x(), location_in_screen.y()), area);
 }
 
 void OverviewWindowDragController::SnapWindow(

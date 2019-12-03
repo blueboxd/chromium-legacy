@@ -42,7 +42,7 @@ class WebBundleURLLoaderFactoryTest : public testing::Test {
     data_decoder::mojom::BundleIndexValuePtr item =
         data_decoder::mojom::BundleIndexValue::New();
     item->response_locations.push_back(
-        data_decoder::mojom::BundleResponseLocation::New(0u, 0u));
+        data_decoder::mojom::BundleResponseLocation::New(573u, 765u));
     items.insert({primary_url_, std::move(item)});
 
     data_decoder::mojom::BundleMetadataPtr metadata =
@@ -84,7 +84,6 @@ class WebBundleURLLoaderFactoryTest : public testing::Test {
           test_client_.CreateRemote(),
           net::MutableNetworkTrafficAnnotationTag(
               TRAFFIC_ANNOTATION_FOR_TESTS));
-
     } else {
       loader_factory_->CreateLoaderAndStart(
           loader.BindNewPipeAndPassReceiver(),
@@ -95,7 +94,9 @@ class WebBundleURLLoaderFactoryTest : public testing::Test {
     }
 
     if (response)
-      mock_factory_->FullfillResponse(std::move(*response), base::DoNothing());
+      mock_factory_->FullfillResponse(
+          data_decoder::mojom::BundleResponseLocation::New(573u, 765u),
+          std::move(*response));
     return loader;
   }
 

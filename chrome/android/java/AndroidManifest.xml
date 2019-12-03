@@ -1157,6 +1157,7 @@ by a child template that "extends" this file.
               <category android:name="androidx.browser.customtabs.category.NavBarColorCustomization"/>
               <category android:name="androidx.browser.customtabs.category.ColorSchemeCustomization"/>
               <category android:name="androidx.browser.trusted.category.WebShareTargetV2"/>
+              <category android:name="androidx.browser.trusted.category.ImmersiveMode"/>
             </intent-filter>
         </service>
         <service android:name="androidx.browser.customtabs.PostMessageService" />

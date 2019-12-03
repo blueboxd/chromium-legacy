@@ -95,7 +95,8 @@ struct SessionContext {
 }  // namespace
 
 class ChromotingSession::Core : public ClientUserInterface,
-                                public protocol::ClipboardStub {
+                                public protocol::ClipboardStub,
+                                public protocol::KeyboardLayoutStub {
  public:
   Core(ChromotingClientRuntime* runtime,
        std::unique_ptr<ClientTelemetryLogger> logger,
@@ -134,9 +135,13 @@ class ChromotingSession::Core : public ClientUserInterface,
                       const webrtc::DesktopVector& dpi) override;
   protocol::ClipboardStub* GetClipboardStub() override;
   protocol::CursorShapeStub* GetCursorShapeStub() override;
+  protocol::KeyboardLayoutStub* GetKeyboardLayoutStub() override;
 
-  // CursorShapeStub implementation.
+  // ClipboardStub implementation.
   void InjectClipboardEvent(const protocol::ClipboardEvent& event) override;
+
+  // KeyboardLayoutStub implementation.
+  void SetKeyboardLayout(const protocol::KeyboardLayout& layout) override;
 
   base::WeakPtr<Core> GetWeakPtr();
 
@@ -445,8 +450,17 @@ protocol::CursorShapeStub* ChromotingSession::Core::GetCursorShapeStub() {
   return session_context_->cursor_shape_stub.get();
 }
 
+protocol::KeyboardLayoutStub* ChromotingSession::Core::GetKeyboardLayoutStub() {
+  return this;
+}
+
 void ChromotingSession::Core::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
+  NOTIMPLEMENTED();
+}
+
+void ChromotingSession::Core::SetKeyboardLayout(
+    const protocol::KeyboardLayout& layout) {
   NOTIMPLEMENTED();
 }
 

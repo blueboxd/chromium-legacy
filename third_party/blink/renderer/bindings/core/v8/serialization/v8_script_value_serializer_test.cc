@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/serialization/v8_script_value_serializer.h"
 
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -144,8 +145,6 @@ testing::AssertionResult HadDOMExceptionInCoreTest(
     return testing::AssertionFailure() << "was " << dom_exception->name();
   return testing::AssertionSuccess();
 }
-
-namespace {
 
 TEST(V8ScriptValueSerializerTest, RoundTripJSONLikeValue) {
   // Ensure that simple JavaScript objects work.
@@ -1450,7 +1449,7 @@ TEST(V8ScriptValueSerializerTest, RoundTripFileNative) {
 
 TEST(V8ScriptValueSerializerTest, RoundTripFileBackedByBlob) {
   V8TestingScope scope;
-  const double kModificationTime = 0.0;
+  const base::Time kModificationTime = base::Time::UnixEpoch();
   scoped_refptr<BlobDataHandle> blob_data_handle = BlobDataHandle::Create();
   auto* file = MakeGarbageCollected<File>("/native/path", kModificationTime,
                                           blob_data_handle);
@@ -1494,17 +1493,22 @@ TEST(V8ScriptValueSerializerTest, RoundTripFileNonNativeSnapshot) {
 }
 
 // Used for checking that times provided are between now and the current time
-// when the checker was constructed, according to WTF::currentTime.
+// when the checker was constructed, according to base::Time::Now.
 class TimeIntervalChecker {
  public:
-  TimeIntervalChecker() : start_time_(base::Time::Now()) {}
-  bool WasAliveAt(double time_in_milliseconds) {
-    base::Time time = base::Time::FromJsTime(time_in_milliseconds);
-    return start_time_ <= time && time <= base::Time::Now();
+  TimeIntervalChecker() : start_time_(NowInMilliseconds()) {}
+
+  bool WasAliveAt(int64_t time_in_milliseconds) {
+    return start_time_ <= time_in_milliseconds &&
+           time_in_milliseconds <= NowInMilliseconds();
   }
 
  private:
-  const base::Time start_time_;
+  static int64_t NowInMilliseconds() {
+    return (base::Time::Now() - base::Time::UnixEpoch()).InMilliseconds();
+  }
+
+  const int64_t start_time_;
 };
 
 TEST(V8ScriptValueSerializerTest, DecodeFileV3) {
@@ -1525,7 +1529,7 @@ TEST(V8ScriptValueSerializerTest, DecodeFileV3) {
   EXPECT_EQ("text/plain", new_file->type());
   EXPECT_FALSE(new_file->HasValidSnapshotMetadata());
   EXPECT_EQ(0u, new_file->size());
-  EXPECT_TRUE(time_interval_checker.WasAliveAt(new_file->LastModifiedDate()));
+  EXPECT_TRUE(time_interval_checker.WasAliveAt(new_file->lastModified()));
   EXPECT_EQ(File::kIsUserVisible, new_file->GetUserVisibility());
 }
 
@@ -1550,7 +1554,7 @@ TEST(V8ScriptValueSerializerTest, DecodeFileV4) {
   EXPECT_EQ("text/plain", new_file->type());
   EXPECT_FALSE(new_file->HasValidSnapshotMetadata());
   EXPECT_EQ(0u, new_file->size());
-  EXPECT_TRUE(time_interval_checker.WasAliveAt(new_file->LastModifiedDate()));
+  EXPECT_TRUE(time_interval_checker.WasAliveAt(new_file->lastModified()));
   EXPECT_EQ(File::kIsUserVisible, new_file->GetUserVisibility());
 }
 
@@ -1577,7 +1581,9 @@ TEST(V8ScriptValueSerializerTest, DecodeFileV4WithSnapshot) {
   EXPECT_EQ(512u, new_file->size());
   // From v4 to v7, the last modified time is written in seconds.
   // So -0.25 represents 250 ms before the Unix epoch.
-  EXPECT_EQ(-250.0, new_file->LastModifiedDate());
+  EXPECT_EQ(-250, new_file->lastModified());
+  EXPECT_EQ(base::TimeDelta::FromMillisecondsD(-250.0),
+            new_file->LastModifiedTime() - base::Time::UnixEpoch());
 }
 
 TEST(V8ScriptValueSerializerTest, DecodeFileV7) {
@@ -1601,7 +1607,7 @@ TEST(V8ScriptValueSerializerTest, DecodeFileV7) {
   EXPECT_EQ("text/plain", new_file->type());
   EXPECT_FALSE(new_file->HasValidSnapshotMetadata());
   EXPECT_EQ(0u, new_file->size());
-  EXPECT_TRUE(time_interval_checker.WasAliveAt(new_file->LastModifiedDate()));
+  EXPECT_TRUE(time_interval_checker.WasAliveAt(new_file->lastModified()));
   EXPECT_EQ(File::kIsNotUserVisible, new_file->GetUserVisibility());
 }
 
@@ -1628,7 +1634,10 @@ TEST(V8ScriptValueSerializerTest, DecodeFileV8WithSnapshot) {
   EXPECT_EQ(512u, new_file->size());
   // From v8, the last modified time is written in milliseconds.
   // So -0.25 represents 0.25 ms before the Unix epoch.
-  EXPECT_EQ(-0.25, new_file->LastModifiedDate());
+  EXPECT_EQ(base::TimeDelta::FromMillisecondsD(-0.25),
+            new_file->LastModifiedTime() - base::Time::UnixEpoch());
+  // lastModified IDL attribute can't represent -0.25 ms.
+  EXPECT_EQ(INT64_C(0), new_file->lastModified());
   EXPECT_EQ(File::kIsUserVisible, new_file->GetUserVisibility());
 }
 
@@ -1758,7 +1767,7 @@ TEST(V8ScriptValueSerializerTest, DecodeFileListV8WithoutSnapshot) {
   EXPECT_EQ("text/plain", new_file->type());
   EXPECT_FALSE(new_file->HasValidSnapshotMetadata());
   EXPECT_EQ(0u, new_file->size());
-  EXPECT_TRUE(time_interval_checker.WasAliveAt(new_file->LastModifiedDate()));
+  EXPECT_TRUE(time_interval_checker.WasAliveAt(new_file->lastModified()));
   EXPECT_EQ(File::kIsNotUserVisible, new_file->GetUserVisibility());
 }
 
@@ -1889,5 +1898,4 @@ TEST(V8ScriptValueSerializerTest, RoundTripReadableStream) {
   EXPECT_FALSE(transferred->locked(script_state, ASSERT_NO_EXCEPTION));
 }
 
-}  // namespace
 }  // namespace blink

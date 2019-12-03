@@ -530,6 +530,13 @@ ServiceManagerContext::ServiceManagerContext(
             manifest.service_name);
     if (overlay)
       manifest.Amend(*overlay);
+    if (!manifest.preloaded_files.empty()) {
+      std::map<std::string, base::FilePath> preloaded_files_map;
+      for (const auto& info : manifest.preloaded_files)
+        preloaded_files_map.emplace(info.key, info.path);
+      ChildProcessLauncher::SetRegisteredFilesForService(
+          manifest.service_name, std::move(preloaded_files_map));
+    }
   }
   for (auto& extra_manifest :
        GetContentClient()->browser()->GetExtraServiceManifests()) {

@@ -35,8 +35,8 @@ class ExternalFileURLUtilTest : public testing::Test {
     return storage::FileSystemURL::CreateForTest(
         url::Origin::Create(GURL("chrome-extension://xxx")),
         storage::kFileSystemTypeExternal,
-        base::FilePath("drive-test-user-hash").Append(path), "",
-        storage::kFileSystemTypeDrive, base::FilePath(), "",
+        base::FilePath("arc-documents-provider").Append(path), "",
+        storage::kFileSystemTypeArcDocumentsProvider, base::FilePath(), "",
         storage::FileSystemMountOption());
   }
 

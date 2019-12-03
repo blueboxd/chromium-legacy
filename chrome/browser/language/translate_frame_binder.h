@@ -15,8 +15,8 @@ class RenderFrameHost;
 namespace language {
 
 void BindContentTranslateDriver(
-    mojo::PendingReceiver<translate::mojom::ContentTranslateDriver> receiver,
-    content::RenderFrameHost* render_frame_host);
+    content::RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<translate::mojom::ContentTranslateDriver> receiver);
 }
 
 #endif  // CHROME_BROWSER_LANGUAGE_TRANSLATE_FRAME_BINDER_H_

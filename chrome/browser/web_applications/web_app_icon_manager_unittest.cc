@@ -47,40 +47,24 @@ class WebAppIconManagerTest : public WebAppTest {
 
  protected:
   void WriteIcons(const AppId& app_id,
-                  const GURL& app_url,
                   const std::vector<int>& sizes_px,
                   const std::vector<SkColor>& colors) {
     DCHECK_EQ(sizes_px.size(), colors.size());
 
-    std::vector<WebApplicationIconInfo> icon_infos;
-    icon_infos.reserve(sizes_px.size());
+    auto web_app_info = std::make_unique<WebApplicationInfo>();
 
     for (size_t i = 0; i < sizes_px.size(); ++i) {
       std::string icon_name = base::StringPrintf("app-%d.ico", sizes_px[i]);
-      // icon_url is empty if app_url is empty.
-      GURL icon_url = app_url.Resolve(icon_name);
-      icon_infos.push_back(GenerateIconInfo(icon_url, sizes_px[i], colors[i]));
+      AddGeneratedIcon(web_app_info.get(), sizes_px[i], colors[i]);
     }
 
     base::RunLoop run_loop;
-    icon_manager_->WriteData(app_id, std::move(icon_infos),
+    icon_manager_->WriteData(app_id, std::move(web_app_info->icon_bitmaps),
                              base::BindLambdaForTesting([&](bool success) {
                                EXPECT_TRUE(success);
                                run_loop.Quit();
                              }));
     run_loop.Run();
-  }
-
-  WebApp::Icons ListIcons(const GURL& app_url,
-                          const std::vector<int>& sizes_px) {
-    WebApp::Icons icons;
-    icons.reserve(sizes_px.size());
-    for (size_t i = 0; i < sizes_px.size(); ++i) {
-      std::string icon_name = base::StringPrintf("app-%d.ico", sizes_px[i]);
-      GURL icon_url = app_url.Resolve(icon_name);
-      icons.push_back({icon_url, sizes_px[i]});
-    }
-    return icons;
   }
 
   std::vector<uint8_t> ReadSmallestCompressedIcon(const AppId& app_id,
@@ -141,9 +125,9 @@ TEST_F(WebAppIconManagerTest, WriteAndReadIcon) {
 
   const std::vector<int> sizes_px{icon_size::k512};
   const std::vector<SkColor> colors{SK_ColorYELLOW};
-  WriteIcons(app_id, web_app->launch_url(), sizes_px, colors);
+  WriteIcons(app_id, sizes_px, colors);
 
-  web_app->SetIcons(ListIcons(web_app->launch_url(), sizes_px));
+  web_app->SetDownloadedIconSizes(sizes_px);
 
   controller().RegisterApp(std::move(web_app));
 
@@ -167,13 +151,10 @@ TEST_F(WebAppIconManagerTest, ReadIconFailed) {
   auto web_app = CreateWebApp();
   const AppId app_id = web_app->app_id();
 
-  const GURL icon_url = GURL("https://example.com/app.ico");
   const int icon_size_px = icon_size::k256;
 
   // Set icon meta-info but don't write bitmap to disk.
-  WebApp::Icons icons;
-  icons.push_back({icon_url, icon_size_px});
-  web_app->SetIcons(std::move(icons));
+  web_app->SetDownloadedIconSizes({icon_size_px});
 
   controller().RegisterApp(std::move(web_app));
 
@@ -202,9 +183,9 @@ TEST_F(WebAppIconManagerTest, FindExact) {
   const std::vector<int> sizes_px{10, 60, 50, 20, 30};
   const std::vector<SkColor> colors{SK_ColorRED, SK_ColorYELLOW, SK_ColorGREEN,
                                     SK_ColorBLUE, SK_ColorMAGENTA};
-  WriteIcons(app_id, web_app->launch_url(), sizes_px, colors);
+  WriteIcons(app_id, sizes_px, colors);
 
-  web_app->SetIcons(ListIcons(web_app->launch_url(), sizes_px));
+  web_app->SetDownloadedIconSizes(sizes_px);
 
   controller().RegisterApp(std::move(web_app));
 
@@ -233,9 +214,9 @@ TEST_F(WebAppIconManagerTest, FindSmallest) {
   const std::vector<int> sizes_px{10, 60, 50, 20, 30};
   const std::vector<SkColor> colors{SK_ColorRED, SK_ColorYELLOW, SK_ColorGREEN,
                                     SK_ColorBLUE, SK_ColorMAGENTA};
-  WriteIcons(app_id, web_app->launch_url(), sizes_px, colors);
+  WriteIcons(app_id, sizes_px, colors);
 
-  web_app->SetIcons(ListIcons(web_app->launch_url(), sizes_px));
+  web_app->SetDownloadedIconSizes(sizes_px);
 
   controller().RegisterApp(std::move(web_app));
 
@@ -277,8 +258,8 @@ TEST_F(WebAppIconManagerTest, DeleteData_Success) {
 
   const std::vector<int> sizes_px{icon_size::k128};
   const std::vector<SkColor> colors{SK_ColorMAGENTA};
-  WriteIcons(app1_id, icons_root_url, sizes_px, colors);
-  WriteIcons(app2_id, icons_root_url, sizes_px, colors);
+  WriteIcons(app1_id, sizes_px, colors);
+  WriteIcons(app2_id, sizes_px, colors);
 
   const base::FilePath web_apps_directory = GetWebAppsDirectory(profile());
   const base::FilePath app1_dir = web_apps_directory.AppendASCII(app1_id);
@@ -326,9 +307,9 @@ TEST_F(WebAppIconManagerTest, ReadSmallestCompressedIcon_Success) {
 
   const std::vector<int> sizes_px{icon_size::k128};
   const std::vector<SkColor> colors{SK_ColorGREEN};
-  WriteIcons(app_id, web_app->launch_url(), sizes_px, colors);
+  WriteIcons(app_id, sizes_px, colors);
 
-  web_app->SetIcons(ListIcons(web_app->launch_url(), sizes_px));
+  web_app->SetDownloadedIconSizes(sizes_px);
 
   controller().RegisterApp(std::move(web_app));
 
@@ -348,7 +329,7 @@ TEST_F(WebAppIconManagerTest, ReadSmallestCompressedIcon_Failure) {
   const AppId app_id = web_app->app_id();
 
   const std::vector<int> sizes_px{icon_size::k64};
-  web_app->SetIcons(ListIcons(web_app->launch_url(), sizes_px));
+  web_app->SetDownloadedIconSizes(sizes_px);
 
   controller().RegisterApp(std::move(web_app));
 

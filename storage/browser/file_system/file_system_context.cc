@@ -94,7 +94,6 @@ int FileSystemContext::GetPermissionPolicy(FileSystemType type) {
     case kFileSystemTypeSyncable:
       return FILE_PERMISSION_SANDBOX;
 
-    case kFileSystemTypeDrive:
     case kFileSystemTypeNativeForPlatformApp:
     case kFileSystemTypeNativeLocal:
     case kFileSystemTypeCloudDevice:

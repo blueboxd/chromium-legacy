@@ -14,6 +14,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/clock.h"
 #include "base/values.h"
 #include "chrome/browser/history/profile_based_browsing_history_driver.h"
@@ -27,7 +28,10 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   ~BrowsingHistoryHandler() override;
 
   // WebUIMessageHandler implementation.
+  void OnJavascriptDisallowed() override;
   void RegisterMessages() override;
+
+  void HandleHistoryLoaded(const base::ListValue* args);
 
   // Handler for the "queryHistory" message.
   void HandleQueryHistory(const base::ListValue* args);
@@ -73,7 +77,11 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
 
   std::unique_ptr<history::BrowsingHistoryService> browsing_history_service_;
 
+  std::vector<base::OnceClosure> deferred_callbacks_;
+
   base::OnceClosure query_history_continuation_;
+
+  base::WeakPtrFactory<BrowsingHistoryHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingHistoryHandler);
 };

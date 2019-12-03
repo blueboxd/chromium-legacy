@@ -12,6 +12,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.metrics.WebApkSplashscreenMetrics;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -200,5 +201,11 @@ public class WebApkActivity extends WebappActivity {
             return;
         }
         finish();
+    }
+
+    @Override
+    @ActivityType
+    public int getActivityType() {
+        return ActivityType.WEB_APK;
     }
 }

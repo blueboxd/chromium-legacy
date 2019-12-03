@@ -174,24 +174,3 @@ TEST_F(PermissionRequestNotificationAndroidTest, Closing_CallsDelegateClosing) {
           kExampleUrl),
       true);
 }
-
-TEST_F(PermissionRequestNotificationAndroidTest, ShouldShowAsNotification) {
-  EXPECT_FALSE(PermissionRequestNotificationAndroid::ShouldShowAsNotification(
-      profile(), ContentSettingsType::NOTIFICATIONS));
-  EXPECT_FALSE(PermissionRequestNotificationAndroid::ShouldShowAsNotification(
-      profile(), ContentSettingsType::GEOLOCATION));
-
-  base::FieldTrialParams params;
-  params[kQuietNotificationPromptsUIFlavorParameterName] =
-      kQuietNotificationPromptsHeadsUpNotification;
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      features::kQuietNotificationPrompts, params);
-  AdaptiveNotificationPermissionUiSelector::GetForProfile(profile())
-      ->set_should_show_quiet_ui_for_testing(true);
-
-  EXPECT_FALSE(PermissionRequestNotificationAndroid::ShouldShowAsNotification(
-      profile(), ContentSettingsType::NOTIFICATIONS));
-  EXPECT_FALSE(PermissionRequestNotificationAndroid::ShouldShowAsNotification(
-      profile(), ContentSettingsType::GEOLOCATION));
-}

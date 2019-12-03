@@ -84,7 +84,6 @@ source_set("browser_tests") {
     "bookmark_app_registrar_browsertest.cc",
     "system_web_app_manager_browsertest.cc",
     "system_web_app_manager_browsertest.h",
-    "system_web_app_manager_browsertest_chromeos.cc",
     "web_app_audio_focus_browsertest.cc",
   ]
 
@@ -109,12 +108,4 @@ source_set("browser_tests") {
     "//extensions/common",
     "//net:test_support",
   ]
-
-  if (is_chromeos) {
-    deps += [
-      "//chromeos/components/help_app_ui",
-      "//chromeos/components/media_app_ui",
-      "//chromeos/constants",
-    ]
-  }
 }

@@ -84,6 +84,7 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
     infos.emplace(
         SystemAppType::TERMINAL,
         SystemAppInfo("Terminal", GURL("chrome://terminal/html/pwa.html")));
+    infos.at(SystemAppType::TERMINAL).single_window = false;
   }
 
   if (SystemWebAppManager::IsAppEnabled(SystemAppType::HELP)) {
@@ -241,6 +242,14 @@ base::Optional<SystemAppType> SystemWebAppManager::GetSystemAppTypeForAppId(
 bool SystemWebAppManager::IsSystemWebApp(const AppId& app_id) const {
   return registrar_->HasExternalAppWithInstallSource(
       app_id, ExternalInstallSource::kSystemInstalled);
+}
+
+bool SystemWebAppManager::IsSingleWindow(SystemAppType type) const {
+  auto it = system_app_infos_.find(type);
+  if (it == system_app_infos_.end())
+    return false;
+
+  return it->second.single_window;
 }
 
 gfx::Size SystemWebAppManager::GetMinimumWindowSize(const AppId& app_id) const {

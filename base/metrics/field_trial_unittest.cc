@@ -948,11 +948,6 @@ TEST_F(FieldTrialTest, Observe) {
   const int chosen_group = trial->group();
   EXPECT_TRUE(chosen_group == default_group || chosen_group == secondary_group);
 
-  // Observers are called asynchronously.
-  EXPECT_TRUE(observer.trial_name().empty());
-  EXPECT_TRUE(observer.group_name().empty());
-  RunLoop().RunUntilIdle();
-
   EXPECT_EQ(kTrialName, observer.trial_name());
   if (chosen_group == default_group)
     EXPECT_EQ(kDefaultGroupName, observer.group_name());

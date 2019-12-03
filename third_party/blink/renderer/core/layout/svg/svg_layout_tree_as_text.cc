@@ -373,7 +373,7 @@ static WTF::TextStream& operator<<(WTF::TextStream& ts,
     WriteNameValuePair(ts, "ry",
                        length_context.ValueForLength(svg_style.Ry(), style,
                                                      SVGLengthMode::kHeight));
-  } else if (IsSVGCircleElement(*svg_element)) {
+  } else if (IsA<SVGCircleElement>(*svg_element)) {
     WriteNameValuePair(ts, "cx",
                        length_context.ValueForLength(svg_style.Cx(), style,
                                                      SVGLengthMode::kWidth));

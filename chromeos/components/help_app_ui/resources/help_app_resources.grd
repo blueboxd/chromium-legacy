@@ -13,18 +13,13 @@
 
   <release seq="1">
     <includes>
-      <!-- TODO(crbug.com/1012578): Add the run time resources .grdp here. -->
-      <include name="IDR_HELP_APP_APP_HTML" file="app.html"
-          type="BINDATA" />
-      <include name="IDR_HELP_APP_INDEX_HTML" file="index.html"
+      <include name="IDR_HELP_APP_APP_HTML" file="app.html" type="BINDATA" />
+      <include name="IDR_HELP_APP_HOST_INDEX_HTML" file="index.html"
           type="BINDATA" />
       <include name="IDR_HELP_APP_PWA_HTML" file="pwa.html" type="BINDATA" />
       <include name="IDR_HELP_APP_MANIFEST" file="manifest.json"
           type="BINDATA" />
       <include name="IDR_HELP_APP_ICON_192" file="app_icon_192.png"
-          type="BINDATA" />
-      <include name="IDR_HELP_APP_BOOTSTRAP_JS"
-          file="js/bootstrap.js"
           type="BINDATA" />
     </includes>
   </release>

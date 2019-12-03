@@ -15,6 +15,7 @@
 #include "media/cast/net/cast_transport.h"
 #include "media/cast/test/utility/default_config.h"
 #include "media/mojo/mojom/remoting.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -132,7 +133,7 @@ class CastRemotingSenderTest : public ::testing::Test {
 
     CastRemotingSender::FindAndBind(
         transport_config_.rtp_stream_id, std::move(consumer_end),
-        MakeRequest(&sender_),
+        sender_.BindNewPipeAndPassReceiver(),
         base::BindOnce(&CastRemotingSenderTest::OnError,
                        base::Unretained(this)));
 
@@ -262,7 +263,7 @@ class CastRemotingSenderTest : public ::testing::Test {
   media::cast::CastTransportRtpConfig transport_config_;
   FakeTransport transport_;
   std::unique_ptr<CastRemotingSender> remoting_sender_;
-  media::mojom::RemotingDataStreamSenderPtr sender_;
+  mojo::Remote<media::mojom::RemotingDataStreamSender> sender_;
   mojo::ScopedDataPipeProducerHandle producer_end_;
   bool expecting_error_callback_run_;
 

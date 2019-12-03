@@ -10,8 +10,8 @@
 #include "url/gurl.h"
 
 HistoryBackendClientImpl::HistoryBackendClientImpl(
-    bookmarks::ModelLoader* model_loader)
-    : model_loader_(model_loader) {}
+    scoped_refptr<bookmarks::ModelLoader> model_loader)
+    : model_loader_(std::move(model_loader)) {}
 
 HistoryBackendClientImpl::~HistoryBackendClientImpl() {
 }

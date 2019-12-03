@@ -49,20 +49,6 @@ function historyResult(info, results) {
 }
 
 /**
- * Called by the history backend after receiving results and after discovering
- * the existence of other forms of browsing history.
- * @param {boolean} includeOtherFormsOfBrowsingHistory Whether to include
- *     a sentence about the existence of other forms of browsing history.
- */
-function showNotification(includeOtherFormsOfBrowsingHistory) {
-  waitForAppUpgrade().then(function() {
-    const app = /** @type {HistoryAppElement} */ ($('history-app'));
-    app.set(
-        'footerInfo.otherFormsOfHistory', includeOtherFormsOfBrowsingHistory);
-  });
-}
-
-/**
  * Receives the synced history data. An empty list means that either there are
  * no foreign sessions, or tab sync is disabled for this profile.
  *
@@ -82,18 +68,5 @@ function setForeignSessions(sessionList) {
 function historyDeleted() {
   waitForAppUpgrade().then(function() {
     /** @type {HistoryAppElement} */ ($('history-app')).historyDeleted();
-  });
-}
-
-/**
- * Called by the history backend after user's sign in state changes.
- * @param {boolean} isUserSignedIn Whether user is signed in or not now.
- */
-function updateSignInState(isUserSignedIn) {
-  waitForAppUpgrade().then(function() {
-    if ($('history-app')) {
-      /** @type {HistoryAppElement} */ ($('history-app'))
-          .updateSignInState(isUserSignedIn);
-    }
   });
 }

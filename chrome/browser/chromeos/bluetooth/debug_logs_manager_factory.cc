@@ -79,6 +79,10 @@ bool DebugLogsManagerFactory::ServiceIsCreatedWithBrowserContext() const {
   return true;
 }
 
+bool DebugLogsManagerFactory::ServiceIsNULLWhileTesting() const {
+  return true;
+}
+
 }  // namespace bluetooth
 
 }  // namespace chromeos

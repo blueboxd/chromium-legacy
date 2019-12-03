@@ -291,8 +291,6 @@ std::string GetFileSystemTypeString(FileSystemType type) {
       return "NativeMedia";
     case kFileSystemTypeDeviceMedia:
       return "DeviceMedia";
-    case kFileSystemTypeDrive:
-      return "Drive";
     case kFileSystemTypeSyncable:
     case kFileSystemTypeSyncableForInternalSync:
       return "Syncable";

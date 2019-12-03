@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -151,8 +152,8 @@ TEST(SerializedScriptValueTest, UserSelectedFile) {
 TEST(SerializedScriptValueTest, FileConstructorFile) {
   V8TestingScope scope;
   scoped_refptr<BlobDataHandle> blob_data_handle = BlobDataHandle::Create();
-  auto* original_file =
-      MakeGarbageCollected<File>("hello.txt", 12345678.0, blob_data_handle);
+  auto* original_file = MakeGarbageCollected<File>(
+      "hello.txt", base::Time::FromJsTime(12345678.0), blob_data_handle);
   ASSERT_FALSE(original_file->HasBackingFile());
   ASSERT_EQ(File::kIsNotUserVisible, original_file->GetUserVisibility());
   ASSERT_EQ("hello.txt", original_file->name());

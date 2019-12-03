@@ -706,7 +706,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     }
 
     // SVG text layout code expects us to be a block-level style element.
-    if ((IsSVGForeignObjectElement(*element) ||
+    if ((IsA<SVGForeignObjectElement>(*element) ||
          IsA<SVGTextElement>(*element)) &&
         style.IsDisplayInlineType())
       style.SetDisplay(EDisplay::kBlock);

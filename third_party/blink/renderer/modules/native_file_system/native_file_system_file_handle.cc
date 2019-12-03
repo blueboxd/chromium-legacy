@@ -83,11 +83,8 @@ ScriptPromise NativeFileSystemFileHandle::getFile(ScriptState* script_state) {
           native_file_system_error::Reject(resolver, *result);
           return;
         }
-        double last_modified = info.last_modified.is_null()
-                                   ? InvalidFileTime()
-                                   : info.last_modified.ToJsTime();
-        resolver->Resolve(
-            MakeGarbageCollected<File>(name, last_modified, blob));
+        resolver->Resolve(MakeGarbageCollected<File>(
+            name, NullableTimeToOptionalTime(info.last_modified), blob));
       },
       WrapPersistent(resolver), name()));
 

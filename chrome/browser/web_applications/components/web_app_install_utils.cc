@@ -24,73 +24,29 @@ namespace web_app {
 
 namespace {
 
-// Get a list of non-empty square icons from |web_app_info|.
-void FilterSquareIconsFromInfo(const WebApplicationInfo& web_app_info,
-                               std::vector<BitmapAndSource>* square_icons) {
-  // Add all existing icons from WebApplicationInfo.
-  for (const WebApplicationIconInfo& icon_info : web_app_info.icons) {
-    const SkBitmap& icon = icon_info.data;
-    if (!icon.drawsNothing() && icon.width() == icon.height())
-      square_icons->push_back(BitmapAndSource(icon_info.url, icon));
-  }
-}
+constexpr int kMaxIcons = 20;
+constexpr SquareSizePx kMaxIconSize = 1024;
 
 // Get a list of non-empty square icons from |icons_map|.
 void FilterSquareIconsFromMap(const IconsMap& icons_map,
-                              std::vector<BitmapAndSource>* square_icons) {
+                              std::vector<SkBitmap>* square_icons) {
   for (const std::pair<GURL, std::vector<SkBitmap>>& url_icon : icons_map) {
     for (const SkBitmap& icon : url_icon.second) {
       if (!icon.empty() && icon.width() == icon.height())
-        square_icons->push_back(BitmapAndSource(url_icon.first, icon));
+        square_icons->push_back(icon);
     }
   }
 }
 
-// This function replaces |web_app_info| icons with the image data of any icon
-// from |size_map|.
-void ReplaceWebAppIcons(std::map<int, BitmapAndSource> size_map,
-                        WebApplicationInfo* web_app_info) {
-  web_app_info->icons.clear();
-
-  // Populate the icon data into the WebApplicationInfo we are using to
-  // install the bookmark app.
-  for (const auto& size_and_icon : size_map) {
-    WebApplicationIconInfo icon_info;
-    icon_info.data = size_and_icon.second.bitmap;
-    icon_info.url = size_and_icon.second.source_url;
-    icon_info.width = icon_info.data.width();
-    icon_info.height = icon_info.data.height();
-    web_app_info->icons.push_back(icon_info);
-  }
-}
-
-// This function updates |web_app_info| with the image data of any icon from
-// |size_map| that has a URL and size matching that in |web_app_info|, as
-// well as adding any new images from |size_map| that have no URL.
-void UpdateWebAppIconsWithoutChangingLinks(
-    const std::map<int, BitmapAndSource>& size_map,
-    WebApplicationInfo* web_app_info) {
-  // First add in the icon data that have urls with the url / size data from the
-  // original web app info, and the data from the new icons (if any).
-  for (auto& icon : web_app_info->icons) {
-    if (!icon.url.is_empty() && icon.data.empty()) {
-      const auto& it = size_map.find(icon.width);
-      if (it != size_map.end() && it->second.source_url == icon.url) {
-        icon.height = icon.width;
-        icon.data = it->second.bitmap;
-      }
-    }
-  }
-
-  // Now add in any icons from the updated list that don't have URLs.
-  for (const auto& pair : size_map) {
-    if (pair.second.source_url.is_empty()) {
-      WebApplicationIconInfo icon_info;
-      icon_info.data = pair.second.bitmap;
-      icon_info.width = pair.first;
-      icon_info.height = pair.first;
-      web_app_info->icons.push_back(icon_info);
-    }
+// Get all non-empty square icons from |icons_map|.
+void FilterSquareIconsFromBitmaps(
+    const std::map<SquareSizePx, SkBitmap> bitmaps,
+    std::vector<SkBitmap>* square_icons) {
+  for (const std::pair<SquareSizePx, SkBitmap>& icon : bitmaps) {
+    DCHECK_EQ(icon.first, icon.second.width());
+    DCHECK_EQ(icon.first, icon.second.height());
+    if (!icon.second.empty())
+      square_icons->push_back(icon.second);
   }
 }
 
@@ -137,16 +93,33 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
       continue;
     }
 
-    // TODO(benwells): Take the declared icon density and sizes into account.
     WebApplicationIconInfo info;
+
+    if (!icon.sizes.empty()) {
+      // Filter out non-square or too large icons.
+      auto valid_size = std::find_if(icon.sizes.begin(), icon.sizes.end(),
+                                     [](const gfx::Size& size) {
+                                       return size.width() == size.height() &&
+                                              size.width() <= kMaxIconSize;
+                                     });
+      if (valid_size == icon.sizes.end())
+        continue;
+      // TODO(benwells): Take the declared icon density and sizes into account.
+      info.square_size_px = valid_size->width();
+    }
+
     info.url = icon.src;
-    web_app_icons.push_back(info);
+    web_app_icons.push_back(std::move(info));
+
+    // Limit the number of icons we store on the user's machine.
+    if (web_app_icons.size() == kMaxIcons)
+      break;
   }
 
   // If any icons are specified in the manifest, they take precedence over any
   // we picked up from the web_app stuff.
   if (!web_app_icons.empty())
-    web_app_info->icons = std::move(web_app_icons);
+    web_app_info->icon_infos = std::move(web_app_icons);
 
   web_app_info->file_handlers = manifest.file_handlers;
 }
@@ -154,7 +127,7 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
 std::vector<GURL> GetValidIconUrlsToDownload(
     const WebApplicationInfo& web_app_info) {
   std::vector<GURL> web_app_info_icon_urls;
-  for (auto& info : web_app_info.icons) {
+  for (const WebApplicationIconInfo& info : web_app_info.icon_infos) {
     if (!info.url.is_valid())
       continue;
     web_app_info_icon_urls.push_back(info.url);
@@ -169,31 +142,35 @@ void FilterAndResizeIconsGenerateMissing(WebApplicationInfo* web_app_info,
   // icons for any sizes which have failed to download. This ensures that the
   // created manifest for the web app does not contain links to icons
   // which are not actually created and linked on disk.
-  std::vector<BitmapAndSource> square_icons;
+  std::vector<SkBitmap> square_icons;
   if (icons_map)
     FilterSquareIconsFromMap(*icons_map, &square_icons);
   if (!is_for_sync)
-    FilterSquareIconsFromInfo(*web_app_info, &square_icons);
+    FilterSquareIconsFromBitmaps(web_app_info->icon_bitmaps, &square_icons);
 
-  std::set<int> sizes_to_generate = SizesToGenerate();
+  std::set<SquareSizePx> sizes_to_generate = SizesToGenerate();
   if (is_for_sync) {
     // Ensure that all icon widths in the web app info icon array are present in
     // the sizes to generate set. This ensures that we will have all of the
     // icon sizes from when the app was originally added, even if icon URLs are
     // no longer accessible.
-    for (const auto& icon : web_app_info->icons)
-      sizes_to_generate.insert(icon.width);
+    for (const auto& icon : web_app_info->icon_infos)
+      sizes_to_generate.insert(icon.square_size_px);
   }
 
   web_app_info->generated_icon_color = SK_ColorTRANSPARENT;
-  std::map<int, BitmapAndSource> size_to_icon = ResizeIconsAndGenerateMissing(
+  // TODO(https://crbug.com/1029223): Don't resize before writing to disk, it's
+  // not necessary and would simplify this code path to remove.
+  std::map<SquareSizePx, SkBitmap> size_to_icon = ResizeIconsAndGenerateMissing(
       square_icons, sizes_to_generate, web_app_info->app_url,
       &web_app_info->generated_icon_color);
 
-  if (is_for_sync)
-    UpdateWebAppIconsWithoutChangingLinks(size_to_icon, web_app_info);
-  else
-    ReplaceWebAppIcons(size_to_icon, web_app_info);
+  for (std::pair<const SquareSizePx, SkBitmap>& item : size_to_icon) {
+    // Retain any bitmaps provided as input to the installation.
+    if (web_app_info->icon_bitmaps.count(item.first) == 0) {
+      web_app_info->icon_bitmaps[item.first] = std::move(item.second);
+    }
+  }
 }
 
 void RecordAppBanner(content::WebContents* contents, const GURL& app_url) {

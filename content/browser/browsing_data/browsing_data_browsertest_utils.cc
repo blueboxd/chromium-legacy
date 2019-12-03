@@ -51,14 +51,16 @@ void GetServiceWorkersCallback(
 
 void ServiceWorkerActivationObserver::SignalActivation(
     ServiceWorkerContextWrapper* context,
-    const base::Closure& callback) {
-  new ServiceWorkerActivationObserver(context, callback);
+    base::OnceClosure callback) {
+  new ServiceWorkerActivationObserver(context, std::move(callback));
 }
 
 ServiceWorkerActivationObserver::ServiceWorkerActivationObserver(
     ServiceWorkerContextWrapper* context,
-    const base::Closure& callback)
-    : context_(context), scoped_observer_(this), callback_(callback) {
+    base::OnceClosure callback)
+    : context_(context),
+      scoped_observer_(this),
+      callback_(std::move(callback)) {
   scoped_observer_.Add(context);
 }
 
@@ -70,7 +72,7 @@ void ServiceWorkerActivationObserver::OnVersionStateChanged(
     ServiceWorkerVersion::Status) {
   if (context_->GetLiveVersion(version_id)->status() ==
       ServiceWorkerVersion::ACTIVATED) {
-    callback_.Run();
+    std::move(callback_).Run();
     delete this;
   }
 }

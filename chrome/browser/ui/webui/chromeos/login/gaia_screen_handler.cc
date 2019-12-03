@@ -671,6 +671,10 @@ void GaiaScreenHandler::DeclareLocalizedValues(
                IDS_SAML_SECURITY_TOKEN_PIN_DIALOG_TRY_AGAIN);
   builder->Add("securityTokenPinDialogAttemptsLeft",
                IDS_REQUEST_PIN_DIALOG_ATTEMPTS_LEFT);
+  builder->Add("securityTokenPinDialogErrorRetry",
+               IDS_REQUEST_PIN_DIALOG_ERROR_RETRY);
+  builder->Add("securityTokenPinDialogErrorRetryAttempts",
+               IDS_REQUEST_PIN_DIALOG_ERROR_RETRY_ATTEMPTS);
   builder->Add("securityTokenPinDialogUnknownError",
                IDS_REQUEST_PIN_DIALOG_UNKNOWN_ERROR);
   builder->Add("securityTokenPinDialogUnknownInvalidPin",

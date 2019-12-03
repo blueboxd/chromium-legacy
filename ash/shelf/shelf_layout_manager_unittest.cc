@@ -5254,7 +5254,8 @@ TEST_F(ShelfLayoutManagerKeyboardTest, ShelfShouldChangeWorkAreaInStickyMode) {
 
 // Make sure we don't update the work area during overview animation
 // (crbug.com/947343).
-TEST_P(ShelfLayoutManagerTest, NoShelfUpdateDuringOverviewAnimation) {
+// TODO(crbub.com/1030222): This is very flaky since Dec 3.
+TEST_P(ShelfLayoutManagerTest, DISABLED_NoShelfUpdateDuringOverviewAnimation) {
   // Finish lid detection task.
   base::RunLoop().RunUntilIdle();
   TabletModeControllerTestApi().EnterTabletMode();

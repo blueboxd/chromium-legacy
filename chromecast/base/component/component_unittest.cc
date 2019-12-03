@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,9 +17,7 @@ namespace chromecast {
 
 class ComponentTest : public ::testing::Test {
  protected:
-  ComponentTest() : message_loop_(new base::MessageLoop()) {}
-
-  const std::unique_ptr<base::MessageLoop> message_loop_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 using ComponentDeathTest = ComponentTest;

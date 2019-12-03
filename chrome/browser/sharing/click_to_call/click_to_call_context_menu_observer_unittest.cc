@@ -61,7 +61,7 @@ class ClickToCallContextMenuObserverTest : public testing::Test {
   }
 
   void BuildMenu(const std::string& phone_number) {
-    observer_->BuildMenu(phone_number,
+    observer_->BuildMenu(phone_number, /*selection_text=*/std::string(),
                          SharingClickToCallEntryPoint::kRightClickLink);
     sharing_message.mutable_click_to_call_message()->set_phone_number(
         phone_number);

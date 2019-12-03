@@ -26,6 +26,7 @@ namespace bluez {
 // Style Note: Clients are sorted by names.
 class BluetoothAdapterClient;
 class BluetoothAgentManagerClient;
+class BluetoothDebugManagerClient;
 class BluetoothDeviceClient;
 class BluetoothGattCharacteristicClient;
 class BluetoothGattDescriptorClient;
@@ -118,6 +119,7 @@ class DEVICE_BLUETOOTH_EXPORT BluezDBusManager {
   BluetoothAdapterClient* GetBluetoothAdapterClient();
   BluetoothLEAdvertisingManagerClient* GetBluetoothLEAdvertisingManagerClient();
   BluetoothAgentManagerClient* GetBluetoothAgentManagerClient();
+  BluetoothDebugManagerClient* GetBluetoothDebugManagerClient();
   BluetoothDeviceClient* GetBluetoothDeviceClient();
   BluetoothGattCharacteristicClient* GetBluetoothGattCharacteristicClient();
   BluetoothGattDescriptorClient* GetBluetoothGattDescriptorClient();
@@ -188,6 +190,8 @@ class DEVICE_BLUETOOTH_EXPORT BluezDBusManagerSetter {
       std::unique_ptr<BluetoothLEAdvertisingManagerClient> client);
   void SetBluetoothAgentManagerClient(
       std::unique_ptr<BluetoothAgentManagerClient> client);
+  void SetBluetoothDebugManagerClient(
+      std::unique_ptr<BluetoothDebugManagerClient> client);
   void SetBluetoothDeviceClient(std::unique_ptr<BluetoothDeviceClient> client);
   void SetBluetoothGattCharacteristicClient(
       std::unique_ptr<BluetoothGattCharacteristicClient> client);

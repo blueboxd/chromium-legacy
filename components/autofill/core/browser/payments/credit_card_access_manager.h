@@ -29,6 +29,7 @@
 namespace autofill {
 
 class AutofillManager;
+enum class WebauthnDialogCallbackType;
 
 // Manages logic for accessing credit cards either stored locally or stored
 // with Google Payments. Owned by AutofillManager.
@@ -161,14 +162,19 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // immediately.
   bool AuthenticationRequiresUnmaskDetails();
 
+  // TODO(crbug.com/991037): Move this function under the build flags after the
+  // refactoring is done.
+  // Offer the option to use WebAuthn for authenticating future card unmasking.
+  void ShowWebauthnOfferDialog(std::string card_authorization_token);
+
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   // After card verification starts, shows the verify pending dialog if WebAuthn
   // is enabled, indicating some verification steps are in progress.
   void ShowVerifyPendingDialog();
 
-  // The callback function invoked when the cancel button in the verify pending
-  // dialog is clicked. Will cancel the attempt to fetch unmask details.
-  void OnDidCancelCardVerification();
+  // Invokes the corresponding callback on different user's responses on either
+  // the Webauthn offer dialog or verify pending dialog.
+  void HandleDialogUserResponse(WebauthnDialogCallbackType type);
 #endif
 
   // Used with PostTaskWithDelay() to signal |can_fetch_unmask_details_| event

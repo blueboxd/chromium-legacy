@@ -7938,6 +7938,14 @@ histogram as enum -->
   <int value="10" label="Image was not required for activation."/>
 </enum>
 
+<enum name="ChromeActivityType">
+  <int value="0" label="Tabbed Chrome"/>
+  <int value="1" label="Custom Tab"/>
+  <int value="2" label="Trusted Web Activity"/>
+  <int value="3" label="WebAPK"/>
+  <int value="4" label="Webapp (not WebAPK)"/>
+</enum>
+
 <enum name="ChromeBrowsingDataRemoverTasks">
   <int value="1" label="kSynchronous"/>
   <int value="2" label="kHistory"/>
@@ -27137,6 +27145,30 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="Name string is invalid unicode"/>
 </enum>
 
+<enum name="ForbiddenResponseBody">
+  <int value="0" label="Body missing"/>
+  <int value="1" label="Unknown body"/>
+  <int value="2" label="Sender not authenticated"/>
+  <int value="3" label="Invalid public key encoding"/>
+  <int value="4" label="Invalid public key length"/>
+  <int value="5" label="Invalid public key format"/>
+  <int value="6" label="Invalid public key curve"/>
+  <int value="7" label="Invalid JWT"/>
+  <int value="8" label="Invalid aud claim"/>
+  <int value="9" label="Aud claim missing origin"/>
+  <int value="10" label="Exp cliam period too long"/>
+  <int value="11" label="Exp cliam expired"/>
+  <int value="12" label="Exp claim missing"/>
+  <int value="13" label="P256 ECDSA missing"/>
+  <int value="14" label="K missing"/>
+  <int value="15" label="Base64 P256 ECDSA"/>
+  <int value="16" label="Base64 K"/>
+  <int value="17" label="Empty P256 ECDSA"/>
+  <int value="18" label="Empty K"/>
+  <int value="19" label="Invalid P256 ECDSA"/>
+  <int value="20" label="Invalid K"/>
+</enum>
+
 <enum name="FormDataDeserializationStatus">
   <int value="0" label="Login database success"/>
   <int value="1" label="Login database failure"/>
@@ -39831,7 +39863,7 @@ from previous Chrome versions.
   <int value="2" label="Non layer viewport constrained"/>
   <int value="3" label="Threaded scrolling disabled"/>
   <int value="4" label="Scrollbar scrolling"/>
-  <int value="5" label="Page overlay"/>
+  <int value="5" label="Frame overlay"/>
   <int value="6" label="Non-fast scrollable region"/>
   <int value="7" label="Event handlers"/>
   <int value="8" label="Failed hit test"/>
@@ -45792,6 +45824,18 @@ Called by update_net_trust_anchors.py.-->
       label="Account was not seeded before FireRefreshTokenAvailable"/>
 </enum>
 
+<enum name="OAuth2MintTokenApiCallResult">
+  <int value="0" label="Mint token success"/>
+  <int value="1" label="Issue advice success"/>
+  <int value="2" label="Remote consent success"/>
+  <int value="3" label="Api call failure"/>
+  <int value="4" label="Parse JSON failure"/>
+  <int value="5" label="&quot;issueAdvice&quot; key not found"/>
+  <int value="6" label="Parse mint token failure"/>
+  <int value="7" label="Parse issue advice failure"/>
+  <int value="8" label="Remote consent fallback"/>
+</enum>
+
 <enum name="OAuthMultiloginResponseStatus">
   <int value="0" label="UNKNOWN_STATUS"/>
   <int value="1" label="OK"/>
@@ -49550,6 +49594,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="Mapped-File Already Exists"/>
   <int value="5" label="No Spare File"/>
   <int value="6" label="Could Not Create Upload Directory"/>
+</enum>
+
+<enum name="PhoneNumberRegexVariantResult">
+  <int value="0" label="None match"/>
+  <int value="1" label="Only simple matches"/>
+  <int value="2" label="Only variant matches"/>
+  <int value="3" label="Both match"/>
 </enum>
 
 <enum name="PhotoEditorFileType">

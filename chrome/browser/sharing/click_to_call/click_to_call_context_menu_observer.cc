@@ -52,12 +52,14 @@ ClickToCallContextMenuObserver::~ClickToCallContextMenuObserver() = default;
 
 void ClickToCallContextMenuObserver::BuildMenu(
     const std::string& phone_number,
+    const std::string& selection_text,
     SharingClickToCallEntryPoint entry_point) {
   DCHECK(!phone_number.empty());
   LogClickToCallPhoneNumberSize(phone_number, entry_point,
                                 /*send_to_device=*/false);
 
   phone_number_ = phone_number;
+  selection_text_ = selection_text;
   entry_point_ = entry_point;
   devices_ = controller_->GetDevices();
   LogSharingDevicesToShow(controller_->GetFeatureMetricsPrefix(),
@@ -143,6 +145,8 @@ void ClickToCallContextMenuObserver::SendClickToCallMessage(
 
   LogSharingSelectedDeviceIndex(controller_->GetFeatureMetricsPrefix(),
                                 kSharingUiContextMenu, chosen_device_index);
+  if (!selection_text_.empty())
+    LogPhoneNumberDetectionMetrics(selection_text_, /*sent_to_device=*/true);
 
   controller_->OnDeviceSelected(phone_number_, *devices_[chosen_device_index],
                                 *entry_point_);

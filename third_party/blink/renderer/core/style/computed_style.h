@@ -1075,6 +1075,9 @@ class ComputedStyle : public ComputedStyleBase,
   float WordSpacing() const { return GetFontDescription().WordSpacing(); }
   void SetWordSpacing(float);
 
+  // font-variant-numeric spacing
+  void SetFontVariantNumericSpacing(FontVariantNumeric::NumericSpacing);
+
   // orphans
   void SetOrphans(int16_t o) { SetOrphansInternal(clampTo<int16_t>(o, 1)); }
 

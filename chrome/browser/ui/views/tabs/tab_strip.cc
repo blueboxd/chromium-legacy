@@ -1147,6 +1147,7 @@ void TabStrip::MoveTab(int from_model_index,
   const Tab* last_tab = GetLastVisibleTab();
 
   Tab* moving_tab = tab_at(from_model_index);
+  const bool pinned = data.pinned;
   moving_tab->SetData(std::move(data));
 
   // Keep child views in same order as tab strip model.
@@ -1168,7 +1169,7 @@ void TabStrip::MoveTab(int from_model_index,
   layout_helper_->MoveTab(moving_tab->group(), from_model_index,
                           to_model_index);
   layout_helper_->SetTabPinned(
-      to_model_index, data.pinned ? TabPinned::kPinned : TabPinned::kUnpinned);
+      to_model_index, pinned ? TabPinned::kPinned : TabPinned::kUnpinned);
   StartMoveTabAnimation();
   if (TabDragController::IsAttachedTo(GetDragContext()) &&
       (last_tab != GetLastVisibleTab() || last_tab->dragging())) {

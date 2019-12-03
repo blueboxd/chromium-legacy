@@ -71,12 +71,9 @@ SkBitmap CreateSquareBitmapWithColor(int size, SkColor color) {
   return bitmap;
 }
 
-WebApplicationIconInfo CreateIconInfoWithBitmap(int size, SkColor color) {
-  WebApplicationIconInfo icon_info;
-  icon_info.width = size;
-  icon_info.height = size;
-  icon_info.data = CreateSquareBitmapWithColor(size, color);
-  return icon_info;
+void SetAppIcon(WebApplicationInfo* web_app, int size, SkColor color) {
+  web_app->icon_bitmaps.clear();
+  web_app->icon_bitmaps[size] = CreateSquareBitmapWithColor(size, color);
 }
 
 void TestAcceptDialogCallback(
@@ -582,8 +579,7 @@ TEST_F(InstallManagerBookmarkAppTest, CreateWebAppFromInfo) {
   web_app_info->title = base::UTF8ToUTF16(kAppTitle);
   web_app_info->description = base::UTF8ToUTF16(kAppDescription);
   web_app_info->scope = kAppScope;
-  web_app_info->icons.push_back(
-      CreateIconInfoWithBitmap(kIconSizeTiny, SK_ColorRED));
+  SetAppIcon(web_app_info.get(), kIconSizeTiny, SK_ColorRED);
 
   base::RunLoop run_loop;
   web_app::AppId app_id;
@@ -638,13 +634,11 @@ TEST_F(InstallManagerBookmarkAppTest, InstallWebAppFromSync) {
   web_app_info->title = base::UTF8ToUTF16(kAppTitle);
   web_app_info->description = base::UTF8ToUTF16(kAppDescription);
   web_app_info->scope = GURL(kAppScope);
-  web_app_info->icons.push_back(
-      CreateIconInfoWithBitmap(kIconSizeSmall, SK_ColorRED));
+  SetAppIcon(web_app_info.get(), kIconSizeSmall, SK_ColorRED);
 
   auto web_app_info2 = std::make_unique<WebApplicationInfo>(*web_app_info);
   web_app_info2->title = base::UTF8ToUTF16(kAlternativeAppTitle);
-  web_app_info2->icons[0] =
-      CreateIconInfoWithBitmap(kIconSizeLarge, SK_ColorRED);
+  SetAppIcon(web_app_info2.get(), kIconSizeLarge, SK_ColorRED);
   web_app_info2->scope = GURL(kAppAlternativeScope);
 
   auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile());

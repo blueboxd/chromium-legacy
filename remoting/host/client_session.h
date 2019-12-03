@@ -47,6 +47,7 @@ class AudioStream;
 class DesktopEnvironment;
 class DesktopEnvironmentFactory;
 class InputInjector;
+class KeyboardLayoutMonitor;
 class MouseShapePump;
 class ScreenControls;
 
@@ -240,6 +241,7 @@ class ClientSession : public protocol::HostStub,
   std::unique_ptr<protocol::VideoStream> video_stream_;
   std::unique_ptr<protocol::AudioStream> audio_stream_;
   std::unique_ptr<MouseShapePump> mouse_shape_pump_;
+  std::unique_ptr<KeyboardLayoutMonitor> keyboard_layout_monitor_;
 
   // The set of all capabilities supported by the client.
   std::unique_ptr<std::string> client_capabilities_;

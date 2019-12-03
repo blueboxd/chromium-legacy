@@ -296,6 +296,12 @@ class PDFEngine {
     pp::FloatRect bounds;
   };
 
+  struct AccessibilityHighlightInfo {
+    int start_char_index = -1;
+    int char_count;
+    pp::FloatRect bounds;
+  };
+
   // Factory method to create an instance of the PDF Engine.
   static std::unique_ptr<PDFEngine> Create(Client* client,
                                            bool enable_javascript);
@@ -399,6 +405,11 @@ class PDFEngine {
   // For all the images in page |page_index|, get their alt texts and bounding
   // boxes.
   virtual std::vector<AccessibilityImageInfo> GetImageInfo(int page_index) = 0;
+  // For all the highlights in page |page_index|, get their underlying text
+  // ranges and bounding boxes.
+  virtual std::vector<AccessibilityHighlightInfo> GetHighlightInfo(
+      int page_index) = 0;
+
   // Gets the PDF document's print scaling preference. True if the document can
   // be scaled to fit.
   virtual bool GetPrintScaling() = 0;

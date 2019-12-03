@@ -61,13 +61,12 @@ void WebKioskAppData::UpdateFromWebAppInfo(
   if (delegate_)
     delegate_->GetKioskAppIconCacheDir(&cache_dir);
 
-  for (const WebApplicationIconInfo& icon_info : app_info->icons) {
-    if (icon_info.width == kIconSize) {
-      icon_ = gfx::ImageSkia::CreateFrom1xBitmap(icon_info.data);
-      icon_.MakeThreadSafe();
-      SaveIcon(icon_info.data, cache_dir);
-      break;
-    }
+  auto it = app_info->icon_bitmaps.find(kIconSize);
+  if (it != app_info->icon_bitmaps.end()) {
+    const SkBitmap& bitmap = it->second;
+    icon_ = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+    icon_.MakeThreadSafe();
+    SaveIcon(bitmap, cache_dir);
   }
 
   PrefService* local_state = g_browser_process->local_state();

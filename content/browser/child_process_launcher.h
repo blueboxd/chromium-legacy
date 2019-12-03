@@ -164,12 +164,6 @@ class CONTENT_EXPORT ChildProcessLauncher {
   // If |process_error_callback| is provided, it will be called if a Mojo error
   // is encountered when processing messages from the child process. This
   // callback must be safe to call from any thread.
-  //
-  // |files_to_preload| is a map of key names to file paths. These files will be
-  // opened by the browser process and corresponding file descriptors inherited
-  // by the new child process, accessible using the corresponding key via some
-  // platform-specific mechanism (such as base::FileDescriptorStore on POSIX).
-  // Currently only supported on POSIX platforms.
   ChildProcessLauncher(
       std::unique_ptr<SandboxedProcessLauncherDelegate> delegate,
       std::unique_ptr<base::CommandLine> cmd_line,
@@ -177,7 +171,6 @@ class CONTENT_EXPORT ChildProcessLauncher {
       Client* client,
       mojo::OutgoingInvitation mojo_invitation,
       const mojo::ProcessErrorCallback& process_error_callback,
-      std::map<std::string, base::FilePath> files_to_preload,
       bool terminate_on_shutdown = true);
   ~ChildProcessLauncher();
 
@@ -215,6 +208,16 @@ class CONTENT_EXPORT ChildProcessLauncher {
   // Replaces the ChildProcessLauncher::Client for testing purposes. Returns the
   // previous  client.
   Client* ReplaceClientForTest(Client* client);
+
+  // Sets the files that should be mapped when a new child process is created
+  // for the service |service_name|.
+  static void SetRegisteredFilesForService(
+      const std::string& service_name,
+      std::map<std::string, base::FilePath> required_files);
+
+  // Resets all files registered by |SetRegisteredFilesForService|. Used to
+  // support multiple shell context creation in unit_tests.
+  static void ResetRegisteredFilesForTesting();
 
 #if defined(OS_ANDROID)
   // Dumps the stack of the child process without crashing it.

@@ -93,6 +93,13 @@ DisplayMode WebAppRegistrar::GetAppUserDisplayMode(const AppId& app_id) const {
   return web_app ? web_app->user_display_mode() : DisplayMode::kUndefined;
 }
 
+std::vector<WebApplicationIconInfo> WebAppRegistrar::GetAppIconInfos(
+    const AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? web_app->icon_infos()
+                 : std::vector<WebApplicationIconInfo>();
+}
+
 std::vector<AppId> WebAppRegistrar::GetAppIds() const {
   std::vector<AppId> app_ids;
   app_ids.reserve(registry_.size());

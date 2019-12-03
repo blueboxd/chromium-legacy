@@ -26,8 +26,7 @@ using content::BrowserThread;
 namespace chromeos {
 
 bool IsExternalFileURLType(storage::FileSystemType type, bool force) {
-  return type == storage::kFileSystemTypeDrive ||
-         type == storage::kFileSystemTypeDeviceMediaAsFileStorage ||
+  return type == storage::kFileSystemTypeDeviceMediaAsFileStorage ||
          type == storage::kFileSystemTypeProvided ||
          type == storage::kFileSystemTypeArcContent ||
          type == storage::kFileSystemTypeArcDocumentsProvider || force;

@@ -18,6 +18,7 @@ static_library("help_app_ui") {
 
   deps = [
     "//chromeos/constants",
+    "//chromeos/resources:help_app_bundle_resources",
     "//chromeos/resources:help_app_resources",
     "//content/public/browser",
     "//ui/webui",

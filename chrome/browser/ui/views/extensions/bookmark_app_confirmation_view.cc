@@ -70,7 +70,7 @@ BookmarkAppConfirmationView::BookmarkAppConfirmationView(
                        extension_misc::EXTENSION_ICON_SMALL);
   gfx::ImageSkia image(
       std::make_unique<WebAppInfoImageSource>(
-          extension_misc::EXTENSION_ICON_SMALL, web_app_info_->icons),
+          extension_misc::EXTENSION_ICON_SMALL, web_app_info_->icon_bitmaps),
       image_size);
   icon_image_view->SetImageSize(image_size);
   icon_image_view->SetImage(image);

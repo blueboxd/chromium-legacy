@@ -32,7 +32,7 @@ namespace content {
 void ClearPluginPrivateDataOnFileTaskRunner(
     scoped_refptr<storage::FileSystemContext> filesystem_context,
     const GURL& storage_origin,
-    const StoragePartition::OriginMatcherFunction& origin_matcher,
+    StoragePartition::OriginMatcherFunction origin_matcher,
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
     const base::Time begin,
     const base::Time end,

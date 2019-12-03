@@ -12,8 +12,8 @@
 namespace language {
 
 void BindContentTranslateDriver(
-    mojo::PendingReceiver<translate::mojom::ContentTranslateDriver> receiver,
-    content::RenderFrameHost* render_frame_host) {
+    content::RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<translate::mojom::ContentTranslateDriver> receiver) {
   // Only valid for the main frame.
   if (render_frame_host->GetParent())
     return;

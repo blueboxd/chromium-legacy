@@ -1313,8 +1313,6 @@ const FeatureEntry::FeatureVariation
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kQuietNotificationPromptsForceMiniInfobars[] =
     {
-        {kQuietNotificationPromptsUIFlavorParameterName,
-         kQuietNotificationPromptsMiniInfobar},
         {kQuietNotificationPromptsActivationParameterName,
          kQuietNotificationPromptsActivationAlways},
 };
@@ -1323,34 +1321,21 @@ const FeatureEntry::FeatureParam kQuietNotificationPromptsForceMiniInfobars[] =
 // adaptively after 3 consecutive denies (or when enabled in settings). In
 // addition to that, expose an option to force-enable "mini-infobars".
 const FeatureEntry::FeatureVariation kQuietNotificationPromptsVariations[] = {
-    {"(force mini-infobars)", kQuietNotificationPromptsForceMiniInfobars,
+    {"(forced)", kQuietNotificationPromptsForceMiniInfobars,
      base::size(kQuietNotificationPromptsForceMiniInfobars), nullptr},
 };
 #else   // OS_ANDROID
 const FeatureEntry::FeatureParam
-    kQuietNotificationPromptsForceStaticIconNotificationsPrompt[] = {
-        {kQuietNotificationPromptsUIFlavorParameterName,
-         kQuietNotificationPromptsStaticIcon},
-        {kQuietNotificationPromptsActivationParameterName,
-         kQuietNotificationPromptsActivationAlways},
-};
-const FeatureEntry::FeatureParam
     kQuietNotificationPromptsForceAnimatedIconNotificationsPrompt[] = {
-        {kQuietNotificationPromptsUIFlavorParameterName,
-         kQuietNotificationPromptsAnimatedIcon},
         {kQuietNotificationPromptsActivationParameterName,
          kQuietNotificationPromptsActivationAlways},
 };
 
-// The "default" option that only shows "Enabled" will be the static icon,
-// triggered after 3 consecutive denies.
+// The default "Enabled" option has the semantics of showing "animated icon"
+// adaptively after 3 consecutive denies (or when enabled in settings). In
+// addition to that, expose an option to force-enable "animated icons".
 const FeatureEntry::FeatureVariation kQuietNotificationPromptsVariations[] = {
-    {"(force static-icon)",
-     kQuietNotificationPromptsForceStaticIconNotificationsPrompt,
-     base::size(kQuietNotificationPromptsForceStaticIconNotificationsPrompt),
-     nullptr},
-    {"(force animated-icon)",
-     kQuietNotificationPromptsForceAnimatedIconNotificationsPrompt,
+    {"(forced)", kQuietNotificationPromptsForceAnimatedIconNotificationsPrompt,
      base::size(kQuietNotificationPromptsForceAnimatedIconNotificationsPrompt),
      nullptr},
 };
@@ -2157,10 +2142,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-system-webapps", flag_descriptions::kEnableSystemWebAppsName,
      flag_descriptions::kEnableSystemWebAppsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSystemWebApps)},
-    {"enable-desktop-pwas-omnibox-install",
-     flag_descriptions::kDesktopPWAsOmniboxInstallName,
-     flag_descriptions::kDesktopPWAsOmniboxInstallDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kDesktopPWAsOmniboxInstall)},
     {"use-sync-sandbox", flag_descriptions::kSyncSandboxName,
      flag_descriptions::kSyncSandboxDescription, kOsAll,
      SINGLE_VALUE_TYPE_AND_VALUE(

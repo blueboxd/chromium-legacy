@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/model_loader.h"
 #include "components/history/core/browser/history_service.h"
 #include "ios/chrome/browser/history/history_backend_client_impl.h"
 #include "ios/chrome/browser/history/history_utils.h"

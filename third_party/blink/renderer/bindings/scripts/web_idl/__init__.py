@@ -47,6 +47,7 @@ from .function_like import FunctionLike
 from .function_like import OverloadGroup
 from .idl_type import IdlType
 from .interface import Interface
+from .literal_constant import LiteralConstant
 from .namespace import Namespace
 from .operation import Operation
 from .operation import OperationGroup

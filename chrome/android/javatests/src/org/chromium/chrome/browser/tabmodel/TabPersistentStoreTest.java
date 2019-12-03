@@ -31,6 +31,7 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.accessibility_tab_switcher.OverviewListLayout;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelper;
+import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.snackbar.undo.UndoBarController;
 import org.chromium.chrome.browser.tab.MockTab;
@@ -309,6 +310,12 @@ public class TabPersistentStoreTest {
                 @Override
                 protected ChromeFullscreenManager createFullscreenManager() {
                     return null;
+                }
+
+                @Override
+                @ActivityType
+                public int getActivityType() {
+                    return ActivityType.TABBED;
                 }
             };
         });

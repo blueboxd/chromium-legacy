@@ -7,12 +7,16 @@ import os
 import time
 
 from core.results_processor import util
+from core.tbmv3 import trace_processor
 
 from tracing.metrics import metric_runner
 
 
-# Aggregated trace is saved under this name.
+# Aggregated TBMv2 trace is saved under this name.
 HTML_TRACE_NAME = 'trace.html'
+
+# Concatenated proto trace is saved under this name.
+CONCATENATED_PROTO_NAME = 'trace.pb'
 
 
 def _RunMetric(test_result, metrics):
@@ -60,7 +64,7 @@ def ComputeTBMv2Metrics(test_result):
   metrics = [tag['value'] for tag in test_result.get('tags', [])
              if tag['key'] == 'tbmv2']
   if not metrics:
-    logging.info('%s: No metrics specified.', test_result['testPath'])
+    logging.info('%s: No TBMv2 metrics specified.', test_result['testPath'])
     return
 
   if HTML_TRACE_NAME not in artifacts:
@@ -80,3 +84,29 @@ def ComputeTBMv2Metrics(test_result):
     return
 
   test_result['_histograms'].ImportDicts(_RunMetric(test_result, metrics))
+
+
+def ComputeTBMv3Metrics(test_result, trace_processor_path):
+  artifacts = test_result.get('outputArtifacts', {})
+
+  if test_result['status'] == 'SKIP':
+    return
+
+  metrics = [tag['value'] for tag in test_result.get('tags', [])
+             if tag['key'] == 'tbmv3']
+  if not metrics:
+    logging.info('%s: No TBMv3 metrics specified.', test_result['testPath'])
+    return
+
+  if CONCATENATED_PROTO_NAME not in artifacts:
+    util.SetUnexpectedFailure(test_result)
+    logging.error('%s: No proto traces to compute metrics on.',
+                  test_result['testPath'])
+    return
+
+  for metric in metrics:
+    logging.info('%s: Computing metric %s.', test_result['testPath'], metric)
+    histograms = trace_processor.RunMetric(
+        trace_processor_path, artifacts[CONCATENATED_PROTO_NAME]['filePath'],
+        metric)
+    test_result['_histograms'].Merge(histograms)

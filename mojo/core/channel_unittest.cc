@@ -8,14 +8,15 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/optional.h"
 #include "base/process/process_handle.h"
 #include "base/process/process_metrics.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "mojo/core/platform_handle_utils.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
@@ -251,7 +252,8 @@ class ChannelTestShutdownAndWriteDelegate : public Channel::Delegate {
 };
 
 TEST(ChannelTest, PeerShutdownDuringRead) {
-  base::MessageLoop message_loop(base::MessagePumpType::IO);
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   PlatformChannel channel;
 
   // Create a "client" Channel with one end of the pipe, and Start() it.
@@ -277,7 +279,7 @@ TEST(ChannelTest, PeerShutdownDuringRead) {
   // is received.
   base::RunLoop run_loop;
   ChannelTestShutdownAndWriteDelegate server_delegate(
-      channel.TakeLocalEndpoint(), message_loop.task_runner(),
+      channel.TakeLocalEndpoint(), base::ThreadTaskRunnerHandle::Get(),
       std::move(client_channel), std::move(client_thread),
       run_loop.QuitClosure());
 
@@ -315,20 +317,23 @@ class RejectHandlesDelegate : public Channel::Delegate {
 };
 
 TEST(ChannelTest, RejectHandles) {
-  base::MessageLoop message_loop(base::MessagePumpType::IO);
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   PlatformChannel platform_channel;
 
   RejectHandlesDelegate receiver_delegate;
-  scoped_refptr<Channel> receiver = Channel::Create(
-      &receiver_delegate,
-      ConnectionParams(platform_channel.TakeLocalEndpoint()),
-      Channel::HandlePolicy::kRejectHandles, message_loop.task_runner());
+  scoped_refptr<Channel> receiver =
+      Channel::Create(&receiver_delegate,
+                      ConnectionParams(platform_channel.TakeLocalEndpoint()),
+                      Channel::HandlePolicy::kRejectHandles,
+                      base::ThreadTaskRunnerHandle::Get());
   receiver->Start();
 
   RejectHandlesDelegate sender_delegate;
   scoped_refptr<Channel> sender = Channel::Create(
       &sender_delegate, ConnectionParams(platform_channel.TakeRemoteEndpoint()),
-      Channel::HandlePolicy::kRejectHandles, message_loop.task_runner());
+      Channel::HandlePolicy::kRejectHandles,
+      base::ThreadTaskRunnerHandle::Get());
   sender->Start();
 
   // Create another platform channel just to stuff one of its endpoint handles
@@ -423,7 +428,8 @@ class CountingChannelDelegate : public Channel::Delegate {
 TEST(ChannelTest, PeerStressTest) {
   constexpr size_t kLotsOfMessages = 1024;
 
-  base::MessageLoop message_loop(base::MessagePumpType::IO);
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   base::RunLoop run_loop;
 
   // Both channels should receive all the messages that each is sent. When
@@ -453,7 +459,8 @@ TEST(ChannelTest, PeerStressTest) {
       quit_when_both_channels_received_final_message);
   scoped_refptr<Channel> channel_a = Channel::Create(
       &delegate_a, ConnectionParams(platform_channel.TakeLocalEndpoint()),
-      Channel::HandlePolicy::kRejectHandles, message_loop.task_runner());
+      Channel::HandlePolicy::kRejectHandles,
+      base::ThreadTaskRunnerHandle::Get());
 
   CountingChannelDelegate delegate_b(
       quit_when_both_channels_received_final_message);
@@ -480,11 +487,11 @@ TEST(ChannelTest, PeerStressTest) {
   send_lots_of_messages(channel_a);
   send_lots_of_messages(channel_b);
 
-  message_loop.task_runner()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(send_lots_of_messages, channel_a));
-  message_loop.task_runner()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(send_lots_of_messages, channel_a));
-  message_loop.task_runner()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(send_final_message, channel_a));
 
   peer_thread.task_runner()->PostTask(
@@ -544,20 +551,23 @@ class SingleMessageWaiterDelegate : public Channel::Delegate {
 };
 
 TEST(ChannelTest, MessageSizeTest) {
-  base::MessageLoop message_loop(base::MessagePumpType::IO);
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   PlatformChannel platform_channel;
 
   SingleMessageWaiterDelegate receiver_delegate;
-  scoped_refptr<Channel> receiver = Channel::Create(
-      &receiver_delegate,
-      ConnectionParams(platform_channel.TakeLocalEndpoint()),
-      Channel::HandlePolicy::kAcceptHandles, message_loop.task_runner());
+  scoped_refptr<Channel> receiver =
+      Channel::Create(&receiver_delegate,
+                      ConnectionParams(platform_channel.TakeLocalEndpoint()),
+                      Channel::HandlePolicy::kAcceptHandles,
+                      base::ThreadTaskRunnerHandle::Get());
   receiver->Start();
 
   MockChannelDelegate sender_delegate;
   scoped_refptr<Channel> sender = Channel::Create(
       &sender_delegate, ConnectionParams(platform_channel.TakeRemoteEndpoint()),
-      Channel::HandlePolicy::kAcceptHandles, message_loop.task_runner());
+      Channel::HandlePolicy::kAcceptHandles,
+      base::ThreadTaskRunnerHandle::Get());
   sender->Start();
 
   for (uint32_t i = 0; i < base::GetPageSize() * 4; ++i) {

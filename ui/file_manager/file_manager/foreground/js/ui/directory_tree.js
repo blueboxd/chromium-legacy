@@ -746,8 +746,13 @@ class DirectoryItem extends TreeItem {
     ejectButton.appendChild(ironIcon);
 
     // Add the eject button as the last element of the tree row content.
-    const parent = rowElement.querySelector('.label').parentElement;
-    assert(parent).appendChild(ejectButton);
+    const label = rowElement.querySelector('.label');
+    label.parentElement.appendChild(ejectButton);
+
+    // Ensure the eject icon shows when the directory tree is too narrow.
+    if (directorytree.FILES_NG_ENABLED) {
+      label.setAttribute('style', 'margin-inline-end: 2px; min-width: 0;');
+    }
   }
 
   /**
@@ -1682,9 +1687,14 @@ class AndroidAppItem extends TreeItem {
     ironIcon.setAttribute('icon', `${iconSet}:external-link`);
     externalLinkIcon.appendChild(ironIcon);
 
-    // Add the external link as the last element of the tree row content.
-    const parent = this.rowElement.querySelector('.label').parentElement;
-    assert(parent).appendChild(externalLinkIcon);
+    // Add the external-link as the last element of the tree row content.
+    const label = this.rowElement.querySelector('.label');
+    label.parentElement.appendChild(externalLinkIcon);
+
+    // Ensure the link icon shows when the directory tree is too narrow.
+    if (directorytree.FILES_NG_ENABLED) {
+      label.setAttribute('style', 'margin-inline-end: 2px; min-width: 0;');
+    }
   }
 
   /**

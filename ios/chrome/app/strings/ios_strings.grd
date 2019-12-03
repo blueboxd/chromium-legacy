@@ -803,6 +803,9 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_DISABLBED_BY_ADMINISTRATOR_TITLE" desc="Error displayed as title when the sync is disabled by the enterprise policy. The user doesn't have a regular gmail account.">
         Sync Is Disabled by Your Administrator
       </message>
+      <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_ENCRYPTION_FIX_NOW" desc="Title button to ask the user to reauthenticate. Syncing of encrypted types (e.g. passwords) is blocked until the user completes the reauth flow.">
+        Fix now.
+      </message>
       <message name="IDS_IOS_HISTORY_OTHER_FORMS_OF_HISTORY" desc="The notification at the top of the history page indicating that deleting Chrome browsing history will not delete other forms of history stored at Google My Activity.">
         Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK">BEGIN_LINK</ph>history.google.com<ph name="END_LINK">END_LINK</ph>.
       </message>
@@ -1716,6 +1719,9 @@ To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>reset sync<ph name=
       <message name="IDS_IOS_SYNC_ENCRYPTION_PASSPHRASE_INFO" desc="The information text for encrypting sync using a passphrase, shown on the passphrase screen [iOS only]">
         Passphrase encryption doesn’t include payment methods and addresses from Google Pay. Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase or want to change this setting, you will need to reset sync. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
       </message>
+      <message name="IDS_IOS_SYNC_ENCRYPTION_FIX_NOW" desc="Title displayed when the signed in user needs to reauthenticate. Syncing of encrypted types (e.g. passwords) is blocked until the user completes the reauth flow.">
+        Fix Now
+      </message>
       <message name="IDS_IOS_SYNC_ENCRYPTION_TITLE" desc="The title for the Sync Encryption item [iOS only]">
         Encryption
       </message>
@@ -1738,13 +1744,19 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_SYNC_ERROR_COULD_NOT_CONNECT" desc="The error message to display when the sync server is unavailable. [Length: 100em, can be multiple lines] [iOS only]">
         Could not connect to the server.
       </message>
+      <message name="IDS_IOS_SYNC_ERROR_DESCRIPTION" desc="The error message to display when a generic error prevents sync from starting.">
+        Sync isn't working.
+      </message>
+      <message name="IDS_IOS_SYNC_PASSWORDS_ERROR_DESCRIPTION" desc="The error message to display when a generic error prevents encrypted sync datatypes (passwords) from working.">
+        Error syncing passwords.
+      </message>
       <message name="IDS_IOS_SYNC_ERROR_INFO_OUT_OF_DATE" desc="The error message to display when the accounts info are out of date. [Length: 100em, can be multiple lines] [iOS only]">
         Account sign-in details are out of date. Update to start sync.
       </message>
       <message name="IDS_IOS_SYNC_ERROR_INTERNET_DISCONNECTED" desc="Error to display when network connection failed while trying to use sync. [Length: 100em, can be multiple lines] [iOS only]">
         Unable to connect to the Internet.
       </message>
-      <message name="IDS_IOS_SYNC_ERROR_TITLE" desc="Title of the error message shown for sync errors. [Length: 60em] [iOS only]">
+      <message name="IDS_IOS_SYNC_ERROR_TITLE" desc="Title of the error message shown for sync errors. [iOS only]">
         Sync Isn't Working
       </message>
       <message name="IDS_IOS_SYNC_ERROR_UNRECOVERABLE" desc="The error message to display when there is an unrecoverable sync error. [Length: 100em, can be multiple lines] [iOS only]">
@@ -1767,6 +1779,9 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       </message>
       <message name="IDS_IOS_SYNC_PASSPHRASE_RECOVER" desc="Message about how to recover from a lost passphrase. [Length:100em, may be multiple lines] [iOS only]">
         If you forget your passphrase or want to change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>reset sync<ph name="END_LINK">END_LINK</ph>
+      </message>
+      <message name="IDS_IOS_SYNC_PASSWORDS_ERROR_TITLE" desc="Title of the error message shown for sync errors when it affects passwords only. [iOS only]">
+        Error Syncing Passwords
       </message>
       <message name="IDS_IOS_SYNC_SETTINGS_NOT_CONFIRMED" desc="The error message to display when sign-in was interrupted and the user didn't review the sync settings.">
         Initial sync setup was not finished. Sync is off.

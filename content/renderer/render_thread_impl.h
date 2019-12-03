@@ -185,6 +185,7 @@ class CONTENT_EXPORT RenderThreadImpl
       blink::scheduler::WebRendererProcessType type) override;
   blink::WebString GetUserAgent() override;
   const blink::UserAgentMetadata& GetUserAgentMetadata() override;
+  bool IsUseZoomForDSF() override;
 
   // IPC::Listener implementation via ChildThreadImpl:
   void OnAssociatedInterfaceRequest(

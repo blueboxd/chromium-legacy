@@ -394,6 +394,7 @@ source_set("eg2_tests") {
     "js_print_egtest.mm",
     "navigation_egtest.mm",
     "restore_egtest.mm",
+    "stop_loading_egtest.mm",
     "tab_order_egtest.mm",
     "visible_url_egtest.mm",
   ]

@@ -25,7 +25,34 @@ namespace audio {
 
 namespace {
 const int kMaxInputChannels = 3;
+
+const char* ErrorCodeToString(InputController::ErrorCode error) {
+  switch (error) {
+    case (InputController::STREAM_CREATE_ERROR):
+      return "STREAM_CREATE_ERROR";
+    case (InputController::STREAM_OPEN_ERROR):
+      return "STREAM_OPEN_ERROR";
+    case (InputController::STREAM_ERROR):
+      return "STREAM_ERROR";
+    default:
+      NOTREACHED();
+  }
+  return "UNKNOWN_ERROR";
 }
+
+std::string GetCtorLogString(const base::UnguessableToken& id,
+                             const std::string& device_id,
+                             const media::AudioParameters& params,
+                             bool enable_agc) {
+  std::string str = base::StringPrintf("Ctor({id=%s}, ", id.ToString().c_str());
+  base::StringAppendF(&str, "{device_id=%s}, ", device_id.c_str());
+  base::StringAppendF(&str, "{params=[%s]}, ",
+                      params.AsHumanReadableString().c_str());
+  base::StringAppendF(&str, "{enable_agc=%d})", enable_agc);
+  return str;
+}
+
+}  // namespace
 
 InputStream::InputStream(
     CreatedCallback created_callback,
@@ -68,6 +95,7 @@ InputStream::InputStream(
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN2("audio", "InputStream", this, "device id",
                                     device_id, "params",
                                     params.AsHumanReadableString());
+  SendLogMessage(GetCtorLogString(id_, device_id, params, enable_agc));
 
   // |this| owns these objects, so unretained is safe.
   base::RepeatingClosure error_handler = base::BindRepeating(
@@ -104,6 +132,7 @@ InputStream::InputStream(
 
 InputStream::~InputStream() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+  SendLogMessage("Dtor({id=" + id_.ToString() + "})");
 
   if (log_)
     log_->OnClosed();
@@ -142,12 +171,15 @@ void InputStream::SetOutputDeviceForAec(const std::string& output_device_id) {
     log_->OnLogMessage(
         base::StrCat({"SetOutputDeviceForAec: ", output_device_id}));
   }
+  SendLogMessage("SetOutputDeviceForAec({id=" + id_.ToString() + "}, " +
+                 "{output_device_id=" + output_device_id + "})");
 }
 
 void InputStream::Record() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   DCHECK(controller_);
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("audio", "Record", this);
+  SendLogMessage("Record({id=" + id_.ToString() + "})");
 
   controller_->Record();
   if (observer_)
@@ -177,6 +209,8 @@ void InputStream::OnCreated(bool initially_muted) {
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT1("audio", "Created", this,
                                       "initially muted", initially_muted);
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+  SendLogMessage(base::StringPrintf("OnCreated({id=%s}, {muted=%d})",
+                                    id_.ToString().c_str(), initially_muted));
 
   base::ReadOnlySharedMemoryRegion shared_memory_region =
       writer_->TakeSharedMemoryRegion();
@@ -202,8 +236,9 @@ void InputStream::OnError(InputController::ErrorCode error_code) {
   client_->OnError();
   if (log_) {
     log_->OnError();
-    log_->OnLogMessage(
-        base::StringPrintf("AIC::OnError: %d", error_code).c_str());
+    SendLogMessage(base::StringPrintf("OnError({id=%s}, {error_code=%s})",
+                                      id_.ToString().c_str(),
+                                      ErrorCodeToString(error_code)));
   }
   OnStreamError(true);
 }
@@ -211,7 +246,7 @@ void InputStream::OnError(InputController::ErrorCode error_code) {
 void InputStream::OnLog(base::StringPiece message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   if (log_)
-    log_->OnLogMessage(message.as_string());
+    log_->OnLogMessage(message.as_string() + " [id=" + id_.ToString() + "]");
 }
 
 void InputStream::OnMuted(bool is_muted) {
@@ -230,8 +265,8 @@ void InputStream::OnStreamError(bool signalPlatformError) {
         std::string());
   }
 
-  if (signalPlatformError && log_) {
-    log_->OnLogMessage(base::StringPrintf("IC::OnStreamError").c_str());
+  if (signalPlatformError) {
+    SendLogMessage("OnStreamError({id=" + id_.ToString() + "})");
   }
 
   // Defer callback so we're not destructed while in the constructor.
@@ -245,6 +280,13 @@ void InputStream::CallDeleter() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
 
   std::move(delete_callback_).Run(this);
+}
+
+void InputStream::SendLogMessage(const std::string& message) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+  if (log_) {
+    log_->OnLogMessage("audio::IS::" + message);
+  }
 }
 
 }  // namespace audio

@@ -24,6 +24,7 @@ interface BluetoothInternalsHandler {
   // not supported (e.g., the required flags are disabled or the logged-in user
   // is not eligible), null is returned. When a valid handler is returned, an
   // extra boolean is provided which represents the initial state of the toggle.
-  GetDebugLogsChangeHandler() => (DebugLogsChangeHandler? handler,
-                                  bool initial_toggle_value);
+  GetDebugLogsChangeHandler()
+      => (pending_remote<DebugLogsChangeHandler>? handler,
+          bool initial_toggle_value);
 };

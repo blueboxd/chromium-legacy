@@ -11,12 +11,14 @@ the standalone version of Results Processor.
 from __future__ import print_function
 
 import datetime
+import gzip
 import json
 import logging
 import os
 import posixpath
 import random
 import re
+import shutil
 
 from py_utils import cloud_storage
 from core.results_processor import command_line
@@ -103,12 +105,14 @@ def ProcessTestResult(test_result, upload_bucket, results_label,
                       max_num_values, test_path_format, trace_processor_path):
   ConvertProtoTraces(test_result, trace_processor_path)
   AggregateTBMv2Traces(test_result)
+  AggregateTBMv3Traces(test_result)
   if upload_bucket is not None:
     UploadArtifacts(test_result, upload_bucket, run_identifier)
 
   if should_compute_metrics:
     test_result['_histograms'] = histogram_set.HistogramSet()
     compute_metrics.ComputeTBMv2Metrics(test_result)
+    compute_metrics.ComputeTBMv3Metrics(test_result, trace_processor_path)
     ExtractMeasurements(test_result)
     num_values = len(test_result['_histograms'])
     if max_num_values is not None and num_values > max_num_values:
@@ -185,6 +189,9 @@ def ConvertProtoTraces(test_result, trace_processor_path):
   artifacts = test_result.get('outputArtifacts', {})
   proto_traces = [name for name in artifacts if _IsProtoTrace(name)]
 
+  # TODO(crbug.com/990304): After implementation of TBMv3-style clock sync,
+  # it will be possible to convert the aggregated proto trace, not
+  # individual ones.
   for proto_trace_name in proto_traces:
     proto_file_path = artifacts[proto_trace_name]['filePath']
     logging.info('%s: Converting proto trace %s.',
@@ -219,6 +226,35 @@ def AggregateTBMv2Traces(test_result):
     artifacts[compute_metrics.HTML_TRACE_NAME] = {
       'filePath': html_path,
       'contentType': 'text/html',
+    }
+  for name in traces:
+    del artifacts[name]
+
+
+def AggregateTBMv3Traces(test_result):
+  """Replace individual proto traces with an aggregate one.
+
+  For a test result with proto traces, concatenates them into one file.
+  Removes all entries for individual traces and adds one entry for
+  the aggregate one.
+  """
+  artifacts = test_result.get('outputArtifacts', {})
+  traces = [name for name in artifacts if _IsProtoTrace(name)]
+  if traces:
+    proto_files = [artifacts[name]['filePath'] for name in traces]
+    concatenated_path = _BuildOutputPath(
+        proto_files, compute_metrics.CONCATENATED_PROTO_NAME)
+    with open(concatenated_path, 'w') as concatenated_trace:
+      for trace_file in proto_files:
+        if trace_file.endswith('.pb.gz'):
+          with gzip.open(trace_file, 'rb') as f:
+            shutil.copyfileobj(f, concatenated_trace)
+        else:
+          with open(trace_file, 'rb') as f:
+            shutil.copyfileobj(f, concatenated_trace)
+    artifacts[compute_metrics.CONCATENATED_PROTO_NAME] = {
+      'filePath': concatenated_path,
+      'contentType': 'application/x-protobuf',
     }
   for name in traces:
     del artifacts[name]

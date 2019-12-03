@@ -155,7 +155,7 @@ bool SVGImage::CurrentFrameHasSingleSecurityOrigin() const {
   // Don't allow foreignObject elements or images that are not known to be
   // single-origin since these can leak cross-origin information.
   for (Node* node = root_element; node; node = FlatTreeTraversal::Next(*node)) {
-    if (IsSVGForeignObjectElement(*node))
+    if (IsA<SVGForeignObjectElement>(*node))
       return false;
     if (auto* image = DynamicTo<SVGImageElement>(*node)) {
       if (!image->CurrentFrameHasSingleSecurityOrigin())

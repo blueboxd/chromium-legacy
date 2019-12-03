@@ -140,7 +140,7 @@ class FetchLoaderClient final : public GarbageCollected<FetchLoaderClient>,
 
  public:
   FetchLoaderClient(
-      std::unique_ptr<ServiceWorkerTimeoutTimer::StayAwakeToken> token)
+      std::unique_ptr<ServiceWorkerEventQueue::StayAwakeToken> token)
       : token_(std::move(token)) {
     // We need to make |callback_| callable in the first place because some
     // DidFetchDataLoadXXX() accessing it may be called synchronously from
@@ -187,7 +187,7 @@ class FetchLoaderClient final : public GarbageCollected<FetchLoaderClient>,
       callback_receiver_;
 
   mojo::Remote<mojom::blink::ServiceWorkerStreamCallback> callback_;
-  std::unique_ptr<ServiceWorkerTimeoutTimer::StayAwakeToken> token_;
+  std::unique_ptr<ServiceWorkerEventQueue::StayAwakeToken> token_;
 
   DISALLOW_COPY_AND_ASSIGN(FetchLoaderClient);
 };

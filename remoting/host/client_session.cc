@@ -25,6 +25,7 @@
 #include "remoting/host/file_transfer/file_transfer_message_handler.h"
 #include "remoting/host/host_extension_session.h"
 #include "remoting/host/input_injector.h"
+#include "remoting/host/keyboard_layout_monitor.h"
 #include "remoting/host/mouse_shape_pump.h"
 #include "remoting/host/screen_controls.h"
 #include "remoting/host/screen_resolution.h"
@@ -378,6 +379,12 @@ void ClientSession::OnConnectionChannelsConnected() {
       new MouseShapePump(desktop_environment_->CreateMouseCursorMonitor(),
                          connection_->client_stub()));
 
+  // Create KeyboardLayoutMonitor to send keyboard layout.
+  keyboard_layout_monitor_ = KeyboardLayoutMonitor::Create(
+      base::BindRepeating(&protocol::KeyboardLayoutStub::SetKeyboardLayout,
+                          base::Unretained(connection_->client_stub())));
+  keyboard_layout_monitor_->Start();
+
   if (pending_video_layout_message_) {
     connection_->client_stub()->SetVideoLayout(*pending_video_layout_message_);
     pending_video_layout_message_.reset();
@@ -406,6 +413,7 @@ void ClientSession::OnConnectionClosed(protocol::ErrorCode error) {
   // longer valid once ConnectionToClient calls OnConnectionClosed().
   audio_stream_.reset();
   video_stream_.reset();
+  keyboard_layout_monitor_.reset();
   mouse_shape_pump_.reset();
   client_clipboard_factory_.InvalidateWeakPtrs();
   input_injector_.reset();

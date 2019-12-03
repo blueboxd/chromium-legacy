@@ -305,8 +305,8 @@ class AssistantOverlayDrawable extends Drawable implements FullscreenListener {
         canvas.drawPaint(mBackground);
 
         // Draw overlay image, if specified.
-        if (mTransparentArea.isEmpty() && mOverlayImage != null
-                && mOverlayImage.mImageBitmap != null && mOverlayImage.mImageSize != null) {
+        if (!mPartial && mOverlayImage != null && mOverlayImage.mImageBitmap != null
+                && mOverlayImage.mImageSize != null) {
             DisplayMetrics displayMetrics = mContext.getResources().getDisplayMetrics();
             int imageSize = mOverlayImage.mImageSize.getSizeInPixels(displayMetrics);
             int topMargin = 0;

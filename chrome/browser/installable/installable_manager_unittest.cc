@@ -5,6 +5,7 @@
 #include "chrome/browser/installable/installable_manager.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
@@ -113,7 +114,7 @@ TEST_F(InstallableManagerUnitTest, ManifestRequiresValidStartURL) {
   EXPECT_EQ(START_URL_NOT_VALID, GetErrorCode());
 }
 
-TEST_F(InstallableManagerUnitTest, ManifestRequiresImagePNG) {
+TEST_F(InstallableManagerUnitTest, ManifestSupportsImagePNG) {
   blink::Manifest manifest = GetValidManifest();
 
   manifest.icons[0].type = base::ASCIIToUTF16("image/gif");
@@ -134,10 +135,42 @@ TEST_F(InstallableManagerUnitTest, ManifestRequiresImagePNG) {
   EXPECT_TRUE(IsManifestValid(manifest));
   EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
 
-  // Non-png extensions are rejected.
+  // Unsupported extensions are rejected.
   manifest.icons[0].src = GURL("http://example.com/icon.gif");
   EXPECT_FALSE(IsManifestValid(manifest));
   EXPECT_EQ(MANIFEST_MISSING_SUITABLE_ICON, GetErrorCode());
+}
+
+TEST_F(InstallableManagerUnitTest, ManifestSupportsImageSVG) {
+  blink::Manifest manifest = GetValidManifest();
+
+  // The correct mimetype is image/svg+xml.
+  manifest.icons[0].type = base::ASCIIToUTF16("image/svg");
+  EXPECT_FALSE(IsManifestValid(manifest));
+  EXPECT_EQ(MANIFEST_MISSING_SUITABLE_ICON, GetErrorCode());
+
+  // If the type is null, the icon src will be checked instead.
+  manifest.icons[0].type.clear();
+  manifest.icons[0].src = GURL("http://example.com/icon.svg");
+// TODO(https://crbug.com/578122): Add SVG support for Android.
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(IsManifestValid(manifest));
+  EXPECT_EQ(MANIFEST_MISSING_SUITABLE_ICON, GetErrorCode());
+#else
+  EXPECT_TRUE(IsManifestValid(manifest));
+  EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
+#endif
+
+  // Capital file extension is also permissible.
+  manifest.icons[0].src = GURL("http://example.com/icon.SVG");
+// TODO(https://crbug.com/578122): Add SVG support for Android.
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(IsManifestValid(manifest));
+  EXPECT_EQ(MANIFEST_MISSING_SUITABLE_ICON, GetErrorCode());
+#else
+  EXPECT_TRUE(IsManifestValid(manifest));
+  EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
+#endif
 }
 
 TEST_F(InstallableManagerUnitTest, ManifestRequiresPurposeAny) {

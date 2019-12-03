@@ -68,6 +68,7 @@
 #include "content/common/unfreezable_frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/common/web_package/signed_exchange_utils.h"
+#include "content/public/common/bind_interface_helpers.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"

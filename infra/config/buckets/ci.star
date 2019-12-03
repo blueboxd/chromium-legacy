@@ -434,64 +434,55 @@ def chromiumos_builder(*, name, **kwargs):
   return builder(
       name = name,
       mastername = 'chromium.chromiumos',
+      goma_backend = goma.backend.RBE_PROD,
       **kwargs
   )
 
 chromiumos_builder(
     name = 'Linux ChromiumOS Full',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 chromiumos_builder(
     name = 'chromeos-amd64-generic-asan-rel',
-    goma_backend = goma.backend.RBE_PROD,
     goma_enable_ats = True,
 )
 
 chromiumos_builder(
     name = 'chromeos-amd64-generic-cfi-thin-lto-rel',
-    goma_backend = goma.backend.RBE_PROD,
     goma_enable_ats = True,
 )
 
 chromiumos_builder(
     name = 'chromeos-amd64-generic-dbg',
-    goma_backend = goma.backend.RBE_PROD,
     goma_enable_ats = True,
 )
 
 chromiumos_builder(
     name = 'chromeos-amd64-generic-rel',
-    goma_backend = goma.backend.RBE_PROD,
     goma_enable_ats = True,
 )
 
 chromiumos_builder(
     name = 'chromeos-arm-generic-dbg',
-    goma_backend = goma.backend.RBE_PROD,
     goma_enable_ats = True,
 )
 
 chromiumos_builder(
     name = 'chromeos-arm-generic-rel',
-    goma_backend = goma.backend.RBE_PROD,
     goma_enable_ats = True,
 )
 
 chromiumos_builder(
     name = 'chromeos-kevin-rel',
-    goma_backend = goma.backend.RBE_PROD,
     goma_enable_ats = True,
 )
 
 chromiumos_builder(
     name = 'linux-chromeos-dbg',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 chromiumos_builder(
     name = 'linux-chromeos-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 

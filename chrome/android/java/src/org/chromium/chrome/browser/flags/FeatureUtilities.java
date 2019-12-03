@@ -102,6 +102,14 @@ public class FeatureUtilities {
     }
 
     /**
+     * Records the type of the currently visible Activity for metrics.
+     * @param activityType The type of the Activity.
+     */
+    public static void setActivityType(@ActivityType int activityType) {
+        FeatureUtilitiesJni.get().setActivityType(activityType);
+    }
+
+    /**
      * Caches flags that must take effect on startup but are set via native code.
      */
     public static void cacheNativeFlags() {
@@ -652,6 +660,7 @@ public class FeatureUtilities {
     @NativeMethods
     interface Natives {
         void setCustomTabVisible(boolean visible);
+        void setActivityType(@ActivityType int type);
         void setIsInMultiWindowMode(boolean isInMultiWindowMode);
         boolean isNetworkServiceWarmUpEnabled();
     }

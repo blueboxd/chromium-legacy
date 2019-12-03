@@ -98,6 +98,9 @@ class ChromotingClient : public SignalStrategy::Listener,
   // CursorShapeStub implementation for receiving cursor shape updates.
   void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) override;
 
+  // KeyboardLayoutStub implementation for sending keyboard layout to client.
+  void SetKeyboardLayout(const protocol::KeyboardLayout& layout) override;
+
   // ConnectionToHost::HostEventCallback implementation.
   void OnConnectionState(protocol::ConnectionToHost::State state,
                          protocol::ErrorCode error) override;

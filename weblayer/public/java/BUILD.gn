@@ -4,6 +4,10 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
+import("//build/util/process_version.gni")
+
+_version_constants_java_file =
+    "$target_gen_dir/org/chromium/weblayer/WebLayerClientVersionConstants.java"
 
 weblayer_client_manifest =
     "$target_gen_dir/weblayer_client_manifest/AndroidManifest.xml"
@@ -47,10 +51,12 @@ android_library("java") {
     "org/chromium/weblayer/UnsupportedVersionException.java",
     "org/chromium/weblayer/WebLayer.java",
     "org/chromium/weblayer/WebLayerFileProvider.java",
+    _version_constants_java_file,
   ]
 
   deps = [
     ":client_resources",
+    ":client_version",
     ":weblayer_client_manifest",
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:com_android_support_support_compat_java",
@@ -86,4 +92,14 @@ dist_aar("client_aar") {
   # specify again here.
   android_manifest = weblayer_client_manifest
   output = "$root_build_dir/WebLayerClient.aar"
+}
+
+process_version("client_version") {
+  process_only = true
+  template_file =
+      "org/chromium/weblayer/WebLayerClientVersionConstants.java.version"
+  output = _version_constants_java_file
+  sources = [
+    "//chrome/VERSION",
+  ]
 }

@@ -53,16 +53,6 @@ class MockFileUtilitiesHost : public mojom::blink::FileUtilitiesHost {
   base::File::Info file_info_;
 };
 
-void ExpectLastModifiedIsNow(const File& file) {
-  const base::Time now = base::Time::Now();
-  const base::Time epoch = base::Time::UnixEpoch();
-  // Because lastModified() applies floor() internally, it can be smaller than
-  // |now|. |+ 1| adjusts it.
-  EXPECT_GE(epoch + base::TimeDelta::FromMilliseconds(file.lastModified() + 1),
-            now);
-  EXPECT_GE(file.LastModifiedDate() + 1, now.ToJsTime());
-}
-
 }  // namespace
 
 TEST(FileTest, NativeFileWithoutTimestamp) {
@@ -75,7 +65,13 @@ TEST(FileTest, NativeFileWithoutTimestamp) {
   EXPECT_TRUE(file->HasBackingFile());
   EXPECT_EQ("/native/path", file->GetPath());
   EXPECT_TRUE(file->FileSystemURL().IsEmpty());
-  ExpectLastModifiedIsNow(*file);
+
+  const base::Time now = base::Time::Now();
+  const base::TimeDelta delta_now = now - base::Time::UnixEpoch();
+  // Because lastModified() applies floor() internally, we should compare
+  // integral millisecond values.
+  EXPECT_GE(file->lastModified(), delta_now.InMilliseconds());
+  EXPECT_GE(file->LastModifiedTime(), now);
 }
 
 TEST(FileTest, NativeFileWithUnixEpochTimestamp) {
@@ -87,7 +83,7 @@ TEST(FileTest, NativeFileWithUnixEpochTimestamp) {
   auto* const file = MakeGarbageCollected<File>("/native/path");
   EXPECT_TRUE(file->HasBackingFile());
   EXPECT_EQ(0, file->lastModified());
-  EXPECT_EQ(0.0, file->LastModifiedDate());
+  EXPECT_EQ(base::Time::UnixEpoch(), file->LastModifiedTime());
 }
 
 TEST(FileTest, NativeFileWithApocalypseTimestamp) {
@@ -99,16 +95,16 @@ TEST(FileTest, NativeFileWithApocalypseTimestamp) {
   auto* const file = MakeGarbageCollected<File>("/native/path");
   EXPECT_TRUE(file->HasBackingFile());
 
-  ExpectLastModifiedIsNow(*file);
-  // Actually, the timestamp should not be |now|.
-  // EXPECT_EQ(base::Time::Max() - base::Time::UnixEpoch(),
-  //           base::TimeDelta::FromMilliseconds(file->lastModified()));
+  EXPECT_EQ((base::Time::Max() - base::Time::UnixEpoch()).InMilliseconds(),
+            file->lastModified());
+  EXPECT_EQ(base::Time::Max(), file->LastModifiedTime());
 }
 
 TEST(FileTest, blobBackingFile) {
   const scoped_refptr<BlobDataHandle> blob_data_handle =
       BlobDataHandle::Create();
-  auto* const file = MakeGarbageCollected<File>("name", 0.0, blob_data_handle);
+  auto* const file = MakeGarbageCollected<File>("name", base::Time::UnixEpoch(),
+                                                blob_data_handle);
   EXPECT_FALSE(file->HasBackingFile());
   EXPECT_TRUE(file->GetPath().IsEmpty());
   EXPECT_TRUE(file->FileSystemURL().IsEmpty());
@@ -152,12 +148,13 @@ TEST(FileTest, hsaSameSource) {
 
   const scoped_refptr<BlobDataHandle> blob_data_a = BlobDataHandle::Create();
   const scoped_refptr<BlobDataHandle> blob_data_b = BlobDataHandle::Create();
+  const base::Time kEpoch = base::Time::UnixEpoch();
   auto* const blob_file_a1 =
-      MakeGarbageCollected<File>("name", 0.0, blob_data_a);
+      MakeGarbageCollected<File>("name", kEpoch, blob_data_a);
   auto* const blob_file_a2 =
-      MakeGarbageCollected<File>("name", 0.0, blob_data_a);
+      MakeGarbageCollected<File>("name", kEpoch, blob_data_a);
   auto* const blob_file_b =
-      MakeGarbageCollected<File>("name", 0.0, blob_data_b);
+      MakeGarbageCollected<File>("name", kEpoch, blob_data_b);
 
   KURL url_a("filesystem:http://example.com/isolated/hash/non-native-file-A");
   KURL url_b("filesystem:http://example.com/isolated/hash/non-native-file-B");

@@ -147,11 +147,33 @@ cc::SnapFlingController::GestureScrollUpdateInfo GetGestureScrollUpdateInfo(
 }
 
 enum ScrollingThreadStatus {
-  SCROLLING_ON_COMPOSITOR,
-  SCROLLING_ON_COMPOSITOR_BLOCKED_ON_MAIN,
-  SCROLLING_ON_MAIN,
-  LAST_SCROLLING_THREAD_STATUS_VALUE = SCROLLING_ON_MAIN,
+  kScrollingOnCompositor = 0,
+  kScrollingOnCompositorBlockedOnMain = 1,
+  kScrollingOnMain = 2,
+  kMaxValue = kScrollingOnMain,
 };
+
+void RecordScrollingThread(bool scrolling_on_compositor_thread,
+                           bool blocked_on_main_thread_event_handler,
+                           blink::WebGestureDevice device) {
+  const char* kWheelHistogramName = "Renderer4.ScrollingThread.Wheel";
+  const char* kTouchHistogramName = "Renderer4.ScrollingThread.Touch";
+
+  ScrollingThreadStatus status = kScrollingOnMain;
+  if (scrolling_on_compositor_thread) {
+    status = blocked_on_main_thread_event_handler
+                 ? kScrollingOnCompositorBlockedOnMain
+                 : kScrollingOnCompositor;
+  }
+
+  if (device == blink::WebGestureDevice::kTouchscreen) {
+    UMA_HISTOGRAM_ENUMERATION(kTouchHistogramName, status);
+  } else if (device == blink::WebGestureDevice::kTouchpad) {
+    UMA_HISTOGRAM_ENUMERATION(kWheelHistogramName, status);
+  } else {
+    NOTREACHED();
+  }
+}
 
 }  // namespace
 
@@ -651,16 +673,38 @@ void InputHandlerProxy::RecordMainThreadScrollingReasons(
   DCHECK(
       !cc::MainThreadScrollingReason::HasNonCompositedScrollReasons(reasons));
 
-  int32_t event_disposition_result =
+  // This records whether a scroll is handled on the main or compositor
+  // threads. Note: scrolls handled on the compositor but blocked on main due
+  // to event handlers are still considered compositor scrolls.
+  const bool is_compositor_scroll =
+      reasons == cc::MainThreadScrollingReason::kNotScrollingOnMain;
+
+  int32_t disposition =
       (device == blink::WebGestureDevice::kTouchpad ? mouse_wheel_result_
                                                     : touch_result_);
-  if (event_disposition_result == DID_NOT_HANDLE) {
+
+  // Scrolling can be handled on the compositor thread but it might be blocked
+  // on the main thread waiting for non-passive event handlers to process the
+  // wheel/touch events (i.e. were they preventDefaulted?).
+  bool blocked_on_main_thread_handler = disposition == DID_NOT_HANDLE;
+
+  RecordScrollingThread(is_compositor_scroll, blocked_on_main_thread_handler,
+                        device);
+
+  if (blocked_on_main_thread_handler) {
     // We should also collect main thread scrolling reasons if a scroll event
     // scrolls on impl thread but is blocked by main thread event handlers.
     reasons |= (device == blink::WebGestureDevice::kTouchpad
                     ? cc::MainThreadScrollingReason::kWheelEventHandlerRegion
                     : cc::MainThreadScrollingReason::kTouchEventHandlerRegion);
   }
+
+  // Note: This is slightly different from |is_compositor_scroll| above because
+  // at this point, we've also included wheel handler region reasons which will
+  // scroll on the compositor but require blocking on the main thread. The
+  // histograms below don't consider this "not scrolling on main".
+  const bool is_unblocked_compositor_scroll =
+      reasons == cc::MainThreadScrollingReason::kNotScrollingOnMain;
 
   // UMA_HISTOGRAM_ENUMERATION requires that the enum_max must be strictly
   // greater than the sample value. kMainThreadScrollingReasonCount doesn't
@@ -669,7 +713,7 @@ void InputHandlerProxy::RecordMainThreadScrollingReasons(
   // TODO(dcheng): Fix https://crbug.com/705169 so this isn't needed.
   constexpr uint32_t kMainThreadScrollingReasonEnumMax =
       cc::MainThreadScrollingReason::kMainThreadScrollingReasonCount + 1;
-  if (reasons == cc::MainThreadScrollingReason::kNotScrollingOnMain) {
+  if (is_unblocked_compositor_scroll) {
     if (device == blink::WebGestureDevice::kTouchscreen) {
       UMA_HISTOGRAM_ENUMERATION(
           kGestureHistogramName,

@@ -61,18 +61,6 @@ CreditCardFIDOAuthenticator::CreditCardFIDOAuthenticator(AutofillDriver* driver,
 
 CreditCardFIDOAuthenticator::~CreditCardFIDOAuthenticator() {}
 
-void CreditCardFIDOAuthenticator::ShowWebauthnOfferDialog(
-    std::string card_authorization_token) {
-#if !defined(OS_ANDROID)
-  card_authorization_token_ = card_authorization_token;
-  autofill_client_->ShowWebauthnOfferDialog(base::BindRepeating(
-      &CreditCardFIDOAuthenticator::OnWebauthnOfferDialogUserResponse,
-      weak_ptr_factory_.GetWeakPtr()));
-  AutofillMetrics::LogWebauthnOptInPromoShown(
-      /*is_checkout_flow=*/!card_authorization_token_.empty());
-#endif
-}
-
 void CreditCardFIDOAuthenticator::Authenticate(
     const CreditCard* card,
     base::WeakPtr<Requester> requester,
@@ -177,6 +165,42 @@ void CreditCardFIDOAuthenticator::CancelVerification() {
     full_card_request_->OnFIDOVerificationCancelled();
 }
 
+#if !defined(OS_ANDROID)
+void CreditCardFIDOAuthenticator::OnWebauthnOfferDialogRequested(
+    std::string card_authorization_token) {
+  card_authorization_token_ = card_authorization_token;
+  AutofillMetrics::LogWebauthnOptInPromoShown(
+      /*is_checkout_flow=*/!card_authorization_token_.empty());
+}
+
+void CreditCardFIDOAuthenticator::OnWebauthnOfferDialogUserResponse(
+    bool did_accept) {
+  if (did_accept) {
+    // Wait until GetAssertion()/MakeCredential() to log user acceptance, since
+    // user still has the option to cancel the dialog while the challenge is
+    // being fetched.
+    Register(card_authorization_token_);
+  } else {
+    // If user declined, log user decision. User may have initially accepted the
+    // dialog, but then chose to cancel while the challenge was being fetched.
+    AutofillMetrics::LogWebauthnOptInPromoUserDecision(
+        /*is_checkout_flow=*/!card_authorization_token_.empty(),
+        current_flow_ == OPT_IN_FETCH_CHALLENGE_FLOW
+            ? AutofillMetrics::WebauthnOptInPromoUserDecisionMetric::
+                  kDeclinedAfterAccepting
+            : AutofillMetrics::WebauthnOptInPromoUserDecisionMetric::
+                  kDeclinedImmediately);
+    payments_client_->CancelRequest();
+    card_authorization_token_ = std::string();
+    current_flow_ = NONE_FLOW;
+    GetOrCreateFidoAuthenticationStrikeDatabase()->AddStrikes(
+        FidoAuthenticationStrikeDatabase::kStrikesToAddWhenOptInOfferDeclined);
+    ::autofill::prefs::SetCreditCardFIDOAuthEnabled(
+        autofill_client_->GetPrefs(), false);
+  }
+}
+#endif
+
 FidoAuthenticationStrikeDatabase*
 CreditCardFIDOAuthenticator::GetOrCreateFidoAuthenticationStrikeDatabase() {
   if (!fido_authentication_strike_database_) {
@@ -200,7 +224,7 @@ void CreditCardFIDOAuthenticator::GetAssertion(
   // closed, then the offer was declined during the fetching challenge process,
   // and thus returned early.
   if (current_flow_ == OPT_IN_WITH_CHALLENGE_FLOW) {
-    if (autofill_client_->CloseWebauthnOfferDialog()) {
+    if (autofill_client_->CloseWebauthnDialog()) {
       // Now that the dialog has closed and will proceed to a WebAuthn prompt,
       // the user must have accepted the dialog without cancelling.
       AutofillMetrics::LogWebauthnOptInPromoUserDecision(
@@ -210,6 +234,12 @@ void CreditCardFIDOAuthenticator::GetAssertion(
       current_flow_ = NONE_FLOW;
       return;
     }
+  }
+  if (current_flow_ == AUTHENTICATION_FLOW) {
+    // The cancel button in the verify pending dialog should be disabled when
+    // the OS authentication dialog is visible.
+    autofill_client_->UpdateWebauthnVerifyPendingCancelButton(
+        /*should_be_enabled=*/false);
   }
 #endif
   authenticator_->GetAssertion(
@@ -229,7 +259,7 @@ void CreditCardFIDOAuthenticator::MakeCredential(
   // level authentication dialog. If dialog is already closed, then the offer
   // was declined during the fetching challenge process, and thus returned
   // early.
-  if (autofill_client_->CloseWebauthnOfferDialog()) {
+  if (autofill_client_->CloseWebauthnDialog()) {
     // Now that the dialog has closed and will proceed to a WebAuthn prompt,
     // the user must have accepted the dialog without cancelling.
     AutofillMetrics::LogWebauthnOptInPromoUserDecision(
@@ -334,6 +364,12 @@ void CreditCardFIDOAuthenticator::OnDidGetAssertion(
   }
 
   if (current_flow_ == AUTHENTICATION_FLOW) {
+#if !defined(OS_ANDROID)
+    // On desktop, enables the cancel button in the verify pending dialog again.
+    autofill_client_->UpdateWebauthnVerifyPendingCancelButton(
+        /*should_be_enabled=*/true);
+#endif
+
     base::Value response =
         ParseAssertionResponse(std::move(assertion_response));
     full_card_request_.reset(new payments::FullCardRequest(
@@ -410,33 +446,6 @@ void CreditCardFIDOAuthenticator::OnDidGetOptChangeResult(
     }
   } else {
     current_flow_ = NONE_FLOW;
-  }
-}
-
-void CreditCardFIDOAuthenticator::OnWebauthnOfferDialogUserResponse(
-    bool did_accept) {
-  if (did_accept) {
-    // Wait until GetAssertion()/MakeCredential() to log user acceptance, since
-    // user still has the option to cancel the dialog while the challenge is
-    // being fetched.
-    Register(card_authorization_token_);
-  } else {
-    // If user declined, log user decision. User may have initially accepted the
-    // dialog, but then chose to cancel while the challenge was being fetched.
-    AutofillMetrics::LogWebauthnOptInPromoUserDecision(
-        /*is_checkout_flow=*/!card_authorization_token_.empty(),
-        current_flow_ == OPT_IN_FETCH_CHALLENGE_FLOW
-            ? AutofillMetrics::WebauthnOptInPromoUserDecisionMetric::
-                  kDeclinedAfterAccepting
-            : AutofillMetrics::WebauthnOptInPromoUserDecisionMetric::
-                  kDeclinedImmediately);
-    payments_client_->CancelRequest();
-    card_authorization_token_ = std::string();
-    current_flow_ = NONE_FLOW;
-    GetOrCreateFidoAuthenticationStrikeDatabase()->AddStrikes(
-        FidoAuthenticationStrikeDatabase::kStrikesToAddWhenOptInOfferDeclined);
-    ::autofill::prefs::SetCreditCardFIDOAuthEnabled(
-        autofill_client_->GetPrefs(), false);
   }
 }
 

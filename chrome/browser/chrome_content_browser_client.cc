@@ -37,6 +37,7 @@
 #include "build/build_config.h"
 #include "chrome/app/builtin_service_manifests.h"
 #include "chrome/app/chrome_content_browser_overlay_manifest.h"
+#include "chrome/app/chrome_content_renderer_overlay_manifest.h"
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
 #include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
 #include "chrome/browser/after_startup_task_utils.h"
@@ -61,7 +62,6 @@
 #include "chrome/browser/font_family_cache.h"
 #include "chrome/browser/gpu/chrome_browser_main_extra_parts_gpu.h"
 #include "chrome/browser/hid/chrome_hid_delegate.h"
-#include "chrome/browser/language/translate_frame_binder.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/lookalikes/lookalike_url_navigation_throttle.h"
 #include "chrome/browser/media/router/media_router_feature.h"
@@ -3715,6 +3715,8 @@ base::Optional<service_manager::Manifest>
 ChromeContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
   if (name == content::mojom::kBrowserServiceName)
     return GetChromeContentBrowserOverlayManifest();
+  if (name == content::mojom::kRendererServiceName)
+    return GetChromeContentRendererOverlayManifest();
   return base::nullopt;
 }
 
@@ -4106,10 +4108,6 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
   worker_interfaces_parameterized_ =
       std::make_unique<service_manager::BinderRegistryWithArgs<
           content::RenderProcessHost*, const url::Origin&>>();
-
-  // Register mojo ContentTranslateDriver interface only for main frame.
-  frame_interfaces_parameterized_->AddInterface(
-      base::BindRepeating(&language::BindContentTranslateDriver));
 }
 
 void ChromeContentBrowserClient::InitNetworkContextsParentDirectory() {

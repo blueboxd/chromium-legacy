@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/task_environment.h"
 #include "gpu/ipc/service/gpu_watchdog_thread_v2.h"
 
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_source.h"
@@ -45,7 +45,7 @@ class GpuWatchdogTest : public testing::Test {
 
  protected:
   ~GpuWatchdogTest() override = default;
-  base::MessageLoop main_loop;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::RunLoop run_loop;
   std::unique_ptr<gpu::GpuWatchdogThread> watchdog_thread_;
 };
@@ -159,30 +159,39 @@ TEST_F(GpuWatchdogTest, GpuInitializationHang) {
 }
 
 // Normal GPU Initialization and Running Task
-TEST_F(GpuWatchdogTest, GpuInitializationAndRunningTasks) {
+//
+// Disabled on TSan due to flakiness: https://crbug.com/1030130.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_GpuInitializationAndRunningTasks \
+  DISABLED_GpuInitializationAndRunningTasks
+#else
+#define MAYBE_GpuInitializationAndRunningTasks GpuInitializationAndRunningTasks
+#endif
+TEST_F(GpuWatchdogTest, MAYBE_GpuInitializationAndRunningTasks) {
   // Assume GPU initialization takes 300 milliseconds.
   SimpleTask(base::TimeDelta::FromMilliseconds(300));
   watchdog_thread_->OnInitComplete();
 
   // Start running GPU tasks. Watchdog function WillProcessTask(),
   // DidProcessTask() and ReportProgress() are tested.
-  main_loop.task_runner()->PostTask(
+  task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&SimpleTask, base::TimeDelta::FromMilliseconds(500)));
-  main_loop.task_runner()->PostTask(
+  task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&SimpleTask, base::TimeDelta::FromMilliseconds(500)));
 
   // This long task takes 3000 milliseconds to finish, longer than timeout.
   // But it reports progress every 500 milliseconds
-  main_loop.task_runner()->PostTask(
+  task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&GpuWatchdogTest::LongTaskWithReportProgress,
                                 base::Unretained(this),
                                 kGpuWatchdogTimeoutForTesting +
                                     base::TimeDelta::FromMilliseconds(2000),
                                 base::TimeDelta::FromMilliseconds(500)));
 
-  main_loop.task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
+  task_environment_.GetMainThreadTaskRunner()->PostTask(FROM_HERE,
+                                                        run_loop.QuitClosure());
   run_loop.Run();
 
   // Everything should be fine. No GPU hang detected.
@@ -197,7 +206,7 @@ TEST_F(GpuWatchdogTest, GpuRunningATaskHang) {
 
   // Start running a GPU task.
 #if defined(OS_WIN)
-  main_loop.task_runner()->PostTask(
+  task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&SimpleTask, kGpuWatchdogTimeoutForTesting * 2 +
                                       kGpuWatchdogTimeoutForTesting *
@@ -205,14 +214,15 @@ TEST_F(GpuWatchdogTest, GpuRunningATaskHang) {
                                       kMaxWaitTimeForTesting +
                                       base::TimeDelta::FromMilliseconds(4000)));
 #else
-  main_loop.task_runner()->PostTask(
+  task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&SimpleTask, kGpuWatchdogTimeoutForTesting * 2 +
                                       kMaxWaitTimeForTesting +
                                       base::TimeDelta::FromMilliseconds(4000)));
 #endif
 
-  main_loop.task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
+  task_environment_.GetMainThreadTaskRunner()->PostTask(FROM_HERE,
+                                                        run_loop.QuitClosure());
   run_loop.Run();
 
   // This GPU task takes too long. A GPU hang should be detected.
@@ -232,11 +242,12 @@ TEST_F(GpuWatchdogTest, ChromeInBackground) {
   watchdog_thread_->OnInitComplete();
 
   // Run a task that takes longer (3000 milliseconds) than timeout.
-  main_loop.task_runner()->PostTask(
+  task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&SimpleTask, kGpuWatchdogTimeoutForTesting * 2 +
                                       base::TimeDelta::FromMilliseconds(1000)));
-  main_loop.task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
+  task_environment_.GetMainThreadTaskRunner()->PostTask(FROM_HERE,
+                                                        run_loop.QuitClosure());
   run_loop.Run();
 
   // The gpu might be slow when running in the background. This is ok.
@@ -252,7 +263,7 @@ TEST_F(GpuWatchdogTest, GpuSwitchingToForegroundHang) {
   // switches to the foreground and runs for 6000 milliseconds. This is longer
   // than the first-time foreground watchdog timeout (2000 ms).
 #if defined(OS_WIN)
-  main_loop.task_runner()->PostTask(
+  task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&GpuWatchdogTest::LongTaskFromBackgroundToForeground,
                      base::Unretained(this),
@@ -264,7 +275,7 @@ TEST_F(GpuWatchdogTest, GpuSwitchingToForegroundHang) {
                      /*time_to_switch_to_foreground*/
                      base::TimeDelta::FromMilliseconds(200)));
 #else
-  main_loop.task_runner()->PostTask(
+  task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&GpuWatchdogTest::LongTaskFromBackgroundToForeground,
                      base::Unretained(this),
@@ -275,7 +286,8 @@ TEST_F(GpuWatchdogTest, GpuSwitchingToForegroundHang) {
                      base::TimeDelta::FromMilliseconds(200)));
 #endif
 
-  main_loop.task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
+  task_environment_.GetMainThreadTaskRunner()->PostTask(FROM_HERE,
+                                                        run_loop.QuitClosure());
   run_loop.Run();
 
   // It takes too long to finish a task after switching to the foreground.
@@ -322,11 +334,12 @@ TEST_F(GpuWatchdogPowerTest, GpuOnSuspend) {
   power_monitor_source_->GenerateSuspendEvent();
 
   // Run a task that takes longer (5000 milliseconds) than timeout.
-  main_loop.task_runner()->PostTask(
+  task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&SimpleTask, kGpuWatchdogTimeoutForTesting * 2 +
                                       base::TimeDelta::FromMilliseconds(3000)));
-  main_loop.task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
+  task_environment_.GetMainThreadTaskRunner()->PostTask(FROM_HERE,
+                                                        run_loop.QuitClosure());
   run_loop.Run();
 
   // A task might take long time to finish after entering suspension mode.
@@ -342,7 +355,7 @@ TEST_F(GpuWatchdogPowerTest, GpuOnResumeHang) {
   // wakes up on power resume and then runs for 6000 milliseconds. This is
   // longer than the watchdog resume timeout (2000 ms).
 #if defined(OS_WIN)
-  main_loop.task_runner()->PostTask(
+  task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(
           &GpuWatchdogPowerTest::LongTaskOnResume, base::Unretained(this),
@@ -353,7 +366,7 @@ TEST_F(GpuWatchdogPowerTest, GpuOnResumeHang) {
           /*time_to_power_resume*/
           base::TimeDelta::FromMilliseconds(200)));
 #else
-  main_loop.task_runner()->PostTask(
+  task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(
           &GpuWatchdogPowerTest::LongTaskOnResume, base::Unretained(this),
@@ -363,7 +376,8 @@ TEST_F(GpuWatchdogPowerTest, GpuOnResumeHang) {
           base::TimeDelta::FromMilliseconds(200)));
 #endif
 
-  main_loop.task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
+  task_environment_.GetMainThreadTaskRunner()->PostTask(FROM_HERE,
+                                                        run_loop.QuitClosure());
   run_loop.Run();
 
   // It takes too long to finish this task after power resume. A GPU hang should

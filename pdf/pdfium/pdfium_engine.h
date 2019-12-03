@@ -119,6 +119,8 @@ class PDFiumEngine : public PDFEngine,
       int start_char_index) override;
   std::vector<AccessibilityLinkInfo> GetLinkInfo(int page_index) override;
   std::vector<AccessibilityImageInfo> GetImageInfo(int page_index) override;
+  std::vector<AccessibilityHighlightInfo> GetHighlightInfo(
+      int page_index) override;
   bool GetPrintScaling() override;
   int GetCopiesToPrint() override;
   int GetDuplexType() override;

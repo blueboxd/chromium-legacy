@@ -7,6 +7,9 @@
 #import "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/sys_string_conversions.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/url_formatter/url_formatter.h"
 #include "ios/chrome/app/application_delegate/tab_opening.h"
 #import "ios/chrome/app/chrome_overlay_window.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
@@ -16,6 +19,7 @@
 #include "ios/chrome/browser/browsing_data/browsing_data_remover.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "ios/chrome/browser/main/browser.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
@@ -29,9 +33,11 @@
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 #include "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
 #import "ios/chrome/browser/ui/util/multi_window_support.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/url_loading/app_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 #import "ios/web/public/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -67,7 +73,7 @@ enum class EnterTabSwitcherSnapshotResult {
 
 }  // namespace
 
-@interface SceneController ()
+@interface SceneController () <UserFeedbackDataSource>
 
 // A flag that keeps track of the UI initialization for the controlled scene.
 @property(nonatomic, assign) BOOL hasInitializedUI;
@@ -216,7 +222,7 @@ enum class EnterTabSwitcherSnapshotResult {
         [SettingsNavigationController
             userFeedbackControllerForBrowser:browser
                                     delegate:self.mainController
-                          feedbackDataSource:self.mainController
+                          feedbackDataSource:self
                                   dispatcher:self];
     [baseViewController
         presentViewController:self.mainController.settingsNavigationController
@@ -581,6 +587,44 @@ enum class EnterTabSwitcherSnapshotResult {
                                                     completion:nil];
   };
   [self.mainController closeSettingsAnimated:YES completion:completion];
+}
+
+#pragma mark - UserFeedbackDataSource
+
+- (NSString*)currentPageDisplayURL {
+  if (self.mainController.tabSwitcherIsActive)
+    return nil;
+  web::WebState* webState =
+      self.mainController.currentTabModel.webStateList->GetActiveWebState();
+  if (!webState)
+    return nil;
+  // Returns URL of browser tab that is currently showing.
+  GURL url = webState->GetVisibleURL();
+  base::string16 urlText = url_formatter::FormatUrl(url);
+  return base::SysUTF16ToNSString(urlText);
+}
+
+- (UIImage*)currentPageScreenshot {
+  UIView* lastView =
+      self.mainController.mainCoordinator.activeViewController.view;
+  DCHECK(lastView);
+  CGFloat scale = 0.0;
+  // For screenshots of the tab switcher we need to use a scale of 1.0 to avoid
+  // spending too much time since the tab switcher can have lots of subviews.
+  if (self.mainController.tabSwitcherIsActive)
+    scale = 1.0;
+  return CaptureView(lastView, scale);
+}
+
+- (NSString*)currentPageSyncedUserName {
+  ios::ChromeBrowserState* browserState =
+      self.mainController.currentBrowserState;
+  if (browserState->IsOffTheRecord())
+    return nil;
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForBrowserState(browserState);
+  std::string username = identity_manager->GetPrimaryAccountInfo().email;
+  return username.empty() ? nil : base::SysUTF8ToNSString(username);
 }
 
 @end

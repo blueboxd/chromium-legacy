@@ -53,7 +53,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/shadow_controller.h"
-#include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
@@ -323,17 +322,10 @@ bool SplitViewController::InTabletSplitViewMode() const {
          split_view_type_ == SplitViewType::kTabletType;
 }
 
-bool SplitViewController::CanSnapWindow(aura::Window* window) const {
-  return ShouldAllowSplitView() && wm::CanActivateWindow(window) &&
-         WindowState::Get(window)->CanSnap() &&
-         GetMinimumWindowSize(window, IsCurrentScreenOrientationLandscape()) <=
-             GetDividerEndPosition() / 2 - kSplitviewDividerShortSideLength / 2;
-}
-
 void SplitViewController::SnapWindow(aura::Window* window,
                                      SnapPosition snap_position,
                                      bool use_divider_spawn_animation) {
-  DCHECK(window && CanSnapWindow(window));
+  DCHECK(window && CanSnapInSplitview(window));
   DCHECK_NE(snap_position, NONE);
   DCHECK(!is_resizing_);
   DCHECK(!IsDividerAnimating());
@@ -800,7 +792,7 @@ void SplitViewController::OnWindowPropertyChanged(aura::Window* window,
   // If the window's resizibility property changes (must from resizable ->
   // unresizable), end the split view mode and also end overview mode if
   // overview mode is active at the moment.
-  if (key == aura::client::kResizeBehaviorKey && !CanSnapWindow(window)) {
+  if (key == aura::client::kResizeBehaviorKey && !CanSnapInSplitview(window)) {
     EndSplitView();
     Shell::Get()->overview_controller()->EndOverview();
     ShowAppCannotSnapToast();
@@ -979,7 +971,7 @@ void SplitViewController::OnWindowActivated(ActivationReason reason,
 
   // If it's a user positionable window but can't be snapped, end split view
   // mode and show the cannot snap toast.
-  if (!CanSnapWindow(gained_active)) {
+  if (!CanSnapInSplitview(gained_active)) {
     if (WindowState::Get(gained_active)->IsUserPositionable()) {
       EndSplitView(EndReason::kUnsnappableWindowActivated);
       ShowAppCannotSnapToast();
@@ -1044,7 +1036,7 @@ void SplitViewController::OnOverviewModeEnding(
     return;
   for (const auto& overview_item : current_grid->window_list()) {
     aura::Window* window = overview_item->GetWindow();
-    if (CanSnapWindow(window) && window != GetDefaultSnappedWindow()) {
+    if (CanSnapInSplitview(window) && window != GetDefaultSnappedWindow()) {
       // Remove the overview item before snapping because the overview session
       // is unavailable to retrieve outside this function after OnOverviewEnding
       // is notified.
@@ -1088,8 +1080,8 @@ void SplitViewController::OnDisplayMetricsChanged(
 
   // If one of the snapped windows becomes unsnappable, end the split view mode
   // directly.
-  if ((left_window_ && !CanSnapWindow(left_window_)) ||
-      (right_window_ && !CanSnapWindow(right_window_))) {
+  if ((left_window_ && !CanSnapInSplitview(left_window_)) ||
+      (right_window_ && !CanSnapInSplitview(right_window_))) {
     if (!Shell::Get()->session_controller()->IsUserSessionBlocked())
       EndSplitView();
     return;

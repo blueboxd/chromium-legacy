@@ -3008,7 +3008,7 @@ scoped_refptr<ComputedStyle> Element::StyleForLayoutObject(
 
   style->UpdateIsStackingContext(this == GetDocument().documentElement(),
                                  IsInTopLayer(),
-                                 IsSVGForeignObjectElement(*this));
+                                 IsA<SVGForeignObjectElement>(*this));
 
   return style;
 }
@@ -5440,7 +5440,7 @@ KURL Element::HrefURL() const {
   if (IsA<HTMLAnchorElement>(*this) || IsA<HTMLAreaElement>(*this) ||
       IsA<HTMLLinkElement>(*this))
     return GetURLAttribute(html_names::kHrefAttr);
-  if (auto* svg_a = ToSVGAElementOrNull(*this))
+  if (auto* svg_a = DynamicTo<SVGAElement>(*this))
     return svg_a->LegacyHrefURL(GetDocument());
   return KURL();
 }

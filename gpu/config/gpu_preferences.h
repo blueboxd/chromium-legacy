@@ -186,9 +186,6 @@ struct GPU_EXPORT GpuPreferences {
   // ===================================
   // Settings from //gpu/config/gpu_switches.h
 
-  // Disables workarounds for various GPU driver bugs.
-  bool disable_gpu_driver_bug_workarounds = false;
-
   // Ignores GPU blacklist.
   bool ignore_gpu_blacklist = false;
 

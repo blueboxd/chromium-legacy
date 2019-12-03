@@ -26,6 +26,7 @@ test("cast_component_unittests") {
     ":component",
     "//base",
     "//base/test:run_all_unittests",
+    "//base/test:test_support",
     "//testing/gtest",
   ]
 }

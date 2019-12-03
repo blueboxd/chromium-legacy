@@ -8,6 +8,8 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "device/bluetooth/dbus/bluetooth_debug_manager_client.h"
+#include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 namespace chromeos {
@@ -16,13 +18,24 @@ namespace bluetooth {
 
 namespace {
 const char kVerboseLoggingEnablePrefName[] = "bluetooth.verboseLogging.enable";
+
+const uint8_t kVerboseDisabledLevel = 0;
+const uint8_t kVerboseBasicLevel = 1;
+
+const int kDbusRetryCount = 10;
+constexpr base::TimeDelta kDbusRetryInterval = base::TimeDelta::FromSeconds(3);
 }  // namespace
 
 DebugLogsManager::DebugLogsManager(const std::string& primary_user_email,
                                    PrefService* pref_service)
-    : primary_user_email_(primary_user_email), pref_service_(pref_service) {}
+    : primary_user_email_(primary_user_email), pref_service_(pref_service) {
+  SetVerboseLogsEnable(GetDebugLogsState() ==
+                       DebugLogsState::kSupportedAndEnabled);
+}
 
-DebugLogsManager::~DebugLogsManager() = default;
+DebugLogsManager::~DebugLogsManager() {
+  SetVerboseLogsEnable(false);
+}
 
 // static
 void DebugLogsManager::RegisterPrefs(PrefRegistrySimple* registry) {
@@ -39,10 +52,11 @@ DebugLogsManager::DebugLogsState DebugLogsManager::GetDebugLogsState() const {
              : DebugLogsState::kSupportedButDisabled;
 }
 
-mojom::DebugLogsChangeHandlerPtr DebugLogsManager::GenerateInterfacePtr() {
-  mojom::DebugLogsChangeHandlerPtr interface_ptr;
-  bindings_.AddBinding(this, mojo::MakeRequest(&interface_ptr));
-  return interface_ptr;
+mojo::PendingRemote<mojom::DebugLogsChangeHandler>
+DebugLogsManager::GenerateRemote() {
+  mojo::PendingRemote<mojom::DebugLogsChangeHandler> remote;
+  receivers_.Add(this, remote.InitWithNewPipeAndPassReceiver());
+  return remote;
 }
 
 void DebugLogsManager::ChangeDebugLogsState(bool should_debug_logs_be_enabled) {
@@ -50,7 +64,6 @@ void DebugLogsManager::ChangeDebugLogsState(bool should_debug_logs_be_enabled) {
 
   pref_service_->SetBoolean(kVerboseLoggingEnablePrefName,
                             should_debug_logs_be_enabled);
-  // TODO(crbug.com/734152): On login, enable logs based on this value
 }
 
 bool DebugLogsManager::AreDebugLogsSupported() const {
@@ -60,6 +73,54 @@ bool DebugLogsManager::AreDebugLogsSupported() const {
   }
 
   return gaia::IsGoogleInternalAccountEmail(primary_user_email_);
+}
+
+void DebugLogsManager::SetVerboseLogsEnable(bool enable) {
+  SendDBusVerboseLogsMessage(enable, 0 /* num_completed_attempts */);
+}
+
+void DebugLogsManager::SendDBusVerboseLogsMessage(bool enable,
+                                                  int num_completed_attempts) {
+  uint8_t level = enable ? kVerboseBasicLevel : kVerboseDisabledLevel;
+  VLOG(1) << (enable ? "Enabling" : "Disabling") << " bluetooth verbose logs";
+
+  bluez::BluezDBusManager::Get()
+      ->GetBluetoothDebugManagerClient()
+      ->SetLogLevels(
+          level /* dispatcher */, level /* newblue */, level /* bluez */,
+          level /* kernel */,
+          base::BindOnce(&DebugLogsManager::OnVerboseLogsEnableSuccess,
+                         weak_ptr_factory_.GetWeakPtr(), enable),
+          base::BindOnce(&DebugLogsManager::OnVerboseLogsEnableError,
+                         weak_ptr_factory_.GetWeakPtr(), enable,
+                         num_completed_attempts));
+}
+
+void DebugLogsManager::OnVerboseLogsEnableSuccess(bool enable) {
+  VLOG(1) << "Bluetooth verbose logs successfully "
+          << (enable ? "enabled" : "disabled");
+}
+
+void DebugLogsManager::OnVerboseLogsEnableError(
+    const bool enable,
+    const int num_completed_attempts,
+    const std::string& error_name,
+    const std::string& error_message) {
+  bool should_retry = (num_completed_attempts < kDbusRetryCount);
+
+  LOG(ERROR) << "Setting bluetooth verbose logs failed: error: " << error_name
+             << " - " << error_message << " "
+             << (should_retry ? "Retrying." : "Giving up.");
+
+  if (!should_retry)
+    return;
+
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&DebugLogsManager::SendDBusVerboseLogsMessage,
+                     weak_ptr_factory_.GetWeakPtr(), enable,
+                     num_completed_attempts + 1),
+      kDbusRetryInterval);
 }
 
 }  // namespace bluetooth

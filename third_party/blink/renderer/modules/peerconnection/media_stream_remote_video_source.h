@@ -34,16 +34,23 @@ class MODULES_EXPORT MediaStreamRemoteVideoSource
   // the webrtc::MediaStreamTrackInterface instance held by |observer_|.
   void OnSourceTerminated();
 
+  // MediaStreamVideoSource overrides.
+  bool SupportsEncodedOutput() const override;
+  void RequestRefreshFrame() override;
+
  protected:
   // Implements MediaStreamVideoSource.
   void StartSourceImpl(VideoCaptureDeliverFrameCB frame_callback,
                        EncodedVideoFrameCB encoded_frame_callback) override;
-
   void StopSourceImpl() override;
+  void OnEncodedSinkEnabled() override;
+  void OnEncodedSinkDisabled() override;
 
   // Used by tests to test that a frame can be received and that the
   // MediaStreamRemoteVideoSource behaves as expected.
   rtc::VideoSinkInterface<webrtc::VideoFrame>* SinkInterfaceForTesting();
+  rtc::VideoSinkInterface<webrtc::RecordableEncodedFrame>*
+  EncodedSinkInterfaceForTesting();
 
  private:
   void OnChanged(webrtc::MediaStreamTrackInterface::TrackState state);

@@ -153,6 +153,7 @@
 #define EGL_FEATURE_COUNT_ANGLE 0x3465
 #define EGL_FEATURE_OVERRIDES_ENABLED_ANGLE 0x3466
 #define EGL_FEATURE_OVERRIDES_DISABLED_ANGLE 0x3467
+#define EGL_FEATURE_ALL_DISABLED_ANGLE 0x3469
 #endif /* EGL_ANGLE_feature_control */
 
 using ui::GetLastEGLErrorString;
@@ -347,8 +348,13 @@ EGLDisplay GetDisplayFromType(
     DisplayType display_type,
     EGLNativeDisplayType native_display,
     const std::vector<std::string>& enabled_angle_features,
-    const std::vector<std::string>& disabled_angle_features) {
+    const std::vector<std::string>& disabled_angle_features,
+    bool disable_all_angle_features) {
   std::vector<EGLAttrib> extra_display_attribs;
+  if (disable_all_angle_features) {
+    extra_display_attribs.push_back(EGL_FEATURE_ALL_DISABLED_ANGLE);
+    extra_display_attribs.push_back(EGL_TRUE);
+  }
   switch (display_type) {
     case DEFAULT:
     case SWIFT_SHADER:
@@ -1118,11 +1124,14 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(
       GetStringVectorFromCommandLine(command_line,
                                      switches::kDisableANGLEFeatures);
 
+  bool disable_all_angle_features =
+      command_line->HasSwitch(switches::kDisableGpuDriverBugWorkarounds);
+
   for (size_t disp_index = 0; disp_index < init_displays.size(); ++disp_index) {
     DisplayType display_type = init_displays[disp_index];
-    EGLDisplay display =
-        GetDisplayFromType(display_type, g_native_display,
-                           enabled_angle_features, disabled_angle_features);
+    EGLDisplay display = GetDisplayFromType(
+        display_type, g_native_display, enabled_angle_features,
+        disabled_angle_features, disable_all_angle_features);
     if (display == EGL_NO_DISPLAY) {
       LOG(ERROR) << "EGL display query failed with error "
                  << GetLastEGLErrorString();

@@ -1528,6 +1528,9 @@ TEST_F(CloudPolicyClientTest, UploadRealtimeReport) {
   EXPECT_EQ(version_info::GetVersionNumber(),
             *payload->FindStringPath(
                 RealtimeReportingJobConfiguration::kChromeVersionKey));
+  EXPECT_EQ(policy::GetOSPlatform(),
+            *payload->FindStringPath(
+                RealtimeReportingJobConfiguration::kOsPlatformKey));
   EXPECT_EQ(policy::GetOSVersion(),
             *payload->FindStringPath(
                 RealtimeReportingJobConfiguration::kOsVersionKey));

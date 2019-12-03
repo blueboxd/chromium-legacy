@@ -21,6 +21,11 @@
 class AndroidHistoryProviderService;
 class Profile;
 
+namespace bookmarks {
+class BookmarkModel;
+class ModelLoader;
+}  // namespace bookmarks
+
 namespace history {
 class TopSites;
 }
@@ -169,12 +174,13 @@ class ChromeBrowserProvider : public bookmarks::BaseBookmarkModelObserver,
 
   // Profile must outlive this object.
   //
-  // BookmarkModel, HistoryService and history::TopSites lifetime is bound to
-  // the lifetime of Profile, they are safe to use as long as the Profile is
-  // alive.
+  // HistoryService and history::TopSites lifetime is bound to the lifetime of
+  // Profile, they are safe to use as long as the Profile is alive.
   Profile* profile_;
-  bookmarks::BookmarkModel* bookmark_model_;
   scoped_refptr<history::TopSites> top_sites_;
+
+  base::WeakPtr<bookmarks::BookmarkModel> bookmark_model_;
+  scoped_refptr<bookmarks::ModelLoader> bookmark_model_loader_;
 
   std::unique_ptr<AndroidHistoryProviderService> service_;
 

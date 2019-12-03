@@ -40,6 +40,9 @@ class AppServiceAppWindowLauncherController
       ChromeLauncherController* owner);
   ~AppServiceAppWindowLauncherController() override;
 
+  // AppWindowLauncherController:
+  void ActiveUserChanged(const std::string& user_email) override;
+
   // aura::EnvObserver:
   void OnWindowInitialized(aura::Window* window) override;
 

@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/clipboard/data_object_item.h"
 
+#include "base/time/time.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/clipboard/clipboard_mime_types.h"
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
@@ -156,8 +157,8 @@ File* DataObjectItem::GetAsFile() const {
     data->AppendBytes(png_data.data(), png_data.size());
     const uint64_t length = data->length();
     auto blob = BlobDataHandle::Create(std::move(data), length);
-    return MakeGarbageCollected<File>(
-        "image.png", base::Time::Now().ToDoubleT() * 1000.0, std::move(blob));
+    return MakeGarbageCollected<File>("image.png", base::Time::Now(),
+                                      std::move(blob));
   }
 
   return nullptr;

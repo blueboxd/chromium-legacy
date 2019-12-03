@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/v8_script_value_deserializer.h"
 
 #include "base/numerics/checked_math.h"
+#include "base/optional.h"
+#include "base/time/time.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/unpacked_serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
@@ -628,9 +630,12 @@ File* V8ScriptValueDeserializer::ReadFile() {
   auto blob_handle = GetOrCreateBlobDataHandle(uuid, type, kSizeForDataHandle);
   if (!blob_handle)
     return nullptr;
-  return File::CreateFromSerialization(
-      path, name, relative_path, user_visibility, has_snapshot, size,
-      last_modified_ms, std::move(blob_handle));
+  base::Optional<base::Time> last_modified;
+  if (has_snapshot && std::isfinite(last_modified_ms))
+    last_modified = base::Time::FromJsTime(last_modified_ms);
+  return File::CreateFromSerialization(path, name, relative_path,
+                                       user_visibility, has_snapshot, size,
+                                       last_modified, std::move(blob_handle));
 }
 
 File* V8ScriptValueDeserializer::ReadFileIndex() {
@@ -647,9 +652,9 @@ File* V8ScriptValueDeserializer::ReadFileIndex() {
   }
   if (!blob_handle)
     return nullptr;
-  return File::CreateFromIndexedSerialization(
-      info.FilePath(), info.FileName(), info.size(),
-      ToJsTimeOrNaN(info.LastModified()), blob_handle);
+  return File::CreateFromIndexedSerialization(info.FilePath(), info.FileName(),
+                                              info.size(), info.LastModified(),
+                                              blob_handle);
 }
 
 DOMRectReadOnly* V8ScriptValueDeserializer::ReadDOMRectReadOnly() {

@@ -32,6 +32,8 @@ const char RealtimeReportingJobConfiguration::kDmTokenKey[] = "device.dmToken";
 const char RealtimeReportingJobConfiguration::kEventsKey[] = "events";
 const char RealtimeReportingJobConfiguration::kMachineUserKey[] =
     "browser.machineUser";
+const char RealtimeReportingJobConfiguration::kOsPlatformKey[] =
+    "device.osPlatform";
 const char RealtimeReportingJobConfiguration::kOsVersionKey[] =
     "device.osVersion";
 
@@ -94,6 +96,7 @@ void RealtimeReportingJobConfiguration::InitializePayload(
   payload_.SetStringPath(kClientIdKey, client->client_id());
   payload_.SetStringPath(kMachineUserKey, GetOSUsername());
   payload_.SetStringPath(kChromeVersionKey, version_info::GetVersionNumber());
+  payload_.SetStringPath(kOsPlatformKey, GetOSPlatform());
   payload_.SetStringPath(kOsVersionKey, GetOSVersion());
   payload_.SetPath(kEventsKey, base::Value(base::Value::Type::LIST));
 }

@@ -530,9 +530,8 @@ void ExtensionSyncService::ApplyBookmarkAppSyncData(
   for (const auto& icon : extension_sync_data.linked_icons()) {
     WebApplicationIconInfo icon_info;
     icon_info.url = icon.url;
-    icon_info.width = icon.size;
-    icon_info.height = icon.size;
-    web_app_info->icons.push_back(icon_info);
+    icon_info.square_size_px = icon.size;
+    web_app_info->icon_infos.push_back(icon_info);
   }
 
   auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile_);

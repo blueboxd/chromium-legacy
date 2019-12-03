@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_CHROMEOS_BLUETOOTH_DEBUG_LOGS_MANAGER_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 
 class PrefService;
 class PrefRegistrySimple;
@@ -44,15 +46,24 @@ class DebugLogsManager : public mojom::DebugLogsChangeHandler {
   // mojom::DebugLogsManager:
   void ChangeDebugLogsState(bool should_debug_logs_be_enabled) override;
 
-  // Generates an InterfacePtr bound to this object.
-  mojom::DebugLogsChangeHandlerPtr GenerateInterfacePtr();
+  // Generates an PendingRemote bound to this object.
+  mojo::PendingRemote<mojom::DebugLogsChangeHandler> GenerateRemote();
 
  private:
   bool AreDebugLogsSupported() const;
+  void SetVerboseLogsEnable(bool enable);
+  void SendDBusVerboseLogsMessage(bool enable, int num_completed_attempts);
+  void OnVerboseLogsEnableSuccess(bool enable);
+  void OnVerboseLogsEnableError(const bool enable,
+                                const int num_completed_attempts,
+                                const std::string& error_name,
+                                const std::string& error_message);
 
   const std::string primary_user_email_;
   PrefService* pref_service_ = nullptr;
-  mojo::BindingSet<mojom::DebugLogsChangeHandler> bindings_;
+  mojo::ReceiverSet<mojom::DebugLogsChangeHandler> receivers_;
+
+  base::WeakPtrFactory<DebugLogsManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DebugLogsManager);
 };

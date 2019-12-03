@@ -887,7 +887,12 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
                 screen.removePreference(notificationsVibrate);
             }
 
-            notificationsQuietUi.setOnPreferenceChangeListener(this);
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.QUIET_NOTIFICATION_PROMPTS)) {
+                notificationsQuietUi.setOnPreferenceChangeListener(this);
+            } else {
+                screen.removePreference(notificationsQuietUi);
+            }
+
             updateNotificationsSecondaryControls();
         } else {
             screen.removePreference(notificationsVibrate);
@@ -1007,6 +1012,8 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
                 (ChromeBaseCheckBoxPreference) getPreferenceScreen().findPreference(
                         NOTIFICATIONS_VIBRATE_TOGGLE_KEY);
         if (vibrate_pref != null) vibrate_pref.setEnabled(categoryEnabled);
+
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.QUIET_NOTIFICATION_PROMPTS)) return;
 
         // The notifications quiet ui checkbox.
         ChromeBaseCheckBoxPreference quiet_ui_pref =

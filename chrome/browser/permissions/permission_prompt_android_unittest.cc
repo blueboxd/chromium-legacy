@@ -24,11 +24,8 @@ class PermissionPromptAndroidTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     // Ensure that the test uses the mini-infobar variant.
-    base::FieldTrialParams params;
-    params[kQuietNotificationPromptsUIFlavorParameterName] =
-        kQuietNotificationPromptsMiniInfobar;
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        features::kQuietNotificationPrompts, params);
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kQuietNotificationPrompts);
     AdaptiveNotificationPermissionUiSelector::GetForProfile(profile())
         ->set_should_show_quiet_ui_for_testing(true);
 

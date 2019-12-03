@@ -150,8 +150,6 @@ GpuPreferences ParseGpuPreferences(const base::CommandLine* command_line) {
       command_line->HasSwitch(switches::kEnableGPUServiceTracing);
   gpu_preferences.use_passthrough_cmd_decoder =
       gpu::gles2::UsePassthroughCommandDecoder(command_line);
-  gpu_preferences.disable_gpu_driver_bug_workarounds =
-      command_line->HasSwitch(switches::kDisableGpuDriverBugWorkarounds);
   gpu_preferences.ignore_gpu_blacklist =
       command_line->HasSwitch(switches::kIgnoreGpuBlacklist);
   gpu_preferences.enable_webgpu =

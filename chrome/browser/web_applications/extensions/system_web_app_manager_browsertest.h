@@ -15,6 +15,14 @@
 class Browser;
 class KeyedService;
 
+namespace apps {
+struct AppLaunchParams;
+}
+
+namespace content {
+class WebContents;
+}
+
 namespace extensions {
 class Extension;
 }
@@ -45,7 +53,17 @@ class SystemWebAppManagerBrowserTest : public InProcessBrowserTest {
   SystemWebAppManager& GetManager();
 
   void WaitForTestSystemAppInstall();
+
+  // Wait for system apps to install, then launch one. Returns the browser that
+  // contains it.
   Browser* WaitForSystemAppInstallAndLaunch(SystemAppType system_app_type);
+
+  // Creates a default AppLaunchParams for |system_app_type|. Launches a window.
+  // Uses kSourceTest as the AppLaunchSource.
+  apps::AppLaunchParams LaunchParamsForApp(SystemAppType system_app_type);
+
+  // Invokes OpenApplication() using the test's Profile.
+  content::WebContents* LaunchApp(const apps::AppLaunchParams& params);
 
  private:
   std::unique_ptr<KeyedService> CreateWebAppProvider(Profile* profile);

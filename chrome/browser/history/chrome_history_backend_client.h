@@ -18,7 +18,8 @@ class ModelLoader;
 // to provides access to embedder-specific features.
 class ChromeHistoryBackendClient : public history::HistoryBackendClient {
  public:
-  explicit ChromeHistoryBackendClient(bookmarks::ModelLoader* model_loader);
+  explicit ChromeHistoryBackendClient(
+      scoped_refptr<bookmarks::ModelLoader> model_loader);
   ~ChromeHistoryBackendClient() override;
 
   // history::HistoryBackendClient implementation.

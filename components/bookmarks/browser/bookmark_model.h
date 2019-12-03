@@ -18,6 +18,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string16.h"
 #include "components/bookmarks/browser/bookmark_client.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -83,30 +84,49 @@ class BookmarkModel : public BookmarkUndoProvider,
             const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner);
 
   // Returns true if the model finished loading.
-  bool loaded() const { return loaded_; }
+  bool loaded() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return loaded_;
+  }
 
   // Returns the object responsible for tracking loading.
-  ModelLoader* model_loader() { return model_loader_.get(); }
+  scoped_refptr<ModelLoader> model_loader();
 
   // Returns the root node. The 'bookmark bar' node and 'other' node are
   // children of the root node.
-  const BookmarkNode* root_node() const { return root_; }
+  const BookmarkNode* root_node() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return root_;
+  }
 
   // Returns the 'bookmark bar' node. This is NULL until loaded.
-  const BookmarkNode* bookmark_bar_node() const { return bookmark_bar_node_; }
+  const BookmarkNode* bookmark_bar_node() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return bookmark_bar_node_;
+  }
 
   // Returns the 'other' node. This is NULL until loaded.
-  const BookmarkNode* other_node() const { return other_node_; }
+  const BookmarkNode* other_node() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return other_node_;
+  }
 
   // Returns the 'mobile' node. This is NULL until loaded.
-  const BookmarkNode* mobile_node() const { return mobile_node_; }
+  const BookmarkNode* mobile_node() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return mobile_node_;
+  }
 
-  bool is_root_node(const BookmarkNode* node) const { return node == root_; }
+  bool is_root_node(const BookmarkNode* node) const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return node == root_;
+  }
 
   // Returns whether the given |node| is one of the permanent nodes - root node,
   // 'bookmark bar' node, 'other' node or 'mobile' node, or one of the root
   // nodes supplied by the |client_|.
   bool is_permanent_node(const BookmarkNode* node) const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return node && (node == root_ || node->parent() == root_);
   }
 
@@ -174,23 +194,18 @@ class BookmarkModel : public BookmarkUndoProvider,
   const BookmarkNode* GetMostRecentlyAddedUserNodeForURL(const GURL& url);
 
   // Returns true if there are bookmarks, otherwise returns false.
-  // This method is thread safe.
   bool HasBookmarks();
 
   // Returns true is there is no user created bookmarks or folders.
   bool HasNoUserCreatedBookmarksOrFolders();
 
   // Returns true if the specified URL is bookmarked.
-  //
-  // If not on the main thread you *must* invoke BlockTillLoaded first.
   bool IsBookmarked(const GURL& url);
 
   // Returns, by reference in |bookmarks|, the set of bookmarked urls and their
   // titles. This returns the unique set of URLs. For example, if two bookmarks
   // reference the same URL only one entry is added not matter the titles are
   // same or not.
-  //
-  // If not on the main thread you *must* invoke BlockTillLoaded first.
   void GetBookmarks(std::vector<UrlAndTitle>* urls);
 
   // Adds a new folder node at the specified position with the given |guid| and
@@ -304,6 +319,10 @@ class BookmarkModel : public BookmarkUndoProvider,
   BookmarkClient* client() const { return client_.get(); }
 
   void SetUndoDelegate(BookmarkUndoDelegate* undo_delegate);
+
+  base::WeakPtr<BookmarkModel> AsWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
 
  private:
   friend class BookmarkCodecTest;
@@ -424,6 +443,8 @@ class BookmarkModel : public BookmarkUndoProvider,
   std::unique_ptr<BookmarkUndoDelegate> empty_undo_delegate_;
 
   scoped_refptr<ModelLoader> model_loader_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<BookmarkModel> weak_factory_{this};
 

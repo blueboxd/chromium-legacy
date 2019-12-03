@@ -17,6 +17,7 @@
 #include "chrome/common/extensions/manifest_handlers/app_display_mode_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
+#include "chrome/common/extensions/manifest_handlers/linked_app_icons.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -160,6 +161,22 @@ DisplayMode BookmarkAppRegistrar::GetAppUserDisplayMode(
       NOTREACHED();
       return DisplayMode::kUndefined;
   }
+}
+
+std::vector<WebApplicationIconInfo> BookmarkAppRegistrar::GetAppIconInfos(
+    const web_app::AppId& app_id) const {
+  std::vector<WebApplicationIconInfo> result;
+  const Extension* extension = GetExtension(app_id);
+  if (!extension)
+    return result;
+  for (const LinkedAppIcons::IconInfo& icon_info :
+       LinkedAppIcons::GetLinkedAppIcons(extension).icons) {
+    WebApplicationIconInfo web_app_icon_info;
+    web_app_icon_info.url = icon_info.url;
+    web_app_icon_info.square_size_px = icon_info.size;
+    result.push_back(std::move(web_app_icon_info));
+  }
+  return result;
 }
 
 std::vector<web_app::AppId> BookmarkAppRegistrar::GetAppIds() const {

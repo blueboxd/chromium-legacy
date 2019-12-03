@@ -21,7 +21,8 @@ class WebauthnDialogViewImpl : public WebauthnDialogView,
                                public WebauthnDialogModelObserver,
                                public views::DialogDelegateView {
  public:
-  explicit WebauthnDialogViewImpl(WebauthnDialogController* controller);
+  WebauthnDialogViewImpl(WebauthnDialogController* controller,
+                         WebauthnDialogState dialog_state);
   ~WebauthnDialogViewImpl() override;
 
   // WebauthnDialogView:
@@ -34,7 +35,6 @@ class WebauthnDialogViewImpl : public WebauthnDialogView,
   gfx::Size CalculatePreferredSize() const override;
   bool Accept() override;
   bool Cancel() override;
-  bool Close() override;
   int GetDialogButtons() const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   ui::ModalType GetModalType() const override;

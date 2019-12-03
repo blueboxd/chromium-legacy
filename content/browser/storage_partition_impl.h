@@ -159,7 +159,7 @@ class CONTENT_EXPORT StoragePartitionImpl
                  base::OnceClosure callback) override;
   void ClearData(uint32_t remove_mask,
                  uint32_t quota_storage_remove_mask,
-                 const OriginMatcherFunction& origin_matcher,
+                 OriginMatcherFunction origin_matcher,
                  network::mojom::CookieDeletionFilterPtr cookie_deletion_filter,
                  bool perform_storage_cleanup,
                  const base::Time begin,
@@ -385,7 +385,7 @@ class CONTENT_EXPORT StoragePartitionImpl
       uint32_t remove_mask,
       uint32_t quota_storage_remove_mask,
       const GURL& remove_origin,
-      const OriginMatcherFunction& origin_matcher,
+      OriginMatcherFunction origin_matcher,
       network::mojom::CookieDeletionFilterPtr cookie_deletion_filter,
       bool perform_storage_cleanup,
       const base::Time begin,

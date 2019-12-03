@@ -18,7 +18,10 @@ js_type_check("closure_compile") {
 }
 
 js_library("launch") {
-  externs_list = [ "dom_draft.externs.js" ]
+  externs_list = [
+    "web_app_file_handling.externs.js",
+    "dom_draft.externs.js",
+  ]
 }
 
 js_library("receiver") {

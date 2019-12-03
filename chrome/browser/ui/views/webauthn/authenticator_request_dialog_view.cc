@@ -162,7 +162,7 @@ bool AuthenticatorRequestDialogView::IsDialogButtonEnabled(
     case ui::DIALOG_BUTTON_OK:
       return sheet()->model()->IsAcceptButtonEnabled();
     case ui::DIALOG_BUTTON_CANCEL:
-      return true;  // Cancel is always enabled if visible.
+      return sheet()->model()->IsCancelButtonEnabled();
   }
   NOTREACHED();
   return false;
@@ -189,8 +189,10 @@ views::View* AuthenticatorRequestDialogView::GetInitiallyFocusedView() {
   if (ShouldOtherTransportsButtonBeVisible())
     return other_transports_button_;
 
-  if (sheet()->model()->IsCancelButtonVisible())
+  if (sheet()->model()->IsCancelButtonVisible() &&
+      sheet()->model()->IsCancelButtonEnabled()) {
     return GetCancelButton();
+  }
 
   return nullptr;
 }

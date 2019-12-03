@@ -105,6 +105,9 @@ class ASH_PUBLIC_EXPORT AccessibilityController {
   virtual void SetSwitchAccessIgnoreVirtualKeyEventForTesting(
       bool should_ignore) = 0;
 
+  // Disables restoring of recommended policy values.
+  virtual void DisablePolicyRecommendationRestorerForTesting() {}
+
  protected:
   AccessibilityController();
   virtual ~AccessibilityController();

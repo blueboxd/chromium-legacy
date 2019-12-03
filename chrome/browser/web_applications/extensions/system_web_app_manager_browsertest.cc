@@ -14,9 +14,9 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
-#include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -211,18 +211,32 @@ void SystemWebAppManagerBrowserTest::WaitForTestSystemAppInstall() {
 Browser* SystemWebAppManagerBrowserTest::WaitForSystemAppInstallAndLaunch(
     SystemAppType system_app_type) {
   WaitForTestSystemAppInstall();
+  apps::AppLaunchParams params = LaunchParamsForApp(system_app_type);
+  content::WebContents* web_contents = LaunchApp(params);
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  EXPECT_EQ(web_app::GetAppIdFromApplicationName(browser->app_name()),
+            params.app_id);
+  return browser;
+}
 
+apps::AppLaunchParams SystemWebAppManagerBrowserTest::LaunchParamsForApp(
+    SystemAppType system_app_type) {
   base::Optional<AppId> app_id =
       GetManager().GetAppIdForSystemApp(system_app_type);
   DCHECK(app_id.has_value());
+  return apps::AppLaunchParams(
+      *app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
+      WindowOpenDisposition::CURRENT_TAB,
+      apps::mojom::AppLaunchSource::kSourceTest);
+}
 
-  Profile* profile = browser()->profile();
-  const extensions::Extension* app =
-      extensions::ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(
-          app_id.value());
-  DCHECK(app);
-
-  return extensions::browsertest_util::LaunchAppBrowser(profile, app);
+content::WebContents* SystemWebAppManagerBrowserTest::LaunchApp(
+    const apps::AppLaunchParams& params) {
+  // Use apps::LaunchService::OpenApplication() to get the most coverage. E.g.,
+  // this is what is invoked by file_manager::file_tasks::ExecuteWebTask() on
+  // ChromeOS.
+  return apps::LaunchService::Get(browser()->profile())
+      ->OpenApplication(params);
 }
 
 // Test that System Apps install correctly with a manifest.
@@ -275,15 +289,8 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest,
 IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest,
                        LaunchFilesForSystemWebApp) {
   WaitForTestSystemAppInstall();
-
-  base::Optional<AppId> app_id =
-      GetManager().GetAppIdForSystemApp(SystemAppType::SETTINGS);
-  ASSERT_TRUE(app_id.has_value());
-
-  apps::AppLaunchParams params(
-      app_id.value(), apps::mojom::LaunchContainer::kLaunchContainerWindow,
-      WindowOpenDisposition::NEW_WINDOW,
-      apps::mojom::AppLaunchSource::kSourceChromeInternal);
+  apps::AppLaunchParams params = LaunchParamsForApp(SystemAppType::SETTINGS);
+  params.source = apps::mojom::AppLaunchSource::kSourceChromeInternal;
 
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_directory;
@@ -292,11 +299,11 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest,
   ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_directory.GetPath(),
                                              &temp_file_path));
 
-  params.launch_files = std::vector<base::FilePath>{temp_file_path};
+  params.launch_files = {temp_file_path};
 
   const GURL& launch_url = WebAppProvider::Get(browser()->profile())
                                ->registrar()
-                               .GetAppLaunchURL(app_id.value());
+                               .GetAppLaunchURL(params.app_id);
   content::TestNavigationObserver navigation_observer(launch_url);
   navigation_observer.StartWatchingNewWebContents();
 

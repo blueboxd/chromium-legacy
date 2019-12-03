@@ -266,6 +266,11 @@ protocol::CursorShapeStub* TestChromotingClient::GetCursorShapeStub() {
   return this;
 }
 
+protocol::KeyboardLayoutStub* TestChromotingClient::GetKeyboardLayoutStub() {
+  VLOG(1) << "TestChromotingClient::GetKeyboardLayoutStub() Called";
+  return this;
+}
+
 void TestChromotingClient::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
   VLOG(1) << "TestChromotingClient::InjectClipboardEvent() Called";
@@ -274,6 +279,11 @@ void TestChromotingClient::InjectClipboardEvent(
 void TestChromotingClient::SetCursorShape(
     const protocol::CursorShapeInfo& cursor_shape) {
   VLOG(1) << "TestChromotingClient::SetCursorShape() Called";
+}
+
+void TestChromotingClient::SetKeyboardLayout(
+    const protocol::KeyboardLayout& layout) {
+  VLOG(1) << "TestChromotingClient::SetKeyboardLayout() Called";
 }
 
 }  // namespace test

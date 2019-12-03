@@ -17,10 +17,12 @@ namespace ui {
 // value. Also tests what happens when we call ToString
 // or ParseEnumName on a bogus value.
 template <typename T>
-void TestEnumStringConversion(T(ParseFunction)(const char*)) {
+void TestEnumStringConversion(
+    T(ParseFunction)(const char*),
+    int32_t(step)(int32_t) = [](int32_t val) { return val + 1; }) {
   // Check every valid enum value.
   for (int i = static_cast<int>(T::kMinValue);
-       i <= static_cast<int>(T::kMaxValue); ++i) {
+       i <= static_cast<int>(T::kMaxValue); i = step(i)) {
     T src = static_cast<T>(i);
     std::string str = ToString(src);
     auto dst = ParseFunction(str.c_str());
@@ -130,10 +132,15 @@ TEST(AXEnumUtilTest, StringListAttribute) {
       &AXNodeData::AddStringListAttribute, std::vector<std::string>());
 }
 
-// TODO(dmazzoni) this should be an enum of flags, not an
-// enum of every possible bitfield value.
-TEST(AXEnumUtilTest, DISABLED_MarkerType) {
-  TestEnumStringConversion<ax::mojom::MarkerType>(ParseMarkerType);
+TEST(AXEnumUtilTest, MarkerType) {
+  TestEnumStringConversion<ax::mojom::MarkerType>(
+      ParseMarkerType, [](int32_t val) {
+        return val == 0 ? 1 :
+                        // 8 (Composition) is
+                        // explicitly skipped in
+                        // ax_enums.mojom.
+                   val == 4 ? 16 : val * 2;
+      });
 }
 
 TEST(AXEnumUtilTest, Text_Decoration_Style) {

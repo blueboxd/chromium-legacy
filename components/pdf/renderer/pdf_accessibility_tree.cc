@@ -14,6 +14,7 @@
 #include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/public/renderer/render_accessibility.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "pdf/pdf_features.h"
@@ -308,12 +309,12 @@ bool PdfAccessibilityTree::IsDataFromPluginValid(
 
 void PdfAccessibilityTree::SetAccessibilityViewportInfo(
     const PP_PrivateAccessibilityViewportInfo& viewport_info) {
-  zoom_device_scale_factor_ = viewport_info.zoom_device_scale_factor;
-  CHECK_GT(zoom_device_scale_factor_, 0);
+  zoom_ = viewport_info.zoom;
+  scale_ = viewport_info.scale;
+  CHECK_GT(zoom_, 0);
+  CHECK_GT(scale_, 0);
   scroll_ = ToVector2dF(viewport_info.scroll);
-  scroll_.Scale(1.0 / zoom_device_scale_factor_);
   offset_ = ToVector2dF(viewport_info.offset);
-  offset_.Scale(1.0 / zoom_device_scale_factor_);
 
   selection_start_page_index_ = viewport_info.selection_start_page_index;
   selection_start_char_index_ = viewport_info.selection_start_char_index;
@@ -971,11 +972,16 @@ content::RenderAccessibility* PdfAccessibilityTree::GetRenderAccessibility() {
 }
 
 gfx::Transform* PdfAccessibilityTree::MakeTransformFromViewInfo() {
+  double applicable_scale_factor =
+      content::RenderThread::Get()->IsUseZoomForDSF() ? scale_ : 1;
   gfx::Transform* transform = new gfx::Transform();
-  float scale_factor = zoom_device_scale_factor_ / GetDeviceScaleFactor();
-  transform->Scale(scale_factor, scale_factor);
-  transform->Translate(offset_);
+  // |scroll_| represents the x offset from which PDF content starts. It is the
+  // width of the PDF toolbar in pixels. Size of PDF toolbar does not change
+  // with zoom.
+  transform->Scale(applicable_scale_factor, applicable_scale_factor);
   transform->Translate(-scroll_);
+  transform->Scale(zoom_, zoom_);
+  transform->Translate(offset_);
   return transform;
 }
 

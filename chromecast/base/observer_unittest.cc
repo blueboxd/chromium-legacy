@@ -9,9 +9,9 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "chromecast/base/observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,9 +20,7 @@ namespace chromecast {
 
 class ObserverTest : public ::testing::Test {
  protected:
-  ObserverTest() : message_loop_(std::make_unique<base::MessageLoop>()) {}
-
-  const std::unique_ptr<base::MessageLoop> message_loop_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 struct NoDefaultConstructor {
@@ -350,4 +348,4 @@ TEST_F(ObserverTest, ObserveOnManyThreads) {
   observers.clear();
 }
 
-}  // chromecast
+}  // namespace chromecast

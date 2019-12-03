@@ -70,6 +70,9 @@ class TestClientStub : public protocol::ClientStub {
   // protocol::CursorShapeStub implementation.
   void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) override;
 
+  // protocol::KeyboardLayoutStub implementation.
+  void SetKeyboardLayout(const protocol::KeyboardLayout& layout) override;
+
   void WaitForDeliverHostMessage(base::TimeDelta max_timeout);
 
   void CheckHostDataMessage(int id, const std::string& data);
@@ -104,6 +107,9 @@ void TestClientStub::InjectClipboardEvent(
 
 void TestClientStub::SetCursorShape(
     const protocol::CursorShapeInfo& cursor_shape) {}
+
+void TestClientStub::SetKeyboardLayout(const protocol::KeyboardLayout& layout) {
+}
 
 void TestClientStub::WaitForDeliverHostMessage(base::TimeDelta max_timeout) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(

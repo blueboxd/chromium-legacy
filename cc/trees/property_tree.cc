@@ -1587,23 +1587,6 @@ const gfx::ScrollOffset ScrollTree::GetScrollOffsetDeltaForTesting(
     return gfx::ScrollOffset();
 }
 
-void ScrollTree::DistributeScroll(ScrollNode* scroll_node,
-                                  ScrollState* scroll_state) {
-  DCHECK(scroll_node && scroll_state);
-  if (scroll_state->FullyConsumed())
-    return;
-  scroll_state->DistributeToScrollChainDescendant();
-
-  // If we're currently scrolling a node other than this one, prevent the scroll
-  // from propagating to this node.
-  if (scroll_state->delta_consumed_for_scroll_sequence() &&
-      scroll_state->current_native_scrolling_node()->id != scroll_node->id) {
-    return;
-  }
-
-  scroll_state->layer_tree_impl()->ApplyScroll(scroll_node, scroll_state);
-}
-
 gfx::Vector2dF ScrollTree::ScrollBy(ScrollNode* scroll_node,
                                     const gfx::Vector2dF& scroll,
                                     LayerTreeImpl* layer_tree_impl) {

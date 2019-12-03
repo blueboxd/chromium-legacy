@@ -28,7 +28,7 @@ static const char kManifestDisplayNotSupportedMessage[] =
     "Manifest 'display' property must be one of 'standalone', 'fullscreen', or "
     "'minimal-ui'";
 static const char kManifestMissingSuitableIconMessage[] =
-    "Manifest does not contain a suitable icon - PNG format of at least "
+    "Manifest does not contain a suitable icon - PNG or SVG format of at least "
     "%dpx is required, the sizes attribute must be set, and the purpose "
     "attribute, if set, must include \"any\" or \"maskable\".";
 static const char kNoMatchingServiceWorkerMessage[] =
@@ -36,7 +36,7 @@ static const char kNoMatchingServiceWorkerMessage[] =
     "check that the service worker for the current page also controls the "
     "start URL from the manifest";
 static const char kNoAcceptableIconMessage[] =
-    "No supplied icon is at least %dpx square in PNG format";
+    "No supplied icon is at least %dpx square in PNG or SVG format";
 static const char kCannotDownloadIconMessage[] =
     "Could not download a required icon from the manifest";
 static const char kNoIconAvailableMessage[] =

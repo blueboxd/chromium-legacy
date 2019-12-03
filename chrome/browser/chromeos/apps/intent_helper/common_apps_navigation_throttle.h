@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_throttle.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -88,6 +89,13 @@ class CommonAppsNavigationThrottle : public apps::AppsNavigationThrottle {
       content::WebContents* web_contents,
       IntentPickerAutoDisplayService* ui_auto_display_service,
       const GURL& url) override;
+
+  bool ShouldDeferNavigation(content::NavigationHandle* handle) override;
+
+  void OnDeferredNavigationProcessed(
+      std::vector<apps::IntentPickerAppInfo> apps);
+
+  base::WeakPtrFactory<CommonAppsNavigationThrottle> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CommonAppsNavigationThrottle);
 };

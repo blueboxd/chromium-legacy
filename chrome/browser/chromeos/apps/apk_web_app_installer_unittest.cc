@@ -27,12 +27,14 @@ arc::mojom::WebAppInfoPtr GetWebAppInfo() {
                                      "https://www.google.com/", 10000);
 }
 
+constexpr int kGeneratedIconSize = 128;
+
 const std::vector<uint8_t> GetIconBytes() {
   auto fake_app_instance =
       std::make_unique<arc::FakeAppInstance>(/*app_host=*/nullptr);
   std::string png_data_as_string;
-  EXPECT_TRUE(fake_app_instance->GenerateIconResponse(128, /*app_icon=*/true,
-                                                      &png_data_as_string));
+  EXPECT_TRUE(fake_app_instance->GenerateIconResponse(
+      kGeneratedIconSize, /*app_icon=*/true, &png_data_as_string));
   return std::vector<uint8_t>(png_data_as_string.begin(),
                               png_data_as_string.end());
 }
@@ -117,9 +119,10 @@ TEST_F(ApkWebAppInstallerTest, IconDecodeCallsWebAppInstallManager) {
             static_cast<int32_t>(
                 apk_web_app_installer.web_app_info().theme_color.value()));
 
-  EXPECT_EQ(1u, apk_web_app_installer.web_app_info().icons.size());
-  EXPECT_FALSE(
-      apk_web_app_installer.web_app_info().icons[0].data.drawsNothing());
+  EXPECT_EQ(1u, apk_web_app_installer.web_app_info().icon_bitmaps.size());
+  EXPECT_FALSE(apk_web_app_installer.web_app_info()
+                   .icon_bitmaps.at(kGeneratedIconSize)
+                   .drawsNothing());
 }
 
 TEST_F(ApkWebAppInstallerTest,

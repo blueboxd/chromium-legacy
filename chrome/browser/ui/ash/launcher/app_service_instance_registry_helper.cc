@@ -11,6 +11,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/services/app_service/public/cpp/instance_update.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
@@ -23,6 +24,14 @@ AppServiceInstanceRegistryHelper::AppServiceInstanceRegistryHelper(
           std::make_unique<LauncherControllerHelper>(profile)) {}
 
 AppServiceInstanceRegistryHelper::~AppServiceInstanceRegistryHelper() = default;
+
+void AppServiceInstanceRegistryHelper::ActiveUserChanged() {
+  if (!base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry))
+    return;
+
+  proxy_ = apps::AppServiceProxyFactory::GetForProfile(
+      ProfileManager::GetActiveUserProfile());
+}
 
 void AppServiceInstanceRegistryHelper::OnActiveTabChanged(
     content::WebContents* old_contents,

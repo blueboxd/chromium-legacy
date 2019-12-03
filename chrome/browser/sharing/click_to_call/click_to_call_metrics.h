@@ -37,6 +37,18 @@ enum class SharingClickToCallSelection {
   kMaxValue = kApp,
 };
 
+// Result of comparing the simple regex with one of the available variants.
+// These values are logged to UMA. Entries should not be renumbered and numeric
+// values should never be reused. Please keep in sync with
+// "PhoneNumberRegexVariantResult" in src/tools/metrics/histograms/enums.xml.
+enum class PhoneNumberRegexVariantResult {
+  kNoneMatch = 0,
+  kOnlySimpleMatches = 1,
+  kOnlyVariantMatches = 2,
+  kBothMatch = 3,
+  kMaxValue = kBothMatch,
+};
+
 // TODO(himanshujaju): Make it generic and move to base/metrics/histogram_base.h
 // Used to Log delay in parsing phone number in highlighted text to UMA.
 class ScopedUmaHistogramMicrosecondsTimer {
@@ -69,5 +81,10 @@ void LogClickToCallUKM(content::WebContents* web_contents,
 void LogClickToCallPhoneNumberSize(const std::string& number,
                                    SharingClickToCallEntryPoint entry_point,
                                    bool send_to_device);
+
+// Compares alternative regexes to the default one on a low priority task runner
+// and records the results to UMA.
+void LogPhoneNumberDetectionMetrics(const std::string& selection_text,
+                                    bool sent_to_device);
 
 #endif  // CHROME_BROWSER_SHARING_CLICK_TO_CALL_CLICK_TO_CALL_METRICS_H_

@@ -48,11 +48,19 @@ const PP_PrivateAccessibilityTextRunInfo kFourthRunMultiLine = {
 
 const char kChromiumTestUrl[] = "www.cs.chromium.org";
 
-void CompareRect(PP_Rect expected_rect, PP_Rect actual_rect) {
+void CompareRect(const PP_Rect& expected_rect, const PP_Rect& actual_rect) {
   EXPECT_EQ(expected_rect.point.x, actual_rect.point.x);
   EXPECT_EQ(expected_rect.point.y, actual_rect.point.y);
   EXPECT_EQ(expected_rect.size.height, actual_rect.size.height);
   EXPECT_EQ(expected_rect.size.width, actual_rect.size.width);
+}
+
+void CompareRect(const gfx::RectF& expected_rect,
+                 const gfx::RectF& actual_rect) {
+  EXPECT_FLOAT_EQ(expected_rect.x(), actual_rect.x());
+  EXPECT_FLOAT_EQ(expected_rect.y(), actual_rect.y());
+  EXPECT_FLOAT_EQ(expected_rect.size().height(), actual_rect.size().height());
+  EXPECT_FLOAT_EQ(expected_rect.size().width(), actual_rect.size().width());
 }
 
 // This class overrides content::FakePepperPluginInstance to record received
@@ -155,7 +163,8 @@ class PdfAccessibilityTreeTest : public content::RenderViewTest {
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
         pak_file, ui::SCALE_FACTOR_NONE);
 
-    viewport_info_.zoom_device_scale_factor = 1.0;
+    viewport_info_.zoom = 1.0;
+    viewport_info_.scale = 1.0;
     viewport_info_.scroll = {0, 0};
     viewport_info_.offset = {0, 0};
     viewport_info_.selection_start_page_index = 0;
@@ -983,6 +992,69 @@ TEST_F(PdfAccessibilityTreeTest, TestEmptyPdfAxActions) {
   EXPECT_FALSE(pdf_action_target->ShowContextMenu());
   EXPECT_FALSE(pdf_action_target->ScrollToMakeVisible());
   EXPECT_FALSE(pdf_action_target->ScrollToGlobalPoint(gfx::Point()));
+}
+
+TEST_F(PdfAccessibilityTreeTest, TestZoomAndScaleChanges) {
+  text_runs_.emplace_back(kFirstTextRun);
+  text_runs_.emplace_back(kSecondTextRun);
+  chars_.insert(chars_.end(), std::begin(kDummyCharsData),
+                std::end(kDummyCharsData));
+
+  content::RenderFrame* render_frame = view_->GetMainRenderFrame();
+  render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
+  ASSERT_TRUE(render_frame->GetRenderAccessibility());
+
+  ActionHandlingFakePepperPluginInstance fake_pepper_instance;
+  FakeRendererPpapiHost host(view_->GetMainRenderFrame(),
+                             &fake_pepper_instance);
+  PP_Instance instance = 0;
+  PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+  pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
+  pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
+                                                  chars_, page_objects_);
+
+  viewport_info_.zoom = 1.0;
+  viewport_info_.scale = 1.0;
+  viewport_info_.scroll = {0, -56};
+  viewport_info_.offset = {57, 0};
+
+  pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
+  ui::AXNode* root_node = pdf_accessibility_tree.GetRoot();
+  ASSERT_TRUE(root_node);
+  ASSERT_EQ(1u, root_node->children().size());
+  ui::AXNode* page_node = root_node->children()[0];
+  ASSERT_TRUE(page_node);
+  ASSERT_EQ(2u, page_node->children().size());
+  ui::AXNode* para_node = page_node->children()[0];
+  ASSERT_TRUE(para_node);
+  gfx::RectF rect = para_node->data().relative_bounds.bounds;
+  CompareRect({{26.0f, 189.0f}, {84.0f, 13.0f}}, rect);
+  gfx::Transform* transform = root_node->data().relative_bounds.transform.get();
+  ASSERT_TRUE(transform);
+  transform->TransformRect(&rect);
+  CompareRect({{83.0f, 245.0f}, {84.0f, 13.0f}}, rect);
+
+  float new_device_scale = 1.5f;
+  float new_zoom = 1.5f;
+  viewport_info_.zoom = new_zoom;
+  viewport_info_.scale = new_device_scale;
+  SetUseZoomForDSFEnabled(true);
+  pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
+
+  rect = para_node->data().relative_bounds.bounds;
+  transform = root_node->data().relative_bounds.transform.get();
+  ASSERT_TRUE(transform);
+  transform->TransformRect(&rect);
+  CompareRect({{186.75f, 509.25f}, {189.00f, 29.25f}}, rect);
+
+  SetUseZoomForDSFEnabled(false);
+  pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
+
+  rect = para_node->data().relative_bounds.bounds;
+  transform = root_node->data().relative_bounds.transform.get();
+  ASSERT_TRUE(transform);
+  transform->TransformRect(&rect);
+  CompareRect({{124.5f, 339.5f}, {126.0f, 19.5f}}, rect);
 }
 
 }  // namespace pdf

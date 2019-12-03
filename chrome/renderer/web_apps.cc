@@ -46,11 +46,9 @@ void AddInstallIcon(const WebElement& link,
   if (link.HasAttribute("sizes")) {
     blink::WebVector<blink::WebSize> icon_sizes =
         blink::WebIconSizesParser::ParseIconSizes(link.GetAttribute("sizes"));
-    if (icon_sizes.size() == 1 &&
-        icon_sizes[0].width != 0 &&
-        icon_sizes[0].height != 0) {
-      icon_info.width = icon_sizes[0].width;
-      icon_info.height = icon_sizes[0].height;
+    if (icon_sizes.size() == 1 && icon_sizes[0].width != 0 &&
+        icon_sizes[0].height == icon_sizes[0].width) {
+      icon_info.square_size_px = icon_sizes[0].width;
     }
   }
   icon_info.url = url;
@@ -89,7 +87,7 @@ void ParseWebAppFromWebDocument(WebLocalFrame* frame,
           base::LowerCaseEqualsASCII(rel, "shortcut icon") ||
           base::LowerCaseEqualsASCII(rel, "apple-touch-icon") ||
           base::LowerCaseEqualsASCII(rel, "apple-touch-icon-precomposed")) {
-        AddInstallIcon(elem, &app_info->icons);
+        AddInstallIcon(elem, &app_info->icon_infos);
       }
     } else if (elem.HasHTMLTagName("meta") && elem.HasAttribute("name")) {
       std::string name = elem.GetAttribute("name").Utf8();

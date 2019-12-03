@@ -62,8 +62,6 @@ void CheckGpuPreferencesEqual(GpuPreferences left, GpuPreferences right) {
             right.disable_biplanar_gpu_memory_buffers_for_video_frames);
   EXPECT_EQ(left.texture_target_exception_list,
             right.texture_target_exception_list);
-  EXPECT_EQ(left.disable_gpu_driver_bug_workarounds,
-            right.disable_gpu_driver_bug_workarounds);
   EXPECT_EQ(left.ignore_gpu_blacklist, right.ignore_gpu_blacklist);
   EXPECT_EQ(left.enable_oop_rasterization, right.enable_oop_rasterization);
   EXPECT_EQ(left.disable_oop_rasterization, right.disable_oop_rasterization);
@@ -150,7 +148,6 @@ TEST(GpuPreferencesTest, EncodeDecode) {
     GPU_PREFERENCES_FIELD(use_passthrough_cmd_decoder, true)
     GPU_PREFERENCES_FIELD(disable_biplanar_gpu_memory_buffers_for_video_frames,
                           true)
-    GPU_PREFERENCES_FIELD(disable_gpu_driver_bug_workarounds, true)
     GPU_PREFERENCES_FIELD(ignore_gpu_blacklist, true)
     GPU_PREFERENCES_FIELD(enable_oop_rasterization, true)
     GPU_PREFERENCES_FIELD(disable_oop_rasterization, true)

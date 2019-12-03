@@ -18,7 +18,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/public/web/web_widget.h"
 
@@ -62,13 +62,21 @@ class ChromeRenderFrameObserverTest : public ChromeRenderViewTest {
   void SetUp() override {
     ChromeRenderViewTest::SetUp();
 
-    service_manager::InterfaceProvider* remote_interfaces =
-        view_->GetMainRenderFrame()->GetRemoteInterfaces();
-    service_manager::InterfaceProvider::TestApi test_api(remote_interfaces);
-    test_api.SetBinderForName(
-        translate::mojom::ContentTranslateDriver::Name_,
-        base::Bind(&FakeContentTranslateDriver::BindHandle,
-                   base::Unretained(&fake_translate_driver_)));
+    view_->GetMainRenderFrame()
+        ->GetBrowserInterfaceBroker()
+        ->SetBinderForTesting(
+            translate::mojom::ContentTranslateDriver::Name_,
+            base::Bind(&FakeContentTranslateDriver::BindHandle,
+                       base::Unretained(&fake_translate_driver_)));
+  }
+
+  void TearDown() override {
+    view_->GetMainRenderFrame()
+        ->GetBrowserInterfaceBroker()
+        ->SetBinderForTesting(translate::mojom::ContentTranslateDriver::Name_,
+                              {});
+
+    ChromeRenderViewTest::TearDown();
   }
 
   FakeContentTranslateDriver fake_translate_driver_;

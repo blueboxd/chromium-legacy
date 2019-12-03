@@ -177,7 +177,7 @@ cca.util.animateOnce = function(element, callback) {
   /** @suppress {suspiciousCode} */
   element.offsetWidth;  // Force calculation to re-apply animation.
   element.classList.add('animate');
-  cca.util.waitAnimationCompleted(element, () => {
+  cca.util.waitAnimationCompleted(element).finally(() => {
     element.classList.remove('animate');
     if (callback) {
       callback();
@@ -194,25 +194,34 @@ cca.util.animateCancel = function(element) {
 };
 
 /**
- * Waits for animation completed and calls the callback.
- * @param {HTMLElement} element Element to be animated.
- * @param {function()} callback Callback called on completion.
+ * Waits for animation completed.
+ * @param {!HTMLElement} element Element to be animated.
+ * @return {!Promise} Promise is resolved/rejected when animation is
+ *     completed/cancelled.
  */
-cca.util.waitAnimationCompleted = function(element, callback) {
-  var completed = false;
-  var onCompleted = (event) => {
-    if (completed || (event && event.target !== element)) {
-      return;
-    }
-    completed = true;
-    element.removeEventListener('transitionend', onCompleted);
-    element.removeEventListener('animationend', onCompleted);
-    callback();
-  };
-  // Assume only either 'transition' or 'animation' is applied on the element.
-  // Listen to both end-events for its completion.
-  element.addEventListener('transitionend', onCompleted);
-  element.addEventListener('animationend', onCompleted);
+cca.util.waitAnimationCompleted = function(element) {
+  return new Promise((resolve, reject) => {
+    let animationCount = 0;
+    const onStart = (event) =>
+        void (event.target === element && animationCount++);
+    const onFinished = (event, callback) => {
+      if (event.target !== element || --animationCount !== 0) {
+        return;
+      }
+      events.forEach(([e, fn]) => element.removeEventListener(e, fn));
+      callback();
+    };
+    const rejectWithError = () => reject(new Error('Animation is cancelled.'));
+    const events = [
+      ['transitionrun', onStart],
+      ['animationstart', onStart],
+      ['transitionend', (event) => onFinished(event, resolve)],
+      ['animationend', (event) => onFinished(event, resolve)],
+      ['transitioncancel', (event) => onFinished(event, rejectWithError)],
+      // animationcancel is not implemented on chrome.
+    ];
+    events.forEach(([e, fn]) => element.addEventListener(e, fn));
+  });
 };
 
 /**

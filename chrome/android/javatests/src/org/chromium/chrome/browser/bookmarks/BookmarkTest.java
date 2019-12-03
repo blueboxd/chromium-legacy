@@ -246,15 +246,17 @@ public class BookmarkTest {
     @SmallTest
     public void testUrlComposition() {
         readPartnerBookmarks();
-        BookmarkId mobileId = mBookmarkModel.getMobileFolderId();
-        BookmarkId bookmarkBarId = mBookmarkModel.getDesktopFolderId();
-        BookmarkId otherId = mBookmarkModel.getOtherFolderId();
-        Assert.assertEquals("chrome-native://bookmarks/folder/" + mobileId,
-                BookmarkUIState.createFolderUrl(mobileId).toString());
-        Assert.assertEquals("chrome-native://bookmarks/folder/" + bookmarkBarId,
-                BookmarkUIState.createFolderUrl(bookmarkBarId).toString());
-        Assert.assertEquals("chrome-native://bookmarks/folder/" + otherId,
-                BookmarkUIState.createFolderUrl(otherId).toString());
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            BookmarkId mobileId = mBookmarkModel.getMobileFolderId();
+            BookmarkId bookmarkBarId = mBookmarkModel.getDesktopFolderId();
+            BookmarkId otherId = mBookmarkModel.getOtherFolderId();
+            Assert.assertEquals("chrome-native://bookmarks/folder/" + mobileId,
+                    BookmarkUIState.createFolderUrl(mobileId).toString());
+            Assert.assertEquals("chrome-native://bookmarks/folder/" + bookmarkBarId,
+                    BookmarkUIState.createFolderUrl(bookmarkBarId).toString());
+            Assert.assertEquals("chrome-native://bookmarks/folder/" + otherId,
+                    BookmarkUIState.createFolderUrl(otherId).toString());
+        });
     }
 
     @Test

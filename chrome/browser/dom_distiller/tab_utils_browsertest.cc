@@ -22,9 +22,11 @@
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/dom_distiller/core/url_utils.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/isolated_world_ids.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -220,6 +222,32 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest, ToggleOriginalPage) {
       .WaitUntilFinishedLoading();
   EXPECT_EQ(source_web_contents->GetLastCommittedURL(),
             destination_web_contents->GetLastCommittedURL());
+}
+
+IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
+                       DomDistillDisableForBackForwardCache) {
+  content::BackForwardCacheDisabledTester tester;
+
+  GURL url1(article_url());
+  content::WebContents* initial_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::RenderFrameHost* main_frame =
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
+  int process_id = main_frame->GetProcess()->GetID();
+  int frame_routing_id = main_frame->GetRoutingID();
+  GURL url2(embedded_test_server()->GetURL("/title1.html"));
+
+  // Navigate to the page
+  ui_test_utils::NavigateToURL(browser(), url1);
+
+  DistillCurrentPageAndView(initial_web_contents);
+
+  // Navigate away while starting distillation. This should block bfcache.
+  ui_test_utils::NavigateToURL(browser(), url2);
+
+  EXPECT_TRUE(tester.IsDisabledForFrameWithReason(
+      process_id, frame_routing_id,
+      "browser::DomDistiller_SelfDeletingRequestDelegate"));
 }
 
 }  // namespace

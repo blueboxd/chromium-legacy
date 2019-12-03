@@ -6,7 +6,6 @@ executable("get_accessible_interfaces") {
   deps = [
     "//base",
     "//chrome/app:chrome_service_manifests",
-    "//chrome/common",
     "//content/public/app:service_manifests",
   ]
 }

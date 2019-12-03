@@ -48,6 +48,7 @@
 #include "content/common/frame_delete_intention.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/input/input_handler.mojom.h"
+#include "content/common/input/input_injector.mojom-forward.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -58,6 +59,7 @@
 #include "content/public/common/previews_state.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
 #include "media/mojo/mojom/interface_factory.mojom-forward.h"
+#include "media/mojo/mojom/media_metrics_provider.mojom-forward.h"
 #include "media/mojo/services/media_metrics_provider.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -1160,8 +1162,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindCacheStorage(
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver);
 
+  void BindInputInjectorReceiver(
+      mojo::PendingReceiver<mojom::InputInjector> receiver);
+
   void BindSmsReceiverReceiver(
       mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver);
+
+  void BindRestrictedCookieManager(
+      mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver);
 
   // Creates connections to WebUSB interfaces bound to this frame.
   void CreateWebUsbService(
@@ -1172,6 +1180,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void BindMediaInterfaceFactoryReceiver(
       mojo::PendingReceiver<media::mojom::InterfaceFactory> receiver);
+
+  void BindMediaMetricsProviderReceiver(
+      mojo::PendingReceiver<media::mojom::MediaMetricsProvider> receiver);
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
   void BindMediaRemoterFactoryReceiver(

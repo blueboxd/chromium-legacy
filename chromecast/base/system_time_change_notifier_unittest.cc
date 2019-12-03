@@ -10,10 +10,10 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -69,8 +69,6 @@ class TimeChangeObserver : public SystemTimeChangeNotifier::Observer {
 class SystemTimeChangeNotifierTest : public testing::Test {
  protected:
   void SetUp() override {
-    message_loop_.reset(new base::MessageLoop);
-
     notifier_.reset(new SystemTimeChangeNotifierPeriodicMonitor(
         new SequencedTaskRunnerNoDelay()));
 
@@ -86,7 +84,7 @@ class SystemTimeChangeNotifierTest : public testing::Test {
     run_loop.Run();
   }
 
-  std::unique_ptr<base::MessageLoop> message_loop_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<SystemTimeChangeNotifierPeriodicMonitor> notifier_;
   std::unique_ptr<TimeChangeObserver> observer_;
 };

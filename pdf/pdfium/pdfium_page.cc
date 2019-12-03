@@ -570,6 +570,27 @@ std::vector<PDFEngine::AccessibilityImageInfo> PDFiumPage::GetImageInfo() {
   return image_info;
 }
 
+std::vector<PDFEngine::AccessibilityHighlightInfo>
+PDFiumPage::GetHighlightInfo() {
+  std::vector<PDFEngine::AccessibilityHighlightInfo> highlight_info;
+  if (!available_)
+    return highlight_info;
+
+  PopulateHighlights();
+
+  highlight_info.reserve(highlights_.size());
+  for (const Highlight& highlight : highlights_) {
+    PDFEngine::AccessibilityHighlightInfo cur_info;
+    cur_info.start_char_index = highlight.start_char_index;
+    cur_info.char_count = highlight.char_count;
+    cur_info.bounds = pp::FloatRect(
+        highlight.bounding_rect.x(), highlight.bounding_rect.y(),
+        highlight.bounding_rect.width(), highlight.bounding_rect.height());
+    highlight_info.push_back(std::move(cur_info));
+  }
+  return highlight_info;
+}
+
 PDFiumPage::Area PDFiumPage::GetLinkTargetAtIndex(int link_index,
                                                   LinkTarget* target) {
   if (!available_ || link_index < 0)

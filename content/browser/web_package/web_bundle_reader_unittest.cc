@@ -85,7 +85,9 @@ TEST_F(WebBundleReaderTest, ReadResponse) {
   response->payload_length = 0xbeaf;
 
   GetMockFactory()->ReadAndFullfillResponse(
-      GetReader(), GetPrimaryURL(), std::move(response),
+      GetReader(), GetPrimaryURL(),
+      data_decoder::mojom::BundleResponseLocation::New(573u, 765u),
+      std::move(response),
       base::BindOnce(
           [](data_decoder::mojom::BundleResponsePtr response,
              data_decoder::mojom::BundleResponseParseErrorPtr error) {
@@ -112,7 +114,9 @@ TEST_F(WebBundleReaderTest, ReadResponseForURLContainingUserAndPass) {
   response->payload_length = 0xbeaf;
 
   GetMockFactory()->ReadAndFullfillResponse(
-      GetReader(), url, std::move(response),
+      GetReader(), url,
+      data_decoder::mojom::BundleResponseLocation::New(573u, 765u),
+      std::move(response),
       base::BindOnce(
           [](data_decoder::mojom::BundleResponsePtr response,
              data_decoder::mojom::BundleResponseParseErrorPtr error) {
@@ -139,7 +143,9 @@ TEST_F(WebBundleReaderTest, ReadResponseForURLContainingFragment) {
   response->payload_length = 0xbeaf;
 
   GetMockFactory()->ReadAndFullfillResponse(
-      GetReader(), url, std::move(response),
+      GetReader(), url,
+      data_decoder::mojom::BundleResponseLocation::New(573u, 765u),
+      std::move(response),
       base::BindOnce(
           [](data_decoder::mojom::BundleResponsePtr response,
              data_decoder::mojom::BundleResponseParseErrorPtr error) {

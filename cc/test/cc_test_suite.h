@@ -11,8 +11,10 @@
 #include "base/test/test_suite.h"
 
 namespace base {
-class MessageLoop;
+namespace test {
+class SingleThreadTaskEnvironment;
 }
+}  // namespace base
 
 namespace cc {
 
@@ -30,7 +32,7 @@ class CCTestSuite : public base::TestSuite {
   void Shutdown() override;
 
  private:
-  std::unique_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::test::SingleThreadTaskEnvironment> task_environment_;
 
   base::TestDiscardableMemoryAllocator discardable_memory_allocator_;
 };

@@ -86,25 +86,13 @@ Source::Type InferSourceFromExternalInstallSource(
   }
 }
 
-void SetWebAppIcons(const std::vector<WebApplicationIconInfo>& icon_infos,
-                    WebApp* web_app) {
-  WebApp::Icons web_app_icons;
-
-  for (const WebApplicationIconInfo& icon_info : icon_infos) {
-    // Skip unfetched bitmaps.
-    if (icon_info.data.colorType() == kUnknown_SkColorType)
-      continue;
-
-    DCHECK_EQ(icon_info.width, icon_info.height);
-
-    WebApp::IconInfo web_app_icon_info;
-    web_app_icon_info.url = icon_info.url;
-    web_app_icon_info.size_in_px = icon_info.width;
-
-    web_app_icons.push_back(web_app_icon_info);
-  }
-
-  web_app->SetIcons(std::move(web_app_icons));
+std::vector<SquareSizePx> GetSquareSizePxs(
+    const std::map<SquareSizePx, SkBitmap>& icon_bitmaps) {
+  std::vector<SquareSizePx> sizes;
+  sizes.reserve(icon_bitmaps.size());
+  for (const std::pair<SquareSizePx, SkBitmap>& item : icon_bitmaps)
+    sizes.push_back(item.first);
+  return sizes;
 }
 
 }  // namespace
@@ -180,10 +168,11 @@ void WebAppInstallFinalizer::FinalizeInstall(
   sync_data.theme_color = web_app_info.theme_color;
   web_app->SetSyncData(std::move(sync_data));
 
-  SetWebAppIcons(web_app_info.icons, web_app.get());
+  web_app->SetIconInfos(web_app_info.icon_infos);
+  web_app->SetDownloadedIconSizes(GetSquareSizePxs(web_app_info.icon_bitmaps));
 
   icon_manager_->WriteData(
-      std::move(app_id), web_app_info.icons,
+      std::move(app_id), web_app_info.icon_bitmaps,
       base::BindOnce(&WebAppInstallFinalizer::OnIconsDataWritten,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                      std::move(web_app)));
@@ -211,10 +200,9 @@ void WebAppInstallFinalizer::FinalizeFallbackInstallAfterSync(
           ? web_app->sync_data().theme_color.value()
           : SK_ColorDKGRAY;
 
-  std::vector<WebApplicationIconInfo> icon_infos =
+  std::map<SquareSizePx, SkBitmap> icon_bitmaps =
       GenerateIcons(web_app->sync_data().name, background_icon_color);
-
-  SetWebAppIcons(icon_infos, web_app.get());
+  web_app->SetDownloadedIconSizes(GetSquareSizePxs(icon_bitmaps));
 
   InstallFinalizedCallback fallback_install_callback =
       base::BindOnce(&WebAppInstallFinalizer::OnFallbackInstallFinalized,
@@ -222,7 +210,7 @@ void WebAppInstallFinalizer::FinalizeFallbackInstallAfterSync(
                      app_in_sync_install->app_id(), std::move(callback));
 
   icon_manager_->WriteData(
-      std::move(app_id), std::move(icon_infos),
+      std::move(app_id), std::move(icon_bitmaps),
       base::BindOnce(&WebAppInstallFinalizer::OnIconsDataWritten,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(fallback_install_callback), std::move(web_app)));

@@ -455,4 +455,43 @@ TEST_F(AccessibilityTest, GetAccessibilityLinkInfo) {
   }
 }
 
+TEST_F(AccessibilityTest, GetAccessibilityHighlightInfo) {
+  static const pp::PDF::PrivateAccessibilityHighlightInfo
+      kExpectedHighlightInfo[] = {{"", 0, 0, 1, {{5, 196}, {49, 26}}},
+                                  {"", 1, 2, 1, {{110, 196}, {77, 26}}},
+                                  {"", 2, 3, 1, {{192, 196}, {13, 26}}}};
+
+  static const pp::Rect kExpectedPageRect = {{5, 3}, {533, 266}};
+
+  TestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("highlights.pdf"));
+  ASSERT_TRUE(engine);
+  ASSERT_EQ(1, engine->GetNumberOfPages());
+
+  PP_PrivateAccessibilityPageInfo page_info;
+  std::vector<pp::PDF::PrivateAccessibilityTextRunInfo> text_runs;
+  std::vector<PP_PrivateAccessibilityCharInfo> chars;
+  pp::PDF::PrivateAccessibilityPageObjects page_objects;
+  ASSERT_TRUE(GetAccessibilityInfo(engine.get(), 0, &page_info, &text_runs,
+                                   &chars, &page_objects));
+  EXPECT_EQ(0u, page_info.page_index);
+  CompareRect(kExpectedPageRect, page_info.bounds);
+  EXPECT_EQ(text_runs.size(), page_info.text_run_count);
+  EXPECT_EQ(chars.size(), page_info.char_count);
+  ASSERT_EQ(page_objects.highlights.size(), base::size(kExpectedHighlightInfo));
+
+  for (size_t i = 0; i < page_objects.highlights.size(); ++i) {
+    const pp::PDF::PrivateAccessibilityHighlightInfo& highlight_info =
+        page_objects.highlights[i];
+    EXPECT_EQ(highlight_info.index_in_page,
+              kExpectedHighlightInfo[i].index_in_page);
+    CompareRect(kExpectedHighlightInfo[i].bounds, highlight_info.bounds);
+    EXPECT_EQ(highlight_info.text_run_index,
+              kExpectedHighlightInfo[i].text_run_index);
+    EXPECT_EQ(highlight_info.text_run_count,
+              kExpectedHighlightInfo[i].text_run_count);
+  }
+}
+
 }  // namespace chrome_pdf

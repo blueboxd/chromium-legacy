@@ -94,6 +94,7 @@ static_library("protocol") {
     "jingle_session.h",
     "jingle_session_manager.cc",
     "jingle_session_manager.h",
+    "keyboard_layout_stub.h",
     "me2me_host_authenticator_factory.cc",
     "me2me_host_authenticator_factory.h",
     "message_decoder.cc",

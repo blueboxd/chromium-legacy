@@ -41,7 +41,7 @@ ConditionalCacheDeletionHelper::ConditionalCacheDeletionHelper(
 }
 
 // static
-base::Callback<bool(const disk_cache::Entry*)>
+base::RepeatingCallback<bool(const disk_cache::Entry*)>
 ConditionalCacheDeletionHelper::CreateURLAndTimeCondition(
     base::RepeatingCallback<bool(const GURL&)> url_predicate,
     base::Time begin_time,

@@ -68,12 +68,12 @@ base::OnceClosure RunsOrPostOnCurrentTaskRunner(base::OnceClosure closure) {
 // datatypes will be delegated to it.
 bool DoesOriginMatchMaskAndURLs(
     int origin_type_mask,
-    const base::Callback<bool(const GURL&)>& predicate,
+    base::OnceCallback<bool(const GURL&)> predicate,
     const BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher&
         embedder_matcher,
     const url::Origin& origin,
     storage::SpecialStoragePolicy* policy) {
-  if (!predicate.is_null() && !predicate.Run(origin.GetURL()))
+  if (predicate && !std::move(predicate).Run(origin.GetURL()))
     return false;
 
   const std::vector<std::string>& schemes = url::GetWebStorageSchemes();
@@ -154,9 +154,9 @@ bool BrowsingDataRemoverImpl::DoesOriginMatchMask(
   if (embedder_delegate_)
     embedder_matcher = embedder_delegate_->GetOriginTypeMatcher();
 
-  return DoesOriginMatchMaskAndURLs(
-      origin_type_mask, base::Callback<bool(const GURL&)>(),
-      std::move(embedder_matcher), origin, policy);
+  return DoesOriginMatchMaskAndURLs(origin_type_mask, base::NullCallback(),
+                                    std::move(embedder_matcher), origin,
+                                    policy);
 }
 
 void BrowsingDataRemoverImpl::Remove(const base::Time& delete_begin,

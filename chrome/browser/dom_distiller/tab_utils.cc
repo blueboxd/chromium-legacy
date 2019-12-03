@@ -17,6 +17,7 @@
 #include "components/dom_distiller/core/task_tracker.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/dom_distiller/core/url_utils.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
@@ -86,7 +87,14 @@ void SelfDeletingRequestDelegate::WebContentsDestroyed() {
 
 SelfDeletingRequestDelegate::SelfDeletingRequestDelegate(
     content::WebContents* web_contents)
-    : WebContentsObserver(web_contents) {}
+    : WebContentsObserver(web_contents) {
+  // Disable back-forward cache when the distillation is in progress as it would
+  // be cancelled and would not be restarted when the page is restored from the
+  // cache.
+  content::BackForwardCache::DisableForRenderFrameHost(
+      web_contents->GetMainFrame(),
+      "browser::DomDistiller_SelfDeletingRequestDelegate");
+}
 
 SelfDeletingRequestDelegate::~SelfDeletingRequestDelegate() {}
 

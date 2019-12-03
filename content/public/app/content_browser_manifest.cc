@@ -121,6 +121,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .RequireCapability("file", "file:leveldb")
           .RequireCapability("network", "network_service")
           .RequireCapability("network", "test")
+          .RequireCapability(mojom::kRendererServiceName, "browser")
           .RequireCapability("media", "media:media")
           .RequireCapability("media_renderer", "media:media")
           .RequireCapability("*", "app")
@@ -174,8 +175,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .ExposeInterfaceFilterCapability_Deprecated(
               "navigation:service_worker", "renderer",
               std::set<const char*>{
-                  "blink.mojom.QuotaDispatcherHost",
-                  "network.mojom.RestrictedCookieManager"})
+                  "blink.mojom.QuotaDispatcherHost"})
           .ExposeInterfaceFilterCapability_Deprecated(
               "navigation:frame", "renderer",
               std::set<const char*>{
@@ -184,13 +184,12 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.DisplayCutoutHost",
                   "blink.mojom.Portal",
                   "blink.mojom.QuotaDispatcherHost",
-                  "content.mojom.InputInjector",
                   "content.mojom.RendererAudioInputStreamFactory",
                   "content.mojom.RendererAudioOutputStreamFactory",
                   "discardable_memory.mojom.DiscardableSharedMemoryManager",
-                  "media.mojom.MediaMetricsProvider",
-                  "network.mojom.RestrictedCookieManager",
                   "viz.mojom.Gpu"})
+          .RequireInterfaceFilterCapability_Deprecated(
+              mojom::kRendererServiceName, "navigation:frame", "browser")
           .PackageService(content::GetManifest())
           .Build()};
   return *manifest;

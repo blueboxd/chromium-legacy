@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_set.h"
+#include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
@@ -126,47 +127,73 @@ void UpdateLegacyMultiColumnFlowThread(
     const NGPhysicalBoxFragment& fragment) {
   WritingMode writing_mode = constraint_space.GetWritingMode();
   LayoutUnit flow_end;
-  LayoutUnit column_block_size;
-  bool has_processed_first_child = false;
+  bool has_processed_first_column_in_flow_thread = false;
+  bool has_processed_first_column_in_row = false;
 
   // Stitch the columns together.
+  NGBoxStrut border_scrollbar_padding =
+      ComputeBorders(constraint_space, node) +
+      ComputeScrollbars(constraint_space, node) +
+      ComputePadding(constraint_space, node.Style());
+  NGFragment logical_multicol_fragment(writing_mode, fragment);
+  LayoutUnit column_row_inline_size = logical_multicol_fragment.InlineSize() -
+                                      border_scrollbar_padding.InlineSum();
+  LayoutMultiColumnSet* column_set =
+      ToLayoutMultiColumnSetOrNull(flow_thread->FirstMultiColumnBox());
   for (const auto& child : fragment.Children()) {
-    // Skip column spanners, as they are not part of the flow thread (and
-    // besides, otherwise we'd hit a DCHECK below, because the inline-size of a
-    // spanner is typically different from that of the columns).
-    if (child->GetLayoutObject() && child->GetLayoutObject()->IsColumnSpanAll())
+    if (child->GetLayoutObject() &&
+        child->GetLayoutObject()->IsColumnSpanAll()) {
+      // Column spanners are not part of the fragmentation context. We'll use
+      // them as stepping stones to get to the next column set. Note that there
+      // are known discrepancies between when the legacy engine creates column
+      // sets, and when LayoutNG creates column fragments, so our code here
+      // needs to deal with:
+      // 1: NG column fragments with no associated legacy column set
+      // 2: A legacy column set with no associated NG column fragments
+      NGFragment logical_spanner_fragment(writing_mode, *child);
+      if (column_set)
+        column_set->EndFlow(flow_end);
+      // Prepare the next column set, if there's one directly following this
+      // spanner.
+      LayoutMultiColumnSpannerPlaceholder* spanner_placeholder =
+          child->GetLayoutObject()->SpannerPlaceholder();
+      column_set = ToLayoutMultiColumnSetOrNull(
+          spanner_placeholder->NextSiblingMultiColumnBox());
+      if (column_set)
+        column_set->BeginFlow(flow_end);
+      has_processed_first_column_in_row = false;
       continue;
-    NGFragment child_fragment(writing_mode, *child);
-    flow_end += child_fragment.BlockSize();
+    }
+    NGFragment logical_column_fragment(writing_mode, *child);
+    flow_end += logical_column_fragment.BlockSize();
     // Non-uniform fragmentainer widths not supported by legacy layout.
-    DCHECK(!has_processed_first_child ||
-           flow_thread->LogicalWidth() == child_fragment.InlineSize());
-    if (!has_processed_first_child) {
+    DCHECK(!has_processed_first_column_in_flow_thread ||
+           flow_thread->LogicalWidth() == logical_column_fragment.InlineSize());
+    if (!has_processed_first_column_in_flow_thread) {
       // The offset of the flow thread should be the same as that of the first
       // first column.
       flow_thread->SetLocation(child.Offset().ToLayoutPoint());
-      flow_thread->SetLogicalWidth(child_fragment.InlineSize());
-      column_block_size = child_fragment.BlockSize();
-      has_processed_first_child = true;
+      flow_thread->SetLogicalWidth(logical_column_fragment.InlineSize());
+      has_processed_first_column_in_flow_thread = true;
+    }
+    if (!has_processed_first_column_in_row && column_set) {
+      column_set->SetLogicalLeft(border_scrollbar_padding.inline_start);
+      if (IsHorizontalWritingMode(writing_mode)) {
+        column_set->SetLogicalTop(child.offset.top);
+      } else if (IsFlippedBlocksWritingMode(writing_mode)) {
+        column_set->SetLogicalTop(fragment.Size().width - child.offset.left -
+                                  child->Size().width);
+      } else {
+        column_set->SetLogicalTop(child.offset.left);
+      }
+      column_set->SetLogicalWidth(column_row_inline_size);
+      column_set->SetLogicalHeight(logical_column_fragment.BlockSize());
+      has_processed_first_column_in_row = true;
     }
   }
 
-  if (LayoutMultiColumnSet* column_set = flow_thread->FirstMultiColumnSet()) {
-    NGFragment logical_fragment(writing_mode, fragment);
-    auto border_scrollbar_padding =
-        ComputeBorders(constraint_space, node) +
-        ComputeScrollbars(constraint_space, node) +
-        ComputePadding(constraint_space, node.Style());
-
-    column_set->SetLogicalLeft(border_scrollbar_padding.inline_start);
-    column_set->SetLogicalTop(border_scrollbar_padding.block_start);
-    column_set->SetLogicalWidth(logical_fragment.InlineSize() -
-                                border_scrollbar_padding.InlineSum());
-    column_set->SetLogicalHeight(column_block_size);
+  if (column_set)
     column_set->EndFlow(flow_end);
-  }
-  // TODO(mstensho): Update all column boxes, not just the first column set
-  // (like we do above). This is needed to support column-span:all.
 
   flow_thread->UpdateFromNG();
   flow_thread->ValidateColumnSets();

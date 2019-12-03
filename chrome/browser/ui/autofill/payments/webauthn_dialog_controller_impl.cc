@@ -5,7 +5,9 @@
 #include "chrome/browser/ui/autofill/payments/webauthn_dialog_controller_impl.h"
 
 #include "chrome/browser/ui/autofill/payments/webauthn_dialog_model.h"
+#include "chrome/browser/ui/autofill/payments/webauthn_dialog_state.h"
 #include "chrome/browser/ui/autofill/payments/webauthn_dialog_view.h"
+#include "components/autofill/core/browser/payments/webauthn_callback_types.h"
 
 namespace autofill {
 
@@ -20,15 +22,26 @@ WebauthnDialogControllerImpl::~WebauthnDialogControllerImpl() {
   // controller is not reset. Need to reset via WebauthnDialogViewImpl::Hide()
   // to avoid crash.
   if (dialog_model_)
-    dialog_model_->SetDialogState(WebauthnDialogModel::DialogState::kInactive);
+    dialog_model_->SetDialogState(WebauthnDialogState::kInactive);
 }
 
 void WebauthnDialogControllerImpl::ShowOfferDialog(
-    AutofillClient::WebauthnOfferDialogCallback offer_dialog_callback) {
+    AutofillClient::WebauthnDialogCallback offer_dialog_callback) {
   DCHECK(!dialog_model_);
 
-  offer_dialog_callback_ = std::move(offer_dialog_callback);
-  dialog_view_ = WebauthnDialogView::CreateAndShow(this);
+  callback_ = std::move(offer_dialog_callback);
+  dialog_view_ =
+      WebauthnDialogView::CreateAndShow(this, WebauthnDialogState::kOffer);
+  dialog_model_ = dialog_view_->GetDialogModel();
+}
+
+void WebauthnDialogControllerImpl::ShowVerifyPendingDialog(
+    AutofillClient::WebauthnDialogCallback verify_pending_dialog_callback) {
+  DCHECK(!dialog_model_);
+
+  callback_ = std::move(verify_pending_dialog_callback);
+  dialog_view_ = WebauthnDialogView::CreateAndShow(
+      this, WebauthnDialogState::kVerifyPending);
   dialog_model_ = dialog_view_->GetDialogModel();
 }
 
@@ -36,19 +49,38 @@ bool WebauthnDialogControllerImpl::CloseDialog() {
   if (!dialog_model_)
     return false;
 
-  dialog_model_->SetDialogState(WebauthnDialogModel::DialogState::kInactive);
+  dialog_model_->SetDialogState(WebauthnDialogState::kInactive);
   return true;
 }
 
-void WebauthnDialogControllerImpl::UpdateDialogWithError() {
-  dialog_model_->SetDialogState(WebauthnDialogModel::DialogState::kError);
-  offer_dialog_callback_.Reset();
+void WebauthnDialogControllerImpl::UpdateDialog(
+    WebauthnDialogState dialog_state) {
+  if (!dialog_model_)
+    return;
+
+  switch (dialog_state) {
+    case WebauthnDialogState::kOfferError:
+      callback_.Reset();
+      break;
+    case WebauthnDialogState::kVerifyPending:
+    case WebauthnDialogState::kVerifyPendingButtonDisabled:
+      // Do not reset the |callback_| here since after the platform
+      // authentication is done, the cancel button will be enabled again.
+      break;
+    case WebauthnDialogState::kUnknown:
+    case WebauthnDialogState::kInactive:
+    case WebauthnDialogState::kOffer:
+    case WebauthnDialogState::kOfferPending:
+      NOTREACHED();
+      break;
+  }
+  dialog_model_->SetDialogState(dialog_state);
 }
 
 void WebauthnDialogControllerImpl::OnDialogClosed() {
   dialog_model_ = nullptr;
   dialog_view_ = nullptr;
-  offer_dialog_callback_.Reset();
+  callback_.Reset();
 }
 
 content::WebContents* WebauthnDialogControllerImpl::GetWebContents() {
@@ -56,14 +88,31 @@ content::WebContents* WebauthnDialogControllerImpl::GetWebContents() {
 }
 
 void WebauthnDialogControllerImpl::OnOkButtonClicked() {
-  DCHECK(offer_dialog_callback_);
-  offer_dialog_callback_.Run(/*did_accept=*/true);
-  dialog_model_->SetDialogState(WebauthnDialogModel::DialogState::kPending);
+  // The OK button is available only when the dialog is in
+  // WebauthnDialogState::kOffer state.
+  DCHECK(callback_);
+  callback_.Run(WebauthnDialogCallbackType::kOfferAccepted);
+  dialog_model_->SetDialogState(WebauthnDialogState::kOfferPending);
 }
 
 void WebauthnDialogControllerImpl::OnCancelButtonClicked() {
-  DCHECK(offer_dialog_callback_);
-  offer_dialog_callback_.Run(/*did_accept=*/false);
+  switch (dialog_model_->dialog_state()) {
+    case WebauthnDialogState::kOffer:
+    case WebauthnDialogState::kOfferPending:
+      DCHECK(callback_);
+      callback_.Run(WebauthnDialogCallbackType::kOfferCancelled);
+      return;
+    case WebauthnDialogState::kVerifyPending:
+      DCHECK(callback_);
+      callback_.Run(WebauthnDialogCallbackType::kVerificationCancelled);
+      return;
+    case WebauthnDialogState::kUnknown:
+    case WebauthnDialogState::kInactive:
+    case WebauthnDialogState::kOfferError:
+    case WebauthnDialogState::kVerifyPendingButtonDisabled:
+      NOTREACHED();
+      return;
+  }
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(WebauthnDialogControllerImpl)

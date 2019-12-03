@@ -389,8 +389,6 @@ TEST_F(ContentSettingImageModelTest, NotificationsIconVisibility) {
 TEST_F(ContentSettingImageModelTest, NotificationsPrompt) {
 #if !defined(OS_ANDROID)
   std::map<std::string, std::string> parameters;
-  parameters[kQuietNotificationPromptsUIFlavorParameterName] =
-      kQuietNotificationPromptsAnimatedIcon;
   parameters[kQuietNotificationPromptsActivationParameterName] =
       kQuietNotificationPromptsActivationAlways;
   base::test::ScopedFeatureList feature_list;

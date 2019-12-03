@@ -549,6 +549,9 @@ void LayoutListMarker::ListItemStyleDidChange() {
     // might end up (e.g., in some deeply nested line box). See CSS3 spec.
     new_style = ComputedStyle::Create();
     new_style->InheritFrom(list_item_->StyleRef());
+    new_style->SetStyleType(kPseudoIdMarker);
+    new_style->SetUnicodeBidi(UnicodeBidi::kIsolate);
+    new_style->SetFontVariantNumericSpacing(FontVariantNumeric::kTabularNums);
   }
   if (Style()) {
     // Reuse the current margins. Otherwise resetting the margins to initial

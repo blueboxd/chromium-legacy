@@ -22,6 +22,7 @@
 #include "device/base/features.h"
 #include "device/bluetooth/dbus/bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/bluetooth_agent_manager_client.h"
+#include "device/bluetooth/dbus/bluetooth_debug_manager_client.h"
 #include "device/bluetooth/dbus/bluetooth_device_client.h"
 #include "device/bluetooth/dbus/bluetooth_gatt_characteristic_client.h"
 #include "device/bluetooth/dbus/bluetooth_gatt_descriptor_client.h"
@@ -107,6 +108,12 @@ BluetoothAgentManagerClient*
 bluez::BluezDBusManager::GetBluetoothAgentManagerClient() {
   DCHECK(object_manager_support_known_);
   return client_bundle_->bluetooth_agent_manager_client();
+}
+
+BluetoothDebugManagerClient*
+bluez::BluezDBusManager::GetBluetoothDebugManagerClient() {
+  DCHECK(object_manager_support_known_);
+  return client_bundle_->bluetooth_debug_manager_client();
 }
 
 BluetoothDeviceClient* bluez::BluezDBusManager::GetBluetoothDeviceClient() {
@@ -203,6 +210,8 @@ void BluezDBusManager::InitializeClients() {
   client_bundle_->bluetooth_adapter_client()->Init(GetSystemBus(),
                                                    bluetooth_service_name);
   client_bundle_->bluetooth_agent_manager_client()->Init(
+      GetSystemBus(), bluetooth_service_name);
+  client_bundle_->bluetooth_debug_manager_client()->Init(
       GetSystemBus(), bluetooth_service_name);
   client_bundle_->bluetooth_device_client()->Init(GetSystemBus(),
                                                   bluetooth_service_name);
@@ -352,6 +361,12 @@ void BluezDBusManagerSetter::SetBluetoothAgentManagerClient(
     std::unique_ptr<BluetoothAgentManagerClient> client) {
   bluez::BluezDBusManager::Get()
       ->client_bundle_->bluetooth_agent_manager_client_ = std::move(client);
+}
+
+void BluezDBusManagerSetter::SetBluetoothDebugManagerClient(
+    std::unique_ptr<BluetoothDebugManagerClient> client) {
+  bluez::BluezDBusManager::Get()
+      ->client_bundle_->bluetooth_debug_manager_client_ = std::move(client);
 }
 
 void BluezDBusManagerSetter::SetBluetoothDeviceClient(

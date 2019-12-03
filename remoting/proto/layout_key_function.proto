@@ -93,9 +93,6 @@ enum LayoutKeyFunction {
   MUHENKAN = 55;                  // NonConvert
   KATAKANA_HIRAGANA_ROMAJI = 56;  // KanaMode
   KANA = 57;                      // Lang1 (Mac keyboard)
-  // Note: Windows only identifies the key as "Caps Lock", so the Windows host
-  // currently sends the CAPS_LOCK function even for shift level 1 (unshifted)
-  // and doesn't use this function.
   EISU = 58;  // Unshifted CapsLock (Windows), Lang2 (Mac keyboard)
   // Korean
   HAN_YEONG = 59;  // Lang1

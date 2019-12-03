@@ -9,6 +9,8 @@
 // This object is responsible for its own lifetime.
 class SharingDialog {
  public:
+  virtual ~SharingDialog() = default;
+
   // Called to close the dialog and prevent future callbacks into the
   // controller.
   virtual void Hide() = 0;

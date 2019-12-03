@@ -75,8 +75,7 @@ ChildProcessLauncherHelper::ChildProcessLauncherHelper(
     bool can_use_warm_up_connection,
 #endif
     mojo::OutgoingInvitation mojo_invitation,
-    const mojo::ProcessErrorCallback& process_error_callback,
-    std::map<std::string, base::FilePath> files_to_preload)
+    const mojo::ProcessErrorCallback& process_error_callback)
     : child_process_id_(child_process_id),
       client_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       command_line_(std::move(command_line)),
@@ -84,8 +83,7 @@ ChildProcessLauncherHelper::ChildProcessLauncherHelper(
       child_process_launcher_(child_process_launcher),
       terminate_on_shutdown_(terminate_on_shutdown),
       mojo_invitation_(std::move(mojo_invitation)),
-      process_error_callback_(process_error_callback),
-      files_to_preload_(std::move(files_to_preload))
+      process_error_callback_(process_error_callback)
 #if defined(OS_ANDROID)
       ,
       can_use_warm_up_connection_(can_use_warm_up_connection)

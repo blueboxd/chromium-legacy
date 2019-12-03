@@ -15,6 +15,7 @@ namespace autofill {
 
 class WebauthnDialogModel;
 class WebauthnDialogView;
+enum class WebauthnDialogState;
 
 // Implementation of the per-tab controller to control the
 // WebauthnDialogView. Lazily initialized when used.
@@ -26,9 +27,11 @@ class WebauthnDialogControllerImpl
   ~WebauthnDialogControllerImpl() override;
 
   void ShowOfferDialog(
-      AutofillClient::WebauthnOfferDialogCallback offer_dialog_callback);
+      AutofillClient::WebauthnDialogCallback offer_dialog_callback);
+  void ShowVerifyPendingDialog(
+      AutofillClient::WebauthnDialogCallback verify_pending_dialog_callback);
   bool CloseDialog();
-  void UpdateDialogWithError();
+  void UpdateDialog(WebauthnDialogState dialog_state);
 
   // WebauthnDialogController:
   void OnOkButtonClicked() override;
@@ -44,10 +47,11 @@ class WebauthnDialogControllerImpl
  private:
   friend class content::WebContentsUserData<WebauthnDialogControllerImpl>;
 
-  // Callback invoked when any button in the offer dialog is clicked. Note this
-  // repeating callback can be run twice, since after the accept button is
-  // clicked, the offer dialog stays and the cancel button is still clickable.
-  AutofillClient::WebauthnOfferDialogCallback offer_dialog_callback_;
+  // Clicking either the OK button or the cancel button in the dialog
+  // will invoke this repeating callback. Note this repeating callback can
+  // be run twice, since after the accept button in the offer dialog is
+  // clicked, the dialog stays and the cancel button is still clickable.
+  AutofillClient::WebauthnDialogCallback callback_;
 
   WebauthnDialogModel* dialog_model_ = nullptr;
   WebauthnDialogView* dialog_view_ = nullptr;

@@ -140,9 +140,8 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
     return false;
   }
 
-  SMILTime FindInstanceTime(BeginOrEnd,
-                            SMILTime minimum_time,
-                            bool equals_minimum_ok) const;
+  SMILTime NextAfter(BeginOrEnd, SMILTime time) const;
+
   SMILTime BeginTimeForPrioritization(SMILTime presentation_time) const;
 
   SMILInterval ResolveInterval(SMILTime begin_after, SMILTime end_after) const;

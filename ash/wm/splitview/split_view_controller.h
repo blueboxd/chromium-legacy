@@ -112,16 +112,6 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   bool InClamshellSplitViewMode() const;
   bool InTabletSplitViewMode() const;
 
-  // Checks the following criteria:
-  // 1. Split view mode is supported (see |ShouldAllowSplitView|).
-  // 2. |window| can be activated (see |wm::CanActivateWindow|).
-  // 3. The |WindowState| of |window| can snap (see |WindowState::CanSnap|).
-  // 4. |window|'s minimum size, if any, fits into the left or top with the
-  //    default divider position. (If the work area length is odd, then the
-  //    right or bottom will be one pixel larger.)
-  // See also the |DCHECK|s in |SnapWindow|.
-  bool CanSnapWindow(aura::Window* window) const;
-
   // Snaps window to left/right. It will try to remove |window| from the
   // overview window grid first before snapping it if |window| is currently
   // showing in the overview window grid. If split view mode is not already

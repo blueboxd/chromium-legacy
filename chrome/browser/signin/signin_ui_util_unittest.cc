@@ -356,14 +356,7 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithAccountThatNeedsReauth) {
   }
 }
 
-// TODO(https://crbug.com/1014790): This test is timing out on Mac 10.12
-#if defined(OS_MACOSX)
-#define MAYBE_EnableSyncForNewAccountWithNoTab \
-  DISABLED_EnableSyncForNewAccountWithNoTab
-#else
-#define MAYBE_EnableSyncForNewAccountWithNoTab EnableSyncForNewAccountWithNoTab
-#endif
-TEST_F(DiceSigninUiUtilTest, MAYBE_EnableSyncForNewAccountWithNoTab) {
+TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithNoTab) {
   base::HistogramTester histogram_tester;
   base::UserActionTester user_action_tester;
 
@@ -392,9 +385,7 @@ TEST_F(DiceSigninUiUtilTest, MAYBE_EnableSyncForNewAccountWithNoTab) {
       active_contents->GetVisibleURL());
 }
 
-// TODO(https://crbug.com/1014790): This is flaky on several bots.
-TEST_F(DiceSigninUiUtilTest,
-       DISABLED_EnableSyncForNewAccountWithNoTabWithExisting) {
+TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithNoTabWithExisting) {
   base::HistogramTester histogram_tester;
   base::UserActionTester user_action_tester;
 

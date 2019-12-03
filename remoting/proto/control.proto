@@ -152,8 +152,9 @@ message KeyboardLayout {
 
   // Next ID: 2
   message KeyBehavior {
-    // Maps shift level to key action.
-    map<int32, KeyAction> actions = 1;
+    // Maps 0-based shift level to key action. (Note: because this is zero-
+    // based, it will be one less than the corresponding ISO shift level.)
+    map<uint32, KeyAction> actions = 1;
   }
 
   // Map USB code to key behavior.

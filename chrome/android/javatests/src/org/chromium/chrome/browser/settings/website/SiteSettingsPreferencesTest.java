@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
@@ -449,6 +450,7 @@ public class SiteSettingsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
+    @EnableFeatures("QuietNotificationPrompts")
     public void testOnlyExpectedPreferencesShown() {
         // If you add a category in the SiteSettings UI, please add a test for it below.
         Assert.assertEquals(19, SiteSettingsCategory.Type.NUM_ENTRIES);

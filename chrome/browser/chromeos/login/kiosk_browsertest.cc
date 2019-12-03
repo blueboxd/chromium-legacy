@@ -1713,20 +1713,15 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppNoUpdate) {
   EXPECT_EQ(extensions::Manifest::EXTERNAL_PREF, GetInstalledAppLocation());
 }
 
-// TODO(crbug.com/949490): LaunchOfflineEnabledAppHasUpdate is flaky ChromeOS rel (timeout).
-#if defined(OS_CHROMEOS) && defined(NDEBUG)
-#define MAYBE_PRE_LaunchOfflineEnabledAppHasUpdate DISABLED_PRE_LaunchOfflineEnabledAppHasUpdate
-#define MAYBE_LaunchOfflineEnabledAppHasUpdate DISABLED_LaunchOfflineEnabledAppHasUpdate
-#else
-#define MAYBE_PRE_LaunchOfflineEnabledAppHasUpdate PRE_LaunchOfflineEnabledAppHasUpdate
-#define MAYBE_LaunchOfflineEnabledAppHasUpdate LaunchOfflineEnabledAppHasUpdate
-#endif
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, MAYBE_PRE_LaunchOfflineEnabledAppHasUpdate) {
+// TODO(crbug.com/949490): is flaky on ChromeOS rel AND deb.
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
+                       DISABLED_PRE_LaunchOfflineEnabledAppHasUpdate) {
   PreCacheAndLaunchApp(kTestOfflineEnabledKioskApp, "1.0.0",
                        std::string(kTestOfflineEnabledKioskApp) + "_v1.crx");
 }
 
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, MAYBE_LaunchOfflineEnabledAppHasUpdate) {
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
+                       DISABLED_LaunchOfflineEnabledAppHasUpdate) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
   fake_cws()->SetUpdateCrx(test_app_id(),
                            "iiigpodgfihagabpagjehoocpakbnclp.crx", "2.0.0");
@@ -1911,16 +1906,8 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PermissionChange) {
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
 }
 
-// TODO(crbug.com/949490): PreserveLocalData is flaky ChromeOS rel (timeout).
-#if defined(OS_CHROMEOS) && defined(NDEBUG)
-#define MAYBE_PRE_PreserveLocalData DISABLED_PRE_PreserveLocalData
-#define MAYBE_PreserveLocalData DISABLED_PreserveLocalData
-#else
-#define MAYBE_PRE_PreserveLocalData PRE_PreserveLocalData
-#define MAYBE_PreserveLocalData PreserveLocalData
-#endif
-
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, MAYBE_PRE_PreserveLocalData) {
+// TODO(crbug.com/949490): PreserveLocalData is flaky ChromeOS rel AND deb.
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, DISABLED_PRE_PreserveLocalData) {
   // Installs v1 app and writes some local data.
   set_test_app_id(kTestLocalFsKioskApp);
   set_test_app_version("1.0.0");
@@ -1934,7 +1921,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, MAYBE_PRE_PreserveLocalData) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, MAYBE_PreserveLocalData) {
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, DISABLED_PreserveLocalData) {
   // Update existing v1 app installed in PRE_PreserveLocalData to v2
   // that reads and verifies the local data.
   set_test_app_id(kTestLocalFsKioskApp);
@@ -2040,27 +2027,16 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
   LaunchTestKioskAppWithTwoSecondaryApps();
 }
 
-// TODO(crbug.com/949490): UpdateMultiAppKioskRemoveOneApp is flaky ChromeOS rel
-// (timeout).
-#if defined(OS_CHROMEOS) && defined(NDEBUG)
-#define MAYBE_PRE_UpdateMultiAppKioskRemoveOneApp \
-  DISABLED_PRE_UpdateMultiAppKioskRemoveOneApp
-#define MAYBE_UpdateMultiAppKioskRemoveOneApp \
-  DISABLED_UpdateMultiAppKioskRemoveOneApp
-#else
-#define MAYBE_PRE_UpdateMultiAppKioskRemoveOneApp \
-  PRE_UpdateMultiAppKioskRemoveOneApp
-#define MAYBE_UpdateMultiAppKioskRemoveOneApp UpdateMultiAppKioskRemoveOneApp
-#endif
-
+// TODO(crbug.com/949490): test is flaky ChromeOS rel AND deb.
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
-                       MAYBE_PRE_UpdateMultiAppKioskRemoveOneApp) {
+                       DISABLED_PRE_UpdateMultiAppKioskRemoveOneApp) {
   LaunchTestKioskAppWithTwoSecondaryApps();
 }
 
 // Update the primary app to version 2 which removes one of the secondary app
 // from its manifest.
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, MAYBE_UpdateMultiAppKioskRemoveOneApp) {
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
+                       DISABLED_UpdateMultiAppKioskRemoveOneApp) {
   set_test_app_id(kTestPrimaryKioskApp);
   fake_cws()->SetUpdateCrx(kTestPrimaryKioskApp,
                            std::string(kTestPrimaryKioskApp) + "-2.0.0.crx",
@@ -2079,19 +2055,15 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, MAYBE_UpdateMultiAppKioskRemoveOneApp) {
   EXPECT_TRUE(IsAppInstalled(kTestSecondaryApp2, "1.0.0"));
 }
 
-// crbug/1028606 Fails on linux-chromeos-dbg.
-#if defined(OS_CHROMEOS)
-#define MAYBE_UpdateMultiAppKioskAddOneApp DISABLED_UpdateMultiAppKioskAddOneApp
-#else
-#define MAYBE_UpdateMultiAppKioskAddOneApp UpdateMultiAppKioskAddOneApp
-#endif
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_UpdateMultiAppKioskAddOneApp) {
+// crbug/1028606 Fails on linux-chromeos-*.
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
+                       DISABLED_PRE_UpdateMultiAppKioskAddOneApp) {
   LaunchTestKioskAppWithTwoSecondaryApps();
 }
 
 // Update the primary app to version 3 which adds a new secondary app in its
 // manifest.
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, MAYBE_UpdateMultiAppKioskAddOneApp) {
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, DISABLED_UpdateMultiAppKioskAddOneApp) {
   set_test_app_id(kTestPrimaryKioskApp);
   fake_cws()->SetUpdateCrx(kTestPrimaryKioskApp,
                            std::string(kTestPrimaryKioskApp) + "-3.0.0.crx",

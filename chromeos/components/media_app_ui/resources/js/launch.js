@@ -28,3 +28,30 @@ async function loadBlob(blob) {
   const buffer = await blob.arrayBuffer();
   postToGuestWindow({'buffer': buffer, 'type': blob.type});
 }
+
+/**
+ * Loads a file from a handle received via the fileHandling API.
+ *
+ * @param {FileSystemHandle} handle
+ */
+async function loadFileFromHandle(handle) {
+  if (!handle.isFile) {
+    return;
+  }
+
+  const fileHandle = /** @type{FileSystemFileHandle} */ (handle);
+  const file = await fileHandle.getFile();
+  loadBlob(file);
+}
+
+// Wait for 'load' (and not DOMContentLoaded) to ensure the subframe has been
+// loaded and is ready to respond to postMessage.
+window.addEventListener('load', () => {
+  window.launchQueue.setConsumer(params => {
+    if (!params || !params.files || params.files.length == 0) {
+      return;
+    }
+
+    loadFileFromHandle(params.files[0]);
+  });
+});

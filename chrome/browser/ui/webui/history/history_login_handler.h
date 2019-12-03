@@ -20,6 +20,8 @@ class HistoryLoginHandler : public content::WebUIMessageHandler {
   ~HistoryLoginHandler() override;
 
   // WebUIMessageHandler implementation.
+  void OnJavascriptAllowed() override;
+  void OnJavascriptDisallowed() override;
   void RegisterMessages() override;
 
  private:

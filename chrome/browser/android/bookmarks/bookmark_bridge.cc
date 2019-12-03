@@ -155,6 +155,8 @@ static jlong JNI_BookmarkBridge_GetBookmarkIdForWebContents(
     JNIEnv* env,
     const JavaParamRef<jobject>& jweb_contents,
     jboolean only_editable) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   auto* web_contents = content::WebContents::FromJavaWebContents(jweb_contents);
   if (!web_contents)
     return kInvalidId;
@@ -227,6 +229,7 @@ ScopedJavaLocalRef<jobject> BookmarkBridge::GetBookmarkByID(
     const JavaParamRef<jobject>& obj,
     jlong id,
     jint type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsLoaded());
   const BookmarkNode* node = GetNodeByID(id, type);
   return node ? CreateJavaBookmark(node) : ScopedJavaLocalRef<jobject>();
@@ -235,6 +238,7 @@ ScopedJavaLocalRef<jobject> BookmarkBridge::GetBookmarkByID(
 bool BookmarkBridge::IsDoingExtensiveChanges(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return bookmark_model_->IsDoingExtensiveChanges();
 }
 
@@ -243,6 +247,7 @@ void BookmarkBridge::GetPermanentNodeIDs(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& j_result_obj) {
   // TODO(kkimlabs): Remove this function.
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsLoaded());
 
   base::StackVector<const BookmarkNode*, 8> permanent_nodes;
@@ -271,6 +276,7 @@ void BookmarkBridge::GetTopLevelFolderParentIDs(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& j_result_obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   Java_BookmarkBridge_addToBookmarkIdList(
       env, j_result_obj, bookmark_model_->root_node()->id(),
       GetBookmarkType(bookmark_model_->root_node()));
@@ -282,7 +288,9 @@ void BookmarkBridge::GetTopLevelFolderIDs(
     jboolean get_special,
     jboolean get_normal,
     const JavaParamRef<jobject>& j_result_obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsLoaded());
+
   std::vector<const BookmarkNode*> top_level_folders;
 
   if (get_special) {
@@ -336,6 +344,7 @@ void BookmarkBridge::GetAllFoldersWithDepths(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& j_folders_obj,
     const JavaParamRef<jobject>& j_depths_obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsLoaded());
 
   std::unique_ptr<icu::Collator> collator = GetICUCollator();
@@ -378,6 +387,7 @@ void BookmarkBridge::GetAllFoldersWithDepths(
 ScopedJavaLocalRef<jobject> BookmarkBridge::GetRootFolderId(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const BookmarkNode* root_node = bookmark_model_->root_node();
   ScopedJavaLocalRef<jobject> folder_id_obj =
       JavaBookmarkIdCreateBookmarkId(
@@ -388,6 +398,7 @@ ScopedJavaLocalRef<jobject> BookmarkBridge::GetRootFolderId(
 ScopedJavaLocalRef<jobject> BookmarkBridge::GetMobileFolderId(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const BookmarkNode* mobile_node = bookmark_model_->mobile_node();
   ScopedJavaLocalRef<jobject> folder_id_obj =
       JavaBookmarkIdCreateBookmarkId(
@@ -398,6 +409,7 @@ ScopedJavaLocalRef<jobject> BookmarkBridge::GetMobileFolderId(
 ScopedJavaLocalRef<jobject> BookmarkBridge::GetOtherFolderId(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const BookmarkNode* other_node = bookmark_model_->other_node();
   ScopedJavaLocalRef<jobject> folder_id_obj =
       JavaBookmarkIdCreateBookmarkId(
@@ -408,6 +420,7 @@ ScopedJavaLocalRef<jobject> BookmarkBridge::GetOtherFolderId(
 ScopedJavaLocalRef<jobject> BookmarkBridge::GetDesktopFolderId(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const BookmarkNode* desktop_node = bookmark_model_->bookmark_bar_node();
   ScopedJavaLocalRef<jobject> folder_id_obj =
       JavaBookmarkIdCreateBookmarkId(
@@ -418,6 +431,7 @@ ScopedJavaLocalRef<jobject> BookmarkBridge::GetDesktopFolderId(
 ScopedJavaLocalRef<jobject> BookmarkBridge::GetPartnerFolderId(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(partner_bookmarks_shim_->IsLoaded());
 
   const BookmarkNode* partner_node =
@@ -431,6 +445,7 @@ jint BookmarkBridge::GetChildCount(JNIEnv* env,
                                     const JavaParamRef<jobject>& obj,
                                     jlong id,
                                     jint type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsLoaded());
   const BookmarkNode* node = GetNodeByID(id, type);
   return jint{node->children().size()};
@@ -443,6 +458,7 @@ void BookmarkBridge::GetChildIDs(JNIEnv* env,
                                   jboolean get_folders,
                                   jboolean get_bookmarks,
                                   const JavaParamRef<jobject>& j_result_obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsLoaded());
 
   const BookmarkNode* parent = GetNodeByID(id, type);
@@ -476,6 +492,7 @@ ScopedJavaLocalRef<jobject> BookmarkBridge::GetChildAt(
     jlong id,
     jint type,
     jint index) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsLoaded());
 
   const BookmarkNode* parent = GetNodeByID(id, type);
@@ -490,6 +507,7 @@ jint BookmarkBridge::GetTotalBookmarkCount(
     const base::android::JavaParamRef<jobject>& obj,
     jlong id,
     jint type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsLoaded());
 
   std::queue<const BookmarkNode*> nodes;
@@ -529,7 +547,9 @@ void BookmarkBridge::SetBookmarkTitle(JNIEnv* env,
                                        jlong id,
                                        jint type,
                                        const JavaParamRef<jstring>& j_title) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsLoaded());
+
   const BookmarkNode* bookmark = GetNodeByID(id, type);
   const base::string16 title =
       base::android::ConvertJavaStringToUTF16(env, j_title);
@@ -546,6 +566,7 @@ void BookmarkBridge::SetBookmarkUrl(JNIEnv* env,
                                      jlong id,
                                      jint type,
                                      const JavaParamRef<jstring>& url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsLoaded());
   bookmark_model_->SetURL(
       GetNodeByID(id, type),
@@ -556,6 +577,7 @@ bool BookmarkBridge::DoesBookmarkExist(JNIEnv* env,
                                         const JavaParamRef<jobject>& obj,
                                         jlong id,
                                         jint type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsLoaded());
 
   const BookmarkNode* node = GetNodeByID(id, type);
@@ -577,7 +599,9 @@ void BookmarkBridge::GetBookmarksForFolder(
     const JavaParamRef<jobject>& j_folder_id_obj,
     const JavaParamRef<jobject>& j_callback_obj,
     const JavaParamRef<jobject>& j_result_obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsLoaded());
+
   long folder_id = JavaBookmarkIdGetId(env, j_folder_id_obj);
   int type = JavaBookmarkIdGetType(env, j_folder_id_obj);
   const BookmarkNode* folder = GetFolderWithFallback(folder_id, type);
@@ -613,6 +637,7 @@ jboolean BookmarkBridge::IsFolderVisible(JNIEnv* env,
                                           const JavaParamRef<jobject>& obj,
                                           jlong id,
                                           jint type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (type == BookmarkType::BOOKMARK_TYPE_NORMAL) {
     const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(
         bookmark_model_, static_cast<int64_t>(id));
@@ -630,7 +655,9 @@ void BookmarkBridge::GetCurrentFolderHierarchy(
     const JavaParamRef<jobject>& j_folder_id_obj,
     const JavaParamRef<jobject>& j_callback_obj,
     const JavaParamRef<jobject>& j_result_obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsLoaded());
+
   long folder_id = JavaBookmarkIdGetId(env, j_folder_id_obj);
   int type = JavaBookmarkIdGetType(env, j_folder_id_obj);
   const BookmarkNode* folder = GetFolderWithFallback(folder_id, type);
@@ -659,6 +686,7 @@ void BookmarkBridge::SearchBookmarks(JNIEnv* env,
                                       const JavaParamRef<jobject>& j_list,
                                       const JavaParamRef<jstring>& j_query,
                                       jint max_results) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(bookmark_model_->loaded());
 
   std::vector<const BookmarkNode*> results;
@@ -694,7 +722,9 @@ ScopedJavaLocalRef<jobject> BookmarkBridge::AddFolder(
     const JavaParamRef<jobject>& j_parent_id_obj,
     jint index,
     const JavaParamRef<jstring>& j_title) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsLoaded());
+
   long bookmark_id = JavaBookmarkIdGetId(env, j_parent_id_obj);
   int type = JavaBookmarkIdGetType(env, j_parent_id_obj);
   const BookmarkNode* parent = GetNodeByID(bookmark_id, type);
@@ -771,6 +801,7 @@ ScopedJavaLocalRef<jobject> BookmarkBridge::AddBookmark(
     jint index,
     const JavaParamRef<jstring>& j_title,
     const JavaParamRef<jstring>& j_url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsLoaded());
   long bookmark_id = JavaBookmarkIdGetId(env, j_parent_id_obj);
   int type = JavaBookmarkIdGetType(env, j_parent_id_obj);
@@ -822,6 +853,8 @@ base::string16 BookmarkBridge::GetTitle(const BookmarkNode* node) const {
 
 ScopedJavaLocalRef<jobject> BookmarkBridge::CreateJavaBookmark(
     const BookmarkNode* node) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   JNIEnv* env = AttachCurrentThread();
 
   const BookmarkNode* parent = GetParentNode(node);
@@ -841,6 +874,7 @@ ScopedJavaLocalRef<jobject> BookmarkBridge::CreateJavaBookmark(
 void BookmarkBridge::ExtractBookmarkNodeInformation(
     const BookmarkNode* node,
     const JavaRef<jobject>& j_result_obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   if (!IsReachable(node))
     return;
@@ -849,6 +883,7 @@ void BookmarkBridge::ExtractBookmarkNodeInformation(
 
 const BookmarkNode* BookmarkBridge::GetNodeByID(long node_id, int type) {
   const BookmarkNode* node;
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (type == BookmarkType::BOOKMARK_TYPE_PARTNER) {
     node = partner_bookmarks_shim_->GetNodeByID(static_cast<int64_t>(node_id));
   } else {
@@ -860,6 +895,7 @@ const BookmarkNode* BookmarkBridge::GetNodeByID(long node_id, int type) {
 
 const BookmarkNode* BookmarkBridge::GetFolderWithFallback(long folder_id,
                                                            int type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const BookmarkNode* folder = GetNodeByID(folder_id, type);
   if (!folder || folder->type() == BookmarkNode::URL ||
       !IsFolderAvailable(folder)) {
@@ -877,6 +913,7 @@ bool BookmarkBridge::IsEditBookmarksEnabled() const {
 }
 
 void BookmarkBridge::EditBookmarksEnabledChanged() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
   if (obj.is_null())

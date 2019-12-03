@@ -41,13 +41,15 @@ scoped_refptr<base::FieldTrial> CreateTrialAndAssociateId(
     const std::string& default_group_name,
     IDCollectionKey key,
     VariationID id) {
+  AssociateGoogleVariationID(key, trial_name, default_group_name, id);
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::CreateFieldTrial(trial_name, default_group_name));
   EXPECT_TRUE(trial);
 
   if (trial) {
-    AssociateGoogleVariationID(key, trial->trial_name(), trial->group_name(),
-                               id);
+    // Ensure the trial is registered under the correct key so we can look it
+    // up.
+    trial->group();
   }
 
   return trial;

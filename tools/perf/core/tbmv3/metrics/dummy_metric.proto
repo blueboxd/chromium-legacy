@@ -1,0 +1,17 @@
+// Copyright 2019 Google LLC.
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto2";
+option optimize_for = LITE_RUNTIME;
+
+package perfetto.protos;
+
+import "protos/perfetto/metrics/metrics.proto";
+
+message DummyMetric {
+  optional int64 foo = 1;
+}
+
+extend TraceMetrics {
+  optional DummyMetric dummy_metric = 451;
+}

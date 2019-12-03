@@ -547,6 +547,8 @@ BASE_EXPORT bool TrimString(WStringPiece input,
 BASE_EXPORT WStringPiece TrimString(WStringPiece input,
                                     WStringPiece trim_chars,
                                     TrimPositions positions);
+
+BASE_EXPORT wchar_t* WriteInto(std::wstring* str, size_t length_with_null);
 #endif
 
 }  // namespace base

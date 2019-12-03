@@ -12,6 +12,7 @@
 #include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
 #include "chrome/browser/content_settings/content_settings_manager_impl.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
+#include "chrome/browser/language/translate_frame_binder.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,6 +25,7 @@
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/performance_manager/performance_manager_tab_helper.h"
 #include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
+#include "components/translate/content/common/translate.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -223,6 +225,9 @@ void PopulateChromeFrameBinders(
 
   map->Add<performance_manager::mojom::DocumentCoordinationUnit>(
       base::BindRepeating(&BindDocumentCoordinationUnit));
+
+  map->Add<translate::mojom::ContentTranslateDriver>(
+      base::BindRepeating(&language::BindContentTranslateDriver));
 
 #if defined(OS_ANDROID)
   map->Add<blink::mojom::InstalledAppProvider>(base::BindRepeating(

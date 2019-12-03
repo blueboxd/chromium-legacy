@@ -84,11 +84,11 @@ constexpr int kIconSizes[] = {
 
 bool ContainsOneIconOfEachSize(const WebApplicationInfo& web_app_info) {
   for (int size_px : kIconSizes) {
-    int num_icons_for_size =
-        std::count_if(web_app_info.icons.begin(), web_app_info.icons.end(),
-                      [&size_px](const WebApplicationIconInfo& icon) {
-                        return icon.width == size_px && icon.height == size_px;
-                      });
+    int num_icons_for_size = std::count_if(
+        web_app_info.icon_bitmaps.begin(), web_app_info.icon_bitmaps.end(),
+        [&size_px](const std::pair<SquareSizePx, SkBitmap>& icon) {
+          return icon.first == size_px;
+        });
     if (num_icons_for_size != 1)
       return false;
   }
@@ -617,15 +617,8 @@ TEST_F(WebAppInstallTaskTest, GetIcons) {
   // Make sure that icons have been generated for all sub sizes.
   EXPECT_TRUE(ContainsOneIconOfEachSize(*web_app_info));
 
-  for (const WebApplicationIconInfo& icon : web_app_info->icons) {
-    EXPECT_FALSE(icon.data.drawsNothing());
-    EXPECT_EQ(color, icon.data.getColor(0, 0));
-
-    // All icons should have an empty url except the original one:
-    if (icon.url != icon_url) {
-      EXPECT_EQ(GURL(), icon.url);
-    }
-  }
+  // Generated icons are not considered part of the manifest icons.
+  EXPECT_TRUE(web_app_info->icon_infos.empty());
 }
 
 TEST_F(WebAppInstallTaskTest, GetIcons_NoIconsProvided) {
@@ -646,11 +639,8 @@ TEST_F(WebAppInstallTaskTest, GetIcons_NoIconsProvided) {
   // Make sure that icons have been generated for all sizes.
   EXPECT_TRUE(ContainsOneIconOfEachSize(*web_app_info));
 
-  for (const WebApplicationIconInfo& icon : web_app_info->icons) {
-    EXPECT_FALSE(icon.data.drawsNothing());
-    // Since all icons are generated, they should have an empty url.
-    EXPECT_TRUE(icon.url.is_empty());
-  }
+  // Generated icons are not considered part of the manifest icons.
+  EXPECT_TRUE(web_app_info->icon_infos.empty());
 }
 
 TEST_F(WebAppInstallTaskTest, WriteDataToDisk) {
@@ -668,11 +658,8 @@ TEST_F(WebAppInstallTaskTest, WriteDataToDisk) {
   const int original_icon_size_px = icon_size::k512;
 
   // Generate one icon as if it was fetched from renderer.
-  {
-    WebApplicationIconInfo icon_info = GenerateIconInfo(
-        GURL("https://example.com/app.ico"), original_icon_size_px, color);
-    data_retriever_->web_app_info().icons.push_back(std::move(icon_info));
-  }
+  AddGeneratedIcon(&data_retriever_->web_app_info(), original_icon_size_px,
+                   color);
 
   const AppId app_id = InstallWebAppFromManifestWithFallback();
 
@@ -885,28 +872,8 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_GenerateIcons) {
   web_app_info->app_url = GURL("https://example.com/path");
   web_app_info->open_as_window = false;
 
-  const GURL icon_url("https://example.com/path/main.ico");
-
   // Add square yellow icon.
-  {
-    auto icon_info =
-        GenerateIconInfo(icon_url, icon_size::k256, SK_ColorYELLOW);
-    web_app_info->icons.push_back(std::move(icon_info));
-  }
-
-  // Add non-square red icon.
-  {
-    SkBitmap bitmap;
-    bitmap.allocN32Pixels(icon_size::k256, icon_size::k128);
-    bitmap.eraseColor(SK_ColorRED);
-
-    WebApplicationIconInfo icon_info;
-    icon_info.url = GURL("https://example.com/path/bad.ico");
-    icon_info.width = icon_size::k256;
-    icon_info.height = icon_size::k128;
-    icon_info.data = bitmap;
-    web_app_info->icons.push_back(std::move(icon_info));
-  }
+  AddGeneratedIcon(web_app_info.get(), icon_size::k256, SK_ColorYELLOW);
 
   base::RunLoop run_loop;
 
@@ -921,15 +888,11 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_GenerateIcons) {
             // Make sure that icons have been generated for all sub sizes.
             EXPECT_TRUE(ContainsOneIconOfEachSize(*final_web_app_info));
 
-            // Make sure no red non-square icons, only square yellow ones.
-            for (const WebApplicationIconInfo& icon :
-                 final_web_app_info->icons) {
-              EXPECT_FALSE(icon.data.drawsNothing());
-              EXPECT_EQ(SK_ColorYELLOW, icon.data.getColor(0, 0));
-
-              // All icons should have an empty url except the original one:
-              if (icon.url != icon_url)
-                EXPECT_TRUE(icon.url.is_empty());
+            // Make sure they're all derived from the yellow icon.
+            for (const std::pair<SquareSizePx, SkBitmap>& icon :
+                 final_web_app_info->icon_bitmaps) {
+              EXPECT_FALSE(icon.second.drawsNothing());
+              EXPECT_EQ(SK_ColorYELLOW, icon.second.getColor(0, 0));
             }
 
             EXPECT_FALSE(final_web_app_info->open_as_window);
@@ -956,13 +919,13 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfoRetrieveIcons_TwoIcons) {
 
   WebApplicationIconInfo icon1_info;
   icon1_info.url = icon1_url;
-  icon1_info.width = icon_size::k128;
-  web_app_info->icons.push_back(std::move(icon1_info));
+  icon1_info.square_size_px = icon_size::k128;
+  web_app_info->icon_infos.push_back(std::move(icon1_info));
 
   WebApplicationIconInfo icon2_info;
   icon2_info.url = icon2_url;
-  icon2_info.width = icon_size::k256;
-  web_app_info->icons.push_back(std::move(icon2_info));
+  icon2_info.square_size_px = icon_size::k256;
+  web_app_info->icon_infos.push_back(std::move(icon2_info));
 
   IconsMap icons_map;
   AddIconToIconsMap(icon1_url, icon_size::k128, SK_ColorBLUE, &icons_map);
@@ -988,17 +951,21 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfoRetrieveIcons_TwoIcons) {
             std::unique_ptr<WebApplicationInfo> final_web_app_info =
                 test_install_finalizer().web_app_info();
 
-            EXPECT_EQ(2U, final_web_app_info->icons.size());
+            EXPECT_EQ(2U, final_web_app_info->icon_infos.size());
+            EXPECT_EQ(SizesToGenerate().size(),
+                      final_web_app_info->icon_bitmaps.size());
 
-            const auto& icon1 = final_web_app_info->icons.at(0);
-            EXPECT_FALSE(icon1.data.drawsNothing());
-            EXPECT_EQ(SK_ColorBLUE, icon1.data.getColor(0, 0));
-            EXPECT_EQ(icon1_url, icon1.url);
+            EXPECT_EQ(icon1_url, final_web_app_info->icon_infos.at(0).url);
+            const auto& icon1 =
+                final_web_app_info->icon_bitmaps[icon_size::k128];
+            EXPECT_FALSE(icon1.drawsNothing());
+            EXPECT_EQ(SK_ColorBLUE, icon1.getColor(0, 0));
 
-            const auto& icon2 = final_web_app_info->icons.at(1);
-            EXPECT_FALSE(icon2.data.drawsNothing());
-            EXPECT_EQ(SK_ColorRED, icon2.data.getColor(0, 0));
-            EXPECT_EQ(icon2_url, icon2.url);
+            EXPECT_EQ(icon2_url, final_web_app_info->icon_infos.at(1).url);
+            const auto& icon2 =
+                final_web_app_info->icon_bitmaps[icon_size::k256];
+            EXPECT_FALSE(icon2.drawsNothing());
+            EXPECT_EQ(SK_ColorRED, icon2.getColor(0, 0));
 
             run_loop.Quit();
           }));
@@ -1038,10 +1005,9 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfoRetrieveIcons_NoIcons) {
             // Make sure that icons have been generated for all sub sizes.
             EXPECT_TRUE(ContainsOneIconOfEachSize(*final_web_app_info));
 
-            for (const WebApplicationIconInfo& icon :
-                 final_web_app_info->icons) {
-              EXPECT_FALSE(icon.data.drawsNothing());
-              EXPECT_TRUE(icon.url.is_empty());
+            for (const std::pair<SquareSizePx, SkBitmap>& icon :
+                 final_web_app_info->icon_bitmaps) {
+              EXPECT_FALSE(icon.second.drawsNothing());
             }
 
             run_loop.Quit();
@@ -1070,12 +1036,12 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifestWithFallback_NoIcons) {
                 test_install_finalizer().web_app_info();
             // Make sure that icons have been generated for all sub sizes.
             EXPECT_TRUE(ContainsOneIconOfEachSize(*final_web_app_info));
-
-            for (const WebApplicationIconInfo& icon :
-                 final_web_app_info->icons) {
-              EXPECT_FALSE(icon.data.drawsNothing());
-              EXPECT_TRUE(icon.url.is_empty());
+            for (const std::pair<SquareSizePx, SkBitmap>& icon :
+                 final_web_app_info->icon_bitmaps) {
+              EXPECT_FALSE(icon.second.drawsNothing());
             }
+
+            EXPECT_TRUE(final_web_app_info->icon_infos.empty());
 
             run_loop.Quit();
           }));
@@ -1308,7 +1274,8 @@ TEST_F(WebAppInstallTaskTest, LoadAndRetrieveWebApplicationInfoWithIcons) {
         LoadAndRetrieveWebApplicationInfoWithIcons(url);
     EXPECT_TRUE(result);
     EXPECT_EQ(result->app_url, start_url);
-    EXPECT_TRUE(result->icons.size() > 0);
+    EXPECT_TRUE(result->icon_infos.empty());
+    EXPECT_FALSE(result->icon_bitmaps.empty());
   }
   {
     // Verify the callback is always called.

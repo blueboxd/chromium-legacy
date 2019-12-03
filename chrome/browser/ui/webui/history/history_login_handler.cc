@@ -23,11 +23,6 @@ HistoryLoginHandler::HistoryLoginHandler(const base::Closure& signin_callback)
 HistoryLoginHandler::~HistoryLoginHandler() {}
 
 void HistoryLoginHandler::RegisterMessages() {
-  profile_info_watcher_ = std::make_unique<ProfileInfoWatcher>(
-      Profile::FromWebUI(web_ui()),
-      base::Bind(&HistoryLoginHandler::ProfileInfoChanged,
-                 base::Unretained(this)));
-
   web_ui()->RegisterMessageCallback(
       "otherDevicesInitialized",
       base::BindRepeating(&HistoryLoginHandler::HandleOtherDevicesInitialized,
@@ -39,10 +34,21 @@ void HistoryLoginHandler::RegisterMessages() {
                           base::Unretained(this)));
 }
 
+void HistoryLoginHandler::OnJavascriptAllowed() {
+  profile_info_watcher_ = std::make_unique<ProfileInfoWatcher>(
+      Profile::FromWebUI(web_ui()),
+      base::Bind(&HistoryLoginHandler::ProfileInfoChanged,
+                 base::Unretained(this)));
+  ProfileInfoChanged();
+}
+
+void HistoryLoginHandler::OnJavascriptDisallowed() {
+  profile_info_watcher_ = nullptr;
+}
+
 void HistoryLoginHandler::HandleOtherDevicesInitialized(
     const base::ListValue* /*args*/) {
   AllowJavascript();
-  ProfileInfoChanged();
 }
 
 void HistoryLoginHandler::ProfileInfoChanged() {
@@ -50,8 +56,7 @@ void HistoryLoginHandler::ProfileInfoChanged() {
   if (!signin_callback_.is_null())
     signin_callback_.Run();
 
-  if (IsJavascriptAllowed())
-    CallJavascriptFunction("updateSignInState", base::Value(signed_in));
+  FireWebUIListener("sign-in-state-changed", base::Value(signed_in));
 }
 
 void HistoryLoginHandler::HandleStartSignInFlow(

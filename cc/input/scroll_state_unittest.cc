@@ -32,29 +32,24 @@ TEST_F(ScrollStateTest, ConsumeDeltaNative) {
   EXPECT_FLOAT_EQ(delta_x, scroll_state.delta_x());
   EXPECT_FLOAT_EQ(delta_y, scroll_state.delta_y());
   EXPECT_FALSE(scroll_state.delta_consumed_for_scroll_sequence());
-  EXPECT_FALSE(scroll_state.FullyConsumed());
 
   scroll_state.ConsumeDelta(0, 0);
   EXPECT_FLOAT_EQ(delta_x, scroll_state.delta_x());
   EXPECT_FLOAT_EQ(delta_y, scroll_state.delta_y());
   EXPECT_FALSE(scroll_state.delta_consumed_for_scroll_sequence());
-  EXPECT_FALSE(scroll_state.FullyConsumed());
 
   scroll_state.ConsumeDelta(delta_x_to_consume, 0);
   EXPECT_FLOAT_EQ(delta_x - delta_x_to_consume, scroll_state.delta_x());
   EXPECT_FLOAT_EQ(delta_y, scroll_state.delta_y());
   EXPECT_TRUE(scroll_state.delta_consumed_for_scroll_sequence());
-  EXPECT_FALSE(scroll_state.FullyConsumed());
 
   scroll_state.ConsumeDelta(0, delta_y_to_consume);
   EXPECT_FLOAT_EQ(delta_x - delta_x_to_consume, scroll_state.delta_x());
   EXPECT_FLOAT_EQ(delta_y - delta_y_to_consume, scroll_state.delta_y());
   EXPECT_TRUE(scroll_state.delta_consumed_for_scroll_sequence());
-  EXPECT_FALSE(scroll_state.FullyConsumed());
 
   scroll_state.ConsumeDelta(scroll_state.delta_x(), scroll_state.delta_y());
   EXPECT_TRUE(scroll_state.delta_consumed_for_scroll_sequence());
-  EXPECT_TRUE(scroll_state.FullyConsumed());
 }
 
 TEST_F(ScrollStateTest, CurrentNativeScrollingScrollable) {
@@ -72,16 +67,5 @@ TEST_F(ScrollStateTest, CurrentNativeScrollingScrollable) {
           layer_impl->scroll_tree_index());
   scroll_state.set_current_native_scrolling_node(scroll_node);
   EXPECT_EQ(scroll_node, scroll_state.current_native_scrolling_node());
-}
-
-TEST_F(ScrollStateTest, FullyConsumed) {
-  ScrollStateData scroll_state_data;
-  scroll_state_data.delta_x = 1;
-  scroll_state_data.delta_y = 3;
-  ScrollState scroll_state(scroll_state_data);
-
-  EXPECT_FALSE(scroll_state.FullyConsumed());
-  scroll_state.ConsumeDelta(1, 3);
-  EXPECT_TRUE(scroll_state.FullyConsumed());
 }
 }  // namespace cc

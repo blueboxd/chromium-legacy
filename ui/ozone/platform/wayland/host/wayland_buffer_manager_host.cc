@@ -219,12 +219,19 @@ class WaylandBufferManagerHost::Surface {
     DCHECK(buffer && window_);
     DCHECK(!pending_buffer_);
 
-    // Once the BufferRelease is called, the buffer will be released.
-    DCHECK(buffer->released);
-    buffer->released = false;
-
     DCHECK(!submitted_buffer_);
     submitted_buffer_ = buffer;
+
+    // if the same buffer has been submitted again right after the client
+    // received OnSubmission for that buffer, just verify that the buffer has
+    // not been released by Wayland compositor, which is correct.
+    if (prev_submitted_buffer_ != submitted_buffer_) {
+      // Once the BufferRelease is called, the buffer will be released.
+      DCHECK(buffer->released);
+      buffer->released = false;
+    } else {
+      DCHECK(!buffer->released);
+    }
 
     AttachAndDamageBuffer(buffer);
 
@@ -246,7 +253,12 @@ class WaylandBufferManagerHost::Surface {
     // If it was the very first frame, the surface has not had a back buffer
     // before, and Wayland won't release the front buffer until next buffer is
     // attached. Thus, notify about successful submission immediately.
-    if (!prev_submitted_buffer_)
+    //
+    // As said above, if the client submits the same buffer again, we must
+    // notify the client about the submission immediately as Wayland compositor
+    // is not going to send a release callback for a buffer committed more than
+    // once.
+    if (!prev_submitted_buffer_ || prev_submitted_buffer_ == submitted_buffer_)
       CompleteSubmission();
 
     return true;

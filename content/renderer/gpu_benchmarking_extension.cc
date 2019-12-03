@@ -45,7 +45,7 @@
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/page/page_visibility_state.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/web/blink.h"
@@ -546,7 +546,7 @@ GpuBenchmarking::~GpuBenchmarking() {}
 
 void GpuBenchmarking::EnsureRemoteInterface() {
   if (!input_injector_) {
-    render_frame_->GetRemoteInterfaces()->GetInterface(
+    render_frame_->GetBrowserInterfaceBroker()->GetInterface(
         input_injector_.BindNewPipeAndPassReceiver(
             render_frame_->GetTaskRunner(blink::TaskType::kInternalDefault)));
   }

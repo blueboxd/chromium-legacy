@@ -697,67 +697,17 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
       "PermissionRequestManager"));
 }
 
-// For browser tests feature overrides need to be enabled during SetUp.
-// Have a separate fixture based on which UI flavor needs to be enabled.
-class PermissionRequestManagerBrowserTest_StaticIcon
-    : public PermissionRequestManagerBrowserTest {
- public:
-  void SetUp() override {
-    base::FieldTrialParams params;
-    params[kQuietNotificationPromptsUIFlavorParameterName] =
-        kQuietNotificationPromptsStaticIcon;
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeatureWithParameters(
-        features::kQuietNotificationPrompts, params);
-
-    PermissionRequestManagerBrowserTest::SetUp();
-  }
-};
-
 class PermissionRequestManagerBrowserTest_AnimatedIcon
     : public PermissionRequestManagerBrowserTest {
  public:
   void SetUp() override {
-    base::FieldTrialParams params;
-    params[kQuietNotificationPromptsUIFlavorParameterName] =
-        kQuietNotificationPromptsAnimatedIcon;
     base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeatureWithParameters(
-        features::kQuietNotificationPrompts, params);
+    scoped_feature_list.InitAndEnableFeature(
+        features::kQuietNotificationPrompts);
 
     PermissionRequestManagerBrowserTest::SetUp();
   }
 };
-
-// Re-enable when 1016233 is fixed.
-// Quiet permission requests are cancelled when a new request is made.
-IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest_StaticIcon,
-                       DISABLED_QuietPendingRequestsKilledOnNewRequest) {
-  // First add a quiet permission request. Ensure that this request is decided
-  // by the end of this test.
-  MockPermissionRequest request_quiet(
-      "quiet", PermissionRequestType::PERMISSION_NOTIFICATIONS,
-      PermissionRequestGestureType::UNKNOWN);
-  GetPermissionRequestManager()->AddRequest(&request_quiet);
-  base::RunLoop().RunUntilIdle();
-
-  // Add a second permission request. This ones should cause the initial
-  // request to be cancelled.
-  MockPermissionRequest request_loud(
-      "loud", PermissionRequestType::PERMISSION_GEOLOCATION,
-      PermissionRequestGestureType::UNKNOWN);
-  GetPermissionRequestManager()->AddRequest(&request_loud);
-  base::RunLoop().RunUntilIdle();
-
-  // The first dialog should now have been decided.
-  EXPECT_TRUE(request_quiet.finished());
-  EXPECT_EQ(1u, GetPermissionRequestManager()->Requests().size());
-
-  // Cleanup remaining request. And check that this was the last request.
-  GetPermissionRequestManager()->Closing();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0u, GetPermissionRequestManager()->Requests().size());
-}
 
 // Re-enable when 1016233 is fixed.
 // Quiet permission requests are cancelled when a new request is made.

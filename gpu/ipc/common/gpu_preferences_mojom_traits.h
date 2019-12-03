@@ -149,8 +149,6 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
       out->texture_target_exception_list.push_back(usage_format);
     }
 
-    out->disable_gpu_driver_bug_workarounds =
-        prefs.disable_gpu_driver_bug_workarounds();
     out->ignore_gpu_blacklist = prefs.ignore_gpu_blacklist();
     out->enable_oop_rasterization = prefs.enable_oop_rasterization();
     out->disable_oop_rasterization = prefs.disable_oop_rasterization();
@@ -283,10 +281,6 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   static const std::vector<gfx::BufferUsageAndFormat>&
   texture_target_exception_list(const gpu::GpuPreferences& prefs) {
     return prefs.texture_target_exception_list;
-  }
-  static bool disable_gpu_driver_bug_workarounds(
-      const gpu::GpuPreferences& prefs) {
-    return prefs.disable_gpu_driver_bug_workarounds;
   }
   static bool ignore_gpu_blacklist(const gpu::GpuPreferences& prefs) {
     return prefs.ignore_gpu_blacklist;

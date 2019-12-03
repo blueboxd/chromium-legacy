@@ -33,7 +33,6 @@
 #include "base/time/time.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
-#include "cc/base/switches.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/about_url_loader_factory.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -526,20 +525,6 @@ std::unique_ptr<blink::URLLoaderFactoryBundleInfo> CloneFactoryBundle(
     scoped_refptr<blink::URLLoaderFactoryBundle> bundle) {
   return base::WrapUnique(static_cast<blink::URLLoaderFactoryBundleInfo*>(
       bundle->Clone().release()));
-}
-
-void GetRestrictedCookieManager(
-    RenderFrameHostImpl* frame_host,
-    int process_id,
-    int frame_id,
-    StoragePartition* storage_partition,
-    mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver) {
-  storage_partition->CreateRestrictedCookieManager(
-      network::mojom::RestrictedCookieManagerRole::SCRIPT,
-      frame_host->GetLastCommittedOrigin(), frame_host->ComputeSiteForCookies(),
-      frame_host->ComputeTopFrameOrigin(frame_host->GetLastCommittedOrigin()),
-      /* is_service_worker = */ false, process_id, frame_id,
-      std::move(receiver));
 }
 
 // Helper method to download a URL on UI thread.
@@ -4660,8 +4645,6 @@ void RenderFrameHostImpl::ResourceLoadComplete(
 }
 
 void RenderFrameHostImpl::RegisterMojoInterfaces() {
-  auto* command_line = base::CommandLine::ForCurrentProcess();
-
   registry_->AddInterface(
       base::BindRepeating(&RenderFrameHostImpl::CreateAudioInputStreamFactory,
                           base::Unretained(this)));
@@ -4669,60 +4652,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(
       base::BindRepeating(&RenderFrameHostImpl::CreateAudioOutputStreamFactory,
                           base::Unretained(this)));
-
-  // Only save decode stats when BrowserContext provides a VideoPerfHistory.
-  // Off-the-record contexts will internally use an ephemeral history DB.
-  media::VideoDecodePerfHistory::SaveCallback save_stats_cb;
-  if (GetSiteInstance()->GetBrowserContext()->GetVideoDecodePerfHistory()) {
-    save_stats_cb = GetSiteInstance()
-                        ->GetBrowserContext()
-                        ->GetVideoDecodePerfHistory()
-                        ->GetSaveCallback();
-  }
-
-  registry_->AddInterface(base::BindRepeating(
-      &media::MediaMetricsProvider::Create,
-      GetProcess()->GetBrowserContext()->IsOffTheRecord()
-          ? media::MediaMetricsProvider::BrowsingMode::kIncognito
-          : media::MediaMetricsProvider::BrowsingMode::kNormal,
-      frame_tree_node_->IsMainFrame()
-          ? media::MediaMetricsProvider::FrameStatus::kTopFrame
-          : media::MediaMetricsProvider::FrameStatus::kNotTopFrame,
-      base::BindRepeating(
-          &RenderFrameHostDelegate::
-              GetUkmSourceIdForLastCommittedSourceIncludingSameDocument,
-          // This callback is only executed when Create() is called, during
-          // which the lifetime of the |delegate_| is guaranteed.
-          base::Unretained(delegate_)),
-      base::BindRepeating(
-          [](RenderFrameHostImpl* frame) {
-            return ::media::learning::FeatureValue(
-                frame->GetLastCommittedOrigin().host());
-          },
-          // Same as above.
-          base::Unretained(this)),
-      std::move(save_stats_cb),
-      base::BindRepeating(
-          [](base::WeakPtr<RenderFrameHostImpl> frame)
-              -> media::learning::LearningSession* {
-            if (!base::FeatureList::IsEnabled(media::kMediaLearningFramework) ||
-                !frame) {
-              return nullptr;
-            }
-
-            return frame->GetProcess()
-                ->GetBrowserContext()
-                ->GetLearningSession();
-          },
-          weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(
-          &RenderFrameHostImpl::GetRecordAggregateWatchTimeCallback,
-          base::Unretained(this))));
-
-  if (command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking)) {
-    registry_->AddInterface(base::BindRepeating(
-        &InputInjectorImpl::Create, weak_ptr_factory_.GetWeakPtr()));
-  }
 
   // TODO(crbug.com/775792): Move to RendererInterfaceBinders.
   registry_->AddInterface(base::BindRepeating(
@@ -4732,10 +4661,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       GetProcess()->GetID(),
       GetProcess()->GetStoragePartition()->GetFileSystemContext(),
       ChromeBlobStorageContext::GetFor(GetProcess()->GetBrowserContext())));
-
-  registry_->AddInterface(base::BindRepeating(
-      &GetRestrictedCookieManager, base::Unretained(this),
-      GetProcess()->GetID(), routing_id_, GetProcess()->GetStoragePartition()));
 }
 
 media::MediaMetricsProvider::RecordAggregateWatchTimeCallback
@@ -6476,6 +6401,58 @@ void RenderFrameHostImpl::BindMediaInterfaceFactoryReceiver(
           base::Unretained(this))));
 }
 
+void RenderFrameHostImpl::BindMediaMetricsProviderReceiver(
+    mojo::PendingReceiver<media::mojom::MediaMetricsProvider> receiver) {
+  // Only save decode stats when BrowserContext provides a VideoPerfHistory.
+  // Off-the-record contexts will internally use an ephemeral history DB.
+  media::VideoDecodePerfHistory::SaveCallback save_stats_cb;
+  if (GetSiteInstance()->GetBrowserContext()->GetVideoDecodePerfHistory()) {
+    save_stats_cb = GetSiteInstance()
+                        ->GetBrowserContext()
+                        ->GetVideoDecodePerfHistory()
+                        ->GetSaveCallback();
+  }
+
+  media::MediaMetricsProvider::Create(
+      GetProcess()->GetBrowserContext()->IsOffTheRecord()
+          ? media::MediaMetricsProvider::BrowsingMode::kIncognito
+          : media::MediaMetricsProvider::BrowsingMode::kNormal,
+      frame_tree_node_->IsMainFrame()
+          ? media::MediaMetricsProvider::FrameStatus::kTopFrame
+          : media::MediaMetricsProvider::FrameStatus::kNotTopFrame,
+      base::BindRepeating(
+          &RenderFrameHostDelegate::
+              GetUkmSourceIdForLastCommittedSourceIncludingSameDocument,
+          // This callback is only executed when Create() is called, during
+          // which the lifetime of the |delegate_| is guaranteed.
+          base::Unretained(delegate_)),
+      base::BindRepeating(
+          [](RenderFrameHostImpl* frame) {
+            return ::media::learning::FeatureValue(
+                frame->GetLastCommittedOrigin().host());
+          },
+          // Same as above.
+          base::Unretained(this)),
+      std::move(save_stats_cb),
+      base::BindRepeating(
+          [](base::WeakPtr<RenderFrameHostImpl> frame)
+              -> media::learning::LearningSession* {
+            if (!base::FeatureList::IsEnabled(media::kMediaLearningFramework) ||
+                !frame) {
+              return nullptr;
+            }
+
+            return frame->GetProcess()
+                ->GetBrowserContext()
+                ->GetLearningSession();
+          },
+          weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(
+          &RenderFrameHostImpl::GetRecordAggregateWatchTimeCallback,
+          base::Unretained(this)),
+      std::move(receiver));
+}
+
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
 void RenderFrameHostImpl::BindMediaRemoterFactoryReceiver(
     mojo::PendingReceiver<media::mojom::RemoterFactory> receiver) {
@@ -6618,6 +6595,12 @@ void RenderFrameHostImpl::BindCacheStorage(
   GetProcess()->BindCacheStorage(GetLastCommittedOrigin(), std::move(receiver));
 }
 
+void RenderFrameHostImpl::BindInputInjectorReceiver(
+    mojo::PendingReceiver<mojom::InputInjector> receiver) {
+  InputInjectorImpl::Create(weak_ptr_factory_.GetWeakPtr(),
+                            std::move(receiver));
+}
+
 void RenderFrameHostImpl::BindSmsReceiverReceiver(
     mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver) {
   if (GetParent() && !WebContents::FromRenderFrameHost(this)
@@ -6629,6 +6612,16 @@ void RenderFrameHostImpl::BindSmsReceiverReceiver(
   }
   auto* fetcher = SmsFetcher::Get(GetProcess()->GetBrowserContext());
   SmsService::Create(fetcher, this, std::move(receiver));
+}
+
+void RenderFrameHostImpl::BindRestrictedCookieManager(
+    mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver) {
+  GetProcess()->GetStoragePartition()->CreateRestrictedCookieManager(
+      network::mojom::RestrictedCookieManagerRole::SCRIPT,
+      GetLastCommittedOrigin(), ComputeSiteForCookies(),
+      ComputeTopFrameOrigin(GetLastCommittedOrigin()),
+      /* is_service_worker = */ false, GetProcess()->GetID(), routing_id(),
+      std::move(receiver));
 }
 
 void RenderFrameHostImpl::GetInterface(

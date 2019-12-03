@@ -34,9 +34,15 @@ bool ArrayBuffer::Transfer(ArrayBufferContents& result) {
   DCHECK(!IsShared());
   scoped_refptr<ArrayBuffer> keep_alive(this);
 
-  if (!contents_.Data()) {
+  if (is_detached_) {
     result.Detach();
     return false;
+  }
+
+  if (!contents_.Data()) {
+    // We transfer an empty ArrayBuffer, we can just allocate an empty content.
+    result = ArrayBufferContents(contents_.BackingStore());
+    return true;
   }
 
   bool all_views_are_detachable = true;

@@ -2043,16 +2043,13 @@ jumbo_static_library("ui") {
 
   if (is_win || is_mac || is_desktop_linux || is_chromeos) {
     sources += [
-      "autofill/payments/verify_pending_dialog_controller.h",
-      "autofill/payments/verify_pending_dialog_controller_impl.cc",
-      "autofill/payments/verify_pending_dialog_controller_impl.h",
-      "autofill/payments/verify_pending_dialog_view.h",
       "autofill/payments/webauthn_dialog_controller.h",
       "autofill/payments/webauthn_dialog_controller_impl.cc",
       "autofill/payments/webauthn_dialog_controller_impl.h",
       "autofill/payments/webauthn_dialog_model.cc",
       "autofill/payments/webauthn_dialog_model.h",
       "autofill/payments/webauthn_dialog_model_observer.h",
+      "autofill/payments/webauthn_dialog_state.h",
       "autofill/payments/webauthn_dialog_view.h",
       "frame/window_frame_util.cc",
       "frame/window_frame_util.h",
@@ -2061,8 +2058,6 @@ jumbo_static_library("ui") {
       "signin_view_controller_delegate.h",
       "tab_contents/chrome_web_contents_view_handle_drop.cc",
       "tab_contents/chrome_web_contents_view_handle_drop.h",
-      "views/autofill/payments/verify_pending_dialog_view_impl.cc",
-      "views/autofill/payments/verify_pending_dialog_view_impl.h",
       "views/autofill/payments/webauthn_dialog_view_impl.cc",
       "views/autofill/payments/webauthn_dialog_view_impl.h",
       "views/close_bubble_on_tab_activation_helper.cc",

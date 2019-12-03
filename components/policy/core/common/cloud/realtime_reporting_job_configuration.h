@@ -33,6 +33,7 @@ class POLICY_EXPORT RealtimeReportingJobConfiguration
   static const char kDmTokenKey[];
   static const char kEventsKey[];
   static const char kMachineUserKey[];
+  static const char kOsPlatformKey[];
   static const char kOsVersionKey[];
 
   typedef base::OnceCallback<void(DeviceManagementService::Job* job,

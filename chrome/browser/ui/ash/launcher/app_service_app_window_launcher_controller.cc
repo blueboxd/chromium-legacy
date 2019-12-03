@@ -10,6 +10,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/launcher/app_window_base.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -39,6 +40,22 @@ AppServiceAppWindowLauncherController::AppServiceAppWindowLauncherController(
 AppServiceAppWindowLauncherController::
     ~AppServiceAppWindowLauncherController() {
   aura::Env::GetInstance()->RemoveObserver(this);
+}
+
+void AppServiceAppWindowLauncherController::ActiveUserChanged(
+    const std::string& user_email) {
+  if (proxy_)
+    Observe(nullptr);
+
+  // TODO(crbug.com/1011235): Inactive the running app windows in
+  // InstanceRegistry for the inactive user, and active the app windows for the
+  // active user.
+
+  proxy_ = apps::AppServiceProxyFactory::GetForProfile(owner()->profile());
+  DCHECK(proxy_);
+  Observe(&proxy_->InstanceRegistry());
+
+  app_service_instance_helper_->ActiveUserChanged();
 }
 
 void AppServiceAppWindowLauncherController::OnWindowInitialized(

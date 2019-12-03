@@ -1108,6 +1108,10 @@ WStringPiece TrimString(WStringPiece input,
   return TrimStringPieceT(input, trim_chars, positions);
 }
 
+wchar_t* WriteInto(std::wstring* str, size_t length_with_null) {
+  return WriteIntoT(str, length_with_null);
+}
+
 #endif
 
 // The following code is compatible with the OpenBSD lcpy interface.  See:

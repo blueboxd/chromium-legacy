@@ -239,6 +239,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   // |NGPaintFragment| once the transition is done. crbug.com/982194
   const NGPaintFragment* paint_fragment_;
   const NGFragmentItems* items_;
+  const NGFragmentItem* box_item_ = nullptr;
   NGInlineCursor* descendants_ = nullptr;
   mutable base::Optional<NGBorderEdges> border_edges_;
 };
@@ -314,6 +315,8 @@ inline NGBoxFragmentPainter::NGBoxFragmentPainter(
                            /* paint_fragment */ nullptr,
                            descendants) {
   DCHECK_EQ(item.BoxFragment(), &fragment);
+  DCHECK(fragment.IsInlineBox());
+  box_item_ = &item;
 }
 
 }  // namespace blink

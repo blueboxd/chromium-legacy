@@ -9,19 +9,6 @@
 #include "base/metrics/field_trial_params.h"
 #include "chrome/common/chrome_features.h"
 
-// Keep in sync with "PermissionFieldTrial.java"
-const char kQuietNotificationPromptsUIFlavorParameterName[] = "ui_flavour";
-
-#if defined(OS_ANDROID)
-const char kQuietNotificationPromptsQuietNotification[] = "quiet_notification";
-const char kQuietNotificationPromptsHeadsUpNotification[] =
-    "heads_up_notification";
-const char kQuietNotificationPromptsMiniInfobar[] = "mini_infobar";
-#else   // OS_ANDROID
-const char kQuietNotificationPromptsStaticIcon[] = "static_icon";
-const char kQuietNotificationPromptsAnimatedIcon[] = "animated_icon";
-#endif  // OS_ANDROID
-
 const char kQuietNotificationPromptsActivationParameterName[] = "activation";
 const char kQuietNotificationPromptsActivationNever[] = "never";
 const char kQuietNotificationPromptsActivationAdaptive[] = "adaptive";
@@ -35,17 +22,7 @@ QuietNotificationsPromptConfig::UIFlavorToUse() {
 #if defined(OS_ANDROID)
   return UIFlavor::MINI_INFOBAR;
 #else   // OS_ANDROID
-  std::string ui_flavor = base::GetFieldTrialParamValueByFeature(
-      features::kQuietNotificationPrompts,
-      kQuietNotificationPromptsUIFlavorParameterName);
-
-  if (ui_flavor == kQuietNotificationPromptsStaticIcon) {
-    return UIFlavor::STATIC_ICON;
-  } else if (ui_flavor == kQuietNotificationPromptsAnimatedIcon) {
-    return UIFlavor::ANIMATED_ICON;
-  } else {
-    return UIFlavor::STATIC_ICON;
-  }
+  return UIFlavor::ANIMATED_ICON;
 #endif  // !OS_ANDROID
 }
 

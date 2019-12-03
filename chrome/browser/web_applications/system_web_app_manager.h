@@ -66,6 +66,9 @@ struct SystemAppInfo {
   // TODO(https://github.com/w3c/manifest/issues/436): Replace with PWA manifest
   // properties for window size.
   gfx::Size minimum_window_size;
+
+  // If set, we allow only a single window for this app.
+  bool single_window = true;
 };
 
 // Installs, uninstalls, and updates System Web Apps.
@@ -119,6 +122,9 @@ class SystemWebAppManager {
 
   // Returns whether |app_id| points to an installed System App.
   bool IsSystemWebApp(const AppId& app_id) const;
+
+  // Returns whether the given System App |type| should use a single window.
+  bool IsSingleWindow(SystemAppType type) const;
 
   // Returns the minimum window size for |app_id| or an empty size if the app
   // doesn't specify a minimum.

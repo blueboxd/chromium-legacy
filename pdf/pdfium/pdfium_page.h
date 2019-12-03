@@ -57,6 +57,9 @@ class PDFiumPage {
   std::vector<PDFEngine::AccessibilityLinkInfo> GetLinkInfo();
   // For all the images on the page, get their alt texts and bounding boxes.
   std::vector<PDFEngine::AccessibilityImageInfo> GetImageInfo();
+  // For all the highlights on the page, get their underlying text ranges and
+  // bounding boxes.
+  std::vector<PDFEngine::AccessibilityHighlightInfo> GetHighlightInfo();
 
   enum Area {
     NONSELECTABLE_AREA,

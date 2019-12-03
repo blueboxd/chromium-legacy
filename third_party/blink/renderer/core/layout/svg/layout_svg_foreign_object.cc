@@ -90,7 +90,7 @@ void LayoutSVGForeignObject::ComputeLogicalHeight(
 void LayoutSVGForeignObject::UpdateLayout() {
   DCHECK(NeedsLayout());
 
-  SVGForeignObjectElement* foreign = ToSVGForeignObjectElement(GetElement());
+  auto* foreign = To<SVGForeignObjectElement>(GetElement());
 
   bool update_cached_boundaries_in_parents = false;
   if (needs_transform_update_) {

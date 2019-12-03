@@ -40,6 +40,9 @@ class HostControlDispatcher : public ChannelDispatcherBase,
   // CursorShapeStub implementation for sending cursor shape to client.
   void SetCursorShape(const CursorShapeInfo& cursor_shape) override;
 
+  // KeyboardLayoutStub implementation for sending keyboard layout to client.
+  void SetKeyboardLayout(const KeyboardLayout& layout) override;
+
   // Sets the ClipboardStub that will be called for each incoming clipboard
   // message. |clipboard_stub| must outlive this object.
   void set_clipboard_stub(ClipboardStub* clipboard_stub) {

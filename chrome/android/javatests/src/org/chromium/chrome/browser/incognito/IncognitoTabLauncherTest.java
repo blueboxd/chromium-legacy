@@ -65,6 +65,7 @@ public class IncognitoTabLauncherTest {
     @Test
     @Feature("Incognito")
     @MediumTest
+    @Features.EnableFeatures({ChromeFeatureList.FOCUS_OMNIBOX_IN_INCOGNITO_TAB_INTENTS})
     public void testLaunchIncognitoNewTab_omniboxFocused() {
         ChromeTabbedActivity activity = launchIncognitoTab();
         CriteriaHelper.pollUiThread(() -> activity.getToolbarManager().isUrlBarFocused());

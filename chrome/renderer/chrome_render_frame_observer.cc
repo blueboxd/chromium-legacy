@@ -301,9 +301,10 @@ void ChromeRenderFrameObserver::GetWebApplicationInfo(
   // any icon with a data URL to have originated from a favicon.  We don't want
   // to decode arbitrary data URLs in the browser process.  See
   // http://b/issue?id=1162972
-  for (auto it = web_app_info.icons.begin(); it != web_app_info.icons.end();) {
+  for (auto it = web_app_info.icon_infos.begin();
+       it != web_app_info.icon_infos.end();) {
     if (it->url.SchemeIs(url::kDataScheme))
-      it = web_app_info.icons.erase(it);
+      it = web_app_info.icon_infos.erase(it);
     else
       ++it;
   }

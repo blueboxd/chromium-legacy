@@ -691,34 +691,28 @@ void SVGSMILElement::AddInstanceTimeAndUpdate(BeginOrEnd begin_or_end,
   InstanceListChanged();
 }
 
-SMILTime SVGSMILElement::FindInstanceTime(BeginOrEnd begin_or_end,
-                                          SMILTime minimum_time,
-                                          bool equals_minimum_ok) const {
+SMILTime SVGSMILElement::NextAfter(BeginOrEnd begin_or_end,
+                                   SMILTime time) const {
   const Vector<SMILTimeWithOrigin>& list =
       begin_or_end == kBegin ? begin_times_ : end_times_;
-
-  if (list.IsEmpty())
+  if (list.IsEmpty()) {
     return begin_or_end == kBegin ? SMILTime::Unresolved()
                                   : SMILTime::Indefinite();
-
-  // If an equal value is not accepted, return the next bigger item in the list,
-  // if any.
-  auto predicate = [equals_minimum_ok](const SMILTimeWithOrigin& instance_time,
-                                       const SMILTime& time) {
-    return equals_minimum_ok ? instance_time.Time() < time
-                             : instance_time.Time() <= time;
-  };
-  auto* item =
-      std::lower_bound(list.begin(), list.end(), minimum_time, predicate);
-  if (item == list.end())
+  }
+  // Find the value in |list| that is strictly greater than |time|.
+  auto* next_item = std::lower_bound(
+      list.begin(), list.end(), time,
+      [](const SMILTimeWithOrigin& instance_time, const SMILTime& time) {
+        return instance_time.Time() <= time;
+      });
+  if (next_item == list.end())
     return SMILTime::Unresolved();
-
-  // The special value "indefinite" does not yield an instance time in the begin
-  // list.
-  if (item->Time().IsIndefinite() && begin_or_end == kBegin)
+  SMILTime next = next_item->Time();
+  // The special value "indefinite" does not yield an instance time in the
+  // begin list.
+  if (begin_or_end == kBegin && next.IsIndefinite())
     return SMILTime::Unresolved();
-
-  return item->Time();
+  return next;
 }
 
 SMILTime SVGSMILElement::RepeatingDuration() const {
@@ -738,7 +732,7 @@ SMILTime SVGSMILElement::RepeatingDuration() const {
 }
 
 SMILTime SVGSMILElement::ResolveActiveEnd(SMILTime resolved_begin) const {
-  SMILTime resolved_end = FindInstanceTime(kEnd, resolved_begin, false);
+  SMILTime resolved_end = NextAfter(kEnd, resolved_begin);
   if (resolved_end.IsUnresolved()) {
     // If we have no pending end conditions, don't generate a new interval.
     if (!end_times_.IsEmpty() && !has_end_event_conditions_)
@@ -770,22 +764,31 @@ SMILTime SVGSMILElement::ResolveActiveEnd(SMILTime resolved_begin) const {
 
 SMILInterval SVGSMILElement::ResolveInterval(SMILTime begin_after,
                                              SMILTime end_after) const {
+  if (begin_times_.IsEmpty())
+    return SMILInterval::Unresolved();
   // Simplified version of the pseudocode in
   // http://www.w3.org/TR/SMIL3/smil-timing.html#q90.
   const size_t kMaxIterations = std::max(begin_times_.size() * 4, 1000000u);
   size_t current_iteration = 0;
   while (true) {
-    SMILTime temp_begin = FindInstanceTime(kBegin, begin_after, true);
-    if (temp_begin.IsUnresolved())
+    // Find the (next) instance time in the 'begin' list that is greater or
+    // equal to |begin_after|.
+    auto* begin_item = std::lower_bound(
+        begin_times_.begin(), begin_times_.end(), begin_after,
+        [](const SMILTimeWithOrigin& instance_time, const SMILTime& time) {
+          return instance_time.Time() < time;
+        });
+    // If there are no more 'begin' instance times, or we encountered the
+    // special value "indefinite" (which doesn't yield an instance time in the
+    // 'begin' list), we're done.
+    if (begin_item == begin_times_.end() || begin_item->Time().IsIndefinite())
       break;
-    SMILTime temp_end = ResolveActiveEnd(temp_begin);
+    SMILTime temp_end = ResolveActiveEnd(begin_item->Time());
     if (temp_end.IsUnresolved())
       break;
     // Don't allow the interval to end in the past.
-    if (temp_end > end_after) {
-      DCHECK(!temp_begin.IsIndefinite());
-      return SMILInterval(temp_begin, temp_end);
-    }
+    if (temp_end > end_after)
+      return SMILInterval(begin_item->Time(), temp_end);
     // Ensure forward progress.
     if (begin_after == temp_end)
       temp_end = begin_after + SMILTime::Epsilon();
@@ -821,8 +824,7 @@ SMILTime SVGSMILElement::ComputeNextIntervalTime(
       next_interval_time = interval_.end;
     }
   }
-  return std::min(next_interval_time,
-                  FindInstanceTime(kBegin, presentation_time, false));
+  return std::min(next_interval_time, NextAfter(kBegin, presentation_time));
 }
 
 void SVGSMILElement::InstanceListChanged() {
@@ -884,7 +886,7 @@ bool SVGSMILElement::HandleIntervalRestart(SMILTime presentation_time) {
   if (!interval_.IsResolved() || interval_.EndsBefore(presentation_time))
     return true;
   if (restart == kRestartAlways) {
-    SMILTime next_begin = FindInstanceTime(kBegin, interval_.begin, false);
+    SMILTime next_begin = NextAfter(kBegin, interval_.begin);
     if (interval_.EndsAfter(next_begin)) {
       SetNewIntervalEnd(next_begin);
       return interval_.EndsBefore(presentation_time);

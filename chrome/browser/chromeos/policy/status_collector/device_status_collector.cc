@@ -1448,11 +1448,9 @@ bool DeviceStatusCollector::GetNetworkInterfaces(
     anything_reported = true;
   }
 
-  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  const user_manager::User* const primary_user = user_manager->GetPrimaryUser();
-  // Don't write network state for unaffiliated users or when no user is signed
-  // in.
-  if (!primary_user || !primary_user->IsAffiliated()) {
+  // Don't write any network state if we aren't in a kiosk or public session.
+  if (!GetAutoLaunchedKioskSessionInfo() &&
+      !user_manager::UserManager::Get()->IsLoggedInAsPublicAccount()) {
     return anything_reported;
   }
 

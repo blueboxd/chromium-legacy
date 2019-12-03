@@ -191,7 +191,7 @@ class StoragePartitionRemovalTestStoragePartition
 
   void ClearData(uint32_t remove_mask,
                  uint32_t quota_storage_remove_mask,
-                 const OriginMatcherFunction& origin_matcher,
+                 OriginMatcherFunction origin_matcher,
                  CookieDeletionFilterPtr cookie_deletion_filter,
                  bool perform_storage_cleanup,
                  const base::Time begin,
@@ -203,7 +203,7 @@ class StoragePartitionRemovalTestStoragePartition
         quota_storage_remove_mask;
     storage_partition_removal_data_.remove_begin = begin;
     storage_partition_removal_data_.remove_end = end;
-    storage_partition_removal_data_.origin_matcher = origin_matcher;
+    storage_partition_removal_data_.origin_matcher = std::move(origin_matcher);
     storage_partition_removal_data_.cookie_deletion_filter =
         std::move(cookie_deletion_filter);
 
@@ -248,20 +248,22 @@ class StoragePartitionRemovalTestStoragePartition
 // filters, but its constructor currently only takes a single URL and constructs
 // its own url filter. If an url filter was directly passed to
 // BrowsingDataRemover (what should eventually be the case), we can use the same
-// instance in the test as well, and thus simply test base::Callback::Equals()
-// in this matcher.
+// instance in the test as well, and thus simply test
+// base::RepeatingCallback::Equals() in this matcher.
 class ProbablySameFilterMatcher
-    : public MatcherInterface<const base::Callback<bool(const GURL&)>&> {
+    : public MatcherInterface<
+          const base::RepeatingCallback<bool(const GURL&)>&> {
  public:
   explicit ProbablySameFilterMatcher(
-      const base::Callback<bool(const GURL&)>& filter)
+      const base::RepeatingCallback<bool(const GURL&)>& filter)
       : to_match_(filter) {}
 
-  virtual bool MatchAndExplain(const base::Callback<bool(const GURL&)>& filter,
-                               MatchResultListener* listener) const {
-    if (filter.is_null() && to_match_.is_null())
+  virtual bool MatchAndExplain(
+      const base::RepeatingCallback<bool(const GURL&)>& filter,
+      MatchResultListener* listener) const {
+    if (!filter && !to_match_)
       return true;
-    if (filter.is_null() != to_match_.is_null())
+    if (!filter || !to_match_)
       return false;
 
     const GURL urls_to_test_[] = {kOrigin1.GetURL(), kOrigin2.GetURL(),
@@ -285,11 +287,11 @@ class ProbablySameFilterMatcher
   }
 
  private:
-  const base::Callback<bool(const GURL&)>& to_match_;
+  const base::RepeatingCallback<bool(const GURL&)>& to_match_;
 };
 
-inline Matcher<const base::Callback<bool(const GURL&)>&> ProbablySameFilter(
-    const base::Callback<bool(const GURL&)>& filter) {
+inline Matcher<const base::RepeatingCallback<bool(const GURL&)>&>
+ProbablySameFilter(const base::RepeatingCallback<bool(const GURL&)>& filter) {
   return MakeMatcher(new ProbablySameFilterMatcher(filter));
 }
 
@@ -1180,7 +1182,7 @@ TEST_F(BrowsingDataRemoverImplTest, EarlyShutdown) {
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveDownloadsByTimeOnly) {
   RemoveDownloadsTester tester(GetBrowserContext());
-  base::Callback<bool(const GURL&)> filter =
+  base::RepeatingCallback<bool(const GURL&)> filter =
       BrowsingDataFilterBuilder::BuildNoopFilter();
 
   EXPECT_CALL(*tester.download_manager(),
@@ -1196,7 +1198,8 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveDownloadsByOrigin) {
   std::unique_ptr<BrowsingDataFilterBuilder> builder(
       BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
   builder->AddRegisterableDomain(kTestRegisterableDomain1);
-  base::Callback<bool(const GURL&)> filter = builder->BuildGeneralFilter();
+  base::RepeatingCallback<bool(const GURL&)> filter =
+      builder->BuildGeneralFilter();
 
   EXPECT_CALL(*tester.download_manager(),
               RemoveDownloadsByURLAndTime(ProbablySameFilter(filter), _, _));

@@ -35,19 +35,21 @@ class MockWebBundleReaderFactory {
       data_decoder::mojom::BundleMetadataPtr metadata,
       WebBundleReader::MetadataCallback callback) = 0;
 
-  // Calls ReadResponse with |callback| for |reader|, and simulates the call as
+  // Calls ReadResponse on |reader| with |callback|, verifies that |reader|
+  // calls ParseResponse with |expected_parse_args|, and responds as if
   // |response| is read.
   virtual void ReadAndFullfillResponse(
       WebBundleReader* reader,
       const GURL& url,
+      data_decoder::mojom::BundleResponseLocationPtr expected_parse_args,
       data_decoder::mojom::BundleResponsePtr response,
       WebBundleReader::ResponseCallback callback) = 0;
 
-  // Sets up the mocked factory so that the created WebBundleReader
-  // instance can read |response| when WebBundleReader::ReaderResponse is
-  // called.
-  virtual void FullfillResponse(data_decoder::mojom::BundleResponsePtr response,
-                                WebBundleReader::ResponseCallback callback) = 0;
+  // Sets up the mocked factory so that the created WebBundleReader instance
+  // can read |response| when WebBundleReader::ReadResponse is called.
+  virtual void FullfillResponse(
+      data_decoder::mojom::BundleResponseLocationPtr expected_parse_args,
+      data_decoder::mojom::BundleResponsePtr response) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockWebBundleReaderFactory);

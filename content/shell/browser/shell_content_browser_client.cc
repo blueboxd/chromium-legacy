@@ -163,6 +163,20 @@ const service_manager::Manifest& GetContentBrowserOverlayManifest() {
   return *manifest;
 }
 
+const service_manager::Manifest& GetContentRendererOverlayManifest() {
+  static base::NoDestructor<service_manager::Manifest> manifest{
+      service_manager::ManifestBuilder()
+          .ExposeCapability(
+              "browser",
+              service_manager::Manifest::InterfaceList<mojom::PowerMonitorTest,
+                                                       mojom::TestService>())
+          .ExposeInterfaceFilterCapability_Deprecated(
+              "navigation:frame", "browser",
+              service_manager::Manifest::InterfaceList<mojom::WebTestControl>())
+          .Build()};
+  return *manifest;
+}
+
 }  // namespace
 
 std::string GetShellUserAgent() {
@@ -285,6 +299,8 @@ base::Optional<service_manager::Manifest>
 ShellContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
   if (name == content::mojom::kBrowserServiceName)
     return GetContentBrowserOverlayManifest();
+  if (name == content::mojom::kRendererServiceName)
+    return GetContentRendererOverlayManifest();
 
   return base::nullopt;
 }

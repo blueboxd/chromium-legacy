@@ -7,8 +7,10 @@ class TestBrowserService extends TestBrowserProxy {
     super([
       'deleteForeignSession',
       'deleteItems',
+      'historyLoaded',
       'navigateToUrl',
       'openForeignSessionTab',
+      'otherDevicesInitialized',
       'recordHistogram',
       'queryHistory',
     ]);
@@ -38,7 +40,9 @@ class TestBrowserService extends TestBrowserProxy {
   }
 
   /** @override */
-  historyLoaded() {}
+  historyLoaded() {
+    this.methodCalled('historyLoaded');
+  }
 
   /** @override */
   menuPromoShown() {}
@@ -65,7 +69,9 @@ class TestBrowserService extends TestBrowserProxy {
   }
 
   /** @override */
-  otherDevicesInitialized() {}
+  otherDevicesInitialized() {
+    this.methodCalled('otherDevicesInitialized');
+  }
 
   /** @override */
   queryHistory(searchTerm) {

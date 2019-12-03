@@ -78,22 +78,6 @@ class FakeSafeBrowsingDatabaseManager
 
   bool IsSupported() const override { return true; }
   bool ChecksAreAlwaysAsync() const override { return false; }
-  bool CanCheckResourceType(
-      content::ResourceType /* resource_type */) const override {
-    NOTREACHED();
-    return true;
-  }
-
-  safe_browsing::ThreatSource GetThreatSource() const override {
-    NOTREACHED();
-    return safe_browsing::ThreatSource::LOCAL_PVER4;
-  }
-
-  bool CheckExtensionIDs(const std::set<std::string>& extension_ids,
-                         Client* client) override {
-    NOTREACHED();
-    return true;
-  }
 
  private:
   void OnCheckUrlForSubresourceFilterComplete(Client* client, const GURL& url);

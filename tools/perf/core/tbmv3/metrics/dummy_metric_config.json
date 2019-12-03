@@ -1,0 +1,11 @@
+{
+  "name": "Dummy Metric",
+  "description": "A dummy metric for tests.",
+  "histograms": [
+    {
+      "name": "foo",
+      "description": "bar",
+      "unit": "count_biggerIsBetter"
+    }
+  ]
+}

@@ -285,6 +285,14 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
         [UIImage imageNamed:kGoogleServicesSyncErrorImage];
     self.encryptionItem.detailText = GetNSString(
         IDS_IOS_GOOGLE_SERVICES_SETTINGS_ENTER_PASSPHRASE_TO_START_SYNC);
+  } else if (self.shouldEncryptionItemBeEnabled &&
+             self.syncSetupService->GetSyncServiceState() ==
+                 SyncSetupService::kSyncServiceNeedsTrustedVaultKey) {
+    needsUpdate = needsUpdate || self.encryptionItem.image == nil;
+    self.encryptionItem.image =
+        [UIImage imageNamed:kGoogleServicesSyncErrorImage];
+    self.encryptionItem.detailText =
+        GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_ENCRYPTION_FIX_NOW);
   } else {
     needsUpdate = needsUpdate || self.encryptionItem.image != nil;
     self.encryptionItem.image = nil;
@@ -355,7 +363,8 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   SyncSetupService::SyncServiceState state =
       self.syncSetupService->GetSyncServiceState();
   return state != SyncSetupService::kNoSyncServiceError &&
-         state != SyncSetupService::kSyncServiceNeedsPassphrase;
+         state != SyncSetupService::kSyncServiceNeedsPassphrase &&
+         state != SyncSetupService::kSyncServiceNeedsTrustedVaultKey;
 }
 
 - (BOOL)shouldSyncDataItemEnabled {
@@ -460,6 +469,11 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   ItemType itemType = static_cast<ItemType>(item.type);
   switch (itemType) {
     case EncryptionItemType:
+      if (self.syncSetupService->GetSyncServiceState() ==
+          SyncSetupService::kSyncServiceNeedsTrustedVaultKey) {
+        // TODO(crbug.com/1019685): Open key retrieval dialog.
+        break;
+      }
       [self.commandHandler openPassphraseDialog];
       break;
     case GoogleActivityControlsItemType:

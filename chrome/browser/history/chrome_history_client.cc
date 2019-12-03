@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/sql_init_error_message_ids.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/model_loader.h"
 #include "components/history/core/browser/history_service.h"
 
 ChromeHistoryClient::ChromeHistoryClient(

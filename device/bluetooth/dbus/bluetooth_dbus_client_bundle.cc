@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "device/bluetooth/dbus/bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/bluetooth_agent_manager_client.h"
+#include "device/bluetooth/dbus/bluetooth_debug_manager_client.h"
 #include "device/bluetooth/dbus/bluetooth_device_client.h"
 #include "device/bluetooth/dbus/bluetooth_gatt_characteristic_client.h"
 #include "device/bluetooth/dbus/bluetooth_gatt_descriptor_client.h"
@@ -23,6 +24,7 @@
 #include "device/bluetooth/dbus/bluetooth_profile_manager_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_agent_manager_client.h"
+#include "device/bluetooth/dbus/fake_bluetooth_debug_manager_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_device_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_gatt_characteristic_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_gatt_descriptor_client.h"
@@ -44,6 +46,8 @@ BluetoothDBusClientBundle::BluetoothDBusClientBundle(bool use_fakes)
         BluetoothLEAdvertisingManagerClient::Create());
     bluetooth_agent_manager_client_.reset(
         BluetoothAgentManagerClient::Create());
+    bluetooth_debug_manager_client_.reset(
+        BluetoothDebugManagerClient::Create());
     bluetooth_device_client_.reset(BluetoothDeviceClient::Create());
     bluetooth_input_client_.reset(BluetoothInputClient::Create());
     bluetooth_media_client_.reset(BluetoothMediaClient::Create());
@@ -65,6 +69,7 @@ BluetoothDBusClientBundle::BluetoothDBusClientBundle(bool use_fakes)
     bluetooth_le_advertising_manager_client_.reset(
         new FakeBluetoothLEAdvertisingManagerClient);
     bluetooth_agent_manager_client_.reset(new FakeBluetoothAgentManagerClient);
+    bluetooth_debug_manager_client_.reset(new FakeBluetoothDebugManagerClient);
     bluetooth_device_client_.reset(new FakeBluetoothDeviceClient);
     bluetooth_input_client_.reset(new FakeBluetoothInputClient);
     bluetooth_media_client_.reset(new FakeBluetoothMediaClient);

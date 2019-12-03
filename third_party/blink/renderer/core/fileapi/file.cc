@@ -132,11 +132,16 @@ File* File::Create(
     const FilePropertyBag* options) {
   DCHECK(options->hasType());
 
-  double last_modified;
-  if (options->hasLastModified())
-    last_modified = static_cast<double>(options->lastModified());
-  else
-    last_modified = base::Time::Now().ToDoubleT() * 1000.0;
+  base::Time last_modified;
+  if (options->hasLastModified()) {
+    // We don't use base::Time::FromJsTime(double) here because
+    // options->lastModified() is a 64-bit integer, and casting it to
+    // double is lossy.
+    last_modified = base::Time::UnixEpoch() +
+                    base::TimeDelta::FromMilliseconds(options->lastModified());
+  } else {
+    last_modified = base::Time::Now();
+  }
   DCHECK(options->hasEndings());
   bool normalize_line_endings_to_native = options->endings() == "native";
   if (normalize_line_endings_to_native)
@@ -194,8 +199,7 @@ File::File(const String& path,
       has_backing_file_(true),
       user_visibility_(user_visibility),
       path_(path),
-      name_(FilePathToWebString(WebStringToFilePath(path).BaseName())),
-      snapshot_modification_time_ms_(InvalidFileTime()) {}
+      name_(FilePathToWebString(WebStringToFilePath(path).BaseName())) {}
 
 File::File(const String& path,
            const String& name,
@@ -207,8 +211,7 @@ File::File(const String& path,
       has_backing_file_(true),
       user_visibility_(user_visibility),
       path_(path),
-      name_(name),
-      snapshot_modification_time_ms_(InvalidFileTime()) {}
+      name_(name) {}
 
 File::File(const String& path,
            const String& name,
@@ -216,29 +219,28 @@ File::File(const String& path,
            UserVisibility user_visibility,
            bool has_snapshot_data,
            uint64_t size,
-           double last_modified,
+           const base::Optional<base::Time>& last_modified,
            scoped_refptr<BlobDataHandle> blob_data_handle)
     : Blob(std::move(blob_data_handle)),
       has_backing_file_(!path.IsEmpty() || !relative_path.IsEmpty()),
       user_visibility_(user_visibility),
       path_(path),
       name_(name),
-      snapshot_modification_time_ms_(has_snapshot_data ? last_modified
-                                                       : InvalidFileTime()),
+      snapshot_modification_time_(last_modified),
       relative_path_(relative_path) {
   if (has_snapshot_data)
     snapshot_size_ = size;
 }
 
 File::File(const String& name,
-           double modification_time_ms,
+           const base::Optional<base::Time>& modification_time,
            scoped_refptr<BlobDataHandle> blob_data_handle)
     : Blob(std::move(blob_data_handle)),
       has_backing_file_(false),
       user_visibility_(File::kIsNotUserVisible),
       name_(name),
       snapshot_size_(Blob::size()),
-      snapshot_modification_time_ms_(modification_time_ms) {
+      snapshot_modification_time_(modification_time) {
   uint64_t size = Blob::size();
   if (size != std::numeric_limits<uint64_t>::max())
     snapshot_size_ = size;
@@ -254,8 +256,7 @@ File::File(const String& name,
       user_visibility_(user_visibility),
       path_(metadata.platform_path),
       name_(name),
-      snapshot_modification_time_ms_(
-          ToJsTimeOrNaN(metadata.modification_time)) {
+      snapshot_modification_time_(metadata.modification_time) {
   if (metadata.length >= 0)
     snapshot_size_ = metadata.length;
 }
@@ -271,8 +272,7 @@ File::File(const KURL& file_system_url,
       name_(DecodeURLEscapeSequences(file_system_url.LastPathComponent(),
                                      DecodeURLMode::kUTF8OrIsomorphic)),
       file_system_url_(file_system_url),
-      snapshot_modification_time_ms_(
-          ToJsTimeOrNaN(metadata.modification_time)) {
+      snapshot_modification_time_(metadata.modification_time) {
   if (metadata.length >= 0)
     snapshot_size_ = metadata.length;
 }
@@ -285,7 +285,7 @@ File::File(const File& other)
       name_(other.name_),
       file_system_url_(other.file_system_url_),
       snapshot_size_(other.snapshot_size_),
-      snapshot_modification_time_ms_(other.snapshot_modification_time_ms_),
+      snapshot_modification_time_(other.snapshot_modification_time_),
       relative_path_(other.relative_path_) {}
 
 File* File::Clone(const String& name) const {
@@ -295,49 +295,31 @@ File* File::Clone(const String& name) const {
   return file;
 }
 
-double File::LastModifiedMS() const {
-  if (HasValidSnapshotMetadata() &&
-      IsValidFileTime(snapshot_modification_time_ms_))
-    return snapshot_modification_time_ms_;
+base::Time File::LastModifiedTime() const {
+  if (HasValidSnapshotMetadata() && snapshot_modification_time_)
+    return *snapshot_modification_time_;
 
   base::Optional<base::Time> modification_time;
   if (HasBackingFile() && GetFileModificationTime(path_, modification_time) &&
       modification_time)
-    return modification_time->ToJsTimeIgnoringNull();
+    return *modification_time;
 
-  return base::Time::Now().ToDoubleT() * 1000.0;
+  // lastModified / lastModifiedDate getters should return the current time
+  // when the last modification time isn't known.
+  return base::Time::Now();
 }
 
 int64_t File::lastModified() const {
-  double modified_date = LastModifiedMS();
-
-  // The getter should return the current time when the last modification time
-  // isn't known.
-  if (!IsValidFileTime(modified_date))
-    modified_date = base::Time::Now().ToDoubleT() * 1000.0;
-
   // lastModified returns a number, not a Date instance,
   // http://dev.w3.org/2006/webapi/FileAPI/#file-attrs
-  return floor(modified_date);
+  return (LastModifiedTime() - base::Time::UnixEpoch()).InMilliseconds();
 }
 
 ScriptValue File::lastModifiedDate(ScriptState* script_state) const {
   // lastModifiedDate returns a Date instance,
   // http://www.w3.org/TR/FileAPI/#dfn-lastModifiedDate
-  return ScriptValue(
-      script_state->GetIsolate(),
-      ToV8(base::Time::FromJsTime(LastModifiedDate()), script_state));
-}
-
-double File::LastModifiedDate() const {
-  double modified_date = LastModifiedMS();
-
-  // The getter should return the current time when the last modification time
-  // isn't known.
-  if (!IsValidFileTime(modified_date))
-    modified_date = base::Time::Now().ToDoubleT() * 1000.0;
-
-  return modified_date;
+  return ScriptValue(script_state->GetIsolate(),
+                     ToV8(LastModifiedTime(), script_state));
 }
 
 uint64_t File::size() const {
@@ -380,8 +362,7 @@ void File::CaptureSnapshot(
     base::Optional<base::Time>& snapshot_modification_time) const {
   if (HasValidSnapshotMetadata()) {
     snapshot_size = *snapshot_size_;
-    snapshot_modification_time =
-        JsTimeToOptionalTime(snapshot_modification_time_ms_);
+    snapshot_modification_time = snapshot_modification_time_;
     return;
   }
 

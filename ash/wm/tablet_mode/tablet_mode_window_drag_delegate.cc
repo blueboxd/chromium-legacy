@@ -267,7 +267,7 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
   dragged_window_->SetProperty(kBackdropWindowMode, original_backdrop_mode_);
   SplitViewController::SnapPosition snap_position = SplitViewController::NONE;
   if (result == ToplevelWindowEventHandler::DragResult::SUCCESS &&
-      split_view_controller_->CanSnapWindow(dragged_window_)) {
+      CanSnapInSplitview(dragged_window_)) {
     snap_position = GetSnapPosition(location_in_screen);
   }
 
@@ -348,13 +348,14 @@ SplitViewController::SnapPosition TabletModeWindowDragDelegate::GetSnapPosition(
   // Check that the window has been considered as moved and is compatible with
   // split view. If the window has not been considered as moved, it shall not
   // become snapped, although if it already was snapped, it can stay snapped.
-  if (!(is_window_considered_moved_ &&
-        split_view_controller_->CanSnapWindow(dragged_window_))) {
+  if (!(is_window_considered_moved_ && CanSnapInSplitview(dragged_window_)))
     return SplitViewController::NONE;
-  }
 
-  SplitViewController::SnapPosition snap_position = ::ash::GetSnapPosition(
-      Shell::GetPrimaryRootWindow(), dragged_window_, location_in_screen);
+  SplitViewController::SnapPosition snap_position =
+      ::ash::GetSnapPosition(dragged_window_, location_in_screen,
+                             display::Screen::GetScreen()
+                                 ->GetDisplayNearestWindow(dragged_window_)
+                                 .work_area());
 
   // For portrait mode, since the drag always starts from the top of the
   // screen, we only allow the window to be dragged to snap to the bottom of

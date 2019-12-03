@@ -28,8 +28,8 @@ const base::FilePath::CharType kAndroidCacheFilename[] =
 #endif
 
 ChromeHistoryBackendClient::ChromeHistoryBackendClient(
-    bookmarks::ModelLoader* model_loader)
-    : model_loader_(model_loader) {}
+    scoped_refptr<bookmarks::ModelLoader> model_loader)
+    : model_loader_(std::move(model_loader)) {}
 
 ChromeHistoryBackendClient::~ChromeHistoryBackendClient() {
 }

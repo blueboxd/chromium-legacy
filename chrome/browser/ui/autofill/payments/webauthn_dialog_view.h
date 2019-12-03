@@ -9,14 +9,15 @@ namespace autofill {
 
 class WebauthnDialogController;
 class WebauthnDialogModel;
+enum class WebauthnDialogState;
 
 // The view of the dialog that offers the option to use device's platform
 // authenticator. It is shown automatically after card unmasked details are
 // obtained and filled into the form.
 class WebauthnDialogView {
  public:
-  static WebauthnDialogView* CreateAndShow(
-      WebauthnDialogController* controller);
+  static WebauthnDialogView* CreateAndShow(WebauthnDialogController* controller,
+                                           WebauthnDialogState dialog_state);
 
   virtual WebauthnDialogModel* GetDialogModel() const = 0;
 };

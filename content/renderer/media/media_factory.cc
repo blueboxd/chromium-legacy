@@ -43,7 +43,6 @@
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/cpp/connect.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_element_source_utils.h"
@@ -181,10 +180,10 @@ MediaFactory::~MediaFactory() {
 
 void MediaFactory::SetupMojo() {
   // Only do setup once.
-  DCHECK(!remote_interfaces_);
+  DCHECK(!interface_broker_);
 
-  remote_interfaces_ = render_frame_->GetRemoteInterfaces();
-  DCHECK(remote_interfaces_);
+  interface_broker_ = render_frame_->GetBrowserInterfaceBroker();
+  DCHECK(interface_broker_);
 }
 
 #if defined(OS_ANDROID)
@@ -358,7 +357,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
             web_frame);
 
   mojo::PendingRemote<media::mojom::MediaMetricsProvider> metrics_provider;
-  remote_interfaces_->GetInterface(
+  interface_broker_->GetInterface(
       metrics_provider.InitWithNewPipeAndPassReceiver());
 
   scoped_refptr<base::SingleThreadTaskRunner>
@@ -442,7 +441,7 @@ MediaFactory::CreateRendererFactorySelector(
   auto factory_selector = std::make_unique<media::RendererFactorySelector>();
 
 #if defined(OS_ANDROID)
-  DCHECK(remote_interfaces_);
+  DCHECK(interface_broker_);
 
   // MediaPlayerRendererClientFactory setup.
   auto media_player_factory =
@@ -608,8 +607,10 @@ media::DecoderFactory* MediaFactory::GetDecoderFactory() {
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
 media::mojom::RemoterFactory* MediaFactory::GetRemoterFactory() {
+  DCHECK(interface_broker_);
+
   if (!remoter_factory_) {
-    render_frame_->GetBrowserInterfaceBroker()->GetInterface(
+    interface_broker_->GetInterface(
         remoter_factory_.BindNewPipeAndPassReceiver());
   }
   return remoter_factory_.get();
@@ -621,8 +622,8 @@ media::CdmFactory* MediaFactory::GetCdmFactory() {
     return cdm_factory_.get();
 
 #if defined(OS_FUCHSIA)
-  cdm_factory_ = media::CreateFuchsiaCdmFactory(
-      render_frame_->GetBrowserInterfaceBroker());
+  DCHECK(interface_broker_);
+  cdm_factory_ = media::CreateFuchsiaCdmFactory(interface_broker_);
 #elif BUILDFLAG(ENABLE_MOJO_CDM)
   cdm_factory_ =
       std::make_unique<media::MojoCdmFactory>(GetMediaInterfaceFactory());
@@ -635,9 +636,11 @@ media::CdmFactory* MediaFactory::GetCdmFactory() {
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA)
 media::mojom::InterfaceFactory* MediaFactory::GetMediaInterfaceFactory() {
+  DCHECK(interface_broker_);
+
   if (!media_interface_factory_) {
-    media_interface_factory_.reset(
-        new MediaInterfaceFactory(render_frame_->GetBrowserInterfaceBroker()));
+    media_interface_factory_ =
+        std::make_unique<MediaInterfaceFactory>(interface_broker_);
   }
 
   return media_interface_factory_.get();

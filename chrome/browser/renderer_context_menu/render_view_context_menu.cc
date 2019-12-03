@@ -1853,13 +1853,15 @@ void RenderViewContextMenu::AppendSharingItems() {
 void RenderViewContextMenu::AppendClickToCallItem() {
   SharingClickToCallEntryPoint entry_point;
   base::Optional<std::string> phone_number;
+  std::string selection_text;
   if (ShouldOfferClickToCallForURL(browser_context_, params_.link_url)) {
     entry_point = SharingClickToCallEntryPoint::kRightClickLink;
     phone_number = GetUnescapedURLContent(params_.link_url);
   } else if (!params_.selection_text.empty()) {
     entry_point = SharingClickToCallEntryPoint::kRightClickSelection;
-    phone_number = ExtractPhoneNumberForClickToCall(
-        browser_context_, base::UTF16ToUTF8(params_.selection_text));
+    selection_text = base::UTF16ToUTF8(params_.selection_text);
+    phone_number =
+        ExtractPhoneNumberForClickToCall(browser_context_, selection_text);
   }
 
   if (!phone_number || phone_number->empty())
@@ -1871,7 +1873,8 @@ void RenderViewContextMenu::AppendClickToCallItem() {
     observers_.AddObserver(click_to_call_context_menu_observer_.get());
   }
 
-  click_to_call_context_menu_observer_->BuildMenu(*phone_number, entry_point);
+  click_to_call_context_menu_observer_->BuildMenu(*phone_number, selection_text,
+                                                  entry_point);
 }
 
 void RenderViewContextMenu::AppendSharedClipboardItem() {

@@ -162,7 +162,18 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
   ui::AXTree tree_;
   content::RendererPpapiHost* host_;
   PP_Instance instance_;
-  double zoom_device_scale_factor_ = 1.0;
+  // |zoom_| signifies the zoom level set in for the browser content.
+  // |scale_| signifies the scale level set by user. Scale is applied
+  // by the OS while zoom is applied by the application. Higher scale
+  // values are usually set to increase the size of everything on screen.
+  // Preferred by people with blurry/low vision. |zoom_| and |scale_|
+  // both help us increase/descrease the size of content on screen.
+  // From PDF plugin we receive all the data in logical pixels. Which is
+  // without the zoom and scale factor applied. We apply the |zoom_| and
+  // |scale_| to generate the final bounding boxes of elements in accessibility
+  // tree.
+  double zoom_ = 1.0;
+  double scale_ = 1.0;
   gfx::Vector2dF scroll_;
   gfx::Vector2dF offset_;
   uint32_t selection_start_page_index_ = 0;

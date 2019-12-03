@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/fileapi/file_list.h"
 
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 
@@ -18,7 +19,8 @@ TEST(FileListTest, pathsForUserVisibleFiles) {
   // Blob file.
   const scoped_refptr<BlobDataHandle> blob_data_handle =
       BlobDataHandle::Create();
-  file_list->Append(MakeGarbageCollected<File>("name", 0.0, blob_data_handle));
+  file_list->Append(MakeGarbageCollected<File>("name", base::Time::UnixEpoch(),
+                                               blob_data_handle));
 
   // User visible snapshot file.
   {

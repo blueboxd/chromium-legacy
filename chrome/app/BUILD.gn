@@ -480,6 +480,47 @@ source_set("chrome_content_browser_overlay_manifest") {
   }
 }
 
+source_set("chrome_content_renderer_overlay_manifest") {
+  sources = [
+    "chrome_content_renderer_overlay_manifest.cc",
+    "chrome_content_renderer_overlay_manifest.h",
+  ]
+
+  deps = [
+    "//base",
+    "//base/allocator:buildflags",
+    "//chrome/common:mojo_bindings",
+    "//chrome/common:search_mojom",
+    "//components/autofill/content/common/mojom",
+    "//components/dom_distiller/content/common/mojom",
+    "//components/metrics/public/mojom:call_stack_mojo_bindings",
+    "//components/rappor/public/mojom",
+    "//components/safe_browsing:buildflags",
+    "//components/safe_browsing/common:interfaces",
+    "//components/services/heap_profiling/public/mojom",
+    "//components/subresource_filter/content/mojom",
+    "//extensions/buildflags",
+    "//services/service_manager/public/cpp",
+    "//third_party/blink/public/common",
+  ]
+
+  if (is_linux) {
+    deps += [ "//chrome/common/performance_manager/mojom" ]
+  }
+
+  if (is_chromeos) {
+    deps += [ "//chromeos/services/network_config/public/mojom" ]
+  }
+
+  if (is_mac) {
+    deps += [ "//components/spellcheck/common:interfaces" ]
+  }
+
+  if (enable_extensions) {
+    deps += [ "//extensions/common:mojom" ]
+  }
+}
+
 source_set("builtin_service_manifests") {
   sources = [
     "builtin_service_manifests.cc",
@@ -506,5 +547,6 @@ source_set("chrome_service_manifests") {
   public_deps = [
     ":builtin_service_manifests",
     ":chrome_content_browser_overlay_manifest",
+    ":chrome_content_renderer_overlay_manifest",
   ]
 }

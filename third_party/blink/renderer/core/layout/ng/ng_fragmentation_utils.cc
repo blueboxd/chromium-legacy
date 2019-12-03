@@ -363,6 +363,14 @@ bool MovePastBreakpoint(const NGConstraintSpace& space,
   // infinite number of fragmentainers without putting any content into them.
   bool refuse_break = space_left >= space.FragmentainerBlockSize();
 
+  // If the child starts past the end of the fragmentainer (probably due to a
+  // block-start margin), we must break before it.
+  bool must_break_before = space_left < LayoutUnit();
+  if (must_break_before) {
+    DCHECK(!refuse_break);
+    return false;
+  }
+
   if (IsA<NGBlockBreakToken>(physical_fragment.BreakToken())) {
     // The block child broke inside. We now need to decide whether to keep that
     // break, or if it would be better to break before it.
@@ -370,7 +378,7 @@ bool MovePastBreakpoint(const NGConstraintSpace& space,
         space, To<NGBlockNode>(child), layout_result);
     // Allow breaking inside if it has the same appeal or higher than breaking
     // before or breaking earlier. Also, if breaking before is impossible, break
-    // inside regardless of appeal, .
+    // inside regardless of appeal.
     if (refuse_break || (appeal_inside >= appeal_before &&
                          (!builder->HasEarlyBreak() ||
                           appeal_inside >= builder->BreakAppeal()))) {

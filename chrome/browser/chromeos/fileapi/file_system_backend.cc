@@ -53,7 +53,6 @@ bool FileSystemBackend::CanHandleURL(const storage::FileSystemURL& url) {
     return false;
   return url.type() == storage::kFileSystemTypeNativeLocal ||
          url.type() == storage::kFileSystemTypeRestrictedNativeLocal ||
-         url.type() == storage::kFileSystemTypeDrive ||
          url.type() == storage::kFileSystemTypeProvided ||
          url.type() == storage::kFileSystemTypeDeviceMediaAsFileStorage ||
          url.type() == storage::kFileSystemTypeArcContent ||
@@ -105,7 +104,6 @@ void FileSystemBackend::AddSystemMountPoints() {
 bool FileSystemBackend::CanHandleType(storage::FileSystemType type) const {
   switch (type) {
     case storage::kFileSystemTypeExternal:
-    case storage::kFileSystemTypeDrive:
     case storage::kFileSystemTypeRestrictedNativeLocal:
     case storage::kFileSystemTypeNativeLocal:
     case storage::kFileSystemTypeNativeForPlatformApp:
@@ -354,8 +352,7 @@ storage::FileSystemOperation* FileSystemBackend::CreateFileSystemOperation(
                          .get()));
   }
 
-  DCHECK(url.type() == storage::kFileSystemTypeDrive ||
-         url.type() == storage::kFileSystemTypeProvided ||
+  DCHECK(url.type() == storage::kFileSystemTypeProvided ||
          url.type() == storage::kFileSystemTypeArcContent ||
          url.type() == storage::kFileSystemTypeArcDocumentsProvider);
   return storage::FileSystemOperation::Create(
@@ -365,8 +362,7 @@ storage::FileSystemOperation* FileSystemBackend::CreateFileSystemOperation(
 
 bool FileSystemBackend::SupportsStreaming(
     const storage::FileSystemURL& url) const {
-  return url.type() == storage::kFileSystemTypeDrive ||
-         url.type() == storage::kFileSystemTypeProvided ||
+  return url.type() == storage::kFileSystemTypeProvided ||
          url.type() == storage::kFileSystemTypeDeviceMediaAsFileStorage ||
          url.type() == storage::kFileSystemTypeArcContent ||
          url.type() == storage::kFileSystemTypeArcDocumentsProvider;
@@ -375,7 +371,6 @@ bool FileSystemBackend::SupportsStreaming(
 bool FileSystemBackend::HasInplaceCopyImplementation(
     storage::FileSystemType type) const {
   switch (type) {
-    case storage::kFileSystemTypeDrive:
     case storage::kFileSystemTypeProvided:
     case storage::kFileSystemTypeDeviceMediaAsFileStorage:
     case storage::kFileSystemTypeDriveFs:

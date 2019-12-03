@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/autofill/payments/webauthn_dialog_controller.h"
 #include "chrome/browser/ui/autofill/payments/webauthn_dialog_model.h"
+#include "chrome/browser/ui/autofill/payments/webauthn_dialog_state.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/webauthn/authenticator_request_sheet_view.h"
 #include "chrome/browser/ui/views/webauthn/sheet_view_factory.h"
@@ -19,11 +20,12 @@
 namespace autofill {
 
 WebauthnDialogViewImpl::WebauthnDialogViewImpl(
-    WebauthnDialogController* controller)
+    WebauthnDialogController* controller,
+    WebauthnDialogState dialog_state)
     : controller_(controller) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
   std::unique_ptr<WebauthnDialogModel> model =
-      std::make_unique<WebauthnDialogModel>();
+      std::make_unique<WebauthnDialogModel>(dialog_state);
   model_ = model.get();
   model_->AddObserver(this);
   sheet_view_ =
@@ -46,8 +48,10 @@ WebauthnDialogViewImpl::~WebauthnDialogViewImpl() {
 
 // static
 WebauthnDialogView* WebauthnDialogView::CreateAndShow(
-    WebauthnDialogController* controller) {
-  WebauthnDialogViewImpl* dialog = new WebauthnDialogViewImpl(controller);
+    WebauthnDialogController* controller,
+    WebauthnDialogState dialog_state) {
+  WebauthnDialogViewImpl* dialog =
+      new WebauthnDialogViewImpl(controller, dialog_state);
   constrained_window::ShowWebModalDialogViews(dialog,
                                               controller->GetWebContents());
   return dialog;
@@ -59,15 +63,17 @@ WebauthnDialogModel* WebauthnDialogViewImpl::GetDialogModel() const {
 
 void WebauthnDialogViewImpl::OnDialogStateChanged() {
   switch (model_->dialog_state()) {
-    case WebauthnDialogModel::DialogState::kInactive:
+    case WebauthnDialogState::kInactive:
       Hide();
       break;
-    case WebauthnDialogModel::DialogState::kPending:
-    case WebauthnDialogModel::DialogState::kError:
+    case WebauthnDialogState::kOfferPending:
+    case WebauthnDialogState::kOfferError:
+    case WebauthnDialogState::kVerifyPending:
+    case WebauthnDialogState::kVerifyPendingButtonDisabled:
       RefreshContent();
       break;
-    case WebauthnDialogModel::DialogState::kUnknown:
-    case WebauthnDialogModel::DialogState::kOffer:
+    case WebauthnDialogState::kUnknown:
+    case WebauthnDialogState::kOffer:
       NOTREACHED();
   }
 }
@@ -79,21 +85,18 @@ gfx::Size WebauthnDialogViewImpl::CalculatePreferredSize() const {
 }
 
 bool WebauthnDialogViewImpl::Accept() {
-  DCHECK_EQ(model_->dialog_state(), WebauthnDialogModel::DialogState::kOffer);
+  DCHECK_EQ(model_->dialog_state(), WebauthnDialogState::kOffer);
   controller_->OnOkButtonClicked();
   return false;
 }
 
 bool WebauthnDialogViewImpl::Cancel() {
-  if (model_->dialog_state() == WebauthnDialogModel::DialogState::kOffer ||
-      model_->dialog_state() == WebauthnDialogModel::DialogState::kPending) {
+  if (model_->dialog_state() == WebauthnDialogState::kOffer ||
+      model_->dialog_state() == WebauthnDialogState::kOfferPending ||
+      model_->dialog_state() == WebauthnDialogState::kVerifyPending) {
     controller_->OnCancelButtonClicked();
   }
 
-  return true;
-}
-
-bool WebauthnDialogViewImpl::Close() {
   return true;
 }
 
@@ -108,7 +111,7 @@ int WebauthnDialogViewImpl::GetDialogButtons() const {
 bool WebauthnDialogViewImpl::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   return button == ui::DIALOG_BUTTON_OK ? model_->IsAcceptButtonEnabled()
-                                        : true;
+                                        : model_->IsCancelButtonEnabled();
 }
 
 ui::ModalType WebauthnDialogViewImpl::GetModalType() const {

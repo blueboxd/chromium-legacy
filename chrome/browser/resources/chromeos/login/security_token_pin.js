@@ -146,31 +146,28 @@ Polymer({
   },
 
   /**
-   * Returns whether an error message should be displayed to the user.
+   * Returns whether the error label should be shown.
    * @param {OobeTypes.SecurityTokenPinDialogParameters} parameters
    * @param {boolean} userEdited
    * @return {boolean}
    * @private
    */
-  hasError_: function(parameters, userEdited) {
-    if (!parameters)
-      return false;
-    if (parameters.attemptsLeft != -1)
-      return true;
-    return parameters.errorLabel !=
+  isErrorLabelVisible_: function(parameters, userEdited) {
+    return parameters &&
+        parameters.errorLabel !==
         OobeTypes.SecurityTokenPinDialogErrorType.NONE &&
         !userEdited;
   },
 
   /**
-   * Returns whether the error label should be shown.
-   * @param {string} errorLabelId
+   * Returns a string for a11y whether there is an error.
+   * @param {OobeTypes.SecurityTokenPinDialogParameters} parameters
    * @param {boolean} userEdited
-   * @return {boolean}
+   * @return {string}
    * @private
    */
-  isErrorLabelVisible_: function(errorLabelId, userEdited) {
-    return errorLabelId && !userEdited;
+  isAriaInvalid_: function(parameters, userEdited) {
+    return this.isErrorLabelVisible_(parameters, userEdited) ? 'true' : 'false';
   },
 
   /**
@@ -184,7 +181,19 @@ Polymer({
   },
 
   /**
-   * Returns the aria label to be used for the PIN input field.
+   * Returns whether there is a visible label for the PIN input field
+   * @param {OobeTypes.SecurityTokenPinDialogParameters} parameters
+   * @param {boolean} userEdited
+   * @return {boolean}
+   * @private
+   */
+  isLabelVisible_: function(parameters, userEdited) {
+    return this.isErrorLabelVisible_(parameters, userEdited) ||
+        this.isAttemptsLeftVisible_(parameters);
+  },
+
+  /**
+   * Returns the label to be used for the PIN input field.
    * @param {string} locale
    * @param {OobeTypes.SecurityTokenPinDialogParameters} parameters
    * @param {string} errorLabelId
@@ -192,18 +201,24 @@ Polymer({
    * @return {string}
    * @private
    */
-  getAriaLabel_: function(locale, parameters, errorLabelId, userEdited) {
-    var pieces = [];
-    if (this.isErrorLabelVisible_(errorLabelId, userEdited)) {
-      pieces.push(this.i18n(errorLabelId));
-      pieces.push(this.i18n('securityTokenPinDialogTryAgain'));
+  getLabel_: function(locale, parameters, errorLabelId, userEdited) {
+    if (!this.isLabelVisible_(parameters, userEdited)) {
+      return '';
     }
-    if (this.isAttemptsLeftVisible_(parameters)) {
-      pieces.push(this.i18n(
-          'securityTokenPinDialogAttemptsLeft', parameters.attemptsLeft));
+    if (!this.isErrorLabelVisible_(parameters, userEdited) &&
+        this.isAttemptsLeftVisible_(parameters)) {
+      return this.i18n(
+          'securityTokenPinDialogAttemptsLeft', parameters.attemptsLeft);
     }
-    // Note: The language direction is not taken into account here, since the
-    // order of pieces follows the reading order.
-    return pieces.join(' ');
+    if (parameters && !parameters.enableUserInput) {
+      return this.i18n(errorLabelId);
+    }
+    if (!this.isAttemptsLeftVisible_(parameters)) {
+      return this.i18nRecursive(
+          locale, 'securityTokenPinDialogErrorRetry', errorLabelId);
+    }
+    return this.i18n(
+        'securityTokenPinDialogErrorRetryAttempts', this.i18n(errorLabelId),
+        parameters.attemptsLeft);
   },
 });

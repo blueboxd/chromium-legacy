@@ -131,8 +131,12 @@ void WebApp::SetIsInSyncInstall(bool is_in_sync_install) {
   is_in_sync_install_ = is_in_sync_install;
 }
 
-void WebApp::SetIcons(Icons icons) {
-  icons_ = std::move(icons);
+void WebApp::SetIconInfos(std::vector<WebApplicationIconInfo> icon_infos) {
+  icon_infos_ = std::move(icon_infos);
+}
+
+void WebApp::SetDownloadedIconSizes(std::vector<SquareSizePx> sizes) {
+  downloaded_icon_sizes_ = std::move(sizes);
 }
 
 void WebApp::SetSyncData(SyncData sync_data) {
@@ -146,11 +150,6 @@ WebApp::SyncData::~SyncData() = default;
 WebApp::SyncData::SyncData(const SyncData& sync_data) = default;
 
 WebApp::SyncData& WebApp::SyncData::operator=(SyncData&& sync_data) = default;
-
-std::ostream& operator<<(std::ostream& out, const WebApp::IconInfo& icon_info) {
-  return out << "size_in_px: " << icon_info.size_in_px
-             << " url: " << icon_info.url;
-}
 
 std::ostream& operator<<(std::ostream& out, const WebApp::SyncData& sync_data) {
   return out << "theme_color: " << ColorToString(sync_data.theme_color)
@@ -177,16 +176,12 @@ std::ostream& operator<<(std::ostream& out, const WebApp& app) {
       << "  is_in_sync_install: " << is_in_sync_install << std::endl
       << "  sync_data: " << app.sync_data_ << std::endl
       << "  description: " << app.description_ << std::endl;
-  for (auto icon : app.icons_)
-    out << "  icon: " << icon << std::endl;
+  for (const WebApplicationIconInfo& icon : app.icon_infos_)
+    out << "  icon_url: " << icon << std::endl;
+  for (SquareSizePx size : app.downloaded_icon_sizes_)
+    out << "  icon_size_on_disk: " << size << std::endl;
 
   return out;
-}
-
-bool operator==(const WebApp::IconInfo& icon_info1,
-                const WebApp::IconInfo& icon_info2) {
-  return std::tie(icon_info1.url, icon_info1.size_in_px) ==
-         std::tie(icon_info2.url, icon_info2.size_in_px);
 }
 
 bool operator==(const WebApp::SyncData& sync_data1,
@@ -203,12 +198,14 @@ bool operator!=(const WebApp::SyncData& sync_data1,
 bool operator==(const WebApp& app1, const WebApp& app2) {
   return std::tie(app1.app_id_, app1.sources_, app1.name_, app1.launch_url_,
                   app1.description_, app1.scope_, app1.theme_color_,
-                  app1.icons_, app1.display_mode_, app1.user_display_mode_,
+                  app1.icon_infos_, app1.downloaded_icon_sizes_,
+                  app1.display_mode_, app1.user_display_mode_,
                   app1.is_locally_installed_, app1.is_in_sync_install_,
                   app1.sync_data_) ==
          std::tie(app2.app_id_, app2.sources_, app2.name_, app2.launch_url_,
                   app2.description_, app2.scope_, app2.theme_color_,
-                  app2.icons_, app2.display_mode_, app2.user_display_mode_,
+                  app2.icon_infos_, app2.downloaded_icon_sizes_,
+                  app2.display_mode_, app2.user_display_mode_,
                   app2.is_locally_installed_, app2.is_in_sync_install_,
                   app2.sync_data_);
 }

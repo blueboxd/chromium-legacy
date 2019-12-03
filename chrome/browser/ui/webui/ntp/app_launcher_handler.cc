@@ -805,16 +805,13 @@ void AppLauncherHandler::HandlePageSelected(const base::ListValue* args) {
 void AppLauncherHandler::OnFaviconForApp(
     std::unique_ptr<AppInstallInfo> install_info,
     const favicon_base::FaviconImageResult& image_result) {
-  std::unique_ptr<WebApplicationInfo> web_app(new WebApplicationInfo());
+  auto web_app = std::make_unique<WebApplicationInfo>();
   web_app->title = install_info->title;
   web_app->app_url = install_info->app_url;
 
   if (!image_result.image.IsEmpty()) {
-    WebApplicationIconInfo icon;
-    icon.data = image_result.image.AsBitmap();
-    icon.width = icon.data.width();
-    icon.height = icon.data.height();
-    web_app->icons.push_back(icon);
+    web_app->icon_bitmaps[image_result.image.Width()] =
+        image_result.image.AsBitmap();
   }
 
   scoped_refptr<CrxInstaller> installer(

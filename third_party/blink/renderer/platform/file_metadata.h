@@ -41,15 +41,6 @@
 
 namespace blink {
 
-// TODO(crbug.com/988343): InvalidFileTime() and IsValidFileTime() should be
-// removed. File timestamps should be represented as base::Optional<base::Time>.
-inline double InvalidFileTime() {
-  return std::numeric_limits<double>::quiet_NaN();
-}
-inline bool IsValidFileTime(double time) {
-  return std::isfinite(time);
-}
-
 class FileMetadata {
   DISALLOW_NEW();
 
@@ -80,20 +71,6 @@ PLATFORM_EXPORT bool GetFileMetadata(const String&, FileMetadata&);
 PLATFORM_EXPORT KURL FilePathToURL(const String&);
 
 PLATFORM_EXPORT void RebindFileUtilitiesForTesting();
-
-// TODO(crbug.com/988343): Temporary conversion function. This should be
-// removed.
-inline double ToJsTimeOrNaN(base::Optional<base::Time> time) {
-  return time ? time->ToJsTimeIgnoringNull() : InvalidFileTime();
-}
-
-// TODO(crbug.com/988343): Temporary conversion function. This should be
-// removed.
-inline base::Optional<base::Time> JsTimeToOptionalTime(double ms) {
-  if (!IsValidFileTime(ms))
-    return base::nullopt;
-  return base::Time::FromJsTime(ms);
-}
 
 inline base::Optional<base::Time> NullableTimeToOptionalTime(base::Time time) {
   if (time.is_null())

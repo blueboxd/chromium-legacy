@@ -50,19 +50,8 @@ struct WebCursorInfo {
   float image_scale_factor;
   SkBitmap custom_image;
 
-#ifdef WIN32
-  // On Windows, kTypeCustom may alternatively reference an externally
-  // defined HCURSOR. If |type| is kTypeCustom and |external_handle| is non-
-  // null, then |custom_image| should be ignored. The WebCursorInfo is not
-  // responsible for managing the lifetime of this cursor handle.
-  HCURSOR external_handle;
-#endif
-
   explicit WebCursorInfo(ui::CursorType type = ui::CursorType::kPointer)
       : type(type), image_scale_factor(1) {
-#ifdef WIN32
-    external_handle = 0;
-#endif
   }
 
 #if INSIDE_BLINK

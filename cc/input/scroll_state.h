@@ -27,9 +27,6 @@ class CC_EXPORT ScrollState {
 
   // Reduce deltas by x, y.
   void ConsumeDelta(double x, double y);
-  // Pops the first layer off of |scroll_chain_| and calls
-  // |DistributeScroll| on it.
-  void DistributeToScrollChainDescendant();
   // Positive when scrolling right.
   double delta_x() const { return data_.delta_x; }
   // Positive when scrolling down.
@@ -63,11 +60,8 @@ class CC_EXPORT ScrollState {
     data_.is_direct_manipulation = is_direct_manipulation;
   }
 
-  void set_scroll_chain_and_layer_tree(
-      const std::list<ScrollNode*>& scroll_chain,
-      LayerTreeImpl* layer_tree_impl) {
+  void set_layer_tree(LayerTreeImpl* layer_tree_impl) {
     layer_tree_impl_ = layer_tree_impl;
-    scroll_chain_ = scroll_chain;
   }
 
   void set_current_native_scrolling_node(ScrollNode* scroll_node) {
@@ -84,8 +78,6 @@ class CC_EXPORT ScrollState {
   void set_delta_consumed_for_scroll_sequence(bool delta_consumed) {
     data_.delta_consumed_for_scroll_sequence = delta_consumed;
   }
-
-  bool FullyConsumed() const { return !data_.delta_x && !data_.delta_y; }
 
   void set_caused_scroll(bool x, bool y) {
     data_.caused_scroll_x |= x;
@@ -107,7 +99,6 @@ class CC_EXPORT ScrollState {
  private:
   ScrollStateData data_;
   LayerTreeImpl* layer_tree_impl_;
-  std::list<ScrollNode*> scroll_chain_;
 };
 
 }  // namespace cc

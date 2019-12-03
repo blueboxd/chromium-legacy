@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/test/perf_time_logger.h"
+#include "base/test/task_environment.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/elapsed_timer.h"
 
 #include "base/bind.h"
@@ -17,7 +19,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -36,7 +37,6 @@
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 
-using base::MessageLoop;
 using base::ScopedTempDir;
 using leveldb_env::Options;
 using testing::_;
@@ -139,10 +139,7 @@ class TestDatabase {
 
 class ProtoDBPerfTest : public testing::Test {
  public:
-  void SetUp() override {
-    main_loop_.reset(new MessageLoop());
-    task_runner_ = main_loop_->task_runner();
-  }
+  void SetUp() override { task_runner_ = base::ThreadTaskRunnerHandle::Get(); }
 
   void TearDown() override {
     ShutdownDBs();
@@ -561,7 +558,7 @@ class ProtoDBPerfTest : public testing::Test {
 
   std::map<std::string, std::unique_ptr<ScopedTempDir>> temp_dirs_;
   std::map<std::string, std::unique_ptr<TestDatabase>> dbs_;
-  std::unique_ptr<MessageLoop> main_loop_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 

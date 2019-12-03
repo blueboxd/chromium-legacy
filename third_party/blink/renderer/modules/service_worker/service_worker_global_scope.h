@@ -45,8 +45,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/request_or_usv_string.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/service_worker/service_worker_event_queue.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_installed_scripts_manager.h"
-#include "third_party/blink/renderer/modules/service_worker/service_worker_timeout_timer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -168,9 +168,9 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // PauseEvaluation() is called.
   void ResumeEvaluation();
 
-  // Creates a ServiceWorkerTimeoutTimer::StayAwakeToken to ensure that the idle
+  // Creates a ServiceWorkerEventQueue::StayAwakeToken to ensure that the idle
   // timer won't be triggered while any of these are alive.
-  std::unique_ptr<ServiceWorkerTimeoutTimer::StayAwakeToken>
+  std::unique_ptr<ServiceWorkerEventQueue::StayAwakeToken>
   CreateStayAwakeToken();
 
   // Returns the ServiceWorker object described by the given info. Creates a new
@@ -338,7 +338,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // number of scripts and the total bytes of scripts.
   void CountScriptInternal(size_t script_size, size_t cached_metadata_size);
 
-  // Called by ServiceWorkerTimeoutTimer when a certain time has passed since
+  // Called by ServiceWorkerEventQueue when a certain time has passed since
   // the last task finished.
   void OnIdleTimeout();
 
@@ -583,7 +583,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   mojo::Receiver<mojom::blink::ServiceWorker> receiver_{this};
 
   // Maps for inflight event callbacks.
-  // These are mapped from an event id issued from ServiceWorkerTimeoutTimer to
+  // These are mapped from an event id issued from ServiceWorkerEventQueue to
   // the Mojo callback to notify the end of the event.
   HashMap<int, DispatchInstallEventCallback> install_event_callbacks_;
   HashMap<int, DispatchActivateEventCallback> activate_event_callbacks_;
@@ -643,7 +643,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
 
   // Timer triggered when the service worker considers it should be stopped or
   // an event should be aborted.
-  std::unique_ptr<ServiceWorkerTimeoutTimer> timeout_timer_;
+  std::unique_ptr<ServiceWorkerEventQueue> event_queue_;
 
   // InitializeGlobalScope() pauses the top level script evaluation when this
   // flag is true.
@@ -653,9 +653,9 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
 
   // Connected by the ServiceWorkerProviderHost in the browser process and by
   // the controllees. |controller_bindings_| should be destroyed before
-  // |timeout_timer_| since the pipe needs to be disconnected before callbacks
+  // |event_queue_| since the pipe needs to be disconnected before callbacks
   // passed by DispatchSomeEvent() get destructed, which may be stored in
-  // |timeout_timer_|.
+  // |event_queue_|.
   // network::mojom::blink::CrossOriginEmbedderPolicy set as the context of
   // mojo::ReceiverSet is the policy for the client which dispatches FetchEvents
   // to the ControllerServiceWorker. It should be referred to before sending the

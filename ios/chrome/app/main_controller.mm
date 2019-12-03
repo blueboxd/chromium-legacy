@@ -290,8 +290,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                               PrefObserverDelegate,
                               SettingsNavigationControllerDelegate,
                               TabSwitcherDelegate,
-                              WebStateListObserving,
-                              UserFeedbackDataSource> {
+                              WebStateListObserving> {
   IBOutlet UIWindow* _window;
 
   // Weak; owned by the ChromeBrowserProvider.
@@ -318,9 +317,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // If not NONE, the current BVC should be switched to this BVC on completion
   // of tab switcher dismissal.
   TabSwitcherDismissalMode _modeToDisplayOnTabSwitcherDismissal;
-
-  // If YES, the tab switcher is currently active.
-  BOOL _tabSwitcherIsActive;
 
   // True if the current session began from a cold start. False if the app has
   // entered the background at least once since start up.
@@ -535,6 +531,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 @synthesize mainCoordinator = _mainCoordinator;
 @synthesize NTPActionAfterTabSwitcherDismissal =
     _NTPActionAfterTabSwitcherDismissal;
+@synthesize tabSwitcherIsActive;
 
 #pragma mark - Application lifecycle
 
@@ -945,10 +942,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   _chromeMain.reset();
 }
 
-- (BOOL)isTabSwitcherActive {
-  return _tabSwitcherIsActive;
-}
-
 #pragma mark - Startup tasks
 
 - (void)sendQueuedFeedback {
@@ -1351,7 +1344,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     tabModel = mainTabModel;
     [self setCurrentInterfaceForMode:ApplicationMode::NORMAL];
   }
-  if (_tabSwitcherIsActive) {
+  if (self.tabSwitcherIsActive) {
     DCHECK(!_dismissingTabSwitcher);
     [self beginDismissingTabSwitcherWithCurrentModel:self.mainTabModel
                                         focusOmnibox:NO];
@@ -1591,7 +1584,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // Nothing to do here. The next user action (like clicking on an existing
   // regular tab or creating a new incognito tab from the settings menu) will
   // take care of the logic to mode switch.
-  if (_tabSwitcherIsActive || ![self.currentTabModel isOffTheRecord]) {
+  if (self.tabSwitcherIsActive || ![self.currentTabModel isOffTheRecord]) {
     return;
   }
 
@@ -1609,7 +1602,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // closure of tabs from the main tab model when the main tab model is not
   // current.
   // Nothing to do here.
-  if (_tabSwitcherIsActive || [self.currentTabModel isOffTheRecord]) {
+  if (self.tabSwitcherIsActive || [self.currentTabModel isOffTheRecord]) {
     return;
   }
 
@@ -1664,14 +1657,14 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [_tabSwitcher restoreInternalStateWithMainTabModel:self.mainTabModel
                                          otrTabModel:self.otrTabModel
                                       activeTabModel:self.currentTabModel];
-  _tabSwitcherIsActive = YES;
+  self.tabSwitcherIsActive = YES;
   [_tabSwitcher setDelegate:self];
 
   [self.mainCoordinator showTabSwitcher:_tabSwitcher];
 }
 
 - (BOOL)shouldOpenNTPTabOnActivationOfTabModel:(TabModel*)tabModel {
-  if (_tabSwitcherIsActive) {
+  if (self.tabSwitcherIsActive) {
     // Only attempt to dismiss the tab switcher and open a new tab if:
     // - there are no tabs open in either tab model, and
     // - the tab switcher controller is not directly or indirectly presenting
@@ -1753,7 +1746,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // display. The only appropriate action is to dismiss the BVC and return the
   // user to the tab switcher.
   if (self.currentTabModel.count == 0U) {
-    _tabSwitcherIsActive = NO;
+    self.tabSwitcherIsActive = NO;
     _dismissingTabSwitcher = NO;
     _modeToDisplayOnTabSwitcherDismissal = TabSwitcherDismissalMode::NONE;
     self.NTPActionAfterTabSwitcherDismissal = NO_ACTION;
@@ -1783,7 +1776,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     action();
   }
 
-  _tabSwitcherIsActive = NO;
+  self.tabSwitcherIsActive = NO;
   _dismissingTabSwitcher = NO;
 }
 
@@ -1963,7 +1956,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     tabOpenedCompletion = completion;
   }
 
-  if (_tabSwitcherIsActive) {
+  if (self.tabSwitcherIsActive) {
     // If the tab switcher is already being dismissed, simply add the tab and
     // note that when the tab switcher finishes dismissing, the current BVC
     // should be switched to be the main BVC if necessary.
@@ -2033,7 +2026,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // it.
   ProceduralBlock completionWithBVC = ^{
     DCHECK(self.currentBVC);
-    DCHECK(![self isTabSwitcherActive]);
+    DCHECK(!self.tabSwitcherIsActive);
     DCHECK(!self.signinInteractionCoordinator.isActive);
     // This will dismiss the SSO view controller.
     [self.interfaceProvider.currentInterface
@@ -2042,7 +2035,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   };
   ProceduralBlock completionWithoutBVC = ^{
     // |self.currentBVC| may exist but tab switcher should be active.
-    DCHECK([self isTabSwitcherActive]);
+    DCHECK(self.tabSwitcherIsActive);
     // This will dismiss the SSO view controller.
     [self.signinInteractionCoordinator cancelAndDismiss];
     // History coordinator can be started on top of the tab grid. This is not
@@ -2054,7 +2047,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // As a top level rule, if the settings are showing, they need to be
   // dismissed. Then, based on whether the BVC is present or not, a different
   // completion callback is called.
-  if (![self isTabSwitcherActive] && self.isSettingsViewPresented) {
+  if (!self.tabSwitcherIsActive && self.isSettingsViewPresented) {
     // In this case, the settings are up and the BVC is showing. Close the
     // settings then call the BVC completion.
     [self closeSettingsAnimated:NO completion:completionWithBVC];
@@ -2203,46 +2196,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   return self.mainBVC.dispatcher;
 }
 
-#pragma mark - UserFeedbackDataSource
-
-- (NSString*)currentPageDisplayURL {
-  if (_tabSwitcherIsActive)
-    return nil;
-  web::WebState* webState =
-      self.currentTabModel.webStateList->GetActiveWebState();
-  if (!webState)
-    return nil;
-  // Returns URL of browser tab that is currently showing.
-  GURL url = webState->GetVisibleURL();
-  base::string16 urlText = url_formatter::FormatUrl(url);
-  return base::SysUTF16ToNSString(urlText);
-}
-
-- (UIImage*)currentPageScreenshot {
-  UIView* lastView = self.mainCoordinator.activeViewController.view;
-  DCHECK(lastView);
-  CGFloat scale = 0.0;
-  // For screenshots of the tab switcher we need to use a scale of 1.0 to avoid
-  // spending too much time since the tab switcher can have lots of subviews.
-  if (_tabSwitcherIsActive)
-    scale = 1.0;
-  return CaptureView(lastView, scale);
-}
-
-- (NSString*)currentPageSyncedUserName {
-  ios::ChromeBrowserState* browserState = [self currentBrowserState];
-  if (browserState->IsOffTheRecord())
-    return nil;
-  signin::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForBrowserState(browserState);
-  std::string username = identity_manager->GetPrimaryAccountInfo().email;
-  return username.empty() ? nil : base::SysUTF8ToNSString(username);
-}
-
-- (BOOL)currentPageIsIncognito {
-  return [self currentBrowserState] -> IsOffTheRecord();
-}
-
 #pragma mark - ApplicationCommands helpers
 
 - (void)startVoiceSearchInCurrentBVC {
@@ -2257,6 +2210,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 #pragma mark - SceneController plumbing
+
+- (BOOL)currentPageIsIncognito {
+  return [self currentBrowserState] -> IsOffTheRecord();
+}
 
 // This method is temporarily both required in the scene controller and here.
 - (void)closeSettingsUI {
@@ -2306,7 +2263,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)setTabSwitcherActive:(BOOL)active {
-  _tabSwitcherIsActive = active;
+  self.tabSwitcherIsActive = active;
 }
 
 - (BOOL)dismissingTabSwitcher {

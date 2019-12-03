@@ -155,6 +155,7 @@ js_library("app") {
     ":synced_device_manager",
     "//ui/webui/resources/cr_elements/cr_drawer:cr_drawer",
     "//ui/webui/resources/js:find_shortcut_behavior",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
 }
 

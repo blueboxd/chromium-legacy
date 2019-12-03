@@ -127,6 +127,7 @@ HistoryMetricsTest.prototype = {
   __proto__: HistoryBrowserTest.prototype,
 
   extraLibraries: HistoryBrowserTest.prototype.extraLibraries.concat([
+    '//ui/webui/resources/js/cr.js',
     '../test_browser_proxy.js',
     'test_browser_service.js',
     'history_metrics_test.js',

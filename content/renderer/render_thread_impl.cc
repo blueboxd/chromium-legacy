@@ -1291,6 +1291,10 @@ const blink::UserAgentMetadata& RenderThreadImpl::GetUserAgentMetadata() {
   return user_agent_metadata_;
 }
 
+bool RenderThreadImpl::IsUseZoomForDSF() {
+  return IsUseZoomForDSFEnabled();
+}
+
 void RenderThreadImpl::OnAssociatedInterfaceRequest(
     const std::string& name,
     mojo::ScopedInterfaceEndpointHandle handle) {

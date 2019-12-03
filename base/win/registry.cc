@@ -457,7 +457,7 @@ LONG RegKey::RegDelRecurse(HKEY root_key, const wchar_t* name, REGSAM access) {
   while (result == ERROR_SUCCESS) {
     DWORD key_size = kMaxKeyNameLength;
     result =
-        RegEnumKeyEx(target_key, 0, WriteIntoW(&key_name, kMaxKeyNameLength),
+        RegEnumKeyEx(target_key, 0, WriteInto(&key_name, kMaxKeyNameLength),
                      &key_size, NULL, NULL, NULL, NULL);
 
     if (result != ERROR_SUCCESS)
@@ -549,7 +549,7 @@ bool RegistryValueIterator::Read() {
     // |value_size_| is in bytes. Reserve the last character for a NUL.
     value_size_ = static_cast<DWORD>((value_.size() - 1) * sizeof(wchar_t));
     LONG result = ::RegEnumValue(
-        key_, index_, WriteIntoW(&name_, name_size), &name_size, NULL, &type_,
+        key_, index_, WriteInto(&name_, name_size), &name_size, NULL, &type_,
         reinterpret_cast<BYTE*>(value_.data()), &value_size_);
 
     if (result == ERROR_MORE_DATA) {
@@ -565,7 +565,7 @@ bool RegistryValueIterator::Read() {
       value_size_ = static_cast<DWORD>((value_.size() - 1) * sizeof(wchar_t));
       name_size = name_size == capacity ? MAX_REGISTRY_NAME_SIZE : capacity;
       result = ::RegEnumValue(
-          key_, index_, WriteIntoW(&name_, name_size), &name_size, NULL, &type_,
+          key_, index_, WriteInto(&name_, name_size), &name_size, NULL, &type_,
           reinterpret_cast<BYTE*>(value_.data()), &value_size_);
     }
 

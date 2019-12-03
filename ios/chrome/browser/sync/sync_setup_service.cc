@@ -88,6 +88,7 @@ bool SyncSetupService::UserActionIsRequiredToHaveTabSyncWork() {
     // These errors effectively amount to disabled sync and require a signin.
     case SyncSetupService::kSyncServiceSignInNeedsUpdate:
     case SyncSetupService::kSyncServiceNeedsPassphrase:
+    case SyncSetupService::kSyncServiceNeedsTrustedVaultKey:
     case SyncSetupService::kSyncServiceUnrecoverableError:
     case SyncSetupService::kSyncSettingsNotConfirmed:
       return true;
@@ -150,11 +151,20 @@ SyncSetupService::SyncServiceState SyncSetupService::GetSyncServiceState() {
   if (sync_service_->HasUnrecoverableError())
     return kSyncServiceUnrecoverableError;
   if (sync_service_->GetUserSettings()
-          ->IsPassphraseRequiredForPreferredDataTypes())
+          ->IsPassphraseRequiredForPreferredDataTypes()) {
     return kSyncServiceNeedsPassphrase;
+  }
   if (!IsFirstSetupComplete() && IsSyncEnabled())
     return kSyncSettingsNotConfirmed;
+  if (sync_service_->GetUserSettings()
+          ->IsTrustedVaultKeyRequiredForPreferredDataTypes()) {
+    return kSyncServiceNeedsTrustedVaultKey;
+  }
   return kNoSyncServiceError;
+}
+
+bool SyncSetupService::IsEncryptEverythingEnabled() const {
+  return sync_service_->GetUserSettings()->IsEncryptEverythingEnabled();
 }
 
 bool SyncSetupService::HasFinishedInitialSetup() {

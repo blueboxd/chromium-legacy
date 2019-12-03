@@ -4,6 +4,7 @@
 
 #include "third_party/blink/public/platform/web_drag_data.h"
 
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
@@ -17,8 +18,9 @@ TEST(WebDragDataTest, items) {
 
   // Native file.
   data_object->Add(MakeGarbageCollected<File>("/native/path"));
-  data_object->Add(
-      MakeGarbageCollected<File>("name", 0.0, BlobDataHandle::Create()));
+  // Blob file.
+  data_object->Add(MakeGarbageCollected<File>("name", base::Time::UnixEpoch(),
+                                              BlobDataHandle::Create()));
 
   // User visible snapshot file.
   {

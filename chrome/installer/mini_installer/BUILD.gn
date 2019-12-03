@@ -55,6 +55,8 @@ source_set("lib") {
     defines = [ "SKIP_ARCHIVE_COMPRESSION" ]
   }
 
+  # Initialization may insert unexpected memset calls.
+  configs -= [ "//build/config/compiler:default_init_stack_vars" ]
   configs += [ ":mini_installer_compiler_flags" ]
 }
 
@@ -248,6 +250,8 @@ template("generate_mini_installer") {
     # specify our own to keep the size down. Also make sure that we don't use
     # WPO as it's not supported by the mini installer.
     configs -= [
+      # Initialization may insert unexpected memset calls.
+      "//build/config/compiler:default_init_stack_vars",
       "//build/config/compiler:default_optimization",
       "//build/config:executable_config",
       "//build/config/win:console",

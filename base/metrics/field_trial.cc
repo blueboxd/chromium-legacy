@@ -22,6 +22,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "base/unguessable_token.h"
 
 // On POSIX, the fd is shared using the mapping in GlobalDescriptors.
@@ -971,6 +972,7 @@ void FieldTrialList::OnGroupFinalized(bool is_locked, FieldTrial* field_trial) {
 
 // static
 void FieldTrialList::NotifyFieldTrialGroupSelection(FieldTrial* field_trial) {
+  TRACE_EVENT0("base", "FieldTrialList::NotifyFieldTrialGroupSelection");
   if (!global_)
     return;
 
@@ -999,7 +1001,7 @@ void FieldTrialList::NotifyFieldTrialGroupSelection(FieldTrial* field_trial) {
         field_trial->trial_name(), field_trial->group_name_internal());
   }
 
-  global_->observer_list_->Notify(
+  global_->observer_list_->NotifySynchronously(
       FROM_HERE, &FieldTrialList::Observer::OnFieldTrialGroupFinalized,
       field_trial->trial_name(), field_trial->group_name_internal());
 }

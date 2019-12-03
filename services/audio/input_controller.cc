@@ -464,7 +464,7 @@ void InputController::Record() {
   if (!stream_ || audio_callback_)
     return;
 
-  handler_->OnLog("AIC::Record");
+  handler_->OnLog("AIC::Record()");
 
   if (user_input_monitor_) {
     user_input_monitor_->EnableKeyPressMonitoring();
@@ -511,7 +511,7 @@ void InputController::Close() {
 #endif
 
   std::string log_string;
-  static const char kLogStringPrefix[] = "AIC::DoClose:";
+  static const char kLogStringPrefix[] = "AIC::Close => ";
 
   // Allow calling unconditionally and bail if we don't have a stream to close.
   if (audio_callback_) {
@@ -531,10 +531,11 @@ void InputController::Close() {
     LogCaptureStartupResult(capture_startup_result);
     LogCallbackError();
 
-    log_string = base::StringPrintf(
-        "%s stream duration=%" PRId64 " seconds%s", kLogStringPrefix,
-        duration.InSeconds(),
-        audio_callback_->received_callback() ? "" : " (no callbacks received)");
+    log_string = base::StringPrintf("%s(stream duration=%" PRId64 " seconds%s",
+                                    kLogStringPrefix, duration.InSeconds(),
+                                    audio_callback_->received_callback()
+                                        ? ")"
+                                        : " - no callbacks received)");
 
     if (type_ == LOW_LATENCY) {
       if (audio_callback_->received_callback()) {
@@ -550,8 +551,8 @@ void InputController::Close() {
 
     audio_callback_.reset();
   } else {
-    log_string =
-        base::StringPrintf("%s recording never started", kLogStringPrefix);
+    log_string = base::StringPrintf("%s(WARNING: recording never started)",
+                                    kLogStringPrefix);
   }
 
   handler_->OnLog(log_string);
@@ -579,8 +580,7 @@ void InputController::SetVolume(double volume) {
   if (!stream_)
     return;
 
-  std::string log_string = base::StringPrintf("AIC::SetVolume: %.2f", volume);
-  handler_->OnLog(log_string);
+  handler_->OnLog(base::StringPrintf("AIC::SetVolume({volume=%.2f})", volume));
 
   // Only ask for the maximum volume at first call and use cached value
   // for remaining function calls.
@@ -649,10 +649,7 @@ void InputController::DoCreate(media::AudioManager* audio_manager,
   DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
   DCHECK(!stream_);
   SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioInputController.CreateTime");
-  std::string log_string = base::StringPrintf(
-      "AIC::DoCreate: device_id=%s, enable_agc=%d, params=%s",
-      device_id.c_str(), enable_agc, params.AsHumanReadableString().c_str());
-  handler_->OnLog(log_string);
+  handler_->OnLog("AIC::DoCreate({device_id=" + device_id + "})");
 
 #if defined(AUDIO_POWER_MONITORING)
   // We only do power measurements for UMA stats for low latency streams, and
@@ -698,9 +695,6 @@ void InputController::DoCreate(media::AudioManager* audio_manager,
   // Send initial muted state along with OnCreated, to avoid races.
   is_muted_ = stream_->IsMuted();
   handler_->OnCreated(is_muted_);
-  log_string = base::StringPrintf("AIC::OnCreated: is_muted=%d", is_muted_);
-  handler_->OnLog(log_string);
-
   check_muted_state_timer_.Start(FROM_HERE, kCheckMutedStateInterval, this,
                                  &InputController::CheckMutedState);
   DCHECK(check_muted_state_timer_.IsRunning());
@@ -723,7 +717,7 @@ void InputController::DoLogAudioLevels(float level_dbfs,
   const bool microphone_is_muted = stream_->IsMuted();
   if (microphone_is_muted) {
     LogMicrophoneMuteResult(MICROPHONE_IS_MUTED);
-    handler_->OnLog("AIC::OnData: microphone is muted!");
+    handler_->OnLog("AIC::OnData => (microphone is muted)");
     // Return early if microphone is muted. No need to adding logs and UMA stats
     // of audio levels if we know that the microphone is muted.
     return;
@@ -732,19 +726,19 @@ void InputController::DoLogAudioLevels(float level_dbfs,
   LogMicrophoneMuteResult(MICROPHONE_IS_NOT_MUTED);
 
   std::string log_string = base::StringPrintf(
-      "AIC::OnData: average audio level=%.2f dBFS", level_dbfs);
+      "AIC::OnData => (average audio level=%.2f dBFS", level_dbfs);
   static const float kSilenceThresholdDBFS = -72.24719896f;
   if (level_dbfs < kSilenceThresholdDBFS)
-    log_string += " <=> low audio input level!";
-  handler_->OnLog(log_string);
+    log_string += " <=> low audio input level";
+  handler_->OnLog(log_string + ")");
 
   UpdateSilenceState(level_dbfs < kSilenceThresholdDBFS);
 
-  log_string = base::StringPrintf("AIC::OnData: microphone volume=%d%%",
+  log_string = base::StringPrintf("AIC::OnData => (microphone volume=%d%%",
                                   microphone_volume_percent);
   if (microphone_volume_percent < kLowLevelMicrophoneLevelPercent)
-    log_string += " <=> low microphone level!";
-  handler_->OnLog(log_string);
+    log_string += " <=> low microphone level";
+  handler_->OnLog(log_string + ")");
 #endif
 }
 
@@ -869,7 +863,7 @@ void InputController::CheckMutedState() {
     is_muted_ = new_state;
     handler_->OnMuted(is_muted_);
     std::string log_string =
-        base::StringPrintf("AIC::OnMuted: is_muted=%d", is_muted_);
+        base::StringPrintf("AIC::OnMuted({is_muted=%d})", is_muted_);
     handler_->OnLog(log_string);
   }
 }

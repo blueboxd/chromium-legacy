@@ -6,19 +6,19 @@
 
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/autofill/payments/webauthn_dialog_model_observer.h"
+#include "chrome/browser/ui/autofill/payments/webauthn_dialog_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 
 namespace autofill {
 
-WebauthnDialogModel::WebauthnDialogModel() {
-  state_ = kOffer;
-}
+WebauthnDialogModel::WebauthnDialogModel(WebauthnDialogState dialog_state)
+    : state_(dialog_state) {}
 
 WebauthnDialogModel::~WebauthnDialogModel() = default;
 
-void WebauthnDialogModel::SetDialogState(DialogState state) {
+void WebauthnDialogModel::SetDialogState(WebauthnDialogState state) {
   state_ = state;
   for (WebauthnDialogModelObserver& observer : observers_)
     observer.OnDialogStateChanged();
@@ -34,7 +34,9 @@ void WebauthnDialogModel::RemoveObserver(
 }
 
 bool WebauthnDialogModel::IsActivityIndicatorVisible() const {
-  return state_ == DialogState::kPending;
+  return state_ == WebauthnDialogState::kOfferPending ||
+         state_ == WebauthnDialogState::kVerifyPending ||
+         state_ == WebauthnDialogState::kVerifyPendingButtonDisabled;
 }
 
 bool WebauthnDialogModel::IsBackButtonVisible() const {
@@ -45,28 +47,37 @@ bool WebauthnDialogModel::IsCancelButtonVisible() const {
   return true;
 }
 
+bool WebauthnDialogModel::IsCancelButtonEnabled() const {
+  return state_ != WebauthnDialogState::kVerifyPendingButtonDisabled;
+}
+
 base::string16 WebauthnDialogModel::GetCancelButtonLabel() const {
   switch (state_) {
-    case DialogState::kOffer:
-    case DialogState::kPending:
+    case WebauthnDialogState::kOffer:
+    case WebauthnDialogState::kOfferPending:
       return l10n_util::GetStringUTF16(
           IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_CANCEL_BUTTON_LABEL);
-    case DialogState::kError:
+    case WebauthnDialogState::kOfferError:
       return l10n_util::GetStringUTF16(
           IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_CANCEL_BUTTON_LABEL_ERROR);
-    case DialogState::kInactive:
-    case DialogState::kUnknown:
+    case WebauthnDialogState::kVerifyPending:
+    case WebauthnDialogState::kVerifyPendingButtonDisabled:
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_WEBAUTHN_VERIFY_PENDING_DIALOG_CANCEL_BUTTON_LABEL);
+    case WebauthnDialogState::kInactive:
+    case WebauthnDialogState::kUnknown:
       break;
   }
   return base::string16();
 }
 
 bool WebauthnDialogModel::IsAcceptButtonVisible() const {
-  return state_ == DialogState::kOffer || state_ == DialogState::kPending;
+  return state_ == WebauthnDialogState::kOffer ||
+         state_ == WebauthnDialogState::kOfferPending;
 }
 
 bool WebauthnDialogModel::IsAcceptButtonEnabled() const {
-  return state_ != DialogState::kPending;
+  return state_ != WebauthnDialogState::kOfferPending;
 }
 
 base::string16 WebauthnDialogModel::GetAcceptButtonLabel() const {
@@ -77,16 +88,18 @@ base::string16 WebauthnDialogModel::GetAcceptButtonLabel() const {
 const gfx::VectorIcon& WebauthnDialogModel::GetStepIllustration(
     ImageColorScheme color_scheme) const {
   switch (state_) {
-    case DialogState::kOffer:
-    case DialogState::kPending:
+    case WebauthnDialogState::kOffer:
+    case WebauthnDialogState::kOfferPending:
+    case WebauthnDialogState::kVerifyPending:
+    case WebauthnDialogState::kVerifyPendingButtonDisabled:
       return color_scheme == ImageColorScheme::kDark
                  ? kWebauthnDialogHeaderDarkIcon
                  : kWebauthnDialogHeaderIcon;
-    case DialogState::kError:
+    case WebauthnDialogState::kOfferError:
       return color_scheme == ImageColorScheme::kDark ? kWebauthnErrorDarkIcon
                                                      : kWebauthnErrorIcon;
-    case DialogState::kInactive:
-    case DialogState::kUnknown:
+    case WebauthnDialogState::kInactive:
+    case WebauthnDialogState::kUnknown:
       break;
   }
   NOTREACHED();
@@ -95,15 +108,19 @@ const gfx::VectorIcon& WebauthnDialogModel::GetStepIllustration(
 
 base::string16 WebauthnDialogModel::GetStepTitle() const {
   switch (state_) {
-    case DialogState::kOffer:
-    case DialogState::kPending:
+    case WebauthnDialogState::kOffer:
+    case WebauthnDialogState::kOfferPending:
       return l10n_util::GetStringUTF16(
           IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_TITLE);
-    case DialogState::kError:
+    case WebauthnDialogState::kOfferError:
       return l10n_util::GetStringUTF16(
           IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_TITLE_ERROR);
-    case DialogState::kInactive:
-    case DialogState::kUnknown:
+    case WebauthnDialogState::kVerifyPending:
+    case WebauthnDialogState::kVerifyPendingButtonDisabled:
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_WEBAUTHN_VERIFY_PENDING_DIALOG_TITLE);
+    case WebauthnDialogState::kInactive:
+    case WebauthnDialogState::kUnknown:
       break;
   }
   NOTREACHED();
@@ -112,15 +129,18 @@ base::string16 WebauthnDialogModel::GetStepTitle() const {
 
 base::string16 WebauthnDialogModel::GetStepDescription() const {
   switch (state_) {
-    case DialogState::kOffer:
-    case DialogState::kPending:
+    case WebauthnDialogState::kOffer:
+    case WebauthnDialogState::kOfferPending:
       return l10n_util::GetStringUTF16(
           IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_INSTRUCTION);
-    case DialogState::kError:
+    case WebauthnDialogState::kOfferError:
       return l10n_util::GetStringUTF16(
           IDS_AUTOFILL_WEBAUTHN_OPT_IN_DIALOG_INSTRUCTION_ERROR);
-    case DialogState::kInactive:
-    case DialogState::kUnknown:
+    case WebauthnDialogState::kVerifyPending:
+    case WebauthnDialogState::kVerifyPendingButtonDisabled:
+      return base::string16();
+    case WebauthnDialogState::kInactive:
+    case WebauthnDialogState::kUnknown:
       break;
   }
   NOTREACHED();

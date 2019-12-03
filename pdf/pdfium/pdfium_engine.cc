@@ -2301,6 +2301,12 @@ std::vector<PDFEngine::AccessibilityImageInfo> PDFiumEngine::GetImageInfo(
   return pages_[page_index]->GetImageInfo();
 }
 
+std::vector<PDFEngine::AccessibilityHighlightInfo>
+PDFiumEngine::GetHighlightInfo(int page_index) {
+  DCHECK(PageIndexInBounds(page_index));
+  return pages_[page_index]->GetHighlightInfo();
+}
+
 bool PDFiumEngine::GetPrintScaling() {
   return !!FPDF_VIEWERREF_GetPrintScaling(doc());
 }

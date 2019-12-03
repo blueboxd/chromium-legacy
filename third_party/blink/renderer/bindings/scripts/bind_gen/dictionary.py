@@ -12,6 +12,7 @@ from .blink_v8_bridge import blink_type_info
 from .blink_v8_bridge import make_v8_to_blink_value
 from .code_node import CodeNode
 from .code_node import FunctionDefinitionNode
+from .code_node import SequenceNode
 from .code_node import SymbolScopeNode
 from .code_node import TextNode
 from .codegen_context import CodeGenContext
@@ -394,7 +395,7 @@ def make_fill_own_dict_member(key_index, member):
 
     member_set_func = name_style.api_func("set", member.identifier)
 
-    node = SymbolScopeNode()
+    node = SequenceNode()
 
     pattern = """
 if (!v8_dictionary->Get(current_context, member_names[{_1}].Get(${isolate}))
@@ -471,7 +472,7 @@ def generate_dictionaries(web_idl_database, output_dirs):
     root_node = SymbolScopeNode(separator_last="\n")
     root_node.set_renderer(MakoRenderer())
 
-    code_node = SymbolScopeNode()
+    code_node = SequenceNode()
 
     code_node.extend([
         make_get_v8_dict_member_names_def(cg_context),

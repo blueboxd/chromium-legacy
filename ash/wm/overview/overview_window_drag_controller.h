@@ -103,7 +103,7 @@ class ASH_EXPORT OverviewWindowDragController {
   void UpdateDragIndicatorsAndOverviewGrid(
       const gfx::PointF& location_in_screen);
 
-  aura::Window* GetRootWindowBeingDraggedIn() const;
+  const aura::Window* GetRootWindowBeingDraggedIn() const;
   gfx::Rect GetWorkAreaOfDisplayBeingDraggedIn() const;
 
   // Dragged items should not attempt to update the indicators or snap if

@@ -121,58 +121,28 @@ uint64_t V4L2ConfigStoreDecodeSurface::GetReferenceID() const {
   return output_record();
 }
 
-bool V4L2ConfigStoreDecodeSurface::Submit() const {
+bool V4L2ConfigStoreDecodeSurface::Submit() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // There is nothing extra to submit when using the config store
   return true;
 }
 
-// static
-base::Optional<scoped_refptr<V4L2RequestDecodeSurface>>
-V4L2RequestDecodeSurface::Create(V4L2WritableBufferRef input_buffer,
-                                 V4L2WritableBufferRef output_buffer,
-                                 scoped_refptr<VideoFrame> frame,
-                                 int request_fd) {
-  constexpr int kPollTimeoutMs = 500;
-  int ret;
-  struct pollfd poll_fd = {request_fd, POLLPRI, 0};
-
-  // First poll the request to ensure its previous task is done
-  ret = poll(&poll_fd, 1, kPollTimeoutMs);
-  if (ret != 1) {
-    VPLOGF(1) << "Failed to poll request: ";
-    return base::nullopt;
-  }
-
-  // Then reinit the request to make sure we can use it for a new submission.
-  ret = HANDLE_EINTR(ioctl(request_fd, MEDIA_REQUEST_IOC_REINIT));
-  if (ret < 0) {
-    VPLOGF(1) << "Failed to reinit request: ";
-    return base::nullopt;
-  }
-
-  return new V4L2RequestDecodeSurface(std::move(input_buffer),
-                                      std::move(output_buffer),
-                                      std::move(frame), request_fd);
-}
-
 void V4L2RequestDecodeSurface::PrepareSetCtrls(
     struct v4l2_ext_controls* ctrls) const {
   DCHECK_NE(ctrls, nullptr);
-  DCHECK_GE(request_fd_, 0);
+  DCHECK(request_ref_.IsValid());
 
   ctrls->which = V4L2_CTRL_WHICH_REQUEST_VAL;
-  ctrls->request_fd = request_fd_;
+  request_ref_.SetCtrls(ctrls);
 }
 
 void V4L2RequestDecodeSurface::PrepareQueueBuffer(
     struct v4l2_buffer* buffer) const {
   DCHECK_NE(buffer, nullptr);
-  DCHECK_GE(request_fd_, 0);
+  DCHECK(request_ref_.IsValid());
 
-  buffer->request_fd = request_fd_;
-  buffer->flags |= V4L2_BUF_FLAG_REQUEST_FD;
+  request_ref_.SetQueueBuffer(buffer);
   // Use the output buffer index as the timestamp.
   // Since the client is supposed to keep the output buffer out of the V4L2
   // queue for as long as it is used as a reference frame, this ensures that
@@ -188,11 +158,10 @@ uint64_t V4L2RequestDecodeSurface::GetReferenceID() const {
   return output_record() * 1000;
 }
 
-bool V4L2RequestDecodeSurface::Submit() const {
-  DCHECK_GE(request_fd_, 0);
+bool V4L2RequestDecodeSurface::Submit() {
+  DCHECK(request_ref_.IsValid());
 
-  int ret = HANDLE_EINTR(ioctl(request_fd_, MEDIA_REQUEST_IOC_QUEUE));
-  return ret == 0;
+  return std::move(request_ref_).Submit().IsValid();
 }
 
 }  // namespace media

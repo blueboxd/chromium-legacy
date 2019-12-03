@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/stl_util.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -181,6 +182,65 @@ IntentPickerResponse CommonAppsNavigationThrottle::GetOnPickerClosedCallback(
     const GURL& url) {
   return base::BindOnce(&OnIntentPickerClosed, web_contents,
                         ui_auto_display_service, url);
+}
+
+bool CommonAppsNavigationThrottle::ShouldDeferNavigation(
+    content::NavigationHandle* handle) {
+  content::WebContents* web_contents = handle->GetWebContents();
+
+  const GURL& url = handle->GetURL();
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile);
+
+  if (!proxy)
+    return false;
+
+  std::vector<std::string> app_ids = proxy->GetAppIdsForUrl(url);
+
+  if (navigate_from_link()) {
+    auto preferred_app_id = proxy->PreferredApps().FindPreferredAppForUrl(url);
+
+    if (preferred_app_id.has_value() &&
+        base::Contains(app_ids, preferred_app_id.value())) {
+      auto launch_source = apps::mojom::LaunchSource::kFromLink;
+      proxy->LaunchAppWithUrl(preferred_app_id.value(), url, launch_source,
+                              display::kDefaultDisplayId);
+      CloseOrGoBack(web_contents);
+      return true;
+    }
+  }
+
+  std::vector<apps::IntentPickerAppInfo> apps_for_picker =
+      FindAllAppsForUrl(web_contents, url, {});
+
+  IntentPickerTabHelper::LoadAppIcons(
+      web_contents, std::move(apps_for_picker),
+      base::BindOnce(
+          &CommonAppsNavigationThrottle::OnDeferredNavigationProcessed,
+          weak_factory_.GetWeakPtr()));
+  return false;
+}
+
+void CommonAppsNavigationThrottle::OnDeferredNavigationProcessed(
+    std::vector<apps::IntentPickerAppInfo> apps) {
+  content::NavigationHandle* handle = navigation_handle();
+  content::WebContents* web_contents = handle->GetWebContents();
+  const GURL& url = handle->GetURL();
+
+  std::vector<apps::IntentPickerAppInfo> apps_for_picker =
+      FindAllAppsForUrl(web_contents, url, std::move(apps));
+
+  ShowIntentPickerForApps(web_contents, ui_auto_display_service_, url,
+                          std::move(apps_for_picker),
+                          base::BindOnce(&OnIntentPickerClosed, web_contents,
+                                         ui_auto_display_service_, url));
+
+  // We are about to resume the navigation, which may destroy this object.
+  Resume();
 }
 
 }  // namespace apps

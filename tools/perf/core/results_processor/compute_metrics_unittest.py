@@ -18,6 +18,7 @@ import mock
 
 RUN_METRICS_METHOD = 'tracing.metrics.metric_runner.RunMetricOnSingleTrace'
 GETSIZE_METHOD = 'os.path.getsize'
+TRACE_PROCESSOR_METRIC_METHOD = 'core.tbmv3.trace_processor.RunMetric'
 
 
 class ComputeMetricsTest(unittest.TestCase):
@@ -108,3 +109,24 @@ class ComputeMetricsTest(unittest.TestCase):
     histogram_dicts = test_result['_histograms'].AsDicts()
     self.assertEqual(histogram_dicts, [])
     self.assertEqual(test_result['status'], 'SKIP')
+
+  def testComputeTBMv3Metrics(self):
+    test_result = testing.TestResult(
+        'benchmark/story1',
+        output_artifacts={
+            compute_metrics.CONCATENATED_PROTO_NAME:
+                testing.Artifact('/concatenated.pb')},
+        tags=['tbmv3:metric'],
+    )
+    test_result['_histograms'] = histogram_set.HistogramSet()
+
+    metric_result = histogram_set.HistogramSet()
+    metric_result.CreateHistogram('a', 'unitless', [0])
+
+    with mock.patch(TRACE_PROCESSOR_METRIC_METHOD) as run_metric_mock:
+      run_metric_mock.return_value = metric_result
+      compute_metrics.ComputeTBMv3Metrics(test_result, '/path/to/tp')
+
+    histogram_dicts = test_result['_histograms'].AsDicts()
+    self.assertEqual(histogram_dicts, metric_result.AsDicts())
+    self.assertEqual(test_result['status'], 'PASS')

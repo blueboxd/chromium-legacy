@@ -6,10 +6,6 @@
 
 namespace switches {
 
-// Disable workarounds for various GPU driver bugs.
-const char kDisableGpuDriverBugWorkarounds[] =
-    "disable-gpu-driver-bug-workarounds";
-
 // Disable GPU rasterization, i.e. rasterize on the CPU only.
 // Overrides the kEnableGpuRasterization and kForceGpuRasterization flags.
 const char kDisableGpuRasterization[] = "disable-gpu-rasterization";

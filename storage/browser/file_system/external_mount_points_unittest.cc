@@ -254,8 +254,8 @@ TEST(ExternalMountPointsTest, HandlesFileSystemMountType) {
       storage::kFileSystemTypeNativeLocal));
   EXPECT_FALSE(mount_points->HandlesFileSystemMountType(
       storage::kFileSystemTypeRestrictedNativeLocal));
-  EXPECT_FALSE(
-      mount_points->HandlesFileSystemMountType(storage::kFileSystemTypeDrive));
+  EXPECT_FALSE(mount_points->HandlesFileSystemMountType(
+      storage::kFileSystemTypeDriveFs));
   EXPECT_FALSE(mount_points->HandlesFileSystemMountType(
       storage::kFileSystemTypeSyncable));
 }
@@ -270,13 +270,13 @@ TEST(ExternalMountPointsTest, CreateCrackedFileSystemURL) {
   mount_points->RegisterFileSystem("c", storage::kFileSystemTypeNativeLocal,
                                    storage::FileSystemMountOption(),
                                    base::FilePath(DRIVE FPL("/a/b/c")));
-  mount_points->RegisterFileSystem("c(1)", storage::kFileSystemTypeDrive,
+  mount_points->RegisterFileSystem("c(1)", storage::kFileSystemTypeDriveFs,
                                    storage::FileSystemMountOption(),
                                    base::FilePath(DRIVE FPL("/a/b/c(1)")));
   mount_points->RegisterFileSystem(
       "empty_path", storage::kFileSystemTypeSyncable,
       storage::FileSystemMountOption(), base::FilePath());
-  mount_points->RegisterFileSystem("mount", storage::kFileSystemTypeDrive,
+  mount_points->RegisterFileSystem("mount", storage::kFileSystemTypeDriveFs,
                                    storage::FileSystemMountOption(),
                                    base::FilePath(DRIVE FPL("/root")));
 
@@ -306,17 +306,17 @@ TEST(ExternalMountPointsTest, CreateCrackedFileSystemURL) {
   const TestCase kTestCases[] = {
     {FPL("c/d/e"), true, storage::kFileSystemTypeNativeLocal,
      DRIVE FPL("/a/b/c/d/e"), "c"},
-    {FPL("c(1)/d/e"), true, storage::kFileSystemTypeDrive,
+    {FPL("c(1)/d/e"), true, storage::kFileSystemTypeDriveFs,
      DRIVE FPL("/a/b/c(1)/d/e"), "c(1)"},
-    {FPL("c(1)"), true, storage::kFileSystemTypeDrive, DRIVE FPL("/a/b/c(1)"),
+    {FPL("c(1)"), true, storage::kFileSystemTypeDriveFs, DRIVE FPL("/a/b/c(1)"),
      "c(1)"},
     {FPL("empty_path/a"), true, storage::kFileSystemTypeSyncable, FPL("a"),
      "empty_path"},
     {FPL("empty_path"), true, storage::kFileSystemTypeSyncable, FPL(""),
      "empty_path"},
-    {FPL("mount/a/b"), true, storage::kFileSystemTypeDrive,
+    {FPL("mount/a/b"), true, storage::kFileSystemTypeDriveFs,
      DRIVE FPL("/root/a/b"), "mount"},
-    {FPL("mount"), true, storage::kFileSystemTypeDrive, DRIVE FPL("/root"),
+    {FPL("mount"), true, storage::kFileSystemTypeDriveFs, DRIVE FPL("/root"),
      "mount"},
     {FPL("cc"), false, storage::kFileSystemTypeUnknown, FPL(""), ""},
     {FPL(""), false, storage::kFileSystemTypeUnknown, FPL(""), ""},
@@ -332,7 +332,7 @@ TEST(ExternalMountPointsTest, CreateCrackedFileSystemURL) {
 #if defined(FILE_PATH_USES_WIN_SEPARATORS)
     {FPL("c/d\\e"), true, storage::kFileSystemTypeNativeLocal,
      DRIVE FPL("/a/b/c/d/e"), "c"},
-    {FPL("mount\\a\\b"), true, storage::kFileSystemTypeDrive,
+    {FPL("mount\\a\\b"), true, storage::kFileSystemTypeDriveFs,
      DRIVE FPL("/root/a/b"), "mount"},
 #endif
   };
@@ -374,13 +374,13 @@ TEST(ExternalMountPointsTest, CrackVirtualPath) {
   mount_points->RegisterFileSystem("c", storage::kFileSystemTypeNativeLocal,
                                    storage::FileSystemMountOption(),
                                    base::FilePath(DRIVE FPL("/a/b/c")));
-  mount_points->RegisterFileSystem("c(1)", storage::kFileSystemTypeDrive,
+  mount_points->RegisterFileSystem("c(1)", storage::kFileSystemTypeDriveFs,
                                    storage::FileSystemMountOption(),
                                    base::FilePath(DRIVE FPL("/a/b/c(1)")));
   mount_points->RegisterFileSystem(
       "empty_path", storage::kFileSystemTypeSyncable,
       storage::FileSystemMountOption(), base::FilePath());
-  mount_points->RegisterFileSystem("mount", storage::kFileSystemTypeDrive,
+  mount_points->RegisterFileSystem("mount", storage::kFileSystemTypeDriveFs,
                                    storage::FileSystemMountOption(),
                                    base::FilePath(DRIVE FPL("/root")));
 
@@ -395,17 +395,17 @@ TEST(ExternalMountPointsTest, CrackVirtualPath) {
   const TestCase kTestCases[] = {
     {FPL("c/d/e"), true, storage::kFileSystemTypeNativeLocal,
      DRIVE FPL("/a/b/c/d/e"), "c"},
-    {FPL("c(1)/d/e"), true, storage::kFileSystemTypeDrive,
+    {FPL("c(1)/d/e"), true, storage::kFileSystemTypeDriveFs,
      DRIVE FPL("/a/b/c(1)/d/e"), "c(1)"},
-    {FPL("c(1)"), true, storage::kFileSystemTypeDrive, DRIVE FPL("/a/b/c(1)"),
+    {FPL("c(1)"), true, storage::kFileSystemTypeDriveFs, DRIVE FPL("/a/b/c(1)"),
      "c(1)"},
     {FPL("empty_path/a"), true, storage::kFileSystemTypeSyncable, FPL("a"),
      "empty_path"},
     {FPL("empty_path"), true, storage::kFileSystemTypeSyncable, FPL(""),
      "empty_path"},
-    {FPL("mount/a/b"), true, storage::kFileSystemTypeDrive,
+    {FPL("mount/a/b"), true, storage::kFileSystemTypeDriveFs,
      DRIVE FPL("/root/a/b"), "mount"},
-    {FPL("mount"), true, storage::kFileSystemTypeDrive, DRIVE FPL("/root"),
+    {FPL("mount"), true, storage::kFileSystemTypeDriveFs, DRIVE FPL("/root"),
      "mount"},
     {FPL("cc"), false, storage::kFileSystemTypeUnknown, FPL(""), ""},
     {FPL(""), false, storage::kFileSystemTypeUnknown, FPL(""), ""},
@@ -421,7 +421,7 @@ TEST(ExternalMountPointsTest, CrackVirtualPath) {
 #if defined(FILE_PATH_USES_WIN_SEPARATORS)
     {FPL("c/d\\e"), true, storage::kFileSystemTypeNativeLocal,
      DRIVE FPL("/a/b/c/d/e"), "c"},
-    {FPL("mount\\a\\b"), true, storage::kFileSystemTypeDrive,
+    {FPL("mount\\a\\b"), true, storage::kFileSystemTypeDriveFs,
      DRIVE FPL("/root/a/b"), "mount"},
 #endif
   };

@@ -1299,7 +1299,6 @@ if (!is_android) {
       "../browser/ui/toolbar/browser_actions_bar_browsertest.h",
       "../browser/ui/update_chrome_dialog_browsertest.cc",
       "../browser/ui/views/apps/app_info_dialog/app_info_dialog_views_browsertest.cc",
-      "../browser/ui/views/autofill/payments/verify_pending_dialog_view_browsertest.cc",
       "../browser/ui/views/bookmarks/bookmark_bar_view_browsertest.cc",
       "../browser/ui/views/chrome_cleaner_dialog_browsertest_win.cc",
       "../browser/ui/views/chrome_cleaner_reboot_dialog_browsertest_win.cc",
@@ -1457,6 +1456,7 @@ if (!is_android) {
         "//chrome/services/file_util/public/cpp:browser_tests",
         "//chromeos:test_support",
         "//chromeos/components/drivefs:test_support",
+        "//chromeos/components/media_app_ui:browser_test_support",
         "//chromeos/dbus:test_support",
         "//chromeos/dbus/services:test_support",
         "//chromeos/dbus/session_manager",
@@ -2041,7 +2041,6 @@ if (!is_android) {
 
     if (is_chromeos) {
       sources += [
-        "../browser/apps/app_service/instance_registry_browsertest.cc",
         "../browser/apps/platform_apps/app_window_interactive_uitest_base.cc",
         "../browser/apps/platform_apps/app_window_interactive_uitest_base.h",
         "../browser/chromeos/accessibility/accessibility_manager_browsertest.cc",
@@ -2330,6 +2329,10 @@ if (!is_android) {
         "../browser/chromeos/startup_settings_cache_browsertest.cc",
         "../browser/chromeos/system/device_disabling_browsertest.cc",
         "../browser/chromeos/system/tray_accessibility_browsertest.cc",
+        "../browser/chromeos/web_applications/help_app_integration_browsertest.cc",
+        "../browser/chromeos/web_applications/media_app_integration_browsertest.cc",
+        "../browser/chromeos/web_applications/system_web_app_integration_test.cc",
+        "../browser/chromeos/web_applications/system_web_app_integration_test.h",
         "../browser/download/notification/download_notification_browsertest.cc",
         "../browser/drive/drive_notification_manager_factory_browsertest.cc",
         "../browser/extensions/api/certificate_provider/certificate_provider_apitest.cc",
@@ -2350,6 +2353,7 @@ if (!is_android) {
         "../browser/ui/ash/chrome_screenshot_grabber_browsertest.cc",
         "../browser/ui/ash/keyboard/keyboard_controller_browsertest.cc",
         "../browser/ui/ash/keyboard/keyboard_end_to_end_browsertest.cc",
+        "../browser/ui/ash/launcher/app_service_app_window_browsertest.cc",
         "../browser/ui/ash/launcher/arc_app_launcher_browsertest.cc",
         "../browser/ui/ash/launcher/browser_shortcut_launcher_item_controller_browsertest.cc",
         "../browser/ui/ash/launcher/chrome_launcher_controller_browsertest.cc",

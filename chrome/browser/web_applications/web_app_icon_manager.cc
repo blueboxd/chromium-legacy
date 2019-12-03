@@ -67,13 +67,15 @@ base::FilePath GetTempDir(FileUtilsWrapper* utils,
 
 bool WriteIcon(FileUtilsWrapper* utils,
                const base::FilePath& icons_dir,
-               const WebApplicationIconInfo& icon_info) {
+               const SkBitmap& bitmap) {
+  DCHECK_NE(bitmap.colorType(), kUnknown_SkColorType);
+  DCHECK_EQ(bitmap.width(), bitmap.height());
   base::FilePath icon_file =
-      icons_dir.AppendASCII(base::StringPrintf("%i.png", icon_info.width));
+      icons_dir.AppendASCII(base::StringPrintf("%i.png", bitmap.width()));
 
   std::vector<unsigned char> image_data;
   const bool discard_transparency = false;
-  if (!gfx::PNGCodec::EncodeBGRASkBitmap(icon_info.data, discard_transparency,
+  if (!gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, discard_transparency,
                                          &image_data)) {
     LOG(ERROR) << "Could not encode icon data for file " << icon_file;
     return false;
@@ -91,19 +93,15 @@ bool WriteIcon(FileUtilsWrapper* utils,
 
 bool WriteIcons(FileUtilsWrapper* utils,
                 const base::FilePath& app_dir,
-                const std::vector<WebApplicationIconInfo>& icon_infos) {
+                const std::map<SquareSizePx, SkBitmap>& icon_bitmaps) {
   const base::FilePath icons_dir = app_dir.Append(kIconsDirectoryName);
   if (!utils->CreateDirectory(icons_dir)) {
     LOG(ERROR) << "Could not create icons directory.";
     return false;
   }
 
-  for (const WebApplicationIconInfo& icon_info : icon_infos) {
-    // Skip unfetched bitmaps.
-    if (icon_info.data.colorType() == kUnknown_SkColorType)
-      continue;
-
-    if (!WriteIcon(utils, icons_dir, icon_info))
+  for (const std::pair<SquareSizePx, SkBitmap>& icon_bitmap : icon_bitmaps) {
+    if (!WriteIcon(utils, icons_dir, icon_bitmap.second))
       return false;
   }
 
@@ -115,10 +113,9 @@ bool WriteIcons(FileUtilsWrapper* utils,
 bool WriteDataBlocking(std::unique_ptr<FileUtilsWrapper> utils,
                        base::FilePath web_apps_directory,
                        AppId app_id,
-                       std::vector<WebApplicationIconInfo> icon_infos) {
+                       std::map<SquareSizePx, SkBitmap> icons) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-
   const base::FilePath temp_dir = GetTempDir(utils.get(), web_apps_directory);
   if (temp_dir.empty()) {
     LOG(ERROR)
@@ -132,7 +129,7 @@ bool WriteDataBlocking(std::unique_ptr<FileUtilsWrapper> utils,
     return false;
   }
 
-  if (!WriteIcons(utils.get(), app_temp_dir.GetPath(), icon_infos))
+  if (!WriteIcons(utils.get(), app_temp_dir.GetPath(), icons))
     return false;
 
   // Commit: move whole app data dir to final destination in one mv operation.
@@ -235,16 +232,15 @@ WebAppIconManager::WebAppIconManager(Profile* profile,
 
 WebAppIconManager::~WebAppIconManager() = default;
 
-void WebAppIconManager::WriteData(
-    AppId app_id,
-    std::vector<WebApplicationIconInfo> icon_infos,
-    WriteDataCallback callback) {
+void WebAppIconManager::WriteData(AppId app_id,
+                                  std::map<SquareSizePx, SkBitmap> icons,
+                                  WriteDataCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::PostTaskAndReplyWithResult(
       FROM_HERE, kTaskTraits,
       base::BindOnce(WriteDataBlocking, utils_->Clone(), web_apps_directory_,
-                     std::move(app_id), std::move(icon_infos)),
+                     std::move(app_id), std::move(icons)),
       std::move(callback));
 }
 
@@ -264,8 +260,8 @@ bool WebAppIconManager::HasIcon(const AppId& app_id,
   if (!web_app)
     return false;
 
-  for (const WebApp::IconInfo& icon_info : web_app->icons()) {
-    if (icon_info.size_in_px == icon_size_in_px)
+  for (SquareSizePx size : web_app->downloaded_icon_sizes()) {
+    if (size == icon_size_in_px)
       return true;
   }
 
@@ -326,10 +322,9 @@ bool WebAppIconManager::FindBestSizeInPx(const AppId& app_id,
     return false;
 
   *best_size_in_px = std::numeric_limits<int>::max();
-  for (const WebApp::IconInfo& icon_info : web_app->icons()) {
-    if (icon_info.size_in_px >= icon_size_in_px &&
-        icon_info.size_in_px < *best_size_in_px) {
-      *best_size_in_px = icon_info.size_in_px;
+  for (SquareSizePx size : web_app->downloaded_icon_sizes()) {
+    if (size >= icon_size_in_px && size < *best_size_in_px) {
+      *best_size_in_px = size;
     }
   }
 

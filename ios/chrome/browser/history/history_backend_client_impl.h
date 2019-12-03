@@ -19,7 +19,8 @@ class ModelLoader;
 
 class HistoryBackendClientImpl : public history::HistoryBackendClient {
  public:
-  explicit HistoryBackendClientImpl(bookmarks::ModelLoader* model_loader);
+  explicit HistoryBackendClientImpl(
+      scoped_refptr<bookmarks::ModelLoader> model_loader);
   ~HistoryBackendClientImpl() override;
 
  private:

@@ -1001,10 +1001,14 @@ void OutOfProcessInstance::SendNextAccessibilityPage(int32_t page_index) {
 void OutOfProcessInstance::SendAccessibilityViewportInfo() {
   PP_PrivateAccessibilityViewportInfo viewport_info;
   viewport_info.scroll.x = 0;
-  viewport_info.scroll.y =
-      -top_toolbar_height_in_viewport_coords_ * device_scale_;
-  viewport_info.offset = available_area_.point();
-  viewport_info.zoom_device_scale_factor = zoom_ * device_scale_;
+  viewport_info.scroll.y = -top_toolbar_height_in_viewport_coords_;
+  viewport_info.offset.x =
+      available_area_.point().x() / (device_scale_ * zoom_);
+  viewport_info.offset.y =
+      available_area_.point().y() / (device_scale_ * zoom_);
+
+  viewport_info.zoom = zoom_;
+  viewport_info.scale = device_scale_;
 
   engine_->GetSelection(&viewport_info.selection_start_page_index,
                         &viewport_info.selection_start_char_index,

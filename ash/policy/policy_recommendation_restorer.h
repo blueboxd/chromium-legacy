@@ -48,6 +48,8 @@ class PolicyRecommendationRestorer : public SessionObserver,
   // ui::UserActivityObserver:
   void OnUserActivity(const ui::Event* event) override;
 
+  void DisableForTesting();
+
   base::OneShotTimer* restore_timer_for_test() { return &restore_timer_; }
 
  private:
@@ -70,6 +72,8 @@ class PolicyRecommendationRestorer : public SessionObserver,
   bool active_user_pref_connected_ = false;
 
   base::OneShotTimer restore_timer_;
+
+  bool disabled_for_testing_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyRecommendationRestorer);
 };

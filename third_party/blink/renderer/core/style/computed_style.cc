@@ -1967,6 +1967,17 @@ void ComputedStyle::SetLetterSpacing(float letter_spacing) {
   GetFont().Update(current_font_selector);
 }
 
+void ComputedStyle::SetFontVariantNumericSpacing(
+    FontVariantNumeric::NumericSpacing numeric_spacing) {
+  FontSelector* current_font_selector = GetFont().GetFontSelector();
+  FontDescription desc(GetFontDescription());
+  FontVariantNumeric variant_numeric = desc.VariantNumeric();
+  variant_numeric.SetNumericSpacing(numeric_spacing);
+  desc.SetVariantNumeric(variant_numeric);
+  SetFontDescription(desc);
+  GetFont().Update(current_font_selector);
+}
+
 void ComputedStyle::SetTextAutosizingMultiplier(float multiplier) {
   SetTextAutosizingMultiplierInternal(multiplier);
 

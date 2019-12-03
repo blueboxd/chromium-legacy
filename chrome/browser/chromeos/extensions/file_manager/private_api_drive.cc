@@ -1022,8 +1022,6 @@ FileManagerPrivateInternalGetDownloadUrlFunction::Run() {
       file_system_context->CrackURL(url);
 
   switch (file_system_url.type()) {
-    case storage::kFileSystemTypeDrive:
-      return RespondNow(Error("Legacy drive client is not supported"));
     case storage::kFileSystemTypeDriveFs:
       return RunAsyncForDriveFs(file_system_url);
     default:

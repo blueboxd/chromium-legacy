@@ -330,14 +330,16 @@ class CreditCardAccessManagerTest : public testing::Test {
     GetFIDOAuthenticator()->OnDidGetOptChangeResult(result, response);
   }
 
-  // Mocks user response for the offer dialog.
-  void AcceptWebauthnOfferDialog(bool did_accept) {
-    GetFIDOAuthenticator()->OnWebauthnOfferDialogUserResponse(did_accept);
-  }
-
   TestCreditCardFIDOAuthenticator* GetFIDOAuthenticator() {
     return static_cast<TestCreditCardFIDOAuthenticator*>(
         credit_card_access_manager_->GetOrCreateFIDOAuthenticator());
+  }
+#endif
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // Mocks user response for the offer dialog.
+  void AcceptWebauthnOfferDialog(bool did_accept) {
+    GetFIDOAuthenticator()->OnWebauthnOfferDialogUserResponse(did_accept);
   }
 #endif
 

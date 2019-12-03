@@ -7,7 +7,7 @@ import web_idl
 from .clang_format import clang_format
 from .code_node import CodeNode
 from .code_node import LiteralNode
-from .code_node import SymbolScopeNode
+from .code_node import SequenceNode
 from .codegen_accumulator import CodeGenAccumulator
 from .path_manager import PathManager
 
@@ -40,7 +40,7 @@ def enclose_with_header_guard(code_node, header_guard):
     assert isinstance(code_node, CodeNode)
     assert isinstance(header_guard, str)
 
-    return SymbolScopeNode([
+    return SequenceNode([
         LiteralNode("#ifndef {}".format(header_guard)),
         LiteralNode("#define {}".format(header_guard)),
         LiteralNode(""),
@@ -54,7 +54,7 @@ def enclose_with_namespace(code_node, namespace):
     assert isinstance(code_node, CodeNode)
     assert isinstance(namespace, str)
 
-    return SymbolScopeNode([
+    return SequenceNode([
         LiteralNode("namespace {} {{".format(namespace)),
         LiteralNode(""),
         code_node,

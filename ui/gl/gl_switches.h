@@ -48,6 +48,7 @@ namespace switches {
 GL_EXPORT extern const char kDisableD3D11[];
 GL_EXPORT extern const char kDisableES3GLContext[];
 GL_EXPORT extern const char kDisableES3GLContextForTesting[];
+GL_EXPORT extern const char kDisableGpuDriverBugWorkarounds[];
 GL_EXPORT extern const char kDisableGpuVsync[];
 GL_EXPORT extern const char kEnableGPUServiceLogging[];
 GL_EXPORT extern const char kEnableGPUServiceTracing[];

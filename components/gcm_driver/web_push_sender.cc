@@ -50,6 +50,7 @@ base::Optional<std::string> GetAuthHeader(crypto::ECPrivateKey* vapid_key,
                                           int time_to_live) {
   base::Value claims(base::Value::Type::DICTIONARY);
   claims.SetKey(kClaimsKeyAudience, base::Value(kFCMServerAudience));
+  claims.RemoveKey(kClaimsKeyAudience);
 
   int64_t exp =
       (base::Time::Now() - base::Time::UnixEpoch()).InSeconds() + time_to_live;
@@ -223,6 +224,8 @@ void WebPushSender::OnMessageSent(
 
   if (!network::cors::IsOkStatus(response_code)) {
     DLOG(ERROR) << "HTTP Error: " << response_code;
+    if (response_code == net::HTTP_FORBIDDEN)
+      LogSendWebPushMessageForbiddenBody(response_body.get());
     InvokeWebPushCallback(std::move(callback),
                           SendWebPushMessageResult::kServerError);
     return;

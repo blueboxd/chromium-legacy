@@ -454,13 +454,12 @@
     </message>
   </if>
 
-
-  <!-- Verify pending dialog (Desktop only) -->
+  <!-- Webauthn verify pending dialog (Desktop only) -->
   <if expr="not is_ios and not is_android">
-    <message name="IDS_AUTOFILL_VERIFY_PENDING_DIALOG_TITLE" desc="Headline showing the card verification is in progress.">
+    <message name="IDS_AUTOFILL_WEBAUTHN_VERIFY_PENDING_DIALOG_TITLE" desc="Headline of the dialog shown when user has opted in to use platform biometric authenticator and has selected one card to fill the form. This shows the verification of the selected card is in progress.">
         Verifying your identity...
     </message>
-    <message name="IDS_AUTOFILL_VERIFY_PENDING_DIALOG_CANCEL_BUTTON_LABEL" desc="Button that allows the user to cancel the card verification.">
+    <message name="IDS_AUTOFILL_WEBAUTHN_VERIFY_PENDING_DIALOG_CANCEL_BUTTON_LABEL" desc="Label of the cancel button in the dialog shown when user has opted in to use platform biometric authenticator and has selected one card to fill the form. This cancel button allows the user to cancel the entire the verification process.">
         Cancel
     </message>
   </if>

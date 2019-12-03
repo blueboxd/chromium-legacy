@@ -11,5 +11,16 @@
       "sizes": "256x256",
       "type": "image/png"
     }
-  ]
+  ],
+  "file_handler": {
+    "action": ".",
+    "files": [
+      {
+        "name": "Image File",
+        "accept": [
+          "image/*"
+        ]
+      }
+    ]
+  }
 }

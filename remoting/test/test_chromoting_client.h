@@ -15,6 +15,7 @@
 #include "remoting/client/client_user_interface.h"
 #include "remoting/protocol/clipboard_filter.h"
 #include "remoting/protocol/cursor_shape_stub.h"
+#include "remoting/protocol/keyboard_layout_stub.h"
 #include "remoting/test/remote_connection_observer.h"
 
 namespace remoting {
@@ -40,7 +41,8 @@ struct ConnectionSetupInfo;
 // A VideoRenderer can be passed in to customize the connection.
 class TestChromotingClient : public ClientUserInterface,
                              public protocol::ClipboardStub,
-                             public protocol::CursorShapeStub {
+                             public protocol::CursorShapeStub,
+                             public protocol::KeyboardLayoutStub {
  public:
   TestChromotingClient();
   explicit TestChromotingClient(
@@ -90,12 +92,16 @@ class TestChromotingClient : public ClientUserInterface,
                       const webrtc::DesktopVector& dpi) override;
   protocol::ClipboardStub* GetClipboardStub() override;
   protocol::CursorShapeStub* GetCursorShapeStub() override;
+  protocol::KeyboardLayoutStub* GetKeyboardLayoutStub() override;
 
   // protocol::ClipboardStub interface.
   void InjectClipboardEvent(const protocol::ClipboardEvent& event) override;
 
   // protocol::CursorShapeStub interface.
   void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) override;
+
+  // protocol::KeyboardLayoutStub interface.
+  void SetKeyboardLayout(const protocol::KeyboardLayout& layout) override;
 
   // Tracks the current connection state.
   protocol::ConnectionToHost::State connection_to_host_state_;

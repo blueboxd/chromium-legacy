@@ -78,6 +78,7 @@ import org.chromium.chrome.browser.feature_engagement.ScreenshotTabObserver;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
+import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.fullscreen.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.gesturenav.NavigationSheet;
@@ -1467,14 +1468,15 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
                         } else if (IncognitoTabLauncher.didCreateIntent(intent)) {
                             Tab tab = getTabCreator(true).launchUrl(UrlConstants.NTP_URL,
                                     TabLaunchType.FROM_LAUNCH_NEW_INCOGNITO_TAB);
-                            // Since the Tab is created in the foreground, its View will gain focus,
-                            // and since the Tab and the URL bar are not yet in the same View
-                            // hierarchy, setting the URL bar's focus here won't clear the Tab's
-                            // focus.
-                            // When the Tab is added to the hierarchy, we want the URL bar to retain
-                            // focus, so we clear the Tab's focus here.
-                            tab.getView().clearFocus();
-                            focus = true;
+                            if (IncognitoTabLauncher.shouldFocusOmnibox()) {
+                                // Since the Tab is created in the foreground, its View will gain
+                                // focus, and since the Tab and the URL bar are not yet in the same
+                                // View hierarchy, setting the URL bar's focus here won't clear the
+                                // Tab's focus. When the Tab is added to the hierarchy, we want the
+                                // URL bar to retain focus, so we clear the Tab's focus here.
+                                tab.getView().clearFocus();
+                                focus = true;
+                            }
 
                             IncognitoTabLauncher.recordUse();
                         } else {

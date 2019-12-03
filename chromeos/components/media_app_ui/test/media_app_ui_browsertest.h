@@ -15,6 +15,10 @@ class MediaAppUiBrowserTest : public MojoWebUIBrowserTest {
   MediaAppUiBrowserTest();
   ~MediaAppUiBrowserTest() override;
 
+  // Returns the contents of the JavaScript library used to help test the
+  // MediaApp guest frame.
+  static std::string AppJsTestLibrary();
+
   // MojoWebUIBrowserTest:
   void SetUpOnMainThread() override;
 

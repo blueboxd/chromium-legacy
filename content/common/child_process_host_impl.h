@@ -75,6 +75,8 @@ class CONTENT_EXPORT ChildProcessHostImpl
   void CreateChannelMojo() override;
   bool IsChannelOpening() override;
   void AddFilter(IPC::MessageFilter* filter) override;
+  void BindInterface(const std::string& interface_name,
+                     mojo::ScopedMessagePipeHandle interface_pipe) override;
   void BindReceiver(mojo::GenericPendingReceiver receiver) override;
   void RunService(
       const std::string& service_name,

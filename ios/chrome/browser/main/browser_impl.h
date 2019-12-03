@@ -27,8 +27,7 @@ class ChromeBrowserState;
 // See src/docs/ios/objects.md for more information.
 class BrowserImpl : public Browser {
  public:
-  // Constructs a BrowserImpl attached to |browser_state| in the context of
-  // |scene_state|
+  // Constructs a BrowserImpl attached to |browser_state|.
   BrowserImpl(ios::ChromeBrowserState* browser_state);
   ~BrowserImpl() override;
 

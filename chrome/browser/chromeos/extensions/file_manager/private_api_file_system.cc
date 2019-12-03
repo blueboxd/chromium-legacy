@@ -647,11 +647,6 @@ FileManagerPrivateInternalValidatePathNameLengthFunction::Run() {
   if (!chromeos::FileSystemBackend::CanHandleURL(file_system_url))
     return RespondNow(Error("Invalid URL"));
 
-  // No explicit limit on the length of Drive file names.
-  if (file_system_url.type() == storage::kFileSystemTypeDrive) {
-    return RespondNow(OneArgument(std::make_unique<base::Value>(true)));
-  }
-
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},

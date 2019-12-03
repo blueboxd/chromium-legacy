@@ -13,10 +13,6 @@ namespace prefs {
 // Alphabetical list of preference names specific to the PasswordManager
 // component.
 
-// Boolean indicating whether blacklisted credentials in the password store
-// have already been normalized.
-extern const char kBlacklistedCredentialsNormalized[];
-
 // Boolean controlling whether the password manager allows automatic signing in
 // through Credential Manager API.
 extern const char kCredentialsEnableAutosignin[];

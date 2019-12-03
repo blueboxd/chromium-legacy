@@ -12,6 +12,7 @@
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_main_parts.h"
 #include "android_webview/browser/aw_content_browser_overlay_manifest.h"
+#include "android_webview/browser/aw_content_renderer_overlay_manifest.h"
 #include "android_webview/browser/aw_contents.h"
 #include "android_webview/browser/aw_contents_client_bridge.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
@@ -702,6 +703,8 @@ base::Optional<service_manager::Manifest>
 AwContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
   if (name == content::mojom::kBrowserServiceName)
     return GetAWContentBrowserOverlayManifest();
+  if (name == content::mojom::kRendererServiceName)
+    return GetAWContentRendererOverlayManifest();
   return base::nullopt;
 }
 

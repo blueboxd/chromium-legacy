@@ -83,6 +83,7 @@ Polymer({
   behaviors: [
     FindShortcutBehavior,
     Polymer.IronScrollTargetBehavior,
+    WebUIListenerBehavior,
   ],
 
   properties: {
@@ -168,6 +169,13 @@ Polymer({
   attached: function() {
     this.boundOnKeyDown_ = e => this.onKeyDown_(e);
     document.addEventListener('keydown', this.boundOnKeyDown_);
+    this.addWebUIListener(
+        'sign-in-state-changed',
+        signedIn => this.onSignInStateChanged_(signedIn));
+    this.addWebUIListener(
+        'has-other-forms-changed',
+        hasOtherForms => this.onHasOtherFormsChanged_(hasOtherForms));
+    history.BrowserService.getInstance().historyLoaded();
   },
 
   /** @override */
@@ -326,9 +334,19 @@ Polymer({
   /**
    * Update sign in state of synced device manager after user logs in or out.
    * @param {boolean} isUserSignedIn
+   * @private
    */
-  updateSignInState: function(isUserSignedIn) {
+  onSignInStateChanged_: function(isUserSignedIn) {
     this.isUserSignedIn_ = isUserSignedIn;
+  },
+
+  /**
+   * Update sign in state of synced device manager after user logs in or out.
+   * @param {boolean} hasOtherForms
+   * @private
+   */
+  onHasOtherFormsChanged_: function(hasOtherForms) {
+    this.set('footerInfo.otherFormsOfHistory', hasOtherForms);
   },
 
   /**

@@ -52,6 +52,8 @@ std::string GetContentType(const base::FilePath& path) {
     return "application/json";
   if (path.MatchesExtension(FILE_PATH_LITERAL(".pdf")))
     return "application/pdf";
+  if (path.MatchesExtension(FILE_PATH_LITERAL(".svg")))
+    return "image/svg+xml";
   if (path.MatchesExtension(FILE_PATH_LITERAL(".txt")))
     return "text/plain";
   if (path.MatchesExtension(FILE_PATH_LITERAL(".wav")))

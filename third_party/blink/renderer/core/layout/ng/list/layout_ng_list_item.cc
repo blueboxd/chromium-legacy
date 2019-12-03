@@ -152,20 +152,24 @@ void LayoutNGListItem::UpdateMarker() {
       list_item->IsPseudoElement()
           ? nullptr
           : ToElement(list_item)->CachedStyleForPseudoElement(kPseudoIdMarker);
-  scoped_refptr<ComputedStyle> marker_style;
-  if (cached_marker_style) {
-    marker_style = ComputedStyle::Clone(*cached_marker_style);
-  } else {
-    marker_style = ComputedStyle::Create();
-    marker_style->InheritFrom(style);
-  }
-  if (marker_style->GetContentData()) {
+  if (cached_marker_style && cached_marker_style->GetContentData()) {
     // Don't create an anonymous layout for the marker, it will be generated
     // by the ::marker pseudo-element.
     DestroyMarker();
     marker_type_ = kStatic;
     is_marker_text_updated_ = true;
     return;
+  }
+  scoped_refptr<ComputedStyle> marker_style;
+  if (cached_marker_style) {
+    marker_style = ComputedStyle::Clone(*cached_marker_style);
+  } else {
+    marker_style = ComputedStyle::Create();
+    marker_style->InheritFrom(style);
+    marker_style->SetStyleType(kPseudoIdMarker);
+    marker_style->SetUnicodeBidi(UnicodeBidi::kIsolate);
+    marker_style->SetFontVariantNumericSpacing(
+        FontVariantNumeric::kTabularNums);
   }
   if (IsInside()) {
     if (marker_ && !marker_->IsLayoutInline())
@@ -177,11 +181,6 @@ void LayoutNGListItem::UpdateMarker() {
         LayoutListMarker::InlineMarginsForInside(style, IsMarkerImage());
     marker_style->SetMarginStart(Length::Fixed(margins.first));
     marker_style->SetMarginEnd(Length::Fixed(margins.second));
-    // Markers should have unicode-bidi:isolate according to the spec
-    // (https://drafts.csswg.org/css-lists/#ua-stylesheet).
-    // Note this is only relevant for inside markers with arbitrary strings.
-    if (style.ListStyleType() == EListStyleType::kString)
-      marker_style->SetUnicodeBidi(UnicodeBidi::kIsolate);
   } else {
     if (marker_ && !marker_->IsLayoutBlockFlow())
       DestroyMarker();

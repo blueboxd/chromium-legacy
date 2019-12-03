@@ -7,12 +7,13 @@ package org.chromium.weblayer;
 /**
  * Error thrown if client and implementation versions are not compatible.
  */
-public class UnsupportedVersionException extends Exception {
+public class UnsupportedVersionException extends RuntimeException {
     /**
      * Constructs a new exception with the specified version.
      */
-    public UnsupportedVersionException(int clientVersion) {
-        super("Unsupported WebLayer version, client version " + clientVersion
-                + " is not supported by the implementation.");
+    public UnsupportedVersionException(String implementationVersion) {
+        super("Unsupported WebLayer version, client version "
+                + WebLayerClientVersionConstants.PRODUCT_VERSION
+                + " is not supported by implementation version " + implementationVersion);
     }
 }

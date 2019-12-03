@@ -100,6 +100,7 @@ def blink_type_info(idl_type):
             blink_impl_type,
             member_fmt="Member<{}>",
             ref_fmt="{}*",
+            value_fmt="{}*",
             is_nullable=True)
 
     if (real_type.is_sequence or real_type.is_frozen_array
@@ -168,13 +169,18 @@ def native_value_tag(idl_type):
         return "IDLNullable<{}>".format(native_value_tag(real_type.inner_type))
 
 
-def make_v8_to_blink_value(blink_var_name, v8_value_expr, idl_type):
+def make_v8_to_blink_value(blink_var_name,
+                           v8_value_expr,
+                           idl_type,
+                           default_value=None):
     """
     Returns a SymbolNode whose definition converts a v8::Value to a Blink value.
     """
     assert isinstance(blink_var_name, str)
     assert isinstance(v8_value_expr, str)
     assert isinstance(idl_type, web_idl.IdlType)
+    assert (default_value is None
+            or isinstance(default_value, web_idl.LiteralConstant))
 
     pattern = (
         "const auto& ${{{_1}}} = NativeValueTraits<{_2}>::NativeValue({_3});")

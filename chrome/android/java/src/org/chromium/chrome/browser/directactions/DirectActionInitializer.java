@@ -12,9 +12,9 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
-import org.chromium.chrome.browser.ChromeActivity.ActivityType;
 import org.chromium.chrome.browser.MenuOrKeyboardActionController;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
+import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;

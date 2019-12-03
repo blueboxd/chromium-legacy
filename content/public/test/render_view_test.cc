@@ -22,6 +22,7 @@
 #include "content/common/widget_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/common/bind_interface_helpers.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/previews_state.h"
@@ -766,6 +767,10 @@ void RenderViewTest::OnSameDocumentNavigation(blink::WebLocalFrame* frame,
       is_new_navigation ? blink::kWebStandardCommit
                         : blink::kWebHistoryInertCommit,
       false /* content_initiated */);
+}
+
+void RenderViewTest::SetUseZoomForDSFEnabled(bool enabled) {
+  render_thread_->SetUseZoomForDSFEnabled(enabled);
 }
 
 blink::WebWidget* RenderViewTest::GetWebWidget() {

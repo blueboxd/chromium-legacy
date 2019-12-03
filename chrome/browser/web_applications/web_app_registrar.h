@@ -44,6 +44,8 @@ class WebAppRegistrar : public AppRegistrar {
   base::Optional<GURL> GetAppScope(const AppId& app_id) const override;
   DisplayMode GetAppDisplayMode(const AppId& app_id) const override;
   DisplayMode GetAppUserDisplayMode(const AppId& app_id) const override;
+  std::vector<WebApplicationIconInfo> GetAppIconInfos(
+      const AppId& app_id) const override;
   std::vector<AppId> GetAppIds() const override;
 
   // Only range-based |for| loop supported. Don't use AppSet directly.

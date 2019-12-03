@@ -8,16 +8,15 @@
 
 WebAppInfoImageSource::WebAppInfoImageSource(
     int dip_size,
-    const std::vector<WebApplicationIconInfo>& icons)
+    const std::map<SquareSizePx, SkBitmap>& icons)
     : dip_size_(dip_size), icons_(icons) {}
 
 WebAppInfoImageSource::~WebAppInfoImageSource() {}
 
 gfx::ImageSkiaRep WebAppInfoImageSource::GetImageForScale(float scale) {
   int size = base::saturated_cast<int>(dip_size_ * scale);
-  for (const auto& icon_info : icons_) {
-    if (icon_info.width == size)
-      return gfx::ImageSkiaRep(icon_info.data, scale);
-  }
+  auto icon = icons_.find(size);
+  if (icon != icons_.end())
+    return gfx::ImageSkiaRep(icon->second, scale);
   return gfx::ImageSkiaRep();
 }

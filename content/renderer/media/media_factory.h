@@ -30,6 +30,7 @@
 #endif
 
 namespace blink {
+class BrowserInterfaceBrokerProxy;
 class WebContentDecryptionModule;
 class WebEncryptedMediaClient;
 class WebLocalFrame;
@@ -50,13 +51,6 @@ class MediaObserver;
 class RemotePlaybackClientWrapper;
 class RendererWebMediaPlayerDelegate;
 class WebEncryptedMediaClientImpl;
-}
-
-namespace service_manager {
-class InterfaceProvider;
-namespace mojom {
-class InterfaceProvider;
-}
 }
 
 namespace content {
@@ -163,10 +157,10 @@ class MediaFactory {
   // Injected callback for requesting overlay routing tokens.
   media::RequestRoutingTokenCallback request_routing_token_cb_;
 
-  // Handy pointer to RenderFrame's remote interfaces. Null until SetupMojo().
-  // Lifetime matches that of the owning |render_frame_|. Will always be valid
-  // once assigned.
-  service_manager::InterfaceProvider* remote_interfaces_ = nullptr;
+  // Handy pointer to RenderFrame's browser interface broker. Null until
+  // SetupMojo(). Lifetime matches that of the owning |render_frame_|. Will
+  // always be valid once assigned.
+  blink::BrowserInterfaceBrokerProxy* interface_broker_ = nullptr;
 
   // Manages play, pause notifications for WebMediaPlayer implementations; its
   // lifetime is tied to the RenderFrame via the RenderFrameObserver interface.

@@ -57,8 +57,8 @@ oobe-dialog .error-icon {
 }
 
 #offline-network-control {
-  height: 200px;
   margin-bottom: 20px;
+  min-height: 200px;
 }
 
 .button-spacer {

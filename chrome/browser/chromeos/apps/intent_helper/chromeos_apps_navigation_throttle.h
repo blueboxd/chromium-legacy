@@ -94,7 +94,7 @@ class ChromeOsAppsNavigationThrottle : public apps::AppsNavigationThrottle {
 
   void CancelNavigation();
 
-  bool ShouldDeferNavigationForArc(content::NavigationHandle* handle) override;
+  bool ShouldDeferNavigation(content::NavigationHandle* handle) override;
 
   // Passed as a callback to allow ARC-specific code to asynchronously inform
   // this object of the apps which can handle this URL, and optionally request
@@ -102,7 +102,7 @@ class ChromeOsAppsNavigationThrottle : public apps::AppsNavigationThrottle {
   // been opened).
   void OnDeferredNavigationProcessed(
       apps::AppsNavigationAction action,
-      std::vector<apps::IntentPickerAppInfo> apps) override;
+      std::vector<apps::IntentPickerAppInfo> apps);
 
   PickerShowState GetPickerShowState(
       const std::vector<apps::IntentPickerAppInfo>& apps_for_picker,

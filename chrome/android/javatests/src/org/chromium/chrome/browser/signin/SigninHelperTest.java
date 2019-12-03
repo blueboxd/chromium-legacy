@@ -14,7 +14,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.signin.MockChangeEventChecker;
@@ -84,13 +83,12 @@ public class SigninHelperTest {
     }
 
     @Test
-    @DisabledTest(message = "crbug.com/568623")
     @SmallTest
     public void testNotSignedInAccountRename() {
         setSignedInAccountName("A");
         mEventChecker.insertRenameEvent("B", "C");
         SigninHelper.updateAccountRenameData(mEventChecker);
-        Assert.assertEquals(null, getNewSignedInAccountName());
+        Assert.assertNull(getNewSignedInAccountName());
     }
 
     @Test
@@ -113,7 +111,7 @@ public class SigninHelperTest {
         mEventChecker.insertRenameEvent("B", "C");
         mEventChecker.insertRenameEvent("C", "D");
         SigninHelper.updateAccountRenameData(mEventChecker);
-        Assert.assertEquals(null, getNewSignedInAccountName());
+        Assert.assertNull(getNewSignedInAccountName());
     }
 
     @Test
@@ -150,10 +148,6 @@ public class SigninHelperTest {
 
     private void setSignedInAccountName(String account) {
         ChromeSigninController.get().setSignedInAccountName(account);
-    }
-
-    private String getSignedInAccountName() {
-        return ChromeSigninController.get().getSignedInAccountName();
     }
 
     private String getNewSignedInAccountName() {

@@ -27,6 +27,24 @@ namespace net {
 class CanonicalCookie;
 }
 
+extern const char kOAuth2MintTokenApiCallResultHistogram[];
+
+// Values carrying the result of processing a successful API call.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class OAuth2MintTokenApiCallResult {
+  kMintTokenSuccess = 0,
+  kIssueAdviceSuccess = 1,
+  kRemoteConsentSuccess = 2,
+  kApiCallFailure = 3,
+  kParseJsonFailure = 4,
+  kIssueAdviceKeyNotFoundFailure = 5,
+  kParseMintTokenFailure = 6,
+  kParseIssueAdviceFailure = 7,
+  kRemoteConsentFallback = 8,
+  kMaxValue = kRemoteConsentFallback
+};
+
 // IssueAdvice: messages to show to the user to get a user's approval.
 // The structure is as follows:
 // * Description 1
@@ -171,8 +189,6 @@ class OAuth2MintTokenFlow : public OAuth2ApiCallFlow {
   FRIEND_TEST_ALL_PREFIXES(OAuth2MintTokenFlowTest,
                            ParseRemoteConsentResponse_BadCookieList);
   FRIEND_TEST_ALL_PREFIXES(OAuth2MintTokenFlowTest, ParseMintTokenResponse);
-  FRIEND_TEST_ALL_PREFIXES(OAuth2MintTokenFlowTest, ProcessApiCallSuccess);
-  FRIEND_TEST_ALL_PREFIXES(OAuth2MintTokenFlowTest, ProcessApiCallFailure);
 
   void ReportSuccess(const std::string& access_token, int time_to_live);
   void ReportIssueAdviceSuccess(const IssueAdviceInfo& issue_advice);

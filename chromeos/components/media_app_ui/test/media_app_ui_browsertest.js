@@ -37,7 +37,15 @@ var MediaAppUIBrowserTest = class extends testing.Test {
 
   /** @override */
   get featureList() {
-    return {enabled: ['chromeos::features::kMediaApp']};
+    // Note the error `Cannot read property 'setConsumer' of undefined"` will be
+    // raised if kFileHandlingAPI is omitted.
+    return {
+      enabled: [
+        'chromeos::features::kMediaApp',
+        'blink::features::kNativeFileSystemAPI',
+        'blink::features::kFileHandlingAPI'
+      ]
+    };
   }
 
   /** @override */

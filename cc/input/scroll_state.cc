@@ -26,14 +26,4 @@ void ScrollState::ConsumeDelta(double x, double y) {
     data_.delta_consumed_for_scroll_sequence = true;
 }
 
-void ScrollState::DistributeToScrollChainDescendant() {
-  if (!scroll_chain_.empty()) {
-    ScrollNode* next = scroll_chain_.front();
-    scroll_chain_.pop_front();
-
-    ScrollTree& scroll_tree = layer_tree_impl_->property_trees()->scroll_tree;
-    scroll_tree.DistributeScroll(next, this);
-  }
-}
-
 }  // namespace cc

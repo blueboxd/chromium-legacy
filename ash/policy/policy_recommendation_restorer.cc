@@ -62,6 +62,10 @@ void PolicyRecommendationRestorer::OnUserActivity(const ui::Event* event) {
     restore_timer_.Reset();
 }
 
+void PolicyRecommendationRestorer::DisableForTesting() {
+  disabled_for_testing_ = true;
+}
+
 void PolicyRecommendationRestorer::Restore(bool allow_delay,
                                            const std::string& pref_name) {
   const PrefService::Preference* pref =
@@ -89,7 +93,7 @@ void PolicyRecommendationRestorer::Restore(bool allow_delay,
 
   if (allow_delay)
     StartTimer();
-  else
+  else if (!disabled_for_testing_)
     pref_change_registrar_->prefs()->ClearPref(pref->name());
 }
 

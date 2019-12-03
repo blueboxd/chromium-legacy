@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
@@ -85,8 +86,8 @@ class CompositedScrollingBrowserTest : public ContentBrowserTest {
   }
 
  protected:
-  void LoadURL() {
-    const GURL data_url(kCompositedScrollingDataURL);
+  void LoadURL(const char* url) {
+    const GURL data_url(url);
     EXPECT_TRUE(NavigateToURL(shell(), data_url));
 
     RenderWidgetHostImpl* host = GetWidgetHost();
@@ -124,15 +125,11 @@ class CompositedScrollingBrowserTest : public ContentBrowserTest {
 
   // Generate touch events for a synthetic scroll from |point| for |distance|.
   // Returns the distance scrolled.
-  double DoTouchScroll(const gfx::Point& point, const gfx::Vector2d& distance) {
-    EXPECT_EQ(0, GetScrollTop());
-
-    int scroll_height = ExecuteScriptAndExtractInt(
-        "document.getElementById('scroller').scrollHeight");
-    EXPECT_EQ(1000, scroll_height);
-
+  double DoScroll(SyntheticGestureParams::GestureSourceType type,
+                  const gfx::Point& point,
+                  const gfx::Vector2d& distance) {
     SyntheticSmoothScrollGestureParams params;
-    params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+    params.gesture_source_type = type;
     params.anchor = gfx::PointF(point);
     params.distances.push_back(-distance);
 
@@ -151,6 +148,14 @@ class CompositedScrollingBrowserTest : public ContentBrowserTest {
     runner_ = nullptr;
 
     return GetScrollTop();
+  }
+
+  double DoTouchScroll(const gfx::Point& point, const gfx::Vector2d& distance) {
+    return DoScroll(SyntheticGestureParams::TOUCH_INPUT, point, distance);
+  }
+
+  double DoWheelScroll(const gfx::Point& point, const gfx::Vector2d& distance) {
+    return DoScroll(SyntheticGestureParams::MOUSE_INPUT, point, distance);
   }
 
  private:
@@ -172,11 +177,182 @@ class CompositedScrollingBrowserTest : public ContentBrowserTest {
 #endif
 IN_PROC_BROWSER_TEST_F(CompositedScrollingBrowserTest,
                        MAYBE_Scroll3DTransformedScroller) {
-  LoadURL();
+  LoadURL(kCompositedScrollingDataURL);
+  ASSERT_EQ(0, GetScrollTop());
+
   double scroll_distance =
       DoTouchScroll(gfx::Point(50, 150), gfx::Vector2d(0, 100));
   // The scroll distance is increased due to the rotation of the scroller.
   EXPECT_NEAR(100 / std::cos(gfx::DegToRad(30.f)), scroll_distance, 1.f);
+}
+
+class CompositedScrollingMetricTest : public CompositedScrollingBrowserTest,
+                                      public testing::WithParamInterface<bool> {
+ public:
+  CompositedScrollingMetricTest() = default;
+  ~CompositedScrollingMetricTest() override = default;
+
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    const bool enable_composited_scrolling = GetParam();
+    if (enable_composited_scrolling)
+      cmd->AppendSwitch(switches::kEnablePreferCompositingToLCDText);
+    else
+      cmd->AppendSwitch(switches::kDisableThreadedScrolling);
+  }
+
+  bool CompositingEnabled() { return GetParam(); }
+
+  const char* kWheelHistogramName = "Renderer4.ScrollingThread.Wheel";
+  const char* kTouchHistogramName = "Renderer4.ScrollingThread.Touch";
+
+  // These values are defined in input_handler_proxy.cc and match the enum in
+  // histograms.xml.
+  enum ScrollingThreadStatus {
+    kScrollingOnCompositor = 0,
+    kScrollingOnCompositorBlockedOnMain = 1,
+    kScrollingOnMain = 2,
+    kMaxValue = kScrollingOnMain,
+  };
+};
+
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         CompositedScrollingMetricTest,
+                         ::testing::Bool());
+
+// Tests the functionality of the histogram tracking composited vs main thread
+// scrolls.
+IN_PROC_BROWSER_TEST_P(CompositedScrollingMetricTest,
+                       RecordCorrectScrollingThread) {
+  LoadURL(R"HTML(
+    data:text/html;charset=utf-8,
+    <!DOCTYPE html>
+    <style>
+      %23scroller {
+        width: 300px;
+        height: 300px;
+        overflow: auto;
+      }
+      %23space {
+        width: 1000px;
+        height: 1000px;
+      }
+    </style>
+    <div id='scroller'>
+      <div id='space'></div>
+    </div>
+    <script>
+      document.title = 'ready';
+    </script>
+  )HTML");
+
+  base::HistogramTester histograms;
+
+  DoTouchScroll(gfx::Point(50, 50), gfx::Vector2d(0, 100));
+  DoTouchScroll(gfx::Point(50, 50), gfx::Vector2d(0, -100));
+
+  DoWheelScroll(gfx::Point(50, 50), gfx::Vector2d(0, 100));
+
+  content::FetchHistogramsFromChildProcesses();
+
+  base::HistogramBase::Sample expected_bucket =
+      CompositingEnabled() ? kScrollingOnCompositor : kScrollingOnMain;
+
+  histograms.ExpectUniqueSample(kTouchHistogramName, expected_bucket, 2);
+  histograms.ExpectUniqueSample(kWheelHistogramName, expected_bucket, 1);
+}
+
+// Tests the composited vs main thread scrolling histogram in the presence of
+// blocking event handlers.
+IN_PROC_BROWSER_TEST_P(CompositedScrollingMetricTest, BlockingEventHandlers) {
+  LoadURL(R"HTML(
+    data:text/html;charset=utf-8,
+    <!DOCTYPE html>
+    <style>
+      %23scroller {
+        width: 300px;
+        height: 300px;
+        overflow: auto;
+      }
+      %23space {
+        width: 1000px;
+        height: 1000px;
+      }
+    </style>
+    <div id='scroller'>
+      <div id='space'></div>
+    </div>
+    <script>
+      const scroller = document.getElementById('scroller');
+      scroller.addEventListener('wheel', (e) => { }, {passive: false});
+      scroller.addEventListener('touchstart', (e) => { }, {passive: false});
+      onload = () => {
+        document.title = 'ready';
+      }
+    </script>
+  )HTML");
+
+  base::HistogramTester histograms;
+
+  DoTouchScroll(gfx::Point(50, 50), gfx::Vector2d(0, 100));
+  DoTouchScroll(gfx::Point(50, 50), gfx::Vector2d(0, -100));
+
+  DoWheelScroll(gfx::Point(50, 50), gfx::Vector2d(0, 100));
+
+  content::FetchHistogramsFromChildProcesses();
+
+  base::HistogramBase::Sample expected_bucket =
+      CompositingEnabled() ? kScrollingOnCompositorBlockedOnMain
+                           : kScrollingOnMain;
+
+  histograms.ExpectUniqueSample(kTouchHistogramName, expected_bucket, 2);
+  histograms.ExpectUniqueSample(kWheelHistogramName, expected_bucket, 1);
+}
+
+// Tests the composited vs main thread scrolling histogram in the presence of
+// passive event handlers. These should behave the same as the case without any
+// event handlers at all.
+IN_PROC_BROWSER_TEST_P(CompositedScrollingMetricTest, PassiveEventHandlers) {
+  LoadURL(R"HTML(
+    data:text/html;charset=utf-8,
+    <!DOCTYPE html>
+    <style>
+      %23scroller {
+        width: 300px;
+        height: 300px;
+        overflow: auto;
+      }
+      %23space {
+        width: 1000px;
+        height: 1000px;
+      }
+    </style>
+    <div id='scroller'>
+      <div id='space'></div>
+    </div>
+    <script>
+      const scroller = document.getElementById('scroller');
+      scroller.addEventListener('wheel', (e) => { }, {passive: true});
+      scroller.addEventListener('touchstart', (e) => { }, {passive: true});
+      onload = () => {
+        document.title = 'ready';
+      }
+    </script>
+  )HTML");
+
+  base::HistogramTester histograms;
+
+  DoTouchScroll(gfx::Point(50, 50), gfx::Vector2d(0, 100));
+  DoTouchScroll(gfx::Point(50, 50), gfx::Vector2d(0, -100));
+
+  DoWheelScroll(gfx::Point(50, 50), gfx::Vector2d(0, 100));
+
+  content::FetchHistogramsFromChildProcesses();
+
+  base::HistogramBase::Sample expected_bucket =
+      CompositingEnabled() ? kScrollingOnCompositor : kScrollingOnMain;
+
+  histograms.ExpectUniqueSample(kTouchHistogramName, expected_bucket, 2);
+  histograms.ExpectUniqueSample(kWheelHistogramName, expected_bucket, 1);
 }
 
 }  // namespace content

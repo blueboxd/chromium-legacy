@@ -85,12 +85,22 @@ Browser* LaunchSystemWebApp(Profile* profile,
                             const GURL& url,
                             const apps::AppLaunchParams& params,
                             bool* did_create) {
+  auto* provider = WebAppProvider::Get(profile);
+  if (!provider)
+    return nullptr;
+
+  DCHECK_EQ(params.app_id, *GetAppIdForSystemWebApp(profile, app_type));
+
   if (did_create)
     *did_create = false;
 
   // TODO(https://crbug.com/1027030): Better understand and improve SWA launch
   // behavior. Early exit here skips logic in ShowApplicationWindow.
-  Browser* browser = FindSystemWebAppBrowser(profile, app_type);
+  Browser* browser = nullptr;
+  if (provider->system_web_app_manager().IsSingleWindow(app_type)) {
+    browser = FindSystemWebAppBrowser(profile, app_type);
+  }
+
   if (browser) {
     content::WebContents* web_contents =
         browser->tab_strip_model()->GetWebContentsAt(0);

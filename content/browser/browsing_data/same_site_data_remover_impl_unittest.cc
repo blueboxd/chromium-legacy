@@ -43,7 +43,7 @@ class SameSiteRemoverTestStoragePartition : public TestStoragePartition {
 
   void ClearData(uint32_t removal_mask,
                  uint32_t quota_storage_removal_mask,
-                 const OriginMatcherFunction& origin_matcher,
+                 OriginMatcherFunction origin_matcher,
                  network::mojom::CookieDeletionFilterPtr cookie_deletion_filter,
                  bool perform_storage_cleanup,
                  const base::Time begin,
@@ -52,7 +52,7 @@ class SameSiteRemoverTestStoragePartition : public TestStoragePartition {
     storage_partition_removal_data_.removal_mask = removal_mask;
     storage_partition_removal_data_.quota_storage_removal_mask =
         quota_storage_removal_mask;
-    storage_partition_removal_data_.origin_matcher = origin_matcher;
+    storage_partition_removal_data_.origin_matcher = std::move(origin_matcher);
     std::move(callback).Run();
   }
 

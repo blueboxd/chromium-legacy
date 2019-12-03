@@ -34,7 +34,7 @@ constexpr char kComponentsRootPath[] = "cros-components";
 
 // All downloadable Chrome OS components.
 const ComponentConfig kConfigs[] = {
-    {"epson-inkjet-printer-escpr", "3.0",
+    {"epson-inkjet-printer-escpr", "4.0",
      "1913a5e0a6cad30b6f03e176177e0d7ed62c5d6700a9c66da556d7c3f5d6a47e"},
     {"cros-termina", "800.1",
      "e9d960f84f628e1f42d05de4046bb5b3154b6f1f65c08412c6af57a29aecaffb"},

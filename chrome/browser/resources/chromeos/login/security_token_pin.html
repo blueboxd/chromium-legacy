@@ -27,26 +27,14 @@
       <div slot="footer">
         <div id="pinKeyboardContainer">
           <pin-keyboard id="pinKeyboard" enable-letters
-              has-error="[[hasError_(parameters, userEdited_)]]"
-              aria-label$="[[getAriaLabel_(locale, parameters, errorLabelId_,
-                                           userEdited_)]]"
+              has-error="[[isErrorLabelVisible_(errorLabelId_, userEdited_)]]"
+              aria-invalid$="[[isAriaInvalid_(parameters, userEdited_)]]"
               on-pin-change="onPinChange_" on-submit="onSubmit_"
               disabled="[[!canSubmit_]]">
-            <div id="errorContainer" problem
-                hidden="[[!hasError_(parameters, userEdited_)]]">
+            <div id="errorContainer" role="alert" problem
+                hidden$="[[!isLabelVisible_(parameters, userEdited_)]]">
               <iron-icon id="errorIcon" icon="cr:error-outline"></iron-icon>
-              <span hidden="[[!isErrorLabelVisible_(
-                                   errorLabelId_, userEdited_)]]">
-                [[i18nDynamic(locale, errorLabelId_)]]
-              </span>
-              <span hidden="[[!isErrorLabelVisible_(
-                                   errorLabelId_, userEdited_)]]">
-                [[i18nDynamic(locale, 'securityTokenPinDialogTryAgain')]]
-              </span>
-              <span hidden="[[!isAttemptsLeftVisible_(parameters)]]">
-                [[i18nDynamic(locale, 'securityTokenPinDialogAttemptsLeft',
-                              parameters.attemptsLeft)]]
-              </span>
+              [[getLabel_(locale, parameters, errorLabelId_, userEdited_)]]
             </div>
           </pin-keyboard>
         </div>

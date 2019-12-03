@@ -120,6 +120,12 @@ DisplayMode TestAppRegistrar::GetAppUserDisplayMode(const AppId& app_id) const {
   return DisplayMode::kBrowser;
 }
 
+std::vector<WebApplicationIconInfo> TestAppRegistrar::GetAppIconInfos(
+    const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return {};
+}
+
 std::vector<AppId> TestAppRegistrar::GetAppIds() const {
   std::vector<AppId> result;
   for (const std::pair<AppId, AppInfo>& it : installed_apps_) {

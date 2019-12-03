@@ -65,6 +65,8 @@ crbug.com/457718 external/wpt/css/css-pseudo/marker-content-003.html [ Failure ]
 crbug.com/457718 external/wpt/css/css-pseudo/marker-content-003b.html [ Failure ]
 crbug.com/457718 external/wpt/css/css-pseudo/marker-content-004.html [ Failure ]
 crbug.com/457718 external/wpt/css/css-pseudo/marker-content-006.html [ Failure ]
+crbug.com/1012289 external/wpt/css/css-pseudo/marker-unicode-bidi-default.html [ Failure ]
+crbug.com/1012289 external/wpt/css/css-pseudo/marker-unicode-bidi-normal.html [ Failure ]
 
 ### external/wpt/css/css-shapes/shape-outside/supported-shapes/polygon/
 crbug.com/591099 external/wpt/css/css-shapes/shape-outside/supported-shapes/polygon/shape-outside-polygon-017.html [ Failure ]

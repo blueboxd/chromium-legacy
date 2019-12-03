@@ -233,31 +233,6 @@ TEST_F(CRWWebViewScrollViewProxyTest, ReleasingAScrollView) {
   [webViewScrollViewProxy_ setScrollView:nil];
 }
 
-// Tests that multiple WebViewScrollViewProxies hold onto the same underlying
-// UIScrollView
-TEST_F(CRWWebViewScrollViewProxyTest, MultipleWebViewScrollViewProxies) {
-  [webViewScrollViewProxy_ setScrollView:mockScrollView_];
-
-  CRWWebViewScrollViewProxy* webViewScrollViewProxy1 =
-      [[CRWWebViewScrollViewProxy alloc] init];
-  [webViewScrollViewProxy1 setScrollView:mockScrollView_];
-
-  CRWWebViewScrollViewProxy* webViewScrollViewProxy2 =
-      [[CRWWebViewScrollViewProxy alloc] init];
-  [webViewScrollViewProxy2 setScrollView:mockScrollView_];
-
-  // Arbitrary point.
-  const CGPoint point = CGPointMake(10, 10);
-  [[[mockScrollView_ stub] andReturnValue:[NSValue valueWithCGPoint:point]]
-      contentOffset];
-  EXPECT_TRUE(
-      CGPointEqualToPoint(point, [webViewScrollViewProxy_ contentOffset]));
-  EXPECT_TRUE(
-      CGPointEqualToPoint(point, [webViewScrollViewProxy1 contentOffset]));
-  EXPECT_TRUE(
-      CGPointEqualToPoint(point, [webViewScrollViewProxy2 contentOffset]));
-}
-
 // Tests that CRWWebViewScrollViewProxy correctly delegates property setters to
 // the underlying UIScrollView.
 TEST_F(CRWWebViewScrollViewProxyTest, ScrollViewSetProperties) {

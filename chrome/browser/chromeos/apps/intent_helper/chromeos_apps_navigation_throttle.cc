@@ -230,7 +230,7 @@ void ChromeOsAppsNavigationThrottle::CancelNavigation() {
   }
 }
 
-bool ChromeOsAppsNavigationThrottle::ShouldDeferNavigationForArc(
+bool ChromeOsAppsNavigationThrottle::ShouldDeferNavigation(
     content::NavigationHandle* handle) {
   // Query for ARC apps, and if we are handling a link navigation, allow the
   // preferred app (if it exists) to be launched unless we are on a device

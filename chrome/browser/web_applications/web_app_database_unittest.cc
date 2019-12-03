@@ -79,14 +79,12 @@ class WebAppDatabaseTest : public WebAppTest {
         DisplayMode::kStandalone, DisplayMode::kFullscreen};
     app->SetDisplayMode(display_modes[(suffix >> 4) & 3]);
 
-    const std::string icon_url =
-        base_url + "/icon" + base::NumberToString(suffix);
-    const int icon_size_in_px = 256;
-
-    WebApp::Icons icons;
-    icons.push_back({GURL(icon_url), icon_size_in_px});
-
-    app->SetIcons(std::move(icons));
+    WebApplicationIconInfo icon;
+    icon.url = GURL(base_url + "/icon" + base::NumberToString(suffix));
+    const SquareSizePx size = 256;
+    icon.square_size_px = size;
+    app->SetIconInfos({std::move(icon)});
+    app->SetDownloadedIconSizes({size});
 
     WebApp::SyncData sync_data;
     sync_data.name = "Sync" + name;
@@ -275,7 +273,8 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app->description().empty());
   EXPECT_TRUE(app->scope().is_empty());
   EXPECT_FALSE(app->theme_color().has_value());
-  EXPECT_TRUE(app->icons().empty());
+  EXPECT_TRUE(app->icon_infos().empty());
+  EXPECT_TRUE(app->downloaded_icon_sizes().empty());
   EXPECT_FALSE(app->is_in_sync_install());
   EXPECT_TRUE(app->sync_data().name.empty());
   EXPECT_FALSE(app->sync_data().theme_color.has_value());
@@ -304,7 +303,8 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app_copy->description().empty());
   EXPECT_TRUE(app_copy->scope().is_empty());
   EXPECT_FALSE(app_copy->theme_color().has_value());
-  EXPECT_TRUE(app_copy->icons().empty());
+  EXPECT_TRUE(app_copy->icon_infos().empty());
+  EXPECT_TRUE(app_copy->downloaded_icon_sizes().empty());
   EXPECT_FALSE(app_copy->is_in_sync_install());
   EXPECT_TRUE(app_copy->sync_data().name.empty());
   EXPECT_FALSE(app_copy->sync_data().theme_color.has_value());
@@ -319,15 +319,18 @@ TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {
   auto app = CreateWebApp(base_url, 0);
   auto app_id = app->app_id();
 
-  WebApp::Icons icons;
+  std::vector<WebApplicationIconInfo> icons;
+  std::vector<SquareSizePx> sizes;
   for (int i = 1; i <= num_icons; ++i) {
-    const std::string icon_url =
-        base_url + "/icon" + base::NumberToString(num_icons);
+    WebApplicationIconInfo icon;
+    icon.url = GURL(base_url + "/icon" + base::NumberToString(num_icons));
     // Let size equals the icon's number squared.
-    const int icon_size_in_px = i * i;
-    icons.push_back({GURL(icon_url), icon_size_in_px});
+    icon.square_size_px = i * i;
+    sizes.push_back(icon.square_size_px);
+    icons.push_back(std::move(icon));
   }
-  app->SetIcons(std::move(icons));
+  app->SetIconInfos(std::move(icons));
+  app->SetDownloadedIconSizes(std::move(sizes));
 
   controller().RegisterApp(std::move(app));
 
@@ -335,10 +338,10 @@ TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {
   EXPECT_EQ(1UL, registry.size());
 
   std::unique_ptr<WebApp>& app_copy = registry.at(app_id);
-  EXPECT_EQ(static_cast<unsigned>(num_icons), app_copy->icons().size());
+  EXPECT_EQ(static_cast<unsigned>(num_icons), app_copy->icon_infos().size());
   for (int i = 1; i <= num_icons; ++i) {
     const int icon_size_in_px = i * i;
-    EXPECT_EQ(icon_size_in_px, app_copy->icons()[i - 1].size_in_px);
+    EXPECT_EQ(icon_size_in_px, app_copy->icon_infos()[i - 1].square_size_px);
   }
 }
 

@@ -532,6 +532,7 @@ java_cpp_enum("chrome_android_java_enums_srcjar") {
     "//chrome/browser/android/digital_asset_links/digital_asset_links_handler.h",
     "//chrome/browser/android/explore_sites/explore_sites_bridge.h",
     "//chrome/browser/android/explore_sites/explore_sites_feature.h",
+    "//chrome/browser/android/feature_utilities.h",
     "//chrome/browser/android/feedback/connectivity_checker.cc",
     "//chrome/browser/android/policy/policy_auditor.cc",
     "//chrome/browser/android/shortcut_info.h",

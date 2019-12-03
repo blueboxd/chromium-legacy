@@ -17,6 +17,7 @@
 #include "media/cast/net/cast_transport.h"
 #include "media/cast/test/utility/default_config.h"
 #include "media/mojo/mojom/remoting.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -127,7 +128,7 @@ class RemotingSenderTest : public ::testing::Test {
     receiver_ssrc_ = video_config.receiver_ssrc;
     remoting_sender_ = std::make_unique<RemotingSender>(
         cast_environment_, &transport_, video_config, std::move(consumer_end),
-        mojo::MakeRequest(&sender_),
+        sender_.BindNewPipeAndPassReceiver(),
         base::BindOnce(
             [](bool expecting_error_callback_run) {
               CHECK(expecting_error_callback_run);
@@ -254,7 +255,7 @@ class RemotingSenderTest : public ::testing::Test {
   const scoped_refptr<media::cast::CastEnvironment> cast_environment_;
   FakeTransport transport_;
   std::unique_ptr<RemotingSender> remoting_sender_;
-  media::mojom::RemotingDataStreamSenderPtr sender_;
+  mojo::Remote<media::mojom::RemotingDataStreamSender> sender_;
   mojo::ScopedDataPipeProducerHandle producer_end_;
   bool expecting_error_callback_run_;
   uint32_t receiver_ssrc_;

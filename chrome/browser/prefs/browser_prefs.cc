@@ -516,6 +516,10 @@ const char kDisplayRotationAcceleratorDialogHasBeenAccepted[] =
     "settings.a11y.display_rotation_accelerator_dialog_has_been_accepted";
 #endif  // defined(OS_CHROMEOS)
 
+// Deprecated 11/2019
+const char kBlacklistedCredentialsNormalized[] =
+    "profile.blacklisted_credentials_normalized";
+
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -601,6 +605,8 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterBooleanPref(
       kDisplayRotationAcceleratorDialogHasBeenAccepted, false);
 #endif  // defined(OS_CHROMEOS)
+
+  registry->RegisterBooleanPref(kBlacklistedCredentialsNormalized, false);
 }
 
 }  // namespace
@@ -1237,4 +1243,7 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 10/2019.
   profile_prefs->ClearPref(kDisplayRotationAcceleratorDialogHasBeenAccepted);
 #endif  // defined(OS_CHROMEOS)
+
+  // Added 11/2019.
+  profile_prefs->ClearPref(kBlacklistedCredentialsNormalized);
 }

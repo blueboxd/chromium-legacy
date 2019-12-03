@@ -48,18 +48,6 @@ void GetInterfaceImpl(const std::string& interface_name,
   if (!process)
     return;
 
-  // RestrictedCookieManager creation is different between frames and service
-  // workers, so it's handled here.
-  if (interface_name == network::mojom::RestrictedCookieManager::Name_) {
-    mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver(
-        std::move(interface_pipe));
-    process->GetStoragePartition()->CreateRestrictedCookieManager(
-        network::mojom::RestrictedCookieManagerRole::SCRIPT, origin,
-        origin.GetURL(), origin, true /* is_service_worker */, process_id,
-        MSG_ROUTING_NONE, std::move(receiver));
-    return;
-  }
-
   BindWorkerInterface(interface_name, std::move(interface_pipe), process,
                       origin);
 }

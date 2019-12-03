@@ -4,6 +4,7 @@
 
 #include "base/run_loop.h"
 #include "chrome/browser/ui/autofill/payments/webauthn_dialog_controller_impl.h"
+#include "chrome/browser/ui/autofill/payments/webauthn_dialog_state.h"
 #include "chrome/browser/ui/autofill/payments/webauthn_dialog_view.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -11,6 +12,13 @@
 #include "chrome/browser/ui/views/autofill/payments/webauthn_dialog_view_impl.h"
 
 namespace autofill {
+
+namespace {
+// If ShowAndVerifyUi() is used, the tests must be named as "InvokeUi_"
+// appending these names.
+constexpr char kOfferDialogName[] = "Offer";
+constexpr char kVerifyDialogName[] = "Verify";
+}  // namespace
 
 class WebauthnDialogBrowserTest : public DialogBrowserTest {
  public:
@@ -23,8 +31,12 @@ class WebauthnDialogBrowserTest : public DialogBrowserTest {
 
     // Do lazy initialization of WebauthnDialogControllerImpl.
     WebauthnDialogControllerImpl::CreateForWebContents(web_contents);
-    DCHECK(controller());
-    controller()->ShowOfferDialog(base::DoNothing());
+
+    if (name == kOfferDialogName) {
+      controller()->ShowOfferDialog(base::DoNothing());
+    } else if (name == kVerifyDialogName) {
+      controller()->ShowVerifyPendingDialog(base::DoNothing());
+    }
   }
 
   WebauthnDialogViewImpl* GetWebauthnDialog() {
@@ -51,15 +63,15 @@ class WebauthnDialogBrowserTest : public DialogBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(WebauthnDialogBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(WebauthnDialogBrowserTest, InvokeUi_default) {
+IN_PROC_BROWSER_TEST_F(WebauthnDialogBrowserTest, InvokeUi_Offer) {
   ShowAndVerifyUi();
 }
 
 // Ensures closing tab while dialog being visible is correctly handled.
 // RunUntilIdle() makes sure that nothing crashes after browser tab is closed.
 IN_PROC_BROWSER_TEST_F(WebauthnDialogBrowserTest,
-                       CanCloseTabWhileDialogShowing) {
-  ShowUi(std::string());
+                       OfferDialog_CanCloseTabWhileDialogShowing) {
+  ShowUi(kOfferDialogName);
   VerifyUi();
   browser()->tab_strip_model()->GetActiveWebContents()->Close();
   base::RunLoop().RunUntilIdle();
@@ -67,19 +79,81 @@ IN_PROC_BROWSER_TEST_F(WebauthnDialogBrowserTest,
 
 // Ensures closing browser while dialog being visible is correctly handled.
 IN_PROC_BROWSER_TEST_F(WebauthnDialogBrowserTest,
-                       CanCloseBrowserWhileDialogShowing) {
-  ShowUi(std::string());
+                       OfferDialog_CanCloseBrowserWhileDialogShowing) {
+  ShowUi(kOfferDialogName);
   VerifyUi();
   browser()->window()->Close();
   base::RunLoop().RunUntilIdle();
 }
 
 // Ensures dialog is closed when cancel button is clicked.
-IN_PROC_BROWSER_TEST_F(WebauthnDialogBrowserTest, ClickCancelButton) {
-  ShowUi(std::string());
+IN_PROC_BROWSER_TEST_F(WebauthnDialogBrowserTest,
+                       OfferDialog_ClickCancelButton) {
+  ShowUi(kOfferDialogName);
   VerifyUi();
   GetWebauthnDialog()->CancelDialog();
   base::RunLoop().RunUntilIdle();
+}
+
+IN_PROC_BROWSER_TEST_F(WebauthnDialogBrowserTest, InvokeUi_Verify) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(WebauthnDialogBrowserTest,
+                       VerifyPendingDialog_CanCloseTabWhileDialogShowing) {
+  ShowUi(kVerifyDialogName);
+  VerifyUi();
+  browser()->tab_strip_model()->GetActiveWebContents()->Close();
+  base::RunLoop().RunUntilIdle();
+}
+
+// Ensures closing browser while dialog being visible is correctly handled.
+IN_PROC_BROWSER_TEST_F(WebauthnDialogBrowserTest,
+                       VerifyPendingDialog_CanCloseBrowserWhileDialogShowing) {
+  ShowUi(kVerifyDialogName);
+  VerifyUi();
+  browser()->window()->Close();
+  base::RunLoop().RunUntilIdle();
+}
+
+// Ensures dialog can be closed when verification finishes.
+IN_PROC_BROWSER_TEST_F(WebauthnDialogBrowserTest,
+                       VerifyPendingDialog_VerificationFinishes) {
+  ShowUi(kVerifyDialogName);
+  VerifyUi();
+  controller()->CloseDialog();
+  base::RunLoop().RunUntilIdle();
+}
+
+// Ensures dialog is closed when cancel button is clicked.
+IN_PROC_BROWSER_TEST_F(WebauthnDialogBrowserTest,
+                       VerifyPendingDialog_ClickCancelButton) {
+  ShowUi(kVerifyDialogName);
+  VerifyUi();
+  GetWebauthnDialog()->CancelDialog();
+  base::RunLoop().RunUntilIdle();
+}
+
+// Ensures dialog cancel button is disabled when dialog state changed to
+// |kVerifyPendingButtonDisabled|.
+IN_PROC_BROWSER_TEST_F(WebauthnDialogBrowserTest,
+                       VerifyPendingDialog_CancelButtonDisabled) {
+  ShowUi(kVerifyDialogName);
+  VerifyUi();
+  controller()->UpdateDialog(WebauthnDialogState::kVerifyPendingButtonDisabled);
+  EXPECT_FALSE(
+      GetWebauthnDialog()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
+}
+
+// Ensures dialog cancel button is enabled when dialog state changed to
+// |kVerifyPending|.
+IN_PROC_BROWSER_TEST_F(WebauthnDialogBrowserTest,
+                       VerifyPendingDialog_CancelButtonEnabled) {
+  ShowUi(kVerifyDialogName);
+  VerifyUi();
+  controller()->UpdateDialog(WebauthnDialogState::kVerifyPending);
+  EXPECT_TRUE(
+      GetWebauthnDialog()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
 }
 
 }  // namespace autofill

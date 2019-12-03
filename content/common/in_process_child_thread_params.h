@@ -5,6 +5,8 @@
 #ifndef CONTENT_COMMON_IN_PROCESS_CHILD_THREAD_PARAMS_H_
 #define CONTENT_COMMON_IN_PROCESS_CHILD_THREAD_PARAMS_H_
 
+#include <string>
+
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
@@ -19,7 +21,8 @@ class CONTENT_EXPORT InProcessChildThreadParams {
  public:
   InProcessChildThreadParams(
       scoped_refptr<base::SingleThreadTaskRunner> io_runner,
-      mojo::OutgoingInvitation* mojo_invitation);
+      mojo::OutgoingInvitation* mojo_invitation,
+      const std::string& service_request_token);
   InProcessChildThreadParams(const InProcessChildThreadParams& other);
   ~InProcessChildThreadParams();
 
@@ -29,9 +32,14 @@ class CONTENT_EXPORT InProcessChildThreadParams {
 
   mojo::OutgoingInvitation* mojo_invitation() const { return mojo_invitation_; }
 
+  const std::string& service_request_token() const {
+    return service_request_token_;
+  }
+
  private:
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
   mojo::OutgoingInvitation* const mojo_invitation_;
+  std::string service_request_token_;
 };
 
 }  // namespace content

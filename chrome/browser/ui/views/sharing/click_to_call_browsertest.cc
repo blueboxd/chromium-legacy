@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -81,7 +82,7 @@ class ClickToCallBrowserTest : public SharingBrowserTest {
   base::test::ScopedFeatureList feature_list_;
 
   std::string HistogramName(const char* suffix) {
-    return base::StrCat({"Sharing.ClickToCallPhoneNumber", suffix});
+    return base::StrCat({"Sharing.ClickToCall", suffix});
   }
 
  private:
@@ -232,43 +233,59 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, ContextMenu_TelLink_Histograms) {
   // Trigger a context menu for a link with 8 digits and 9 characters.
   std::unique_ptr<TestRenderViewContextMenu> menu = InitContextMenu(
       GURL("tel:1234-5678"), kLinkText, kTextWithoutPhoneNumber);
+  // RegexVariantResult is logged on a thread pool.
+  base::ThreadPoolInstance::Get()->FlushForTesting();
 
-  base::HistogramTester::CountsMap expected_counts;
-  expected_counts[HistogramName("Digits")] = 1;
-  expected_counts[HistogramName("Digits.RightClickLink.Showing")] = 1;
-  expected_counts[HistogramName("Length")] = 1;
-  expected_counts[HistogramName("Length.RightClickLink.Showing")] = 1;
+  base::HistogramTester::CountsMap expected_counts = {
+      {HistogramName("DevicesToShow"), 1},
+      {HistogramName("DevicesToShow.ContextMenu"), 1},
+      {HistogramName("PhoneNumberDigits"), 1},
+      {HistogramName("PhoneNumberDigits.RightClickLink.Showing"), 1},
+      {HistogramName("PhoneNumberLength"), 1},
+      {HistogramName("PhoneNumberLength.RightClickLink.Showing"), 1},
+  };
   EXPECT_THAT(histograms.GetTotalCountsForPrefix(HistogramName("")),
               testing::ContainerEq(expected_counts));
 
-  histograms.ExpectUniqueSample(HistogramName("Digits"),
+  histograms.ExpectUniqueSample(HistogramName("PhoneNumberDigits"),
                                 /*sample=*/8, /*count=*/1);
-  histograms.ExpectUniqueSample(HistogramName("Digits.RightClickLink.Showing"),
-                                /*sample=*/8, /*count=*/1);
-  histograms.ExpectUniqueSample(HistogramName("Length"),
+  histograms.ExpectUniqueSample(
+      HistogramName("PhoneNumberDigits.RightClickLink.Showing"),
+      /*sample=*/8, /*count=*/1);
+  histograms.ExpectUniqueSample(HistogramName("PhoneNumberLength"),
                                 /*sample=*/9, /*count=*/1);
-  histograms.ExpectUniqueSample(HistogramName("Length.RightClickLink.Showing"),
-                                /*sample=*/9, /*count=*/1);
+  histograms.ExpectUniqueSample(
+      HistogramName("PhoneNumberLength.RightClickLink.Showing"),
+      /*sample=*/9, /*count=*/1);
 
   // Send the number to the device in the context menu.
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE,
                        0);
+  // RegexVariantResult is logged on a thread pool.
+  base::ThreadPoolInstance::Get()->FlushForTesting();
 
-  expected_counts[HistogramName("Digits")] = 2;
-  expected_counts[HistogramName("Digits.RightClickLink.Sending")] = 1;
-  expected_counts[HistogramName("Length")] = 2;
-  expected_counts[HistogramName("Length.RightClickLink.Sending")] = 1;
+  expected_counts.insert({
+      {HistogramName("SelectedDeviceIndex"), 1},
+      {HistogramName("SelectedDeviceIndex.ContextMenu"), 1},
+      {HistogramName("PhoneNumberDigits.RightClickLink.Sending"), 1},
+      {HistogramName("PhoneNumberLength.RightClickLink.Sending"), 1},
+  });
+  expected_counts[HistogramName("PhoneNumberDigits")] = 2;
+  expected_counts[HistogramName("PhoneNumberLength")] = 2;
+
   EXPECT_THAT(histograms.GetTotalCountsForPrefix(HistogramName("")),
               testing::ContainerEq(expected_counts));
 
-  histograms.ExpectUniqueSample(HistogramName("Digits"),
+  histograms.ExpectUniqueSample(HistogramName("PhoneNumberDigits"),
                                 /*sample=*/8, /*count=*/2);
-  histograms.ExpectUniqueSample(HistogramName("Digits.RightClickLink.Sending"),
-                                /*sample=*/8, /*count=*/1);
-  histograms.ExpectUniqueSample(HistogramName("Length"),
+  histograms.ExpectUniqueSample(
+      HistogramName("PhoneNumberDigits.RightClickLink.Sending"),
+      /*sample=*/8, /*count=*/1);
+  histograms.ExpectUniqueSample(HistogramName("PhoneNumberLength"),
                                 /*sample=*/9, /*count=*/2);
-  histograms.ExpectUniqueSample(HistogramName("Length.RightClickLink.Sending"),
-                                /*sample=*/9, /*count=*/1);
+  histograms.ExpectUniqueSample(
+      HistogramName("PhoneNumberLength.RightClickLink.Sending"),
+      /*sample=*/9, /*count=*/1);
 }
 
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
@@ -280,47 +297,84 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
   // Trigger a context menu for a selection with 8 digits and 9 characters.
   std::unique_ptr<TestRenderViewContextMenu> menu =
       InitContextMenu(GURL(kNonTelUrl), kLinkText, "1234-5678");
+  // RegexVariantResult is logged on a thread pool.
+  base::ThreadPoolInstance::Get()->FlushForTesting();
 
-  base::HistogramTester::CountsMap expected_counts;
-  expected_counts[HistogramName("Digits")] = 1;
-  expected_counts[HistogramName("Digits.RightClickSelection.Showing")] = 1;
-  expected_counts[HistogramName("Length")] = 1;
-  expected_counts[HistogramName("Length.RightClickSelection.Showing")] = 1;
+  base::HistogramTester::CountsMap expected_counts = {
+      {HistogramName("DevicesToShow"), 1},
+      {HistogramName("DevicesToShow.ContextMenu"), 1},
+      {HistogramName("PhoneNumberDigits"), 1},
+      {HistogramName("PhoneNumberDigits.RightClickSelection.Showing"), 1},
+      {HistogramName("PhoneNumberLength"), 1},
+      {HistogramName("PhoneNumberLength.RightClickSelection.Showing"), 1},
+      {HistogramName(
+           "PhoneNumberRegexVariantResult.LowConfidenceModified.Showing"),
+       1},
+      {HistogramName("ContextMenuPhoneNumberParsingDelay"), 2},
+      {HistogramName("ContextMenuPhoneNumberParsingDelay.Simple"), 1},
+      {HistogramName(
+           "ContextMenuPhoneNumberParsingDelay.LowConfidenceModified"),
+       1},
+  };
   EXPECT_THAT(histograms.GetTotalCountsForPrefix(HistogramName("")),
               testing::ContainerEq(expected_counts));
 
-  histograms.ExpectUniqueSample(HistogramName("Digits"),
+  histograms.ExpectUniqueSample(HistogramName("PhoneNumberDigits"),
                                 /*sample=*/8, /*count=*/1);
   histograms.ExpectUniqueSample(
-      HistogramName("Digits.RightClickSelection.Showing"),
+      HistogramName("PhoneNumberDigits.RightClickSelection.Showing"),
       /*sample=*/8, /*count=*/1);
-  histograms.ExpectUniqueSample(HistogramName("Length"),
+  histograms.ExpectUniqueSample(HistogramName("PhoneNumberLength"),
                                 /*sample=*/9, /*count=*/1);
   histograms.ExpectUniqueSample(
-      HistogramName("Length.RightClickSelection.Showing"),
+      HistogramName("PhoneNumberLength.RightClickSelection.Showing"),
       /*sample=*/9, /*count=*/1);
+  histograms.ExpectUniqueSample(
+      HistogramName(
+          "PhoneNumberRegexVariantResult.LowConfidenceModified.Showing"),
+      /*sample=*/PhoneNumberRegexVariantResult::kBothMatch, /*count=*/1);
 
   // Send the number to the device in the context menu.
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE,
                        0);
+  // RegexVariantResult is logged on a thread pool.
+  base::ThreadPoolInstance::Get()->FlushForTesting();
 
-  expected_counts[HistogramName("Digits")] = 2;
-  expected_counts[HistogramName("Digits.RightClickSelection.Sending")] = 1;
-  expected_counts[HistogramName("Length")] = 2;
-  expected_counts[HistogramName("Length.RightClickSelection.Sending")] = 1;
+  expected_counts.insert({
+      {HistogramName("SelectedDeviceIndex"), 1},
+      {HistogramName("SelectedDeviceIndex.ContextMenu"), 1},
+      {HistogramName("PhoneNumberDigits.RightClickSelection.Sending"), 1},
+      {HistogramName("PhoneNumberLength"), 2},
+      {HistogramName("PhoneNumberLength.RightClickSelection.Sending"), 1},
+      {HistogramName(
+           "PhoneNumberRegexVariantResult.LowConfidenceModified.Sending"),
+       1},
+  });
+  expected_counts[HistogramName("PhoneNumberDigits")] = 2;
+  expected_counts[HistogramName("PhoneNumberLength")] = 2;
+
   EXPECT_THAT(histograms.GetTotalCountsForPrefix(HistogramName("")),
               testing::ContainerEq(expected_counts));
 
-  histograms.ExpectUniqueSample(HistogramName("Digits"),
-                                /*sample=*/8, /*count=*/2);
+  histograms.ExpectUniqueSample(HistogramName("PhoneNumberDigits"),
+                                /*sample=*/8,
+                                /*count=*/2);
   histograms.ExpectUniqueSample(
-      HistogramName("Digits.RightClickSelection.Sending"),
-      /*sample=*/8, /*count=*/1);
-  histograms.ExpectUniqueSample(HistogramName("Length"),
-                                /*sample=*/9, /*count=*/2);
+      HistogramName("PhoneNumberDigits.RightClickSelection.Sending"),
+      /*sample=*/8,
+      /*count=*/1);
+  histograms.ExpectUniqueSample(HistogramName("PhoneNumberLength"),
+                                /*sample=*/9,
+                                /*count=*/2);
   histograms.ExpectUniqueSample(
-      HistogramName("Length.RightClickSelection.Sending"),
-      /*sample=*/9, /*count=*/1);
+      HistogramName("PhoneNumberLength.RightClickSelection.Sending"),
+      /*sample=*/9,
+      /*count=*/1);
+  histograms.ExpectUniqueSample(
+      HistogramName(
+          "PhoneNumberRegexVariantResult.LowConfidenceModified.Sending"),
+      /*sample=*/PhoneNumberRegexVariantResult::kBothMatch,
+      /*count=*/1);
 }
 
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, ContextMenu_UKM) {

@@ -375,7 +375,13 @@ void NGBoxFragmentPainter::PaintObject(
       if (UNLIKELY(descendants_)) {
         // Use the descendants cursor for this painter if it is given.
         // Self-painting inline box paints only parts of the container block.
-        PaintInlineItems(paint_info.ForDescendants(), paint_offset,
+        // Adjust |paint_offset| because it is the offset of the inline box, but
+        // |descendants_| has offsets to the contaiing block.
+        DCHECK(box_item_ && box_item_->HasSelfPaintingLayer());
+        const PhysicalOffset paint_offset_to_inline_formatting_context =
+            paint_offset - box_item_->Offset();
+        PaintInlineItems(paint_info.ForDescendants(),
+                         paint_offset_to_inline_formatting_context,
                          descendants_);
       } else if (items_) {
         // Paint |NGFragmentItems| for this block if we have one.

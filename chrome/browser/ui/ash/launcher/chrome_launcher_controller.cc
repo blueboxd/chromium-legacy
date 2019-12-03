@@ -258,8 +258,18 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   }
 
   if (base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry)) {
-    browser_status_monitor_ = std::make_unique<BrowserStatusMonitor>(this);
-    browser_status_monitor_->Initialize();
+    if (SessionControllerClientImpl::IsMultiProfileAvailable()) {
+      // If running in separated destkop mode, we create the multi profile
+      // version of status monitor.
+      browser_status_monitor_ =
+          std::make_unique<MultiProfileBrowserStatusMonitor>(this);
+      browser_status_monitor_->Initialize();
+    } else {
+      // Create our v1/v2 application / browser monitors which will inform the
+      // launcher of status changes.
+      browser_status_monitor_ = std::make_unique<BrowserStatusMonitor>(this);
+      browser_status_monitor_->Initialize();
+    }
     app_window_controllers_.push_back(
         std::make_unique<AppServiceAppWindowLauncherController>(this));
     return;

@@ -255,8 +255,7 @@ void LocationBarView::Init() {
       params.types_enabled.push_back(PageActionIconType::kManagePasswords);
     }
     params.types_enabled.push_back(PageActionIconType::kIntentPicker);
-    if (base::FeatureList::IsEnabled(features::kDesktopPWAsOmniboxInstall))
-      params.types_enabled.push_back(PageActionIconType::kPwaInstall);
+    params.types_enabled.push_back(PageActionIconType::kPwaInstall);
     params.types_enabled.push_back(PageActionIconType::kFind);
     params.types_enabled.push_back(PageActionIconType::kTranslate);
     params.types_enabled.push_back(PageActionIconType::kZoom);

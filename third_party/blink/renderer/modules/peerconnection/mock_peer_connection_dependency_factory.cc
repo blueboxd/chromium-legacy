@@ -192,8 +192,9 @@ MockWebRtcVideoTrack::MockWebRtcVideoTrack(
 MockWebRtcVideoTrack::~MockWebRtcVideoTrack() {}
 
 scoped_refptr<MockWebRtcVideoTrack> MockWebRtcVideoTrack::Create(
-    const std::string& id) {
-  return new rtc::RefCountedObject<MockWebRtcVideoTrack>(id, nullptr);
+    const std::string& id,
+    scoped_refptr<webrtc::VideoTrackSourceInterface> source) {
+  return new rtc::RefCountedObject<MockWebRtcVideoTrack>(id, source.get());
 }
 
 void MockWebRtcVideoTrack::AddOrUpdateSink(
@@ -250,6 +251,62 @@ void MockWebRtcVideoTrack::SetEnded() {
   for (auto* o : observers_)
     o->OnChanged();
 }
+
+scoped_refptr<MockWebRtcVideoTrackSource> MockWebRtcVideoTrackSource::Create(
+    bool supports_encoded_output) {
+  return new rtc::RefCountedObject<MockWebRtcVideoTrackSource>(
+      supports_encoded_output);
+}
+
+MockWebRtcVideoTrackSource::MockWebRtcVideoTrackSource(
+    bool supports_encoded_output)
+    : supports_encoded_output_(supports_encoded_output) {}
+
+bool MockWebRtcVideoTrackSource::is_screencast() const {
+  return false;
+}
+
+absl::optional<bool> MockWebRtcVideoTrackSource::needs_denoising() const {
+  return absl::nullopt;
+}
+
+bool MockWebRtcVideoTrackSource::GetStats(Stats* stats) {
+  return false;
+}
+
+bool MockWebRtcVideoTrackSource::SupportsEncodedOutput() const {
+  return supports_encoded_output_;
+}
+
+void MockWebRtcVideoTrackSource::GenerateKeyFrame() {}
+
+void MockWebRtcVideoTrackSource::AddEncodedSink(
+    rtc::VideoSinkInterface<webrtc::RecordableEncodedFrame>* sink) {}
+
+void MockWebRtcVideoTrackSource::RemoveEncodedSink(
+    rtc::VideoSinkInterface<webrtc::RecordableEncodedFrame>* sink) {}
+
+void MockWebRtcVideoTrackSource::RegisterObserver(
+    webrtc::ObserverInterface* observer) {}
+
+void MockWebRtcVideoTrackSource::UnregisterObserver(
+    webrtc::ObserverInterface* observer) {}
+
+webrtc::MediaSourceInterface::SourceState MockWebRtcVideoTrackSource::state()
+    const {
+  return webrtc::MediaSourceInterface::kLive;
+}
+
+bool MockWebRtcVideoTrackSource::remote() const {
+  return supports_encoded_output_;
+}
+
+void MockWebRtcVideoTrackSource::AddOrUpdateSink(
+    rtc::VideoSinkInterface<webrtc::VideoFrame>* sink,
+    const rtc::VideoSinkWants& wants) {}
+
+void MockWebRtcVideoTrackSource::RemoveSink(
+    rtc::VideoSinkInterface<webrtc::VideoFrame>* sink) {}
 
 class MockSessionDescription : public SessionDescriptionInterface {
  public:

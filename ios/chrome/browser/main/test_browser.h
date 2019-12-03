@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 
 class TestBrowser : public Browser {
  public:
@@ -21,6 +22,13 @@ class TestBrowser : public Browser {
   // constructor will return nil for GetTabModel().
   TestBrowser(ios::ChromeBrowserState* browser_state,
               WebStateList* web_state_list);
+
+  // Constructor that creates a test browser state and an empty web state list.
+  // Test fixtures will need to include a base::test::TaskEnvironment member if
+  // this constructor is used (since it creates a TestChromeBrowserState that
+  // requires a task environment).
+  TestBrowser();
+
   ~TestBrowser() override;
 
   // Browser.
@@ -32,10 +40,16 @@ class TestBrowser : public Browser {
   void RemoveObserver(BrowserObserver* observer) override;
 
  private:
+  // Used when the test browser creates and owns its own browser state.
+  std::unique_ptr<ios::ChromeBrowserState> owned_browser_state_;
+  // Used when the test browser creates and owns its own web state list.
+  std::unique_ptr<WebStateList> owned_web_state_list_;
+  FakeWebStateListDelegate web_state_list_delegate_;
+  // Used in all cases.
+  __strong CommandDispatcher* command_dispatcher_ = nil;
   ios::ChromeBrowserState* browser_state_ = nullptr;
   TabModel* tab_model_ = nil;
   WebStateList* web_state_list_ = nullptr;
-  __strong CommandDispatcher* command_dispatcher_ = nil;
   base::ObserverList<BrowserObserver, /* check_empty= */ true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowser);

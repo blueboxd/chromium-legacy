@@ -612,19 +612,11 @@ TEST_F(PermissionRequestManagerTest, UMAForTabSwitching) {
 
 TEST_F(PermissionRequestManagerTest,
        NotificationsUnderClientSideEmbargoAfterSeveralDenies) {
-  std::map<std::string, std::string> parameters;
-  parameters[kQuietNotificationPromptsUIFlavorParameterName] =
-#if defined(OS_ANDROID)
-      kQuietNotificationPromptsMiniInfobar;
-#else
-      kQuietNotificationPromptsAnimatedIcon;
-#endif
-  parameters[kQuietNotificationPromptsActivationParameterName] =
-      kQuietNotificationPromptsActivationAdaptive;
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeaturesAndParameters(
-      {{features::kQuietNotificationPrompts, parameters}},
-      {features::kBlockRepeatedNotificationPermissionPrompts});
+  feature_list.InitWithFeatures(
+      {features::kQuietNotificationPrompts,
+       features::kBlockRepeatedNotificationPermissionPrompts},
+      {});
 
   auto* permission_ui_selector =
       AdaptiveNotificationPermissionUiSelector::GetForProfile(profile());

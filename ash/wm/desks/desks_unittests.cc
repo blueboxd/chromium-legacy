@@ -1755,8 +1755,8 @@ TEST_F(
   EXPECT_TRUE(overview_controller->StartOverview());
   split_view_controller()->SnapWindow(win1.get(), SplitViewController::LEFT);
   EXPECT_EQ(win1.get(), split_view_controller()->left_window());
-  EXPECT_FALSE(split_view_controller()->CanSnapWindow(win2.get()));
-  EXPECT_FALSE(split_view_controller()->CanSnapWindow(win3.get()));
+  EXPECT_FALSE(CanSnapInSplitview(win2.get()));
+  EXPECT_FALSE(CanSnapInSplitview(win3.get()));
 
   // Switch to |desk_2| using its |mini_view|. Split view and overview should
   // end, but |win1| should retain its snapped state.
@@ -1955,7 +1955,7 @@ TEST_F(TabletModeDesksTest, RestoringUnsnappableWindowsInSplitView) {
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window.get());
   widget->non_client_view()->set_client_view(
       new TestClientView(widget, gfx::Size(350, 100)));
-  EXPECT_FALSE(split_view_controller()->CanSnapWindow(window.get()));
+  EXPECT_FALSE(CanSnapInSplitview(window.get()));
 
   // Change to a portrait orientation and expect it's possible to snap the
   // window.
@@ -1965,7 +1965,7 @@ TEST_F(TabletModeDesksTest, RestoringUnsnappableWindowsInSplitView) {
                               display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
             OrientationLockType::kPortraitPrimary);
-  EXPECT_TRUE(split_view_controller()->CanSnapWindow(window.get()));
+  EXPECT_TRUE(CanSnapInSplitview(window.get()));
 
   // Snap the window in this orientation.
   split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);

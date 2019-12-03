@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "content/browser/web_package/web_bundle_reader.h"
 #include "content/browser/web_package/web_bundle_source.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -48,11 +49,14 @@ class MockParser final : public data_decoder::mojom::WebBundleParser {
     else
       std::move(closure).Run();
   }
-  void WaitUntilParseResponseCalled(base::OnceClosure closure) {
+
+  void WaitUntilParseResponseCalled(
+      base::OnceCallback<void(data_decoder::mojom::BundleResponseLocationPtr)>
+          callback) {
     if (response_callback_.is_null())
-      wait_parse_response_callback_ = std::move(closure);
+      wait_parse_response_callback_ = std::move(callback);
     else
-      std::move(closure).Run();
+      std::move(callback).Run(std::move(parse_response_args_));
   }
 
  private:
@@ -66,16 +70,22 @@ class MockParser final : public data_decoder::mojom::WebBundleParser {
                      uint64_t response_length,
                      ParseResponseCallback callback) override {
     response_callback_ = std::move(callback);
-    if (!wait_parse_response_callback_.is_null())
-      std::move(wait_parse_response_callback_).Run();
+    parse_response_args_ = data_decoder::mojom::BundleResponseLocation::New(
+        response_offset, response_length);
+    if (!wait_parse_response_callback_.is_null()) {
+      std::move(wait_parse_response_callback_)
+          .Run(std::move(parse_response_args_));
+    }
   }
 
   mojo::Receiver<data_decoder::mojom::WebBundleParser> receiver_;
 
   ParseMetadataCallback metadata_callback_;
   ParseResponseCallback response_callback_;
+  data_decoder::mojom::BundleResponseLocationPtr parse_response_args_;
   base::OnceClosure wait_parse_metadata_callback_;
-  base::OnceClosure wait_parse_response_callback_;
+  base::OnceCallback<void(data_decoder::mojom::BundleResponseLocationPtr)>
+      wait_parse_response_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MockParser);
 };
@@ -98,12 +108,6 @@ class MockParserFactory final
     else
       wait_parse_metadata_callback_ = std::move(closure);
   }
-  void WaitUntilParseResponseCalled(base::OnceClosure closure) {
-    if (parser_)
-      parser_->WaitUntilParseResponseCalled(std::move(closure));
-    else
-      wait_parse_response_callback_ = std::move(closure);
-  }
 
   void RunMetadataCallback(data_decoder::mojom::BundleMetadataPtr metadata) {
     base::RunLoop run_loop;
@@ -113,12 +117,20 @@ class MockParserFactory final
     ASSERT_TRUE(parser_);
     parser_->RunMetadataCallback(std::move(metadata));
   }
-  void RunResponseCallback(data_decoder::mojom::BundleResponsePtr response) {
-    base::RunLoop run_loop;
-    WaitUntilParseResponseCalled(run_loop.QuitClosure());
-    run_loop.Run();
 
+  void RunResponseCallback(
+      data_decoder::mojom::BundleResponseLocationPtr expected_parse_args,
+      data_decoder::mojom::BundleResponsePtr response) {
     ASSERT_TRUE(parser_);
+    base::RunLoop run_loop;
+    parser_->WaitUntilParseResponseCalled(base::BindLambdaForTesting(
+        [&run_loop, &expected_parse_args](
+            data_decoder::mojom::BundleResponseLocationPtr parse_args) {
+          EXPECT_EQ(expected_parse_args->offset, parse_args->offset);
+          EXPECT_EQ(expected_parse_args->length, parse_args->length);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
     parser_->RunResponseCallback(std::move(response));
   }
 
@@ -143,7 +155,6 @@ class MockParserFactory final
   std::unique_ptr<MockParser> parser_;
   mojo::ReceiverSet<data_decoder::mojom::WebBundleParserFactory> receivers_;
   base::OnceClosure wait_parse_metadata_callback_;
-  base::OnceClosure wait_parse_response_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MockParserFactory);
 };
@@ -199,6 +210,7 @@ class MockWebBundleReaderFactoryImpl final : public MockWebBundleReaderFactory {
   void ReadAndFullfillResponse(
       WebBundleReader* reader,
       const GURL& url,
+      data_decoder::mojom::BundleResponseLocationPtr expected_parse_args,
       data_decoder::mojom::BundleResponsePtr response,
       WebBundleReader::ResponseCallback callback) override {
     ASSERT_TRUE(factory_);
@@ -217,15 +229,18 @@ class MockWebBundleReaderFactoryImpl final : public MockWebBundleReaderFactory {
                  },
                  run_loop.QuitClosure(), std::move(callback)));
 
-    factory_->RunResponseCallback(std::move(response));
+    factory_->RunResponseCallback(std::move(expected_parse_args),
+                                  std::move(response));
     run_loop.Run();
   }
 
-  void FullfillResponse(data_decoder::mojom::BundleResponsePtr response,
-                        WebBundleReader::ResponseCallback callback) override {
+  void FullfillResponse(
+      data_decoder::mojom::BundleResponseLocationPtr expected_parse_args,
+      data_decoder::mojom::BundleResponsePtr response) override {
     ASSERT_TRUE(factory_);
 
-    factory_->RunResponseCallback(std::move(response));
+    factory_->RunResponseCallback(std::move(expected_parse_args),
+                                  std::move(response));
   }
 
  private:

@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/i18n/number_formatting.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/ui/passphrase_textfield.h"
@@ -129,7 +130,7 @@ void RequestPinView::SetDialogParameters(SecurityTokenPinCodeType code_type,
                                          int attempts_left,
                                          bool accept_input) {
   locked_ = false;
-  SetErrorMessage(error_label, attempts_left);
+  SetErrorMessage(error_label, attempts_left, accept_input);
   SetAcceptInput(accept_input);
 
   switch (code_type) {
@@ -225,7 +226,8 @@ void RequestPinView::SetAcceptInput(bool accept_input) {
 }
 
 void RequestPinView::SetErrorMessage(SecurityTokenPinErrorLabel error_label,
-                                     int attempts_left) {
+                                     int attempts_left,
+                                     bool accept_input) {
   base::string16 error_message;
   switch (error_label) {
     case SecurityTokenPinErrorLabel::kInvalidPin:
@@ -253,17 +255,25 @@ void RequestPinView::SetErrorMessage(SecurityTokenPinErrorLabel error_label,
       break;
   }
 
-  if (attempts_left >= 0) {
-    if (!error_message.empty())
-      error_message.append(base::ASCIIToUTF16(" "));
-    error_message.append(l10n_util::GetStringFUTF16(
-        IDS_REQUEST_PIN_DIALOG_ATTEMPTS_LEFT,
-        base::ASCIIToUTF16(std::to_string(attempts_left))));
+  base::string16 display_message;
+  if (!accept_input) {
+    display_message = error_message;
+  } else if (attempts_left == -1) {
+    display_message = l10n_util::GetStringFUTF16(
+        IDS_REQUEST_PIN_DIALOG_ERROR_RETRY, error_message);
+  } else if (error_message.empty()) {
+    display_message =
+        l10n_util::GetStringFUTF16(IDS_REQUEST_PIN_DIALOG_ATTEMPTS_LEFT,
+                                   base::FormatNumber(attempts_left));
+  } else {
+    display_message = l10n_util::GetStringFUTF16(
+        IDS_REQUEST_PIN_DIALOG_ERROR_RETRY_ATTEMPTS, error_message,
+        base::FormatNumber(attempts_left));
   }
 
   error_label_->SetVisible(true);
-  error_label_->SetText(error_message);
-  error_label_->SetTooltipText(error_message);
+  error_label_->SetText(display_message);
+  error_label_->SetTooltipText(display_message);
   error_label_->SetEnabledColor(gfx::kGoogleRed600);
   error_label_->SizeToPreferredSize();
   textfield_->SetInvalid(true);

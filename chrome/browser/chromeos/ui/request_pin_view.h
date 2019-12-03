@@ -93,7 +93,8 @@ class RequestPinView final : public views::DialogDelegateView,
   void Init();
   void SetAcceptInput(bool accept_input);
   void SetErrorMessage(SecurityTokenPinErrorLabel error_label,
-                       int attempts_left);
+                       int attempts_left,
+                       bool accept_input);
   // Updates the header text |header_label_| based on values from
   // |window_title_| and |code_type_|.
   void UpdateHeaderText();

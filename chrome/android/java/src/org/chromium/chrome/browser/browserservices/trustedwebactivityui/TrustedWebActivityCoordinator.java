@@ -4,6 +4,10 @@
 
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui;
 
+import androidx.annotation.Nullable;
+import androidx.browser.trusted.TrustedWebActivityDisplayMode;
+import androidx.browser.trusted.TrustedWebActivityDisplayMode.ImmersiveMode;
+
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.Origin;
@@ -46,6 +50,9 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
     private final TwaRegistrar mTwaRegistrar;
     private final ClientPackageNameProvider mClientPackageNameProvider;
 
+    @Nullable
+    private final TrustedWebActivityDisplayMode mDisplayMode;
+
     private boolean mInTwaMode = true;
 
     @Inject
@@ -75,6 +82,7 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
         mImmersiveModeController = immersiveModeController;
         mTwaRegistrar = twaRegistrar;
         mClientPackageNameProvider = clientPackageNameProvider;
+        mDisplayMode = intentDataProvider.getTwaDisplayMode();
 
         navigationController.setLandingPageOnCloseCriterion(
                 verifier::wasPreviouslyVerified);
@@ -142,7 +150,16 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
     }
 
     private void updateImmersiveMode(boolean inTwaMode) {
-        // TODO(pshmakov): implement this once we can depend on tip-of-tree of androidx-browser.
+        if (!(mDisplayMode instanceof ImmersiveMode)) {
+            return;
+        }
+        if (inTwaMode) {
+            ImmersiveMode immersiveMode = (ImmersiveMode) mDisplayMode;
+            mImmersiveModeController.get().enterImmersiveMode(
+                    immersiveMode.layoutInDisplayCutoutMode(), immersiveMode.isSticky());
+        } else {
+            mImmersiveModeController.get().exitImmersiveMode();
+        }
     }
 
     // This doesn't belong here, but doesn't deserve a separate class. Do extract it if more

@@ -147,7 +147,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                 media::mojom::MediaEngagementScoreDetailsProvider,
                 media_router::mojom::MediaRouter,
                 page_load_metrics::mojom::PageLoadMetrics,
-                translate::mojom::ContentTranslateDriver,
 
                 // WebUI-only interfaces go below this line. These should be
                 // brokered through a dedicated interface, but they're here

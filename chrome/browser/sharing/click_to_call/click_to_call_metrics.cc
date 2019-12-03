@@ -7,14 +7,20 @@
 #include <algorithm>
 #include <cctype>
 
+#include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
+#include "chrome/browser/sharing/click_to_call/click_to_call_utils.h"
+#include "chrome/browser/sharing/click_to_call/feature.h"
+#include "chrome/browser/sharing/click_to_call/phone_number_regex.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/re2/src/re2/re2.h"
 
 namespace {
 
@@ -47,6 +53,45 @@ const char* PhoneNumberRegexVariantToSuffix(PhoneNumberRegexVariant variant) {
 // SharingClickToCallSendToDevice suffixes defined in histograms.xml.
 const char* SendToDeviceToSuffix(bool send_to_device) {
   return send_to_device ? "Sending" : "Showing";
+}
+
+bool RegexMatches(const std::string& selection_text,
+                  bool sent_to_device,
+                  PhoneNumberRegexVariant variant) {
+  auto used_variant = base::FeatureList::IsEnabled(kClickToCallDetectionV2)
+                          ? PhoneNumberRegexVariant::kLowConfidenceModified
+                          : PhoneNumberRegexVariant::kSimple;
+  // Do not use ExtractPhoneNumber as it would log the parse delay again.
+  if (variant == used_variant || sent_to_device)
+    return re2::RE2::PartialMatch(selection_text, GetPhoneNumberRegex(variant));
+
+  return ExtractPhoneNumber(selection_text, variant).has_value();
+}
+
+void LogPhoneNumberDetectionMetricsOnThreadPool(
+    const std::string& selection_text,
+    bool sent_to_device) {
+  bool simple_regex_matches = RegexMatches(selection_text, sent_to_device,
+                                           PhoneNumberRegexVariant::kSimple);
+
+  for (auto variant : {PhoneNumberRegexVariant::kLowConfidenceModified}) {
+    DCHECK_NE(PhoneNumberRegexVariant::kSimple, variant);
+    bool matches = RegexMatches(selection_text, sent_to_device, variant);
+    PhoneNumberRegexVariantResult result;
+    if (simple_regex_matches) {
+      result = matches ? PhoneNumberRegexVariantResult::kBothMatch
+                       : PhoneNumberRegexVariantResult::kOnlySimpleMatches;
+    } else {
+      result = matches ? PhoneNumberRegexVariantResult::kOnlyVariantMatches
+                       : PhoneNumberRegexVariantResult::kNoneMatch;
+    }
+
+    base::UmaHistogramEnumeration(
+        base::StrCat({"Sharing.ClickToCallPhoneNumberRegexVariantResult.",
+                      PhoneNumberRegexVariantToSuffix(variant), ".",
+                      SendToDeviceToSuffix(sent_to_device)}),
+        result);
+  }
 }
 
 }  // namespace
@@ -115,4 +160,13 @@ void LogClickToCallPhoneNumberSize(const std::string& number,
   base::UmaHistogramCounts100("Sharing.ClickToCallPhoneNumberDigits", digits);
   base::UmaHistogramCounts100(
       base::StrCat({"Sharing.ClickToCallPhoneNumberDigits.", suffix}), digits);
+}
+
+void LogPhoneNumberDetectionMetrics(const std::string& selection_text,
+                                    bool sent_to_device) {
+  base::PostTask(FROM_HERE,
+                 {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+                 base::BindOnce(&LogPhoneNumberDetectionMetricsOnThreadPool,
+                                selection_text, sent_to_device));
 }

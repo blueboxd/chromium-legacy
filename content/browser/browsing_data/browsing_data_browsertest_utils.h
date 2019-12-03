@@ -27,11 +27,11 @@ class ServiceWorkerActivationObserver
  public:
   // |callback| is called when |context| is activated.
   static void SignalActivation(ServiceWorkerContextWrapper* context,
-                               const base::Closure& callback);
+                               base::OnceClosure callback);
 
  private:
   ServiceWorkerActivationObserver(ServiceWorkerContextWrapper* context,
-                                  const base::Closure& callback);
+                                  base::OnceClosure callback);
 
   ~ServiceWorkerActivationObserver() override;
 
@@ -43,7 +43,7 @@ class ServiceWorkerActivationObserver
   ServiceWorkerContextWrapper* context_;
   ScopedObserver<ServiceWorkerContextWrapper, ServiceWorkerContextCoreObserver>
       scoped_observer_;
-  base::Closure callback_;
+  base::OnceClosure callback_;
 };
 
 // Appends a switch to the |command_line| based on whether the network service

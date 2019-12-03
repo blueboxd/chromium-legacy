@@ -308,4 +308,49 @@ TEST(SignedExchangeRequestMatcherTest, FindBestMatchingVariantKey) {
     }
   }
 }
+
+TEST(SignedExchangeRequestMatcherTest, FindBestMatchingIndex) {
+  const struct TestCase {
+    const char* name;
+    std::string variants;
+    std::map<std::string, std::string> req_headers;
+    base::Optional<size_t> expected_result;
+  } cases[] = {
+      {"matching value",
+       "Accept;image/png;image/jpg",
+       {{"accept", "image/webp,image/jpg"}},
+       1 /* image/jpg */},
+      {"default value",
+       "Accept;image/xx;image/yy",
+       {{"accept", "image/webp,image/jpg"}},
+       0 /* image/xx */},
+      {"content type and language",
+       "Accept;image/png;image/jpg, Accept-Language;en;fr;ja",
+       {{"accept", "image/jpg"}, {"accept-language", "fr"}},
+       4 /* image/jpg, fr */},
+      {"language and content type",
+       "Accept-Language;en;fr;ja, Accept;image/png;image/jpg",
+       {{"accept", "image/jpg"}, {"accept-language", "fr"}},
+       3 /* fr, image/jpg */},
+      {"ill-formed variants",
+       "Accept",
+       {{"accept", "image/webp,image/jpg"}},
+       base::nullopt},
+      {"unknown field name",
+       "Unknown;foo;bar",
+       {{"Unknown", "foo"}},
+       base::nullopt},
+  };
+
+  for (const auto& c : cases) {
+    net::HttpRequestHeaders request_headers;
+    for (auto it = c.req_headers.begin(); it != c.req_headers.end(); ++it)
+      request_headers.SetHeader(it->first, it->second);
+    base::Optional<size_t> result =
+        SignedExchangeRequestMatcher::FindBestMatchingIndex(request_headers,
+                                                            c.variants);
+    EXPECT_EQ(c.expected_result, result) << c.name;
+  }
+}
+
 }  // namespace blink

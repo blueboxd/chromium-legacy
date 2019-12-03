@@ -22,6 +22,7 @@
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
 #include "ui/base/clipboard/clipboard_observer.h"
 #include "ui/display/display.h"
@@ -543,9 +544,9 @@ class AutotestPrivateBootstrapMachineLearningServiceFunction
 
   // Callbacks for a basic Mojo call to MachineLearningService.LoadModel.
   void ModelLoaded(chromeos::machine_learning::mojom::LoadModelResult result);
-  void ConnectionError();
+  void OnMojoDisconnect();
 
-  chromeos::machine_learning::mojom::ModelPtr model_;
+  mojo::Remote<chromeos::machine_learning::mojom::Model> model_;
 };
 
 // Enable/disable the Google Assistant feature. This toggles the Assistant user

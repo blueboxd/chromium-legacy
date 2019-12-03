@@ -55,9 +55,6 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
                       HandledEventCallback callback,
                       bool known_by_scheduler)
       : ScopedWebInputEventWithLatencyInfo(std::move(event), latency),
-        non_blocking_coalesced_count_(0),
-        creation_timestamp_(base::TimeTicks::Now()),
-        last_coalesced_timestamp_(creation_timestamp_),
         originally_cancelable_(originally_cancelable),
         callback_(std::move(callback)),
         known_by_scheduler_count_(known_by_scheduler ? 1 : 0) {}
@@ -99,12 +96,9 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
     if (other_event->callback_) {
       blocking_coalesced_callbacks_.push_back(
           std::move(other_event->callback_));
-    } else {
-      non_blocking_coalesced_count_++;
     }
     known_by_scheduler_count_ += other_event->known_by_scheduler_count_;
     ScopedWebInputEventWithLatencyInfo::CoalesceWith(*other_event);
-    last_coalesced_timestamp_ = base::TimeTicks::Now();
 
     // The newest event (|other_item|) always wins when updating fields.
     originally_cancelable_ = other_event->originally_cancelable_;
@@ -185,32 +179,9 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
     }
   }
 
-  base::TimeTicks creationTimestamp() const { return creation_timestamp_; }
-  base::TimeTicks lastCoalescedTimestamp() const {
-    return last_coalesced_timestamp_;
-  }
-
-  size_t coalescedCount() const {
-    return non_blocking_coalesced_count_ + blocking_coalesced_callbacks_.size();
-  }
-
-  bool IsContinuousEvent() const {
-    switch (event().GetType()) {
-      case blink::WebInputEvent::kMouseMove:
-      case blink::WebInputEvent::kMouseWheel:
-      case blink::WebInputEvent::kTouchMove:
-        return true;
-      default:
-        return false;
-    }
-  }
-
   // Contains the pending callbacks to be called.
   base::circular_deque<HandledEventCallback> blocking_coalesced_callbacks_;
   // Contains the number of non-blocking events coalesced.
-  size_t non_blocking_coalesced_count_;
-  base::TimeTicks creation_timestamp_;
-  base::TimeTicks last_coalesced_timestamp_;
 
   // Whether the received event was originally cancelable or not. The compositor
   // input handler can change the event based on presence of event handlers so

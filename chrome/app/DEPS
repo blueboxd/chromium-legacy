@@ -35,7 +35,6 @@ include_rules = [
   "+headless/public",
   "+native_client/src/trusted/service_runtime/osx",
   "+pdf/pdf_ppapi.h",
-  "+remoting/client/plugin",
   "+sandbox",
   "+services/preferences/public",
   "+services/service_manager/public",

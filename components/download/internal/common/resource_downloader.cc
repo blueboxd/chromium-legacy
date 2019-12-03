@@ -16,10 +16,6 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 
-namespace network {
-struct ResourceResponseHead;
-}
-
 namespace download {
 
 // This object monitors the URLLoaderCompletionStatus change when
@@ -95,7 +91,7 @@ ResourceDownloader::InterceptNavigationResponse(
     const GURL& tab_referrer_url,
     std::vector<GURL> url_chain,
     net::CertStatus cert_status,
-    const scoped_refptr<network::ResourceResponse>& response_head,
+    network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -186,7 +182,7 @@ void ResourceDownloader::Start(
 void ResourceDownloader::InterceptResponse(
     std::vector<GURL> url_chain,
     net::CertStatus cert_status,
-    const scoped_refptr<network::ResourceResponse>& response_head,
+    network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr endpoints) {
   // Set the URLLoader.
@@ -205,8 +201,8 @@ void ResourceDownloader::InterceptResponse(
       false /* is_background_mode */);
 
   // Simulate on the new URLLoaderClient calls that happened on the old client.
-  response_head->head.cert_status = cert_status;
-  url_loader_client_->OnReceiveResponse(response_head->head);
+  response_head->cert_status = cert_status;
+  url_loader_client_->OnReceiveResponse(std::move(response_head));
   url_loader_client_->OnStartLoadingResponseBody(std::move(response_body));
 
   // Bind the new client.

@@ -25,7 +25,7 @@
 #include "components/download/public/common/input_stream.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_ANDROID)
@@ -120,7 +120,7 @@ void CreateDownloadHandlerForNavigation(
     const GURL& tab_referrer_url,
     std::vector<GURL> url_chain,
     net::CertStatus cert_status,
-    scoped_refptr<network::ResourceResponse> response_head,
+    network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
@@ -321,7 +321,7 @@ void InProgressDownloadManager::InterceptDownloadFromNavigation(
     const GURL& tab_referrer_url,
     std::vector<GURL> url_chain,
     net::CertStatus cert_status,
-    scoped_refptr<network::ResourceResponse> response_head,
+    network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>

@@ -28,16 +28,16 @@ class WebContents;
 
 // Called by SavePackage when it creates a download::DownloadItem.
 using SavePackageDownloadCreatedCallback =
-    base::Callback<void(download::DownloadItem*)>;
+    base::OnceCallback<void(download::DownloadItem*)>;
 
 // Will be called asynchronously with the results of the ChooseSavePath
 // operation.  If the delegate wants notification of the download item created
 // in response to this operation, the SavePackageDownloadCreatedCallback will be
 // non-null.
 using SavePackagePathPickedCallback =
-    base::Callback<void(const base::FilePath&,
-                        SavePageType,
-                        const SavePackageDownloadCreatedCallback&)>;
+    base::OnceCallback<void(const base::FilePath&,
+                            SavePageType,
+                            SavePackageDownloadCreatedCallback)>;
 
 // Called with the results of DetermineDownloadTarget().
 //
@@ -145,8 +145,7 @@ class CONTENT_EXPORT DownloadManagerDelegate {
       const base::FilePath& suggested_path,
       const base::FilePath::StringType& default_extension,
       bool can_save_as_complete,
-      const SavePackagePathPickedCallback& callback) {
-  }
+      SavePackagePathPickedCallback callback) {}
 
   // Sanitize a filename that's going to be used for saving a subresource of a
   // SavePackage.

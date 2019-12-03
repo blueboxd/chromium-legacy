@@ -78,12 +78,12 @@ group("telemetry_weblayer_apks") {
   data_deps = []
   if (is_android) {
     data_deps += [
+      # TODO(crbug.com/1022823): Remove the following two deps once our tooling
+      # is configured to use weblayer_shell_system_webview_apk.
       "//weblayer/shell/android:weblayer_support_apk",
       "//weblayer/shell/android:weblayer_shell_apk",
 
-      # TODO(crbug.com/1022823): Uncomment the following line after
-      # the chromium_perf.py recipe has been set up to use this build rule.
-      #"//weblayer/shell/android:weblayer_shell_system_webview_apk",
+      "//weblayer/shell/android:weblayer_shell_system_webview_apk",
     ]
   }
 }

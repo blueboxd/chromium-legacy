@@ -1318,7 +1318,7 @@ public class PaymentRequestImpl
     @Override
     public boolean changePaymentMethodFromPaymentHandler(
             String methodName, String stringifiedData) {
-        if (mPaymentHandlerHost == null || mPaymentHandlerHost.isChanging()) {
+        if (mPaymentHandlerHost == null || mPaymentHandlerHost.isWaitingForPaymentDetailsUpdate()) {
             return false;
         }
 
@@ -1331,7 +1331,7 @@ public class PaymentRequestImpl
      */
     @Override
     public boolean changeShippingOptionFromPaymentHandler(String shippingOptionId) {
-        if (mPaymentHandlerHost == null || mPaymentHandlerHost.isChanging()) {
+        if (mPaymentHandlerHost == null || mPaymentHandlerHost.isWaitingForPaymentDetailsUpdate()) {
             return false;
         }
 
@@ -1344,7 +1344,7 @@ public class PaymentRequestImpl
      */
     @Override
     public boolean changeShippingAddressFromPaymentHandler(PaymentAddress shippingAddress) {
-        if (mPaymentHandlerHost == null || mPaymentHandlerHost.isChanging()) {
+        if (mPaymentHandlerHost == null || mPaymentHandlerHost.isWaitingForPaymentDetailsUpdate()) {
             return false;
         }
 
@@ -1418,7 +1418,8 @@ public class PaymentRequestImpl
         }
 
         if (!mRequestShipping && !mRequestPayerName && !mRequestPayerEmail && !mRequestPayerPhone
-                && (mInvokedPaymentInstrument == null || !mInvokedPaymentInstrument.isChanging())) {
+                && (mInvokedPaymentInstrument == null
+                        || !mInvokedPaymentInstrument.isWaitingForPaymentDetailsUpdate())) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_STATE);
             return;
@@ -1426,7 +1427,8 @@ public class PaymentRequestImpl
 
         if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
 
-        if (mInvokedPaymentInstrument != null && mInvokedPaymentInstrument.isChanging()) {
+        if (mInvokedPaymentInstrument != null
+                && mInvokedPaymentInstrument.isWaitingForPaymentDetailsUpdate()) {
             // After a payment app has been invoked, all of the merchant's calls to update the price
             // via updateWith() should be forwarded to the invoked app, so it can reflect the
             // updated price in its UI.
@@ -1504,7 +1506,7 @@ public class PaymentRequestImpl
      * info, but did not update the payment details in response.
      */
     @Override
-    public void noUpdatedPaymentDetails() {
+    public void onPaymentDetailsNotUpdated() {
         if (mClient == null) return;
 
         if (mUI == null) {
@@ -1513,8 +1515,9 @@ public class PaymentRequestImpl
             return;
         }
 
-        if (mInvokedPaymentInstrument != null && mInvokedPaymentInstrument.isChanging()) {
-            mInvokedPaymentInstrument.noUpdatedPaymentDetails();
+        if (mInvokedPaymentInstrument != null
+                && mInvokedPaymentInstrument.isWaitingForPaymentDetailsUpdate()) {
+            mInvokedPaymentInstrument.onPaymentDetailsNotUpdated();
             return;
         }
 

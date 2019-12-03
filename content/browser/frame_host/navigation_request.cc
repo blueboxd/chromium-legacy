@@ -94,8 +94,8 @@
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request_body.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
@@ -1377,12 +1377,12 @@ mojom::NavigationClient* NavigationRequest::GetCommitNavigationClient() {
 
 void NavigationRequest::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
-    const scoped_refptr<network::ResourceResponse>& response_head) {
+    network::mojom::URLResponseHeadPtr response_head) {
   // Sanity check - this can only be set at commit time.
   DCHECK(!auth_challenge_info_);
 
-  response_head_ = response_head;
-  ssl_info_ = response_head->head.ssl_info;
+  response_head_ = std::move(response_head);
+  ssl_info_ = response_head_->ssl_info;
 
   // Reset the page state as it can no longer be used at commit time since the
   // navigation was redirected.
@@ -1473,7 +1473,7 @@ void NavigationRequest::OnRequestRedirected(
   commit_params_->navigation_timing->redirect_end = base::TimeTicks::Now();
   commit_params_->navigation_timing->fetch_start = base::TimeTicks::Now();
 
-  commit_params_->redirect_response.push_back(response_head->head);
+  commit_params_->redirect_response.push_back(response_head_.Clone());
   commit_params_->redirect_infos.push_back(redirect_info);
 
   // On redirects, the initial origin_to_commit is no longer correct, so it
@@ -1565,7 +1565,7 @@ void NavigationRequest::OnRequestRedirected(
 
 void NavigationRequest::OnResponseStarted(
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-    const scoped_refptr<network::ResourceResponse>& response_head,
+    network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     const GlobalRequestID& request_id,
     bool is_download,
@@ -1586,16 +1586,16 @@ void NavigationRequest::OnResponseStarted(
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
                                "OnResponseStarted");
   state_ = WILL_PROCESS_RESPONSE;
-  response_head_ = response_head;
+  response_head_ = std::move(response_head);
   response_body_ = std::move(response_body);
-  ssl_info_ = response_head->head.ssl_info;
-  auth_challenge_info_ = response_head->head.auth_challenge_info;
+  ssl_info_ = response_head_->ssl_info;
+  auth_challenge_info_ = response_head_->auth_challenge_info;
 
   // Check if the response should be sent to a renderer.
   response_should_be_rendered_ =
-      !is_download && (!response_head->head.headers.get() ||
-                       (response_head->head.headers->response_code() != 204 &&
-                        response_head->head.headers->response_code() != 205));
+      !is_download && (!response_head_->headers.get() ||
+                       (response_head_->headers->response_code() != 204 &&
+                        response_head_->headers->response_code() != 205));
 
   // Response that will not commit should be marked as aborted in the
   // NavigationHandle.
@@ -1616,7 +1616,7 @@ void NavigationRequest::OnResponseStarted(
   // worker intercepted the navigation).
   commit_params_->navigation_timing->fetch_start =
       std::max(commit_params_->navigation_timing->fetch_start,
-               response_head->head.service_worker_ready_time);
+               response_head_->service_worker_ready_time);
 
   // A navigation is user activated if it contains a user gesture or the frame
   // received a gesture and the navigation is renderer initiated. If the
@@ -1663,8 +1663,8 @@ void NavigationRequest::OnResponseStarted(
     // Parse the Cross-Origin-Opener-Policy header.
     {
       std::string header_value;
-      if (response_head->head.headers &&
-          response_head->head.headers->GetNormalizedHeader(
+      if (response_head_->headers &&
+          response_head_->headers->GetNormalizedHeader(
               "cross-origin-embedder-policy", &header_value) &&
           header_value == "require-corp") {
         cross_origin_embedder_policy =
@@ -1752,13 +1752,12 @@ void NavigationRequest::OnResponseStarted(
   }
 
   // This must be set before DetermineCommittedPreviews is called.
-  proxy_server_ = response_head->head.proxy_server;
+  proxy_server_ = response_head_->proxy_server;
 
   // Update the previews state of the request.
   common_params_->previews_state =
       GetContentClient()->browser()->DetermineCommittedPreviews(
-          common_params_->previews_state, this,
-          response_head->head.headers.get());
+          common_params_->previews_state, this, response_head_->headers.get());
 
   // Store the URLLoaderClient endpoints until checks have been processed.
   url_loader_client_endpoints_ = std::move(url_loader_client_endpoints);
@@ -1822,15 +1821,15 @@ void NavigationRequest::OnResponseStarted(
     }
   }
 
-  devtools_instrumentation::OnNavigationResponseReceived(*this, *response_head);
+  devtools_instrumentation::OnNavigationResponseReceived(*this,
+                                                         *response_head_);
 
   // The response code indicates that this is an error page, but we don't
   // know how to display the content.  We follow Firefox here and show our
   // own error page instead of intercepting the request as a stream or a
   // download.
-  if (is_download &&
-      (response_head->head.headers.get() &&
-       (response_head->head.headers->response_code() / 100 != 2))) {
+  if (is_download && (response_head_->headers.get() &&
+                      (response_head_->headers->response_code() / 100 != 2))) {
     OnRequestFailedInternal(
         network::URLLoaderCompletionStatus(net::ERR_INVALID_RESPONSE),
         false /* skip_throttles */, base::nullopt /* error_page_content */,
@@ -2300,7 +2299,7 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
       DownloadManagerImpl* download_manager = static_cast<DownloadManagerImpl*>(
           BrowserContext::GetDownloadManager(browser_context));
       download_manager->InterceptNavigation(
-          std::move(resource_request), redirect_chain_, response_head_,
+          std::move(resource_request), redirect_chain_, response_head_.Clone(),
           std::move(response_body_), std::move(url_loader_client_endpoints_),
           ssl_info_.has_value() ? ssl_info_->cert_status : 0,
           frame_tree_node_->frame_tree_node_id());
@@ -2490,9 +2489,7 @@ void NavigationRequest::CommitNavigation() {
 
   auto common_params = common_params_->Clone();
   auto commit_params = commit_params_.Clone();
-  network::mojom::URLResponseHeadPtr response_head;
-  if (response_head_)
-    response_head = response_head_->head;
+  auto response_head = response_head_.Clone();
   if (subresource_loader_params_ &&
       !subresource_loader_params_->prefetched_signed_exchanges.empty()) {
     commit_params->prefetched_signed_exchanges =
@@ -3369,7 +3366,7 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
   // https://wicg.github.io/cors-rfc1918/#address-space
   commit_params_->ip_address_space = CalculateIPAddressSpace(
       GetSocketAddress().address(),
-      response_head_ ? response_head_->head.headers.get() : nullptr);
+      response_head_ ? response_head_->headers.get() : nullptr);
 
   if (appcache_handle_) {
     DCHECK(appcache_handle_->host());
@@ -3533,7 +3530,7 @@ void NavigationRequest::SetRequestHeader(const std::string& header_name,
 const net::HttpResponseHeaders* NavigationRequest::GetResponseHeaders() {
   if (response_headers_for_testing_)
     return response_headers_for_testing_.get();
-  return response_head_.get() ? response_head_->head.headers.get() : nullptr;
+  return response_head_.get() ? response_head_->headers.get() : nullptr;
 }
 
 std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
@@ -3578,12 +3575,12 @@ bool NavigationRequest::IsExternalProtocol() {
 }
 
 bool NavigationRequest::IsSignedExchangeInnerResponse() {
-  return response() && response()->head.is_signed_exchange_inner_response;
+  return response() && response()->is_signed_exchange_inner_response;
 }
 
 net::IPEndPoint NavigationRequest::GetSocketAddress() {
   DCHECK_GE(state_, WILL_PROCESS_RESPONSE);
-  return response() ? response()->head.remote_endpoint : net::IPEndPoint();
+  return response() ? response()->remote_endpoint : net::IPEndPoint();
 }
 
 bool NavigationRequest::HasCommitted() {
@@ -3595,7 +3592,7 @@ bool NavigationRequest::IsErrorPage() {
 }
 
 net::HttpResponseInfo::ConnectionInfo NavigationRequest::GetConnectionInfo() {
-  return response() ? response()->head.connection_info
+  return response() ? response()->connection_info
                     : net::HttpResponseInfo::ConnectionInfo();
 }
 
@@ -3618,7 +3615,7 @@ int NavigationRequest::GetFrameTreeNodeId() {
 }
 
 bool NavigationRequest::WasResponseCached() {
-  return response() && response()->head.was_fetched_via_cache;
+  return response() && response()->was_fetched_via_cache;
 }
 
 bool NavigationRequest::HasPrefetchedAlternativeSubresourceSignedExchange() {

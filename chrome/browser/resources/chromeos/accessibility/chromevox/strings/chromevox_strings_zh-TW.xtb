@@ -463,6 +463,7 @@
 <translation id="4204126831294769023">湛藍</translation>
 <translation id="4204864733111726379">花卉白</translation>
 <translation id="4206289001967551965">在表格內</translation>
+<translation id="4207770814752775793">將文字轉語音設定重設為預設值。</translation>
 <translation id="4209770650650780359">按下向上鍵或向下鍵即可使用自動完成功能。</translation>
 <translation id="4215733775853809057">下一個滑桿</translation>
 <translation id="42164919740161077">軍服藍</translation>
@@ -766,6 +767,7 @@
 <translation id="6290434000785343030">沒有下一個下拉式方塊。</translation>
 <translation id="6305702903308659374">ChromeVox 朗讀時仍維持音訊的標準音量</translation>
 <translation id="6307969636681130414">已按下</translation>
+<translation id="6315652249189065725">開啟「鍵盤快速鍵」選單</translation>
 <translation id="6322856989298155004">音效</translation>
 <translation id="6324551002951139333">偵測到文法錯誤</translation>
 <translation id="6325241889020214828">複製<ph name="TEXT" />。</translation>
@@ -959,6 +961,7 @@
 <translation id="7668307052366682650">{COUNT,plural, =1{小時}other{小時}}</translation>
 <translation id="7674576868851035240">下一個連結</translation>
 <translation id="7674768236845044097">標記</translation>
+<translation id="7676847077928500578">重設文字轉語音設定</translation>
 <translation id="7684431668231950609">編輯文字，網址項目</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">上一個圓形按鈕</translation>

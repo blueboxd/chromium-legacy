@@ -17,6 +17,7 @@
 #include "ash/wm/window_util.h"
 #include "base/containers/adapters.h"
 #include "base/stl_util.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
@@ -49,10 +50,16 @@ class ScopedWindowClosingObserver : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(ScopedWindowClosingObserver);
 };
 
-bool IsWindowConsideredActivatable(aura::Window* window) {
+bool IsNonSysModalWindowConsideredActivatable(aura::Window* window) {
   DCHECK(window);
   ScopedWindowClosingObserver observer(window);
   AshFocusRules* focus_rules = Shell::Get()->focus_rules();
+
+  // Exclude system modal because we only care about non systm modal windows.
+  if (window->GetProperty(aura::client::kModalKey) ==
+      static_cast<int>(ui::MODAL_TYPE_SYSTEM)) {
+    return false;
+  }
 
   // Only toplevel windows can be activated.
   if (!focus_rules->IsToplevelWindow(window))
@@ -123,9 +130,9 @@ MruWindowTracker::WindowList BuildWindowListInternal(
 
         if (!can_include_window_predicate(window))
           continue;
-      }
 
-      windows.emplace_back(window);
+        windows.emplace_back(window);
+      }
     }
   }
 
@@ -201,8 +208,8 @@ MruWindowTracker::WindowList MruWindowTracker::BuildMruWindowList(
 
 MruWindowTracker::WindowList MruWindowTracker::BuildWindowListIgnoreModal(
     DesksMruType desks_mru_type) const {
-  return BuildWindowListInternal(nullptr, desks_mru_type,
-                                 IsWindowConsideredActivatable);
+  return BuildWindowListInternal(&mru_windows_, desks_mru_type,
+                                 IsNonSysModalWindowConsideredActivatable);
 }
 
 MruWindowTracker::WindowList MruWindowTracker::BuildWindowForCycleList(

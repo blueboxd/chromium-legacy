@@ -38,8 +38,6 @@ namespace {
 
 const char kText[] = "Some random text to be copied.";
 
-constexpr int kSeparatorCommandId = -1;
-
 class SharedClipboardContextMenuObserverTest : public testing::Test {
  public:
   SharedClipboardContextMenuObserverTest() = default;
@@ -127,16 +125,10 @@ TEST_F(SharedClipboardContextMenuObserverTest, SingleDevice_ShowMenu) {
       .WillOnce(Return(ByMove(std::move(devices))));
 
   InitMenu(base::ASCIIToUTF16(kText));
+  ASSERT_EQ(1U, menu_.GetMenuSize());
 
-  // The first item is a separator and the second item is the device.
-  EXPECT_EQ(2U, menu_.GetMenuSize());
-
-  // Assert item ordering.
   MockRenderViewContextMenu::MockMenuItem item;
   ASSERT_TRUE(menu_.GetMenuItem(0, &item));
-  EXPECT_EQ(kSeparatorCommandId, item.command_id);
-
-  ASSERT_TRUE(menu_.GetMenuItem(1, &item));
   EXPECT_EQ(IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE,
             item.command_id);
 
@@ -159,20 +151,16 @@ TEST_F(SharedClipboardContextMenuObserverTest, MultipleDevices_ShowMenu) {
       .WillOnce(Return(ByMove(std::move(devices))));
 
   InitMenu(base::ASCIIToUTF16(kText));
-
-  EXPECT_EQ(device_count + 2U, menu_.GetMenuSize());
+  ASSERT_EQ(device_count + 1U, menu_.GetMenuSize());
 
   // Assert item ordering.
   MockRenderViewContextMenu::MockMenuItem item;
   ASSERT_TRUE(menu_.GetMenuItem(0, &item));
-  EXPECT_EQ(kSeparatorCommandId, item.command_id);
-
-  ASSERT_TRUE(menu_.GetMenuItem(1, &item));
   EXPECT_EQ(IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_MULTIPLE_DEVICES,
             item.command_id);
 
   for (int i = 0; i < device_count; i++) {
-    ASSERT_TRUE(menu_.GetMenuItem(i + 2, &item));
+    ASSERT_TRUE(menu_.GetMenuItem(i + 1, &item));
     EXPECT_EQ(kSubMenuFirstDeviceCommandId + i, item.command_id);
   }
 
@@ -204,20 +192,16 @@ TEST_F(SharedClipboardContextMenuObserverTest,
       .WillOnce(Return(ByMove(std::move(devices))));
 
   InitMenu(base::ASCIIToUTF16(kText));
-
-  EXPECT_EQ(kMaxDevicesShown + 2U, menu_.GetMenuSize());
+  ASSERT_EQ(kMaxDevicesShown + 1U, menu_.GetMenuSize());
 
   // Assert item ordering.
   MockRenderViewContextMenu::MockMenuItem item;
   ASSERT_TRUE(menu_.GetMenuItem(0, &item));
-  EXPECT_EQ(kSeparatorCommandId, item.command_id);
-
-  ASSERT_TRUE(menu_.GetMenuItem(1, &item));
   EXPECT_EQ(IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_MULTIPLE_DEVICES,
             item.command_id);
 
   for (int i = 0; i < kMaxDevicesShown; i++) {
-    ASSERT_TRUE(menu_.GetMenuItem(i + 2, &item));
+    ASSERT_TRUE(menu_.GetMenuItem(i + 1, &item));
     EXPECT_EQ(kSubMenuFirstDeviceCommandId + i, item.command_id);
   }
 

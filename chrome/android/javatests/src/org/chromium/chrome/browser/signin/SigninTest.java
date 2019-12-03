@@ -34,7 +34,7 @@ import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.MainPreferences;
-import org.chromium.chrome.browser.settings.Preferences;
+import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.sync.AccountManagementFragment;
 import org.chromium.chrome.browser.settings.sync.SignInPreference;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -296,15 +296,15 @@ public class SigninTest {
         });
 
         // Verify that its preference UI is enabled.
-        Preferences prefActivity = mActivityTestRule.startPreferences(null);
-        MainPreferences mainPrefs = getMainPreferences(prefActivity);
+        SettingsActivity settingsActivity = mActivityTestRule.startSettingsActivity(null);
+        MainPreferences mainPrefs = getMainPreferences(settingsActivity);
         Preference passwordPref = mainPrefs.findPreference(MainPreferences.PREF_SAVED_PASSWORDS);
         Assert.assertNotNull(passwordPref);
         // This preference opens a new fragment when clicked.
         Assert.assertNotNull(passwordPref.getFragment());
         // There is no icon for this preference by default.
         Assert.assertNull(passwordPref.getIcon());
-        prefActivity.finish();
+        settingsActivity.finish();
 
         // Sign out now.
         signOut();
@@ -320,8 +320,8 @@ public class SigninTest {
         // Verify that we aren't signed in yet.
         Assert.assertFalse(ChromeSigninController.get().isSignedIn());
 
-        // Open the preferences UI.
-        final Preferences prefActivity = mActivityTestRule.startPreferences(null);
+        // Open the settings UI.
+        final SettingsActivity settingsActivity = mActivityTestRule.startSettingsActivity(null);
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         // Create a monitor to catch the SigninActivity when it is created.
@@ -329,7 +329,7 @@ public class SigninTest {
                 SigninActivity.class.getName(), null, false);
 
         // Click sign in.
-        TestThreadUtils.runOnUiThreadBlocking(() -> clickSigninPreference(prefActivity));
+        TestThreadUtils.runOnUiThreadBlocking(() -> clickSigninPreference(settingsActivity));
 
         // Pick the mock account.
         SigninActivity signinActivity =
@@ -351,7 +351,7 @@ public class SigninTest {
                 ()
                         -> ProfileSyncService.get().setFirstSetupComplete(
                                 SyncFirstSetupCompleteSource.BASIC_FLOW));
-        prefActivity.finish();
+        settingsActivity.finish();
 
         // Verify that signin succeeded.
         mTestSignInObserver.waitForSignInEvents(1);
@@ -364,16 +364,16 @@ public class SigninTest {
         // Verify that we are currently signed in.
         Assert.assertTrue(ChromeSigninController.get().isSignedIn());
 
-        // Open the account preferences.
-        final Preferences prefActivity =
-                mActivityTestRule.startPreferences(AccountManagementFragment.class.getName());
+        // Open the account settings.
+        final SettingsActivity settingsActivity =
+                mActivityTestRule.startSettingsActivity(AccountManagementFragment.class.getName());
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         // Click on the signout button.
-        TestThreadUtils.runOnUiThreadBlocking(() -> clickSignOut(prefActivity));
+        TestThreadUtils.runOnUiThreadBlocking(() -> clickSignOut(settingsActivity));
 
         // Accept the warning dialog.
-        acceptAlertDialogWithTag(prefActivity, AccountManagementFragment.SIGN_OUT_DIALOG_TAG);
+        acceptAlertDialogWithTag(settingsActivity, AccountManagementFragment.SIGN_OUT_DIALOG_TAG);
 
         // Verify that signout succeeded.
         mTestSignInObserver.waitForSignInEvents(2);
@@ -381,19 +381,19 @@ public class SigninTest {
         Assert.assertEquals(1, mTestSignInObserver.mSignOutCount);
         Assert.assertFalse(ChromeSigninController.get().isSignedIn());
 
-        if (!prefActivity.isFinishing()) prefActivity.finish();
+        if (!settingsActivity.isFinishing()) settingsActivity.finish();
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
-    private static MainPreferences getMainPreferences(Preferences prefActivity) {
-        Fragment fragment = prefActivity.getMainFragment();
+    private static MainPreferences getMainPreferences(SettingsActivity settingsActivity) {
+        Fragment fragment = settingsActivity.getMainFragment();
         Assert.assertNotNull(fragment);
         Assert.assertTrue(fragment instanceof MainPreferences);
         return (MainPreferences) fragment;
     }
 
-    private static void clickSigninPreference(Preferences prefActivity) {
-        MainPreferences mainPrefs = getMainPreferences(prefActivity);
+    private static void clickSigninPreference(SettingsActivity settingsActivity) {
+        MainPreferences mainPrefs = getMainPreferences(settingsActivity);
         Preference signinPref = mainPrefs.findPreference(MainPreferences.PREF_SIGN_IN);
         Assert.assertNotNull(signinPref);
         Assert.assertTrue(signinPref instanceof SignInPreference);
@@ -401,8 +401,8 @@ public class SigninTest {
         signinPref.getOnPreferenceClickListener().onPreferenceClick(signinPref);
     }
 
-    private static void clickSignOut(Preferences prefActivity) {
-        Fragment fragment = prefActivity.getMainFragment();
+    private static void clickSignOut(SettingsActivity settingsActivity) {
+        Fragment fragment = settingsActivity.getMainFragment();
         Assert.assertNotNull(fragment);
         Assert.assertTrue(fragment instanceof AccountManagementFragment);
         AccountManagementFragment managementFragment = (AccountManagementFragment) fragment;

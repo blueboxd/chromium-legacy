@@ -156,7 +156,7 @@ void PaymentHandlerHost::UpdateWith(
   std::move(change_payment_request_details_callback_).Run(std::move(response));
 }
 
-void PaymentHandlerHost::NoUpdatedPaymentDetails() {
+void PaymentHandlerHost::OnPaymentDetailsNotUpdated() {
   if (!change_payment_request_details_callback_)
     return;
 

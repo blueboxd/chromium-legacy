@@ -3,31 +3,16 @@
 # found in the LICENSE file.
 
 import("//build/config/chrome_build.gni")
+import("//build/config/chromeos/args.gni")
 
 assert(is_chromeos)
 
-declare_args() {
-  cros_board = ""
-  cros_sdk_version = ""
-}
 declare_args() {
   # Determines if we're running tests on VMs or on devices.
   # TODO(crbug.com/866062): Is there a better way to do this?
   cros_is_vm = cros_board == "amd64-generic" || cros_board == "betty" ||
                cros_board == "betty-pi-arc"
 }
-
-# Ensure that if one is set, the other is as well.
-assert(cros_board == "" == (cros_sdk_version == ""))
-
-# The build is using the Simple Chrome "cros chrome-sdk" to target real hardware
-# or a VM, not linux-chromeos.
-# NOTE: Most test targets in Chrome expect to run under linux-chromeos, so some
-# have compile-time asserts that intentionally fail when this build flag is set.
-# Build and run the tests for linux-chromeos instead.
-# https://chromium.googlesource.com/chromium/src/+/master/docs/chromeos_build_instructions.md
-# https://chromium.googlesource.com/chromiumos/docs/+/master/simple_chrome_workflow.md
-is_cros_chrome_sdk = cros_board != ""
 
 # Creates a script at $generated_script that can be used to launch a cros VM
 # and optionally run a test within it.

@@ -183,6 +183,12 @@ class MultiStorePasswordSaveManagerTest : public testing::Test {
         .WillByDefault(Return(password_manager::SYNCING_NORMAL_ENCRYPTION));
   }
 
+  void SetDefaultPasswordStore(const autofill::PasswordForm::Store& store) {
+    ON_CALL(*client()->GetMockPasswordFeatureManager(),
+            GetDefaultPasswordStore())
+        .WillByDefault(Return(store));
+  }
+
   MockPasswordManagerClient* client() { return &client_; }
   MockFormSaver* mock_account_form_saver() { return mock_account_form_saver_; }
   MockFormSaver* mock_profile_form_saver() { return mock_profile_form_saver_; }
@@ -220,9 +226,7 @@ TEST_F(MultiStorePasswordSaveManagerTest,
   fetcher()->NotifyFetchCompleted();
 
   PasswordForm parsed_submitted_form(parsed_submitted_form_);
-  // TODO(crbug.com/1012203): change to use an API in the PasswordSaveManager to
-  // set the store once the API is introduced.
-  parsed_submitted_form.in_store = PasswordForm::Store::kAccountStore;
+  SetDefaultPasswordStore(PasswordForm::Store::kAccountStore);
 
   password_save_manager()->CreatePendingCredentials(
       parsed_submitted_form, observed_form_, submitted_form_,
@@ -244,7 +248,7 @@ TEST_F(MultiStorePasswordSaveManagerTest,
   fetcher()->NotifyFetchCompleted();
 
   PasswordForm parsed_submitted_form(parsed_submitted_form_);
-  parsed_submitted_form.in_store = PasswordForm::Store::kAccountStore;
+  SetDefaultPasswordStore(PasswordForm::Store::kAccountStore);
 
   password_save_manager()->CreatePendingCredentials(
       parsed_submitted_form, observed_form_, submitted_form_,
@@ -265,7 +269,7 @@ TEST_F(MultiStorePasswordSaveManagerTest, SaveInProfileStore) {
   fetcher()->NotifyFetchCompleted();
 
   PasswordForm parsed_submitted_form(parsed_submitted_form_);
-  parsed_submitted_form.in_store = PasswordForm::Store::kProfileStore;
+  SetDefaultPasswordStore(PasswordForm::Store::kProfileStore);
 
   password_save_manager()->CreatePendingCredentials(
       parsed_submitted_form, observed_form_, submitted_form_,
@@ -287,7 +291,6 @@ TEST_F(MultiStorePasswordSaveManagerTest,
   fetcher()->NotifyFetchCompleted();
 
   PasswordForm parsed_submitted_form(parsed_submitted_form_);
-  parsed_submitted_form.in_store = PasswordForm::Store::kNotSet;
 
   password_save_manager()->CreatePendingCredentials(
       parsed_submitted_form, observed_form_, submitted_form_,
@@ -309,7 +312,6 @@ TEST_F(MultiStorePasswordSaveManagerTest,
   fetcher()->NotifyFetchCompleted();
 
   PasswordForm parsed_submitted_form(parsed_submitted_form_);
-  parsed_submitted_form.in_store = PasswordForm::Store::kNotSet;
 
   password_save_manager()->CreatePendingCredentials(
       parsed_submitted_form, observed_form_, submitted_form_,

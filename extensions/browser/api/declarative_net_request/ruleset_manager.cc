@@ -417,7 +417,8 @@ std::vector<RequestAction> RulesetManager::GetRemoveHeadersActions(
   uint8_t combined_mask = 0;
   for (const ExtensionRulesetData* ruleset : rulesets) {
     uint8_t extension_ruleset_mask = ruleset->matcher->GetRemoveHeadersMask(
-        params, combined_mask /* ignored_mask */, &remove_headers_actions);
+        params, combined_mask /* excluded_remove_headers_mask */,
+        &remove_headers_actions);
     if (!extension_ruleset_mask)
       continue;
 

@@ -150,7 +150,7 @@
       如果此政策设为False，则不报告dev开关的状态。</translation>
 <translation id="1160479894929412407">允许使用 QUIC 协议</translation>
 <translation id="1160939557934457296">禁止从安全浏览警告页面继续访问</translation>
-<translation id="1163080558183062209">停用拒绝列表中的打印机类型</translation>
+<translation id="1163080558183062209">禁用拒绝列表中的打印机类型</translation>
 <translation id="117059611145966538">外部打印服务器</translation>
 <translation id="1189817621108632689">让您能够设置一系列网址格式，以用于指定允许哪些网站显示图片。
 
@@ -2292,9 +2292,9 @@
       当用户尝试安装未被 <ph name="EXTENSION_INSTALL_WHITELIST" /> 或 <ph name="EXTENSION_SETTINGS" /> 列入白名单的扩展程序时，系统将会创建扩展程序安装请求。
 
       仅当已使用 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 注册相应设备且已启用 <ph name="CLOUD_REPORTING_ENABLED" /> 后，此政策才有效。</translation>
-<translation id="4638162097046412832">拒绝列表中所含类型的打印机将被停用，因此用户将无法发现它们或获取它们的功能。
+<translation id="4638162097046412832">已在拒绝列表中的各类打印机将被禁用，因此用户将无法发现或使用它们。
 
-      将所有打印机类型都添加到拒绝列表中可有效地停用打印功能，因为没有任何可接收文档以进行打印的目的地。
+      将所有打印机类型都添加到拒绝列表中可有效地停用打印功能，因为没有任何可用来接收要打印的文档的目的地。
 
       在拒绝列表中添加“cloud”与将“CloudPrintSubmitEnabled”政策设为 false 具有同样的效果。若要使 <ph name="CLOUD_PRINT_NAME" />目的地能被用户发现，则必须确保“CloudPrintSubmitEnabled”政策设为 true 且拒绝列表中不含“cloud”。
 

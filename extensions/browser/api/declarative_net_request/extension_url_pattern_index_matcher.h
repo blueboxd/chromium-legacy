@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "components/url_pattern_index/url_pattern_index.h"
-#include "extensions/browser/api/declarative_net_request/ruleset_matcher_interface.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_matcher_base.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -17,7 +17,7 @@ namespace declarative_net_request {
 // RulesetMatcher. It deals with matching of filter list style rules. This uses
 // the url_pattern_index component to achieve fast matching of network requests
 // against declarative rules.
-class ExtensionUrlPatternIndexMatcher final : public RulesetMatcherInterface {
+class ExtensionUrlPatternIndexMatcher final : public RulesetMatcherBase {
  public:
   using UrlPatternIndexList = flatbuffers::Vector<
       flatbuffers::Offset<url_pattern_index::flat::UrlPatternIndex>>;
@@ -27,7 +27,7 @@ class ExtensionUrlPatternIndexMatcher final : public RulesetMatcherInterface {
       const UrlPatternIndexList* index_list,
       const ExtensionMetadataList* metadata_list);
 
-  // RulesetMatcherInterface override:
+  // RulesetMatcherBase override:
   ~ExtensionUrlPatternIndexMatcher() override;
   base::Optional<RequestAction> GetBlockOrCollapseAction(
       const RequestParams& params) const override;
@@ -39,7 +39,7 @@ class ExtensionUrlPatternIndexMatcher final : public RulesetMatcherInterface {
       const RequestParams& params) const override;
   uint8_t GetRemoveHeadersMask(
       const RequestParams& params,
-      uint8_t ignored_mask,
+      uint8_t excluded_remove_headers_mask,
       std::vector<RequestAction>* remove_headers_actions) const override;
   bool IsExtraHeadersMatcher() const override {
     return is_extra_headers_matcher_;

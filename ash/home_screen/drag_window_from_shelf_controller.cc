@@ -415,11 +415,9 @@ DragWindowFromShelfController::GetSnapPosition(
   if (ShouldRestoreToOriginalBounds(location_in_screen))
     return SplitViewController::NONE;
 
-  const gfx::Rect work_area = display::Screen::GetScreen()
-                                  ->GetDisplayNearestPoint(location_in_screen)
-                                  .work_area();
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
   SplitViewController::SnapPosition snap_position =
-      ::ash::GetSnapPosition(window_, location_in_screen, work_area);
+      ::ash::GetSnapPosition(root_window, window_, location_in_screen);
 
   // For portrait mode, since the drag starts from the bottom of the screen,
   // we should only allow the window to snap to the top of the screen.
@@ -441,6 +439,9 @@ DragWindowFromShelfController::GetSnapPosition(
     const int initial_x = initial_location_in_screen_.x();
     const int initial_y = initial_location_in_screen_.y();
     if (is_landscape) {
+      const gfx::Rect work_area =
+          screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+              root_window);
       started_in_screen_edge =
           initial_x <= work_area.x() + kDistanceFromEdge ||
           initial_x > work_area.right() - kDistanceFromEdge;
@@ -449,8 +450,9 @@ DragWindowFromShelfController::GetSnapPosition(
     if (!started_in_screen_edge) {
       // Check if the drag starts in the snap region.
       const bool started_in_snap_region =
-          ::ash::GetSnapPosition(window_, initial_location_in_screen_,
-                                 work_area) != SplitViewController::NONE;
+          ::ash::GetSnapPosition(root_window, window_,
+                                 initial_location_in_screen_) !=
+          SplitViewController::NONE;
       const int distance = is_landscape ? location_in_screen.x() - initial_x
                                         : location_in_screen.y() - initial_y;
       const int min_drag_distance = started_in_snap_region

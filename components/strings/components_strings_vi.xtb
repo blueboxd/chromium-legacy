@@ -9,6 +9,7 @@
 <translation id="1036348656032585052">Tắt</translation>
 <translation id="1038842779957582377">tên không biết</translation>
 <translation id="1039626062703039346">Chrome có thể giúp bạn bảo vệ Tài khoản Google của mình và đổi mật khẩu. Google sẽ nhận được thông báo về trang web này.</translation>
+<translation id="1044897699341250361">Rủi ro phải đối mặt</translation>
 <translation id="1050038467049342496">Đóng các ứng dụng khác</translation>
 <translation id="1055184225775184556">&amp;Hoàn tác thêm</translation>
 <translation id="1056898198331236512">Cảnh báo</translation>
@@ -183,6 +184,7 @@
 <translation id="1745880797583122200">Trình duyệt của bạn được quản lý</translation>
 <translation id="17513872634828108">Tab đang mở</translation>
 <translation id="1753706481035618306">Số trang</translation>
+<translation id="175838129965056221">Chrome phát hiện thấy kết nối của bạn đang bị giám sát</translation>
 <translation id="1763864636252898013">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không được hệ điều hành thiết bị của bạn tin cậy. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Thử chạy Chẩn đoán mạng của Windows<ph name="END_LINK" />.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -251,6 +253,7 @@
 <translation id="2119867082804433120">Đục lỗ dưới cùng bên phải</translation>
 <translation id="2129079103035905234">Cảm biến chuyển động</translation>
 <translation id="2130448033692577677">Các mẫu bạn đã chỉ định có thể không được áp dụng do chưa đặt chính sách DnsOverHttpsMode.</translation>
+<translation id="2131277894177304644">Chromium phát hiện thấy kết nối của bạn đang bị giám sát</translation>
 <translation id="213826338245044447">Dấu trang trên thiết bị di động</translation>
 <translation id="214556005048008348">Hủy thanh toán</translation>
 <translation id="2147827593068025794">Đồng bộ hóa dưới nền</translation>
@@ -298,6 +301,7 @@
 <translation id="2354001756790975382">Dấu trang khác</translation>
 <translation id="2354430244986887761">Gần đây, Duyệt web an toàn của Google <ph name="BEGIN_LINK" />đã tìm thấy các ứng dụng có hại<ph name="END_LINK" /> trên <ph name="SITE" />.</translation>
 <translation id="2355395290879513365">Kẻ tấn công có thể thấy những hình ảnh mà bạn đang xem trên trang web này và lừa bạn bằng cách sửa đổi những hình ảnh đó.</translation>
+<translation id="2355474962185559967">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Bạn nên truy cập vào <ph name="WEBSITE_1" /> rồi đổi mật khẩu của mình ngay bây giờ.</translation>
 <translation id="2356070529366658676">Yêu cầu</translation>
 <translation id="2359629602545592467">Nhiều</translation>
 <translation id="2359808026110333948">Tiếp tục</translation>
@@ -401,6 +405,7 @@
 <translation id="2799020568854403057">Trang web bạn sắp truy cập chứa ứng dụng có hại</translation>
 <translation id="2799223571221894425">Chạy lại</translation>
 <translation id="2803306138276472711">Duyệt web an toàn của Google gần đây <ph name="BEGIN_LINK" />đã phát hiện phần mềm độc hại<ph name="END_LINK" /> trên <ph name="SITE" />. Các trang web thường được coi là an toàn đôi khi vẫn bị nhiễm phần mềm độc hại.</translation>
+<translation id="281585763351939989">Chromium phát hiện thấy kết nối của bạn đang bị giám sát.</translation>
 <translation id="2824775600643448204">Thanh địa chỉ và tìm kiếm</translation>
 <translation id="2826760142808435982">Kết nối được mã hóa và xác thực bằng <ph name="CIPHER" /> đồng thời sử dụng <ph name="KX" /> làm cơ chế trao đổi chính.</translation>
 <translation id="2835170189407361413">Xóa biểu mẫu</translation>
@@ -445,6 +450,7 @@
 <translation id="3024663005179499861">Loại chính sách sai</translation>
 <translation id="3037605927509011580">Ôi, hỏng! </translation>
 <translation id="3041612393474885105">Thông tin Chứng chỉ</translation>
+<translation id="304755864151473094">Lý do cảnh báo hiển thị</translation>
 <translation id="3057676462092457419">Chưa hỗ trợ chế độ DnsOverHttps <ph name="SECURE_DNS_MODE_SECURE" />. Đã đặt chế độ này thành <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">C9 (Phong bì)</translation>
 <translation id="3061707000357573562">Dịch vụ vá lỗi</translation>
@@ -484,6 +490,7 @@
 <translation id="3228969707346345236">Dịch thất bại vì trang đã bằng <ph name="LANGUAGE" />.</translation>
 <translation id="3229041911291329567">Thông tin phiên bản về thiết bị và trình duyệt của bạn</translation>
 <translation id="323107829343500871">Nhập CVC cho <ph name="CREDIT_CARD" /></translation>
+<translation id="3234392465377209614">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Bạn nên truy cập vào <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> và <ph name="WEBSITE_3" /> rồi đổi mật khẩu của mình ngay bây giờ.</translation>
 <translation id="3234666976984236645">Luôn luôn phát hiện nội dung quan trọng trên trang web này</translation>
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> trông giống với <ph name="SUGGESTED_DOMAIN" />. Kẻ tấn công đôi khi bắt chước các trang web bằng cách sử dụng các URL tương tự những trang này.</translation>
 <translation id="3270847123878663523">&amp;Hoàn tác sắp xếp lại</translation>
@@ -516,6 +523,7 @@
 <translation id="342781501876943858">Chromium khuyên bạn nên đặt lại mật khẩu của mình nếu đã sử dụng lại mật khẩu này trên các trang web khác.</translation>
 <translation id="3428151540071562330">Một hoặc nhiều URI mẫu máy chủ DnsOverHttpsTemplates là không hợp lệ và sẽ không được dùng.</translation>
 <translation id="3431636764301398940">Lưu thẻ này vào thiết bị này</translation>
+<translation id="3438790640050632698">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Bạn nên truy cập vào <ph name="WEBSITE_1" /> và <ph name="WEBSITE_2" /> rồi đổi mật khẩu của mình ngay bây giờ.</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">Chủ sở hữu của thiết bị này đã tắt trò chơi khủng long.</translation>
 <translation id="3447884698081792621">Hiển thị chứng chỉ (do <ph name="ISSUER" /> cấp)</translation>
@@ -530,6 +538,7 @@
 <translation id="3495081129428749620">Tìm trong trang
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">Chính sách này bị bỏ qua vì một chính sách khác thuộc cùng nhóm chính sách có mức ưu tiên cao hơn.</translation>
+<translation id="3525469219100414032">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Bạn nên truy cập vào <ph name="WEBSITE_1" /> rồi đổi mật khẩu của mình ngay bây giờ.</translation>
 <translation id="3528171143076753409">Chứng chỉ của máy chủ không đáng tin cậy.</translation>
 <translation id="3528485271872257980">Nâu đậm</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Ít nhất 1 mục trên các thiết bị đã đồng bộ hóa}=1{1 mục (và nhiều mục khác trên các thiết bị đã đồng bộ hóa)}other{# mục (và nhiều mục khác trên các thiết bị đã đồng bộ hóa)}}</translation>
@@ -608,6 +617,7 @@
 <translation id="3858027520442213535">Cập nhật ngày và giờ</translation>
 <translation id="3884278016824448484">Số nhận dạng thiết bị xung đột</translation>
 <translation id="3885155851504623709">Giáo xứ</translation>
+<translation id="388632593194507180">Hoạt động giám sát đã phát hiện</translation>
 <translation id="3890664840433101773">Thêm email</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3901925938762663762">Thẻ đã hết hạn</translation>
@@ -709,6 +719,7 @@
 <translation id="4305817255990598646">Chuyển</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Chặn (mặc định)</translation>
+<translation id="4318312030194671742">Dịch vụ sắp xếp Paint Preview</translation>
 <translation id="4318566738941496689">Tên thiết bị và địa chỉ mạng của bạn</translation>
 <translation id="4325863107915753736">Không tìm được bài viết</translation>
 <translation id="4326324639298822553">Kiểm tra ngày hết hạn của bạn và thử lại</translation>
@@ -725,6 +736,7 @@
 <translation id="4372948949327679948">Giá trị <ph name="VALUE_TYPE" /> mong đợi.</translation>
 <translation id="4377125064752653719">Bạn đã cố truy cập vào <ph name="DOMAIN" /> nhưng chứng chỉ mà máy chủ xuất trình đã bị nhà phát hành thu hồi. Điều này có nghĩa là giấy ủy nhiệm bảo mật mà máy chủ xuất trình hoàn toàn không đáng tin cậy. Bạn có thể đang giao tiếp với kẻ tấn công.</translation>
 <translation id="4378154925671717803">Điện thoại</translation>
+<translation id="437847259914972036">Hoạt động trên web của bạn và mọi thông tin bạn nhập đang bị theo dõi, và nội dung có thể bị thay đổi mà bạn không hề hay biết.</translation>
 <translation id="4398334096870680409">Thiết bị của bạn không dùng được tính năng này.</translation>
 <translation id="4406896451731180161">kết quả tìm kiếm</translation>
 <translation id="4408413947728134509">Cookie <ph name="NUM_COOKIES" /></translation>
@@ -960,6 +972,7 @@
 <translation id="5565735124758917034">Đang hoạt động</translation>
 <translation id="5570825185877910964">Bảo vệ tài khoản</translation>
 <translation id="5571083550517324815">Không thể nhận hàng từ địa chỉ này. Chọn một địa chỉ khác.</translation>
+<translation id="5572009199897554128">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Bạn nên truy cập vào <ph name="WEBSITE_1" /> và <ph name="WEBSITE_2" /> rồi đổi mật khẩu của mình ngay bây giờ.</translation>
 <translation id="5580958916614886209">Kiểm tra tháng hết hạn của bạn và thử lại</translation>
 <translation id="5586446728396275693">Không có địa chỉ nào được lưu</translation>
 <translation id="5595485650161345191">Chỉnh sửa địa chỉ</translation>
@@ -1142,6 +1155,7 @@
 <translation id="6446163441502663861">Kahu (Phong bì)</translation>
 <translation id="6446608382365791566">Thêm thông tin khác</translation>
 <translation id="6447842834002726250">Cookie</translation>
+<translation id="644931407731409778">Tài liệu PDF gồm {COUNT,plural, =1{1 trang}other{# trang}}</translation>
 <translation id="6451458296329894277">Xác nhận việc Gửi lại Biểu mẫu</translation>
 <translation id="6457206614190510200">Đóng kim lồng</translation>
 <translation id="6465306955648956876">Quản lý mật khẩu...</translation>
@@ -1160,6 +1174,7 @@
 <translation id="6547208576736763147">Đục 2 lỗ bên trái</translation>
 <translation id="6554795675067793129">Tài khoản của bạn do <ph name="ENROLLMENT_DOMAIN" /> quản lý.</translation>
 <translation id="6556866813142980365">Làm lại</translation>
+<translation id="6559565319173126218">Chrome không tin cậy chứng chỉ của kết nối này vì chứng chỉ này đã được xác định là dùng để chặn và giám sát mạng.</translation>
 <translation id="6569060085658103619">Bạn đang xem trang tiện ích</translation>
 <translation id="6573200754375280815">Đục 2 lỗ bên phải</translation>
 <translation id="6578796323535178455">C2 (Phong bì)</translation>
@@ -1193,6 +1208,7 @@
 <translation id="6710594484020273272">&lt;Nhập cụm từ tìm kiếm&gt;</translation>
 <translation id="671076103358959139">Mã đăng ký:</translation>
 <translation id="6711464428925977395">Đã xảy ra sự cố với máy chủ proxy hoặc địa chỉ không chính xác.</translation>
+<translation id="6721811549156553509">Thiết bị giám sát mạng có thể giả mạo trang web bạn truy cập và thấy hoạt động của bạn cũng như mọi thông tin bạn nhập (ví dụ: mật khẩu, tin nhắn hoặc thẻ tín dụng). Bạn nên cẩn thận khi làm bất cứ việc gì nhạy cảm trên mạng vì thiết bị giám sát mạng sẽ thấy được hoạt động đó. Ngoài ra, thiết bị này có thể thay đổi nội dung trên trang bạn truy cập. Nội dung này bao gồm hoạt động trong các trình duyệt và chương trình khác truy cập Internet.</translation>
 <translation id="6738516213925468394">Dữ liệu của bạn đã được mã hóa bằng <ph name="BEGIN_LINK" />cụm mật khẩu đồng bộ hóa<ph name="END_LINK" /> vào <ph name="TIME" />. Hãy nhập cụm mật khẩu đó để bắt đầu đồng bộ hóa.</translation>
 <translation id="674375294223700098">Lỗi chứng chỉ máy chủ không xác định.</translation>
 <translation id="6744009308914054259">Trong khi chờ kết nối, bạn có thể chuyển đến phần Tệp đã tải xuống để đọc các tin bài khi không có mạng.</translation>
@@ -1277,6 +1293,7 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /> về sự cố này.</translation>
 <translation id="7219179957768738017">Kết nối sử dụng <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Đang xử lý</translation>
+<translation id="7239736667463137521">Chrome phát hiện thấy kết nối của bạn đang bị giám sát.</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Trang web bạn sắp truy cập chứa phần mềm độc hại</translation>
 <translation id="724975217298816891">Nhập ngày hết hạn và CVC cho <ph name="CREDIT_CARD" /> để cập nhật chi tiết thẻ của bạn. Sau khi bạn xác nhận, chi tiết thẻ của bạn sẽ được chia sẻ với trang web này.</translation>
@@ -1303,6 +1320,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7346048084945669753">Được liên kết:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Dòng Lệnh</translation>
+<translation id="7353776484425559055">Chromium không tin cậy chứng chỉ của kết nối này vì chứng chỉ này đã được xác định là dùng để chặn và giám sát mạng. Bạn có thể gặp phải lỗi này do một chứng chỉ mà bạn đã cài đặt trên thiết bị. Khi tạo kết nối an toàn, Chromium sẽ tin cậy các chứng chỉ đã được tạo trên máy tính hoặc thiết bị di động của người dùng. Nhờ vậy mà người dùng có thể chạy các công cụ để kiểm tra và gỡ lỗi kết nối trong quá trình phát triển trang web, hoặc có thể chặn và giám sát lưu lượng truy cập nội bộ trong môi trường công ty. Chromium sẽ hiển thị cảnh báo với các trường hợp lạm dụng đặc tính này để chặn lưu lượng truy cập trên Internet công cộng.</translation>
 <translation id="7372973238305370288">kết quả tìm kiếm</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Các chức năng điều khiển nội dung đa phương tiện</translation>
@@ -1364,6 +1382,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7592362899630581445">Chứng chỉ của máy chủ vi phạm hạn chế tên.</translation>
 <translation id="7598391785903975535">Dưới <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> hiện không thể xử lý yêu cầu này.</translation>
+<translation id="7599841999395223597">Chrome không tin cậy chứng chỉ của kết nối này vì chứng chỉ này đã được xác định là dùng để chặn và giám sát mạng. Bạn có thể gặp phải lỗi này do một chứng chỉ mà bạn đã cài đặt trên thiết bị. Khi tạo kết nối an toàn, Chrome sẽ tin cậy các chứng chỉ đã được cài đặt trên máy tính hoặc thiết bị di động của người dùng. Nhờ vậy mà người dùng có thể chạy các công cụ để kiểm tra và gỡ lỗi kết nối trong quá trình phát triển trang web, hoặc có thể chặn và giám sát lưu lượng truy cập nội bộ trong môi trường công ty. Chrome sẽ hiển thị cảnh báo với các trường hợp lạm dụng đặc tính này để chặn lưu lượng truy cập trên Internet công cộng.</translation>
 <translation id="7600965453749440009">Không bao giờ dịch <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Giá trị nằm ngoài phạm vi <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Hết hạn: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -1681,6 +1700,7 @@ Thông tin chi tiết bổ sung:
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">Bạn có thể mất quyền truy cập vào Tài khoản Google của mình. Chromium khuyên bạn nên đổi mật khẩu ngay bây giờ. Bạn sẽ được yêu cầu đăng nhập.</translation>
 <translation id="939736085109172342">Thư mục mới</translation>
+<translation id="940786960229275114">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Bạn nên truy cập vào <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> và <ph name="WEBSITE_3" /> rồi đổi mật khẩu của mình ngay bây giờ.</translation>
 <translation id="945855313015696284">Kiểm tra thông tin bên dưới và xóa mọi thẻ không hợp lệ</translation>
 <translation id="950736567201356821">Đục 3 lỗ trên cùng</translation>
 <translation id="951104842009476243">Thẻ ghi nợ và thẻ trả trước được chấp nhận</translation>

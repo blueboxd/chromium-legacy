@@ -611,12 +611,26 @@ bool V4L2SliceVideoDecodeAccelerator::CreateInputBuffers() {
     return false;
   }
 
-  requests_queue_ = device_->GetRequestsQueue();
-  if (requests_queue_ == nullptr)
-    return false;
+  // The remainder of this method only applies if requests are used.
+  if (!supports_requests_)
+    return true;
 
-  if (!requests_queue_->AllocateRequests(input_queue_->AllocatedBuffersCount()))
-    return false;
+  DCHECK(requests_.empty());
+
+  DCHECK(media_fd_.is_valid());
+  for (size_t i = 0; i < input_queue_->AllocatedBuffersCount(); i++) {
+    int request_fd;
+
+    int ret = HANDLE_EINTR(
+        ioctl(media_fd_.get(), MEDIA_IOC_REQUEST_ALLOC, &request_fd));
+    if (ret < 0) {
+      VPLOGF(1) << "Failed to create request: ";
+      return false;
+    }
+
+    requests_.push(base::ScopedFD(request_fd));
+  }
+  DCHECK_EQ(requests_.size(), input_queue_->AllocatedBuffersCount());
 
   return true;
 }
@@ -735,6 +749,9 @@ void V4L2SliceVideoDecodeAccelerator::DestroyInputBuffers() {
   DCHECK(!input_queue_->IsStreaming());
 
   input_queue_->DeallocateBuffers();
+
+  if (supports_requests_)
+    requests_ = {};
 }
 
 void V4L2SliceVideoDecodeAccelerator::DismissPictures(
@@ -2106,16 +2123,23 @@ V4L2SliceVideoDecodeAccelerator::CreateSurface() {
   scoped_refptr<V4L2DecodeSurface> dec_surface;
 
   if (supports_requests_) {
-    // Get a free request from the queue for a new surface.
-    V4L2RequestRef request_ref = requests_queue_->GetFreeRequest();
-    if (!request_ref.IsValid()) {
+    // Here we just borrow the older request to use it, before
+    // immediately putting it back at the back of the queue.
+    base::ScopedFD request = std::move(requests_.front());
+    requests_.pop();
+    auto ret = V4L2RequestDecodeSurface::Create(std::move(input_buffer),
+                                                std::move(output_buffer),
+                                                nullptr, request.get());
+    requests_.push(std::move(request));
+
+    // Not being able to create the decode surface at this stage is a
+    // fatal error.
+    if (!ret) {
       NOTIFY_ERROR(PLATFORM_FAILURE);
       return nullptr;
     }
-    dec_surface = new V4L2RequestDecodeSurface(std::move(input_buffer),
-                                              std::move(output_buffer),
-                                              nullptr,
-                                              std::move(request_ref));
+
+    dec_surface = std::move(ret).value();
   } else {
     dec_surface = new V4L2ConfigStoreDecodeSurface(
         std::move(input_buffer), std::move(output_buffer), nullptr);

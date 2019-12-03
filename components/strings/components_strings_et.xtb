@@ -9,6 +9,7 @@
 <translation id="1036348656032585052">Lülita välja</translation>
 <translation id="1038842779957582377">tundmatu nimi</translation>
 <translation id="1039626062703039346">Chrome aitab teil oma Google'i kontot kaitsta ja parooli muuta. See saadab Google'ile selle saidi kohta märguande.</translation>
+<translation id="1044897699341250361">Mida see tähendab?</translation>
 <translation id="1050038467049342496">Sulgege muud rakendused</translation>
 <translation id="1055184225775184556">&amp;Võta lisamine tagasi</translation>
 <translation id="1056898198331236512">Hoiatus</translation>
@@ -183,6 +184,7 @@
 <translation id="1745880797583122200">Teie brauserit hallatakse</translation>
 <translation id="17513872634828108">Avatud vahelehed</translation>
 <translation id="1753706481035618306">Lk</translation>
+<translation id="175838129965056221">Chrome tuvastas, et teie ühendust jälgitakse</translation>
 <translation id="1763864636252898013">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />, seadme operatsioonisüsteem ei usalda selle turvasertifikaati. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Proovige käitada Windowsi võrgudiagnostika tööriista<ph name="END_LINK" />.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -251,6 +253,7 @@
 <translation id="2119867082804433120">Auk paremal all</translation>
 <translation id="2129079103035905234">Liikumisandurid</translation>
 <translation id="2130448033692577677">Teie määratud malle ei pruugita rakendada, kuna reeglit DnsOverHttpsMode pole määratud.</translation>
+<translation id="2131277894177304644">Chromium tuvastas, et teie ühendust jälgitakse</translation>
 <translation id="213826338245044447">Mobiili järjehoidjad</translation>
 <translation id="214556005048008348">Tühista makse</translation>
 <translation id="2147827593068025794">Taustal sünkroonimine</translation>
@@ -298,6 +301,7 @@
 <translation id="2354001756790975382">Muud järjehoidjad</translation>
 <translation id="2354430244986887761">Google'i ohutu sirvimine leidis hiljuti saidilt <ph name="SITE" /> <ph name="BEGIN_LINK" />ohtlikke rakendusi<ph name="END_LINK" />.</translation>
 <translation id="2355395290879513365">Ründajad võivad näha pilte, mida sellel saidil vaatate, ja teid neid pilte muutes petta.</translation>
+<translation id="2355474962185559967">Sisestasite äsja oma parooli kahtlasele saidile. Chromium soovitab teil minna saidile <ph name="WEBSITE_1" /> ja kohe oma parooli muuta.</translation>
 <translation id="2356070529366658676">Küsi</translation>
 <translation id="2359629602545592467">Mitu</translation>
 <translation id="2359808026110333948">Jätka</translation>
@@ -401,6 +405,7 @@
 <translation id="2799020568854403057">Sait, mille soovite avada, sisaldab kahjulikke rakendusi</translation>
 <translation id="2799223571221894425">Taaskäivita</translation>
 <translation id="2803306138276472711">Google'i ohutu sirvimise teenus <ph name="BEGIN_LINK" />tuvastas hiljuti pahavara<ph name="END_LINK" /> saidil <ph name="SITE" />. Tavaliselt turvalisi veebisaite võidakse mõnikord nakatada pahavaraga.</translation>
+<translation id="281585763351939989">Chromium tuvastas, et teie ühendust jälgitakse.</translation>
 <translation id="2824775600643448204">Aadressi- ja otsinguriba</translation>
 <translation id="2826760142808435982">Ühendus on krüptitud ja autenditud üksusega <ph name="CIPHER" /> ning kasutab peamise vahetusmehhanismina üksust <ph name="KX" />.</translation>
 <translation id="2835170189407361413">Tühjenda vorm</translation>
@@ -445,6 +450,7 @@
 <translation id="3024663005179499861">Reegli tüüp on vale</translation>
 <translation id="3037605927509011580">Ups, ebaõnn!</translation>
 <translation id="3041612393474885105">Sertifikaadi andmed</translation>
+<translation id="304755864151473094">Miks see juhtub?</translation>
 <translation id="3057676462092457419">DnsOverHttps-režiimi <ph name="SECURE_DNS_MODE_SECURE" /> ei toetata veel. Režiimiks on määratud <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">C9 (ümbrik)</translation>
 <translation id="3061707000357573562">Teenuse paikamine</translation>
@@ -484,6 +490,7 @@
 <translation id="3228969707346345236">Tõlkimine nurjus, kuna lehe keel on juba <ph name="LANGUAGE" />.</translation>
 <translation id="3229041911291329567">Teie seadme ja brauseri versiooniteave</translation>
 <translation id="323107829343500871">Krediitkaardi <ph name="CREDIT_CARD" /> CVC sisestamine</translation>
+<translation id="3234392465377209614">Sisestasite äsja oma parooli kahtlasele saidile. Chromium soovitab teil minna saitidele <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> ja <ph name="WEBSITE_3" /> ning muuta kohe oma parooli.</translation>
 <translation id="3234666976984236645">Sellel saidil olulise sisu alati tuvastamine</translation>
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> sarnaneb domeeniga <ph name="SUGGESTED_DOMAIN" />. Ründajad imiteerivad mõnikord saite, kasutades sarnaseid URL-e.</translation>
 <translation id="3270847123878663523">&amp;Võta korrastamine tagasi</translation>
@@ -516,6 +523,7 @@
 <translation id="342781501876943858">Chromium soovitab teil parooli lähtestada, kui kasutasite seda ka muudel saitidel.</translation>
 <translation id="3428151540071562330">Vähemalt üks reegli DnsOverHttpsTemplates serveri malli URI on kehtetu ja seda ei kasutata.</translation>
 <translation id="3431636764301398940">Salvesta kaart sellesse seadmesse</translation>
+<translation id="3438790640050632698">Sisestasite äsja oma parooli kahtlasele saidile. Chrome soovitab teil minna saitidele <ph name="WEBSITE_1" /> ja <ph name="WEBSITE_2" /> ning muuta kohe oma parooli.</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">Seadme omanik lülitas dinosaurusemängu välja.</translation>
 <translation id="3447884698081792621">Kuva sertifikaat (väljastas <ph name="ISSUER" />)</translation>
@@ -530,6 +538,7 @@
 <translation id="3495081129428749620">Lehelt otsimine
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">Seda reeglit eiratakse, kuna sama reegligrupi teisel reeglil on kõrgem prioriteet.</translation>
+<translation id="3525469219100414032">Sisestasite äsja oma parooli kahtlasele saidile. Chrome soovitab teil minna saidile <ph name="WEBSITE_1" /> ja kohe oma parooli muuta.</translation>
 <translation id="3528171143076753409">Serveri sertifikaat ei ole usaldusväärne.</translation>
 <translation id="3528485271872257980">Tumepruun</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Vähemalt 1 üksus sünkroonitud seadmetes}=1{1 üksus (ja rohkem sünkroonitud seadmetes)}other{# üksust (ja rohkem sünkroonitud seadmetes)}}</translation>
@@ -608,6 +617,7 @@
 <translation id="3858027520442213535">Värskenda kuupäeva ja kellaaega</translation>
 <translation id="3884278016824448484">Seadme identifikaator on konfliktne</translation>
 <translation id="3885155851504623709">Vald</translation>
+<translation id="388632593194507180">Tuvastati jälgimine</translation>
 <translation id="3890664840433101773">E-posti aadressi lisamine</translation>
 <translation id="3897092660631435901">Menüü</translation>
 <translation id="3901925938762663762">Kaart on aegunud</translation>
@@ -709,6 +719,7 @@
 <translation id="4305817255990598646">Lüliti</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Blokeeri (vaikimisi)</translation>
+<translation id="4318312030194671742">Värvi eelvaate koostamisteenus</translation>
 <translation id="4318566738941496689">Teie seadme nimi ja võrguaadress</translation>
 <translation id="4325863107915753736">Artiklit ei leitud</translation>
 <translation id="4326324639298822553">Kontrollige aegumiskuupäeva ja proovige uuesti</translation>
@@ -725,6 +736,7 @@
 <translation id="4372948949327679948">Oodatud väärtus: <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">Püüdsite jõuda saidile <ph name="DOMAIN" />, kuid sertifikaadi väljaandja on serveri esitatud sertifikaadi tagasi võtnud. See tähendab, et serveri esitatud turvamandaate ei tohiks mingil juhul usaldada. Võimalik, et suhtlete ründajaga.</translation>
 <translation id="4378154925671717803">Telefon</translation>
+<translation id="437847259914972036">Teie tegevust veebis ja teie sisestatud teavet jälgitakse ja sisu võidakse teie teadmata muuta.</translation>
 <translation id="4398334096870680409">See funktsioon pole teie seadmes saadaval.</translation>
 <translation id="4406896451731180161">otsingutulemused</translation>
 <translation id="4408413947728134509">Küpsisefailid: <ph name="NUM_COOKIES" /></translation>
@@ -960,6 +972,7 @@
 <translation id="5565735124758917034">Aktiivne</translation>
 <translation id="5570825185877910964">Kaitse kontot</translation>
 <translation id="5571083550517324815">Sellelt aadressilt ei saa kaupa kätte. Valige mõni teine aadress.</translation>
+<translation id="5572009199897554128">Sisestasite äsja oma parooli kahtlasele saidile. Chromium soovitab teil minna saitidele <ph name="WEBSITE_1" /> ja <ph name="WEBSITE_2" /> ning muuta kohe oma parooli.</translation>
 <translation id="5580958916614886209">Kontrollige aegumiskuud ja proovige uuesti</translation>
 <translation id="5586446728396275693">Salvestatud aadresse pole</translation>
 <translation id="5595485650161345191">Muuda aadressi</translation>
@@ -1142,6 +1155,7 @@
 <translation id="6446163441502663861">Kahu (ümbrik)</translation>
 <translation id="6446608382365791566">Lisateabe lisamine</translation>
 <translation id="6447842834002726250">Küpsised</translation>
+<translation id="644931407731409778">PDF-dokument, mis sisaldab {COUNT,plural, =1{1 lehte}other{# lehte}}</translation>
 <translation id="6451458296329894277">Kinnita vormi uuestiesitamist</translation>
 <translation id="6457206614190510200">Sadulõmblus</translation>
 <translation id="6465306955648956876">Halda paroole …</translation>
@@ -1160,6 +1174,7 @@
 <translation id="6547208576736763147">Kaks auku vasakul</translation>
 <translation id="6554795675067793129">Teie kontot haldab <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Tee uuesti</translation>
+<translation id="6559565319173126218">Chrome ei usalda selle ühenduse jaoks esitatud sertifikaati, kuna seda kasutatakse teadaolevalt võrgu jälgimiseks ja ühenduse katkestamiseks.</translation>
 <translation id="6569060085658103619">Vaatate laienduse lehte</translation>
 <translation id="6573200754375280815">Kaks auku paremal</translation>
 <translation id="6578796323535178455">C2 (ümbrik)</translation>
@@ -1193,6 +1208,7 @@
 <translation id="6710594484020273272">&lt;Sisestage otsingutermin&gt;</translation>
 <translation id="671076103358959139">Registreerimismärk:</translation>
 <translation id="6711464428925977395">Puhverserveriga on midagi valesti või aadress on vale.</translation>
+<translation id="6721811549156553509">Võrgu jälgija võib esineda saitidena, mida külastate, ning saab vaadata teie tegevust ja sisestatud teavet (nt paroolid, sõnumid, krediitkaardiandmed). Olge veebis tundlike toimingute tegemisel ettevaatlik, kuna võrgu jälgija näeb teie toiminguid ja saab muuta teie külastatavate saitide sisu. See hõlmab ka toiminguid muudes brauserites ja programmides, mis kasutavad Interneti-ühendust.</translation>
 <translation id="6738516213925468394">Teie andmed krüpteeriti teie <ph name="BEGIN_LINK" />sünkroonimisparooliga<ph name="END_LINK" /> kuupäeval <ph name="TIME" />. Sisestage see sünkroonimise alustamiseks.</translation>
 <translation id="674375294223700098">Serveri sertifikaadi tundmatu viga.</translation>
 <translation id="6744009308914054259">Ühenduse loomise ajal võite avada jaotise Allalaadimised ja lugeda võrguühenduseta artikleid.</translation>
@@ -1277,6 +1293,7 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /> selle probleemi kohta.</translation>
 <translation id="7219179957768738017">Ühendus kasutab protokolli <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Töötlemine</translation>
+<translation id="7239736667463137521">Chrome tuvastas, et teie ühendust jälgitakse.</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Avatav veebisait sisaldab pahavara</translation>
 <translation id="724975217298816891">Kaardi üksikasjade värskendamiseks sisestage krediitkaardi <ph name="CREDIT_CARD" /> aegumiskuupäev ja CVC. Kui selle kinnitate, jagatakse teie kaardi üksikasju selle saidiga.</translation>
@@ -1303,6 +1320,7 @@ Lisateave:
 <translation id="7346048084945669753">On seotud:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Käsurida</translation>
+<translation id="7353776484425559055">Chromium ei usalda selle ühenduse sertifikaati, kuna teadaolevalt kasutatakse seda võrgu pealtkuulamiseks ja jälgimiseks. Võib-olla ilmneb viga teie seadmesse installitud sertifikaadi tõttu. Turvaliste ühenduste loomisel usaldab Chromium sertifikaate, mis on kasutaja arvutisse või mobiilseadmesse kohalikult installitud. See võimaldab kasutajatel veebisaitide arendamise ajal käitada tööriistu ühenduste uurimiseks ja silumiseks, samuti võimaldab see ettevõttekeskkonnas siseliiklust püüda ja jälgida. Kui funktsiooni väärkasutatakse avaliku Interneti-ühenduse liikluse katkestamiseks, kuvab Chromium hoiatuse.</translation>
 <translation id="7372973238305370288">otsingutulemus</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Meedia juhtnupud</translation>
@@ -1364,6 +1382,7 @@ Lisateave:
 <translation id="7592362899630581445">Serveri sertifikaat rikub nime piiranguid.</translation>
 <translation id="7598391785903975535">Alla <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187">Host <ph name="HOST_NAME" /> ei saa praegu seda taotlust töödelda.</translation>
+<translation id="7599841999395223597">Chrome ei usalda selle ühenduse sertifikaati, kuna teadaolevalt kasutatakse seda võrgu pealtkuulamiseks ja jälgimiseks. Võib-olla ilmneb viga teie seadmesse installitud sertifikaadi tõttu. Turvaliste ühenduste loomisel usaldab Chrome sertifikaate, mis on kasutaja arvutisse või mobiilseadmesse kohalikult installitud. See võimaldab kasutajatel veebisaitide arendamise ajal käitada tööriistu ühenduste uurimiseks ja silumiseks, samuti võimaldab see ettevõttekeskkonnas siseliiklust püüda ja jälgida. Kui funktsiooni väärkasutatakse avaliku Interneti-ühenduse liikluse katkestamiseks, kuvab Chrome hoiatuse.</translation>
 <translation id="7600965453749440009">Ära kunagi tõlgi: <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Väärtus on vahemikust (<ph name="VALUE" />) väljaspool.</translation>
 <translation id="7613889955535752492">Aegub: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -1680,6 +1699,7 @@ Lisateave:
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">Võite kaotada juurdepääsu oma Google'i kontole. Chromium soovitab teil kohe oma parooli muuta. Teil palutakse sisse logida.</translation>
 <translation id="939736085109172342">Uus kaust</translation>
+<translation id="940786960229275114">Sisestasite äsja oma parooli kahtlasele saidile. Chrome soovitab teil minna saitidele <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> ja <ph name="WEBSITE_3" /> ning muuta kohe oma parooli.</translation>
 <translation id="945855313015696284">Vaadake allolevat teavet ja kustutage sobimatud kaardid</translation>
 <translation id="950736567201356821">Kolm auku ülal</translation>
 <translation id="951104842009476243">Aktsepteeritavad ettemakstud ja deebetkaardid</translation>

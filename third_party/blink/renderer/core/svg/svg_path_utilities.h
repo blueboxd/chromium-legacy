@@ -34,8 +34,8 @@ bool CORE_EXPORT BuildPathFromString(const StringView&, Path&);
 bool BuildPathFromByteStream(const SVGPathByteStream&, Path&);
 
 // StringView -> SVGPathByteStream
-SVGParsingError BuildByteStreamFromString(const StringView&,
-                                          SVGPathByteStream&);
+SVGParsingError CORE_EXPORT BuildByteStreamFromString(const StringView&,
+                                                      SVGPathByteStream&);
 
 // SVGPathByteStream -> String
 enum PathSerializationFormat { kNoTransformation, kTransformToAbsolute };

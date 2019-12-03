@@ -9,11 +9,10 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/numerics/ranges.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromecast/media/audio/mixer_service/loopback_connection.h"
@@ -370,8 +369,7 @@ std::string DeathRegex(const std::string& regex) {
 
 class StreamMixerTest : public testing::Test {
  protected:
-  StreamMixerTest()
-      : message_loop_(new base::MessageLoop(base::MessagePumpType::IO)) {
+  StreamMixerTest() {
     auto output = std::make_unique<NiceMock<MockMixerOutput>>();
     mock_output_ = output.get();
     mixer_ = std::make_unique<StreamMixer>(std::move(output), nullptr,
@@ -392,7 +390,8 @@ class StreamMixerTest : public testing::Test {
 
   void WaitForMixer() {
     base::RunLoop run_loop1;
-    message_loop_->task_runner()->PostTask(FROM_HERE, run_loop1.QuitClosure());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  run_loop1.QuitClosure());
     run_loop1.Run();
   }
 
@@ -404,7 +403,8 @@ class StreamMixerTest : public testing::Test {
                                      _))
         .Times(1);
     base::RunLoop run_loop;
-    message_loop_->task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  run_loop.QuitClosure());
     run_loop.Run();
     testing::Mock::VerifyAndClearExpectations(mock_output_);
   }
@@ -471,7 +471,8 @@ class StreamMixerTest : public testing::Test {
   }
 
  protected:
-  const std::unique_ptr<base::MessageLoop> message_loop_;
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
   MockMixerOutput* mock_output_;
   std::unique_ptr<StreamMixer> mixer_;
   MockPostProcessorFactory* pp_factory_;

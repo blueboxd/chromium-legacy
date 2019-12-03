@@ -148,8 +148,7 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
   if (!web_app_icons.empty())
     web_app_info->icons = std::move(web_app_icons);
 
-  // Copy across the file handler info.
-  web_app_info->file_handler = manifest.file_handler;
+  web_app_info->file_handlers = manifest.file_handlers;
 }
 
 std::vector<GURL> GetValidIconUrlsToDownload(

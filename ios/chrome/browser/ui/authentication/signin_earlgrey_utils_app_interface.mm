@@ -50,4 +50,9 @@
                     grey_sufficientlyVisible(), nil);
 }
 
++ (void)removeFakeIdentity:(FakeChromeIdentity*)fakeIdentity {
+  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
+      ->RemoveIdentity(fakeIdentity);
+}
+
 @end

@@ -3135,6 +3135,10 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
       base::FeatureList::IsEnabled(
           content_settings ::
               kImprovedCookieControlsForThirdPartyCookieBlocking));
+
+  html_source->AddBoolean(
+      "enableStoragePressureUI",
+      base::FeatureList::IsEnabled(features::kStoragePressureUI));
 }
 
 #if defined(OS_CHROMEOS)

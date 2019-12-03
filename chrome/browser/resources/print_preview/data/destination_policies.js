@@ -68,4 +68,4 @@ export const BackgroundGraphicsModeRestriction = {
  *       ?BackgroundGraphicsModeRestriction,
  * }}
  */
-export let Policies;
+export let DestinationPolicies;

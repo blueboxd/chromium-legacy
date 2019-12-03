@@ -159,18 +159,18 @@ RedirectActionInfo CompositeMatcher::GetRedirectAction(
 
 uint8_t CompositeMatcher::GetRemoveHeadersMask(
     const RequestParams& params,
-    uint8_t ignored_mask,
+    uint8_t excluded_remove_headers_mask,
     std::vector<RequestAction>* remove_headers_actions) const {
   uint8_t mask = 0;
   for (const auto& matcher : matchers_) {
     // The allow rule will override lower priority remove header rules.
     if (HasAllowAction(*matcher, params))
       return mask;
-    mask |= matcher->GetRemoveHeadersMask(params, mask | ignored_mask,
-                                          remove_headers_actions);
+    mask |= matcher->GetRemoveHeadersMask(
+        params, mask | excluded_remove_headers_mask, remove_headers_actions);
   }
 
-  DCHECK(!(mask & ignored_mask));
+  DCHECK(!(mask & excluded_remove_headers_mask));
   return mask;
 }
 

@@ -72,9 +72,11 @@ UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
     case UserSelectableType::kApps: {
       ModelTypeSet model_types = {APPS, APP_SETTINGS, WEB_APPS};
 #if defined(OS_CHROMEOS)
+      // App list must sync if either Chrome apps or ARC apps are synced.
+      model_types.Put(APP_LIST);
       // SplitSettingsSync moves ARC apps under a separate OS setting.
       if (!chromeos::features::IsSplitSettingsSyncEnabled())
-        model_types.PutAll({APP_LIST, ARC_PACKAGE});
+        model_types.Put(ARC_PACKAGE);
 #endif
       return {kAppsTypeName, APPS, model_types};
     }
@@ -100,7 +102,8 @@ UserSelectableTypeInfo GetUserSelectableOsTypeInfo(UserSelectableOsType type) {
   // changed without updating js part.
   switch (type) {
     case UserSelectableOsType::kOsApps:
-      return {"osApps", APP_LIST, {APP_LIST, ARC_PACKAGE}};
+      // App list must sync if either Chrome apps or ARC apps are synced.
+      return {"osApps", ARC_PACKAGE, {ARC_PACKAGE, APP_LIST}};
     case UserSelectableOsType::kOsPreferences:
       return {"osPreferences",
               OS_PREFERENCES,
@@ -153,6 +156,17 @@ UserSelectableType GetUserSelectableTypeFromString(const std::string& type) {
   }
   NOTREACHED();
   return UserSelectableType::kLastType;
+}
+
+std::string UserSelectableTypeSetToString(UserSelectableTypeSet types) {
+  std::string result;
+  for (UserSelectableType type : types) {
+    if (!result.empty()) {
+      result += ", ";
+    }
+    result += GetUserSelectableTypeName(type);
+  }
+  return result;
 }
 
 ModelTypeSet UserSelectableTypeToAllModelTypes(UserSelectableType type) {

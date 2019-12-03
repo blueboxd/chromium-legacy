@@ -18,7 +18,7 @@ config("chromeos_implementation") {
 
 buildflag_header("chromeos_buildflags") {
   header = "chromeos_buildflags.h"
-  flags = [ "IS_CROS_CHROME_SDK=$is_cros_chrome_sdk" ]
+  flags = [ "IS_CHROMEOS_DEVICE=$is_chromeos_device" ]
 }
 
 component("chromeos") {
@@ -207,7 +207,7 @@ test("chromeos_unittests") {
 # linux-chromeos). See the following for reference:
 # https://chromium.googlesource.com/chromium/src/+/master/docs/chromeos_build_instructions.md
 # https://chromium.googlesource.com/chromiumos/docs/+/master/simple_chrome_workflow.md
-if (is_cros_chrome_sdk) {
+if (is_chromeos_device) {
   # This builds a tool that prepares a DUT or VM for testing, which can be
   # utilized by wrapping a host-side script test.
   generate_runner_script("cros_test_wrapper") {

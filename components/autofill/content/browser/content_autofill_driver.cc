@@ -203,11 +203,7 @@ gfx::RectF ContentAutofillDriver::TransformBoundingBoxToViewportCoordinates(
 }
 
 net::NetworkIsolationKey ContentAutofillDriver::NetworkIsolationKey() {
-  content::RenderFrameHost* top_frame_host = render_frame_host_;
-  while (top_frame_host->GetParent())
-    top_frame_host = top_frame_host->GetParent();
-  return net::NetworkIsolationKey(top_frame_host->GetLastCommittedOrigin(),
-                                  render_frame_host_->GetLastCommittedOrigin());
+  return render_frame_host_->GetNetworkIsolationKey();
 }
 
 void ContentAutofillDriver::FormsSeen(const std::vector<FormData>& forms,

@@ -1219,10 +1219,11 @@ template("ios_framework_bundle") {
 
   _default_toolchain_root_out_dir =
       get_label_info("$_target_name($default_toolchain)", "root_out_dir")
-  _default_toolchain_target_gen_dir =
-      get_label_info("$_target_name($default_toolchain)", "target_gen_dir")
 
   if (_has_public_headers) {
+    _default_toolchain_target_gen_dir =
+        get_label_info("$_target_name($default_toolchain)", "target_gen_dir")
+
     _framework_headers_target = _target_name + "_framework_headers"
     _framework_headers_config = _target_name + "_framework_headers_config"
     config(_framework_headers_config) {

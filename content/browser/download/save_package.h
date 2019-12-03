@@ -97,7 +97,7 @@ class CONTENT_EXPORT SavePackage
   // g_browser_process on a non-UI thread can cause crashes during shutdown.
   // |cb| will be called when the download::DownloadItem is created, before data
   // is written to disk.
-  bool Init(const SavePackageDownloadCreatedCallback& cb);
+  bool Init(SavePackageDownloadCreatedCallback cb);
 
   // Cancel all in progress request, might be called by user or internal error.
   void Cancel(bool user_action, bool cancel_download_item = true);
@@ -159,7 +159,7 @@ class CONTENT_EXPORT SavePackage
   ~SavePackage() override;
 
   void InitWithDownloadItem(
-      const SavePackageDownloadCreatedCallback& download_created_callback,
+      SavePackageDownloadCreatedCallback download_created_callback,
       download::DownloadItemImpl* item);
 
   // Callback for WebContents::GenerateMHTML().
@@ -308,10 +308,9 @@ class CONTENT_EXPORT SavePackage
       const base::FilePath& download_save_dir);
   void ContinueGetSaveInfo(bool can_save_as_complete,
                            const base::FilePath& suggested_path);
-  void OnPathPicked(
-      const base::FilePath& final_name,
-      SavePageType type,
-      const SavePackageDownloadCreatedCallback& cb);
+  void OnPathPicked(const base::FilePath& final_name,
+                    SavePageType type,
+                    SavePackageDownloadCreatedCallback cb);
 
   // The number of in process SaveItems.
   int in_process_count() const {

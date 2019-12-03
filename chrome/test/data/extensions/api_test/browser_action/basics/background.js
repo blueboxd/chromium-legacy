@@ -15,4 +15,4 @@ chrome.browserAction.onClicked.addListener(function(tab) {
   chrome.test.notifyPass();
 });
 
-chrome.test.notifyPass();
+chrome.test.sendMessage('ready');

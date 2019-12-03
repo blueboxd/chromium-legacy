@@ -25,6 +25,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.c
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.createTabGroup;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.createTabs;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.enterTabSwitcher;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabStripFaviconCount;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabSwitcherCardCount;
 
 import android.graphics.Rect;
@@ -58,7 +59,7 @@ import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
-import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.CardCountAssertion;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.ChildrenCountAssertion;
 import org.chromium.chrome.features.start_surface.StartSurfaceLayout;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -225,7 +226,7 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
-    public void testUndoClosureInDialog() throws InterruptedException {
+    public void testUndoClosureInDialog_GTS() throws InterruptedException {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
         enterTabSwitcher(cta);
@@ -253,6 +254,40 @@ public class TabGridDialogTest {
             assertEquals("2 tabs", textView.getText().toString());
         });
         openDialogFromTabSwitcherAndVerify(cta, 2);
+    }
+
+    @Test
+    @MediumTest
+    public void testUndoClosureInDialog_TabStrip() throws InterruptedException {
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        createTabs(cta, false, 2);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 2);
+
+        // Create a tab group.
+        mergeAllTabsToAGroup(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+
+        // Enter first tab page.
+        assertTrue(cta.getLayoutManager().overviewVisible());
+        clickFirstCardFromTabSwitcher(cta);
+        clickFirstTabFromDialog(cta);
+
+        // Open dialog from tab strip and verify dialog is showing correct content.
+        openDialogFromStripAndVerify(cta, 2);
+
+        // Click close button to close the first tab in group.
+        closeFirstTabInDialog(cta);
+        verifyShowingDialog(cta, 1);
+
+        // Exit dialog, wait for the undo bar showing and undo the closure.
+        TabUiTestHelper.clickScrimToExitDialog(cta);
+        CriteriaHelper.pollInstrumentationThread(() -> !isDialogShowing(cta));
+        CriteriaHelper.pollInstrumentationThread(this::verifyUndoBarShowingAndClickUndo);
+
+        // Verify the undo has happened.
+        verifyTabStripFaviconCount(cta, 2);
+        openDialogFromStripAndVerify(cta, 2);
     }
 
     private void mergeAllTabsToAGroup(ChromeTabbedActivity cta) {
@@ -285,7 +320,7 @@ public class TabGridDialogTest {
     private void verifyShowingDialog(ChromeTabbedActivity cta, int tabCount) {
         onView(withId(R.id.tab_list_view))
                 .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
-                .check(CardCountAssertion.havingTabCount(tabCount));
+                .check(ChildrenCountAssertion.havingTabCount(tabCount));
 
         onView(allOf(withParent(withId(R.id.main_content)), withId(R.id.title)))
                 .inRoot(withDecorView(not(cta.getWindow().getDecorView())))

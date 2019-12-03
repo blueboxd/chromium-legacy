@@ -109,11 +109,8 @@ cr.define('history', function() {
       chrome.send('metricsHandler:recordTime', [histogram, time]);
     }
 
-    /**
-     * @param {boolean} successful
-     * @private
-     */
-    resolveDelete_(successful) {
+    /** @param {boolean} successful */
+    resolveDelete(successful) {
       if (this.pendingDeleteItems_ == null ||
           this.pendingDeletePromise_ == null) {
         return;
@@ -171,12 +168,12 @@ cr.define('history', function() {
  * Called by the history backend when deletion was succesful.
  */
 function deleteComplete() {
-  history.BrowserService.getInstance().resolveDelete_(true);
+  history.BrowserService.getInstance().resolveDelete(true);
 }
 
 /**
  * Called by the history backend when the deletion failed.
  */
 function deleteFailed() {
-  history.BrowserService.getInstance().resolveDelete_(false);
+  history.BrowserService.getInstance().resolveDelete(false);
 }

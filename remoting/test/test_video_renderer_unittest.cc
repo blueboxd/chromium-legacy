@@ -15,9 +15,9 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "remoting/codec/video_encoder.h"
@@ -113,8 +113,8 @@ class TestVideoRendererTest : public testing::Test {
   // Fill a desktop frame with a gradient.
   void FillFrameWithGradient(webrtc::DesktopFrame* frame) const;
 
-  // The thread's message loop. Valid only when the thread is alive.
-  std::unique_ptr<base::MessageLoop> message_loop_;
+  // The thread's task environment. Valid only when the thread is alive.
+  std::unique_ptr<base::test::SingleThreadTaskEnvironment> task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(TestVideoRendererTest);
 };
@@ -125,9 +125,8 @@ TestVideoRendererTest::~TestVideoRendererTest() = default;
 
 void TestVideoRendererTest::SetUp() {
   if (!base::MessageLoopCurrent::Get()) {
-    // Create a temporary message loop if the current thread does not already
-    // have one.
-    message_loop_.reset(new base::MessageLoop);
+    task_environment_ =
+        std::make_unique<base::test::SingleThreadTaskEnvironment>();
   }
   test_video_renderer_.reset(new TestVideoRenderer());
 }

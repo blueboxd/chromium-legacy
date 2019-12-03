@@ -2342,11 +2342,11 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si los usuarios intentan instalar una extensión que <ph name="EXTENSION_INSTALL_WHITELIST" /> y <ph name="EXTENSION_SETTINGS" /> no incluyeron en sus listas blancas, se crearán las solicitudes de instalación de extensiones.
 
       Esta política solo es válida si la máquina está inscrita en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" />, y se habilita <ph name="CLOUD_REPORTING_ENABLED" />.</translation>
-<translation id="4638162097046412832">Si la lista de rechazo incluye un tipo de impresora, no se podrá visualizar estas impresoras ni obtener sus capacidades.
+<translation id="4638162097046412832">Si la lista de rechazo incluye un tipo de impresora, no se podrán visualizar estas impresoras ni obtener sus capacidades.
 
       Si se incluyen todos los tipos de impresora en la lista de rechazo, no se podrán realizar impresiones, dado que no habrá destinos disponibles para enviar un documento a imprimir.
 
-      Si se incluye "nube" en la lista de rechazo, el efecto es el mismo que si se establece la política "CloudPrintSubmitEnabled" como falsa. Para que se puedan visualizar los destinos de <ph name="CLOUD_PRINT_NAME" />, debe establecerse como verdadera la política "CloudPrintSubmitEnabled" y no debe incluirse "nube" en la lista de rechazo.
+      Si se incluye "cloud" en la lista de rechazo, el efecto es el mismo que si se establece la política "CloudPrintSubmitEnabled" como falsa. Para que se puedan visualizar los destinos de <ph name="CLOUD_PRINT_NAME" />, debe establecerse como verdadera la política "CloudPrintSubmitEnabled" y no debe incluirse "nube" en la lista de rechazo.
 
       Si no se establece la política o se establece como una lista vacía, podrán visualizarse todos los tipos de impresora.
 
@@ -3973,7 +3973,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7469554574977894907">Habilitar sugerencias de búsqueda</translation>
 <translation id="747275827471712187">Revierte el comportamiento de las cookies en estos sitios conforme al atributo heredado <ph name="ATTRIBUTE_SAMESITE_NAME" /></translation>
 <translation id="7477231245051133709">Habilita la función de accesibilidad de audio mono</translation>
-<translation id="7477239290070847560">Destinos de los protocolos basados en Zeroconf (mDNS + DNS-SD)</translation>
+<translation id="7477239290070847560">Destinos de los protocolos basados en la no configuración (mDNS y DNS-SD)</translation>
 <translation id="7485481791539008776">Normas de selección de la impresora predeterminada</translation>
 <translation id="7485730741952775732">Si se configura esta política, el host de acceso remoto usará esta URL para validar los tokens de autenticación de los clientes de acceso remoto, a fin de aceptar las conexiones. Debe usarse junto con RemoteAccessHostTokenUrl.
 

@@ -206,6 +206,8 @@ namespace autotestPrivate {
     long count;
   };
   dictionary Histogram {
+    // Sum of the all entries.
+    double sum;
     // Buckets containing samples.
     HistogramBucket[] buckets;
   };

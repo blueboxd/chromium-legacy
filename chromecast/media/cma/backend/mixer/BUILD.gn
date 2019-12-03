@@ -142,6 +142,7 @@ cast_source_set("unittests") {
     ":loopback_test_support",
     ":mixer",
     "//base",
+    "//base/test:test_support",
     "//chromecast/media/audio:fake_external_audio_pipeline",
     "//chromecast/media/audio/mixer_service:common",
     "//chromecast/media/audio/mixer_service:loopback_connection",

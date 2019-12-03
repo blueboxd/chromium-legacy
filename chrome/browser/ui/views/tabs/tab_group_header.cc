@@ -202,9 +202,17 @@ void TabGroupHeader::RemoveObserverFromWidget(views::Widget* widget) {
   widget->RemoveObserver(&editor_bubble_tracker_);
 }
 
+TabGroupHeader::EditorBubbleTracker::~EditorBubbleTracker() {
+  if (is_open_) {
+    widget_->RemoveObserver(this);
+    widget_->CloseWithReason(views::Widget::ClosedReason::kUnspecified);
+  }
+}
+
 void TabGroupHeader::EditorBubbleTracker::Opened(views::Widget* bubble_widget) {
   DCHECK(bubble_widget);
   DCHECK(!is_open_);
+  widget_ = bubble_widget;
   is_open_ = true;
   bubble_widget->AddObserver(this);
 }

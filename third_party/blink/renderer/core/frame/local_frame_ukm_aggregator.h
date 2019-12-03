@@ -253,10 +253,6 @@ class CORE_EXPORT LocalFrameUkmAggregator
   // RecordEndOfFrameMetrics.
   std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics();
 
-  // The caller is the owner of the |clock|. The |clock| must outlive the
-  // LocalFrameUkmAggregator.
-  void SetTickClockForTesting(const base::TickClock* clock);
-
  private:
   struct AbsoluteMetricRecord {
     std::unique_ptr<CustomCountHistogram> uma_counter;
@@ -299,6 +295,10 @@ class CORE_EXPORT LocalFrameUkmAggregator
   // Used to check that we only for the MainFrame of a document.
   bool AllMetricsAreZero();
 
+  // The caller is the owner of the |clock|. The |clock| must outlive the
+  // LocalFrameUkmAggregator.
+  void SetTickClockForTesting(const base::TickClock* clock);
+
   // UKM system data
   const int64_t source_id_;
   ukm::UkmRecorder* const recorder_;
@@ -310,10 +310,17 @@ class CORE_EXPORT LocalFrameUkmAggregator
   Vector<AbsoluteMetricRecord> absolute_metric_records_;
   Vector<MainFramePercentageRecord> main_frame_percentage_records_;
 
-  // Sampling control. Currently we sample a bit more than every 30s assuming we
-  // are achieving 60fps. Better to sample less rather than more given our data
-  // is already beyond the throtting threshold.
-  unsigned mean_frames_between_samples_ = 2000;
+  // Sampling control. We use a Poisson process with an exponential decay
+  // multiplier. The goal is to get many randomly distributed samples early
+  // during page load and initial interaction, then samples at an exponentially
+  // decreasing rate to effectively cap the number of samples. The particular
+  // parameters chosen here give roughly 10-15 samples in the first 100 frames,
+  // decaying to several hours between samples by the 40th sample. The
+  // multiplier value should be tuned to achieve a total sample count that
+  // avoids throttling by the UKM system.
+  double sample_decay_rate_ = 3;
+  double sample_rate_multiplier_ = 1;
+  unsigned samples_so_far_ = 0;
   unsigned frames_to_next_event_ = 0;
 
   // Control for the ForcedStyleAndUpdate UMA metric sampling

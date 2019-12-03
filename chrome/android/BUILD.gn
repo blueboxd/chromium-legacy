@@ -1370,7 +1370,7 @@ if (current_toolchain == default_toolchain) {
       disable_compression = _is_bundle_module
       renaming_sources = []
       renaming_destinations = []
-      foreach(_locale, locales - android_chrome_omitted_locales) {
+      foreach(_locale, android_non_bundle_locales) {
         renaming_sources +=
             [ "$target_gen_dir/${_variant}_paks/locales/$_locale.pak" ]
         renaming_destinations += [ "locales/$_locale.pak" ]

@@ -12,9 +12,9 @@
 <translation id="107147699690128016">మీరు ఫైల్ ఎక్స్‌టెన్షన్‌ను మార్చితే, ఫైల్ వేరే అప్లికేషన్‌లో తెరవబడవచ్చు. అది మీ పరికరానికి హానికరంగా పరిణమించే అవకాశం ఉంటుంది.</translation>
 <translation id="1100066534610197918">సమూహంలో కొత్త ట్యాబ్‌లో తెరువు</translation>
 <translation id="1105960400813249514">స్క్రీన్ క్యాప్చర్</translation>
-<translation id="1110022065703191351">చిహ్నాలు</translation>
 <translation id="1111673857033749125">మీ ఇతర పరికరాల్లో సేవ్ చేసిన బుక్‌మార్క్‌లు ఇక్కడ చూపబడతాయి.</translation>
 <translation id="1113597929977215864">సరళీకృత వీక్షణను చూపు</translation>
+<translation id="1122278879166832009">మీ హోమ్ పేజీని ఎక్కడి నుండైనా సత్వరం యాక్సెస్ చేయడానికి ఇక్కడ నొక్కండి</translation>
 <translation id="1124772482545689468">వినియోగదారు</translation>
 <translation id="1129510026454351943">వివరాలు: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 డౌన్‌లోడ్ పెండింగ్‌లో ఉంది.}other{# డౌన్‌లోడ్‌లు పెండింగ్‌లో ఉన్నాయి.}}</translation>
@@ -379,6 +379,7 @@
 <translation id="3822502789641063741">సైట్ నిల్వను తీసివేయాలా?</translation>
 <translation id="385051799172605136">వెనుకకు</translation>
 <translation id="3859306556332390985">ముందుకు జరుపు</translation>
+<translation id="388596076286380598">మీరు ఆఫ్‌లైన్‌లో ఉన్నప్పటికీ, మీ కనెక్షన్ బలహీనంగా ఉన్నప్పటికీ మీరు ఇష్టపడే సైట్‌ల నుండి కథనాలు, వీడియోలు, ఇతర కంటెంట్‌ను పొందండి.</translation>
 <translation id="3894427358181296146">ఫోల్డర్‌ను జోడించండి</translation>
 <translation id="3895926599014793903">జూమ్ చేయడాన్ని నిర్బంధంగా ప్రారంభించు</translation>
 <translation id="3912508018559818924">వెబ్ నుండి ఉత్తమమైనది కనుగొంటోంది…</translation>
@@ -490,6 +491,7 @@
 <translation id="4719927025381752090">అనువదించమని ఆఫర్ చేయి</translation>
 <translation id="4720023427747327413"><ph name="PRODUCT_NAME" />లో తెరువు</translation>
 <translation id="4720982865791209136">Chromeను మెరుగుపరచడంలో సహాయపడండి. <ph name="BEGIN_LINK" />సర్వేలో పాల్గొనండి<ph name="END_LINK" /></translation>
+<translation id="4732120983431207637">స్టాక్ అన్‌వైండర్</translation>
 <translation id="473775607612524610">అప్‌డేట్‌</translation>
 <translation id="4738836084190194332">చివరిగా సమకాలీకరించినది: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">కొత్త ట్యాబ్‌ను తెరవండి</translation>
@@ -542,7 +544,6 @@
 <translation id="5048398596102334565">మోషన్ సెన్సార్‌లను యాక్సెస్ చేయడానికి సైట్‌లను అనుమతించండి (సిఫార్సు చేస్తున్నాము)</translation>
 <translation id="5063480226653192405">నిల్వ వినియోగం</translation>
 <translation id="5087580092889165836">కార్డ్‌ను జోడించు</translation>
-<translation id="5096950519211870196">మీకు నోటిఫికేషన్‌లను చూపడం అడగలేని విధంగా సైట్‌లు బ్లాక్ చేయబడతాయి. ఒకవేళ సైట్ కనుక నోటిఫికేషన్‌లను అభ్యర్థిస్తే, పేజీ దిగువున సమాచార బార్ కనిపిస్తుంది.</translation>
 <translation id="5100237604440890931">కుదించబడింది - విస్తరింపజేయడానికి క్లిక్ చేయండి.</translation>
 <translation id="510275257476243843">1 గంట మిగిలి ఉంది</translation>
 <translation id="5123685120097942451">అజ్ఞాత ట్యాబ్</translation>
@@ -636,6 +637,7 @@
 <translation id="5684874026226664614">అయ్యో. ఈ పేజీని అనువదించడం సాధ్యపడలేదు.</translation>
 <translation id="5686790454216892815">ఫైల్ పేరు చాలా పొడవుగా ఉంది</translation>
 <translation id="5689516760719285838">స్థానం</translation>
+<translation id="5694049548840660018">ఇంటికి సులభంగా తిరిగి రండి</translation>
 <translation id="569536719314091526">మరిన్ని ఎంపికలు బటన్‌ని ఉపయోగించి ఈ పేజీని ఏ భాషలోకైనా అనువదించుకోవచ్చు</translation>
 <translation id="5710871682236653961">మీరు NFC పరికరాలను నొక్కినప్పుడు, సైట్‌లు సమాచారాన్ని పంపడానికి, అలాగే స్వీకరించడానికి ముందు అనుమతి కోసం అడుగుతాయి (సిఫార్సు చేయబడింది)</translation>
 <translation id="572328651809341494">ఇటీవలి ట్యాబ్‌లు</translation>
@@ -689,7 +691,6 @@
 <translation id="6108923351542677676">సెటప్ ప్రోగ్రెస్‌లో ఉంది...</translation>
 <translation id="6111020039983847643">వినియోగించిన డేటా</translation>
 <translation id="6112702117600201073">పేజీని రిఫ్రెష్ చేస్తోంది</translation>
-<translation id="6113400363611269907">నిశ్శబ్దంగా ప్రాంప్ట్‌లను చూపు</translation>
 <translation id="6127379762771434464">అంశాన్ని తీసివేసారు</translation>
 <translation id="6140912465461743537">దేశం/ప్రాంతం</translation>
 <translation id="614940544461990577">ఇలా చేసి ప్రయత్నించండి:</translation>
@@ -791,13 +792,13 @@
 <translation id="6818926723028410516">అంశాలను ఎంచుకోండి</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">అనువదించు</translation>
-<translation id="6840155290835956714">పంపే ముందు అడగాలి</translation>
 <translation id="6845325883481699275">Chrome భద్రతను మెరుగుపరచడంలో సహాయం చేయండి</translation>
 <translation id="6846298663435243399">లోడ్ అవుతోంది...</translation>
 <translation id="6850409657436465440">మీ డౌన్‌లోడ్‌‌ ఇప్పటికీ జరుగుతోంది</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> ట్యాబ్‌లు మూసివేయబడ్డాయి</translation>
 <translation id="6864459304226931083">చిత్రాన్ని డౌన్‌లోడ్ చేయి</translation>
 <translation id="6865313869410766144">స్వీయపూర్తి ఫారమ్ డేటా</translation>
+<translation id="6884306546558072722">ఆఫ్‌లైన్‌లో అన్వేషణను కొనసాగించండి</translation>
 <translation id="688738109438487280">ఇప్పటికే ఉన్న డేటాను <ph name="TO_ACCOUNT" />కి జోడించండి.</translation>
 <translation id="6891726759199484455">మీ పాస్‌వర్డ్‌ను కాపీ చేయడానికి అన్‌లాక్ చేయండి</translation>
 <translation id="6896758677409633944">కాపీ చేయి</translation>
@@ -1039,6 +1040,7 @@
 <translation id="8636825310635137004">మీ ఇతర పరికరాల నుండి మీ ట్యాబ్‌లను పొందడానికి, సమకాలీకరణను ఆన్ చేయండి</translation>
 <translation id="8641930654639604085">వయోజన కంటెంట్ గల సైట్‌లను బ్లాక్ చేయడానికి ప్రయత్నించండి</translation>
 <translation id="8655129584991699539">మీరు Chrome సెట్టింగ్‌లలో డేటాను తీసివేయవచ్చు</translation>
+<translation id="8655599981421006542">కొత్త ట్యాబ్‌లను సృష్టించి, మునుపటి వాటికి తిరిగి రావడానికి ఇక్కడ నొక్కండి</translation>
 <translation id="8662811608048051533">చాలా సైట్‌ల నుండి మిమ్మల్ని సైన్ అవుట్ చేస్తుంది.</translation>
 <translation id="8664979001105139458">ఫైల్ పేరు ఇప్పటికే ఉంది</translation>
 <translation id="8676374126336081632">ఇన్‌పుట్‌ను తీసివేయండి</translation>
@@ -1051,6 +1053,7 @@
 <translation id="8730621377337864115">పూర్తయింది</translation>
 <translation id="8748850008226585750">కంటెంట్‌లు దాచబడ్డాయి</translation>
 <translation id="8751914237388039244">చిత్రాన్ని ఎంచుకోండి</translation>
+<translation id="8758557275681689734">మీ తెరవబడిన ట్యాబ్‌లన్నీ చూడండి</translation>
 <translation id="8788265440806329501">నావిగేషన్ చరిత్ర మూసివేయబడింది</translation>
 <translation id="8788968922598763114">చివరగా మూసివేసిన ట్యాబ్‌ను మళ్లీ తెరవండి</translation>
 <translation id="8801436777607969138">నిర్దిష్ట సైట్‌లో JavaScriptను బ్లాక్ చేస్తుంది.</translation>

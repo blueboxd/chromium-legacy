@@ -263,6 +263,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool IsCrossProcessSubframe() override;
   const GURL& GetLastCommittedURL() override;
   const url::Origin& GetLastCommittedOrigin() override;
+  const net::NetworkIsolationKey& GetNetworkIsolationKey() override;
   gfx::NativeView GetNativeView() override;
   void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message) override;
@@ -1196,12 +1197,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   bool has_committed_any_navigation() const {
     return has_committed_any_navigation_;
-  }
-
-  // Returns the network isolation key used for subresources from the currently
-  // committed navigation. It is reset on each document commit.
-  const net::NetworkIsolationKey& network_isolation_key() const {
-    return network_isolation_key_;
   }
 
   std::unique_ptr<blink::URLLoaderFactoryBundleInfo>

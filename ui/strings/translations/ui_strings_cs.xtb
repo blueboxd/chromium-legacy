@@ -8,6 +8,7 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min}few{# min}many{# min}other{# min}}</translation>
 <translation id="1181037720776840403">Odebrat</translation>
 <translation id="1201402288615127009">Další</translation>
+<translation id="1218444235442067213"><ph name="APP_NAME" />, aplikace z Obchodu Play</translation>
 <translation id="1243314992276662751">Nahrát</translation>
 <translation id="1266864766717917324">Sdílení obsahu typu <ph name="CONTENT_TYPE" /> se nezdařilo</translation>
 <translation id="1269641567813814718">Win</translation>
@@ -18,6 +19,7 @@
 <translation id="1368832886055348810">Zleva doprava</translation>
 <translation id="1383876407941801731">Vyhledávání</translation>
 <translation id="1398853756734560583">Maximalizovat</translation>
+<translation id="1414271762428216854"><ph name="APP_NAME" />, nainstalovaná aplikace</translation>
 <translation id="1450753235335490080">Sdílení obsahu typu <ph name="CONTENT_TYPE" /> se nezdařilo</translation>
 <translation id="1498028757988366001">Toto jste v minulosti vyhledávali. Když dotaz „<ph name="QUERY" />“ vymažete z historie, bude trvale odstraněn z vašeho účtu na všech zařízeních.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuta a  }few{# minuty a  }many{# minuty a  }other{# minut a  }}</translation>
@@ -30,6 +32,7 @@
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 měsíc}few{# měsíce}many{# měsíce}other{# měsíců}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 hodina a  }few{# hodiny a  }many{# hodiny a  }other{# hodin a  }}</translation>
+<translation id="1830308660060964064">Položka <ph name="ITEM_TITLE" /> byla odepnuta</translation>
 <translation id="1842960171412779397">zvolit</translation>
 <translation id="1859234291848436338">Směr textu</translation>
 <translation id="1860796786778352021">Zavřít oznámení</translation>
@@ -66,10 +69,12 @@
 <translation id="2666092431469916601">Nahoru</translation>
 <translation id="2701330563083355633">Sdíleno ze zařízení <ph name="DEVICE_NAME" /></translation>
 <translation id="2743387203779672305">Zkopírovat do schránky</translation>
+<translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Otevřít složku</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{před 1 rokem}few{před # lety}many{před # roku}other{před # lety}}</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{za 1 d}few{za # d}many{za # d}other{za # d}}</translation>
 <translation id="2931838996092594335">kliknout</translation>
+<translation id="2981684127883932071">Jsou zobrazeny návrhy</translation>
 <translation id="3036649622769666520">Otevřít soubory</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3068711042108640621">Polička vlevo</translation>
@@ -84,6 +89,7 @@
 <translation id="3389286852084373014">Text je příliš dlouhý</translation>
 <translation id="3479552764303398839">Teď ne</translation>
 <translation id="348799646910989694">Polička byla automaticky skryta</translation>
+<translation id="3554637740840164787">Položka <ph name="ITEM_TITLE" /> byla připnuta</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Zbývá 1 den}few{Zbývají # dny}many{Zbývá # dne}other{Zbývá # dnů}}</translation>
 <translation id="3600969208114796418">Soubor <ph name="SAVEAS_EXTENSION_TYPE" /></translation>
 <translation id="3608915363409716668">&gt; <ph name="MAXIMUM_VALUE" /></translation>
@@ -105,8 +111,11 @@
 <translation id="4250229828105606438">Snímek obrazovky</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{před 1 měsícem}few{před # měsíci}many{před # měsíce}other{před # měsíci}}</translation>
 <translation id="4289300219472526559">Začít mluvit</translation>
+<translation id="430191667033048642">Aplikace <ph name="MOVED_APP_NAME" /> byla přesunuta do složky <ph name="FOLDER_NAME" /></translation>
 <translation id="4316910396681052118">VŠECHNY APLIKACE</translation>
 <translation id="4588090240171750605">Posuv doprava</translation>
+<translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, hodnocení hvězdičkami <ph name="RATING_SCORE" /></translation>
+<translation id="4648249871170053485"><ph name="APP_NAME" />, doporučení aplikace</translation>
 <translation id="4690510401873698237">Polička dole</translation>
 <translation id="4724120544754982507">Centrum oznámení – nepřečtená oznámení: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
 <translation id="4730374152663651037">ČASTO POUŽÍVANÉ</translation>
@@ -116,6 +125,7 @@
 <translation id="4971687151119236543">Média – předchozí skladba</translation>
 <translation id="5046499563572181734">Klepněte sem</translation>
 <translation id="5076340679995252485">Vložit</translation>
+<translation id="5198715732953550718"><ph name="MOVED_APP_NAME" /> byla sloučena s aplikací <ph name="IN_PLACE_APP" /> a byla vytvořena nová složka.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Tlačítko k zobrazení skrytého obsahu</translation>
 <translation id="5278860589123563674">Odeslání se nezdařilo</translation>
@@ -129,6 +139,7 @@
 <translation id="5574202486608032840">Systém <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Klávesa šipka vlevo</translation>
+<translation id="5675363643668471212">Položka na poličce</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}few{# min}many{# min}other{# min}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Aktivní dnes}=1{Aktivní včera}few{Aktivní před # dny}many{Aktivní před # dne}other{Aktivní před # dny}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 den a  }few{# dny a  }many{# dne a  }other{# dnů a  }}</translation>
@@ -208,6 +219,7 @@
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Klávesa PageDown</translation>
 <translation id="8245914219290430011">Tab</translation>
+<translation id="8247998213073982446"><ph name="APP_NAME" />, aplikace</translation>
 <translation id="8259556432390118667">Hexadecimální kód barvy</translation>
 <translation id="8328145009876646418">Levý okraj</translation>
 <translation id="8331626408530291785">Posuv nahoru</translation>
@@ -237,6 +249,8 @@
 <translation id="9150735707954472829">Karta</translation>
 <translation id="9161053988251441839">NAVRHOVANÉ APLIKACE</translation>
 <translation id="9170848237812810038">Z&amp;pět</translation>
+<translation id="9178475906033259337">Zobrazuje se 1 výsledek pro dotaz <ph name="QUERY" /></translation>
 <translation id="932327136139879170">Domovská stránka</translation>
 <translation id="944069440740578670">Nepřečtená oznámení</translation>
+<translation id="974545358917229949">Zobrazuje se tento počet výsledků pro dotaz <ph name="QUERY" />: <ph name="RESULT_COUNT" /></translation>
 </translationbundle>

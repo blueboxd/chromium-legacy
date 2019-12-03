@@ -119,7 +119,7 @@ TEST(UpdateClientUtils, IsValidInstallerAttributeName) {
 }
 
 // Tests that the value of an InstallerAttribute matches
-// ^[-.,;+_=a-zA-Z0-9]{0,256}$
+// ^[-.,;+_=$a-zA-Z0-9]{0,256}$
 TEST(UpdateClientUtils, IsValidInstallerAttributeValue) {
   // Test the length boundaries.
   EXPECT_TRUE(IsValidInstallerAttribute(
@@ -129,8 +129,8 @@ TEST(UpdateClientUtils, IsValidInstallerAttributeValue) {
   EXPECT_FALSE(IsValidInstallerAttribute(
       make_pair(std::string("name"), std::string(257, 'a'))));
 
-  const char* const valid_values[] = {"",  "a=1", "A", "Z",      "a",
-                                      "z", "0",   "9", "-.,;+_="};
+  const char* const valid_values[] = {"",  "a=1", "A", "Z",       "a",
+                                      "z", "0",   "9", "-.,;+_=$"};
   for (const char* value : valid_values)
     EXPECT_TRUE(IsValidInstallerAttribute(
         make_pair(std::string("name"), std::string(value))));

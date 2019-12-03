@@ -29,6 +29,8 @@ const char kDefaultTestURL[] = "/background_sync/test.html";
 const char kEmptyURL[] = "/background_sync/empty.html";
 const char kRegisterSyncFromIFrameURL[] =
     "/background_sync/register_sync_from_iframe.html";
+const char kRegisterPeriodicSyncFromIFrameURL[] =
+    "/background_sync/register_periodicsync_from_iframe.html";
 const char kRegisterSyncFromSWURL[] =
     "/background_sync/register_sync_from_sw.html";
 const char kSuccessfulOperationPrefix[] = "ok - ";

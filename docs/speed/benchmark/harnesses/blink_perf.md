@@ -180,9 +180,13 @@ viewer won't be supported.
 
 **Running tests with Telemetry**
 
-Assuming your current directory is `chromium/src/`, you can run tests with:
+There are several `blink_perf` benchmarks. You can see the full list in
+`third_party/blink/perf_tests` or by running
+`tools/perf/run_benchmark list | grep blink_perf`. If you want to run the
+`blink_perf.paint` benchmark and your current directory is `chromium/src/`, you
+can run tests with:
 
-`./tools/perf/run_benchmark run blink_perf [--test-path=<path to your tests>]`
+`./tools/perf/run_benchmark run blink_perf.paint [--story-filter=<test_file_name>]`
 
 For information about all supported options, run:
 

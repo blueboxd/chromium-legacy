@@ -9,6 +9,7 @@
 <translation id="1036348656032585052">כבה</translation>
 <translation id="1038842779957582377">שם לא ידוע</translation>
 <translation id="1039626062703039346">‏בעזרת Chrome אפשר להגן על חשבון Google ולשנות את הסיסמה. הפעולה הזו תשלח אל Google דיווח לגבי האתר הזה.</translation>
+<translation id="1044897699341250361">מה זה אומר?</translation>
 <translation id="1050038467049342496">סגירת יישומים אחרים</translation>
 <translation id="1055184225775184556">&amp;ביטול הוספה</translation>
 <translation id="1056898198331236512">אזהרה</translation>
@@ -183,6 +184,7 @@
 <translation id="1745880797583122200">הדפדפן שלך מנוהל</translation>
 <translation id="17513872634828108">כרטיסיות פתוחות</translation>
 <translation id="1753706481035618306">מספר דף</translation>
+<translation id="175838129965056221">‏מערכת Chrome זיהתה שהחיבור שלך נמצא במעקב</translation>
 <translation id="1763864636252898013">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. אישור האבטחה שלו לא נחשב כמהימן על ידי מערכת ההפעלה של המכשיר. ייתכן שהסיבה לכך היא תצורה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="1768211456781949159">‏<ph name="BEGIN_LINK" />נסה להפעיל את אבחון הרשת של Windows<ph name="END_LINK" />.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -251,6 +253,7 @@
 <translation id="2119867082804433120">ניקוב בפינה הימנית התחתונה</translation>
 <translation id="2129079103035905234">חיישני תנועה</translation>
 <translation id="2130448033692577677">‏לא ניתן להחיל את התבניות שבחרת, מפני שמדיניות DnsOverHttpsMode לא הוגדרה.</translation>
+<translation id="2131277894177304644">‏מערכת Chromium זיהתה שהחיבור שלך נמצא במעקב</translation>
 <translation id="213826338245044447">סימניות לנייד</translation>
 <translation id="214556005048008348">ביטול תשלום</translation>
 <translation id="2147827593068025794">סינכרון ברקע</translation>
@@ -298,6 +301,7 @@
 <translation id="2354001756790975382">סימניות אחרות</translation>
 <translation id="2354430244986887761">‏התכונה 'גלישה בטוחה' של Google <ph name="BEGIN_LINK" />מצאה לאחרונה יישומים מזיקים<ph name="END_LINK" /> באתר <ph name="SITE" />.</translation>
 <translation id="2355395290879513365">ייתכן שתוקפים יוכלו לראות את התמונות שבהן אתה צופה באתר זה, ולאחר מכן הם ינסו להונות אותך על ידי שינוי התמונות.</translation>
+<translation id="2355474962185559967">‏הזנת כרגע את הסיסמה שלך באתר מטעה. ההמלצה של Chromium היא לנווט אל <ph name="WEBSITE_1" /> ולשנות את הסיסמה שלך עכשיו.</translation>
 <translation id="2356070529366658676">שאל</translation>
 <translation id="2359629602545592467">מטבעות מרובים</translation>
 <translation id="2359808026110333948">המשך</translation>
@@ -399,6 +403,7 @@
 <translation id="2799020568854403057">האתר הבא מכיל יישומים מזיקים</translation>
 <translation id="2799223571221894425">הפעל מחדש</translation>
 <translation id="2803306138276472711">‏לאחרונה, 'גלישה בטוחה של Google‏' <ph name="BEGIN_LINK" />זיהתה תוכנה זדונית<ph name="END_LINK" /> באתר <ph name="SITE" />. אתרים שבדרך כלל נחשבים לבטוחים נדבקים לעתים בתוכנה זדונית.</translation>
+<translation id="281585763351939989">‏מערכת Chromium זיהתה שהחיבור שלך נמצא במעקב.</translation>
 <translation id="2824775600643448204">שורת חיפוש וכתובות אתרים</translation>
 <translation id="2826760142808435982">החיבור מוצפן ומאומת באמצעות <ph name="CIPHER" /> ומשתמש ב-<ph name="KX" /> כמנגנון להחלפת מפתחות.</translation>
 <translation id="2835170189407361413">ניקוי הטופס</translation>
@@ -443,6 +448,7 @@
 <translation id="3024663005179499861">סוג המדיניות שגוי</translation>
 <translation id="3037605927509011580">אוי, לא!</translation>
 <translation id="3041612393474885105">פרטי אישור</translation>
+<translation id="304755864151473094">למה זה קורה?</translation>
 <translation id="3057676462092457419">‏המצב <ph name="SECURE_DNS_MODE_SECURE" /> של DnsOverHttps לא נתמך עדיין, המצב הועבר להגדרה <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">C9 (Envelope)‎</translation>
 <translation id="3061707000357573562">שירות תיקון</translation>
@@ -482,6 +488,7 @@
 <translation id="3228969707346345236">התרגום נכשל כיוון שהדף כבר ב<ph name="LANGUAGE" />.</translation>
 <translation id="3229041911291329567">פרטי גרסה של המכשיר והדפדפן</translation>
 <translation id="323107829343500871">הזן את קוד האימות של הכרטיס <ph name="CREDIT_CARD" /></translation>
+<translation id="3234392465377209614">‏הזנת כרגע את הסיסמה שלך באתר מטעה. ההמלצה של Chromium היא לנווט אל <ph name="WEBSITE_1" />, אל <ph name="WEBSITE_2" /> ואל <ph name="WEBSITE_3" /> ולשנות את הסיסמה שלך עכשיו.</translation>
 <translation id="3234666976984236645">זהה תמיד תוכן חשוב באתר זה</translation>
 <translation id="3262069459091978471">‏<ph name="LOOKALIKE_DOMAIN" /> נראה דומה ל-<ph name="SUGGESTED_DOMAIN" />. תוקפים שמחקים אתרים לפעמים משתמשים בכתובת URL דומות.</translation>
 <translation id="3270847123878663523">&amp;ביטול של שינוי סדר</translation>
@@ -514,6 +521,7 @@
 <translation id="342781501876943858">‏אם הזנת את הסיסמה שלך באתרים אחרים, ההמלצה של Chromium היא לאפס אותה.</translation>
 <translation id="3428151540071562330">‏אחד או יותר ממזהי ה-URI של תבנית השרת DnsOverHttpsTemplates אינם חוקיים ולא ייעשה בהם שימוש.</translation>
 <translation id="3431636764301398940">שמור כרטיס זה במכשיר הנוכחי</translation>
+<translation id="3438790640050632698">‏הזנת כרגע את הסיסמה שלך באתר מטעה. ההמלצה של Chrome היא לנווט אל <ph name="WEBSITE_1" /> ואל <ph name="WEBSITE_2" /> ולשנות את הסיסמה שלך עכשיו.</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">הבעלים של המכשיר הזה כיבה את משחק הדינוזאורים.</translation>
 <translation id="3447884698081792621">הצגת אישור (נופק על-ידי <ph name="ISSUER" />)</translation>
@@ -528,6 +536,7 @@
 <translation id="3495081129428749620">חיפוש בדף
 <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">המערכת מתעלמת מהמדיניות הזו כי יש מדיניות אחרת מאותה קבוצה של הגדרות מדיניות שקיבלה עדיפות גבוהה יותר.</translation>
+<translation id="3525469219100414032">‏הזנת כרגע את הסיסמה שלך באתר מטעה. ההמלצה של Chrome היא לנווט אל <ph name="WEBSITE_1" /> ולשנות את הסיסמה שלך עכשיו.</translation>
 <translation id="3528171143076753409">אישור השרת אינו מהימן.</translation>
 <translation id="3528485271872257980">חום כהה</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{לפחות פריט אחד במכשירים מסונכרנים}=1{פריט אחד (ופריטים נוספים במכשירים מסונכרנים)}two{שני פריטים (ופריטים נוספים במכשירים מסונכרנים)}many{# פריטים (ופריטים נוספים במכשירים מסונכרנים)}other{# פריטים (ופריטים נוספים במכשירים מסונכרנים)}}</translation>
@@ -606,6 +615,7 @@
 <translation id="3858027520442213535">עדכן את התאריך והשעה</translation>
 <translation id="3884278016824448484">מזהה מכשיר מתנגש</translation>
 <translation id="3885155851504623709">פאריש</translation>
+<translation id="388632593194507180">זוהה מעקב</translation>
 <translation id="3890664840433101773">הוספת כתובת אימייל</translation>
 <translation id="3897092660631435901">תפריט</translation>
 <translation id="3901925938762663762">תוקף הכרטיס פג</translation>
@@ -707,6 +717,7 @@
 <translation id="4305817255990598646">מעבר</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">חסום (ברירת מחדל)</translation>
+<translation id="4318312030194671742">שירות קומפוזיציה של תצוגה מקדימה של תמונה במסך</translation>
 <translation id="4318566738941496689">שם המכשיר וכתובת הרשת שלך</translation>
 <translation id="4325863107915753736">לא ניתן היה למצוא את הפריט</translation>
 <translation id="4326324639298822553">בדוק את תאריך התפוגה ונסה שוב</translation>
@@ -723,6 +734,7 @@
 <translation id="4372948949327679948">צפוי ערך מסוג <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">ניסית להשיג את <ph name="DOMAIN" />, אך האישור שהשרת הציג בוטל על ידי המנפיק שלו. פירוש הדבר שאין כל אפשרות לתת אמון באישורי האבטחה שהשרת הציג. ייתכן שאתה מתקשר עם תוקף.</translation>
 <translation id="4378154925671717803">טלפון</translation>
+<translation id="437847259914972036">מתבצע מעקב אחר הפעילות שלך באינטרנט ואחר כל המידע שמוזן על ידך. כמו כן, ייתכן שיבוצעו שינויים בתוכן ללא ידיעתך.</translation>
 <translation id="4398334096870680409">התכונה הזו לא זמינה במכשיר שלך.</translation>
 <translation id="4406896451731180161">תוצאות חיפוש</translation>
 <translation id="4408413947728134509">‏קובצי Cookie <ph name="NUM_COOKIES" /></translation>
@@ -963,6 +975,7 @@ Del</translation>
 <translation id="5565735124758917034">פעיל</translation>
 <translation id="5570825185877910964">הגנה על החשבון</translation>
 <translation id="5571083550517324815">לא ניתן לבצע איסוף מהכתובת הזו. עליך לבחור כתובת אחרת.</translation>
+<translation id="5572009199897554128">‏הזנת כרגע את הסיסמה שלך באתר מטעה. ההמלצה של Chromium היא לנווט אל <ph name="WEBSITE_1" /> ואל <ph name="WEBSITE_2" /> ולשנות את הסיסמה שלך עכשיו.</translation>
 <translation id="5580958916614886209">בדוק את חודש התפוגה ונסה שוב</translation>
 <translation id="5586446728396275693">לא נשמרו כתובות</translation>
 <translation id="5595485650161345191">עריכת כתובת</translation>
@@ -1145,6 +1158,7 @@ Del</translation>
 <translation id="6446163441502663861">Kahu (Envelope)‎</translation>
 <translation id="6446608382365791566">הוסף מידע</translation>
 <translation id="6447842834002726250">‏קובצי Cookie</translation>
+<translation id="644931407731409778">מסמך PDF המכיל {COUNT,plural, =1{עמוד אחד}two{# עמודים}many{# עמודים}other{# עמודים}}</translation>
 <translation id="6451458296329894277">אשר שליחה-מחדש של הטופס</translation>
 <translation id="6457206614190510200">קיפול והידוק של כפולות עמודים</translation>
 <translation id="6465306955648956876">ניהול סיסמאות...</translation>
@@ -1163,6 +1177,7 @@ Del</translation>
 <translation id="6547208576736763147">שני ניקובים בצד שמאל</translation>
 <translation id="6554795675067793129">החשבון שלך מנוהל על-ידי <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">בצע מחדש</translation>
+<translation id="6559565319173126218">‏מערכת Chrome לא נותנת אמון באישור שמוצג עבור החיבור הזה, כי הוא מוכר כאישור שבו נעשה שימוש ליירוט רשתות ולמעקב אחריהן.</translation>
 <translation id="6569060085658103619">אתה מציג דף של תוסף</translation>
 <translation id="6573200754375280815">שני ניקובים בצד ימין</translation>
 <translation id="6578796323535178455">C2 (Envelope)‎</translation>
@@ -1196,6 +1211,7 @@ Del</translation>
 <translation id="6710594484020273272">&lt;הקלד מונח חיפוש&gt;</translation>
 <translation id="671076103358959139">אסימון הרשמה:</translation>
 <translation id="6711464428925977395">‏משהו אינו תקין בשרת ה-proxy, או שהכתובת שגויה.</translation>
+<translation id="6721811549156553509">מעקב הרשת יכול לכלול התחזות לאתרים שנכנסת אליהם ומעקב אחר הפעילות שלך ואחר כל המידע שמוזן על ידך באתרים אלה (לדוגמה, סיסמאות, הודעות או פרטים של כרטיסי אשראי). עליך להיזהר בכל פעילות בעלת אופי רגיש באינטרנט, כי היא תהיה חשופה למעקב הרשת. עליך לדעת שכחלק ממעקב הרשת, ייתכן שיבוצעו שינויים בתוכן של הדפים שנכנסת אליהם. הנחיה זו תקפה גם לגבי פעילויות בדפדפנים ובתוכניות אחרים עם גישה לאינטרנט.</translation>
 <translation id="6738516213925468394">הנתונים שלך הוצפנו באמצעות<ph name="BEGIN_LINK" />ביטוי סיסמה לסנכרון<ph name="END_LINK" /> בתאריך <ph name="TIME" />. צריך להזין אותו כדי להתחיל את הסנכרון.</translation>
 <translation id="674375294223700098">שגיאת אישור שרת לא ידוע.</translation>
 <translation id="6744009308914054259">בזמן ההמתנה לחיבור אפשר לעבור אל 'הורדות' כדי לקרוא מאמרים לא מקוונים.</translation>
@@ -1280,6 +1296,7 @@ Del</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />מידע נוסף<ph name="END_LINK" /> בנושא זה.</translation>
 <translation id="7219179957768738017">החיבור משתמש ב-<ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">מעבד</translation>
+<translation id="7239736667463137521">‏מערכת Chrome זיהתה שהחיבור שלך נמצא במעקב.</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">האתר שלפניך מכיל תוכנה זדונית</translation>
 <translation id="724975217298816891">הזן את תאריך התפוגה ואת קוד האימות של <ph name="CREDIT_CARD" /> כדי לעדכן את פרטי הכרטיס. ברגע שתאשר, פרטי הכרטיס שלך ישותפו עם האתר הזה.</translation>
@@ -1306,6 +1323,7 @@ Del</translation>
 <translation id="7346048084945669753">משויך:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">שורת פקודה </translation>
+<translation id="7353776484425559055">‏מערכת Chromium לא נותנת אמון באישור של החיבור הזה, כי הוא מוכר כאישור שבו נעשה שימוש ליירוט רשתות ולמעקב אחריהן. ייתכן שהשגיאה הזו מוצגת לך בגלל אישור שהתקנת במכשיר. כשיוצרים חיבורים מאובטחים, מערכת Chromium נותנת אמון באישורים שהותקנו באופן מקומי במחשב או במכשיר הנייד של המשתמש. כך היא מאפשרת למשתמשים להפעיל כלים לבדיקת החיבורים ולניפוי באגים בחיבורים במהלך פיתוח אתר. היא גם מאפשרת לבדוק את התנועה הפנימית בסביבות ארגוניות ולעקוב אחריה. במקרים שבהם האפשרות הזו מנוצלת לרעה כדי ליירט תנועה ברשת האינטרנט הציבורית, מערכת Chromium מציגה אזהרה.</translation>
 <translation id="7372973238305370288">תוצאת חיפוש</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">פקדי מדיה</translation>
@@ -1367,6 +1385,7 @@ Del</translation>
 <translation id="7592362899630581445">אישור השרת מפר את אילוצי השמות.</translation>
 <translation id="7598391785903975535">פחות מ-<ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> לא יכול לטפל כרגע בבקשה הזו.</translation>
+<translation id="7599841999395223597">‏מערכת Chrome לא נותנת אמון באישור של החיבור הזה, כי הוא מוכר כאישור שבו נעשה שימוש ליירוט רשתות ולמעקב אחריהן. ייתכן שהשגיאה הזו מוצגת לך בגלל אישור שהתקנת במכשיר. כשיוצרים חיבורים מאובטחים, מערכת Chrome נותנת אמון באישורים שהותקנו באופן מקומי במחשב או במכשיר הנייד של המשתמש. כך היא מאפשרת למשתמשים להפעיל כלים לבדיקת החיבורים ולניפוי באגים בחיבורים במהלך פיתוח אתר. היא גם מאפשרת לבדוק את התנועה הפנימית בסביבות ארגוניות ולעקוב אחריה. במקרים שבהם האפשרות הזו מנוצלת לרעה כדי ליירט תנועה ברשת האינטרנט הציבורית, מערכת Chrome מציגה אזהרה.</translation>
 <translation id="7600965453749440009">איני רוצה לקבל תרגום מ<ph name="LANGUAGE" /> בכלל</translation>
 <translation id="7610193165460212391">הערך מחוץ לטווח <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">תפוגה: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -1684,6 +1703,7 @@ Del</translation>
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">‏ייתכן שמישהו אחר ישלול את הגישה שלך לחשבון Google. לגלישה בטוחה ב-Chromium, מומלץ לשנות את הסיסמה עכשיו.</translation>
 <translation id="939736085109172342">תיקייה חדשה</translation>
+<translation id="940786960229275114">‏הזנת כרגע את הסיסמה שלך באתר מטעה. ההמלצה של Chrome היא לנווט אל <ph name="WEBSITE_1" />, אל <ph name="WEBSITE_2" /> ואל <ph name="WEBSITE_3" /> ולשנות את הסיסמה שלך עכשיו.</translation>
 <translation id="945855313015696284">יש לבדוק את המידע שבהמשך ולמחוק כרטיסים עם שגיאות</translation>
 <translation id="950736567201356821">3 ניקובים בחלק העליון</translation>
 <translation id="951104842009476243">כרטיסי חיוב וכרטיסים משולמים מראש שהסוחר מקבל</translation>

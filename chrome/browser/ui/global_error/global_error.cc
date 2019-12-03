@@ -74,9 +74,13 @@ bool GlobalErrorWithStandardBubble::ShouldShowCloseButton() const {
   return false;
 }
 
-bool GlobalErrorWithStandardBubble::ShouldUseExtraView() const {
-  return false;
+base::string16
+GlobalErrorWithStandardBubble::GetBubbleViewDetailsButtonLabel() {
+  return {};
 }
+
+void GlobalErrorWithStandardBubble::BubbleViewDetailsButtonPressed(
+    Browser* browser) {}
 
 bool GlobalErrorWithStandardBubble::ShouldAddElevationIconToAcceptButton() {
   return false;

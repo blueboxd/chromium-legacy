@@ -9,6 +9,7 @@
 <translation id="1036348656032585052">ปิด</translation>
 <translation id="1038842779957582377">ไม่ทราบชื่อ</translation>
 <translation id="1039626062703039346">Chrome ช่วยคุณปกป้องบัญชี Google และเปลี่ยนรหัสผ่านได้ การดำเนินการนี้จะแจ้งให้ Google ทราบเกี่ยวกับเว็บไซต์นี้</translation>
+<translation id="1044897699341250361">หมายความว่าอะไร</translation>
 <translation id="1050038467049342496">ปิดแอปอื่นๆ</translation>
 <translation id="1055184225775184556">&amp;เลิกทำการเพิ่ม</translation>
 <translation id="1056898198331236512">คำเตือน</translation>
@@ -183,6 +184,7 @@
 <translation id="1745880797583122200">เบราว์เซอร์ของคุณมีการจัดการ</translation>
 <translation id="17513872634828108">แท็บที่เปิดอยู่</translation>
 <translation id="1753706481035618306">เลขหน้า</translation>
+<translation id="175838129965056221">Chrome ตรวจพบว่ามีการตรวจสอบการเชื่อมต่อของคุณ</translation>
 <translation id="1763864636252898013">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เพราะระบบปฏิบัติการของอุปกรณ์ของคุณไม่เชื่อถือใบรับรองความปลอดภัย โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />ลองเรียกใช้การวินิจฉัยเครือข่ายของ Windows<ph name="END_LINK" /></translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -251,6 +253,7 @@
 <translation id="2119867082804433120">เจาะรูด้านขวาล่าง</translation>
 <translation id="2129079103035905234">เซ็นเซอร์ตรวจจับความเคลื่อนไหว</translation>
 <translation id="2130448033692577677">เทมเพลตที่คุณระบุอาจใช้ไม่ได้เนื่องจากไม่มีการตั้งค่านโยบาย DnsOverHttpsMode ไว้</translation>
+<translation id="2131277894177304644">Chromium ตรวจพบว่ามีการตรวจสอบการเชื่อมต่อของคุณ</translation>
 <translation id="213826338245044447">บุ๊กมาร์กบนอุปกรณ์เคลื่อนที่</translation>
 <translation id="214556005048008348">ยกเลิกการชำระเงิน</translation>
 <translation id="2147827593068025794">การซิงค์ในแบ็กกราวด์</translation>
@@ -298,6 +301,7 @@
 <translation id="2354001756790975382">บุ๊กมาร์กอื่นๆ</translation>
 <translation id="2354430244986887761">เมื่อเร็วๆ นี้ Google Safe Browsing <ph name="BEGIN_LINK" />พบแอปอันตราย<ph name="END_LINK" />ใน <ph name="SITE" /></translation>
 <translation id="2355395290879513365">ผู้โจมตีอาจเห็นรูปภาพที่คุณกำลังดูอยู่บนเว็บไซต์นี้และหลอกลวงคุณโดยการแก้ไขรูปภาพ</translation>
+<translation id="2355474962185559967">คุณเพิ่งใส่รหัสผ่านในเว็บไซต์ที่มีการหลอกลวง Chromium ขอแนะนำให้ไปที่ <ph name="WEBSITE_1" /> แล้วเปลี่ยนรหัสผ่านของคุณโดยทันที</translation>
 <translation id="2356070529366658676">ถาม</translation>
 <translation id="2359629602545592467">หลายรายการ</translation>
 <translation id="2359808026110333948">ต่อไป</translation>
@@ -391,6 +395,7 @@
 <translation id="2799020568854403057">เว็บไซต์ที่จะเปิดมีแอปอันตราย</translation>
 <translation id="2799223571221894425">เปิดใหม่</translation>
 <translation id="2803306138276472711">เมื่อเร็วๆ นี้ Google Safe Browsing <ph name="BEGIN_LINK" />ตรวจพบมัลแวร์<ph name="END_LINK" />ใน <ph name="SITE" /> เว็บไซต์ที่โดยปกติจะปลอดภัยบางครั้งอาจติดมัลแวร์</translation>
+<translation id="281585763351939989">Chromium ตรวจพบว่ามีการตรวจสอบการเชื่อมต่อของคุณ</translation>
 <translation id="2824775600643448204">ที่อยู่และแถบค้นหา</translation>
 <translation id="2826760142808435982">การเชื่อมต่อถูกเข้ารหัสและรับรองความถูกต้องโดยใช้ <ph name="CIPHER" /> และใช้ <ph name="KX" /> เป็นกลไกการแลกเปลี่ยนคีย์</translation>
 <translation id="2835170189407361413">ล้างฟอร์ม</translation>
@@ -435,6 +440,7 @@
 <translation id="3024663005179499861">ประเภทนโยบายไม่ถูกต้อง</translation>
 <translation id="3037605927509011580">แย่จัง!</translation>
 <translation id="3041612393474885105">ข้อมูลในใบรับรอง</translation>
+<translation id="304755864151473094">เหตุใดจึงได้รับคำเตือน</translation>
 <translation id="3057676462092457419">ยังไม่รองรับโหมด DnsOverHttps <ph name="SECURE_DNS_MODE_SECURE" /> มีการตั้งค่าโหมดดังกล่าวเป็น <ph name="SECURE_DNS_MODE_OFF" /></translation>
 <translation id="3060227939791841287">C9 (ซองจดหมาย)</translation>
 <translation id="3061707000357573562">แพตช์บริการ</translation>
@@ -474,6 +480,7 @@
 <translation id="3228969707346345236">การแปลล้มเหลวเนื่องจากหน้าเว็บนี้เป็นภาษา<ph name="LANGUAGE" />อยู่แล้ว</translation>
 <translation id="3229041911291329567">ข้อมูลเวอร์ชันเกี่ยวกับอุปกรณ์และเบราว์เซอร์</translation>
 <translation id="323107829343500871">ป้อน CVC สำหรับ <ph name="CREDIT_CARD" /></translation>
+<translation id="3234392465377209614">คุณเพิ่งใส่รหัสผ่านในเว็บไซต์ที่มีการหลอกลวง Chromium ขอแนะนำให้ไปที่ <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> และ <ph name="WEBSITE_3" /> แล้วเปลี่ยนรหัสผ่านของคุณโดยทันที</translation>
 <translation id="3234666976984236645">ตรวจหาเนื้อหาที่สำคัญบนไซต์นี้เสมอ</translation>
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> ดูคล้ายกับ <ph name="SUGGESTED_DOMAIN" /> บางครั้งผู้โจมตีจะเลียนแบบเว็บไซต์ต่างๆ โดยใช้ URL ที่คล้ายกัน</translation>
 <translation id="3270847123878663523">&amp;เลิกทำการจัดลำดับใหม่</translation>
@@ -506,6 +513,7 @@
 <translation id="342781501876943858">Chromium ขอแนะนำให้รีเซ็ตรหัสผ่านหากคุณใช้รหัสผ่านนี้ซ้ำในเว็บไซต์อื่น</translation>
 <translation id="3428151540071562330">URI ของเซิร์ฟเวอร์เทมเพลต DnsOverHttpsTemplates อย่างน้อย 1 รายการไม่ถูกต้องและจะไม่มีการนำไปใช้</translation>
 <translation id="3431636764301398940">บันทึกบัตรนี้ลงในอุปกรณ์นี้</translation>
+<translation id="3438790640050632698">คุณเพิ่งใส่รหัสผ่านในเว็บไซต์ที่มีการหลอกลวง Chrome ขอแนะนำให้ไปที่ <ph name="WEBSITE_1" /> และ <ph name="WEBSITE_2" /> แล้วเปลี่ยนรหัสผ่านของคุณโดยทันที</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">เจ้าของอุปกรณ์นี้ปิดเกมไดโนเสาร์</translation>
 <translation id="3447884698081792621">แสดงใบรับรอง (ออกโดย <ph name="ISSUER" />)</translation>
@@ -519,6 +527,7 @@
 <translation id="3484560055331845446">คุณอาจสูญเสียสิทธิ์เข้าถึงบัญชี Google ของคุณ Chrome ขอแนะนำให้เปลี่ยนรหัสผ่านทันที ระบบจะขอให้คุณลงชื่อเข้าใช้</translation>
 <translation id="3495081129428749620">ค้นหาในหน้าเว็บ <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">ระบบจะไม่สนใจนโยบายนี้เพราะอีกนโยบายหนึ่งจากกลุ่มนโยบายเดียวกันมีลำดับความสำคัญสูงกว่า</translation>
+<translation id="3525469219100414032">คุณเพิ่งใส่รหัสผ่านในเว็บไซต์ที่มีการหลอกลวง Chrome ขอแนะนำให้ไปที่ <ph name="WEBSITE_1" /> แล้วเปลี่ยนรหัสผ่านของคุณโดยทันที</translation>
 <translation id="3528171143076753409">ใบรับรองของเซิร์ฟเวอร์ไม่น่าเชื่อถือ</translation>
 <translation id="3528485271872257980">น้ำตาลเข้ม</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{อย่างน้อย 1 รายการบนอุปกรณ์ที่ซิงค์}=1{1 รายการ (และมากกว่าบนอุปกรณ์ที่ซิงค์)}other{# รายการ (และมากกว่าบนอุปกรณ์ที่ซิงค์)}}</translation>
@@ -592,6 +601,7 @@
 <translation id="3858027520442213535">อัปเดตวันที่และเวลา</translation>
 <translation id="3884278016824448484">ตัวชี้อุปกรณ์ขัดแย้งกัน</translation>
 <translation id="3885155851504623709">Parish</translation>
+<translation id="388632593194507180">ตรวจพบการตรวจสอบ</translation>
 <translation id="3890664840433101773">เพิ่มอีเมล</translation>
 <translation id="3897092660631435901">เมนู</translation>
 <translation id="3901925938762663762">บัตรหมดอายุ</translation>
@@ -693,6 +703,7 @@
 <translation id="4305817255990598646">สลับ</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">บล็อก (ค่าเริ่มต้น)</translation>
+<translation id="4318312030194671742">บริการจัดวางตัวอย่างภาพวาด</translation>
 <translation id="4318566738941496689">ชื่ออุปกรณ์และที่อยู่เครือข่ายของคุณ</translation>
 <translation id="4325863107915753736">การค้นหาบทความล้มเหลว</translation>
 <translation id="4326324639298822553">ตรวจสอบวันหมดอายุแล้วลองอีกครั้ง</translation>
@@ -709,6 +720,7 @@
 <translation id="4372948949327679948">ค่า <ph name="VALUE_TYPE" /> ที่คาดไว้</translation>
 <translation id="4377125064752653719">คุณพยายามเข้าถึง <ph name="DOMAIN" /> แต่ใบรับรองที่เซิร์ฟเวอร์แจ้งมาถูกเพิกถอนโดยผู้ออกใบรับรอง ซึ่งหมายความว่าข้อมูลรับรองด้านความปลอดภัยที่เซิร์ฟเวอร์แจ้งมานั้นไม่สามารถเชื่อถือได้ คุณอาจกำลังติดต่อกับคนที่คิดจะโจมตีคุณ</translation>
 <translation id="4378154925671717803">โทรศัพท์</translation>
+<translation id="437847259914972036">มีการสอดแนมกิจกรรมบนเว็บและข้อมูลทั้งหมดที่คุณป้อน ตลอดจนอาจมีการเปลี่ยนแปลงเนื้อหาโดยไม่แจ้งให้คุณทราบ</translation>
 <translation id="4398334096870680409">ฟีเจอร์นี้ใช้ไม่ได้ในอุปกรณ์ของคุณ</translation>
 <translation id="4406896451731180161">ผลการค้นหา</translation>
 <translation id="4408413947728134509">คุกกี้ <ph name="NUM_COOKIES" /></translation>
@@ -943,6 +955,7 @@
 <translation id="5565735124758917034">ใช้งานอยู่</translation>
 <translation id="5570825185877910964">ปกป้องบัญชี</translation>
 <translation id="5571083550517324815">ไม่สามารถรับสินค้าจากที่อยู่นี้ โปรดเลือกที่อยู่อื่น</translation>
+<translation id="5572009199897554128">คุณเพิ่งใส่รหัสผ่านในเว็บไซต์ที่มีการหลอกลวง Chromium ขอแนะนำให้ไปที่ <ph name="WEBSITE_1" /> และ <ph name="WEBSITE_2" /> แล้วเปลี่ยนรหัสผ่านของคุณโดยทันที</translation>
 <translation id="5580958916614886209">ตรวจสอบเดือนหมดอายุแล้วลองอีกครั้ง</translation>
 <translation id="5586446728396275693">ไม่มีที่อยู่ที่บันทึกไว้</translation>
 <translation id="5595485650161345191">แก้ไขที่อยู่</translation>
@@ -1125,6 +1138,7 @@
 <translation id="6446163441502663861">Kahu (ซองจดหมาย)</translation>
 <translation id="6446608382365791566">เพิ่มข้อมูลเพิ่มเติม</translation>
 <translation id="6447842834002726250">คุกกี้</translation>
+<translation id="644931407731409778">เอกสาร PDF ที่มี {COUNT,plural, =1{1 หน้า}other{# หน้า}}</translation>
 <translation id="6451458296329894277">ยืนยันการส่งแบบฟอร์มอีกครั้ง</translation>
 <translation id="6457206614190510200">เย็บด้วยลวดเย็บกระดาษที่สัน</translation>
 <translation id="6465306955648956876">จัดการรหัสผ่าน...</translation>
@@ -1143,6 +1157,7 @@
 <translation id="6547208576736763147">เจาะรูด้านซ้าย 2 รู</translation>
 <translation id="6554795675067793129">บัญชีของคุณจัดการโดย <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="6556866813142980365">ทำซ้ำ</translation>
+<translation id="6559565319173126218">Chrome ไม่เชื่อถือใบรับรองการเชื่อมต่อนี้ เนื่องจากเป็นที่ทราบกันว่าใช้สำหรับการสกัดกั้นและการตรวจสอบเครือข่าย</translation>
 <translation id="6569060085658103619">คุณกำลังดูหน้าส่วนขยาย</translation>
 <translation id="6573200754375280815">เจาะรูด้านขวา 2 รู</translation>
 <translation id="6578796323535178455">C2 (ซองจดหมาย)</translation>
@@ -1176,6 +1191,7 @@
 <translation id="6710594484020273272">&lt;พิมพ์ข้อความค้นหา&gt;</translation>
 <translation id="671076103358959139">โทเค็นการลงทะเบียน:</translation>
 <translation id="6711464428925977395">พร็อกซีเซิร์ฟเวอร์ผิดปกติหรือที่อยู่ไม่ถูกต้อง</translation>
+<translation id="6721811549156553509">ตัวตรวจสอบเครือข่ายอาจปลอมเป็นเว็บไซต์ที่คุณเข้าถึงเพื่อดูกิจกรรมและข้อมูลที่คุณป้อน (เช่น รหัสผ่าน ข้อความ หรือบัตรเครดิต) คุณควรระมัดระวังเวลาทำกิจกรรมที่ละเอียดอ่อนทางออนไลน์ เนื่องจากตัวตรวจสอบเครือข่ายจะมองเห็นได้ และตัวตรวจสอบเครือข่ายอาจเปลี่ยนแปลงเนื้อหาในหน้าที่คุณเข้าชม กิจกรรมดังกล่าวรวมถึงกิจกรรมในเบราว์เซอร์และโปรแกรมอื่นๆ ที่เข้าถึงอินเทอร์เน็ต</translation>
 <translation id="6738516213925468394">ข้อมูลของคุณเข้ารหัสลับไว้ด้วย<ph name="BEGIN_LINK" />รหัสผ่านการซิงค์<ph name="END_LINK" />เมื่อ <ph name="TIME" /> ป้อนรหัสผ่านเพื่อเริ่มซิงค์</translation>
 <translation id="674375294223700098">ข้อผิดพลาดใบรับรองของเซิร์ฟเวอร์ที่ไม่รู้จัก</translation>
 <translation id="6744009308914054259">ระหว่างที่รอการเชื่อมต่อ คุณไปที่หน้า "ดาวน์โหลด" เพื่ออ่านบทความออฟไลน์ได้</translation>
@@ -1260,6 +1276,7 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /> เกี่ยวกับปัญหานี้</translation>
 <translation id="7219179957768738017">การเชื่อมต่อใช้ <ph name="SSL_VERSION" /></translation>
 <translation id="7220786058474068424">กำลังดำเนินการ</translation>
+<translation id="7239736667463137521">Chrome ตรวจพบว่ามีการตรวจสอบการเชื่อมต่อของคุณ</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" /> <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">ไซต์ที่จะเปิดมีมัลแวร์</translation>
 <translation id="724975217298816891">ป้อนวันหมดอายุและ CVC สำหรับ <ph name="CREDIT_CARD" /> เพื่ออัปเดตรายละเอียดของบัตร เมื่อคุณยืนยันแล้ว รายละเอียดบัตรของคุณจะแชร์กับเว็บไซต์นี้</translation>
@@ -1286,6 +1303,7 @@
 <translation id="7346048084945669753">เป็นพาร์ทเนอร์:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">บรรทัดคำสั่ง </translation>
+<translation id="7353776484425559055">Chromium ไม่เชื่อถือใบรับรองการเชื่อมต่อนี้ เนื่องจากเป็นที่ทราบกันว่าใช้สำหรับการสกัดกั้นและการตรวจสอบเครือข่าย คุณอาจเห็นข้อผิดพลาดนี้เพราะใบรับรองที่ติดตั้งไว้ในอุปกรณ์ เมื่อทำการเชื่อมต่อที่ปลอดภัย Chromium จะเชื่อถือใบรับรองที่ติดตั้งไว้ในเครื่องคอมพิวเตอร์หรืออุปกรณ์เคลื่อนที่ของผู้ใช้ ซึ่งจะช่วยให้ผู้ใช้เรียกใช้เครื่องมือเพื่อตรวจสอบและแก้ไขข้อบกพร่องการเชื่อมต่อระหว่างการพัฒนาเว็บไซต์ได้ หรือสกัดกั้นและตรวจสอบการเข้าชมภายในสำหรับสภาพแวดล้อมแบบองค์กร Chromium จะแสดงคำเตือนในกรณีที่มีการละเมิดโดยใช้ใบรับรองเพื่อสกัดกั้นการเข้าชมในอินเทอร์เน็ตสาธารณะ</translation>
 <translation id="7372973238305370288">ผลการค้นหา</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">การควบคุมสื่อ</translation>
@@ -1347,6 +1365,7 @@
 <translation id="7592362899630581445">ใบรับรองของเซิร์ฟเวอร์ละเมิดข้อกำหนดชื่อ</translation>
 <translation id="7598391785903975535">ไม่ถึง <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> ไม่สามารถดำเนินการกับคำขอนี้ในขณะนี้</translation>
+<translation id="7599841999395223597">Chrome ไม่เชื่อถือใบรับรองการเชื่อมต่อนี้ เนื่องจากเป็นที่ทราบกันว่าใช้สำหรับการสกัดกั้นและการตรวจสอบเครือข่าย คุณอาจเห็นข้อผิดพลาดนี้เพราะใบรับรองที่ติดตั้งไว้ในอุปกรณ์ เมื่อทำการเชื่อมต่อที่ปลอดภัย Chrome จะเชื่อถือใบรับรองที่ติดตั้งไว้ในเครื่องคอมพิวเตอร์หรืออุปกรณ์เคลื่อนที่ของผู้ใช้ ซึ่งจะช่วยให้ผู้ใช้เรียกใช้เครื่องมือเพื่อตรวจสอบและแก้ไขข้อบกพร่องการเชื่อมต่อระหว่างการพัฒนาเว็บไซต์ได้ หรือสกัดกั้นและตรวจสอบการเข้าชมภายในสำหรับสภาพแวดล้อมแบบองค์กร Chrome จะแสดงคำเตือนในกรณีที่มีการละเมิดโดยใช้ใบรับรองเพื่อสกัดกั้นการเข้าชมในอินเทอร์เน็ตสาธารณะ</translation>
 <translation id="7600965453749440009">ไม่ต้องแปลภาษา<ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">ค่าอยู่นอกช่วง <ph name="VALUE" /></translation>
 <translation id="7613889955535752492">หมดอายุ: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -1664,6 +1683,7 @@
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">คุณอาจสูญเสียสิทธิ์เข้าถึงบัญชี Google ของคุณ Chromium ขอแนะนำให้เปลี่ยนรหัสผ่านทันที ระบบจะขอให้คุณลงชื่อเข้าใช้</translation>
 <translation id="939736085109172342">โฟลเดอร์ใหม่</translation>
+<translation id="940786960229275114">คุณเพิ่งใส่รหัสผ่านในเว็บไซต์ที่มีการหลอกลวง Chrome ขอแนะนำให้ไปที่ <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> และ <ph name="WEBSITE_3" /> แล้วเปลี่ยนรหัสผ่านของคุณโดยทันที</translation>
 <translation id="945855313015696284">ตรวจสอบข้อมูลด้านล่างและลบบัตรที่ไม่ถูกต้อง</translation>
 <translation id="950736567201356821">เจาะรูด้านบน 3 รู</translation>
 <translation id="951104842009476243">บัตรเดบิตและบัตรเติมเงินที่ยอมรับ</translation>

@@ -1311,20 +1311,6 @@ const FeatureEntry::FeatureVariation
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
-const FeatureEntry::FeatureParam
-    kQuietNotificationPromptsForceQuietNotifications[] = {
-        {kQuietNotificationPromptsUIFlavorParameterName,
-         kQuietNotificationPromptsQuietNotification},
-        {kQuietNotificationPromptsActivationParameterName,
-         kQuietNotificationPromptsActivationAlways},
-};
-const FeatureEntry::FeatureParam
-    kQuietNotificationPromptsForceHeadsUpNotifications[] = {
-        {kQuietNotificationPromptsUIFlavorParameterName,
-         kQuietNotificationPromptsHeadsUpNotification},
-        {kQuietNotificationPromptsActivationParameterName,
-         kQuietNotificationPromptsActivationAlways},
-};
 const FeatureEntry::FeatureParam kQuietNotificationPromptsForceMiniInfobars[] =
     {
         {kQuietNotificationPromptsUIFlavorParameterName,
@@ -1333,15 +1319,10 @@ const FeatureEntry::FeatureParam kQuietNotificationPromptsForceMiniInfobars[] =
          kQuietNotificationPromptsActivationAlways},
 };
 
-// The "default" option that only shows "Enabled" will be "quiet notifications",
-// triggered after 3 consecutive denies.
+// The default "Enabled" option has the semantics of showing "mini-infobars"
+// adaptively after 3 consecutive denies (or when enabled in settings). In
+// addition to that, expose an option to force-enable "mini-infobars".
 const FeatureEntry::FeatureVariation kQuietNotificationPromptsVariations[] = {
-    {"(force quiet notifications)",
-     kQuietNotificationPromptsForceQuietNotifications,
-     base::size(kQuietNotificationPromptsForceQuietNotifications), nullptr},
-    {"(force heads-up notifications)",
-     kQuietNotificationPromptsForceHeadsUpNotifications,
-     base::size(kQuietNotificationPromptsForceHeadsUpNotifications), nullptr},
     {"(force mini-infobars)", kQuietNotificationPromptsForceMiniInfobars,
      base::size(kQuietNotificationPromptsForceMiniInfobars), nullptr},
 };
@@ -2522,6 +2503,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kImeInputLogicFstName,
      flag_descriptions::kImeInputLogicFstDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kImeInputLogicFst)},
+    {"enable-cros-ime-input-logic-hmm",
+     flag_descriptions::kImeInputLogicHmmName,
+     flag_descriptions::kImeInputLogicHmmDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kImeInputLogicHmm)},
     {"enable-cros-ime-native-decoder", flag_descriptions::kImeNativeDecoderName,
      flag_descriptions::kImeNativeDecoderDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kImeDecoderWithSandbox)},
@@ -4112,10 +4097,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kUseSkiaRenderer)},
 
 #if defined(OS_CHROMEOS)
-    {"allow-ambient-eq", flag_descriptions::kAllowAmbientEQName,
-     flag_descriptions::kAllowAmbientEQDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kAllowAmbientEQ)},
-
     {"allow-disable-mouse-acceleration",
      flag_descriptions::kAllowDisableMouseAccelerationName,
      flag_descriptions::kAllowDisableMouseAccelerationDescription, kOsCrOS,

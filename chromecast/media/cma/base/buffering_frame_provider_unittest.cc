@@ -13,12 +13,13 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chromecast/media/cma/test/frame_generator_for_test.h"
 #include "chromecast/media/cma/test/mock_frame_consumer.h"
@@ -129,8 +130,8 @@ TEST_F(BufferingFrameProviderTest, FastProviderSlowConsumer) {
                               consumer_delayed_pattern +
                                   base::size(consumer_delayed_pattern)));
 
-  std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
-  message_loop->task_runner()->PostTask(
+  base::test::SingleThreadTaskEnvironment task_environment;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&BufferingFrameProviderTest::Start,
                                 base::Unretained(this)));
   base::RunLoop().Run();
@@ -149,8 +150,8 @@ TEST_F(BufferingFrameProviderTest, SlowProviderFastConsumer) {
                               consumer_delayed_pattern +
                                   base::size(consumer_delayed_pattern)));
 
-  std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
-  message_loop->task_runner()->PostTask(
+  base::test::SingleThreadTaskEnvironment task_environment;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&BufferingFrameProviderTest::Start,
                                 base::Unretained(this)));
   base::RunLoop().Run();
@@ -176,8 +177,8 @@ TEST_F(BufferingFrameProviderTest, SlowFastProducerConsumer) {
                               consumer_delayed_pattern +
                                   base::size(consumer_delayed_pattern)));
 
-  std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
-  message_loop->task_runner()->PostTask(
+  base::test::SingleThreadTaskEnvironment task_environment;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&BufferingFrameProviderTest::Start,
                                 base::Unretained(this)));
   base::RunLoop().Run();

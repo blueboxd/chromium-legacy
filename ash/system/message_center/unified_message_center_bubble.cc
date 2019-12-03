@@ -127,10 +127,16 @@ int UnifiedMessageCenterBubble::CalculateAvailableHeight() {
 }
 
 void UnifiedMessageCenterBubble::CollapseMessageCenter() {
+  if (message_center_view_->collapsed())
+    return;
+
   message_center_view_->SetCollapsed(true /*animate*/);
 }
 
 void UnifiedMessageCenterBubble::ExpandMessageCenter() {
+  if (!message_center_view_->collapsed())
+    return;
+
   message_center_view_->SetExpanded();
   UpdatePosition();
   tray_->EnsureQuickSettingsCollapsed();

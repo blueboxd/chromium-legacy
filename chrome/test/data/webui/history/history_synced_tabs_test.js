@@ -18,19 +18,25 @@ function assertNoSyncedTabsMessageShown(manager, stringID) {
 
 suite('<history-synced-device-manager>', function() {
   let element;
+  let testService;
 
   const setForeignSessions = function(sessions) {
     element.sessionList = sessions;
   };
 
   setup(function() {
+    PolymerTest.clearBody();
+    window.history.replaceState({}, '', '/');
+    testService = new TestBrowserService();
+    history.BrowserService.instance_ = testService;
+
     element = document.createElement('history-synced-device-manager');
     // |signInState| is generally set after |searchTerm| in Polymer 2. Set in
     // the same order in tests, in order to catch regressions like
     // https://crbug.com/915641.
     element.searchTerm = '';
     element.signInState = true;
-    replaceBody(element);
+    document.body.appendChild(element);
   });
 
   test('single card, single window', function() {
@@ -169,7 +175,7 @@ suite('<history-synced-device-manager>', function() {
         });
   });
 
-  test('delete a session', function(done) {
+  test('delete a session', function() {
     const sessionList = [
       createSession('Nexus 5', [createWindow(['http://www.example.com'])]),
       createSession('Pixel C', [createWindow(['http://www.badssl.com'])]),
@@ -177,7 +183,7 @@ suite('<history-synced-device-manager>', function() {
 
     setForeignSessions(sessionList);
 
-    test_util.flushTasks()
+    return test_util.flushTasks()
         .then(function() {
           const cards = getCards(element);
           assertEquals(2, cards.length);
@@ -186,21 +192,21 @@ suite('<history-synced-device-manager>', function() {
           return test_util.flushTasks();
         })
         .then(function() {
-          registerMessageCallback('deleteForeignSession', this, function(args) {
-            assertEquals('Nexus 5', args[0]);
-
-            // Simulate deleting the first device.
-            setForeignSessions([sessionList[1]]);
-
-            test_util.flushTasks().then(function() {
-              cards = getCards(element);
-              assertEquals(1, cards.length);
-              assertEquals('http://www.badssl.com', cards[0].tabs[0].title);
-              done();
-            });
-          });
-
           MockInteractions.tap(element.$$('#menuDeleteButton'));
+          return testService.whenCalled('deleteForeignSession');
+        })
+        .then(args => {
+          assertEquals('Nexus 5', args);
+
+          // Simulate deleting the first device.
+          setForeignSessions([sessionList[1]]);
+
+          return test_util.flushTasks();
+        })
+        .then(function() {
+          cards = getCards(element);
+          assertEquals(1, cards.length);
+          assertEquals('http://www.badssl.com', cards[0].tabs[0].title);
         });
   });
 
@@ -227,26 +233,25 @@ suite('<history-synced-device-manager>', function() {
         });
   });
 
-  test('click synced tab', function(done) {
+  test('click synced tab', function() {
     setForeignSessions(
         [createSession('Chromebook', [createWindow(['https://example.com'])])]);
-
-    registerMessageCallback('openForeignSession', this, function(args) {
-      assertEquals('Chromebook', args[0], 'sessionTag is correct');
-      assertEquals('123', args[1], 'windowId is correct');
-      assertEquals('456', args[2], 'tabId is correct');
-      assertFalse(args[4], 'altKey is defined');
-      assertFalse(args[5], 'ctrlKey is defined');
-      assertFalse(args[6], 'metaKey is defined');
-      assertFalse(args[7], 'shiftKey is defined');
-      done();
-    });
-
-    test_util.flushTasks().then(function() {
-      const cards = getCards(element);
-      const anchor = cards[0].root.querySelector('a');
-      MockInteractions.tap(anchor);
-    });
+    return test_util.flushTasks()
+        .then(function() {
+          const cards = getCards(element);
+          const anchor = cards[0].root.querySelector('a');
+          MockInteractions.tap(anchor);
+          return testService.whenCalled('openForeignSessionTab');
+        })
+        .then(args => {
+          assertEquals('Chromebook', args.sessionTag, 'sessionTag is correct');
+          assertEquals('123', args.windowId, 'windowId is correct');
+          assertEquals(456, args.tabId, 'tabId is correct');
+          assertFalse(args.e.altKey, 'altKey is defined');
+          assertFalse(args.e.ctrlKey, 'ctrlKey is defined');
+          assertFalse(args.e.metaKey, 'metaKey is defined');
+          assertFalse(args.e.shiftKey, 'shiftKey is defined');
+        });
   });
 
   test('show actions menu', function() {
@@ -342,10 +347,5 @@ suite('<history-synced-device-manager>', function() {
           const cards = getCards(element);
           assertEquals(0, cards.length);
         });
-  });
-
-  teardown(function() {
-    registerMessageCallback('openForeignSession', this, undefined);
-    registerMessageCallback('deleteForeignSession', this, undefined);
   });
 });

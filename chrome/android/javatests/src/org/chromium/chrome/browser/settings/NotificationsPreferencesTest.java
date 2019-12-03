@@ -41,14 +41,15 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 public class NotificationsPreferencesTest {
     @Rule
     public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
-    private Preferences mActivity;
+    private SettingsActivity mActivity;
 
     @Rule
     public ScreenShooter mScreenShooter = new ScreenShooter();
 
     @Before
     public void setUp() {
-        mActivity = PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+        mActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
                 NotificationsPreferences.class.getName());
     }
 
@@ -166,10 +167,14 @@ public class NotificationsPreferencesTest {
         });
     }
 
-    /** Gets the fragment of the top Activity. Assumes the top Activity is a Preferences. */
+    /**
+     * Gets the fragment of the top Activity. Assumes the top Activity is a {@link
+     * SettingsActivity}.
+     */
     private static Fragment getTopFragment() {
-        Preferences preferences = (Preferences) ApplicationStatus.getLastTrackedFocusedActivity();
-        return preferences.getMainFragment();
+        SettingsActivity settingsActivity =
+                (SettingsActivity) ApplicationStatus.getLastTrackedFocusedActivity();
+        return settingsActivity.getMainFragment();
     }
 
     /** Gets the summary text that should be used for site specific notifications. */

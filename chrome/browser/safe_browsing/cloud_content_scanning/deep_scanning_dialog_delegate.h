@@ -240,6 +240,14 @@ class DeepScanningDialogDelegate : public TabModalConfirmDialogDelegate {
                    std::string sha256,
                    int64_t size);
 
+  // Completion of |FileRequestCallback| once the mime type is obtained
+  // asynchronously.
+  void CompleteFileRequestCallback(size_t index,
+                                   base::FilePath path,
+                                   BinaryUploadService::Result result,
+                                   DeepScanningClientResponse response,
+                                   std::string mime_type);
+
   // The web contents that is attempting to access the data.
   content::WebContents* web_contents_ = nullptr;
 

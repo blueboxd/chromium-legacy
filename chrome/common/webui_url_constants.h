@@ -216,6 +216,8 @@ extern const char kChromeUIConfirmPasswordChangeHost[];
 extern const char kChromeUIConfirmPasswordChangeUrl[];
 extern const char kChromeUICrostiniInstallerHost[];
 extern const char kChromeUICrostiniInstallerUrl[];
+extern const char kChromeUICrostiniUpgraderHost[];
+extern const char kChromeUICrostiniUpgraderUrl[];
 extern const char kChromeUICryptohomeHost[];
 extern const char kChromeUIDeviceEmulatorHost[];
 extern const char kChromeUIDiscoverURL[];

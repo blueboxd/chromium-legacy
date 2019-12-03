@@ -4,9 +4,6 @@
 
 package org.chromium.chrome.browser.printing;
 
-import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
-import android.os.Build;
 import android.os.CancellationSignal;
 import android.os.ParcelFileDescriptor;
 import android.print.PageRange;
@@ -26,7 +23,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
@@ -58,8 +54,6 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-@SuppressLint("NewApi")
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PrintingControllerTest {
     @Rule
@@ -156,12 +150,9 @@ public class PrintingControllerTest {
      * order, in the UI thread.
      */
     @Test
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     @LargeTest
     @Feature({"Printing"})
     public void testNormalPrintingFlow() throws Throwable {
-        if (!(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)) return;
-
         mActivityTestRule.startMainActivityWithURL(URL);
         final Tab currentTab = mActivityTestRule.getActivity().getActivityTab();
 
@@ -225,12 +216,9 @@ public class PrintingControllerTest {
      * don't crash and won't call into framework.
      */
     @Test
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     @MediumTest
     @Feature({"Printing"})
     public void testPrintCloseWindowBeforeStart() {
-        if (!(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)) return;
-
         mActivityTestRule.startMainActivityWithURL(URL);
         final Tab currentTab = mActivityTestRule.getActivity().getActivityTab();
         final PrintingControllerImpl printingController = createControllerOnUiThread();
@@ -254,12 +242,9 @@ public class PrintingControllerTest {
      * let framework notify user that we can't perform printing job.
      */
     @Test
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     @LargeTest
     @Feature({"Printing"})
     public void testPrintCloseWindowBeforeOnWrite() throws Throwable {
-        if (!(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)) return;
-
         mActivityTestRule.startMainActivityWithURL(URL);
         final Tab currentTab = mActivityTestRule.getActivity().getActivityTab();
         final PrintingControllerImpl printingController = createControllerOnUiThread();
@@ -321,12 +306,9 @@ public class PrintingControllerTest {
      * Crash test, pass if there is no crash.
      */
     @Test
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     @MediumTest
     @Feature({"Printing"})
     public void testCancelPrintBeforeWriteResultCallbacks() throws Throwable {
-        if (!(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)) return;
-
         mActivityTestRule.startMainActivityWithURL(URL);
 
         final WaitForOnWriteHelper onWriteHelper = new WaitForOnWriteHelper();
@@ -382,8 +364,6 @@ public class PrintingControllerTest {
     @SmallTest
     @Feature({"Printing"})
     public void testPdfWritingDoneCalledWithoutInitailizePrintingTask() {
-        if (!(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)) return;
-
         mActivityTestRule.startMainActivityWithURL(URL);
         final PrintingControllerImpl controller = createControllerOnUiThread();
 
@@ -397,7 +377,6 @@ public class PrintingControllerTest {
                 () -> (PrintingControllerImpl) PrintingControllerImpl.getInstance());
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     private PrintAttributes createDummyPrintAttributes() {
         return new PrintAttributes.Builder()
                 .setMediaSize(PrintAttributes.MediaSize.ISO_A4)

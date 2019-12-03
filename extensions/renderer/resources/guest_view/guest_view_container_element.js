@@ -15,61 +15,6 @@ var GuestViewInternalNatives = requireNative('guest_view_internal');
 var IdGenerator = requireNative('id_generator');
 var logging = requireNative('logging');
 
-// Registers the browserplugin and guestview as custom elements.
-// |containerElementType| is a GuestViewContainerElement (e.g. WebViewElement)
-function registerElement(elementName, containerElementType) {
-  registerInternalElement($String.toLowerCase(elementName));
-  registerGuestViewElement(elementName, containerElementType);
-}
-
-// Registers the browser plugin <object> custom element. |viewType| is the
-// name of the specific guestview container (e.g. 'webview').
-function registerInternalElement(viewType) {
-  GuestViewInternalNatives.AllowGuestViewElementDefinition(() => {
-    var InternalElement = class extends HTMLObjectElement {
-      static get observedAttributes() {
-        return ['internalinstanceid'];
-      }
-
-      constructor() {
-        super();
-        $Element.setAttribute(this, 'type', 'application/browser-plugin');
-        $Element.setAttribute(
-            this, 'id', 'browser-plugin-' + IdGenerator.GetNextId());
-        var style = $HTMLElement.style.get(this);
-        $Object.defineProperty(style, 'width', {value: '100%'});
-        $Object.defineProperty(style, 'height', {value: '100%'});
-      }
-    }
-
-    InternalElement.prototype.connectedCallback = function() {
-      // Load the plugin immediately.
-      var unused = this.nonExistentAttribute;
-    };
-
-    InternalElement.prototype.attributeChangedCallback = function(
-        name, oldValue, newValue) {
-      var internal = privates(this).internal;
-      if (!internal) {
-        return;
-      }
-      internal.handleInternalElementAttributeMutation(name, oldValue, newValue);
-    };
-
-    $CustomElementRegistry.define(
-        window.customElements, viewType + 'browserplugin', InternalElement,
-        {extends: 'object'});
-    $Object.defineProperty(GuestViewContainer, viewType + 'BrowserPlugin', {
-      value: InternalElement,
-    });
-
-    delete InternalElement.prototype.connectedCallback;
-    delete InternalElement.prototype.attributeChangedCallback;
-
-    delete InternalElement.observedAttributes;
-  });
-}
-
 // Conceptually, these are methods on GuestViewContainerElement.prototype.
 // However, since that is exposed to users, we only set these callbacks on
 // the prototype temporarily during the custom element registration.
@@ -80,7 +25,7 @@ var customElementCallbacks = {
       return;
 
     internal.elementAttached = true;
-    internal.willAttachElement$();
+    internal.willAttachElement();
     internal.onElementAttached();
   },
 
@@ -105,8 +50,9 @@ var customElementCallbacks = {
   }
 };
 
-// Registers a GuestViewContainerElement as a custom element.
-function registerGuestViewElement(elementName, containerElementType) {
+// Registers the guestview as a custom element.
+// |containerElementType| is a GuestViewContainerElement (e.g. WebViewElement)
+function registerElement(elementName, containerElementType) {
   GuestViewInternalNatives.AllowGuestViewElementDefinition(() => {
     // We set the lifecycle callbacks so that they're available during
     // registration. Once that's done, we'll delete them so developers cannot

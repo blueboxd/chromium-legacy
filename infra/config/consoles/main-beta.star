@@ -22,12 +22,26 @@ luci.console_view(
         # and/or don't have linux-rel mirror these since they do not appear on
         # the main console
         luci.console_view_entry(
+            builder = 'ci-beta/android-kitkat-arm-rel',
+            category = 'chromium.android',
+            short_name = 'k',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/android-marshmallow-arm64-rel',
+            category = 'chromium.android',
+            short_name = 'm',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Android Release (Nexus 5X)',
+            category = 'chromium.gpu|android',
+        ),
+        luci.console_view_entry(
             builder = 'ci-beta/GPU Linux Builder',
-            category = 'chromium.gpu',
+            category = 'chromium.gpu|linux',
         ),
         luci.console_view_entry(
             builder = 'ci-beta/Linux Release (NVIDIA)',
-            category = 'chromium.gpu',
+            category = 'chromium.gpu|linux',
         ),
     ],
 )

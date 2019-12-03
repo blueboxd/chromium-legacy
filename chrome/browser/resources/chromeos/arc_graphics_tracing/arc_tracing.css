@@ -125,13 +125,15 @@
   width: 24px;
 }
 
+.arc-tracing-app-commit-deviation,
 .arc-tracing-app-duration,
 .arc-tracing-app-fps,
-.arc-tracing-chrome-fps,
 .arc-tracing-app-power-total,
 .arc-tracing-app-power-cpu,
 .arc-tracing-app-power-gpu,
-.arc-tracing-app-power-memory {
+.arc-tracing-app-power-memory,
+.arc-tracing-app-render-quality,
+.arc-tracing-chrome-fps {
   font-weight: bold;
 }
 

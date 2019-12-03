@@ -8,6 +8,8 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {Policies} from '../native_layer.js';
+
 import {Cdd, CddCapabilities, Destination, DestinationOrigin, DestinationType, RecentDestination} from './destination.js';
 import {getPrinterTypeForDestination} from './destination_match.js';
 // <if expr="chromeos">
@@ -1008,16 +1010,24 @@ Polymer({
   /**
    * Sets settings in accordance to policies from native code, and prevents
    * those settings from being changed via other means.
-   * @param {boolean|undefined} headerFooter Value of
-   *     printing.print_header_footer, if set in prefs (or undefined, if not).
-   * @param {boolean} isHeaderFooterManaged true if the header/footer UI state
-   *     is managed by a policy.
+   * @param {Policies} policies Value of policies.
    */
-  setPolicySettings: function(headerFooter, isHeaderFooterManaged) {
+  setPolicySettings: function(policies) {
+    if (policies === undefined || policies.headerFooter === undefined) {
+      return;
+    }
+    const headerFooterAllowedMode = policies.headerFooter.allowedMode;
+    const headerFooterDefaultMode = policies.headerFooter.defaultMode;
+    const headerFooterValue = headerFooterAllowedMode !== undefined ?
+        headerFooterAllowedMode :
+        headerFooterDefaultMode;
+    if (headerFooterValue === undefined) {
+      return;
+    }
     this.policySettings_ = {
       headerFooter: {
-        value: headerFooter,
-        managed: isHeaderFooterManaged,
+        value: headerFooterValue,
+        managed: headerFooterAllowedMode !== undefined,
       },
     };
   },
@@ -1034,17 +1044,7 @@ Polymer({
         }
       });
     }
-    if (this.policySettings_) {
-      for (const [settingName, policy] of Object.entries(
-               this.policySettings_)) {
-        if (policy.value !== undefined) {
-          this.setSetting(settingName, policy.value, true);
-        }
-        if (policy.managed) {
-          this.set(`settings.${settingName}.setByPolicy`, true);
-        }
-      }
-    }
+    this.applyPolicySettings_();
     this.initialized_ = true;
     this.updateManaged_();
     this.stickySettings_ = null;
@@ -1077,6 +1077,21 @@ Polymer({
         // settings, and 'scalingType' has been set to custom, we want
         // 'scalingTypePdf' to match.
         this.setSetting(settingName, ScalingType.CUSTOM);
+      }
+    }
+  },
+
+  /** @private */
+  applyPolicySettings_: function() {
+    if (this.policySettings_) {
+      for (const [settingName, policy] of Object.entries(
+               this.policySettings_)) {
+        if (policy.value !== undefined) {
+          this.setSetting(settingName, policy.value, true);
+        }
+        if (policy.managed) {
+          this.set(`settings.${settingName}.setByPolicy`, true);
+        }
       }
     }
   },

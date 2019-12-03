@@ -21,6 +21,7 @@ class WebContents;
 }
 namespace password_manager {
 struct InteractionsStats;
+class PasswordFeatureManager;
 class PasswordFormMetricsRecorder;
 namespace metrics_util {
 enum class CredentialSourceType;
@@ -43,6 +44,9 @@ class PasswordsModelDelegate {
   // submitted.
   virtual password_manager::PasswordFormMetricsRecorder*
   GetPasswordFormMetricsRecorder() = 0;
+
+  virtual password_manager::PasswordFeatureManager*
+  GetPasswordFeatureManager() = 0;
 
   // Returns the URL of the site the current forms are retrieved for.
   virtual const GURL& GetOrigin() const = 0;
@@ -131,7 +135,7 @@ class PasswordsModelDelegate {
   virtual ~PasswordsModelDelegate() = default;
 };
 
-base::WeakPtr<PasswordsModelDelegate>
-PasswordsModelDelegateFromWebContents(content::WebContents* web_contents);
+base::WeakPtr<PasswordsModelDelegate> PasswordsModelDelegateFromWebContents(
+    content::WebContents* web_contents);
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_PASSWORDS_MODEL_DELEGATE_H_

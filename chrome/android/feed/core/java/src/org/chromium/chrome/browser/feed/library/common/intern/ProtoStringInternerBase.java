@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.common.intern;
 
+import android.annotation.SuppressLint;
+
 import com.google.protobuf.GeneratedMessageLite;
 import com.google.protobuf.MessageLite;
 
@@ -33,6 +35,7 @@ public abstract class ProtoStringInternerBase<P extends MessageLite> implements 
     }
 
     @SuppressWarnings("ReferenceEquality") // Intentional reference comparison for interned != orig
+    @SuppressLint("StringEquality")
     /*@Nullable*/
     protected <T extends GeneratedMessageLite<T, B>, B extends GeneratedMessageLite.Builder<T, B>> B
     internSingleStringField(T input,
@@ -60,6 +63,7 @@ public abstract class ProtoStringInternerBase<P extends MessageLite> implements 
     }
 
     @SuppressWarnings("ReferenceEquality") // Intentional reference comparison for interned != orig
+    @SuppressLint("StringEquality")
     /*@Nullable*/
     protected <T extends GeneratedMessageLite<T, B>, B extends GeneratedMessageLite.Builder<T, B>> B
     internRepeatedStringField(T input,

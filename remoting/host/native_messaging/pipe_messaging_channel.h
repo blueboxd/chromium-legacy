@@ -37,6 +37,16 @@ class PipeMessagingChannel : public extensions::NativeMessagingChannel {
   PipeMessagingChannel(base::File input, base::File output);
   ~PipeMessagingChannel() override;
 
+  // If the ctor is called with |input| and |output| set to stdin/stdout,
+  // it will close those file-descriptors. In that case, this helper function
+  // should be used to recreate stdin/stdout as open files. This is needed on
+  // POSIX because a later call to open() will return the lowest available
+  // descriptors, and stdin or stdout could end up pointing at some random file,
+  // which could cause an issue when, say, launching a child process.
+  // This is POSIX-only (a no-op on other platforms) and is thread-unsafe, as it
+  // calls open() twice, expecting it to return 0 then 1.
+  static void ReopenStdinStdout();
+
   // extensions::NativeMessagingChannel implementation.
   void Start(EventHandler* event_handler) override;
   void SendMessage(std::unique_ptr<base::Value> message) override;

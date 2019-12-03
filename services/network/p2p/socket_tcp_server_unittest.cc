@@ -11,8 +11,6 @@
 
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/completion_once_callback.h"
 #include "services/network/p2p/socket_tcp.h"
 #include "services/network/p2p/socket_test_utils.h"
@@ -131,9 +129,6 @@ TEST_F(P2PSocketTcpServerTest, Accept) {
   incoming->SetLocalAddress(ParseAddress(kTestLocalIpAddress, kTestPort1));
   net::IPEndPoint addr = ParseAddress(kTestIpAddress1, kTestPort1);
   incoming->SetPeerAddress(addr);
-
-  network::mojom::P2PSocketPtr socket;
-  network::mojom::P2PSocketClientRequest client_request;
 
   socket_->AddIncoming(incoming);
 

@@ -60,7 +60,6 @@ void SharedClipboardContextMenuObserver::InitMenu(
   if (devices_.empty())
     return;
 
-  proxy_->AddSeparator();
   if (devices_.size() == 1) {
 #if defined(OS_MACOSX)
     proxy_->AddMenuItem(

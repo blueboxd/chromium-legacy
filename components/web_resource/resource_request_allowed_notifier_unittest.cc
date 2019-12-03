@@ -297,7 +297,7 @@ TEST_P(ResourceRequestAllowedNotifierTest, NoRequestNoNotifyEula) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     ResourceRequestAllowedNotifierTest,
     testing::Values(ConnectionTrackerResponseMode::kSynchronous,
                     ConnectionTrackerResponseMode::kAsynchronous));

@@ -154,10 +154,16 @@ cr.define('test_util', function() {
    *     |originList|.
    * @param {!Array<string>} originList A list of the origins with the same
    *     eTLD+1.
+   * @param {number=} mockUsage The override initial usage value for each origin
+   *     in the site group.
    * @return {SiteGroup}
    */
-  function createSiteGroup(eTLDPlus1Name, originList) {
-    const originInfoList = originList.map(origin => createOriginInfo(origin));
+  function createSiteGroup(eTLDPlus1Name, originList, mockUsage) {
+    if (mockUsage == undefined) {
+      mockUsage = 0;
+    }
+    const originInfoList = originList.map(
+        (origin) => createOriginInfo(origin, {usage: mockUsage}));
     return {
       etldPlus1: eTLDPlus1Name,
       origins: originInfoList,

@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "components/sync/base/sync_prefs.h"
+#include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/sync_service_crypto.h"
 
 #if defined(OS_CHROMEOS)
@@ -101,7 +102,8 @@ UserSelectableTypeSet SyncUserSettingsImpl::GetSelectedTypes() const {
 void SyncUserSettingsImpl::SetSelectedTypes(bool sync_everything,
                                             UserSelectableTypeSet types) {
   UserSelectableTypeSet registered_types = GetRegisteredSelectableTypes();
-  DCHECK(registered_types.HasAll(types));
+  DCHECK(registered_types.HasAll(types))
+      << UserSelectableTypeSetToString(types);
   prefs_->SetSelectedTypes(sync_everything, registered_types, types);
 }
 

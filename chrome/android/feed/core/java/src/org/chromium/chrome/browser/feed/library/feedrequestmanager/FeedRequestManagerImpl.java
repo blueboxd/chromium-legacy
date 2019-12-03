@@ -53,7 +53,6 @@ import org.chromium.components.feed.core.proto.wire.FeedActionQueryDataProto.Fee
 import org.chromium.components.feed.core.proto.wire.FeedActionQueryDataProto.FeedActionQueryDataItem;
 import org.chromium.components.feed.core.proto.wire.FeedQueryProto.FeedQuery;
 import org.chromium.components.feed.core.proto.wire.FeedRequestProto.FeedRequest;
-import org.chromium.components.feed.core.proto.wire.FeedRequestProto.FeedRequest.Builder;
 import org.chromium.components.feed.core.proto.wire.RequestProto.Request;
 import org.chromium.components.feed.core.proto.wire.RequestProto.Request.RequestVersion;
 import org.chromium.components.feed.core.proto.wire.ResponseProto.Response;
@@ -324,7 +323,8 @@ public final class FeedRequestManagerImpl implements FeedRequestManager {
             if (mToken != null) {
                 feedQuery.setPageToken(mToken);
             }
-            Builder feedRequestBuilder = FeedRequest.newBuilder().setFeedQuery(feedQuery);
+            FeedRequest.Builder feedRequestBuilder =
+                    FeedRequest.newBuilder().setFeedQuery(feedQuery);
             if (mConsistencyToken != null) {
                 feedRequestBuilder.setConsistencyToken(mConsistencyToken);
                 Logger.i(TAG, "Consistency Token: %s", mConsistencyToken);
@@ -340,7 +340,7 @@ public final class FeedRequestManagerImpl implements FeedRequestManager {
             return requestBuilder.build();
         }
 
-        private void addCapabilities(Builder feedRequestBuilder) {
+        private void addCapabilities(FeedRequest.Builder feedRequestBuilder) {
             addCapabilityIfConfigEnabled(
                     feedRequestBuilder, ConfigKey.FEED_UI_ENABLED, Capability.FEED_UI);
             addCapabilityIfConfigEnabled(feedRequestBuilder, ConfigKey.UNDOABLE_ACTIONS_ENABLED,
@@ -365,7 +365,7 @@ public final class FeedRequestManagerImpl implements FeedRequestManager {
         }
 
         private void addCapabilityIfConfigEnabled(
-                Builder feedRequestBuilder, String configKey, Capability capability) {
+                FeedRequest.Builder feedRequestBuilder, String configKey, Capability capability) {
             if (mConfiguration.getValueOrDefault(configKey, false)) {
                 feedRequestBuilder.addClientCapability(capability);
             }

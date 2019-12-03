@@ -29,7 +29,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
-import org.chromium.chrome.browser.settings.Preferences;
+import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.sync.ManageSyncPreferences;
 import org.chromium.chrome.browser.sync.ui.PassphraseCreationDialogFragment;
 import org.chromium.chrome.browser.sync.ui.PassphraseDialogFragment;
@@ -70,7 +70,7 @@ public class ManageSyncPreferencesTest {
         UI_DATATYPES.put(ModelType.PREFERENCES, ManageSyncPreferences.PREF_SYNC_SETTINGS);
     }
 
-    private Preferences mPreferences;
+    private SettingsActivity mSettingsActivity;
 
     @Rule
     public SyncTestRule mSyncTestRule = new SyncTestRule();
@@ -362,7 +362,7 @@ public class ManageSyncPreferencesTest {
             pss.syncStateChanged();
             fragment.getFragmentManager().executePendingTransactions();
             Assert.assertNull("PassphraseDialogFragment should be dismissed.",
-                    mPreferences.getFragmentManager().findFragmentByTag(
+                    mSettingsActivity.getFragmentManager().findFragmentByTag(
                             ManageSyncPreferences.FRAGMENT_ENTER_PASSPHRASE));
         });
     }
@@ -442,14 +442,15 @@ public class ManageSyncPreferencesTest {
     }
 
     private ManageSyncPreferences startManageSyncPreferences() {
-        mPreferences = mSyncTestRule.startPreferences(ManageSyncPreferences.class.getName());
+        mSettingsActivity =
+                mSyncTestRule.startSettingsActivity(ManageSyncPreferences.class.getName());
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        return (ManageSyncPreferences) mPreferences.getMainFragment();
+        return (ManageSyncPreferences) mSettingsActivity.getMainFragment();
     }
 
     private void closeFragment(ManageSyncPreferences fragment) {
         FragmentTransaction transaction =
-                mPreferences.getSupportFragmentManager().beginTransaction();
+                mSettingsActivity.getSupportFragmentManager().beginTransaction();
         transaction.remove(fragment);
         transaction.commit();
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
@@ -484,17 +485,17 @@ public class ManageSyncPreferencesTest {
 
     private PassphraseDialogFragment getPassphraseDialogFragment() {
         return ActivityUtils.waitForFragment(
-                mPreferences, ManageSyncPreferences.FRAGMENT_ENTER_PASSPHRASE);
+                mSettingsActivity, ManageSyncPreferences.FRAGMENT_ENTER_PASSPHRASE);
     }
 
     private PassphraseTypeDialogFragment getPassphraseTypeDialogFragment() {
         return ActivityUtils.waitForFragment(
-                mPreferences, ManageSyncPreferences.FRAGMENT_PASSPHRASE_TYPE);
+                mSettingsActivity, ManageSyncPreferences.FRAGMENT_PASSPHRASE_TYPE);
     }
 
     private PassphraseCreationDialogFragment getPassphraseCreationDialogFragment() {
         return ActivityUtils.waitForFragment(
-                mPreferences, ManageSyncPreferences.FRAGMENT_CUSTOM_PASSPHRASE);
+                mSettingsActivity, ManageSyncPreferences.FRAGMENT_CUSTOM_PASSPHRASE);
     }
 
     private void assertSyncOnState(ManageSyncPreferences fragment) {

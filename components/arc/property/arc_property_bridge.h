@@ -5,14 +5,8 @@
 #ifndef COMPONENTS_ARC_PROPERTY_ARC_PROPERTY_BRIDGE_H_
 #define COMPONENTS_ARC_PROPERTY_ARC_PROPERTY_BRIDGE_H_
 
-#include <string>
-#include <utility>
 #include <vector>
 
-#include "base/callback.h"
-#include "base/macros.h"
-#include "base/optional.h"
-#include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
 #include "components/arc/mojom/property.mojom.h"
 #include "components/arc/session/connection_observer.h"
@@ -30,6 +24,12 @@ class ArcBridgeService;
 class ArcPropertyBridge : public KeyedService,
                           public ConnectionObserver<mojom::PropertyInstance> {
  public:
+  // Public for testing.
+  static constexpr const char* kMinimizeOnBackButtonTrialName =
+      "ArcMinimizeOnBackButton";
+  static constexpr const char* kMinimizeOnBackButtonEnabled = "Enabled";
+  static constexpr const char* kMinimizeOnBackButtonDisabled = "Disabled";
+
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
   static ArcPropertyBridge* GetForBrowserContext(
@@ -38,6 +38,8 @@ class ArcPropertyBridge : public KeyedService,
   ArcPropertyBridge(content::BrowserContext* context,
                     ArcBridgeService* bridge_service);
   ~ArcPropertyBridge() override;
+  ArcPropertyBridge(const ArcPropertyBridge&) = delete;
+  ArcPropertyBridge& operator=(const ArcPropertyBridge&) = delete;
 
   // ConnectionObserver<mojom::PropertyInstance> overrides:
   void OnConnectionReady() override;
@@ -52,9 +54,10 @@ class ArcPropertyBridge : public KeyedService,
   std::vector<mojom::PropertyInstance::GetGcaMigrationPropertyCallback>
       pending_requests_;
 
-  THREAD_CHECKER(thread_checker_);
+  // Send minimize on back button setting if specified by a field trial.
+  void SyncMinimizeOnBackButton();
 
-  DISALLOW_COPY_AND_ASSIGN(ArcPropertyBridge);
+  THREAD_CHECKER(thread_checker_);
 };
 
 }  // namespace arc

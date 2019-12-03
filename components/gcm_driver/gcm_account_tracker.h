@@ -96,12 +96,12 @@ class GCMAccountTracker : public AccountTracker::Observer,
  private:
   friend class GCMAccountTrackerTest;
 
-  // Maps account keys to account states. Keyed by account_ids as used by
+  // Maps account keys to account states. Keyed by account_id as used by
   // IdentityManager.
   typedef std::map<CoreAccountId, AccountInfo> AccountInfos;
 
   // AccountTracker::Observer overrides.
-  void OnAccountSignInChanged(const AccountIds& ids,
+  void OnAccountSignInChanged(const CoreAccountInfo& account,
                               bool is_signed_in) override;
 
   void OnAccessTokenFetchCompleteForAccount(
@@ -136,8 +136,8 @@ class GCMAccountTracker : public AccountTracker::Observer,
   void GetToken(AccountInfos::iterator& account_iter);
 
   // Handling of actual sign in and sign out for accounts.
-  void OnAccountSignedIn(const AccountIds& ids);
-  void OnAccountSignedOut(const AccountIds& ids);
+  void OnAccountSignedIn(const CoreAccountInfo& account);
+  void OnAccountSignedOut(const CoreAccountInfo& account);
 
   // Account tracker.
   std::unique_ptr<AccountTracker> account_tracker_;

@@ -32,11 +32,11 @@ public final class ModelCursorImpl implements ModelCursor, Dumpable {
 
     private final String mParentContentId;
 
-    @GuardedBy("lock")
+    @GuardedBy("mLock")
     private final List<UpdatableModelChild> mChildList;
 
     /*@Nullable*/
-    @GuardedBy("lock")
+    @GuardedBy("mLock")
     private CursorIterator mIterator;
 
     // #dump() operation counts

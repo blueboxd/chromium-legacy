@@ -62,12 +62,12 @@ class RLZTrackerDelegate {
   // Registers |callback| to be invoked the next time the user perform a search
   // using Google search engine via the omnibox. Callback will invoked at most
   // once.
-  virtual void SetOmniboxSearchCallback(const base::Closure& callback) = 0;
+  virtual void SetOmniboxSearchCallback(base::OnceClosure callback) = 0;
 
   // Registers |callback| to be invoked the next time the user perform a search
   // using Google search engine via the homepage. Callback will invoked at most
   // once.
-  virtual void SetHomepageSearchCallback(const base::Closure& callback) = 0;
+  virtual void SetHomepageSearchCallback(base::OnceClosure callback) = 0;
 
   // Returns true if the existing access point RLZ strings in the data file
   // should be updated.

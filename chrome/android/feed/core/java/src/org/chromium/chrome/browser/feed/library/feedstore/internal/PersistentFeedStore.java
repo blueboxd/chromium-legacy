@@ -18,7 +18,6 @@ import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
 import org.chromium.chrome.browser.feed.library.api.host.logging.InternalFeedError;
 import org.chromium.chrome.browser.feed.library.api.host.storage.CommitResult;
-import org.chromium.chrome.browser.feed.library.api.host.storage.ContentMutation.Builder;
 import org.chromium.chrome.browser.feed.library.api.host.storage.ContentStorage;
 import org.chromium.chrome.browser.feed.library.api.host.storage.ContentStorageDirect;
 import org.chromium.chrome.browser.feed.library.api.host.storage.JournalMutation;
@@ -418,7 +417,9 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
             Map<String, ByteString> semanticPropertiesMap) {
         mThreadUtils.checkNotMainThread();
         ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
-        Builder mutationBuilder = new Builder();
+        org.chromium.chrome.browser.feed.library.api.host.storage.ContentMutation
+                .Builder mutationBuilder = new org.chromium.chrome.browser.feed.library.api.host
+                                                   .storage.ContentMutation.Builder();
         for (Map.Entry<String, ByteString> entry : semanticPropertiesMap.entrySet()) {
             mutationBuilder.upsert(
                     SEMANTIC_PROPERTIES_PREFIX + entry.getKey(), entry.getValue().toByteArray());
@@ -452,7 +453,9 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
     private CommitResult commitContentMutation(List<PayloadWithId> mutations) {
         ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
 
-        Builder contentMutationBuilder = new Builder();
+        org.chromium.chrome.browser.feed.library.api.host.storage.ContentMutation
+                .Builder contentMutationBuilder = new org.chromium.chrome.browser.feed.library.api
+                                                          .host.storage.ContentMutation.Builder();
         for (PayloadWithId mutation : mutations) {
             String payloadId = mutation.contentId;
             StreamPayload payload = mutation.payload;
@@ -516,7 +519,9 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
             Map<String, FeedUploadableActionMutation.FeedUploadableActionChanges> actions) {
         ElapsedTimeTracker tracker = mTimingUtils.getElapsedTimeTracker(TAG);
 
-        Builder contentMutationBuilder = new Builder();
+        org.chromium.chrome.browser.feed.library.api.host.storage.ContentMutation
+                .Builder contentMutationBuilder = new org.chromium.chrome.browser.feed.library.api
+                                                          .host.storage.ContentMutation.Builder();
         for (Map.Entry<String, FeedUploadableActionMutation.FeedUploadableActionChanges> entry :
                 actions.entrySet()) {
             String contentId = entry.getKey();
@@ -604,7 +609,9 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
             Logger.e(TAG, "Error clearing all contents. Could not fetch all content.");
             return false;
         }
-        Builder contentMutationBuilder = new Builder();
+        org.chromium.chrome.browser.feed.library.api.host.storage.ContentMutation
+                .Builder contentMutationBuilder = new org.chromium.chrome.browser.feed.library.api
+                                                          .host.storage.ContentMutation.Builder();
         for (String key : results.getValue()) {
             if (key.contains(SEMANTIC_PROPERTIES_PREFIX)) {
                 continue;
@@ -626,7 +633,11 @@ public final class PersistentFeedStore implements ClearableStore, Dumpable {
 
         boolean success = true;
         // Run clear on both content and journal
-        CommitResult result = mContentStorageDirect.commit(new Builder().deleteAll().build());
+        CommitResult result = mContentStorageDirect.commit(
+                new org.chromium.chrome.browser.feed.library.api.host.storage.ContentMutation
+                        .Builder()
+                        .deleteAll()
+                        .build());
         CommitResult journalResult = mJournalStorageDirect.deleteAll();
 
         // Confirm results were successful

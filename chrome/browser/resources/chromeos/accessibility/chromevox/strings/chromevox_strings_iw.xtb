@@ -463,6 +463,7 @@
 <translation id="4204126831294769023">תכלת</translation>
 <translation id="4204864733111726379">לבן פורח</translation>
 <translation id="4206289001967551965">בתוך טבלה</translation>
+<translation id="4207770814752775793">איפוס ההגדרות של המרת טקסט לדיבור לערכי ברירת המחדל.</translation>
 <translation id="4209770650650780359">כדי להשתמש בהשלמה האוטומטית, יש להקיש על החיצים הפונים מעלה או מטה.</translation>
 <translation id="4215733775853809057">המחוון הבא</translation>
 <translation id="42164919740161077">כחול אפרפר</translation>
@@ -766,6 +767,7 @@
 <translation id="6290434000785343030">אין עוד תיבה משולבת.</translation>
 <translation id="6305702903308659374">‏הפעל בעוצמת שמע רגילה גם אם מכשיר ה-ChromeVox מקריא</translation>
 <translation id="6307969636681130414">לחוץ</translation>
+<translation id="6315652249189065725">פתיחת התפריט של מקשי הקיצור</translation>
 <translation id="6322856989298155004">צלילים</translation>
 <translation id="6324551002951139333">Grammatical mistake detected</translation>
 <translation id="6325241889020214828">העתקה של <ph name="TEXT" />.</translation>
@@ -959,6 +961,7 @@
 <translation id="7668307052366682650">{COUNT,plural, =1{שעה}two{שעות}many{שעות}other{שעות}}</translation>
 <translation id="7674576868851035240">הקישור הבא</translation>
 <translation id="7674768236845044097">mark</translation>
+<translation id="7676847077928500578">איפוס ההגדרות של המרת טקסט לדיבור</translation>
 <translation id="7684431668231950609">ערוך טקסט, רשומת כתובת אתר</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">לחצן הבחירה הקודם</translation>

@@ -91,26 +91,26 @@ public class TaskQueue implements Dumpable {
 
     private final Object mLock = new Object();
 
-    @GuardedBy("lock")
+    @GuardedBy("mLock")
     private final Queue<TaskWrapper> mImmediateTasks = new ArrayDeque<>();
 
-    @GuardedBy("lock")
+    @GuardedBy("mLock")
     private final Queue<TaskWrapper> mUserTasks = new ArrayDeque<>();
 
-    @GuardedBy("lock")
+    @GuardedBy("mLock")
     private final Queue<TaskWrapper> mBackgroundTasks = new ArrayDeque<>();
 
-    @GuardedBy("lock")
+    @GuardedBy("mLock")
     private boolean mWaitingForHeadReset;
 
-    @GuardedBy("lock")
+    @GuardedBy("mLock")
     private boolean mInitialized;
 
     /**
      * CancelableTask that tracks the current starvation runnable. {@liternal null} means that
      * starvation checks are not running.
      */
-    @GuardedBy("lock")
+    @GuardedBy("mLock")
     /*@Nullable*/
     private CancelableTask mStarvationCheckTask;
 

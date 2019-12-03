@@ -4,22 +4,13 @@
 
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
 
-#include <string>
-
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "components/language/core/browser/pref_names.h"
-#include "components/prefs/pref_service.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
+#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_interstitials/core/controller_client.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "url/gurl.h"
 
 namespace chrome_browser_interstitials {
 
@@ -40,36 +31,53 @@ bool IsInterstitialDisplayingText(content::RenderFrameHost* interstitial_frame,
   return result == security_interstitials::CMD_TEXT_FOUND;
 }
 
-void SecurityInterstitialIDNTest::SetUpOnMainThread() {
-  // Clear AcceptLanguages to force punycode decoding.
-  browser()->profile()->GetPrefs()->SetString(language::prefs::kAcceptLanguages,
-                                              std::string());
+bool InterstitialHasProceedLink(content::RenderFrameHost* interstitial_frame) {
+  int result = security_interstitials::CMD_ERROR;
+  const std::string javascript = base::StringPrintf(
+      "domAutomationController.send("
+      "(document.querySelector(\"#proceed-link\") === null) "
+      "? (%d) : (%d))",
+      security_interstitials::CMD_TEXT_NOT_FOUND,
+      security_interstitials::CMD_TEXT_FOUND);
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(interstitial_frame,
+                                                  javascript, &result));
+  return result == security_interstitials::CMD_TEXT_FOUND;
 }
 
-testing::AssertionResult SecurityInterstitialIDNTest::VerifyIDNDecoded() const {
-  const char kHostname[] = "xn--d1abbgf6aiiy.xn--p1ai";
-  const char kHostnameJSUnicode[] =
-      "\\u043f\\u0440\\u0435\\u0437\\u0438\\u0434\\u0435\\u043d\\u0442."
-      "\\u0440\\u0444";
-  std::string request_url_spec = base::StringPrintf("https://%s/", kHostname);
-  GURL request_url(request_url_spec);
-
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  DCHECK(contents);
-  security_interstitials::SecurityInterstitialPage* blocking_page =
-      CreateInterstitial(contents, request_url);
-  blocking_page->Show();
-
-  WaitForInterstitialAttach(contents);
-  if (!WaitForRenderFrameReady(contents->GetInterstitialPage()->GetMainFrame()))
-    return testing::AssertionFailure() << "Render frame not ready";
-
-  if (IsInterstitialDisplayingText(
-          contents->GetInterstitialPage()->GetMainFrame(),
-          kHostnameJSUnicode)) {
-    return testing::AssertionSuccess();
-  }
-  return testing::AssertionFailure() << "Interstitial not displaying text";
+bool IsShowingInterstitial(content::WebContents* tab) {
+  security_interstitials::SecurityInterstitialTabHelper* helper =
+      security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
+          tab);
+  return helper &&
+         helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting();
 }
+
+bool IsShowingCaptivePortalInterstitial(content::WebContents* tab) {
+  return IsShowingInterstitial(tab) &&
+         IsInterstitialDisplayingText(tab->GetMainFrame(), "Connect to");
+}
+
+bool IsShowingSSLInterstitial(content::WebContents* tab) {
+  return IsShowingInterstitial(tab) &&
+         IsInterstitialDisplayingText(tab->GetMainFrame(),
+                                      "Your connection is not private");
+}
+
+bool IsShowingMITMInterstitial(content::WebContents* tab) {
+  return IsShowingInterstitial(tab) &&
+         IsInterstitialDisplayingText(tab->GetMainFrame(),
+                                      "An application is stopping");
+}
+
+bool IsShowingBadClockInterstitial(content::WebContents* tab) {
+  return IsShowingInterstitial(tab) &&
+         IsInterstitialDisplayingText(tab->GetMainFrame(), "Your clock is");
+}
+
+bool IsShowingBlockedInterceptionInterstitial(content::WebContents* tab) {
+  return IsShowingInterstitial(tab) &&
+         IsInterstitialDisplayingText(tab->GetMainFrame(),
+                                      "Anything you type, any pages you view");
+}
+
 }  // namespace chrome_browser_interstitials

@@ -4,6 +4,8 @@
 
 #include "ios/web_view/internal/passwords/web_view_password_feature_manager.h"
 
+#include "base/logging.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -16,6 +18,28 @@ bool WebViewPasswordFeatureManager::IsGenerationEnabled() const {
 
 bool WebViewPasswordFeatureManager::ShouldCheckReuseOnLeakDetection() const {
   return false;
+}
+
+bool WebViewPasswordFeatureManager::IsOptedInForAccountStorage() const {
+  return false;
+}
+
+bool WebViewPasswordFeatureManager::ShouldShowAccountStorageOptIn() const {
+  return false;
+}
+
+void WebViewPasswordFeatureManager::SetAccountStorageOptIn(bool opt_in) {
+  NOTREACHED();
+}
+
+autofill::PasswordForm::Store
+WebViewPasswordFeatureManager::GetDefaultPasswordStore() const {
+  return autofill::PasswordForm::Store::kProfileStore;
+}
+
+void WebViewPasswordFeatureManager::SetDefaultPasswordStore(
+    const autofill::PasswordForm::Store& store) {
+  NOTREACHED();
 }
 
 }  // namespace ios_web_view

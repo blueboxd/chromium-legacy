@@ -98,9 +98,9 @@ import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
-import org.chromium.chrome.browser.settings.Preferences;
 import org.chromium.chrome.browser.settings.PreferencesLauncher;
-import org.chromium.chrome.browser.settings.PreferencesTest;
+import org.chromium.chrome.browser.settings.SettingsActivity;
+import org.chromium.chrome.browser.settings.SettingsActivityTest;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.util.browser.Features;
@@ -416,7 +416,7 @@ public class SavePasswordsPreferencesTest {
      * progress bar after an initial period. Hiding can be later allowed manually in tests with
      * {@link #allowProgressBarToBeHidden}, to avoid time-dependent flakiness.
      */
-    private void reauthenticateAndRequestExport(Preferences preferences) {
+    private void reauthenticateAndRequestExport(SettingsActivity settingsActivity) {
         openActionBarOverflowOrOptionsMenu(
                 InstrumentationRegistry.getInstrumentation().getTargetContext());
 
@@ -435,12 +435,12 @@ public class SavePasswordsPreferencesTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Disable the timer for progress bar.
             SavePasswordsPreferences fragment =
-                    (SavePasswordsPreferences) preferences.getMainFragment();
+                    (SavePasswordsPreferences) settingsActivity.getMainFragment();
             fragment.getExportFlowForTesting()
                     .getDialogManagerForTesting()
                     .replaceCallbackDelayerForTesting(mManualDelayer);
             // Now call onResume to nudge Chrome into continuing the export flow.
-            preferences.getMainFragment().onResume();
+            settingsActivity.getMainFragment().onResume();
         });
     }
 
@@ -478,14 +478,14 @@ public class SavePasswordsPreferencesTest {
     /**
      * Requests showing an arbitrary password export error with a particular positive button to be
      * shown. If you don't care about the button, just call {@link #requestShowingExportError}.
-     * @param preferences is the SavePasswordsPreferences instance being tested.
+     * @param settingsActivity is the SavePasswordsPreferences instance being tested.
      * @param positiveButtonLabelId controls which label the positive button ends up having.
      */
     private void requestShowingExportErrorWithButton(
-            Preferences preferences, int positiveButtonLabelId) {
+            SettingsActivity settingsActivity, int positiveButtonLabelId) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SavePasswordsPreferences fragment =
-                    (SavePasswordsPreferences) preferences.getMainFragment();
+                    (SavePasswordsPreferences) settingsActivity.getMainFragment();
             // To show an error, the error type for UMA needs to be specified. Because it is not
             // relevant for cases when the error is forcibly displayed in tests,
             // HistogramExportResult.NO_CONSUMER is passed as an arbitrarily chosen value.
@@ -499,7 +499,7 @@ public class SavePasswordsPreferencesTest {
      * Sends the signal to {@link DialogManager} that the minimal time for showing the progress
      * bar has passed. This results in the progress bar getting hidden as soon as requested.
      */
-    private void allowProgressBarToBeHidden(Preferences preferences) {
+    private void allowProgressBarToBeHidden(SettingsActivity settingsActivity) {
         TestThreadUtils.runOnUiThreadBlocking(mManualDelayer::runCallbacksSynchronously);
     }
     /**
@@ -536,13 +536,13 @@ public class SavePasswordsPreferencesTest {
     @Feature({"Preferences"})
     public void testResetListEmpty() {
         // Load the preferences, they should show the empty list.
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SavePasswordsPreferences savePasswordPreferences =
-                    (SavePasswordsPreferences) preferences.getMainFragment();
+                    (SavePasswordsPreferences) settingsActivity.getMainFragment();
             // Emulate an update from PasswordStore. This should not crash.
             savePasswordPreferences.passwordListAvailable(0);
         });
@@ -560,13 +560,13 @@ public class SavePasswordsPreferencesTest {
             PrefServiceBridge.getInstance().setBoolean(Pref.REMEMBER_PASSWORDS_ENABLED, true);
         });
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SavePasswordsPreferences savedPasswordPrefs =
-                    (SavePasswordsPreferences) preferences.getMainFragment();
+                    (SavePasswordsPreferences) settingsActivity.getMainFragment();
             ChromeSwitchPreference onOffSwitch =
                     (ChromeSwitchPreference) savedPasswordPrefs.findPreference(
                             SavePasswordsPreferences.PREF_SAVE_PASSWORDS_SWITCH);
@@ -579,17 +579,17 @@ public class SavePasswordsPreferencesTest {
             Assert.assertTrue(
                     PrefServiceBridge.getInstance().getBoolean(Pref.REMEMBER_PASSWORDS_ENABLED));
 
-            preferences.finish();
+            settingsActivity.finish();
 
             PrefServiceBridge.getInstance().setBoolean(Pref.REMEMBER_PASSWORDS_ENABLED, false);
         });
 
-        final Preferences preferences2 =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity2 = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SavePasswordsPreferences savedPasswordPrefs =
-                    (SavePasswordsPreferences) preferences2.getMainFragment();
+                    (SavePasswordsPreferences) settingsActivity2.getMainFragment();
             ChromeSwitchPreference onOffSwitch =
                     (ChromeSwitchPreference) savedPasswordPrefs.findPreference(
                             SavePasswordsPreferences.PREF_SAVE_PASSWORDS_SWITCH);
@@ -608,11 +608,11 @@ public class SavePasswordsPreferencesTest {
         // Add a password entry, because the link is only displayed if the password list is not
         // empty.
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
         SavePasswordsPreferences savedPasswordPrefs =
-                (SavePasswordsPreferences) preferences.getMainFragment();
+                (SavePasswordsPreferences) settingsActivity.getMainFragment();
         Assert.assertNull(savedPasswordPrefs.findPreference(
                 SavePasswordsPreferences.PREF_KEY_MANAGE_ACCOUNT_LINK));
     }
@@ -631,11 +631,11 @@ public class SavePasswordsPreferencesTest {
         ChromeSigninController.get().setSignedInAccountName("Test Account");
         overrideProfileSyncService(false, false);
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
         SavePasswordsPreferences savedPasswordPrefs =
-                (SavePasswordsPreferences) preferences.getMainFragment();
+                (SavePasswordsPreferences) settingsActivity.getMainFragment();
 
         Assert.assertNull(savedPasswordPrefs.findPreference(
                 SavePasswordsPreferences.PREF_KEY_MANAGE_ACCOUNT_LINK));
@@ -655,11 +655,11 @@ public class SavePasswordsPreferencesTest {
         ChromeSigninController.get().setSignedInAccountName("Test Account");
         overrideProfileSyncService(false, true);
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
         SavePasswordsPreferences savedPasswordPrefs =
-                (SavePasswordsPreferences) preferences.getMainFragment();
+                (SavePasswordsPreferences) settingsActivity.getMainFragment();
 
         Assert.assertNotNull(savedPasswordPrefs.findPreference(
                 SavePasswordsPreferences.PREF_KEY_MANAGE_ACCOUNT_LINK));
@@ -679,11 +679,11 @@ public class SavePasswordsPreferencesTest {
         ChromeSigninController.get().setSignedInAccountName("Test Account");
         overrideProfileSyncService(true, true);
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
         SavePasswordsPreferences savedPasswordPrefs =
-                (SavePasswordsPreferences) preferences.getMainFragment();
+                (SavePasswordsPreferences) settingsActivity.getMainFragment();
 
         Assert.assertNull(savedPasswordPrefs.findPreference(
                 SavePasswordsPreferences.PREF_KEY_MANAGE_ACCOUNT_LINK));
@@ -702,13 +702,13 @@ public class SavePasswordsPreferencesTest {
                     Pref.PASSWORD_MANAGER_AUTO_SIGNIN_ENABLED, true);
         });
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SavePasswordsPreferences passwordPrefs =
-                    (SavePasswordsPreferences) preferences.getMainFragment();
+                    (SavePasswordsPreferences) settingsActivity.getMainFragment();
             ChromeBaseCheckBoxPreference onOffSwitch =
                     (ChromeBaseCheckBoxPreference) passwordPrefs.findPreference(
                             SavePasswordsPreferences.PREF_AUTOSIGNIN_SWITCH);
@@ -721,18 +721,18 @@ public class SavePasswordsPreferencesTest {
             Assert.assertTrue(PrefServiceBridge.getInstance().getBoolean(
                     Pref.PASSWORD_MANAGER_AUTO_SIGNIN_ENABLED));
 
-            preferences.finish();
+            settingsActivity.finish();
 
             PrefServiceBridge.getInstance().setBoolean(
                     Pref.PASSWORD_MANAGER_AUTO_SIGNIN_ENABLED, false);
         });
 
-        final Preferences preferences2 =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity2 = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SavePasswordsPreferences passwordPrefs =
-                    (SavePasswordsPreferences) preferences2.getMainFragment();
+                    (SavePasswordsPreferences) settingsActivity2.getMainFragment();
             ChromeBaseCheckBoxPreference onOffSwitch =
                     (ChromeBaseCheckBoxPreference) passwordPrefs.findPreference(
                             SavePasswordsPreferences.PREF_AUTOSIGNIN_SWITCH);
@@ -756,7 +756,7 @@ public class SavePasswordsPreferencesTest {
                                                   "example user", "example password"),
                         new SavedPasswordEntry("https://test.com", "test user", "test password")});
 
-        PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+        SettingsActivityTest.startSettingsActivity(InstrumentationRegistry.getInstrumentation(),
                 SavePasswordsPreferences.class.getName());
 
         Espresso.onView(withText(containsString("test user"))).perform(click());
@@ -801,7 +801,7 @@ public class SavePasswordsPreferencesTest {
                 mMockPasswordEditingDelegate);
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
-        PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+        SettingsActivityTest.startSettingsActivity(InstrumentationRegistry.getInstrumentation(),
                 SavePasswordsPreferences.class.getName());
 
         Espresso.onView(withText(containsString("test user"))).perform(click());
@@ -831,7 +831,7 @@ public class SavePasswordsPreferencesTest {
                 mMockPasswordEditingDelegate);
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
-        PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+        SettingsActivityTest.startSettingsActivity(InstrumentationRegistry.getInstrumentation(),
                 SavePasswordsPreferences.class.getName());
 
         Espresso.onView(withText(containsString("test user"))).perform(click());
@@ -898,9 +898,9 @@ public class SavePasswordsPreferencesTest {
 
         ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
 
         checkExportMenuItemState(MenuItemState.DISABLED);
     }
@@ -916,9 +916,9 @@ public class SavePasswordsPreferencesTest {
 
         ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
 
         checkExportMenuItemState(MenuItemState.ENABLED);
     }
@@ -936,9 +936,9 @@ public class SavePasswordsPreferencesTest {
         ReauthenticationManager.setScreenLockSetUpOverride(
                 ReauthenticationManager.OverrideState.AVAILABLE);
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
 
         openActionBarOverflowOrOptionsMenu(
                 InstrumentationRegistry.getInstrumentation().getTargetContext());
@@ -967,11 +967,11 @@ public class SavePasswordsPreferencesTest {
         ReauthenticationManager.setScreenLockSetUpOverride(
                 ReauthenticationManager.OverrideState.AVAILABLE);
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
 
-        reauthenticateAndRequestExport(preferences);
+        reauthenticateAndRequestExport(settingsActivity);
 
         // Check that the warning dialog is displayed.
         Espresso.onView(withText(R.string.settings_passwords_export_description))
@@ -992,11 +992,11 @@ public class SavePasswordsPreferencesTest {
         ReauthenticationManager.setScreenLockSetUpOverride(
                 ReauthenticationManager.OverrideState.AVAILABLE);
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
 
-        reauthenticateAndRequestExport(preferences);
+        reauthenticateAndRequestExport(settingsActivity);
 
         // Hit the Cancel button on the warning dialog to cancel the flow.
         Espresso.onView(withText(R.string.cancel)).perform(click());
@@ -1018,7 +1018,8 @@ public class SavePasswordsPreferencesTest {
         ReauthenticationManager.resetLastReauth();
 
         // Now call onResume to nudge Chrome into continuing the export flow.
-        TestThreadUtils.runOnUiThreadBlocking(() -> { preferences.getMainFragment().onResume(); });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { settingsActivity.getMainFragment().onResume(); });
 
         // Check that the warning dialog is not displayed.
         Espresso.onView(withText(R.string.settings_passwords_export_description))
@@ -1041,11 +1042,11 @@ public class SavePasswordsPreferencesTest {
         ReauthenticationManager.setScreenLockSetUpOverride(
                 ReauthenticationManager.OverrideState.UNAVAILABLE);
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
 
-        View mainDecorView = preferences.getWindow().getDecorView();
+        View mainDecorView = settingsActivity.getWindow().getDecorView();
         openActionBarOverflowOrOptionsMenu(
                 InstrumentationRegistry.getInstrumentation().getTargetContext());
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
@@ -1069,9 +1070,9 @@ public class SavePasswordsPreferencesTest {
         ReauthenticationManager.setScreenLockSetUpOverride(
                 ReauthenticationManager.OverrideState.UNAVAILABLE);
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
 
         // Trigger exporting and let it fail on the unavailable lock.
         openActionBarOverflowOrOptionsMenu(
@@ -1096,9 +1097,9 @@ public class SavePasswordsPreferencesTest {
         ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
         ReauthenticationManager.setSkipSystemReauth(true);
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
 
         openActionBarOverflowOrOptionsMenu(
                 InstrumentationRegistry.getInstrumentation().getTargetContext());
@@ -1106,7 +1107,8 @@ public class SavePasswordsPreferencesTest {
                 .perform(click());
         // The reauthentication dialog is skipped and the last reauthentication timestamp is not
         // reset. This looks like a failed reauthentication to SavePasswordsPreferences' onResume.
-        TestThreadUtils.runOnUiThreadBlocking(() -> { preferences.getMainFragment().onResume(); });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { settingsActivity.getMainFragment().onResume(); });
         checkExportMenuItemState(MenuItemState.ENABLED);
     }
 
@@ -1124,9 +1126,9 @@ public class SavePasswordsPreferencesTest {
         ReauthenticationManager.setScreenLockSetUpOverride(
                 ReauthenticationManager.OverrideState.AVAILABLE);
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
 
         // Ensure that the last reauthentication time stamp is recent enough.
         ReauthenticationManager.recordLastReauth(
@@ -1163,13 +1165,13 @@ public class SavePasswordsPreferencesTest {
         ReauthenticationManager.setScreenLockSetUpOverride(
                 ReauthenticationManager.OverrideState.AVAILABLE);
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
 
         Intents.init();
 
-        reauthenticateAndRequestExport(preferences);
+        reauthenticateAndRequestExport(settingsActivity);
         File tempFile = createFakeExportedPasswordsFile();
         // Pretend that passwords have been serialized to go directly to the intent.
         mHandler.getExportSuccessCallback().onResult(123, tempFile.getPath());
@@ -1206,17 +1208,18 @@ public class SavePasswordsPreferencesTest {
         ReauthenticationManager.setScreenLockSetUpOverride(
                 ReauthenticationManager.OverrideState.AVAILABLE);
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
 
         Intents.init();
 
-        reauthenticateAndRequestExport(preferences);
+        reauthenticateAndRequestExport(settingsActivity);
 
         // Call onResume to simulate that the user put Chrome into background by opening "recent
         // apps" and then restored Chrome by choosing it from the list.
-        TestThreadUtils.runOnUiThreadBlocking(() -> { preferences.getMainFragment().onResume(); });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { settingsActivity.getMainFragment().onResume(); });
 
         File tempFile = createFakeExportedPasswordsFile();
         // Pretend that passwords have been serialized to go directly to the intent.
@@ -1254,11 +1257,11 @@ public class SavePasswordsPreferencesTest {
         ReauthenticationManager.setScreenLockSetUpOverride(
                 ReauthenticationManager.OverrideState.AVAILABLE);
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
 
-        reauthenticateAndRequestExport(preferences);
+        reauthenticateAndRequestExport(settingsActivity);
 
         // Cancel the export warning.
         Espresso.onView(withText(R.string.cancel)).perform(click());
@@ -1281,15 +1284,16 @@ public class SavePasswordsPreferencesTest {
         ReauthenticationManager.setScreenLockSetUpOverride(
                 ReauthenticationManager.OverrideState.AVAILABLE);
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
 
-        reauthenticateAndRequestExport(preferences);
+        reauthenticateAndRequestExport(settingsActivity);
 
         // Call onResume to simulate that the user put Chrome into background by opening "recent
         // apps" and then restored Chrome by choosing it from the list.
-        TestThreadUtils.runOnUiThreadBlocking(() -> { preferences.getMainFragment().onResume(); });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { settingsActivity.getMainFragment().onResume(); });
 
         // Cancel the export warning.
         Espresso.onView(withText(R.string.cancel)).perform(click());
@@ -1316,9 +1320,9 @@ public class SavePasswordsPreferencesTest {
         ReauthenticationManager.setScreenLockSetUpOverride(
                 ReauthenticationManager.OverrideState.AVAILABLE);
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
 
         openActionBarOverflowOrOptionsMenu(
                 InstrumentationRegistry.getInstrumentation().getTargetContext());
@@ -1333,7 +1337,8 @@ public class SavePasswordsPreferencesTest {
 
         // Call onResume to simulate that the user put Chrome into background by opening "recent
         // apps" and then restored Chrome by choosing it from the list.
-        TestThreadUtils.runOnUiThreadBlocking(() -> { preferences.getMainFragment().onResume(); });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { settingsActivity.getMainFragment().onResume(); });
 
         // Check that export warning is not visible again.
         Espresso.onView(withText(R.string.cancel)).check(doesNotExist());
@@ -1358,11 +1363,11 @@ public class SavePasswordsPreferencesTest {
         ReauthenticationManager.setScreenLockSetUpOverride(
                 ReauthenticationManager.OverrideState.AVAILABLE);
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
 
-        reauthenticateAndRequestExport(preferences);
+        reauthenticateAndRequestExport(settingsActivity);
 
         // Verify that the warning dialog is shown and then dismiss it through pressing back (as
         // opposed to the cancel button).
@@ -1388,15 +1393,15 @@ public class SavePasswordsPreferencesTest {
         ReauthenticationManager.setScreenLockSetUpOverride(
                 ReauthenticationManager.OverrideState.AVAILABLE);
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
 
         Intents.init();
 
         // This also disables the timer for keeping the progress bar up. The test can thus emulate
         // that timer going off by calling {@link allowProgressBarToBeHidden}.
-        reauthenticateAndRequestExport(preferences);
+        reauthenticateAndRequestExport(settingsActivity);
 
         // Before triggering the sharing intent chooser, stub it out to avoid leaving system UI open
         // after the test is finished.
@@ -1422,7 +1427,7 @@ public class SavePasswordsPreferencesTest {
                 .check(matches(isDisplayed()));
 
         // Now mark the timer as gone off and check that the progress bar is hidden.
-        allowProgressBarToBeHidden(preferences);
+        allowProgressBarToBeHidden(settingsActivity);
         Espresso.onView(withText(R.string.settings_passwords_preparing_export))
                 .check(doesNotExist());
 
@@ -1449,13 +1454,13 @@ public class SavePasswordsPreferencesTest {
         ReauthenticationManager.setScreenLockSetUpOverride(
                 ReauthenticationManager.OverrideState.AVAILABLE);
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
 
         Intents.init();
 
-        reauthenticateAndRequestExport(preferences);
+        reauthenticateAndRequestExport(settingsActivity);
 
         // Before triggering the sharing intent chooser, stub it out to avoid leaving system UI open
         // after the test is finished.
@@ -1474,7 +1479,7 @@ public class SavePasswordsPreferencesTest {
         File tempFile = createFakeExportedPasswordsFile();
 
         // Now pretend that passwords have been serialized.
-        allowProgressBarToBeHidden(preferences);
+        allowProgressBarToBeHidden(settingsActivity);
         mHandler.getExportSuccessCallback().onResult(12, tempFile.getPath());
 
         // After simulating the serialized passwords being received, check that the progress bar is
@@ -1504,11 +1509,11 @@ public class SavePasswordsPreferencesTest {
         ReauthenticationManager.setScreenLockSetUpOverride(
                 ReauthenticationManager.OverrideState.AVAILABLE);
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
 
-        reauthenticateAndRequestExport(preferences);
+        reauthenticateAndRequestExport(settingsActivity);
 
         // Confirm the export warning to fire the sharing intent.
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
@@ -1516,7 +1521,7 @@ public class SavePasswordsPreferencesTest {
 
         // Simulate the minimal time for showing the progress bar to have passed, to ensure that it
         // is kept live because of the pending serialization.
-        allowProgressBarToBeHidden(preferences);
+        allowProgressBarToBeHidden(settingsActivity);
 
         // Check that the progress bar is shown.
         Espresso.onView(withText(R.string.settings_passwords_preparing_export))
@@ -1543,11 +1548,11 @@ public class SavePasswordsPreferencesTest {
         ReauthenticationManager.setScreenLockSetUpOverride(
                 ReauthenticationManager.OverrideState.AVAILABLE);
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
 
-        reauthenticateAndRequestExport(preferences);
+        reauthenticateAndRequestExport(settingsActivity);
 
         // Confirm the export warning.
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
@@ -1555,7 +1560,7 @@ public class SavePasswordsPreferencesTest {
 
         // Show an arbitrary error. This should replace the progress bar if that has been shown in
         // the meantime.
-        allowProgressBarToBeHidden(preferences);
+        allowProgressBarToBeHidden(settingsActivity);
         requestShowingExportError();
 
         // Check that the error prompt is showing.
@@ -1584,11 +1589,11 @@ public class SavePasswordsPreferencesTest {
         ReauthenticationManager.setScreenLockSetUpOverride(
                 ReauthenticationManager.OverrideState.AVAILABLE);
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
 
-        reauthenticateAndRequestExport(preferences);
+        reauthenticateAndRequestExport(settingsActivity);
 
         // Confirm the export warning.
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
@@ -1596,8 +1601,8 @@ public class SavePasswordsPreferencesTest {
 
         // Show an arbitrary error but ensure that the positive button label is the one for "try
         // again".
-        allowProgressBarToBeHidden(preferences);
-        requestShowingExportErrorWithButton(preferences, R.string.try_again);
+        allowProgressBarToBeHidden(settingsActivity);
+        requestShowingExportErrorWithButton(settingsActivity, R.string.try_again);
 
         // Hit the positive button to try again.
         Espresso.onView(withText(R.string.try_again)).perform(click());
@@ -1621,11 +1626,11 @@ public class SavePasswordsPreferencesTest {
         ReauthenticationManager.setScreenLockSetUpOverride(
                 ReauthenticationManager.OverrideState.AVAILABLE);
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
 
-        reauthenticateAndRequestExport(preferences);
+        reauthenticateAndRequestExport(settingsActivity);
 
         // Confirm the export warning.
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
@@ -1633,9 +1638,9 @@ public class SavePasswordsPreferencesTest {
 
         // Show an arbitrary error but ensure that the positive button label is the one for the
         // Google Drive help site.
-        allowProgressBarToBeHidden(preferences);
+        allowProgressBarToBeHidden(settingsActivity);
         requestShowingExportErrorWithButton(
-                preferences, R.string.save_password_preferences_export_learn_google_drive);
+                settingsActivity, R.string.save_password_preferences_export_learn_google_drive);
 
         Intents.init();
 
@@ -1669,11 +1674,11 @@ public class SavePasswordsPreferencesTest {
         ReauthenticationManager.setScreenLockSetUpOverride(
                 ReauthenticationManager.OverrideState.AVAILABLE);
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
 
-        reauthenticateAndRequestExport(preferences);
+        reauthenticateAndRequestExport(settingsActivity);
 
         // Request showing an arbitrary error while the confirmation dialog is still up.
         requestShowingExportError();
@@ -1683,7 +1688,7 @@ public class SavePasswordsPreferencesTest {
                 .perform(click());
 
         // Check that now the error is displayed, instead of the progress bar.
-        allowProgressBarToBeHidden(preferences);
+        allowProgressBarToBeHidden(settingsActivity);
         Espresso.onView(withText(R.string.settings_passwords_preparing_export))
                 .check(doesNotExist());
         Espresso.onView(withText(R.string.save_password_preferences_export_error_title))
@@ -1710,11 +1715,11 @@ public class SavePasswordsPreferencesTest {
         ReauthenticationManager.setScreenLockSetUpOverride(
                 ReauthenticationManager.OverrideState.UNAVAILABLE);
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
 
-        View mainDecorView = preferences.getWindow().getDecorView();
+        View mainDecorView = settingsActivity.getWindow().getDecorView();
         Espresso.onView(withText(containsString("test user"))).perform(click());
         Espresso.onView(withContentDescription(R.string.password_entry_viewer_copy_stored_password))
                 .perform(click());
@@ -1737,9 +1742,9 @@ public class SavePasswordsPreferencesTest {
         ReauthenticationManager.setScreenLockSetUpOverride(
                 ReauthenticationManager.OverrideState.AVAILABLE);
 
-        final Preferences preferences =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        SavePasswordsPreferences.class.getName());
+        final SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
 
         Espresso.onView(withText(containsString("test user"))).perform(click());
 
@@ -1762,8 +1767,8 @@ public class SavePasswordsPreferencesTest {
     public void testSearchIconVisibleInActionBarWithFeature() {
         setPasswordSource(null); // Initialize empty preferences.
         SavePasswordsPreferences f =
-                (SavePasswordsPreferences) PreferencesTest
-                        .startPreferences(InstrumentationRegistry.getInstrumentation(),
+                (SavePasswordsPreferences) SettingsActivityTest
+                        .startSettingsActivity(InstrumentationRegistry.getInstrumentation(),
                                 SavePasswordsPreferences.class.getName())
                         .getMainFragment();
 
@@ -1788,7 +1793,7 @@ public class SavePasswordsPreferencesTest {
         setPasswordSource( // Initialize preferences
                 new SavedPasswordEntry("https://example.com", "test user", "test password"));
 
-        PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+        SettingsActivityTest.startSettingsActivity(InstrumentationRegistry.getInstrumentation(),
                 SavePasswordsPreferences.class.getName());
 
         Espresso.onView(withText(containsString("test user"))).perform(click());
@@ -1805,8 +1810,8 @@ public class SavePasswordsPreferencesTest {
     public void testSearchTextInOverflowMenuVisibleWithFeature() {
         setPasswordSource(null); // Initialize empty preferences.
         SavePasswordsPreferences f =
-                (SavePasswordsPreferences) PreferencesTest
-                        .startPreferences(InstrumentationRegistry.getInstrumentation(),
+                (SavePasswordsPreferences) SettingsActivityTest
+                        .startSettingsActivity(InstrumentationRegistry.getInstrumentation(),
                                 SavePasswordsPreferences.class.getName())
                         .getMainFragment();
 
@@ -1833,7 +1838,7 @@ public class SavePasswordsPreferencesTest {
     @Feature({"Preferences"})
     public void testTriggeringSearchRestoresHelpIcon() {
         setPasswordSource(null);
-        PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+        SettingsActivityTest.startSettingsActivity(InstrumentationRegistry.getInstrumentation(),
                 SavePasswordsPreferences.class.getName());
         Espresso.onView(isRoot()).check(
                 (root, e)
@@ -1884,7 +1889,7 @@ public class SavePasswordsPreferencesTest {
     @Feature({"Preferences"})
     public void testSearchFiltersByUserName() {
         setPasswordSourceWithMultipleEntries(GREEK_GODS);
-        PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+        SettingsActivityTest.startSettingsActivity(InstrumentationRegistry.getInstrumentation(),
                 SavePasswordsPreferences.class.getName());
 
         // Search for a string matching multiple user names. Case doesn't need to match.
@@ -1907,7 +1912,7 @@ public class SavePasswordsPreferencesTest {
     @Feature({"Preferences"})
     public void testSearchFiltersByUrl() {
         setPasswordSourceWithMultipleEntries(GREEK_GODS);
-        PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+        SettingsActivityTest.startSettingsActivity(InstrumentationRegistry.getInstrumentation(),
                 SavePasswordsPreferences.class.getName());
 
         // Search for a string that matches multiple URLs. Case doesn't need to match.
@@ -1930,7 +1935,7 @@ public class SavePasswordsPreferencesTest {
     @Feature({"Preferences"})
     public void testSearchDisplaysBlankPageIfSearchTurnsUpEmpty() {
         setPasswordSourceWithMultipleEntries(GREEK_GODS);
-        PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+        SettingsActivityTest.startSettingsActivity(InstrumentationRegistry.getInstrumentation(),
                 SavePasswordsPreferences.class.getName());
 
         // Open the search which should hide the Account link.
@@ -1962,8 +1967,8 @@ public class SavePasswordsPreferencesTest {
     public void testSearchIconClickedHidesExceptionsTemporarily() {
         setPasswordExceptions(new String[] {"http://exclu.de", "http://not-inclu.de"});
         final SavePasswordsPreferences savePasswordPreferences =
-                (SavePasswordsPreferences) PreferencesTest
-                        .startPreferences(InstrumentationRegistry.getInstrumentation(),
+                (SavePasswordsPreferences) SettingsActivityTest
+                        .startSettingsActivity(InstrumentationRegistry.getInstrumentation(),
                                 SavePasswordsPreferences.class.getName())
                         .getMainFragment();
 
@@ -1993,8 +1998,8 @@ public class SavePasswordsPreferencesTest {
     public void testSearchIconClickedHidesGeneralPrefs() {
         setPasswordSource(ZEUS_ON_EARTH);
         final SavePasswordsPreferences prefs =
-                (SavePasswordsPreferences) PreferencesTest
-                        .startPreferences(InstrumentationRegistry.getInstrumentation(),
+                (SavePasswordsPreferences) SettingsActivityTest
+                        .startSettingsActivity(InstrumentationRegistry.getInstrumentation(),
                                 SavePasswordsPreferences.class.getName())
                         .getMainFragment();
         final AtomicReference<Boolean> menuInitiallyVisible = new AtomicReference<>();
@@ -2037,7 +2042,7 @@ public class SavePasswordsPreferencesTest {
     @Feature({"Preferences"})
     public void testSearchBarBackButtonRestoresGeneralPrefs() {
         setPasswordSourceWithMultipleEntries(GREEK_GODS);
-        PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+        SettingsActivityTest.startSettingsActivity(InstrumentationRegistry.getInstrumentation(),
                 SavePasswordsPreferences.class.getName());
 
         Espresso.onView(withSearchMenuIdOrText()).perform(click());
@@ -2063,7 +2068,7 @@ public class SavePasswordsPreferencesTest {
     @Feature({"Preferences"})
     public void testSearchViewCloseIconExistsOnlyToClearQueries() {
         setPasswordSourceWithMultipleEntries(GREEK_GODS);
-        PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+        SettingsActivityTest.startSettingsActivity(InstrumentationRegistry.getInstrumentation(),
                 SavePasswordsPreferences.class.getName());
 
         // Trigger search which shouldn't have the button yet.
@@ -2098,8 +2103,8 @@ public class SavePasswordsPreferencesTest {
     public void testSearchIconColorAffectsOnlyLocalSearchDrawable() {
         // Open the password preferences and remember the applied color filter.
         final SavePasswordsPreferences f =
-                (SavePasswordsPreferences) PreferencesTest
-                        .startPreferences(InstrumentationRegistry.getInstrumentation(),
+                (SavePasswordsPreferences) SettingsActivityTest
+                        .startSettingsActivity(InstrumentationRegistry.getInstrumentation(),
                                 SavePasswordsPreferences.class.getName())
                         .getMainFragment();
         Espresso.onView(withId(R.id.search_button)).check(matches(isDisplayed()));
@@ -2150,7 +2155,7 @@ public class SavePasswordsPreferencesTest {
         ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
         ReauthenticationManager.setScreenLockSetUpOverride(
                 ReauthenticationManager.OverrideState.AVAILABLE);
-        PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+        SettingsActivityTest.startSettingsActivity(InstrumentationRegistry.getInstrumentation(),
                 SavePasswordsPreferences.class.getName());
 
         // Open the search and filter all but "Zeus".

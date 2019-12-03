@@ -60,7 +60,7 @@ bool IsValidBrand(const std::string& brand);
 
 // Returns true if the name part of the |attr| parameter matches
 // ^[-_a-zA-Z0-9]{1,256}$ and the value part of the |attr| parameter
-// matches ^[-.,;+_=a-zA-Z0-9]{0,256}$ .
+// matches ^[-.,;+_=$a-zA-Z0-9]{0,256}$ .
 bool IsValidInstallerAttribute(const InstallerAttribute& attr);
 
 // Removes the unsecure urls in the |urls| parameter.

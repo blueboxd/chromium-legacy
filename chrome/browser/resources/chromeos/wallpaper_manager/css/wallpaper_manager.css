@@ -656,8 +656,10 @@ html[dir='rtl'] .top-header-contents .more-options {
 }
 
 .daily-refresh-banner {
+  align-items: center;
   background-color: rgba(228, 228, 228, 0.9);
   bottom: 0;
+  display: flex;
   height: 40px;
   position: absolute;
   width: 100%;
@@ -745,9 +747,17 @@ html[dir='rtl'] .top-header-contents .more-options {
   font-family: 'Roboto';
   font-size: 13px;
   font-weight: 500;
-  left: 18px;
+  line-height: 13px;
+  max-height: 26px;
+  overflow: hidden;
+  padding-inline-end: 8px;
+  padding-inline-start: 13px;
   position: absolute;
-  top: 13px;
+  width: 98px;
+}
+
+html[dir='rtl'] .daily-refresh-label {
+  padding-inline-start: 52px;
 }
 
 #current-wallpaper-info-bar {

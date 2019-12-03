@@ -424,24 +424,21 @@ TEST(ExtensionFromWebApp, FileHandlersAreCorrectlyConverted) {
   web_app.scope = GURL("https://graphr.n/");
 
   {
-    blink::Manifest::FileHandler file_handler;
-    file_handler.action = GURL("https://graphr.n/open-file/");
-
-    blink::Manifest::FileFilter graph;
+    blink::Manifest::FileHandler graph;
+    graph.action = GURL("https://graphr.n/open-graph/");
     graph.name = base::ASCIIToUTF16("Graph");
-    graph.accept.push_back(base::ASCIIToUTF16("text/svg+xml"));
-    graph.accept.push_back(base::ASCIIToUTF16(""));
-    graph.accept.push_back(base::ASCIIToUTF16(".svg"));
-    file_handler.files.push_back(graph);
+    graph.accept[base::ASCIIToUTF16("text/svg+xml")].push_back(
+        base::ASCIIToUTF16(""));
+    graph.accept[base::ASCIIToUTF16("text/svg+xml")].push_back(
+        base::ASCIIToUTF16(".svg"));
+    web_app.file_handlers.push_back(graph);
 
-    blink::Manifest::FileFilter raw;
+    blink::Manifest::FileHandler raw;
+    raw.action = GURL("https://graphr.n/open-raw/");
     raw.name = base::ASCIIToUTF16("Raw");
-    raw.accept.push_back(base::ASCIIToUTF16(".csv"));
-    raw.accept.push_back(base::ASCIIToUTF16("text/csv"));
-    file_handler.files.push_back(raw);
-
-    web_app.file_handler =
-        base::Optional<blink::Manifest::FileHandler>(std::move(file_handler));
+    raw.accept[base::ASCIIToUTF16("text/csv")].push_back(
+        base::ASCIIToUTF16(".csv"));
+    web_app.file_handlers.push_back(raw);
   }
 
   scoped_refptr<Extension> extension = ConvertWebAppToExtension(
@@ -455,7 +452,7 @@ TEST(ExtensionFromWebApp, FileHandlersAreCorrectlyConverted) {
 
   EXPECT_EQ(2u, file_handler_info.size());
 
-  EXPECT_EQ("https://graphr.n/open-file/?name=Graph", file_handler_info[0].id);
+  EXPECT_EQ("https://graphr.n/open-graph/", file_handler_info[0].id);
   EXPECT_FALSE(file_handler_info[0].include_directories);
   EXPECT_EQ(apps::file_handler_verbs::kOpenWith, file_handler_info[0].verb);
   // Extensions should contain SVG, and only SVG
@@ -465,7 +462,7 @@ TEST(ExtensionFromWebApp, FileHandlersAreCorrectlyConverted) {
   EXPECT_THAT(file_handler_info[0].types,
               testing::UnorderedElementsAre("text/svg+xml"));
 
-  EXPECT_EQ("https://graphr.n/open-file/?name=Raw", file_handler_info[1].id);
+  EXPECT_EQ("https://graphr.n/open-raw/", file_handler_info[1].id);
   EXPECT_FALSE(file_handler_info[1].include_directories);
   EXPECT_EQ(apps::file_handler_verbs::kOpenWith, file_handler_info[1].verb);
   // Extensions should contain csv, and only csv

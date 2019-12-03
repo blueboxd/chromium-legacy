@@ -217,10 +217,17 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
         return siteGroup.etldPlus1 == etldPlus1Name;
       });
 
+      const mockUsage = index * 100;
+
+      // TODO(https://crbug.com/1021606): Add test where existing evaluates to
+      // true.
       if (existing) {
-        existing.origins.push(test_util.createOriginInfo(origin));
+        const originInfo =
+            test_util.createOriginInfo(origin, {usage: mockUsage});
+        existing.origins.push(originInfo);
       } else {
-        const entry = test_util.createSiteGroup(etldPlus1Name, [origin]);
+        const entry =
+            test_util.createSiteGroup(etldPlus1Name, [origin], mockUsage);
         result.push(entry);
       }
     });

@@ -121,10 +121,10 @@ def _guess_caller_name(caller):
             if value is caller:
                 return name
         try:
-            # Outer SequenceNode may contain the caller.
+            # Outer ListNode may contain the caller.
             for index, value in enumerate(caller.outer, 1):
                 if value is caller:
-                    return "{}-of-{}-in-seq".format(index, len(caller.outer))
+                    return "{}-of-{}-in-list".format(index, len(caller.outer))
         except:
             pass
         return "<no name>"

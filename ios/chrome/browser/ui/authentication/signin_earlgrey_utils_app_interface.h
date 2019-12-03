@@ -27,6 +27,9 @@
 // Returns a matcher for an identity picker cell for |email|.
 + (id<GREYMatcher>)identityCellMatcherForEmail:(NSString*)email;
 
+// Removes |fakeIdentity| from the fake identity service.
++ (void)removeFakeIdentity:(FakeChromeIdentity*)fakeIdentity;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_EARLGREY_UTILS_APP_INTERFACE_H_

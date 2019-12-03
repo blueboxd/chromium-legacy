@@ -122,7 +122,7 @@ def interpret_run_benchmark_results(upper_limit_data,
         upper_limit_ci = upper_limit_data[story_name]['ci_095']
         # Only average values which are not noisy will be used
         if (float(row['ci_095']) <= upper_limit_ci * CI_ERROR_MARGIN):
-          values_per_story[story_name]['averages'].append(float(row['ci_095']))
+          values_per_story[story_name]['averages'].append(float(row['avg']))
 
     # Clearing the result of run_benchmark and write the gated perf results
     resultsFile.seek(0)

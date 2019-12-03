@@ -402,10 +402,10 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
           source->io_task_runner(), weak_factory_.GetWeakPtr(), enabled);
   source->AddTrack(
       this, VideoTrackAdapterSettings(),
-      ConvertToBaseCallback(CrossThreadBindRepeating(
+      ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
           &MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO,
           frame_deliverer_)),
-      ConvertToBaseCallback(CrossThreadBindRepeating(
+      ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
           &MediaStreamVideoTrack::FrameDeliverer::DeliverEncodedVideoFrameOnIO,
           frame_deliverer_)),
       media::BindToCurrentLoop(WTF::BindRepeating(
@@ -437,10 +437,10 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
           source->io_task_runner(), weak_factory_.GetWeakPtr(), enabled);
   source->AddTrack(
       this, adapter_settings,
-      ConvertToBaseCallback(CrossThreadBindRepeating(
+      ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
           &MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO,
           frame_deliverer_)),
-      ConvertToBaseCallback(CrossThreadBindRepeating(
+      ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
           &MediaStreamVideoTrack::FrameDeliverer::DeliverEncodedVideoFrameOnIO,
           frame_deliverer_)),
       media::BindToCurrentLoop(WTF::BindRepeating(

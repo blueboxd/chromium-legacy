@@ -422,13 +422,9 @@ unsigned LocalFrameUkmAggregator::SampleFramesToNextEvent() {
     return frames_to_next_event_for_test_;
 
   // Sample from an exponential distribution to give a poisson distribution
-  // of samples per time unit. In this case, a mean of one sample per
-  // mean_milliseconds_between_samples_. The exponential distribution tends
-  // to give more samples in the range (0, mean) than in the range
-  // [mean, infinity). Intuitively, the (0, mean) is bounded and can only
-  // influence the mean so much, while the [mean, infinity) range is infinite
-  // and can generate some long interval times (though there is less than 1%
-  // chance of an interval mofre than 5 * mean).
+  // of samples per time unit, then weigh it with an exponential multiplier to
+  // give a few samples in rapid succession (for frames early in the page's
+  // life) then exponentially fewer as the page lives longer.
   // RandDouble() returns [0,1), but we need (0,1]. If RandDouble() is
   // uniformly random, so is 1-RandDouble(), so use it to adjust the range.
   // When RandDouble returns 0.0, as it could, we will get a float_sample of
@@ -436,14 +432,20 @@ unsigned LocalFrameUkmAggregator::SampleFramesToNextEvent() {
   // sample until we get a positive count.
   double float_sample = 0;
   do {
-    float_sample =
-        -(mean_frames_between_samples_ * std::log(1.0 - base::RandDouble()));
+    float_sample = -(sample_rate_multiplier_ *
+                     std::exp(samples_so_far_ / sample_decay_rate_) *
+                     std::log(1.0 - base::RandDouble()));
   } while (float_sample == 0);
   // float_sample is positive, so we don't need to worry about underflow.
-  // But with extremely low probability we might end up with a super high
+  // After around 100 samples we will end up with a super high
   // sample. That's OK because it just means we'll stop reporting metrics
-  // for that session.
-  return (unsigned)std::ceil(float_sample);
+  // for that session, but we do need to be careful about overflow and NaN.
+  samples_so_far_++;
+  unsigned unsigned_sample =
+      std::isnan(float_sample)
+          ? UINT_MAX
+          : base::saturated_cast<unsigned>(std::ceil(float_sample));
+  return unsigned_sample;
 }
 
 bool LocalFrameUkmAggregator::AllMetricsAreZero() {

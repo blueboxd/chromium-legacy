@@ -10,12 +10,12 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -148,14 +148,15 @@ class MessageCenterImplTest : public testing::Test {
   void SetUp() override {
     MessageCenter::Initialize(std::make_unique<FakeLockScreenController>());
     message_center_ = MessageCenter::Get();
-    loop_ = std::make_unique<base::MessageLoop>();
+    task_environment_ =
+        std::make_unique<base::test::SingleThreadTaskEnvironment>();
     run_loop_ = std::make_unique<base::RunLoop>();
     closure_ = run_loop_->QuitClosure();
   }
 
   void TearDown() override {
     run_loop_.reset();
-    loop_.reset();
+    task_environment_.reset();
     message_center_ = nullptr;
     MessageCenter::Shutdown();
   }
@@ -215,7 +216,7 @@ class MessageCenterImplTest : public testing::Test {
 
  private:
   MessageCenter* message_center_;
-  std::unique_ptr<base::MessageLoop> loop_;
+  std::unique_ptr<base::test::SingleThreadTaskEnvironment> task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
   base::RepeatingClosure closure_;
 

@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
+#include "chrome/browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader_dialog.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
@@ -81,11 +82,21 @@ void OnLaunchFailed(const std::string& app_id) {
   chrome_controller->GetShelfSpinnerController()->CloseSpinner(app_id);
 }
 
+// TODO(nverne): Real conditions (e.g. once per session max, container id is
+// default and still on old version).
+bool ShouldPromptContainerUpgrade() {
+  return false;
+}
+
 void OnCrostiniRestarted(Profile* profile,
                          const std::string& app_id,
                          Browser* browser,
                          base::OnceClosure callback,
                          crostini::CrostiniResult result) {
+  if (ShouldPromptContainerUpgrade()) {
+    chromeos::CrostiniUpgraderDialog::Show(profile, std::move(callback));
+    return;
+  }
   if (result != crostini::CrostiniResult::SUCCESS) {
     OnLaunchFailed(app_id);
     if (browser && browser->window())
@@ -281,6 +292,10 @@ ContainerId::ContainerId(std::string vm_name,
 bool operator<(const ContainerId& lhs, const ContainerId& rhs) noexcept {
   const auto result = lhs.vm_name.compare(rhs.vm_name);
   return result < 0 || (result == 0 && lhs.container_name < rhs.container_name);
+}
+
+bool operator==(const ContainerId& lhs, const ContainerId& rhs) noexcept {
+  return lhs.vm_name == rhs.vm_name && lhs.container_name == rhs.container_name;
 }
 
 std::ostream& operator<<(std::ostream& ostream,

@@ -51,12 +51,6 @@ found in the LICENSE file.
 
   <style name="FeedBlueButtonText2" parent="FeedBlueTitle" />
 
-  <!-- Black Title Text Styles -->
-  <style name="FeedBlackTitle1">
-    <item name="android:textColor">@color/feed_default_text_color</item>
-    <item name="android:textSize">@dimen/text_size_large</item>
-  </style>
-
   <!-- Menu Text Padding Styles -->
   <style name="FeedMenuTextPaddingStyle">
     <item name="android:paddingLeft">?android:attr/listPreferredItemPaddingLeft</item>

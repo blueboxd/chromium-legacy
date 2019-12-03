@@ -773,7 +773,7 @@ SimpleBackendImpl::DiskStatResult SimpleBackendImpl::InitCacheStructureOnDisk(
       result.net_error = net::ERR_FAILED;
     } else if (!result.max_size) {
       int64_t available = base::SysInfo::AmountOfFreeDiskSpace(path);
-      result.max_size = disk_cache::PreferredCacheSize(available);
+      result.max_size = disk_cache::PreferredCacheSize(available, cache_type);
       DCHECK(result.max_size);
     }
   }

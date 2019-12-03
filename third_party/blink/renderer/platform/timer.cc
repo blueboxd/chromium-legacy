@@ -103,10 +103,6 @@ void TimerBase::MoveToNewTaskRunner(
   SetNextFireTime(now, next_fire_time - now);
 }
 
-scoped_refptr<base::SingleThreadTaskRunner> TimerBase::TimerTaskRunner() const {
-  return web_task_runner_;
-}
-
 void TimerBase::SetNextFireTime(base::TimeTicks now, base::TimeDelta delay) {
 #if DCHECK_IS_ON()
   DCHECK_EQ(thread_, CurrentThread());
@@ -120,7 +116,7 @@ void TimerBase::SetNextFireTime(base::TimeTicks now, base::TimeDelta delay) {
     // Cancel any previously posted task.
     weak_ptr_factory_.InvalidateWeakPtrs();
 
-    TimerTaskRunner()->PostDelayedTask(
+    web_task_runner_->PostDelayedTask(
         location_,
         WTF::Bind(&TimerBase::RunInternal, weak_ptr_factory_.GetWeakPtr()),
         delay);

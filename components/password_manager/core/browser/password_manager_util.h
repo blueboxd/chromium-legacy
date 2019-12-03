@@ -141,6 +141,31 @@ const autofill::PasswordForm* GetMatchForUpdating(
 autofill::PasswordForm MakeNormalizedBlacklistedForm(
     password_manager::PasswordStore::FormDigest digest);
 
+// Whether the current signed-in user (aka unconsented primary account) has
+// opted in to use the Google account storage for passwords (as opposed to
+// local/profile storage).
+// |pref_service| must not be null.
+// |sync_service| may be null (commonly the case in incognito mode), in which
+// case this will simply return false.
+bool IsOptedInForAccountStorage(const PrefService* pref_service,
+                                const syncer::SyncService* sync_service);
+
+// Whether it makes sense to ask the user to opt-in for account-based
+// password storage. This is true if the opt-in doesn't exist yet, but all
+// other requirements are met (i.e. there is a signed-in user etc).
+// |pref_service| must not be null.
+// |sync_service| may be null (commonly the case in incognito mode), in which
+// case this will simply return false.
+bool ShouldShowAccountStorageOptIn(const PrefService* pref_service,
+                                   const syncer::SyncService* sync_service);
+
+// Sets or clears the opt-in to using account storage for passwords for the
+// current signed-in user (unconsented primary account).
+// |pref_service| and |sync_service| must not be null.
+void SetAccountStorageOptIn(PrefService* pref_service,
+                            const syncer::SyncService* sync_service,
+                            bool opt_in);
+
 }  // namespace password_manager_util
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_UTIL_H_

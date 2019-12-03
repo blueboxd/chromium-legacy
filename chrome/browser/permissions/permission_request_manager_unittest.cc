@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/permissions/mock_permission_request.h"
 #include "chrome/browser/permissions/permission_features.h"
 #include "chrome/browser/permissions/permission_request.h"
+#include "chrome/browser/permissions/permission_request_auto_blocker.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
@@ -82,14 +84,17 @@ class PermissionRequestManagerTest : public ChromeRenderViewHostTestHarness {
 
   void Accept() {
     manager_->Accept();
+    base::RunLoop().RunUntilIdle();
   }
 
   void Deny() {
     manager_->Deny();
+    base::RunLoop().RunUntilIdle();
   }
 
   void Closing() {
     manager_->Closing();
+    base::RunLoop().RunUntilIdle();
   }
 
   void WaitForFrameLoad() {
@@ -644,7 +649,7 @@ TEST_F(PermissionRequestManagerTest,
       notification2);
   manager_->AddRequest(&notification2_request);
   WaitForBubbleToBeShown();
-  EXPECT_FALSE(manager_->ShouldShowQuietPermissionPrompt());
+  EXPECT_FALSE(manager_->ShouldCurrentRequestUseQuietUI());
   Deny();
 
   GURL notification3("http://www.notification3.com/");
@@ -654,7 +659,7 @@ TEST_F(PermissionRequestManagerTest,
       notification3);
   manager_->AddRequest(&notification3_request);
   WaitForBubbleToBeShown();
-  EXPECT_FALSE(manager_->ShouldShowQuietPermissionPrompt());
+  EXPECT_FALSE(manager_->ShouldCurrentRequestUseQuietUI());
   Accept();
 
   // Only show quiet UI after 3 consecutive denies of the permission prompt.
@@ -665,7 +670,7 @@ TEST_F(PermissionRequestManagerTest,
       notification4);
   manager_->AddRequest(&notification4_request);
   WaitForBubbleToBeShown();
-  EXPECT_FALSE(manager_->ShouldShowQuietPermissionPrompt());
+  EXPECT_FALSE(manager_->ShouldCurrentRequestUseQuietUI());
   Deny();
 
   GURL notification5("http://www.notification5.com/");
@@ -675,7 +680,7 @@ TEST_F(PermissionRequestManagerTest,
       notification5);
   manager_->AddRequest(&notification5_request);
   WaitForBubbleToBeShown();
-  EXPECT_FALSE(manager_->ShouldShowQuietPermissionPrompt());
+  EXPECT_FALSE(manager_->ShouldCurrentRequestUseQuietUI());
   Deny();
 
   GURL notification6("http://www.notification6.com/");
@@ -685,7 +690,7 @@ TEST_F(PermissionRequestManagerTest,
       notification6);
   manager_->AddRequest(&notification6_request);
   WaitForBubbleToBeShown();
-  EXPECT_FALSE(manager_->ShouldShowQuietPermissionPrompt());
+  EXPECT_FALSE(manager_->ShouldCurrentRequestUseQuietUI());
   Deny();
 
   // After the 3rd consecutive denies, show the quieter version of the
@@ -701,7 +706,7 @@ TEST_F(PermissionRequestManagerTest,
           ->AdaptiveNotificationPermissionUiSelector::ShouldShowPromo());
   manager_->AddRequest(&notification7_request);
   WaitForBubbleToBeShown();
-  EXPECT_TRUE(manager_->ShouldShowQuietPermissionPrompt());
+  EXPECT_TRUE(manager_->ShouldCurrentRequestUseQuietUI());
   EXPECT_TRUE(
       permission_ui_selector
           ->AdaptiveNotificationPermissionUiSelector::ShouldShowQuietUi());
@@ -724,15 +729,15 @@ TEST_F(PermissionRequestManagerTest,
           ->AdaptiveNotificationPermissionUiSelector::ShouldShowPromo());
   manager_->AddRequest(&notification8_request);
   WaitForBubbleToBeShown();
-  EXPECT_TRUE(manager_->ShouldShowQuietPermissionPrompt());
+  EXPECT_TRUE(manager_->ShouldCurrentRequestUseQuietUI());
 
   // Clearing interaction history does not change the state for the enabled
   // quiet UI.
   permission_ui_selector->ClearInteractionHistory(base::Time(),
                                                   base::Time::Max());
-  EXPECT_TRUE(manager_->ShouldShowQuietPermissionPrompt());
+  EXPECT_TRUE(manager_->ShouldCurrentRequestUseQuietUI());
   permission_ui_selector->DisableQuietUi();
-  EXPECT_FALSE(manager_->ShouldShowQuietPermissionPrompt());
+  EXPECT_FALSE(manager_->ShouldCurrentRequestUseQuietUI());
   Deny();
 
   base::Time recorded_time = clock_.Now();
@@ -758,7 +763,7 @@ TEST_F(PermissionRequestManagerTest,
       notification10);
   manager_->AddRequest(&notification10_request);
   WaitForBubbleToBeShown();
-  EXPECT_FALSE(manager_->ShouldShowQuietPermissionPrompt());
+  EXPECT_FALSE(manager_->ShouldCurrentRequestUseQuietUI());
   Deny();
 
   clock_.Advance(base::TimeDelta::FromDays(1));
@@ -783,4 +788,88 @@ TEST_F(PermissionRequestManagerTest,
   EXPECT_EQ((util::ValueToTime(permission_actions.begin()->FindKey("time")))
                 .value_or(base::Time()),
             recorded_time);
+}
+
+// Will simulate an autoblocker that simply returns a predefined response every
+// time.
+class MockPermissionRequestAutoBlocker : public PermissionRequestAutoBlocker {
+ public:
+  explicit MockPermissionRequestAutoBlocker(Response response, bool async) {
+    response_ = response;
+    async_ = async;
+  }
+
+  void MakeDecision(PermissionRequest* request,
+                    DecisionMadeCallback callback) override {
+    if (async_) {
+      base::PostTask(FROM_HERE, {base::CurrentThread()},
+                     base::BindOnce(std::move(callback), response_));
+    } else {
+      std::move(callback).Run(response_);
+    }
+  }
+
+  static void CreateForManager(PermissionRequestManager* manager,
+                               Response response,
+                               bool async) {
+    manager->set_autoblocker_for_testing(
+        std::make_unique<MockPermissionRequestAutoBlocker>(response, async));
+  }
+
+ private:
+  Response response_;
+  bool async_;
+};
+
+TEST_F(PermissionRequestManagerTest, AutoBlocker) {
+  struct {
+    MockPermissionRequest* request;
+    PermissionRequestAutoBlocker::Response auto_blocker_set_response;
+    bool async;
+  } tests[] = {
+      {&request1_, PermissionRequestAutoBlocker::Response::USE_NORMAL_UI, true},
+      {&request2_, PermissionRequestAutoBlocker::Response::TIMEOUT, true},
+      {&request_mic_, PermissionRequestAutoBlocker::Response::USE_QUIET_UI,
+       true},
+      {&request_camera_, PermissionRequestAutoBlocker::Response::USE_QUIET_UI,
+       false},
+  };
+
+  for (const auto& test : tests) {
+    MockPermissionRequestAutoBlocker::CreateForManager(
+        manager_, test.auto_blocker_set_response, test.async);
+
+    manager_->AddRequest(test.request);
+    WaitForBubbleToBeShown();
+
+    EXPECT_TRUE(prompt_factory_->is_visible());
+    EXPECT_TRUE(prompt_factory_->RequestTypeSeen(
+        test.request->GetPermissionRequestType()));
+    Accept();
+
+    EXPECT_TRUE(test.request->granted());
+    EXPECT_EQ(manager_->current_request_autoblocker_response_for_testing(),
+              test.auto_blocker_set_response);
+  }
+}
+
+TEST_F(PermissionRequestManagerTest,
+       ShouldCurrentRequestUseQuietUIAffectedByAutoblocker) {
+  MockPermissionRequest request1(
+      "request1", PermissionRequestType::PERMISSION_NOTIFICATIONS,
+      PermissionRequestGestureType::GESTURE);
+  manager_->AddRequest(&request1);
+  WaitForBubbleToBeShown();
+  EXPECT_FALSE(manager_->ShouldCurrentRequestUseQuietUI());
+  Accept();
+
+  MockPermissionRequest request2(
+      "request2", PermissionRequestType::PERMISSION_NOTIFICATIONS,
+      PermissionRequestGestureType::GESTURE);
+  MockPermissionRequestAutoBlocker::CreateForManager(
+      manager_, PermissionRequestAutoBlocker::Response::USE_QUIET_UI, true);
+  manager_->AddRequest(&request2);
+  WaitForBubbleToBeShown();
+  EXPECT_TRUE(manager_->ShouldCurrentRequestUseQuietUI());
+  Accept();
 }

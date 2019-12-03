@@ -24,12 +24,43 @@ defaults.bucket.set(vars.bucket.get())
 defaults.bucketed_triggers.set(True)
 
 
+def android_builder(
+    *,
+    name,
+    # TODO(tandrii): migrate to this gradually (current value of
+    # goma.jobs.MANY_JOBS_FOR_CI is 500).
+    # goma_jobs=goma.jobs.MANY_JOBS_FOR_CI
+    goma_jobs=goma.jobs.J150,
+    **kwargs):
+  return builder(
+      name = name,
+      goma_jobs = goma_jobs,
+      mastername = 'chromium.android',
+      **kwargs
+  )
+
+android_builder(
+    name = 'android-kitkat-arm-rel',
+    goma_backend = goma.backend.RBE_PROD,
+)
+
+android_builder(
+    name = 'android-marshmallow-arm64-rel',
+    goma_backend = goma.backend.RBE_PROD,
+)
+
+
 def gpu_builder(*, name, **kwargs):
   return builder(
       name = name,
       mastername = 'chromium.gpu',
       **kwargs
   )
+
+gpu_builder(
+    name = 'Android Release (Nexus 5X)',
+    goma_backend = goma.backend.RBE_PROD,
+)
 
 gpu_builder(
     name = 'GPU Linux Builder',

@@ -2106,3 +2106,8 @@ crbug.com/626703 [ Win ] external/wpt/payment-method-basic-card/billing-address-
 [ Win ] virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/contacts-manager-extra-properties-trial-interfaces.html [ Skip ]
 [ Linux ] virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/contacts-manager-extra-properties-trial-interfaces.html [ Skip ]
 [ Mac ] virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/contacts-manager-extra-properties-trial-interfaces.html [ Skip ]
+
+# Chrome Win/Linux/Mac don't support Content Index origin trial yet
+[ Win ] virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/content-index-origin-trial-interfaces.html [ Skip ]
+[ Linux ] virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/content-index-origin-trial-interfaces.html [ Skip ]
+[ Mac ] virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/content-index-origin-trial-interfaces.html [ Skip ]

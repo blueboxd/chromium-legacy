@@ -1188,6 +1188,7 @@ jumbo_static_library("browser") {
     "permissions/permission_manager_factory.h",
     "permissions/permission_request.cc",
     "permissions/permission_request.h",
+    "permissions/permission_request_auto_blocker.h",
     "permissions/permission_request_id.cc",
     "permissions/permission_request_id.h",
     "permissions/permission_request_impl.cc",
@@ -5082,7 +5083,7 @@ jumbo_static_library("browser") {
       "spellchecker/spellcheck_service.h",
     ]
 
-    if (use_browser_spellchecker) {
+    if (use_browser_spellchecker && enable_spelling_service) {
       sources += [
         "spellchecker/spelling_request.cc",
         "spellchecker/spelling_request.h",
@@ -5413,14 +5414,11 @@ grit("resources") {
     }
   }
 
-  if (is_win || is_mac || is_desktop_linux) {
-    deps += [ "//chrome/browser/resources/signin:polymer3_elements" ]
-  }
-
   if (is_win || is_mac || is_desktop_linux || is_chromeos) {
     deps += [
       "//chrome/browser/resources/discards:discards_resources_gen",
       "//chrome/browser/resources/management:polymer3_elements",
+      "//chrome/browser/resources/signin:polymer3_elements",
       "//chrome/browser/ui/webui/discards:mojo_bindings_js",
       "//services/resource_coordinator/public/mojom:mojom_js",
     ]
@@ -5439,10 +5437,12 @@ grit("resources") {
   if (is_chromeos) {
     deps += [
       "//chrome/browser/resources/chromeos/crostini_installer:polymer3_elements",
+      "//chrome/browser/resources/chromeos/crostini_upgrader:polymer3_elements",
       "//chrome/browser/resources/chromeos/emulator:polymer3_elements",
       "//chrome/browser/resources/chromeos/set_time_dialog:polymer3_elements",
       "//chrome/browser/ui/webui/chromeos/add_supervision:mojo_bindings_js",
       "//chrome/browser/ui/webui/chromeos/crostini_installer:mojo_bindings_js",
+      "//chrome/browser/ui/webui/chromeos/crostini_upgrader:mojo_bindings_js",
       "//chrome/browser/ui/webui/chromeos/machine_learning:mojo_bindings_js",
     ]
   }
@@ -5552,6 +5552,8 @@ static_library("test_support") {
     "history/history_test_utils.h",
     "installable/fake_installable_manager.cc",
     "installable/fake_installable_manager.h",
+    "interstitials/security_interstitial_page_test_utils.cc",
+    "interstitials/security_interstitial_page_test_utils.h",
     "media/webrtc/fake_desktop_media_list.cc",
     "media/webrtc/fake_desktop_media_list.h",
     "media/webrtc/fake_desktop_media_picker_factory.cc",
@@ -5588,6 +5590,8 @@ static_library("test_support") {
     "signin/e2e_tests/test_accounts_util.h",
     "signin/identity_test_environment_profile_adaptor.cc",
     "signin/identity_test_environment_profile_adaptor.h",
+    "ssl/ssl_browsertest_util.cc",
+    "ssl/ssl_browsertest_util.h",
     "ssl/ssl_client_auth_requestor_mock.cc",
     "ssl/ssl_client_auth_requestor_mock.h",
     "ssl/tls_deprecation_test_utils.cc",
@@ -5837,10 +5841,14 @@ if (!is_android) {
     visibility = [ "//chrome/test:test_support_ui" ]
 
     sources = [
+      "interstitials/security_interstitial_idn_test.cc",
+      "interstitials/security_interstitial_idn_test.h",
       "password_manager/password_manager_test_base.cc",
       "password_manager/password_manager_test_base.h",
       "signin/token_revoker_test_utils.cc",
       "signin/token_revoker_test_utils.h",
+      "ssl/cert_verifier_platform_browser_test.cc",
+      "ssl/cert_verifier_platform_browser_test.h",
       "ui/webui/signin/login_ui_test_utils.cc",
       "ui/webui/signin/login_ui_test_utils.h",
       "ui/webui/test_data_source.cc",

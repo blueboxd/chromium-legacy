@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
-#include "third_party/blink/renderer/core/frame/dom_timer_coordinator.h"
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
@@ -123,7 +122,6 @@ class CORE_EXPORT WorkerGlobalScope
   HttpsState GetHttpsState() const override { return https_state_; }
   scheduler::WorkerScheduler* GetScheduler() final;
 
-  DOMTimerCoordinator* Timers() final { return &timers_; }
   SecurityContext& GetSecurityContext() final { return *this; }
   const SecurityContext& GetSecurityContext() const final { return *this; }
   void AddConsoleMessageImpl(ConsoleMessage*, bool discard_duplicates) final;
@@ -252,8 +250,6 @@ class CORE_EXPORT WorkerGlobalScope
   WorkerThread* thread_;
 
   bool closing_ = false;
-
-  DOMTimerCoordinator timers_;
 
   const base::TimeTicks time_origin_;
 

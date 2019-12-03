@@ -311,11 +311,12 @@ class CONTENT_EXPORT NavigationRequest
   void set_net_error(net::Error net_error) { net_error_ = net_error; }
 
   const std::string& GetMimeType() {
-    return response_head_ ? response_head_->head.mime_type
-                          : base::EmptyString();
+    return response_head_ ? response_head_->mime_type : base::EmptyString();
   }
 
-  const network::ResourceResponse* response() { return response_head_.get(); }
+  const network::mojom::URLResponseHead* response() {
+    return response_head_.get();
+  }
 
   void SetWaitingForRendererResponse();
 
@@ -534,10 +535,10 @@ class CONTENT_EXPORT NavigationRequest
   // NavigationURLLoaderDelegate implementation.
   void OnRequestRedirected(
       const net::RedirectInfo& redirect_info,
-      const scoped_refptr<network::ResourceResponse>& response_head) override;
+      network::mojom::URLResponseHeadPtr response_head) override;
   void OnResponseStarted(
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-      const scoped_refptr<network::ResourceResponse>& response_head,
+      network::mojom::URLResponseHeadPtr response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
       const GlobalRequestID& request_id,
       bool is_download,
@@ -901,7 +902,7 @@ class CONTENT_EXPORT NavigationRequest
   // Holds objects received from OnResponseStarted while the WillProcessResponse
   // checks are performed by the NavigationHandle. Once the checks have been
   // completed, these objects will be used to continue the navigation.
-  scoped_refptr<network::ResourceResponse> response_head_;
+  network::mojom::URLResponseHeadPtr response_head_;
   mojo::ScopedDataPipeConsumerHandle response_body_;
   network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints_;
   base::Optional<net::SSLInfo> ssl_info_;

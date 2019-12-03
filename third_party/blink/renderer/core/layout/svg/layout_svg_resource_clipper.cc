@@ -217,7 +217,7 @@ void LayoutSVGResourceClipper::CalculateLocalClipBounds() {
 }
 
 SVGUnitTypes::SVGUnitType LayoutSVGResourceClipper::ClipPathUnits() const {
-  return ToSVGClipPathElement(GetElement())
+  return To<SVGClipPathElement>(GetElement())
       ->clipPathUnits()
       ->CurrentValue()
       ->EnumValue();
@@ -226,7 +226,7 @@ SVGUnitTypes::SVGUnitType LayoutSVGResourceClipper::ClipPathUnits() const {
 AffineTransform LayoutSVGResourceClipper::CalculateClipTransform(
     const FloatRect& reference_box) const {
   AffineTransform transform =
-      ToSVGClipPathElement(GetElement())
+      To<SVGClipPathElement>(GetElement())
           ->CalculateTransform(SVGElement::kIncludeMotionTransform);
   if (ClipPathUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
     transform.Translate(reference_box.X(), reference_box.Y());

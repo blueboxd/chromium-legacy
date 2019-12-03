@@ -15,7 +15,7 @@ import org.chromium.chrome.browser.share.qrcode.share_tab.QrCodeShareCoordinator
 public class QrCodeCoordinator {
     QrCodeDialog mDialog;
 
-    QrCodeCoordinator(Context context) {
+    public QrCodeCoordinator(Context context) {
         QrCodeShareCoordinator shareCoordinator = new QrCodeShareCoordinator(context);
         QrCodeScanCoordinator scanCoordinator = new QrCodeScanCoordinator(context);
 

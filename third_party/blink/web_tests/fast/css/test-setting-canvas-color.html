@@ -18,10 +18,10 @@ var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 
 function shouldSuccessfullyParse(color) {
-    ctx.fillStyle = "#f00";
+    ctx.fillStyle = "#008800";
     ctx.fillStyle = color;
-    // Check that there is no red.
-    if (ctx.fillStyle.match(/^#(?!(FF0000|ff0000|f00)$)/))
+    // Check that there is no green.
+    if (ctx.fillStyle.match(/^#(?!(008800|080)$)/))
         testPassed("Setting color to " + color + " was successfully set.");
     else
         testFailed("Setting color to " + color + " was not set but should!");

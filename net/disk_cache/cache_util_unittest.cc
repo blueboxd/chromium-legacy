@@ -133,6 +133,11 @@ TEST_F(CacheUtilTest, PreferredCacheSize) {
               PreferredCacheSize(test_case.available));
   }
 
+  // Check that the cache size cap is 50% higher for native code caches.
+  EXPECT_EQ(((320 * 1024 * 1024) / 2) * 3,
+            PreferredCacheSize(50000 * 1024 * 1024LL,
+                               net::GENERATED_NATIVE_CODE_CACHE));
+
   // Check 100 "percent_relative_size" matches default behavior.
   {
     base::test::ScopedFeatureList scoped_feature_list;
@@ -144,6 +149,10 @@ TEST_F(CacheUtilTest, PreferredCacheSize) {
       EXPECT_EQ(test_case.expected_without_trial,
                 PreferredCacheSize(test_case.available));
     }
+    // Check that the cache size cap is 50% higher for native code caches.
+    EXPECT_EQ(((320 * 1024 * 1024) / 2) * 3,
+              PreferredCacheSize(50000 * 1024 * 1024LL,
+                                 net::GENERATED_NATIVE_CODE_CACHE));
   }
 
   // Check 200 "percent_relative_size".
@@ -157,6 +166,10 @@ TEST_F(CacheUtilTest, PreferredCacheSize) {
       EXPECT_EQ(test_case.expected_with_200_trial,
                 PreferredCacheSize(test_case.available));
     }
+    // Check that the cache size cap is 50% higher for native code caches.
+    EXPECT_EQ(((640 * 1024 * 1024) / 2) * 3,
+              PreferredCacheSize(50000 * 1024 * 1024LL,
+                                 net::GENERATED_NATIVE_CODE_CACHE));
   }
 }
 

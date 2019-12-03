@@ -60,10 +60,6 @@ Polymer({
     lastTouchPoints_: Number,
   },
 
-  hostAttributes: {
-    'role': 'listitem',
-  },
-
   observers: [
     'updateFavicon_(item_.url)',
   ],

@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_COMPONENT_UPDATER_CONFIGURATOR_IMPL_H_
 #define COMPONENTS_COMPONENT_UPDATER_CONFIGURATOR_IMPL_H_
 
-#include <stdint.h>
-
 #include <memory>
 #include <string>
 #include <vector>
@@ -85,9 +83,6 @@ class ConfiguratorImpl {
   // True if signing of update checks is enabled.
   bool EnabledCupSigning() const;
 
-  // Returns the key hash corresponding to a CRX trusted by ActionRun.
-  std::vector<uint8_t> GetRunActionKeyHash() const;
-
   // Returns the app GUID with which Chrome is registered with Google Update, or
   // an empty string if this brand does not integrate with Google Update.
   std::string GetAppGuid() const;
@@ -96,8 +91,6 @@ class ConfiguratorImpl {
   // serializer object instances.
   std::unique_ptr<update_client::ProtocolHandlerFactory>
   GetProtocolHandlerFactory() const;
-
-  update_client::RecoveryCRXElevator GetRecoveryCRXElevator() const;
 
  private:
   base::flat_map<std::string, std::string> extra_info_;

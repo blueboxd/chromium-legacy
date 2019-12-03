@@ -8,6 +8,8 @@
 #include "base/run_loop.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/apps_helper.h"
+#include "chrome/browser/sync/test/integration/os_sync_test.h"
+#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_app_list_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -16,8 +18,14 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/app_list/page_break_constants.h"
+#include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
+
+using syncer::UserSelectableOsType;
+using syncer::UserSelectableOsTypeSet;
+using syncer::UserSelectableType;
+using syncer::UserSelectableTypeSet;
 
 namespace {
 
@@ -208,4 +216,54 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppListSyncTest, LocalStorage) {
       true, syncer::UserSelectableTypeSet());
   EXPECT_TRUE(AppListSyncUpdateWaiter(service).Wait());
   EXPECT_TRUE(SyncItemsMatch(service, &compare_service));
+}
+
+// Tests for SplitSettingsSync.
+class SingleClientAppListOsSyncTest : public OsSyncTest {
+ public:
+  SingleClientAppListOsSyncTest() : OsSyncTest(SINGLE_CLIENT) {}
+  ~SingleClientAppListOsSyncTest() override = default;
+};
+
+IN_PROC_BROWSER_TEST_F(SingleClientAppListOsSyncTest,
+                       AppListSyncedForAllAppTypes) {
+  ASSERT_TRUE(SetupSync());
+  syncer::SyncService* service = GetSyncService(0);
+  syncer::SyncUserSettings* settings = service->GetUserSettings();
+
+  // Initially all app types are enabled.
+  ASSERT_TRUE(settings->IsSyncEverythingEnabled());
+  ASSERT_TRUE(settings->IsSyncAllOsTypesEnabled());
+  ASSERT_TRUE(service->GetActiveDataTypes().Has(syncer::APP_LIST));
+  ASSERT_TRUE(service->GetActiveDataTypes().Has(syncer::APPS));
+  ASSERT_TRUE(service->GetActiveDataTypes().Has(syncer::ARC_PACKAGE));
+
+  // Disable all browser types, which disables Chrome apps.
+  settings->SetSelectedTypes(false, UserSelectableTypeSet());
+  GetClient(0)->AwaitSyncSetupCompletion();
+  EXPECT_FALSE(service->GetActiveDataTypes().Has(syncer::APPS));
+  EXPECT_TRUE(service->GetActiveDataTypes().Has(syncer::ARC_PACKAGE));
+
+  // APP_LIST is still synced because ARC apps affect it.
+  EXPECT_TRUE(service->GetActiveDataTypes().Has(syncer::APP_LIST));
+
+  // Enable browser types and disable OS types, which disables ARC apps.
+  settings->SetSelectedTypes(true, UserSelectableTypeSet());
+  settings->SetSelectedOsTypes(false, UserSelectableOsTypeSet());
+  GetClient(0)->AwaitSyncSetupCompletion();
+  EXPECT_TRUE(service->GetActiveDataTypes().Has(syncer::APPS));
+  EXPECT_FALSE(service->GetActiveDataTypes().Has(syncer::ARC_PACKAGE));
+
+  // APP_LIST is still synced because Chrome apps affect it.
+  EXPECT_TRUE(service->GetActiveDataTypes().Has(syncer::APP_LIST));
+
+  // Disable both browser and OS types.
+  settings->SetSelectedTypes(false, UserSelectableTypeSet());
+  settings->SetSelectedOsTypes(false, UserSelectableOsTypeSet());
+  GetClient(0)->AwaitSyncSetupCompletion();
+  EXPECT_FALSE(service->GetActiveDataTypes().Has(syncer::APPS));
+  EXPECT_FALSE(service->GetActiveDataTypes().Has(syncer::ARC_PACKAGE));
+
+  // APP_LIST is not synced.
+  EXPECT_FALSE(service->GetActiveDataTypes().Has(syncer::APP_LIST));
 }

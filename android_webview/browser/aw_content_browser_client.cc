@@ -91,6 +91,7 @@
 #include "media/mojo/buildflags.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/android/network_library.h"
 #include "net/http/http_util.h"
 #include "net/net_buildflags.h"
@@ -750,8 +751,13 @@ void AwContentBrowserClient::ExposeInterfacesToRenderer(
       base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
+  auto create_spellcheck_host =
+      [](mojo::PendingReceiver<spellcheck::mojom::SpellCheckHost> receiver) {
+        mojo::MakeSelfOwnedReceiver(std::make_unique<SpellCheckHostImpl>(),
+                                    std::move(receiver));
+      };
   registry->AddInterface(
-      base::BindRepeating(&SpellCheckHostImpl::Create),
+      base::BindRepeating(create_spellcheck_host),
       base::CreateSingleThreadTaskRunner({BrowserThread::UI}));
 #endif
 }

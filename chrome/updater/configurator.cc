@@ -146,22 +146,9 @@ bool Configurator::IsPerUserInstall() const {
   return true;
 }
 
-std::vector<uint8_t> Configurator::GetRunActionKeyHash() const {
-  return {};
-}
-
-std::string Configurator::GetAppGuid() const {
-  return {};
-}
-
 std::unique_ptr<update_client::ProtocolHandlerFactory>
 Configurator::GetProtocolHandlerFactory() const {
   return std::make_unique<update_client::ProtocolHandlerFactoryJSON>();
-}
-
-update_client::RecoveryCRXElevator Configurator::GetRecoveryCRXElevator()
-    const {
-  return {};
 }
 
 }  // namespace updater

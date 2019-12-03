@@ -24,8 +24,11 @@ class PeriodicBackgroundSyncBrowserTest : public BackgroundSyncBaseBrowserTest {
   ~PeriodicBackgroundSyncBrowserTest() override {}
 
   bool Register(const std::string& tag, int min_interval_ms);
+  bool RegisterFromIFrame(const std::string& tag, int min_interval_ms);
   bool RegisterNoMinInterval(const std::string& tag);
   bool RegisterFromServiceWorker(const std::string& tag, int min_interval_ms);
+  bool RegisterFromCrossOriginFrame(const std::string& frame_url,
+                                    std::string* script_result);
   bool RegisterFromServiceWorkerNoMinInterval(const std::string& tag);
   bool HasTag(const std::string& tag);
   bool HasTagFromServiceWorker(const std::string& tag);
@@ -48,6 +51,31 @@ bool PeriodicBackgroundSyncBrowserTest::Register(const std::string& tag,
                                    tag.c_str(), min_interval_ms),
                 &script_result));
   return script_result == BuildExpectedResult(tag, "registered");
+}
+
+bool PeriodicBackgroundSyncBrowserTest::RegisterFromIFrame(
+    const std::string& tag,
+    int min_interval_ms) {
+  std::string script_result;
+  EXPECT_TRUE(RunScript(
+      base::StringPrintf("%s('%s', %d);", "registerPeriodicSyncFromIFrame",
+                         tag.c_str(), min_interval_ms),
+      &script_result));
+  return script_result == BuildExpectedResult(tag, "registered");
+}
+
+bool PeriodicBackgroundSyncBrowserTest::RegisterFromCrossOriginFrame(
+    const std::string& frame_url,
+    std::string* script_result) {
+  // Start a second https server to use as a second origin.
+  net::EmbeddedTestServer alt_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  alt_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
+  EXPECT_TRUE(alt_server.Start());
+
+  GURL url = alt_server.GetURL(frame_url);
+  return RunScript(
+      BuildScriptString("registerPeriodicSyncFromCrossOriginFrame", url.spec()),
+      script_result);
 }
 
 bool PeriodicBackgroundSyncBrowserTest::RegisterNoMinInterval(
@@ -135,6 +163,30 @@ IN_PROC_BROWSER_TEST_F(PeriodicBackgroundSyncBrowserTest,
 
   EXPECT_TRUE(RegisterNoMinInterval("foo"));
   EXPECT_TRUE(Unregister("foo"));
+}
+
+IN_PROC_BROWSER_TEST_F(PeriodicBackgroundSyncBrowserTest,
+                       RegisterFromIFrameWithTopLevelFrameForOrigin) {
+  std::string script_result;
+  GURL url = https_server()->GetURL(kEmptyURL);
+  EXPECT_TRUE(RunScript(
+      BuildScriptString("registerPeriodicSyncFromLocalFrame", url.spec()),
+      &script_result));
+
+  // This succeeds because there's a top level frame for the origin.
+  EXPECT_EQ(BuildExpectedResult("iframe", "registered periodicSync"),
+            script_result);
+}
+
+IN_PROC_BROWSER_TEST_F(PeriodicBackgroundSyncBrowserTest,
+                       RegisterFromIFrameWithoutTopLevelFrameForOrigin) {
+  std::string script_result;
+  EXPECT_TRUE(RegisterFromCrossOriginFrame(kRegisterPeriodicSyncFromIFrameURL,
+                                           &script_result));
+
+  // This fails because there's no top level frame open for the origin.
+  EXPECT_EQ(BuildExpectedResult("frame", "failed to register periodicSync"),
+            script_result);
 }
 
 // Verify that Register works in a service worker

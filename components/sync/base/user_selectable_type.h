@@ -35,6 +35,7 @@ using UserSelectableTypeSet = EnumSet<UserSelectableType,
 
 const char* GetUserSelectableTypeName(UserSelectableType type);
 UserSelectableType GetUserSelectableTypeFromString(const std::string& type);
+std::string UserSelectableTypeSetToString(UserSelectableTypeSet types);
 ModelTypeSet UserSelectableTypeToAllModelTypes(UserSelectableType type);
 
 ModelType UserSelectableTypeToCanonicalModelType(UserSelectableType type);

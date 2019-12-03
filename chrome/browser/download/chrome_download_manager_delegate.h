@@ -103,12 +103,11 @@ class ChromeDownloadManagerDelegate
   void GetSaveDir(content::BrowserContext* browser_context,
                   base::FilePath* website_save_dir,
                   base::FilePath* download_save_dir) override;
-  void ChooseSavePath(
-      content::WebContents* web_contents,
-      const base::FilePath& suggested_path,
-      const base::FilePath::StringType& default_extension,
-      bool can_save_as_complete,
-      const content::SavePackagePathPickedCallback& callback) override;
+  void ChooseSavePath(content::WebContents* web_contents,
+                      const base::FilePath& suggested_path,
+                      const base::FilePath::StringType& default_extension,
+                      bool can_save_as_complete,
+                      content::SavePackagePathPickedCallback callback) override;
   void SanitizeSavePackageResourceName(base::FilePath* filename) override;
   void SanitizeDownloadParameters(
       download::DownloadUrlParameters* params) override;

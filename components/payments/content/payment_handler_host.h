@@ -80,7 +80,7 @@ class PaymentHandlerHost : public mojom::PaymentHandlerHost {
   // Returns "true" when the payment handler has changed any of the payment
   // method, shipping address or shipping option, but has not received the
   // response from the merchant yet.
-  bool is_changing() const {
+  bool is_waiting_for_payment_details_update() const {
     return !!change_payment_request_details_callback_;
   }
 
@@ -95,7 +95,7 @@ class PaymentHandlerHost : public mojom::PaymentHandlerHost {
   // Notifies the payment handler that the merchant did not handle the payment
   // method, shipping option, or shipping address change events, so the payment
   // details are unchanged.
-  void NoUpdatedPaymentDetails();
+  void OnPaymentDetailsNotUpdated();
 
   // Disconnects from the payment handler.
   void Disconnect();

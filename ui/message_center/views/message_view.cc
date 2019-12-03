@@ -186,11 +186,9 @@ SkPath MessageView::GetHighlightPath() const {
   // Shrink focus ring size by -kFocusHaloInset on each side to draw
   // them on top of the notifications. We need to do this because TrayBubbleView
   // has a layer that masks to bounds due to which the focus ring can not extend
-  // outside the view. This is not required on the bottom most notification's
-  // bottom side.
+  // outside the view.
   int inset = -views::PlatformStyle::kFocusHaloInset;
-  int bottom_inset = bottom_radius_ == 0 ? inset : 0;
-  rect.Inset(gfx::Insets(inset, inset, bottom_inset, inset));
+  rect.Inset(gfx::Insets(inset));
 
   int top_radius = std::max(0, top_radius_ - inset);
   int bottom_radius = std::max(0, bottom_radius_ - inset);

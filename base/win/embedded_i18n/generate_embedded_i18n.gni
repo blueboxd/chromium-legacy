@@ -49,10 +49,10 @@ import("//build/config/locales.gni")
 #   deps (optional)
 #   visibility (optional)
 
-# Some locales exist in |locales| but don't generally have an xtb file on disk
-# and some translations don't exist in |locales| but do generally have an xtb
+# Some locales exist in |all_chrome_locales| but don't generally have an xtb file on disk
+# and some translations don't exist in |all_chrome_locales| but do generally have an xtb
 # file on disk.
-default_embedded_i18_locales = locales - [
+default_embedded_i18_locales = all_chrome_locales - [
                                  "en-US",
                                  "he",
                                  "nb",
@@ -60,7 +60,7 @@ default_embedded_i18_locales = locales - [
                                [
                                  "iw",
                                  "no",
-                               ] + xtb_only_locales
+                               ]
 
 template("generate_embedded_i18n") {
   assert(defined(invoker.grd_files_info),

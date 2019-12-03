@@ -21,7 +21,7 @@ suite('OtherOptionsSettingsTest', function() {
     model = document.createElement('print-preview-model');
     document.body.appendChild(model);
     model.set('settings.headerFooter.available', true);
-    model.set('settings.headerFotoer.value', true);
+    model.set('settings.headerFooter.value', true);
     model.set('settings.cssBackground.available', true);
     model.set('settings.cssBackground.value', true);
     model.set('settings.selectionOnly.available', true);

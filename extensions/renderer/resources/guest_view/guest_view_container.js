@@ -5,12 +5,9 @@
 // This module implements the shared functionality for different guestview
 // containers, such as web_view, app_view, etc.
 
-// Methods ending with $ will be overwritten by guest_view_iframe_container.js.
-// TODO(mcnee): When BrowserPlugin is removed, merge
-// guest_view_iframe_container.js into this file.
-
 var $parseInt = require('safeMethods').SafeMethods.$parseInt;
 var $getComputedStyle = require('safeMethods').SafeMethods.$getComputedStyle;
+var $Document = require('safeMethods').SafeMethods.$Document;
 var $Element = require('safeMethods').SafeMethods.$Element;
 var $EventTarget = require('safeMethods').SafeMethods.$EventTarget;
 var $HTMLElement = require('safeMethods').SafeMethods.$HTMLElement;
@@ -31,7 +28,7 @@ function GuestViewContainer(element, viewType) {
   this.guest = new GuestView(viewType);
   this.setupAttributes();
 
-  this.internalElement = this.createInternalElement$();
+  this.internalElement = this.createInternalElement();
   this.shadowRoot = $Element.attachShadow(this.element, {mode: 'closed'});
   $Node.appendChild(this.shadowRoot, this.internalElement);
 
@@ -70,30 +67,36 @@ GuestViewContainer.prototype.setupGuestProperty = function() {
   });
 };
 
-GuestViewContainer.prototype.createInternalElement$ = function() {
-  // We create BrowserPlugin as a custom element in order to observe changes
-  // to attributes synchronously.
-  var browserPluginElement =
-      new GuestViewContainer[this.viewType + 'BrowserPlugin']();
-  privates(browserPluginElement).internal = this;
-  return browserPluginElement;
+GuestViewContainer.prototype.createInternalElement = function() {
+  var iframeElement = $Document.createElement(document, 'iframe');
+
+  var style = $HTMLElement.style.get(iframeElement);
+  $Object.defineProperty(style, 'width', {value: '100%'});
+  $Object.defineProperty(style, 'height', {value: '100%'});
+  $Object.defineProperty(style, 'border', {value: '0px'});
+
+  return iframeElement;
 };
 
-GuestViewContainer.prototype.prepareForReattach$ = function() {};
+GuestViewContainer.prototype.prepareForReattach = function() {
+  // Since attachment swaps a local frame for a remote frame, we need our
+  // internal iframe element to be local again before we can reattach.
+  var newFrame = this.createInternalElement();
+  var oldFrame = this.internalElement;
+  this.internalElement = newFrame;
+  var frameParent = $Node.parentNode.get(oldFrame);
+  $Node.replaceChild(frameParent, newFrame, oldFrame);
+};
 
 GuestViewContainer.prototype.focus = function() {
   // Focus the internal element when focus() is called on the GuestView element.
   $HTMLElement.focus(this.internalElement);
 }
 
-GuestViewContainer.prototype.attachWindow$ = function() {
-  if (!this.internalInstanceId) {
-    return true;
-  }
-
-  this.guest.attach(this.internalInstanceId,
-                    this.viewInstanceId,
-                    this.buildParams());
+GuestViewContainer.prototype.attachWindow = function() {
+  var generatedId = IdGenerator.GetNextId();
+  // Generate an instance id for the container.
+  this.onInternalInstanceId(generatedId);
   return true;
 };
 
@@ -118,15 +121,6 @@ GuestViewContainer.prototype.onInternalInstanceId = function(
   this.guest.attach(this.internalInstanceId,
                     this.viewInstanceId,
                     this.buildParams());
-};
-
-GuestViewContainer.prototype.handleInternalElementAttributeMutation =
-    function(name, oldValue, newValue) {
-  if (name == 'internalinstanceid' && !oldValue && !!newValue) {
-    $Element.removeAttribute(
-        this.internalElement, 'internalinstanceid');
-    this.onInternalInstanceId($parseInt(newValue));
-  }
 };
 
 GuestViewContainer.prototype.onElementResize = function(newWidth, newHeight) {
@@ -167,7 +161,12 @@ GuestViewContainer.prototype.weakWrapper = function(func) {
   };
 };
 
-GuestViewContainer.prototype.willAttachElement$ = function() {};
+GuestViewContainer.prototype.willAttachElement = function() {
+  if (this.deferredAttachCallback) {
+    this.deferredAttachCallback();
+    this.deferredAttachCallback = null;
+  }
+};
 
 // Implemented by the specific view type, if needed.
 GuestViewContainer.prototype.buildContainerParams = function() {

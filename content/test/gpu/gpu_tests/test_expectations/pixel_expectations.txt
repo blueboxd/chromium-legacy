@@ -235,10 +235,8 @@ crbug.com/1019462 [ android nvidia no-skia-renderer ] Pixel_Video_MP4_Rounded_Co
 crbug.com/1019462 [ android nvidia no-skia-renderer ] Pixel_Video_Context_Loss_VP9 [ RetryOnFailure ]
 crbug.com/1019462 [ android nvidia no-skia-renderer ] Pixel_WebGL2_BlitFramebuffer_Result_Displayed [ RetryOnFailure ]
 
-# TODO(crbug.com/681341): enable these new tests immediately after they land.
-# Disabled upon landing only to avoid having the entire CL reverted if the new
-# tests turn out to be flaky.
-crbug.com/681341 [ mac ] Pixel_WebGLLowToHighPower [ Skip ]
+# Skip dual gpu switch tests on Mac Nvidia
+crbug.com/681341 [ mac nvidia ] Pixel_WebGLLowToHighPower [ Skip ]
 
 # Flakes on Mac Retine NVIDIA producing a blank image.
 crbug.com/1027518 [ mac nvidia ] Pixel_Video_Context_Loss_VP9 [ Skip ]

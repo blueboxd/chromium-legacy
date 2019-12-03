@@ -233,7 +233,7 @@ interface PaymentRequest {
 
   // Called when the merchant received a new shipping address or shipping
   // option, but did not update the payment details in response.
-  NoUpdatedPaymentDetails();
+  OnPaymentDetailsNotUpdated();
 
   // Requests to abort the checkout in process, for example because the item
   // went out of stock.

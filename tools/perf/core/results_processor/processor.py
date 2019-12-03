@@ -22,8 +22,8 @@ from py_utils import cloud_storage
 from core.results_processor import command_line
 from core.results_processor import compute_metrics
 from core.results_processor import formatters
-from core.results_processor import trace_processor
 from core.results_processor import util
+from core.tbmv3 import trace_processor
 
 from tracing.trace_data import trace_data
 from tracing.value.diagnostics import all_diagnostics
@@ -193,8 +193,8 @@ def ConvertProtoTraces(test_result, trace_processor_path):
                       CONVERTED_JSON_SUFFIX)
     json_trace_name = (posixpath.splitext(proto_trace_name)[0] +
                        CONVERTED_JSON_SUFFIX)
-    trace_processor.ConvertProtoTracesToJson(
-        trace_processor_path, [proto_file_path], json_file_path)
+    trace_processor.ConvertProtoTraceToJson(
+        trace_processor_path, proto_file_path, json_file_path)
     artifacts[json_trace_name] = {
         'filePath': json_file_path,
         'contentType': 'application/json',

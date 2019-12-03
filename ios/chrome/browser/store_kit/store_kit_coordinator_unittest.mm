@@ -21,10 +21,15 @@
 class StoreKitCoordinatorTest : public PlatformTest {
  protected:
   StoreKitCoordinatorTest()
-      : base_view_controller_([[UIViewController alloc] init]),
+      : root_view_controller_([[UIViewController alloc] init]),
+        base_view_controller_([[UIViewController alloc] init]),
+
         coordinator_([[StoreKitCoordinator alloc]
             initWithBaseViewController:base_view_controller_]) {
-    [scoped_key_window_.Get() setRootViewController:base_view_controller_];
+    [scoped_key_window_.Get() setRootViewController:root_view_controller_];
+    [root_view_controller_ presentViewController:base_view_controller_
+                                        animated:NO
+                                      completion:nil];
   }
 
   ~StoreKitCoordinatorTest() override {
@@ -38,6 +43,7 @@ class StoreKitCoordinatorTest : public PlatformTest {
     }
   }
 
+  UIViewController* root_view_controller_;
   UIViewController* base_view_controller_;
   StoreKitCoordinator* coordinator_;
   ScopedKeyWindow scoped_key_window_;
@@ -162,6 +168,10 @@ TEST_F(StoreKitCoordinatorTest, MAYBE_NoOverlappingPresentedViewControllers) {
   [base_view_controller_ presentViewController:dummy_view_controller
                                       animated:NO
                                     completion:nil];
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^bool {
+        return base_view_controller_.presentedViewController;
+      }));
   EXPECT_NSEQ(dummy_view_controller,
               base_view_controller_.presentedViewController);
 
@@ -175,6 +185,7 @@ TEST_F(StoreKitCoordinatorTest, MAYBE_NoOverlappingPresentedViewControllers) {
   EXPECT_NSEQ(dummy_view_controller,
               base_view_controller_.presentedViewController);
   [coordinator_ stop];
+  [dummy_view_controller dismissViewControllerAnimated:NO completion:nil];
   EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForActionTimeout, ^bool {
         return !base_view_controller_.presentedViewController;
@@ -192,4 +203,32 @@ TEST_F(StoreKitCoordinatorTest, MAYBE_NoOverlappingPresentedViewControllers) {
   // presented.
   EXPECT_EQ([SKStoreProductViewController class],
             [base_view_controller_.presentedViewController class]);
+}
+
+// iOS 13 dismisses SKStoreProductViewController when user taps "Done". This
+// test makes sure that StoreKitCoordinator gracefully handles the situation.
+TEST_F(StoreKitCoordinatorTest, StopAfterDismissingPresentedViewController) {
+  NSDictionary* product_params = @{
+    SKStoreProductParameterITunesItemIdentifier : @"TestITunesItemIdentifier",
+  };
+  [coordinator_ openAppStoreWithParameters:product_params];
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^bool {
+        return base_view_controller_.presentedViewController;
+      }));
+
+  // iOS 13 dismisses SKStoreProductViewController when user taps "Done".
+  [base_view_controller_.presentedViewController
+      dismissViewControllerAnimated:NO
+                         completion:nil];
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^{
+        return !base_view_controller_.presentedViewController;
+      }));
+
+  // Make sure that base view controller is not dismissed (crbug.com.1027058).
+  [coordinator_ stop];
+  EXPECT_FALSE(base::test::ios::WaitUntilConditionOrTimeout(1.0, ^{
+    return !root_view_controller_.presentedViewController;
+  }));
 }

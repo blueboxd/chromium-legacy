@@ -7,9 +7,9 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/cdm_config.h"
@@ -164,7 +164,7 @@ class RendererControllerTest : public ::testing::Test,
     EXPECT_FALSE(IsInDelayedStart());
   }
 
-  base::MessageLoop message_loop_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
  protected:
   bool is_rendering_remotely_ = false;

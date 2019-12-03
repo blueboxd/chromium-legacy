@@ -83,29 +83,29 @@ public final class FeedModelProvider
 
     private final Object mLock = new Object();
 
-    @GuardedBy("lock")
+    @GuardedBy("mLock")
     /*@Nullable*/
     private UpdatableModelChild mRoot;
 
     // The tree is model as a parent with an list of children.  A container is created for every
     // ModelChild with a child.
-    @GuardedBy("lock")
+    @GuardedBy("mLock")
     private final Map<String, ArrayList<UpdatableModelChild>> mContainers = new HashMap<>();
 
-    @GuardedBy("lock")
+    @GuardedBy("mLock")
     private final Map<String, UpdatableModelChild> mContents = new HashMap<>();
 
-    @GuardedBy("lock")
+    @GuardedBy("mLock")
     private final Map<ByteString, TokenTracking> mTokens = new HashMap<>();
 
-    @GuardedBy("lock")
+    @GuardedBy("mLock")
     private final Map<String, SyntheticTokenTracker> mSyntheticTokens = new HashMap<>();
 
     // TODO: Tiktok doesn't like WeakReference and will report uses as conformance errors
-    @GuardedBy("lock")
+    @GuardedBy("mLock")
     private final List<WeakReference<ModelCursorImpl>> mCursors = new ArrayList<>();
 
-    @GuardedBy("lock")
+    @GuardedBy("mLock")
     private ModelState mCurrentState = ModelState.initializing();
 
     // #dump() operation counts
@@ -133,10 +133,10 @@ public final class FeedModelProvider
 
     @VisibleForTesting /*@Nullable*/ String mSessionId;
 
-    @GuardedBy("lock")
+    @GuardedBy("mLock")
     private boolean mDelayedTriggerRefresh;
 
-    @GuardedBy("lock")
+    @GuardedBy("mLock")
     @RequestReason
     private int mRequestReason = RequestReason.UNKNOWN;
 

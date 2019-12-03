@@ -6,28 +6,32 @@ suite('<history-list>', function() {
   let app;
   let element;
   let toolbar;
-  let TEST_HISTORY_RESULTS;
-  let ADDITIONAL_RESULTS;
+  let testService;
 
-  suiteSetup(function() {
-    TEST_HISTORY_RESULTS = [
-      createHistoryEntry('2016-03-15', 'https://www.google.com'),
-      createHistoryEntry('2016-03-14 10:00', 'https://www.example.com'),
-      createHistoryEntry('2016-03-14 9:00', 'https://www.google.com'),
-      createHistoryEntry('2016-03-13', 'https://en.wikipedia.org')
-    ];
-    TEST_HISTORY_RESULTS[2].starred = true;
+  const TEST_HISTORY_RESULTS = [
+    createHistoryEntry('2016-03-15', 'https://www.google.com'),
+    createHistoryEntry('2016-03-14 10:00', 'https://www.example.com'),
+    createHistoryEntry('2016-03-14 9:00', 'https://www.google.com'),
+    createHistoryEntry('2016-03-13', 'https://en.wikipedia.org')
+  ];
+  TEST_HISTORY_RESULTS[2].starred = true;
 
-    ADDITIONAL_RESULTS = [
-      createHistoryEntry('2016-03-13 10:00', 'https://en.wikipedia.org'),
-      createHistoryEntry('2016-03-13 9:50', 'https://www.youtube.com'),
-      createHistoryEntry('2016-03-11', 'https://www.google.com'),
-      createHistoryEntry('2016-03-10', 'https://www.example.com')
-    ];
-  });
+  const ADDITIONAL_RESULTS = [
+    createHistoryEntry('2016-03-13 10:00', 'https://en.wikipedia.org'),
+    createHistoryEntry('2016-03-13 9:50', 'https://www.youtube.com'),
+    createHistoryEntry('2016-03-11', 'https://www.google.com'),
+    createHistoryEntry('2016-03-10', 'https://www.example.com')
+  ];
 
   setup(function() {
-    app = replaceApp();
+    window.history.replaceState({}, '', '/');
+    PolymerTest.clearBody();
+    testService = new TestBrowserService();
+    history.BrowserService.instance_ = testService;
+
+    app = document.createElement('history-app');
+    document.body.appendChild(app);
+
     element = app.$.history;
     toolbar = app.$.toolbar;
     app.queryState_.incremental = true;
@@ -53,12 +57,12 @@ suite('<history-list>', function() {
           toolbar.deleteSelectedItems();
           return test_util.flushTasks();
         })
-        .then(() => new Promise(resolve => {
-                registerMessageCallback('removeVisits', this, resolve);
-                const dialog = element.$.dialog.get();
-                assertTrue(dialog.open);
-                element.$$('.action-button').click();
-              }))
+        .then(function() {
+          const dialog = element.$.dialog.get();
+          assertTrue(dialog.open);
+          element.$$('.action-button').click();
+          return testService.whenCalled('deleteItems');
+        })
         .then(test_util.flushTasks)
         .then(function() {
           deleteComplete();
@@ -304,17 +308,15 @@ suite('<history-list>', function() {
     let items;
     return test_util.flushTasks()
         .then(function() {
-          return new Promise(resolve => {
-            registerMessageCallback('queryHistory', this, resolve);
-            Polymer.dom.flush();
-            items = polymerSelectAll(element, 'history-item');
-            items[0].$['menu-button'].click();
-            element.$.sharedMenu.get();
-            element.$$('#menuMoreButton').click();
-          });
+          Polymer.dom.flush();
+          items = polymerSelectAll(element, 'history-item');
+          items[0].$['menu-button'].click();
+          element.$.sharedMenu.get();
+          element.$$('#menuMoreButton').click();
+          return testService.whenCalled('queryHistory');
         })
-        .then(function(info) {
-          assertEquals('www.google.com', info[0]);
+        .then(function(query) {
+          assertEquals('www.google.com', query);
           app.historyResult(
               createHistoryInfo('www.google.com'), TEST_HISTORY_RESULTS);
 
@@ -395,20 +397,20 @@ suite('<history-list>', function() {
           toolbar.deleteSelectedItems();
           return test_util.flushTasks();
         })
-        .then(() => new Promise(resolve => {
-                registerMessageCallback('removeVisits', this, resolve);
-
-                // Confirmation dialog should appear.
-                assertTrue(dialog.open);
-                element.$$('.action-button').click();
-              }))
+        .then(function() {
+          testService.resetResolver('deleteItems');
+          // Confirmation dialog should appear.
+          assertTrue(dialog.open);
+          element.$$('.action-button').click();
+          return testService.whenCalled('deleteItems');
+        })
         .then(test_util.flushTasks)
         .then(function() {
           deleteComplete();
           return test_util.flushTasks();
         })
         .then(function() {
-          assertEquals(element.historyData_.length, 5);
+          assertEquals(5, element.historyData_.length);
           assertEquals(element.historyData_[0].dateRelativeDay, '2016-03-15');
           assertEquals(element.historyData_[2].dateRelativeDay, '2016-03-13');
           assertEquals(element.historyData_[4].dateRelativeDay, '2016-03-11');
@@ -433,15 +435,12 @@ suite('<history-list>', function() {
         .then(function() {
           Polymer.dom.flush();
           items = polymerSelectAll(element, 'history-item');
-          return new Promise(resolve => {
-            registerMessageCallback('removeVisits', this, resolve);
-
-            items[1].$.checkbox.click();
-            items[3].$.checkbox.click();
-            items[1].$['menu-button'].click();
-            element.$.sharedMenu.get();
-            element.$$('#menuRemoveButton').click();
-          });
+          items[1].$.checkbox.click();
+          items[3].$.checkbox.click();
+          items[1].$['menu-button'].click();
+          element.$.sharedMenu.get();
+          element.$$('#menuRemoveButton').click();
+          return testService.whenCalled('deleteItems');
         })
         .then(test_util.flushTasks)
         .then(function() {
@@ -501,11 +500,8 @@ suite('<history-list>', function() {
         })
         .then(function() {
           assertTrue(dialog.open);
-
-          return new Promise(resolve => {
-            registerMessageCallback('removeVisits', this, resolve);
-            element.$$('.action-button').click();
-          });
+          element.$$('.action-button').click();
+          return testService.whenCalled('deleteItems');
         })
         .then(function(toRemove) {
           assertEquals('https://www.example.com', toRemove[0].url);
@@ -559,21 +555,15 @@ suite('<history-list>', function() {
         .then(function() {
           Polymer.dom.flush();
           const items = polymerSelectAll(element, 'history-item');
-
-          return new Promise(resolve => {
-            registerMessageCallback('navigateToUrl', this, resolve);
-            items[0].$.link.click();
-          });
+          items[0].$.link.click();
+          return testService.whenCalled('navigateToUrl');
         })
-        .then(function(info) {
-          assertEquals(fileURL, info[0]);
+        .then(function(url) {
+          assertEquals(fileURL, url);
         });
   });
 
   teardown(function() {
-    registerMessageCallback('removeVisits', this, undefined);
-    registerMessageCallback('queryHistory', this, function() {});
-    registerMessageCallback('navigateToUrl', this, undefined);
     app.fire('change-query', {search: ''});
   });
 });

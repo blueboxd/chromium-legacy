@@ -489,7 +489,6 @@ source_set("blink_headers") {
   ]
 }
 
-assert(external_devtools_frontend)
 devtools_frontend_path = "//third_party/devtools-frontend/src"
 
 group("blink_devtools_frontend_resources") {

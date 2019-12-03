@@ -46,10 +46,8 @@ class SVGMarkerData {
   STACK_ALLOCATED();
 
  public:
-  SVGMarkerData(Vector<MarkerPosition>& positions, bool auto_start_reverse)
-      : positions_(positions),
-        element_index_(0),
-        auto_start_reverse_(auto_start_reverse) {}
+  SVGMarkerData(Vector<MarkerPosition>& positions)
+      : positions_(positions), element_index_(0) {}
 
   static void UpdateFromPathElement(void* info, const PathElement* element) {
     static_cast<SVGMarkerData*>(info)->UpdateFromPathElement(*element);
@@ -94,8 +92,6 @@ class SVGMarkerData {
 
     switch (type) {
       case kStartMarker:
-        if (auto_start_reverse_)
-          out_angle += 180;
         return out_angle;
       case kMidMarker:
         return BisectingAngle(in_angle, out_angle);
@@ -192,7 +188,6 @@ class SVGMarkerData {
   FloatPoint subpath_start_;
   FloatSize in_slope_;
   FloatSize out_slope_;
-  bool auto_start_reverse_;
 };
 
 }  // namespace blink

@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_SSL_SSL_BROWSERTEST_UTIL_H_
 #define CHROME_BROWSER_SSL_SSL_BROWSERTEST_UTIL_H_
 
+#include <string>
+
 #include "base/run_loop.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "net/cert/cert_status_flags.h"
 
 namespace content {
+class BrowserContext;
 class WebContents;
 }
 
@@ -50,6 +53,25 @@ void CheckSecurityState(content::WebContents* tab,
                         security_state::SecurityLevel expected_security_level,
                         int expected_authentication_state);
 
+// Checks that |tab|'s
+//  - connection status is secure
+//  - authentication state is |expected_authentication_state|
+void CheckAuthenticatedState(content::WebContents* tab,
+                             int expected_authentication_state);
+
+// Checks that |tab|'s
+//  - connection status is unauthenticated
+//  - authentication state is |expected_authentication_state|
+void CheckUnauthenticatedState(content::WebContents* tab,
+                               int expected_authentication_state);
+
+// Checks that |tab|'s
+//  - certificate status flags match |expected_error|
+//  - authentication state is |expected_authentication_state|
+void CheckAuthenticationBrokenState(content::WebContents* tab,
+                                    net::CertStatus expected_error,
+                                    int expected_authentication_state);
+
 // A WebContentsObserver that allows the user to wait for a
 // DidChangeVisibleSecurityState event.
 class SecurityStateWebContentsObserver : public content::WebContentsObserver {
@@ -65,6 +87,15 @@ class SecurityStateWebContentsObserver : public content::WebContentsObserver {
  private:
   base::RunLoop run_loop_;
 };
+
+// Returns |true| if the default CertVerifier used by the NetworkService is
+// expected to support blocking certificates that appear within a CRLSet.
+bool CertVerifierSupportsCRLSetBlocking();
+
+// Sets HSTS for |hostname|, so that all certificate errors for that host
+// will be non-overridable.
+void SetHSTSForHostName(content::BrowserContext* context,
+                        const std::string& hostname);
 
 }  // namespace ssl_test_util
 

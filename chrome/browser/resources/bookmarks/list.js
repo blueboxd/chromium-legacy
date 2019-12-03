@@ -344,4 +344,14 @@ Polymer({
       source: MenuSource.LIST,
     });
   },
+
+  /**
+   * Returns a 1-based index for aria-rowindex.
+   * @param {number} index
+   * @return {number}
+   * @private
+   */
+  getAriaRowindex_: function(index) {
+    return index + 1;
+  },
 });

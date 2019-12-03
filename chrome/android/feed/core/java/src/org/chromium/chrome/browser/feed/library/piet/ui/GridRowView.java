@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.piet.ui;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.support.annotation.VisibleForTesting;
 import android.support.v4.view.MarginLayoutParamsCompat;
@@ -289,6 +290,7 @@ public class GridRowView extends LinearLayout {
     // slightly (ex. remove divider width))
     // THIS METHOD IS UNTESTED: PROCEED WITH CAUTION!
     @Override
+    @SuppressLint("RtlHardcoded")
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         final boolean isLayoutRtl = mIsRtlSupplier.get();
         final int paddingTop = getPaddingTop();

@@ -4,13 +4,11 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import static org.chromium.chrome.browser.ui.system.StatusBarColorController.DEFAULT_STATUS_BAR_COLOR;
 import static org.chromium.chrome.browser.ui.system.StatusBarColorController.UNDEFINED_STATUS_BAR_COLOR;
 
-import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
-import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.chrome.browser.webapps.WebDisplayMode;
 import org.chromium.chrome.browser.webapps.WebappExtras;
@@ -23,17 +21,14 @@ import javax.inject.Inject;
 @ActivityScope
 public class CustomTabStatusBarColorProvider {
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
-    private final ActivityTabProvider mActivityTabProvider;
     private final StatusBarColorController mStatusBarColorController;
 
     private boolean mUseTabThemeColor;
 
     @Inject
     public CustomTabStatusBarColorProvider(BrowserServicesIntentDataProvider intentDataProvider,
-            ActivityTabProvider activityTabProvider,
             StatusBarColorController statusBarColorController) {
         mIntentDataProvider = intentDataProvider;
-        mActivityTabProvider = activityTabProvider;
         mStatusBarColorController = statusBarColorController;
     }
 
@@ -48,28 +43,17 @@ public class CustomTabStatusBarColorProvider {
         mStatusBarColorController.updateStatusBarColor();
     }
 
-    int getBaseStatusBarColor(int fallbackStatusBarColor) {
+    int getBaseStatusBarColor(boolean activityHasTab, int fallbackStatusBarColor) {
         if (mIntentDataProvider.isOpenedByChrome()) return fallbackStatusBarColor;
 
-        Tab tab = mActivityTabProvider.get();
-        if (tab == null) {
-            return mIntentDataProvider.getToolbarColor();
-        }
-
         if (shouldUseDefaultThemeColorForFullscreen()) {
-            return TabThemeColorHelper.getDefaultColor(tab);
+            return DEFAULT_STATUS_BAR_COLOR;
         }
 
-        return mUseTabThemeColor ? UNDEFINED_STATUS_BAR_COLOR
-                                 : mIntentDataProvider.getToolbarColor();
-    }
+        if (activityHasTab && mUseTabThemeColor) return UNDEFINED_STATUS_BAR_COLOR;
 
-    boolean isStatusBarDefaultThemeColor(boolean isFallbackColorDefault) {
-        if (mIntentDataProvider.isOpenedByChrome()) {
-            return isFallbackColorDefault;
-        }
-
-        return shouldUseDefaultThemeColorForFullscreen();
+        return mIntentDataProvider.hasCustomToolbarColor() ? mIntentDataProvider.getToolbarColor()
+                                                           : DEFAULT_STATUS_BAR_COLOR;
     }
 
     private boolean shouldUseDefaultThemeColorForFullscreen() {

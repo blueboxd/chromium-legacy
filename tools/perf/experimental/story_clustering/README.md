@@ -1,4 +1,6 @@
-The code is this directory provides support for clustering and choosing
+# Clustering Benchmark Stories
+
+The code in this directory provides support for clustering and choosing
 representatives for benchmarks.
 
 Input needed for the clustering methods are:

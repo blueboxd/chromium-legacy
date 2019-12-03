@@ -5,13 +5,22 @@
 #include "chrome/browser/ssl/ssl_browsertest_util.h"
 
 #include "base/feature_list.h"
+#include "base/run_loop.h"
+#include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "components/security_state/core/security_state.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/ssl_status.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/page_type.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
+#include "net/base/features.h"
 #include "net/cert/cert_status_flags.h"
+#include "net/net_buildflags.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ssl_test_util {
@@ -92,6 +101,25 @@ void CheckSecurityState(content::WebContents* tab,
   AuthState::Check(entry, expected_authentication_state);
 }
 
+void CheckAuthenticatedState(content::WebContents* tab,
+                             int expected_authentication_state) {
+  CheckSecurityState(tab, CertError::NONE, security_state::SECURE,
+                     expected_authentication_state);
+}
+
+void CheckUnauthenticatedState(content::WebContents* tab,
+                               int expected_authentication_state) {
+  CheckSecurityState(tab, CertError::NONE, security_state::NONE,
+                     expected_authentication_state);
+}
+
+void CheckAuthenticationBrokenState(content::WebContents* tab,
+                                    net::CertStatus expected_error,
+                                    int expected_authentication_state) {
+  CheckSecurityState(tab, expected_error, security_state::DANGEROUS,
+                     expected_authentication_state);
+}
+
 SecurityStateWebContentsObserver::SecurityStateWebContentsObserver(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {}
@@ -104,6 +132,39 @@ void SecurityStateWebContentsObserver::WaitForDidChangeVisibleSecurityState() {
 
 void SecurityStateWebContentsObserver::DidChangeVisibleSecurityState() {
   run_loop_.Quit();
+}
+
+static bool UsingBuiltinCertVerifier() {
+#if defined(OS_FUCHSIA)
+  return true;
+#elif BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
+  if (base::FeatureList::IsEnabled(net::features::kCertVerifierBuiltinFeature))
+    return true;
+#endif
+  return false;
+}
+
+bool CertVerifierSupportsCRLSetBlocking() {
+  if (UsingBuiltinCertVerifier())
+    return true;
+#if defined(OS_ANDROID)
+  return false;
+#else
+  return true;
+#endif
+}
+
+void SetHSTSForHostName(content::BrowserContext* context,
+                        const std::string& hostname) {
+  const base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
+  bool include_subdomains = false;
+  mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+  content::StoragePartition* partition =
+      content::BrowserContext::GetDefaultStoragePartition(context);
+  base::RunLoop run_loop;
+  partition->GetNetworkContext()->AddHSTS(hostname, expiry, include_subdomains,
+                                          run_loop.QuitClosure());
+  run_loop.Run();
 }
 
 }  // namespace ssl_test_util

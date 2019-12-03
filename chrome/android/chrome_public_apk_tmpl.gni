@@ -183,7 +183,7 @@ template("chrome_public_common_apk_or_module_tmpl") {
       if (target_type == "android_apk") {
         # For APKs, do not include the resource strings files from our
         # omitted locale list in order to save size.
-        aapt_locale_whitelist = locales - android_chrome_omitted_locales
+        aapt_locale_whitelist = android_non_bundle_locales
       } else {
         # For bundles, only include resource strings files from our full
         # locale list, but nothing more.

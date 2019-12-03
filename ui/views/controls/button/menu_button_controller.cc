@@ -337,14 +337,4 @@ void MenuButtonController::DecrementPressedLocked() {
   }
 }
 
-int MenuButtonController::GetMaximumScreenXCoordinate() {
-  if (!button()->GetWidget()) {
-    NOTREACHED();
-    return 0;
-  }
-
-  gfx::Rect monitor_bounds = button()->GetWidget()->GetWorkAreaBoundsInScreen();
-  return monitor_bounds.right() - 1;
-}
-
 }  // namespace views

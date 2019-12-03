@@ -82,12 +82,12 @@ public class PasswordViewingTypeTest {
     /**
      * Launches the main preferences.
      */
-    private static Preferences startMainPreferences(Instrumentation instrumentation,
-            final Context mContext) {
+    private static SettingsActivity startMainPreferences(
+            Instrumentation instrumentation, final Context mContext) {
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(mContext,
                 MainPreferences.class.getName());
-        Activity activity = (Preferences) instrumentation.startActivitySync(intent);
-        return (Preferences) activity;
+        Activity activity = (SettingsActivity) instrumentation.startActivitySync(intent);
+        return (SettingsActivity) activity;
     }
 
     /**

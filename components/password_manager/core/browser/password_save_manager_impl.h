@@ -73,12 +73,10 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
   virtual FormSaver* GetFormSaverForGeneration();
 
   virtual void SaveInternal(
-      const autofill::PasswordForm& pending,
       const std::vector<const autofill::PasswordForm*>& matches,
       const base::string16& old_password);
 
   virtual void UpdateInternal(
-      const autofill::PasswordForm& pending,
       const std::vector<const autofill::PasswordForm*>& matches,
       const base::string16& old_password);
 
@@ -88,6 +86,15 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
 
   // The client which implements embedder-specific PasswordManager operations.
   PasswordManagerClient* client_;
+
+  // Stores updated credentials when the form was submitted but success is still
+  // unknown. This variable contains credentials that are ready to be written
+  // (saved or updated) to a password store. It is calculated based on
+  // |submitted_form_| and |best_matches_|.
+  autofill::PasswordForm pending_credentials_;
+
+  PendingCredentialsState pending_credentials_state_ =
+      PendingCredentialsState::NONE;
 
  private:
   // Create pending credentials from provisionally saved form when this form
@@ -114,15 +121,6 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
 
   // FormFetcher instance which owns the login data from PasswordStore.
   const FormFetcher* form_fetcher_;
-
-  // Stores updated credentials when the form was submitted but success is still
-  // unknown. This variable contains credentials that are ready to be written
-  // (saved or updated) to a password store. It is calculated based on
-  // |submitted_form_| and |best_matches_|.
-  autofill::PasswordForm pending_credentials_;
-
-  PendingCredentialsState pending_credentials_state_ =
-      PendingCredentialsState::NONE;
 
   // Takes care of recording metrics and events for |*this|.
   scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder_;

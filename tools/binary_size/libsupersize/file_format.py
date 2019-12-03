@@ -178,7 +178,9 @@ def _SaveSizeInfoToFile(size_info,
     file_object: File opened for writing
     sparse_symbols: If present, only save these symbols to the file
   """
-  raw_symbols = sparse_symbols or size_info.raw_symbols
+  raw_symbols = sparse_symbols
+  if raw_symbols is None:
+    raw_symbols = size_info.raw_symbols
   # Created by supersize header
   file_obj.write('# Created by //tools/binary_size\n')
   file_obj.write('%s\n' % _SERIALIZATION_VERSION)

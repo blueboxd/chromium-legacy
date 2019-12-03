@@ -16,10 +16,10 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringize_macros.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "net/base/file_stream.h"
@@ -282,8 +282,7 @@ class Me2MeNativeMessagingHostTest : public testing::Test {
   base::File input_write_file_;
   base::File output_read_file_;
 
-  // Message loop of the test thread.
-  std::unique_ptr<base::MessageLoop> test_message_loop_;
+  std::unique_ptr<base::test::SingleThreadTaskEnvironment> task_environment_;
   std::unique_ptr<base::RunLoop> test_run_loop_;
 
   std::unique_ptr<base::Thread> host_thread_;
@@ -307,14 +306,15 @@ void Me2MeNativeMessagingHostTest::SetUp() {
   ASSERT_TRUE(MakePipe(&input_read_file, &input_write_file_));
   ASSERT_TRUE(MakePipe(&output_read_file_, &output_write_file));
 
-  test_message_loop_.reset(new base::MessageLoop());
+  task_environment_ =
+      std::make_unique<base::test::SingleThreadTaskEnvironment>();
   test_run_loop_.reset(new base::RunLoop());
 
   // Run the host on a dedicated thread.
   host_thread_.reset(new base::Thread("host_thread"));
   host_thread_->Start();
 
-  // Arrange to run |test_message_loop_| until no components depend on it.
+  // Arrange to run |task_environment_| until no components depend on it.
   host_task_runner_ = new AutoThreadTaskRunner(
       host_thread_->task_runner(),
       base::Bind(&Me2MeNativeMessagingHostTest::ExitTest,
@@ -384,8 +384,9 @@ void Me2MeNativeMessagingHostTest::StopHost() {
 }
 
 void Me2MeNativeMessagingHostTest::ExitTest() {
-  if (!test_message_loop_->task_runner()->RunsTasksInCurrentSequence()) {
-    test_message_loop_->task_runner()->PostTask(
+  if (!task_environment_->GetMainThreadTaskRunner()
+           ->RunsTasksInCurrentSequence()) {
+    task_environment_->GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&Me2MeNativeMessagingHostTest::ExitTest,
                                   base::Unretained(this)));
     return;

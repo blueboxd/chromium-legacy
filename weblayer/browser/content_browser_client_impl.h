@@ -70,6 +70,10 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
   CreateThrottlesForNavigation(content::NavigationHandle* handle) override;
   content::GeneratedCodeCacheSettings GetGeneratedCodeCacheSettings(
       content::BrowserContext* context) override;
+  void ExposeInterfacesToRenderer(
+      service_manager::BinderRegistry* registry,
+      blink::AssociatedInterfaceRegistry* associated_registry,
+      content::RenderProcessHost* render_process_host) override;
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   void GetAdditionalMappedFilesForChildProcess(
@@ -94,6 +98,7 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
   MainParams* params_;
 
 #if defined(OS_ANDROID)
+  SafeBrowsingService* GetSafeBrowsingService();
   std::unique_ptr<SafeBrowsingService> safe_browsing_service_;
 #endif
 };

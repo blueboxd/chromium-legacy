@@ -36,8 +36,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
-import org.chromium.chrome.browser.settings.Preferences;
 import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.vr.mock.MockVrDaydreamApi;
@@ -401,7 +401,7 @@ public class VrBrowserTransitionTest {
         });
 
         ActivityUtils.waitForActivity(
-                InstrumentationRegistry.getInstrumentation(), Preferences.class);
+                InstrumentationRegistry.getInstrumentation(), SettingsActivity.class);
         VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(null);
     }
 

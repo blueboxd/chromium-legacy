@@ -8,6 +8,7 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1분}other{#분}}</translation>
 <translation id="1181037720776840403">삭제</translation>
 <translation id="1201402288615127009">다음</translation>
+<translation id="1218444235442067213"><ph name="APP_NAME" />, Play 스토어 앱</translation>
 <translation id="1243314992276662751">업로드</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> 공유할 수 없음</translation>
 <translation id="1269641567813814718">Win</translation>
@@ -18,6 +19,7 @@
 <translation id="1368832886055348810">왼쪽에서 오른쪽으로</translation>
 <translation id="1383876407941801731">검색</translation>
 <translation id="1398853756734560583">최대화</translation>
+<translation id="1414271762428216854"><ph name="APP_NAME" />, 설치된 앱</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> 공유할 수 없음</translation>
 <translation id="1498028757988366001">이전에 검색한 내용입니다. 기록에서 '<ph name="QUERY" />'을(를) 삭제하면 계정과 연결된 모든 기기에서 완전히 삭제됩니다.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1분 }other{#분 }}</translation>
@@ -30,6 +32,7 @@
 <translation id="1803208670097017349">{MONTHS,plural, =1{1개월}other{#개월}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" />MB/초</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1시간 }other{#시간 }}</translation>
+<translation id="1830308660060964064"><ph name="ITEM_TITLE" /> 고정 취소됨</translation>
 <translation id="1842960171412779397">선택</translation>
 <translation id="1859234291848436338">쓰기 방향</translation>
 <translation id="1860796786778352021">알림 닫기</translation>
@@ -66,10 +69,12 @@
 <translation id="2666092431469916601">맨 위</translation>
 <translation id="2701330563083355633"><ph name="DEVICE_NAME" />에서 공유함</translation>
 <translation id="2743387203779672305">클립보드로 복사</translation>
+<translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">폴더 열기</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1년 전}other{#년 전}}</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1일 후}other{#일 후}}</translation>
 <translation id="2931838996092594335">클릭</translation>
+<translation id="2981684127883932071">추천 표시 중</translation>
 <translation id="3036649622769666520">파일 열기</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" />MB</translation>
 <translation id="3068711042108640621">왼쪽에 실행기 표시</translation>
@@ -84,6 +89,7 @@
 <translation id="3389286852084373014">텍스트가 너무 큼</translation>
 <translation id="3479552764303398839">나중에</translation>
 <translation id="348799646910989694">실행기 자동 숨김</translation>
+<translation id="3554637740840164787"><ph name="ITEM_TITLE" /> 고정됨</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1일 남음}other{#일 남음}}</translation>
 <translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" /> 파일</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" /> 이상</translation>
@@ -105,8 +111,11 @@
 <translation id="4250229828105606438">캡처화면</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1개월 전}other{#개월 전}}</translation>
 <translation id="4289300219472526559">말하기 시작</translation>
+<translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> 앱이 <ph name="FOLDER_NAME" /> 폴더로 이동했습니다.</translation>
 <translation id="4316910396681052118">모든 앱</translation>
 <translation id="4588090240171750605">오른쪽 스크롤</translation>
+<translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, 별표 평점 <ph name="RATING_SCORE" />점</translation>
+<translation id="4648249871170053485"><ph name="APP_NAME" />, 앱 추천</translation>
 <translation id="4690510401873698237">실행기 하단에 표시</translation>
 <translation id="4724120544754982507">알림 센터, 읽지 않은 알림 <ph name="UNREAD_NOTIFICATION_COUNT" />개</translation>
 <translation id="4730374152663651037">자주 사용하는 앱</translation>
@@ -116,6 +125,7 @@
 <translation id="4971687151119236543">미디어 이전 트랙</translation>
 <translation id="5046499563572181734">여기를 탭하세요.</translation>
 <translation id="5076340679995252485">붙여넣기(&amp;P)</translation>
+<translation id="5198715732953550718"><ph name="MOVED_APP_NAME" /> 앱과 <ph name="IN_PLACE_APP" /> 앱이 포함된 새 폴더를 만들었습니다.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" />PB</translation>
 <translation id="5266161281976477809">펼치기/접기 삼각형</translation>
 <translation id="5278860589123563674">전송 실패</translation>
@@ -129,6 +139,7 @@
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> 시스템</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">왼쪽 화살표</translation>
+<translation id="5675363643668471212">실행기 항목</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1분}other{#분}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{오늘 사용}=1{1일 전에 사용}other{#일 전에 사용}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1일 }other{#일 }}</translation>
@@ -208,6 +219,7 @@
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">페이지 아래로</translation>
 <translation id="8245914219290430011">탭</translation>
+<translation id="8247998213073982446"><ph name="APP_NAME" />, 앱</translation>
 <translation id="8259556432390118667">16진수 색상 값</translation>
 <translation id="8328145009876646418">왼쪽 모서리</translation>
 <translation id="8331626408530291785">위로 스크롤</translation>
@@ -237,6 +249,8 @@
 <translation id="9150735707954472829">탭</translation>
 <translation id="9161053988251441839">추천 앱</translation>
 <translation id="9170848237812810038">실행 취소(&amp;U)</translation>
+<translation id="9178475906033259337"><ph name="QUERY" /> 검색결과 1개 표시 중</translation>
 <translation id="932327136139879170">홈</translation>
 <translation id="944069440740578670">읽지 않은 알림</translation>
+<translation id="974545358917229949"><ph name="QUERY" /> 검색결과 <ph name="RESULT_COUNT" />개 표시 중</translation>
 </translationbundle>

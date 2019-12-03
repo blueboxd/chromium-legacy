@@ -137,7 +137,7 @@ void MediaResourceGetterImpl::GetAuthCredentials(
   BrowserContext::GetDefaultStoragePartition(browser_context_)
       ->GetNetworkContext()
       ->LookupServerBasicAuthCredentials(
-          url, render_frame_host->network_isolation_key(),
+          url, render_frame_host->GetNetworkIsolationKey(),
           base::BindOnce(&MediaResourceGetterImpl::GetAuthCredentialsCallback,
                          weak_factory_.GetWeakPtr(), std::move(callback)));
 }

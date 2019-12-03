@@ -77,7 +77,7 @@ InkDropType InkDropTest::GetInkDropType() const {
 
 // Note: First argument is optional and intentionally left blank.
 // (it's a prefix for the generated test cases)
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          InkDropTest,
                          testing::Values(INK_DROP_STUB, INK_DROP_IMPL));
 

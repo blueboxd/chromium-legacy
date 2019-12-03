@@ -343,7 +343,7 @@ KURL HitTestResult::AbsoluteImageURL() const {
             inner_node_or_image_map_image->GetLayoutObject()->IsImage()) &&
            (IsHTMLEmbedElement(*inner_node_or_image_map_image) ||
             IsHTMLObjectElement(*inner_node_or_image_map_image) ||
-            IsSVGImageElement(*inner_node_or_image_map_image)))
+            IsA<SVGImageElement>(*inner_node_or_image_map_image)))
     url_string = To<Element>(*inner_node_or_image_map_image).ImageSourceURL();
   if (url_string.IsEmpty())
     return KURL();

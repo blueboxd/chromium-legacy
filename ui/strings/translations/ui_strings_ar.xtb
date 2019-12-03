@@ -8,6 +8,7 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{دقيقة واحدة}zero{# دقيقة}two{دقيقتان (#)}few{# دقائق}many{# دقيقة}other{# دقيقة}}</translation>
 <translation id="1181037720776840403">إزالة</translation>
 <translation id="1201402288615127009">التالي</translation>
+<translation id="1218444235442067213">‏<ph name="APP_NAME" />، تطبيق من "متجر Play"</translation>
 <translation id="1243314992276662751">تحميل</translation>
 <translation id="1266864766717917324">تعذَّرت مشاركة <ph name="CONTENT_TYPE" />.</translation>
 <translation id="1269641567813814718">الفوز</translation>
@@ -18,6 +19,7 @@
 <translation id="1368832886055348810">من اليسار لليمين</translation>
 <translation id="1383876407941801731">البحث</translation>
 <translation id="1398853756734560583">تكبير</translation>
+<translation id="1414271762428216854"><ph name="APP_NAME" />، تطبيق مثبّت</translation>
 <translation id="1450753235335490080">تعذَّرت مشاركة <ph name="CONTENT_TYPE" />.</translation>
 <translation id="1498028757988366001">لقد بحثت عن هذا الموضوع من قبل. سيؤدي حذف "<ph name="QUERY" />" من السجل إلى إزالته نهائيًا من حسابك على جميع أجهزتك.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{دقيقة واحدة و }zero{# من الدقائق و }two{دقيقتان (#) و }few{# دقائق و }many{# دقيقة و }other{# من الدقائق و }}</translation>
@@ -30,6 +32,7 @@
 <translation id="1803208670097017349">{MONTHS,plural, =1{شهر واحد}zero{# شهر}two{شهران (#)}few{# أشهر}many{# شهرًا}other{# شهر}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> ميغابايات/ثانية</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{ساعة واحدة و }zero{# من الساعات و }two{ساعتان (#) و }few{# ساعات و }many{# ساعة و }other{# من الساعات و }}</translation>
+<translation id="1830308660060964064">تم إلغاء تثبيت <ph name="ITEM_TITLE" /></translation>
 <translation id="1842960171412779397">الاختيار</translation>
 <translation id="1859234291848436338">اتجاه الكتابة</translation>
 <translation id="1860796786778352021">إغلاق الإشعار</translation>
@@ -66,10 +69,12 @@
 <translation id="2666092431469916601">أعلى</translation>
 <translation id="2701330563083355633">تمت المشاركة من <ph name="DEVICE_NAME" /></translation>
 <translation id="2743387203779672305">نسخ إلى الحافظة</translation>
+<translation id="2749082172777216925">التطبيق <ph name="APP_NAME_INFO" />، <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">فتح المجلد</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{قبل عام واحد}zero{قبل # عام}two{قبل عامين (#)}few{قبل # أعوام}many{قبل # عامًا}other{قبل # عام}}</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{خلال يوم واحد}zero{خلال # يوم}two{خلال يومين (#)}few{خلال # أيام}many{خلال # يومًا}other{خلال # يوم}}</translation>
 <translation id="2931838996092594335">النقر</translation>
+<translation id="2981684127883932071">عرض الاقتراحات</translation>
 <translation id="3036649622769666520">فتح الملفات</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> ميغابايت</translation>
 <translation id="3068711042108640621">الرف على يمين الشاشة</translation>
@@ -84,6 +89,7 @@
 <translation id="3389286852084373014">النص كبير جدًا</translation>
 <translation id="3479552764303398839">ليس الآن</translation>
 <translation id="348799646910989694">إخفاء الرف تلقائيًا</translation>
+<translation id="3554637740840164787">تم تثبيت <ph name="ITEM_TITLE" /></translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{يتبقى يوم واحد}zero{يتبقى عدد # من الأيام}two{يتبقى يومان (#)}few{يتبقى # أيام}many{يتبقى # يومًا}other{يتبقى # من الأيام}}</translation>
 <translation id="3600969208114796418">ملف <ph name="SAVEAS_EXTENSION_TYPE" /></translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
@@ -105,8 +111,11 @@
 <translation id="4250229828105606438">لقطة شاشة</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{قبل شهر واحد}zero{قبل # شهر}two{قبل شهرين (#)}few{قبل # أشهر}many{قبل # شهرًا}other{قبل # شهر}}</translation>
 <translation id="4289300219472526559">بدء التحدث</translation>
+<translation id="430191667033048642">تم نقل <ph name="MOVED_APP_NAME" /> إلى المجلد <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">جميع التطبيقات</translation>
 <translation id="4588090240171750605">التمرير إلى اليسار</translation>
+<translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />، التقييم بالنجوم <ph name="RATING_SCORE" /></translation>
+<translation id="4648249871170053485"><ph name="APP_NAME" />، اقتراح تطبيق</translation>
 <translation id="4690510401873698237">الرف في الجزء السفلي</translation>
 <translation id="4724120544754982507">مركز الإشعارات، <ph name="UNREAD_NOTIFICATION_COUNT" /> من الإشعارات غير المقروءة</translation>
 <translation id="4730374152663651037">التطبيقات المستخدمة بشكل متكرر</translation>
@@ -116,6 +125,7 @@
 <translation id="4971687151119236543">المقطع الصوتي السابق للوسائط</translation>
 <translation id="5046499563572181734">انقر هنا</translation>
 <translation id="5076340679995252485">ل&amp;صق</translation>
+<translation id="5198715732953550718">تم جمع <ph name="MOVED_APP_NAME" /> مع <ph name="IN_PLACE_APP" /> لإنشاء مجلد جديد.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> بيتابايت</translation>
 <translation id="5266161281976477809">مثلث الإفصاح</translation>
 <translation id="5278860589123563674">تعذّر الإرسال</translation>
@@ -129,6 +139,7 @@
 <translation id="5574202486608032840">نظام <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">مفتاح سهم إلى اليسار</translation>
+<translation id="5675363643668471212">عنصر الرف</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{دقيقة واحدة}zero{# من الدقائق}two{دقيقتان (#)}few{# دقائق}many{# دقيقة}other{# من الدقائق}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{نشط اليوم}=1{نشط قبل يوم واحد}two{نشط قبل يومين (#)}few{نشط قبل # أيام}many{نشط قبل # يومًا}other{نشط قبل # يوم}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{يوم واحد و }zero{# من الأيام و }two{يومان (#) و }few{# أيام و }many{# يومًا و }other{# من الأيام و }}</translation>
@@ -208,6 +219,7 @@
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">صفحة  إلى أسفل</translation>
 <translation id="8245914219290430011">علامة تبويب</translation>
+<translation id="8247998213073982446"><ph name="APP_NAME" />، تطبيق</translation>
 <translation id="8259556432390118667">القيمة السداسية للّون</translation>
 <translation id="8328145009876646418">الحافة اليمنى</translation>
 <translation id="8331626408530291785">التمرير إلى أعلى</translation>
@@ -237,6 +249,8 @@
 <translation id="9150735707954472829">علامة تبويب</translation>
 <translation id="9161053988251441839">التطبيقات المُقترحَة</translation>
 <translation id="9170848237812810038">&amp;إلغاء</translation>
+<translation id="9178475906033259337">عرض نتيجة واحدة عن <ph name="QUERY" /></translation>
 <translation id="932327136139879170">الصفحة الرئيسية</translation>
 <translation id="944069440740578670">إشعارات غير مقروءة</translation>
+<translation id="974545358917229949">عرض <ph name="RESULT_COUNT" /> نتيجة عن <ph name="QUERY" /></translation>
 </translationbundle>

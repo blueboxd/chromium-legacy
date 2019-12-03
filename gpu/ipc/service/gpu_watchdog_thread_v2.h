@@ -94,6 +94,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   void OnAddPowerObserver();
   void RestartWatchdogTimeoutTask(PauseResumeSource source_of_request);
   void StopWatchdogTimeoutTask(PauseResumeSource source_of_request);
+  void UpdateInitializationFlag();
   void Arm();
   void Disarm();
   void InProgress();
@@ -195,8 +196,11 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   // whether GpuWatchdogThreadEvent::kGpuWatchdogStart has been recorded.
   bool is_watchdog_start_histogram_recorded = false;
 
-  // For the experiment and the debugging purpose
+  // Read/Write by the watchdog thread only after initialized in the
+  // constructor.
   bool in_gpu_initialization_ = false;
+
+  // For the experiment and the debugging purpose
   size_t num_of_timeout_after_power_resume_ = 0;
   size_t num_of_timeout_after_foregrounded_ = 0;
   bool foregrounded_event_ = false;

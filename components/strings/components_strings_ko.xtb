@@ -9,6 +9,7 @@
 <translation id="1036348656032585052">사용 중지</translation>
 <translation id="1038842779957582377">알 수 없는 이름</translation>
 <translation id="1039626062703039346">Chrome을 통해 Google 계정을 보호하고 비밀번호를 변경할 수 있습니다. Google에 이 사이트에 관해 알리게 됩니다.</translation>
+<translation id="1044897699341250361">의미</translation>
 <translation id="1050038467049342496">다른 앱 닫기</translation>
 <translation id="1055184225775184556">추가 실행 취소(&amp;U)</translation>
 <translation id="1056898198331236512">경고</translation>
@@ -183,6 +184,7 @@
 <translation id="1745880797583122200">관리 대상 브라우저입니다</translation>
 <translation id="17513872634828108">열린 탭</translation>
 <translation id="1753706481035618306">페이지 번호</translation>
+<translation id="175838129965056221">Chrome에서 연결이 모니터링되고 있음을 감지했습니다</translation>
 <translation id="1763864636252898013">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 기기의 운영체제에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows 네트워크 진단 프로그램을 실행<ph name="END_LINK" />해 보세요.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -251,6 +253,7 @@
 <translation id="2119867082804433120">오른쪽 하단 펀칭</translation>
 <translation id="2129079103035905234">움직임 감지 센서</translation>
 <translation id="2130448033692577677">DnsOverHttpsMode 정책이 설정되지 않았기 때문에 지정한 템플릿이 적용되지 않을 수 있습니다.</translation>
+<translation id="2131277894177304644">Chromium에서 연결이 모니터링되고 있음을 감지했습니다</translation>
 <translation id="213826338245044447">모바일 북마크</translation>
 <translation id="214556005048008348">결제 취소</translation>
 <translation id="2147827593068025794">백그라운드 동기화</translation>
@@ -298,6 +301,7 @@
 <translation id="2354001756790975382">기타 북마크</translation>
 <translation id="2354430244986887761">Google 세이프 브라우징이 최근 <ph name="SITE" />에서 <ph name="BEGIN_LINK" />유해한 앱을 발견<ph name="END_LINK" />했습니다.</translation>
 <translation id="2355395290879513365">공격자는 사용자가 이 사이트에서 보고 있는 이미지를 볼 수 있으며 이미지를 수정하여 사용자를 속일 수 있습니다.</translation>
+<translation id="2355474962185559967">사기성 사이트에 비밀번호를 입력했습니다. <ph name="WEBSITE_1" />(으)로 이동하여 비밀번호를 변경하는 것이 좋습니다.</translation>
 <translation id="2356070529366658676">확인</translation>
 <translation id="2359629602545592467">복수</translation>
 <translation id="2359808026110333948">계속</translation>
@@ -399,6 +403,7 @@
 <translation id="2799020568854403057">방문하려는 사이트에 유해한 앱이 있습니다.</translation>
 <translation id="2799223571221894425">다시 시작</translation>
 <translation id="2803306138276472711">최근 Google 세이프 브라우징이 <ph name="SITE" />에서 <ph name="BEGIN_LINK" />멀웨어를 감지<ph name="END_LINK" />했습니다. 평소에 안전한 웹사이트도 멀웨어에 감염될 때가 있습니다.</translation>
+<translation id="281585763351939989">Chromium에서 연결이 모니터링되고 있음을 감지했습니다.</translation>
 <translation id="2824775600643448204">주소창 및 검색창</translation>
 <translation id="2826760142808435982">이 연결은 <ph name="CIPHER" />을(를) 사용하여 암호화되고 인증되며 <ph name="KX" />을(를) 키 교환 매커니즘으로 사용합니다.</translation>
 <translation id="2835170189407361413">서식 지우기</translation>
@@ -443,6 +448,7 @@
 <translation id="3024663005179499861">잘못된 정책 유형</translation>
 <translation id="3037605927509011580">앗, 이런!</translation>
 <translation id="3041612393474885105">인증서 정보</translation>
+<translation id="304755864151473094">경고가 표시된 이유</translation>
 <translation id="3057676462092457419">DnsOverHttps 모드(<ph name="SECURE_DNS_MODE_SECURE" />)는 아직 지원되지 않으며 <ph name="SECURE_DNS_MODE_OFF" />(으)로 설정되었습니다.</translation>
 <translation id="3060227939791841287">C9(봉투)</translation>
 <translation id="3061707000357573562">서비스 패치</translation>
@@ -482,6 +488,7 @@
 <translation id="3228969707346345236">페이지가 <ph name="LANGUAGE" />(으)로 되어 있으므로 번역하지 못했습니다.</translation>
 <translation id="3229041911291329567">기기와 브라우저에 관한 버전 정보</translation>
 <translation id="323107829343500871"><ph name="CREDIT_CARD" /> 카드의 CVC를 입력하세요.</translation>
+<translation id="3234392465377209614">사기성 사이트에 비밀번호를 입력했습니다. 지금 바로 <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> 및 <ph name="WEBSITE_3" />(으)로 이동하여 비밀번호를 변경하는 것이 좋습니다.</translation>
 <translation id="3234666976984236645">이 사이트에서 중요한 콘텐츠 항상 감지</translation>
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" />은(는) <ph name="SUGGESTED_DOMAIN" />과(와) 유사합니다. 일부 공격자는 비슷한 URL을 사용하여 다른 사이트를 모방합니다.</translation>
 <translation id="3270847123878663523">재정렬 실행 취소(&amp;U)</translation>
@@ -514,6 +521,7 @@
 <translation id="342781501876943858">다른 사이트에서 비밀번호를 재사용했다면 비밀번호를 재설정하는 것이 좋습니다.</translation>
 <translation id="3428151540071562330">하나 이상의 DnsOverHttpsTemplates 서버 템플릿 URI가 유효하지 않아 앞으로 사용되지 않습니다.</translation>
 <translation id="3431636764301398940">기기에 카드 저장</translation>
+<translation id="3438790640050632698">사기성 사이트에 비밀번호를 입력했습니다. <ph name="WEBSITE_1" /> 및 <ph name="WEBSITE_2" />(으)로 이동하여 비밀번호를 변경하는 것이 좋습니다.</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">이 기기의 소유자가 공룡 게임을 사용 중지했습니다.</translation>
 <translation id="3447884698081792621">인증서 표시(발급 기관: <ph name="ISSUER" />)</translation>
@@ -528,6 +536,7 @@
 <translation id="3495081129428749620"><ph name="PAGE_TITLE" />
 페이지에서 찾기</translation>
 <translation id="3512163584740124171">동일한 정책 그룹에 있는 다른 정책이 우선순위가 높기 때문에 이 정책은 무시됩니다.</translation>
+<translation id="3525469219100414032">사기성 사이트에 비밀번호를 입력했습니다. <ph name="WEBSITE_1" />(으)로 이동하여 비밀번호를 변경하는 것이 좋습니다.</translation>
 <translation id="3528171143076753409">서버의 인증서를 신뢰할 수 없습니다.</translation>
 <translation id="3528485271872257980">진한 갈색</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{동기화된 기기에 항목 1개 이상}=1{항목 1개(동기화된 기기에는 그 이상)}other{항목 #개(동기화된 기기에는 그 이상)}}</translation>
@@ -606,6 +615,7 @@
 <translation id="3858027520442213535">시간과 날짜 업데이트</translation>
 <translation id="3884278016824448484">기기 식별자 충돌</translation>
 <translation id="3885155851504623709">교구</translation>
+<translation id="388632593194507180">모니터링 감지됨</translation>
 <translation id="3890664840433101773">이메일 추가</translation>
 <translation id="3897092660631435901">메뉴</translation>
 <translation id="3901925938762663762">만료된 카드입니다.</translation>
@@ -707,6 +717,7 @@
 <translation id="4305817255990598646">전환</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">차단(기본값)</translation>
+<translation id="4318312030194671742">페인트 미리보기 합성 서비스</translation>
 <translation id="4318566738941496689">기기 이름 및 네트워크 주소</translation>
 <translation id="4325863107915753736">도움말을 찾지 못했습니다.</translation>
 <translation id="4326324639298822553">만료일을 확인한 후 다시 시도해 주세요.</translation>
@@ -723,6 +734,7 @@
 <translation id="4372948949327679948">예상 <ph name="VALUE_TYPE" /> 값입니다.</translation>
 <translation id="4377125064752653719"><ph name="DOMAIN" />에 접속하려 했으나 발행기관에서 서버가 전달한 인증서를 폐기했습니다. 이는 서버가 제시한 보안 자격증명 정보를 신뢰할 수 없음을 의미합니다. 사용자는 현재 공격자와 통신 중일 수도 있습니다.</translation>
 <translation id="4378154925671717803">전화기</translation>
+<translation id="437847259914972036">웹에서의 내 활동 및 내가 입력하는 모든 정보가 감시되며, 콘텐츠가 눈치채지 못하게 변경될 수 있습니다.</translation>
 <translation id="4398334096870680409">기기에서 지원하지 않는 기능입니다.</translation>
 <translation id="4406896451731180161">검색결과</translation>
 <translation id="4408413947728134509">쿠키 <ph name="NUM_COOKIES" />개</translation>
@@ -958,6 +970,7 @@
 <translation id="5565735124758917034">활성</translation>
 <translation id="5570825185877910964">계정 보호</translation>
 <translation id="5571083550517324815">이 주소에서 수령할 수 없습니다. 다른 주소를 선택하세요.</translation>
+<translation id="5572009199897554128">사기성 사이트에 비밀번호를 입력했습니다. <ph name="WEBSITE_1" /> 및 <ph name="WEBSITE_2" />(으)로 이동하여 비밀번호를 변경하는 것이 좋습니다.</translation>
 <translation id="5580958916614886209">유효기간 월을 확인한 후 다시 시도해 주세요.</translation>
 <translation id="5586446728396275693">저장된 주소 없음</translation>
 <translation id="5595485650161345191">주소 수정</translation>
@@ -1140,6 +1153,7 @@
 <translation id="6446163441502663861">Kahu(봉투)</translation>
 <translation id="6446608382365791566">자세한 정보 추가</translation>
 <translation id="6447842834002726250">쿠키</translation>
+<translation id="644931407731409778">{COUNT,plural, =1{페이지 1개}other{페이지 #개}}가 포함된 PDF 문서</translation>
 <translation id="6451458296329894277">양식 다시 제출 확인</translation>
 <translation id="6457206614190510200">새들 스티치</translation>
 <translation id="6465306955648956876">비밀번호 관리...</translation>
@@ -1158,6 +1172,7 @@
 <translation id="6547208576736763147">왼쪽 2공 펀칭</translation>
 <translation id="6554795675067793129">사용자의 계정은 <ph name="ENROLLMENT_DOMAIN" />에서 관리합니다.</translation>
 <translation id="6556866813142980365">다시실행</translation>
+<translation id="6559565319173126218">이 연결에서 확인된 인증서는 네트워크 가로채기와 모니터링에 사용되는 것으로 알려져 Chrome에서 신뢰하지 않습니다.</translation>
 <translation id="6569060085658103619">확장 프로그램 페이지를 보는 중</translation>
 <translation id="6573200754375280815">오른쪽 2공 펀칭</translation>
 <translation id="6578796323535178455">C2(봉투)</translation>
@@ -1191,6 +1206,7 @@
 <translation id="6710594484020273272">&lt;검색어 입력&gt;</translation>
 <translation id="671076103358959139">등록 토큰:</translation>
 <translation id="6711464428925977395">프록시 서버에 문제가 발생했거나 주소가 잘못되었습니다.</translation>
+<translation id="6721811549156553509">네트워크 감시자가 내가 방문하는 사이트로 가장하고 내 활동 및 입력하는 모든 정보를 볼 수 있습니다(예: 비밀번호, 메시지, 신용카드). 네트워크 감시자가 활동을 보고 방문하는 페이지의 콘텐츠를 변경할 수 있으니 온라인에서 민감한 활동을 할 때는 항상 주의해야 합니다. 인터넷에 액세스하는 다른 브라우저 및 프로그램의 활동도 포함됩니다.</translation>
 <translation id="6738516213925468394"><ph name="TIME" />자로 <ph name="BEGIN_LINK" />동기화 암호<ph name="END_LINK" />를 통해 데이터가 암호화되었습니다. 동기화를 시작하려면 암호를 입력하세요.</translation>
 <translation id="674375294223700098">알 수 없는 서버 인증서 오류입니다.</translation>
 <translation id="6744009308914054259">연결을 기다리는 동안 다운로드에서 오프라인 기사를 읽을 수 있습니다.</translation>
@@ -1275,6 +1291,7 @@
 <translation id="721197778055552897">이 문제에 대해 <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="7219179957768738017"><ph name="SSL_VERSION" /> 연결입니다.</translation>
 <translation id="7220786058474068424">처리 중</translation>
+<translation id="7239736667463137521">Chrome에서 연결이 모니터링되고 있음을 감지했습니다.</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">다음 사이트에 멀웨어가 있습니다.</translation>
 <translation id="724975217298816891">카드 세부정보를 업데이트하려면 <ph name="CREDIT_CARD" /> 카드의 만료일과 CVC를 입력하세요. 카드를 확인하면 카드 세부정보가 이 사이트와 공유됩니다.</translation>
@@ -1301,6 +1318,7 @@
 <translation id="7346048084945669753">연결됨:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">명령줄</translation>
+<translation id="7353776484425559055">이 연결의 인증서는 네트워크 가로채기와 모니터링에 사용되는 것으로 알려져 Chromium에서 신뢰하지 않습니다. 기기에 설치한 인증서로 인해 이 오류가 표시될 수 있습니다. 보안 연결이 이루어지면 Chromium에서 사용자의 컴퓨터나 휴대기기에 로컬로 저장된 인증서를 신뢰합니다. 이렇게 하면 사용자가 웹사이트 개발 중에 도구를 실행하여 연결을 검사 및 디버그하거나 기업 환경에서 내부 트래픽을 가로채고 모니터링할 수 있습니다. 공개 인터넷에서 트래픽을 가로채기 위해 악용되는 경우 Chromium에서 경고를 표시합니다.</translation>
 <translation id="7372973238305370288">검색결과</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">미디어 컨트롤</translation>
@@ -1361,6 +1379,7 @@
 <translation id="7592362899630581445">서버의 인증서가 이름 제약 조건을 위반합니다.</translation>
 <translation id="7598391785903975535"><ph name="UPPER_ESTIMATE" /> 미만</translation>
 <translation id="759889825892636187">현재 <ph name="HOST_NAME" />에서 요청을 처리할 수 없습니다.</translation>
+<translation id="7599841999395223597">이 연결의 인증서는 네트워크 가로채기와 모니터링에 사용되는 것으로 알려져 Chrome에서 신뢰하지 않습니다. 기기에 설치한 인증서로 인해 이 오류가 표시될 수 있습니다. 보안 연결이 이루어지면 Chrome에서 사용자의 컴퓨터나 휴대기기에 로컬로 저장된 인증서를 신뢰합니다. 이렇게 하면 사용자가 웹사이트 개발 중에 도구를 실행하여 연결을 검사 및 디버그하거나 기업 환경에서 내부 트래픽을 가로채고 모니터링할 수 있습니다. 공개 인터넷에서 트래픽을 가로채기 위해 악용되는 경우 Chrome에서 경고를 표시합니다.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> 번역 안함</translation>
 <translation id="7610193165460212391">값(<ph name="VALUE" />)이 범위를 벗어났습니다.</translation>
 <translation id="7613889955535752492">만료일: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -1677,6 +1696,7 @@
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">Google 계정에 액세스하지 못할 수 있습니다. 따라서 지금 비밀번호를 변경하는 것이 좋습니다. 로그인하라는 메시지가 표시됩니다.</translation>
 <translation id="939736085109172342">새 폴더</translation>
+<translation id="940786960229275114">사기성 사이트에 비밀번호를 입력했습니다. 지금 바로 <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> 및 <ph name="WEBSITE_3" />(으)로 이동하여 비밀번호를 변경하는 것이 좋습니다.</translation>
 <translation id="945855313015696284">아래 정보를 확인하고 잘못된 카드를 삭제하세요.</translation>
 <translation id="950736567201356821">상단 3공 펀칭</translation>
 <translation id="951104842009476243">사용 가능한 직불카드 및 선불카드</translation>

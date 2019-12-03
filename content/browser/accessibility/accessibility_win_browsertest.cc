@@ -3349,6 +3349,58 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                     L"\"KHTML, like\".");
 }
 
+IN_PROC_BROWSER_TEST_F(
+    AccessibilityWinBrowserTest,
+    TestTextAtOffsetWithBoundaryLineAndMultiLineEmbeddedObject) {
+  // There should be two lines in this contenteditable.
+  //
+  // Half of the link is on the first line, and the other half is on the second
+  // line.
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(<!DOCTYPE html>
+      <div contenteditable style="width: 70px">
+        Hello
+        <a href="#">this is a</a>
+        test.
+      </div>
+      )HTML");
+
+  Microsoft::WRL::ComPtr<IAccessible> document(GetRendererAccessible());
+  std::vector<base::win::ScopedVariant> document_children =
+      GetAllAccessibleChildren(document.Get());
+  ASSERT_EQ(1u, document_children.size());
+
+  Microsoft::WRL::ComPtr<IAccessible2> contenteditable;
+  ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
+      GetAccessibleFromVariant(document.Get(), document_children[0].AsInput())
+          .Get(),
+      &contenteditable));
+
+  Microsoft::WRL::ComPtr<IAccessibleText> contenteditable_text;
+  ASSERT_HRESULT_SUCCEEDED(contenteditable.As(&contenteditable_text));
+
+  LONG n_characters;
+  ASSERT_HRESULT_SUCCEEDED(
+      contenteditable_text->get_nCharacters(&n_characters));
+  ASSERT_EQ(13, n_characters);
+
+  // Line one.
+  //
+  // The embedded object character representing the link is at offset 6.
+  for (LONG i = 0; i <= 6; ++i) {
+    CheckTextAtOffset(contenteditable_text, i, IA2_TEXT_BOUNDARY_LINE, 0, 7,
+                      L"Hello \xFFFC");
+  }
+
+  // Line two.
+  //
+  // Note that the caret can also be at the end of the contenteditable, so an
+  // offset that is equal to "n_characters" is also permitted.
+  for (LONG i = 7; i <= n_characters; ++i) {
+    CheckTextAtOffset(contenteditable_text, i, IA2_TEXT_BOUNDARY_LINE, 6,
+                      n_characters, L"\xFFFC test.");
+  }
+}
+
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestParagraphTextAtOffsetWithBoundaryLine) {
   Microsoft::WRL::ComPtr<IAccessibleText> paragraph_text;

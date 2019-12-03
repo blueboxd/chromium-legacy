@@ -9,6 +9,7 @@
 <translation id="1036348656032585052">Deaktiv edin</translation>
 <translation id="1038842779957582377">bilinməyən ad</translation>
 <translation id="1039626062703039346">Chrome Google Hesabınızı qorumağa və parolu dəyişməyə kömək edə bilər. Bu, Google'a bu sayt barədə bildiriş göndərəcək.</translation>
+<translation id="1044897699341250361">Mənası nədir</translation>
 <translation id="1050038467049342496">Digər tətbiqləri bağlayın</translation>
 <translation id="1055184225775184556">Əlavəni geri qaytarın</translation>
 <translation id="1056898198331236512">Xəbərdarlıq</translation>
@@ -183,6 +184,7 @@
 <translation id="1745880797583122200">Brauzer idarə edilir</translation>
 <translation id="17513872634828108">Panelləri açın</translation>
 <translation id="1753706481035618306">Səhifə nömrəsi</translation>
+<translation id="175838129965056221">Chrome bağlantınıza nəzarət edildiyini aşkarlayıb</translation>
 <translation id="1763864636252898013">Bu server <ph name="DOMAIN" /> domenini təsdiqləyə bilmədi; onun təhlükəsizlik sertifikatı cihazınızın əməliyyat sistemi tərəfindən doğrulanmayıb. Buna səbəb yanlış konfiqurasiya və ya hücumçu tərəfindən bağlantınızın ələ keçirilməsi ola bilər.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows Şəbəkə Diaqnostikasını işlətməyə çalışın<ph name="END_LINK" />.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -251,6 +253,7 @@
 <translation id="2119867082804433120">Aşağı sağdan deşik açmaq</translation>
 <translation id="2129079103035905234">Hərəkət sensorları</translation>
 <translation id="2130448033692577677">DnsOverHttpsMode siyasətinin ayarlanmamasına görə qeyd etdiyiniz şablonlar tətbiq edilməyə bilər.</translation>
+<translation id="2131277894177304644">Chromium bağlantınıza nəzarət edildiyini aşkarlayıb</translation>
 <translation id="213826338245044447">Mobil Əlfəcinlər</translation>
 <translation id="214556005048008348">Ödənişi ləğv edin</translation>
 <translation id="2147827593068025794">Arxafon Sinxronizasiyası</translation>
@@ -298,6 +301,7 @@
 <translation id="2354001756790975382">Digər əlfəcinlər</translation>
 <translation id="2354430244986887761">Təhlükəsiz Google Axtarış bu yaxınlarda <ph name="SITE" /> saytında <ph name="BEGIN_LINK" />zərərli tətbiq tapdı<ph name="END_LINK" />.</translation>
 <translation id="2355395290879513365">Hücumçular bu saytda baxdığınız şəkilləri görə bilər və onları deyişdirərək Sizi aldada bilər.</translation>
+<translation id="2355474962185559967">İndicə parolunuzu aldadıcı saytda daxil etdiniz. Chromium elə indi <ph name="WEBSITE_1" /> veb saytına keçərək parolunuzu dəyişməyi tövsiyə edir.</translation>
 <translation id="2356070529366658676">Soruşun</translation>
 <translation id="2359629602545592467">Çoxsaylı</translation>
 <translation id="2359808026110333948">Davam edin</translation>
@@ -401,6 +405,7 @@
 <translation id="2799020568854403057">Sonrakı saytda zərərli tətbiq var</translation>
 <translation id="2799223571221894425">Yenidən başladın</translation>
 <translation id="2803306138276472711">Google Güvənlik Baxış <ph name="SITE" /> saytında <ph name="BEGIN_LINK" />zərərli proqram aşkar etdi<ph name="END_LINK" />. Adətən güvənli olan veb saytlar bəzən zərərli proqramlar ilə yoluxur.</translation>
+<translation id="281585763351939989">Chromium bağlantınıza nəzarət edildiyini aşkarlayıb.</translation>
 <translation id="2824775600643448204">Ünvan və axtarış paneli</translation>
 <translation id="2826760142808435982">Bağlantı şifrələnib və <ph name="CIPHER" /> işlədərək doğrulanıb və açar mübadiləsi olaraq <ph name="KX" /> işlədir.</translation>
 <translation id="2835170189407361413">Formanı təmizləyin</translation>
@@ -445,6 +450,7 @@
 <translation id="3024663005179499861">Yanlış siyasət növü</translation>
 <translation id="3037605927509011580">Yapon xalq musiqisi dinləmisiniz?</translation>
 <translation id="3041612393474885105">Sertifikat Məlumatı</translation>
+<translation id="304755864151473094">Bu niyə baş verir</translation>
 <translation id="3057676462092457419">DnsOverHttps rejimi <ph name="SECURE_DNS_MODE_SECURE" /> hələ dəstəklənmir, rejim <ph name="SECURE_DNS_MODE_OFF" /> olaraq ayarlanıb.</translation>
 <translation id="3060227939791841287">C9 (Zərf)</translation>
 <translation id="3061707000357573562">Təmir Xidməti</translation>
@@ -482,6 +488,7 @@
 <translation id="3228969707346345236">Səhifə artıq <ph name="LANGUAGE" /> dilində olduğundan tərcümə alınmadı.</translation>
 <translation id="3229041911291329567">Cihaz və brauzer haqqında versiya məlumatı</translation>
 <translation id="323107829343500871"><ph name="CREDIT_CARD" /> üçün CVC kodu daxil edin</translation>
+<translation id="3234392465377209614">İndicə parolunuzu aldadıcı saytda daxil etdiniz. Chromium elə indi <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> və <ph name="WEBSITE_3" /> veb saytlarına keçərək parolunuzu dəyişməyi tövsiyə edir.</translation>
 <translation id="3234666976984236645">Bu saytda həmişə önəmli məzmunu aşkarlayın</translation>
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> <ph name="SUGGESTED_DOMAIN" /> ilə oxşar görünür. Hücum edənlər bəzən oxşar URL istifadə edərək saytları təqlid edir.</translation>
 <translation id="3270847123878663523">Təkrar sıralamanı geri qaytarın</translation>
@@ -514,6 +521,7 @@
 <translation id="342781501876943858">Parolunuzdan digər saytlarda təkrar istifadə etmisinizsə, Chromium onu sıfırlamağınızı tövsiyə edir.</translation>
 <translation id="3428151540071562330">Bir və ya bir neçə DnsOverHttpsTemplates server şablonu URI'si yanlışdır və istifadə edilməyəcək.</translation>
 <translation id="3431636764301398940">Bu kartı bu cihaza yazın</translation>
+<translation id="3438790640050632698">İndicə parolunuzu aldadıcı saytda daxil etdiniz. Chrome elə indi <ph name="WEBSITE_1" /> və <ph name="WEBSITE_2" /> veb saytlarına keçərək parolunuzu dəyişməyi tövsiyə edir.</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">Bu cihazın sahibi dinozavr oyununu söndürüb.</translation>
 <translation id="3447884698081792621">Sertifikatı göstərin (<ph name="ISSUER" /> tərəfindən paylaşılan)</translation>
@@ -527,6 +535,7 @@
 <translation id="3484560055331845446">Google Hesabınıza girişi itirə bilərsiniz. Chrome parolu dəyişməyi məsləhət görür. Daxil olmağınız tələb olunacaq.</translation>
 <translation id="3495081129428749620"><ph name="PAGE_TITLE" /> səhifəsində tapın</translation>
 <translation id="3512163584740124171">Eyni siyasət qrupundan olan digər siyasət üstünlük təşkil etdiyinə görə bu siyasət iqnor edilir.</translation>
+<translation id="3525469219100414032">İndicə parolunuzu aldadıcı saytda daxil etdiniz. Chrome elə indi <ph name="WEBSITE_1" /> veb saytına keçərək parolunuzu dəyişməyi tövsiyə edir.</translation>
 <translation id="3528171143076753409">Server sertifikatı etibarlı deyil.</translation>
 <translation id="3528485271872257980">Tünd-qəhvəyi</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Sinxronizasiya olunmuş cihazlarda ən az 1 element}=1{1 element (sinxronizasiya olunmuş cihazlarda daha çox)}other{# element (sinxronizasiya olunmuş cihazlarda daha çox)}}</translation>
@@ -604,6 +613,7 @@
 <translation id="3858027520442213535">Tarix və saatı güncəlləşdirin</translation>
 <translation id="3884278016824448484">Ziddiyyətli cihaz identifikatoru</translation>
 <translation id="3885155851504623709">Kilsə</translation>
+<translation id="388632593194507180">Nəzarət Aşkarlanıb</translation>
 <translation id="3890664840433101773">E-poçt ünvanı əlavə edin</translation>
 <translation id="3897092660631435901">Menyu</translation>
 <translation id="3901925938762663762">Kartın vaxtı bitib.</translation>
@@ -705,6 +715,7 @@
 <translation id="4305817255990598646">Dəyişin</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Blok edin (defolt)</translation>
+<translation id="4318312030194671742">Boyama Önbaxış Düzücü Xidməti</translation>
 <translation id="4318566738941496689">Cihaz adı və şəbəkə ünvanı</translation>
 <translation id="4325863107915753736">Məqalə tapılmadı</translation>
 <translation id="4326324639298822553">Bitmə tarixini yoxlayın və yenidən cəhd edin</translation>
@@ -721,6 +732,7 @@
 <translation id="4372948949327679948">Gözlənilən <ph name="VALUE_TYPE" /> dəyəri.</translation>
 <translation id="4377125064752653719"><ph name="DOMAIN" /> domeninə daxil olmağa çalışdınız, onun sertifikatı geri alınıb. Bu o deməkdir ki, güvənlik kredensiallarına kəsinliklə inanmaq olmaz. Ola bilər ki, hücumçu ilə əlaqəyə girirsiniz.</translation>
 <translation id="4378154925671717803">Telefon</translation>
+<translation id="437847259914972036">Vebdə fəaliyyətiniz və daxil etdiyiniz istənilən məlumatlar izlənilir, həmçinin məzmun xəbəriniz olmadan dəyişdirilə bilər.</translation>
 <translation id="4398334096870680409">Bu funksiya cihazınızda dəstəklənmir.</translation>
 <translation id="4406896451731180161">axtarış nəticələri</translation>
 <translation id="4408413947728134509">Kukilər <ph name="NUM_COOKIES" /></translation>
@@ -956,6 +968,7 @@
 <translation id="5565735124758917034">Aktiv</translation>
 <translation id="5570825185877910964">Hesabınızı qoruyun</translation>
 <translation id="5571083550517324815">Bu ünvandan götürmək mümkün deyil. Başqa ünvan seçin.</translation>
+<translation id="5572009199897554128">İndicə parolunuzu aldadıcı saytda daxil etdiniz. Chromium elə indi <ph name="WEBSITE_1" /> və <ph name="WEBSITE_2" /> veb saytlarına keçərək parolunuzu dəyişməyi tövsiyə edir.</translation>
 <translation id="5580958916614886209">Bitmə ayını yoxlayın və yenidən cəhd edin</translation>
 <translation id="5586446728396275693">Yadda saxlanılmış ünvan yoxdur</translation>
 <translation id="5595485650161345191">Ünvana düzəliş edin</translation>
@@ -1138,6 +1151,7 @@
 <translation id="6446163441502663861">Kahu (Zərf)</translation>
 <translation id="6446608382365791566">Ətraflı məlumat əlavə edin</translation>
 <translation id="6447842834002726250">Kukilər</translation>
+<translation id="644931407731409778">PDF sənədi {COUNT,plural, =1{1 səhifə}other{# səhifə}} ehtiva edir</translation>
 <translation id="6451458296329894277">Formanın yenidən təqdim edilməsini təsdiq edin</translation>
 <translation id="6457206614190510200">Yəhər tikişi vurun</translation>
 <translation id="6465306955648956876">Parolları İdarə edin...</translation>
@@ -1156,6 +1170,7 @@
 <translation id="6547208576736763147">Soldan qoşa deşik açın</translation>
 <translation id="6554795675067793129">Hesabınızı <ph name="ENROLLMENT_DOMAIN" /> idarə edir.</translation>
 <translation id="6556866813142980365">Yenidən edin</translation>
+<translation id="6559565319173126218">Şəbəkəyə müdaxilə və nəzarət məqsədilə istifadə edildiyi məlum olduğuna görə Chrome bu bağlantı üçün verilən sertifikata etibar etmir.</translation>
 <translation id="6569060085658103619">Artırma səhifəsinə baxırsınız</translation>
 <translation id="6573200754375280815">Sağdan qoşa deşik açın</translation>
 <translation id="6578796323535178455">C2 (Zərf)</translation>
@@ -1189,6 +1204,7 @@
 <translation id="6710594484020273272">&lt;Axtarış sözünü yazın&gt;</translation>
 <translation id="671076103358959139">Qeydiyyat Açarı:</translation>
 <translation id="6711464428925977395">Proksi serveri ilə bağlı nəsə xəta var və ya ünvan yanlışdır.</translation>
+<translation id="6721811549156553509">Şəbəkə monitoru özünü daxil olduğunuz saytlar kimi göstərə bilər, eləcə də fəaliyyətinizi və daxil etdiyiniz istənilən məlumatları (məsələn, parollar, mesajlar və ya kredit kartları) görə bilər. Onlayn şəkildə həssas məlumatlarla bağlı fəaliyyət ilə məşğul olan zaman ehtiyatlı olmalısınız, belə ki, şəbəkə monitoru onu görə və daxil olduğunuz səhifələrdə məzmunu dəyişə bilər. Buraya internet şəbəkəsinə çıxış imkanı olan digər brauzerlərdə və proqramlarda fəaliyyət daxildir.</translation>
 <translation id="6738516213925468394">Data <ph name="TIME" /> tarixində <ph name="BEGIN_LINK" />sinxronizasiya parolu<ph name="END_LINK" /> ilə şifrələnib. Sinxronizasiyanı başlatmaq üçün klikləyin.</translation>
 <translation id="674375294223700098">Naməlum server sertifikatı xətası</translation>
 <translation id="6744009308914054259">Bağlantı gözlənilərkən oflayn məqalələri oxumaq üçün Endirilənlərə baxa bilərsiniz.</translation>
@@ -1273,6 +1289,7 @@
 <translation id="721197778055552897">Bu problem haqqında <ph name="BEGIN_LINK" />ətraflı məlumat alın<ph name="END_LINK" />.</translation>
 <translation id="7219179957768738017">Bağlantı <ph name="SSL_VERSION" /> istifadə edir.</translation>
 <translation id="7220786058474068424">Prosesdən keçirilir...</translation>
+<translation id="7239736667463137521">Chrome bağlantınıza nəzarət edildiyini aşkarlayıb.</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Sonrakı sayda virus var</translation>
 <translation id="724975217298816891">Detallarınızı güncəlləmək məqsədi ilə <ph name="CREDIT_CARD" /> üçün bitmə tarixi və CVC nömrəsini daxil edin. Təsdiq etdikdən sonra, kart detallarınız bu sayt ilə paylaşılacaq.</translation>
@@ -1299,6 +1316,7 @@
 <translation id="7346048084945669753">Qoşulub:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Əmr sahəsi</translation>
+<translation id="7353776484425559055">Şəbəkəyə müdaxilə və nəzarət məqsədilə istifadə edildiyi məlum olduğuna görə Chromium bu bağlantı üçün verilən sertifikata etibar etmir. Bu xətanın səbəbi cihazınızda quraşdırılmış sertifikat ola bilər. Təhlükəsiz bağlantılar yaradılan zaman Chromium istifadəçinin kompüterinə və ya mobil cihazına lokal şəkildə quraşdırılmış sertifikatlara etibar edir. Bu, istifadəçilərə veb sayt işləyib-hazırlayan zaman alətləri işə salmağa və bağlantılarını sazlamağa, yaxud korporativ mühitlərə daxili trafiki ələ keçirməyə və nəzarət etməyə imkan verir. Bu üsuldan ictimai internet şəbəkəsində trafikin ələ keçirilməsi üçün istifadə edilən zaman Chromium xəbərdarlıq göstərir.</translation>
 <translation id="7372973238305370288">axtarış nəticəsi</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Media Nəzarətləri</translation>
@@ -1360,6 +1378,7 @@
 <translation id="7592362899630581445">Serverin sertifikatı ad limitlərini pozur.</translation>
 <translation id="7598391785903975535"><ph name="UPPER_ESTIMATE" /> həcmindən az</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> hal-hazırda bu tələbi idarə edə bilmir.</translation>
+<translation id="7599841999395223597">Şəbəkəyə müdaxilə və nəzarət məqsədilə istifadə edildiyi məlum olduğuna görə Chrome bu bağlantı üçün verilən sertifikata etibar etmir. Bu xətanın səbəbi cihazınızda quraşdırılmış sertifikat ola bilər. Təhlükəsiz bağlantılar yaradılan zaman Chrome istifadəçinin kompüterinə və ya mobil cihazına lokal şəkildə quraşdırılmış sertifikatlara etibar edir. Bu, istifadəçilərə veb sayt işləyib-hazırlayan zaman alətləri işə salmağa və bağlantılarını sazlamağa, yaxud korporativ mühitlərə daxili trafiki ələ keçirməyə və nəzarət etməyə imkan verir. Bu üsuldan ictimai internet şəbəkəsində trafikin ələ keçirilməsi üçün istifadə edilən zaman Chrome xəbərdarlıq göstərir.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> heç vaxt tərcümə etməyin</translation>
 <translation id="7610193165460212391">Dəyər <ph name="VALUE" /> aralığından kənardır.</translation>
 <translation id="7613889955535752492">Bitmə tarixi: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -1676,6 +1695,7 @@
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">Google Hesabına girişi itirə bilərsiniz. Chromium parolu dəyişməyi məsləhət görür. Daxil olmağınız tələb olunacaq.</translation>
 <translation id="939736085109172342">Yeni qovluq</translation>
+<translation id="940786960229275114">İndicə parolunuzu aldadıcı saytda daxil etdiniz. Chrome elə indi <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> və <ph name="WEBSITE_3" /> veb saytlarına keçərək parolunuzu dəyişməyi tövsiyə edir.</translation>
 <translation id="945855313015696284">Aşağıdakı məlumatı yoxlayın və yanlış kartları silin</translation>
 <translation id="950736567201356821">Yuxarıdan üçlü deşik açın</translation>
 <translation id="951104842009476243">Qəbul edilən Debit və Əvvəlcədən Ödənilmiş Kartlar</translation>

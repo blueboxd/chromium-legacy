@@ -140,6 +140,13 @@ public class BrowserServicesIntentDataProvider {
     }
 
     /**
+     * @return Whether the intent specifies a custom toolbar color.
+     */
+    public boolean hasCustomToolbarColor() {
+        return false;
+    }
+
+    /**
      * @return The navigation bar color specified in the intent, or null if not specified.
      */
     @Nullable

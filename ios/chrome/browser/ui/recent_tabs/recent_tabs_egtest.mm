@@ -2,34 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
-#import <XCTest/XCTest.h>
-
 #import <map>
 #import <string>
 
 #include "base/ios/ios_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/app/main_controller.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/history/history_ui_constants.h"
+#import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
-#import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
-#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #import "ui/base/l10n/l10n_util.h"
@@ -79,8 +71,8 @@ id<GREYMatcher> TitleOfTestPage() {
 @implementation RecentTabsTestCase
 
 - (void)setUp {
-  [ChromeEarlGrey clearBrowsingHistory];
   [super setUp];
+  [ChromeEarlGrey clearBrowsingHistory];
   web::test::SetUpSimpleHttpServer(std::map<GURL, std::string>{{
       web::test::HttpServer::MakeUrl(kURLOfTestPage),
       std::string(kHTMLOfTestPage),
@@ -168,15 +160,13 @@ id<GREYMatcher> TitleOfTestPage() {
   // Sign-in promo should be visible with cold state.
   [SigninEarlGreyUI checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState
                                         closeButton:NO];
-  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
-  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
-      identity);
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
+  [SigninEarlGreyUtils addFakeIdentity:fakeIdentity];
   // Sign-in promo should be visible with warm state.
   [SigninEarlGreyUI checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState
                                         closeButton:NO];
   [self closeRecentTabs];
-  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
-      ->RemoveIdentity(identity);
+  [SigninEarlGreyUtils removeFakeIdentity:fakeIdentity];
 }
 
 // Tests that the sign-in promo can be reloaded correctly while being hidden.
@@ -196,9 +186,8 @@ id<GREYMatcher> TitleOfTestPage() {
   [SigninEarlGreyUI checkSigninPromoNotVisible];
 
   // Add an account.
-  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
-  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
-      identity);
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
+  [SigninEarlGreyUtils addFakeIdentity:fakeIdentity];
 
   // Tap on "Other Devices", to show the sign-in promo.
   [[EarlGrey selectElementWithMatcher:otherDevicesMatcher]
@@ -206,8 +195,7 @@ id<GREYMatcher> TitleOfTestPage() {
   [SigninEarlGreyUI checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState
                                         closeButton:NO];
   [self closeRecentTabs];
-  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
-      ->RemoveIdentity(identity);
+  [SigninEarlGreyUtils removeFakeIdentity:fakeIdentity];
 }
 
 // Tests that the VC can be dismissed by swiping down.

@@ -111,8 +111,8 @@ void PaintComplexOutline(GraphicsContext& graphics_context,
   SkPath::Iter iter(path, false);
   SkPoint points[4];
   wtf_size_t count = 0;
-  for (SkPath::Verb verb = iter.next(points, false); verb != SkPath::kDone_Verb;
-       verb = iter.next(points, false)) {
+  for (SkPath::Verb verb = iter.next(points); verb != SkPath::kDone_Verb;
+       verb = iter.next(points)) {
     if (verb != SkPath::kLine_Verb)
       continue;
 

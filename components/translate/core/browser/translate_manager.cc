@@ -277,13 +277,17 @@ void TranslateManager::TranslatePage(const std::string& original_source_lang,
 
   if (source_lang == target_lang) {
     // If the languages are the same, try the translation using the unknown
-    // language code. The source and target languages should only be equal if
-    // the translation was manually triggered by the user. Rather than show them
-    // the error, we should attempt to send the page for translation. For pages
-    // with multiple languages we often detect same language, but the
+    // language code on Desktop. Android and iOS don't support unknown source
+    // language, so this silently falls back to 'auto' when making the
+    // translation request. The source and target languages should only be equal
+    // if the translation was manually triggered by the user. Rather than show
+    // them the error, we should attempt to send the page for translation. For
+    // page with multiple languages we often detect same language, but the
     // Translation service is able to translate the various languages using it's
     // own language detection.
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
     source_lang = translate::kUnknownLanguageCode;
+#endif
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::
             INITIATION_STATUS_IDENTICAL_LANGUAGE_USE_SOURCE_LANGUAGE_UNKNOWN);

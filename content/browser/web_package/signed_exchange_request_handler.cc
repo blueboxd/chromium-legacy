@@ -77,7 +77,7 @@ void SignedExchangeRequestHandler::MaybeCreateLoader(
 
 bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
     const network::ResourceRequest& request,
-    const network::ResourceResponseHead& response_head,
+    network::mojom::URLResponseHeadPtr* response_head,
     mojo::ScopedDataPipeConsumerHandle* response_body,
     mojo::PendingRemote<network::mojom::URLLoader>* loader,
     mojo::PendingReceiver<network::mojom::URLLoaderClient>* client_receiver,
@@ -85,8 +85,8 @@ bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
     bool* skip_other_interceptors,
     bool* will_return_unsafe_redirect) {
   DCHECK(!signed_exchange_loader_);
-  if (!signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(request.url,
-                                                               response_head)) {
+  if (!signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(
+          request.url, **response_head)) {
     return false;
   }
 
@@ -98,17 +98,18 @@ bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
   // which means some checks like SafeBrowsing may not see the redirect. Given
   // that the redirected request will be checked when it's restarted we suppose
   // this is fine.
-  signed_exchange_loader_ = std::make_unique<SignedExchangeLoader>(
-      request, response_head, std::move(*response_body), std::move(client),
-      url_loader->Unbind(), url_loader_options_,
-      true /* should_redirect_to_fallback */,
-      std::make_unique<SignedExchangeDevToolsProxy>(
-          request.url, response_head, frame_tree_node_id_,
-          devtools_navigation_token_, request.report_raw_headers),
+  auto reporter =
       SignedExchangeReporter::MaybeCreate(request.url, request.referrer.spec(),
-                                          response_head, frame_tree_node_id_),
-      url_loader_factory_, url_loader_throttles_getter_, frame_tree_node_id_,
-      metric_recorder_, accept_langs_);
+                                          **response_head, frame_tree_node_id_);
+  auto devtools_proxy = std::make_unique<SignedExchangeDevToolsProxy>(
+      request.url, response_head->Clone(), frame_tree_node_id_,
+      devtools_navigation_token_, request.report_raw_headers);
+  signed_exchange_loader_ = std::make_unique<SignedExchangeLoader>(
+      request, std::move(*response_head), std::move(*response_body),
+      std::move(client), url_loader->Unbind(), url_loader_options_,
+      true /* should_redirect_to_fallback */, std::move(devtools_proxy),
+      std::move(reporter), url_loader_factory_, url_loader_throttles_getter_,
+      frame_tree_node_id_, metric_recorder_, accept_langs_);
 
   *skip_other_interceptors = true;
   return true;

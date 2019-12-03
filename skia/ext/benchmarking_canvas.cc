@@ -299,23 +299,23 @@ std::unique_ptr<base::Value> AsValue(const SkPath& path) {
   SkPath::Iter iter(const_cast<SkPath&>(path), false);
   SkPoint points[4];
 
-  for(SkPath::Verb verb = iter.next(points, false);
-      verb != SkPath::kDone_Verb; verb = iter.next(points, false)) {
-      DCHECK_LT(static_cast<size_t>(verb), SK_ARRAY_COUNT(gVerbStrings));
+  for (SkPath::Verb verb = iter.next(points); verb != SkPath::kDone_Verb;
+       verb = iter.next(points)) {
+    DCHECK_LT(static_cast<size_t>(verb), SK_ARRAY_COUNT(gVerbStrings));
 
-      std::unique_ptr<base::DictionaryValue> verb_val(
-          new base::DictionaryValue());
-      std::unique_ptr<base::ListValue> pts_val(new base::ListValue());
+    std::unique_ptr<base::DictionaryValue> verb_val(
+        new base::DictionaryValue());
+    std::unique_ptr<base::ListValue> pts_val(new base::ListValue());
 
-      for (int i = 0; i < gPtsPerVerb[verb]; ++i)
-        pts_val->Append(AsValue(points[i + gPtOffsetPerVerb[verb]]));
+    for (int i = 0; i < gPtsPerVerb[verb]; ++i)
+      pts_val->Append(AsValue(points[i + gPtOffsetPerVerb[verb]]));
 
-      verb_val->Set(gVerbStrings[verb], std::move(pts_val));
+    verb_val->Set(gVerbStrings[verb], std::move(pts_val));
 
-      if (SkPath::kConic_Verb == verb)
-        verb_val->Set("weight", AsValue(iter.conicWeight()));
+    if (SkPath::kConic_Verb == verb)
+      verb_val->Set("weight", AsValue(iter.conicWeight()));
 
-      verbs_val->Append(std::move(verb_val));
+    verbs_val->Append(std::move(verb_val));
   }
   val->Set("verbs", std::move(verbs_val));
 

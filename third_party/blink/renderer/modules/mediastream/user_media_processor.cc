@@ -1148,7 +1148,7 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeAudioSourceObject(
   pending_local_sources_.push_back(source);
 
   blink::WebPlatformMediaStreamSource::ConstraintsRepeatingCallback
-      source_ready = ConvertToBaseCallback(CrossThreadBindRepeating(
+      source_ready = ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
           &UserMediaProcessor::OnAudioSourceStartedOnAudioThread, task_runner_,
           WrapCrossThreadWeakPersistent(this)));
 

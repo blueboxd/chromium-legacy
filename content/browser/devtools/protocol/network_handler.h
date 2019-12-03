@@ -21,6 +21,7 @@
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace net {
 class HttpRequestHeaders;
@@ -29,7 +30,6 @@ class X509Certificate;
 }  // namespace net
 
 namespace network {
-struct ResourceResponseHead;
 struct ResourceRequest;
 struct URLLoaderCompletionStatus;
 }  // namespace network
@@ -176,7 +176,7 @@ class NetworkHandler : public DevToolsDomainHandler,
                         const std::string& loader_id,
                         const GURL& url,
                         const char* resource_type,
-                        const network::ResourceResponseHead& head,
+                        const network::mojom::URLResponseHead& head,
                         Maybe<std::string> frame_id);
   void LoadingComplete(
       const std::string& request_id,
@@ -186,7 +186,7 @@ class NetworkHandler : public DevToolsDomainHandler,
   void OnSignedExchangeReceived(
       base::Optional<const base::UnguessableToken> devtools_navigation_token,
       const GURL& outer_request_url,
-      const network::ResourceResponseHead& outer_response,
+      const network::mojom::URLResponseHead& outer_response,
       const base::Optional<SignedExchangeEnvelope>& header,
       const scoped_refptr<net::X509Certificate>& certificate,
       const base::Optional<net::SSLInfo>& ssl_info,

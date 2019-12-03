@@ -263,7 +263,6 @@ source_set("app_internal") {
     "//ios/public/provider/chrome/browser/signin",
     "//ios/public/provider/chrome/browser/user_feedback",
     "//ios/testing/perf:startup",
-    "//ios/third_party/material_roboto_font_loader_ios",
     "//ios/web/common:web_view_creation_util",
     "//ios/web/public/webui",
     "//mojo/core/embedder",

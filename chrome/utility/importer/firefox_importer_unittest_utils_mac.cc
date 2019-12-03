@@ -76,7 +76,7 @@ class FFDecryptorClientListener
           receiver)
       : receiver_(this, std::move(receiver)) {}
 
-  void SetQuitClosure(base::Closure quit_closure) {
+  void SetQuitClosure(base::OnceClosure quit_closure) {
     receiver_.set_disconnect_handler(std::move(quit_closure));
   }
 
@@ -160,23 +160,24 @@ class FFDecryptorServerChannelListener {
   bool got_result_;
 
  private:
-  void InitDecryptorReply(base::Closure quit_closure, bool result) {
+  void InitDecryptorReply(base::OnceClosure quit_closure, bool result) {
     result_bool_ = result;
     got_result_ = true;
-    quit_closure.Run();
+    std::move(quit_closure).Run();
   }
 
-  void DecryptReply(base::Closure quit_closure, const base::string16& text) {
+  void DecryptReply(base::OnceClosure quit_closure,
+                    const base::string16& text) {
     result_string_ = text;
     got_result_ = true;
-    quit_closure.Run();
+    std::move(quit_closure).Run();
   }
 
-  void ParseSignonsReply(base::Closure quit_closure,
+  void ParseSignonsReply(base::OnceClosure quit_closure,
                          const std::vector<autofill::PasswordForm>& forms) {
     result_vector_ = forms;
     got_result_ = true;
-    quit_closure.Run();
+    std::move(quit_closure).Run();
   }
 
   mojo::Remote<firefox_importer_unittest_utils_mac::mojom::FirefoxDecryptor>

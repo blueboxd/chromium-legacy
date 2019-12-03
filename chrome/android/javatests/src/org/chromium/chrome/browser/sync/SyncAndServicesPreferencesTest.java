@@ -29,8 +29,8 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
-import org.chromium.chrome.browser.settings.Preferences;
 import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.sync.SyncAndServicesPreferences;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
@@ -49,7 +49,7 @@ public class SyncAndServicesPreferencesTest {
     @Rule
     public SyncTestRule mSyncTestRule = new SyncTestRule();
 
-    private Preferences mPreferences;
+    private SettingsActivity mSettingsActivity;
 
     @After
     public void tearDown() {
@@ -255,19 +255,20 @@ public class SyncAndServicesPreferencesTest {
         Intent intent =
                 PreferencesLauncher.createIntentForSettingsPage(context, fragmentName, arguments);
         Activity activity = InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
-        Assert.assertTrue(activity instanceof Preferences);
+        Assert.assertTrue(activity instanceof SettingsActivity);
         ApplicationTestUtils.finishActivity(activity);
     }
 
     private SyncAndServicesPreferences startSyncAndServicesPreferences() {
-        mPreferences = mSyncTestRule.startPreferences(SyncAndServicesPreferences.class.getName());
+        mSettingsActivity =
+                mSyncTestRule.startSettingsActivity(SyncAndServicesPreferences.class.getName());
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        return (SyncAndServicesPreferences) mPreferences.getMainFragment();
+        return (SyncAndServicesPreferences) mSettingsActivity.getMainFragment();
     }
 
     private void closeFragment(SyncAndServicesPreferences fragment) {
         FragmentTransaction transaction =
-                mPreferences.getSupportFragmentManager().beginTransaction();
+                mSettingsActivity.getSupportFragmentManager().beginTransaction();
         transaction.remove(fragment);
         transaction.commit();
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();

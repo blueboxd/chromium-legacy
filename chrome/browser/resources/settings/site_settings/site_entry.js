@@ -78,7 +78,7 @@ Polymer({
      * The selected sort method.
      * @type {!settings.SortMethod|undefined}
      */
-    sortMethod: {type: String, observer: 'updateOrigins_'}
+    sortMethod: {type: String, observer: 'updateOrigins_'},
   },
 
   /** @private {?settings.LocalDataBrowserProxy} */
@@ -123,6 +123,17 @@ Polymer({
       return true;
     }
     return false;
+  },
+
+  /**
+   * Whether or not to display the overflow menu for a site group.
+   * @param {SiteGroup} siteGroup The eTLD+1 group of origins.
+   * @return {boolean}
+   * @private
+   */
+  shouldHideOverflow_: function(siteGroup) {
+    return !this.grouped_(siteGroup) &&
+        !loadTimeData.getBoolean('enableStoragePressureUI');
   },
 
   /**

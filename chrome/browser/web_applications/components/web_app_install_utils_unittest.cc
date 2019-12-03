@@ -38,14 +38,12 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
       base::NullableString16(base::UTF8ToUTF16(kAppShortName), false);
 
   {
-    blink::Manifest::FileHandler file_handler;
-    file_handler.action = GURL("http://example.com/open-files");
-    blink::Manifest::FileFilter file;
-    file.accept.push_back(base::UTF8ToUTF16(".png"));
-    file.name = base::UTF8ToUTF16("Images");
-    file_handler.files.push_back(file);
-    manifest.file_handler =
-        base::Optional<blink::Manifest::FileHandler>(std::move(file_handler));
+    blink::Manifest::FileHandler handler;
+    handler.action = GURL("http://example.com/open-files");
+    handler.accept[base::UTF8ToUTF16("image/png")].push_back(
+        base::UTF8ToUTF16(".png"));
+    handler.name = base::UTF8ToUTF16("Images");
+    manifest.file_handlers.push_back(handler);
   }
 
   UpdateWebAppInfoFromManifest(manifest, &web_app_info,
@@ -85,13 +83,13 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
   EXPECT_EQ(kAppIcon3, web_app_info.icons[1].url);
 
   // Check file handlers were updated
-  EXPECT_TRUE(web_app_info.file_handler.has_value());
-  auto file_handler = web_app_info.file_handler.value();
-  EXPECT_EQ(manifest.file_handler->action, file_handler.action);
-  EXPECT_EQ(1u, file_handler.files.size());
-  EXPECT_EQ(base::UTF8ToUTF16("Images"), file_handler.files[0].name);
-  EXPECT_EQ(1u, file_handler.files[0].accept.size());
-  EXPECT_EQ(base::UTF8ToUTF16(".png"), file_handler.files[0].accept[0]);
+  EXPECT_EQ(1u, web_app_info.file_handlers.size());
+  auto file_handler = web_app_info.file_handlers;
+  EXPECT_EQ(manifest.file_handlers[0].action, file_handler[0].action);
+  ASSERT_EQ(file_handler[0].accept.count(base::UTF8ToUTF16("image/png")), 1u);
+  EXPECT_EQ(file_handler[0].accept[base::UTF8ToUTF16("image/png")][0],
+            base::UTF8ToUTF16(".png"));
+  EXPECT_EQ(file_handler[0].name, base::UTF8ToUTF16("Images"));
 }
 
 // Tests "scope" is only set for installable sites.

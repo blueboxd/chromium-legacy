@@ -76,12 +76,13 @@ class GlobalErrorWithStandardBubble
   virtual base::string16 GetBubbleViewCancelButtonLabel() = 0;
   virtual int GetDefaultDialogButton() const;
   virtual bool ShouldCloseOnDeactivate() const;
-  virtual bool ShouldUseExtraView() const;
+  virtual base::string16 GetBubbleViewDetailsButtonLabel();
 
   // Override these methods to be notified when events happen on the bubble:
   virtual void OnBubbleViewDidClose(Browser* browser) = 0;
   virtual void BubbleViewAcceptButtonPressed(Browser* browser) = 0;
   virtual void BubbleViewCancelButtonPressed(Browser* browser) = 0;
+  virtual void BubbleViewDetailsButtonPressed(Browser* browser);
 
   // GlobalError overrides:
   bool HasBubbleView() override;

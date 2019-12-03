@@ -271,6 +271,10 @@ int Me2MeNativeMessagingHostMain(int argc, char** argv) {
   std::unique_ptr<extensions::NativeMessagingChannel> channel(
       new PipeMessagingChannel(std::move(read_file), std::move(write_file)));
 
+#if defined(OS_POSIX)
+  PipeMessagingChannel::ReopenStdinStdout();
+#endif  // defined(OS_POSIX)
+
   std::unique_ptr<ChromotingHostContext> context =
       ChromotingHostContext::Create(new remoting::AutoThreadTaskRunner(
           main_task_executor.task_runner(), run_loop.QuitClosure()));

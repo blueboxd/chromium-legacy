@@ -218,10 +218,10 @@ class VideoCaptureImplManagerTest : public ::testing::Test,
                                  const media::VideoCaptureParams& params) {
     return manager_->StartCapture(
         id, params,
-        ConvertToBaseCallback(CrossThreadBindRepeating(
+        ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
             &VideoCaptureImplManagerTest::OnStateUpdate,
             CrossThreadUnretained(this), id)),
-        ConvertToBaseCallback(
+        ConvertToBaseRepeatingCallback(
             CrossThreadBindRepeating(&VideoCaptureImplManagerTest::OnFrameReady,
                                      CrossThreadUnretained(this))));
   }

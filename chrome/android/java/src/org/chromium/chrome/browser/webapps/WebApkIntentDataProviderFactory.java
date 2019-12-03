@@ -344,17 +344,18 @@ public class WebApkIntentDataProviderFactory {
         WebappExtras webappExtras = new WebappExtras(
                 WebappRegistry.webApkIdForPackage(webApkPackageName), url, scope, primaryIcon, name,
                 shortName, displayMode, orientation, source,
-                WebappIntentUtils.isLongColorValid(themeColor),
                 WebappIntentUtils.colorFromLongColor(backgroundColor), defaultBackgroundColor,
                 false /* isIconGenerated */, isPrimaryIconMaskable, forceNavigation);
         WebApkExtras webApkExtras = new WebApkExtras(webApkPackageName, badgeIcon, splashIcon,
                 isSplashIconMaskable, shellApkVersion, manifestUrl, manifestStartUrl, distributor,
                 iconUrlToMurmur2HashMap, shareTarget, isSplashProvidedByWebApk, shareData,
                 webApkVersionCode);
-        int toolbarColor = webappExtras.hasCustomToolbarColor
+        boolean hasCustomToolbarColor = WebappIntentUtils.isLongColorValid(themeColor);
+        int toolbarColor = hasCustomToolbarColor
                 ? (int) themeColor
                 : WebappIntentDataProvider.getDefaultToolbarColor();
-        return new WebappIntentDataProvider(toolbarColor, webappExtras, webApkExtras);
+        return new WebappIntentDataProvider(
+                toolbarColor, hasCustomToolbarColor, webappExtras, webApkExtras);
     }
 
     private static int computeSource(Intent intent, ShareData shareData) {

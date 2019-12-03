@@ -19,8 +19,8 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/ip_endpoint.h"
-#include "services/network/public/cpp/resource_response_info.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -143,7 +143,7 @@ void ReportResult(int frame_tree_node_id,
 std::unique_ptr<SignedExchangeReporter> SignedExchangeReporter::MaybeCreate(
     const GURL& outer_url,
     const std::string& referrer,
-    const network::ResourceResponseHead& response,
+    const network::mojom::URLResponseHead& response,
     int frame_tree_node_id) {
   if (!signed_exchange_utils::
           IsSignedExchangeReportingForDistributorsEnabled()) {
@@ -156,7 +156,7 @@ std::unique_ptr<SignedExchangeReporter> SignedExchangeReporter::MaybeCreate(
 SignedExchangeReporter::SignedExchangeReporter(
     const GURL& outer_url,
     const std::string& referrer,
-    const network::ResourceResponseHead& response,
+    const network::mojom::URLResponseHead& response,
     int frame_tree_node_id)
     : report_(network::mojom::SignedExchangeReport::New()),
       request_start_(response.load_timing.request_start),

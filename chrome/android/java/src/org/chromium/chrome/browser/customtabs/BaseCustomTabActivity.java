@@ -19,7 +19,6 @@ import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarC
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityComponent;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
-import org.chromium.chrome.browser.webapps.WebappExtras;
 
 /**
  * Contains functionality which is shared between {@link WebappActivity} and
@@ -94,27 +93,17 @@ public abstract class BaseCustomTabActivity<C extends ChromeActivityComponent>
 
     @Override
     public int getActivityThemeColor() {
-        if (getIntentDataProvider().isOpenedByChrome()) {
-            return TabState.UNSPECIFIED_THEME_COLOR;
+        BrowserServicesIntentDataProvider intentDataProvider = getIntentDataProvider();
+        if (!intentDataProvider.isOpenedByChrome() && intentDataProvider.hasCustomToolbarColor()) {
+            return intentDataProvider.getToolbarColor();
         }
-
-        WebappExtras webappExtras = getIntentDataProvider().getWebappExtras();
-        if (webappExtras != null && !webappExtras.hasCustomToolbarColor) {
-            return TabState.UNSPECIFIED_THEME_COLOR;
-        }
-
-        return getIntentDataProvider().getToolbarColor();
+        return TabState.UNSPECIFIED_THEME_COLOR;
     }
 
     @Override
-    public int getBaseStatusBarColor() {
-        return mStatusBarColorProvider.getBaseStatusBarColor(super.getBaseStatusBarColor());
-    }
-
-    @Override
-    public boolean isStatusBarDefaultThemeColor() {
-        return mStatusBarColorProvider.isStatusBarDefaultThemeColor(
-                super.isStatusBarDefaultThemeColor());
+    public int getBaseStatusBarColor(boolean activityHasTab) {
+        return mStatusBarColorProvider.getBaseStatusBarColor(
+                activityHasTab, super.getBaseStatusBarColor(activityHasTab));
     }
 
     @Override

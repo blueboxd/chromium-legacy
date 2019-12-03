@@ -10,52 +10,22 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
-#include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/core_account_id.h"
-#include "google_apis/gaia/gaia_oauth_client.h"
-
-class GoogleServiceAuthError;
-
-namespace signin {
-struct AccessTokenInfo;
-}
-
-namespace network {
-class SharedURLLoaderFactory;
-}
 
 namespace gcm {
 
-struct AccountIds {
-  CoreAccountId account_key;  // The account ID used by IdentityManager.
-  std::string gaia;
-  std::string email;
-};
-
-class AccountIdFetcher;
-
 // The AccountTracker keeps track of what accounts exist on the
-// profile and the state of their credentials. The tracker fetches the
-// gaia ID of each account it knows about.
-//
-// The AccountTracker maintains these invariants:
-// 1. Events are only fired after the gaia ID has been fetched.
-// 2. Add/Remove and SignIn/SignOut pairs are always generated in order.
-// 3. SignIn follows Add, and there will be a SignOut between SignIn & Remove.
-// 4. If there is no primary account, there are no other accounts.
+// profile and the state of their credentials.
 class AccountTracker : public signin::IdentityManager::Observer {
  public:
-  AccountTracker(
-      signin::IdentityManager* identity_manager,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+  explicit AccountTracker(signin::IdentityManager* identity_manager);
   ~AccountTracker() override;
 
   class Observer {
    public:
-    virtual void OnAccountSignInChanged(const AccountIds& ids,
+    virtual void OnAccountSignInChanged(const CoreAccountInfo& account,
                                         bool is_signed_in) = 0;
   };
 
@@ -64,20 +34,14 @@ class AccountTracker : public signin::IdentityManager::Observer {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Returns the list of accounts that are signed in, and for which gaia IDs
+  // Returns the list of accounts that are signed in, and for which gaia account
   // have been fetched. The primary account for the profile will be first
-  // in the vector. Additional accounts will be in order of their gaia IDs.
-  std::vector<AccountIds> GetAccounts() const;
-
-  // Indicates if all user information has been fetched. If the result is false,
-  // there are still unfinished fetchers.
-  virtual bool IsAllUserInfoFetched() const;
+  // in the vector. Additional accounts will be in order of their gaia account.
+  std::vector<CoreAccountInfo> GetAccounts() const;
 
  private:
-  friend class AccountIdFetcher;
-
   struct AccountState {
-    AccountIds ids;
+    CoreAccountInfo account;
     bool is_signed_in;
   };
 
@@ -91,63 +55,24 @@ class AccountTracker : public signin::IdentityManager::Observer {
   void OnRefreshTokenRemovedForAccount(
       const CoreAccountId& account_id) override;
 
-  void OnUserInfoFetchSuccess(AccountIdFetcher* fetcher,
-                              const std::string& gaia_id);
-  void OnUserInfoFetchFailure(AccountIdFetcher* fetcher);
+  // Add |account_info| to the lists of accounts tracked by this AccountTracker.
+  void StartTrackingAccount(const CoreAccountInfo& account_info);
 
-  void NotifySignInChanged(const AccountState& account);
+  // Stops tracking |account_id|. Notifies all observers if the account was
+  // previously signed in.
+  void StopTrackingAccount(const CoreAccountId account_id);
 
-  void UpdateSignInState(const CoreAccountId& account_key, bool is_signed_in);
-
-  void StartTrackingAccount(const CoreAccountId& account_key);
-
-  // Note: |account_key| is passed by value here, because the original
-  // object may be stored in |accounts_| and if so, it will be destroyed
-  // after erasing the key from the map.
-  void StopTrackingAccount(const CoreAccountId account_key);
-
+  // Stops tracking all accounts.
   void StopTrackingAllAccounts();
-  void StartFetchingUserInfo(const CoreAccountId& account_key);
-  void DeleteFetcher(AccountIdFetcher* fetcher);
+
+  // Updates the is_signed_in corresponding to the given account. Notifies all
+  // observers of the signed in state changes.
+  void UpdateSignInState(const CoreAccountId& account_id, bool is_signed_in);
 
   signin::IdentityManager* identity_manager_;
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-  std::map<CoreAccountId, std::unique_ptr<AccountIdFetcher>>
-      user_info_requests_;
   std::map<CoreAccountId, AccountState> accounts_;
   base::ObserverList<Observer>::Unchecked observer_list_;
   bool shutdown_called_;
-};
-
-class AccountIdFetcher : public gaia::GaiaOAuthClient::Delegate {
- public:
-  AccountIdFetcher(
-      signin::IdentityManager* identity_manager,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      AccountTracker* tracker,
-      const CoreAccountId& account_key);
-  ~AccountIdFetcher() override;
-
-  const CoreAccountId& account_key() { return account_key_; }
-
-  void Start();
-
-  void AccessTokenFetched(GoogleServiceAuthError error,
-                          signin::AccessTokenInfo access_token_info);
-
-  // gaia::GaiaOAuthClient::Delegate implementation.
-  void OnGetUserIdResponse(const std::string& gaia_id) override;
-  void OnOAuthError() override;
-  void OnNetworkError(int response_code) override;
-
- private:
-  signin::IdentityManager* identity_manager_;
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-  AccountTracker* tracker_;
-  const CoreAccountId account_key_;
-
-  std::unique_ptr<signin::AccessTokenFetcher> access_token_fetcher_;
-  std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
 };
 
 }  // namespace gcm

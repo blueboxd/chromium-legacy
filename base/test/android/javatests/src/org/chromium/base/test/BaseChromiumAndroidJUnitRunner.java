@@ -346,6 +346,15 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
                     if (startsWithAny(className, mExcludedPrefixes)) {
                         continue;
                     }
+                    if (!className.endsWith("Test")) {
+                        // Speeds up test listing to filter by name before
+                        // trying to load the class. We have an ErrorProne
+                        // check that enforces this convention:
+                        // //tools/android/errorprone_plugin/src/org/chromium/tools/errorprone/plugin/TestClassNameCheck.java
+                        // As of Dec 2019, this speeds up test listing on
+                        // android-kitkat-arm-rel from 41s -> 23s.
+                        continue;
+                    }
                     if (!className.contains("$") && loader.loadIfTest(className) != null) {
                         addTestClass(className);
                     }

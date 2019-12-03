@@ -33,13 +33,11 @@ CachedNavigationURLLoader::CachedNavigationURLLoader(
 }
 
 void CachedNavigationURLLoader::OnResponseStarted() {
-  auto dummy_response =
-      scoped_refptr<network::ResourceResponse>(new network::ResourceResponse);
-
   GlobalRequestID global_id = NavigationURLLoaderImpl::MakeGlobalRequestID();
 
   delegate_->OnResponseStarted(
-      /*url_loader_client_endpoints=*/nullptr, dummy_response,
+      /*url_loader_client_endpoints=*/nullptr,
+      network::mojom::URLResponseHead::New(),
       /*response_body=*/mojo::ScopedDataPipeConsumerHandle(), global_id,
       /*is_download=*/false, NavigationDownloadPolicy(), base::nullopt);
 }

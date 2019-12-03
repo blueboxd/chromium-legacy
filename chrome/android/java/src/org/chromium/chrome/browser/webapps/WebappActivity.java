@@ -650,15 +650,20 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     }
 
     private void updateToolbarColor() {
-        if (getToolbarManager() != null && !isStatusBarDefaultThemeColor()) {
-            int toolbarColor = getBaseStatusBarColor();
-            if (toolbarColor == StatusBarColorController.UNDEFINED_STATUS_BAR_COLOR) {
-                toolbarColor = (getActivityTab() == null)
-                        ? mIntentDataProvider.getToolbarColor()
-                        : TabThemeColorHelper.getColor(getActivityTab());
-            }
-            getToolbarManager().onThemeColorChanged(toolbarColor, false);
+        if (getToolbarManager() == null) return;
+
+        Tab tab = getActivityTab();
+        int toolbarColor = getBaseStatusBarColor((tab != null) /* activityHasTab */);
+
+        if (toolbarColor == StatusBarColorController.DEFAULT_STATUS_BAR_COLOR) return;
+
+        // If the color is undefined, we use the color from the tab (if available).
+        if (toolbarColor == StatusBarColorController.UNDEFINED_STATUS_BAR_COLOR) {
+            toolbarColor = (tab != null) ? TabThemeColorHelper.getColor(tab)
+                                         : mIntentDataProvider.getToolbarColor();
         }
+
+        getToolbarManager().onThemeColorChanged(toolbarColor, false);
     }
 
     @Override

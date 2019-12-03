@@ -1456,7 +1456,7 @@ void BackendImpl::AdjustMaxCacheSize(int table_len) {
   if (table_len)
     available += data_->header.num_bytes;
 
-  max_size_ = PreferredCacheSize(available);
+  max_size_ = PreferredCacheSize(available, GetCacheType());
 
   if (!table_len)
     return;

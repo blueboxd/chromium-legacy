@@ -60,7 +60,7 @@ class BLINK_PLATFORM_EXPORT InterfaceRegistry {
                         void(mojo::PendingReceiver<Interface>)> factory,
                     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     AddInterface(Interface::Name_,
-                 ConvertToBaseCallback(CrossThreadBind(
+                 ConvertToBaseRepeatingCallback(CrossThreadBind(
                      &InterfaceRegistry::ForwardToCrossThreadInterfaceFactory<
                          mojo::PendingReceiver<Interface>>,
                      std::move(factory))),

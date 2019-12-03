@@ -280,6 +280,8 @@ void TransactionImpl::IOHelper::LoadBlobsOnIOThread(
     blink::mojom::IDBValuePtr value,
     base::WaitableEvent* signal_when_finished,
     LoadResult* result) {
+  // TODO(enne): once blob data handle is removed from IndexedDBBlobInfo
+  // then this will not have to be done on the IO thread any more.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::ScopedClosureRunner signal_runner(
@@ -312,7 +314,7 @@ void TransactionImpl::IOHelper::LoadBlobsOnIOThread(
       result->code = LoadResultCode::kAbort;
       return;
     }
-    uint64_t size = handle->size();
+    uint64_t size = info->size;
     total_blob_size += size;
 
     if (info->file) {
@@ -321,15 +323,16 @@ void TransactionImpl::IOHelper::LoadBlobsOnIOThread(
         result->code = LoadResultCode::kInvalidBlobPath;
         return;
       }
-      blob_info[i] = IndexedDBBlobInfo(std::move(handle), info->file->path,
-                                       info->file->name, info->mime_type);
+      blob_info[i] = IndexedDBBlobInfo(std::move(handle), std::move(info->blob),
+                                       info->file->path, info->file->name,
+                                       info->mime_type);
       if (info->size != -1) {
         blob_info[i].set_last_modified(info->file->last_modified);
         blob_info[i].set_size(info->size);
       }
     } else {
-      blob_info[i] =
-          IndexedDBBlobInfo(std::move(handle), info->mime_type, info->size);
+      blob_info[i] = IndexedDBBlobInfo(std::move(handle), std::move(info->blob),
+                                       info->mime_type, info->size);
     }
   }
   result->code = LoadResultCode::kSuccess;

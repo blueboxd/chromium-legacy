@@ -154,6 +154,8 @@ var defaultTests = [
           chrome.test.assertEq(typeof histogram, 'object');
           chrome.test.assertEq(histogram.buckets.length, 1);
           chrome.test.assertEq(histogram.buckets[0].count, 1);
+          chrome.test.assertTrue(histogram.sum <= histogram.buckets[0].max);
+          chrome.test.assertTrue(histogram.sum >= histogram.buckets[0].min);
           chrome.test.assertTrue(
               histogram.buckets[0].max > histogram.buckets[0].min);
         }));

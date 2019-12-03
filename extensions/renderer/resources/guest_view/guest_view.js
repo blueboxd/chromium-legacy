@@ -5,10 +5,7 @@
 // This module implements a wrapper for a guestview that manages its
 // creation, attaching, and destruction.
 
-// Methods ending with $ will be overwritten by guest_view_iframe.js
-// TODO(mcnee): When BrowserPlugin is removed, merge
-// guest_view_iframe.js into this file.
-
+var $HTMLIFrameElement = require('safeMethods').SafeMethods.$HTMLIFrameElement;
 var CreateEvent = require('guestViewEvents').CreateEvent;
 var GuestViewInternal = getInternalApi('guestViewInternal');
 var GuestViewInternalNatives = requireNative('guest_view_internal');
@@ -25,6 +22,18 @@ var ERROR_MSG_NOT_CREATED = 'The guest has not been created.';
 
 // Properties.
 var PROPERTY_ON_RESIZE = 'onresize';
+
+var getIframeContentWindow = function(viewInstanceId) {
+  var view = GuestViewInternalNatives.GetViewFromID(viewInstanceId);
+  if (!view)
+    return null;
+
+  var internalIframeElement = view.internalElement;
+  if (internalIframeElement)
+    return $HTMLIFrameElement.contentWindow.get(internalIframeElement);
+
+  return null;
+};
 
 // Contains and hides the internal implementation details of |GuestView|,
 // including maintaining its state and enforcing the proper usage of its API
@@ -154,18 +163,26 @@ GuestViewImpl.prototype.weakWrapper = function(func, viewInstanceId) {
 };
 
 // Internal implementation of attach().
-GuestViewImpl.prototype.attachImpl$ = function(
+GuestViewImpl.prototype.attachImpl = function(
     internalInstanceId, viewInstanceId, attachParams, callback) {
+  var view = GuestViewInternalNatives.GetViewFromID(viewInstanceId);
+  if (!view.elementAttached) {
+    // Defer the attachment until the <webview> element is attached.
+    view.deferredAttachCallback = $Function.bind(this.attachImpl,
+        this, internalInstanceId, viewInstanceId, attachParams, callback);
+    return;
+  };
+
   // Check the current state.
   if (!this.checkState('attach')) {
     this.handleCallback(callback);
     return;
   }
 
-  // Callback wrapper function to store the contentWindow from the attachGuest()
-  // callback, handle potential attaching failure, register an automatic detach,
+  // Callback wrapper function to set the contentWindow following attachment,
   // and advance the queue.
-  var callbackWrapper = function(callback, contentWindow) {
+  var callbackWrapper = function(callback) {
+    var contentWindow = getIframeContentWindow(viewInstanceId);
     // Check if attaching failed.
     if (!contentWindow) {
       this.state = GuestViewImpl.GuestState.GUEST_STATE_CREATED;
@@ -179,10 +196,10 @@ GuestViewImpl.prototype.attachImpl$ = function(
   };
 
   attachParams['instanceId'] = viewInstanceId;
-  GuestViewInternalNatives.AttachGuest(
-      internalInstanceId,
-      this.id,
-      attachParams,
+  var contentWindow = getIframeContentWindow(viewInstanceId);
+  // |contentWindow| is used to retrieve the RenderFrame in cpp.
+  GuestViewInternalNatives.AttachIframeGuest(
+      internalInstanceId, this.id, attachParams, contentWindow,
       $Function.bind(callbackWrapper, this, callback));
 
   this.internalInstanceId = internalInstanceId;
@@ -202,7 +219,7 @@ GuestViewImpl.prototype.attachImpl$ = function(
 };
 
 // Internal implementation of create().
-GuestViewImpl.prototype.createImpl$ = function(createParams, callback) {
+GuestViewImpl.prototype.createImpl = function(createParams, callback) {
   // Check the current state.
   if (!this.checkState('create')) {
     this.handleCallback(callback);
@@ -214,8 +231,6 @@ GuestViewImpl.prototype.createImpl$ = function(createParams, callback) {
   // queue.
   var callbackWrapper = function(callback, guestInfo) {
     this.id = guestInfo.id;
-    this.contentWindow =
-        GuestViewInternalNatives.GetContentWindow(guestInfo.contentWindowId);
 
     // Check if creation failed.
     if (this.id === 0) {
@@ -227,8 +242,8 @@ GuestViewImpl.prototype.createImpl$ = function(createParams, callback) {
     this.handleCallback(callback);
   };
 
-  this.sendCreateRequest(createParams,
-                         $Function.bind(callbackWrapper, this, callback));
+  this.sendCreateRequest(
+      createParams, $Function.bind(callbackWrapper, this, callback));
 
   this.state = GuestViewImpl.GuestState.GUEST_STATE_CREATED;
 };
@@ -239,7 +254,7 @@ GuestViewImpl.prototype.sendCreateRequest = function(
 };
 
 // Internal implementation of destroy().
-GuestViewImpl.prototype.destroyImpl$ = function(callback) {
+GuestViewImpl.prototype.destroyImpl = function(callback) {
   // Check the current state.
   if (!this.checkState('destroy')) {
     this.handleCallback(callback);
@@ -252,18 +267,7 @@ GuestViewImpl.prototype.destroyImpl$ = function(callback) {
     return;
   }
 
-  // If this guest is attached, then detach it first.
-  if (!!this.internalInstanceId) {
-    GuestViewInternalNatives.DetachGuest(this.internalInstanceId);
-  }
-
-  GuestViewInternal.destroyGuest(
-      this.id, $Function.bind(this.handleCallback, this, callback));
-
-  // Reset the state of the destroyed guest; it's ok to do this after shipping
-  // the callback to the GuestViewInternal api, since it runs asynchronously,
-  // and the changes below will happen before the next item from the action
-  // queue is executed.
+  // Reset the state of the destroyed guest;
   this.contentWindow = null;
   this.id = 0;
   this.internalInstanceId = 0;
@@ -271,22 +275,10 @@ GuestViewImpl.prototype.destroyImpl$ = function(callback) {
   if (ResizeEvent.hasListener(this.callOnResize)) {
     ResizeEvent.removeListener(this.callOnResize);
   }
-};
 
-// Internal implementation of detach().
-GuestViewImpl.prototype.detachImpl = function(callback) {
-  // Check the current state.
-  if (!this.checkState('detach')) {
-    this.handleCallback(callback);
-    return;
-  }
-
-  GuestViewInternalNatives.DetachGuest(
-      this.internalInstanceId,
-      $Function.bind(this.handleCallback, this, callback));
-
-  this.internalInstanceId = 0;
-  this.state = GuestViewImpl.GuestState.GUEST_STATE_CREATED;
+  // Handle callback at end to avoid handling items in the action queue out of
+  // order, since the callback is run synchronously here.
+  this.handleCallback(callback);
 };
 
 // Internal implementation of setSize().
@@ -315,7 +307,7 @@ GuestView.prototype.__proto__ = null;
 GuestView.prototype.attach = function(
     internalInstanceId, viewInstanceId, attachParams, callback) {
   var internal = this.internal;
-  $Array.push(internal.actionQueue, $Function.bind(internal.attachImpl$,
+  $Array.push(internal.actionQueue, $Function.bind(internal.attachImpl,
       internal, internalInstanceId, viewInstanceId, attachParams, callback));
   internal.performNextAction();
 };
@@ -323,7 +315,7 @@ GuestView.prototype.attach = function(
 // Creates the guestview.
 GuestView.prototype.create = function(createParams, callback) {
   var internal = this.internal;
-  $Array.push(internal.actionQueue, $Function.bind(internal.createImpl$,
+  $Array.push(internal.actionQueue, $Function.bind(internal.createImpl,
       internal, createParams, callback));
   internal.performNextAction();
 };
@@ -334,16 +326,7 @@ GuestView.prototype.destroy = function(callback) {
   var internal = this.internal;
   $Array.push(
       internal.actionQueue,
-      $Function.bind(internal.destroyImpl$, internal, callback));
-  internal.performNextAction();
-};
-
-// Detaches the guestview from its container.
-// Note: This is not currently used.
-GuestView.prototype.detach = function(callback) {
-  var internal = this.internal;
-  $Array.push(internal.actionQueue,
-      $Function.bind(internal.detachImpl, internal, callback));
+      $Function.bind(internal.destroyImpl, internal, callback));
   internal.performNextAction();
 };
 
@@ -369,6 +352,4 @@ GuestView.prototype.getId = function() {
 
 // Exports
 exports.$set('GuestView', GuestView);
-// TODO(mcnee): Don't export GuestViewImpl once guest_view_iframe.js is gone.
-exports.$set('GuestViewImpl', GuestViewImpl);
 exports.$set('ResizeEvent', ResizeEvent);

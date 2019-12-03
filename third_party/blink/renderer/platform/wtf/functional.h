@@ -314,7 +314,7 @@ class CrossThreadFunction<R(Args...)> {
 
  public:
   CrossThreadFunction() = default;
-  explicit CrossThreadFunction(base::Callback<R(Args...)> callback)
+  explicit CrossThreadFunction(base::RepeatingCallback<R(Args...)> callback)
       : callback_(std::move(callback)) {}
   ~CrossThreadFunction() = default;
 
@@ -332,13 +332,13 @@ class CrossThreadFunction<R(Args...)> {
   void Reset() { callback_.Reset(); }
   explicit operator bool() const { return static_cast<bool>(callback_); }
 
-  friend base::Callback<R(Args...)> ConvertToBaseCallback(
+  friend base::RepeatingCallback<R(Args...)> ConvertToBaseRepeatingCallback(
       CrossThreadFunction function) {
     return std::move(function.callback_);
   }
 
  private:
-  base::Callback<R(Args...)> callback_;
+  base::RepeatingCallback<R(Args...)> callback_;
 };
 
 template <typename Signature>

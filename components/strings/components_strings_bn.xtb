@@ -9,6 +9,7 @@
 <translation id="1036348656032585052">বন্ধ করুন</translation>
 <translation id="1038842779957582377">অজানা নাম</translation>
 <translation id="1039626062703039346">পাসওয়ার্ড পরিবর্তন করে আপনার Google অ্যাকাউন্ট সুরক্ষিত রাখতে Chrome সাহায্য করতে পারবে। সাইটটি সম্পর্কে Google-কে বিজ্ঞপ্তি দেওয়া হবে।</translation>
+<translation id="1044897699341250361">এর মানে কি</translation>
 <translation id="1050038467049342496">অন্যান্য অ্যাপ্লিকেশানগুলি বন্ধ করুন</translation>
 <translation id="1055184225775184556">&amp;যোগ করাকে পূর্বাবস্থায় ফেরান</translation>
 <translation id="1056898198331236512">সতর্কতা</translation>
@@ -183,6 +184,7 @@
 <translation id="1745880797583122200">আপনার ব্রাউজারটি ম্যানেজ করা হচ্ছে</translation>
 <translation id="17513872634828108">খোলা ট্যাব</translation>
 <translation id="1753706481035618306">পৃষ্ঠা সংখ্যা</translation>
+<translation id="175838129965056221">Chrome শনাক্ত করেছে যে, আপনার কানেকশন মনিটর করা হচ্ছে</translation>
 <translation id="1763864636252898013">এই সার্ভার প্রমাণ করতে পারেনি যে এটি <ph name="DOMAIN" />; এর নিরাপত্তা সার্টিফিকেটটি আপনার ডিভােইসের নিকট বিশ্বাসযোগ্য নয়। কোনো ভুল কনফিগারেশনের কারণে অথবা কোনো আক্রমণকারী আপনার সংযোগ মাঝপথে আটকে দিচ্ছে বলে এমনটা হতে পারে।</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows নেটওয়ার্ক ডায়গনিস্টিক্স চালিয়ে দেখুন<ph name="END_LINK" />।</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -252,6 +254,7 @@
 <translation id="2119867082804433120">নিচে ডানদিকে পাঞ্চ করুন</translation>
 <translation id="2129079103035905234">মোশন সেন্সর</translation>
 <translation id="2130448033692577677">DnsOverHttpsMode নীতি সেট না থাকার কারণে আপনার নির্দিষ্ট করা টেমপ্লেট হয়তো ব্যবহার করা যাবে না।</translation>
+<translation id="2131277894177304644">Chromium শনাক্ত করেছে যে আপনার কানেকশন মনিটর করা হচ্ছে</translation>
 <translation id="213826338245044447">মোবাইল বুকমার্ক</translation>
 <translation id="214556005048008348">পেমেন্ট বাতিল করুন</translation>
 <translation id="2147827593068025794">পটভূমি সিঙ্ক</translation>
@@ -299,6 +302,7 @@
 <translation id="2354001756790975382">অন্য বুকমার্ক</translation>
 <translation id="2354430244986887761">Google নিরাপদ ব্রাউজিং সম্প্রতি <ph name="SITE" /> এ <ph name="BEGIN_LINK" />ক্ষতিকারক অ্যাপ<ph name="END_LINK" /> খুঁজে পেয়েছে।</translation>
 <translation id="2355395290879513365">আপনি এই সাইটে যেসব ছবি দেখছেন, আক্রমণকারীরা সেগুলি দেখতে পেতে পারে এবং সেগুলি পরিবর্তন করে আপনাকে বোকা বানাতে পারে।</translation>
+<translation id="2355474962185559967">আপনি এখনই প্রতারণামূলক একটি সাইটে আপনার পাসওয়ার্ড লিখেছেন। Chromium <ph name="WEBSITE_1" />-এ গিয়ে এখনই পাসওয়ার্ড পরিবর্তন করার জন্য সাজেস্ট করছে।</translation>
 <translation id="2356070529366658676">জিজ্ঞাসা করুন</translation>
 <translation id="2359629602545592467">একাধিক</translation>
 <translation id="2359808026110333948">চালিয়ে যান</translation>
@@ -402,6 +406,7 @@
 <translation id="2799020568854403057">যে সাইট খুলতে চলেছেন সেটিতে ক্ষতিকারক অ্যাপ আছে</translation>
 <translation id="2799223571221894425">পুনঃশুরু</translation>
 <translation id="2803306138276472711">Google নিরাপদ ব্রাউজিং সাম্প্রতিক <ph name="SITE" />-এ <ph name="BEGIN_LINK" />ম্যালওয়্যার শনাক্ত করেছে<ph name="END_LINK" />। যেসব ওয়েবসাইট সাধারণত নিরাপদ থাকে, সেগুলি কখনও কখনও ম্যালওয়্যার দিয়ে আক্রান্ত হয়।</translation>
+<translation id="281585763351939989">Chromium শনাক্ত করেছে যে, আপনার কানেকশন মনিটর করা হচ্ছে।</translation>
 <translation id="2824775600643448204">ঠিকানা এবং সার্চ দণ্ড</translation>
 <translation id="2826760142808435982"><ph name="CIPHER" /> ব্যবহার করে এই সংযোগটি এনক্রিপ্টেড এবং প্রমাণীকৃত করা হয়েছে এবং কী এক্সচেঞ্জ প্রক্রিয়া হিসাবে <ph name="KX" /> ব্যবহার করে৷</translation>
 <translation id="2835170189407361413">ফর্ম সাফ করুন</translation>
@@ -446,6 +451,7 @@
 <translation id="3024663005179499861">নীতির ভুল প্রকার</translation>
 <translation id="3037605927509011580">ইস!</translation>
 <translation id="3041612393474885105">সার্টিফিকেট তথ্য</translation>
+<translation id="304755864151473094">এটি কেন দেখাচ্ছে</translation>
 <translation id="3057676462092457419">এখনও <ph name="SECURE_DNS_MODE_SECURE" /> DnsOverHttps মোড কাজ করে না, মোডটি <ph name="SECURE_DNS_MODE_OFF" />-এ সেট করা আছে।</translation>
 <translation id="3060227939791841287">C9 (Envelope)</translation>
 <translation id="3061707000357573562">প্যাচ পরিষেবা</translation>
@@ -485,6 +491,7 @@
 <translation id="3228969707346345236">পৃষ্ঠাটি ইতিমধ্যে <ph name="LANGUAGE" />-এ থাকার কারণে অনুবাদ ব্যর্থ হয়েছে৷</translation>
 <translation id="3229041911291329567">আপনার ডিভাইস এবং ব্রাউজারের ভার্সন সম্বন্ধীয় তথ্য</translation>
 <translation id="323107829343500871"><ph name="CREDIT_CARD" />-এর CVC লিখুন</translation>
+<translation id="3234392465377209614">আপনি এখনই প্রতারণামূলক একটি সাইটে আপনার পাসওয়ার্ড লিখেছেন। Chromium <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> এবং <ph name="WEBSITE_3" />-এ গিয়ে এখনই পাসওয়ার্ড পরিবর্তন করার জন্য সাজেস্ট করছে।</translation>
 <translation id="3234666976984236645">এই সাইটে সবসময় গুরুত্বপূর্ণ কন্টেন্ট শনাক্ত করুন</translation>
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> ইউআরএলটি <ph name="SUGGESTED_DOMAIN" />-এর মতই মনে হচ্ছে। আক্রমণকারীরা কখনও কখনও একই রকম ইউআরএল বানিয়ে নকল করে।</translation>
 <translation id="3270847123878663523">&amp;পুনর্বিন্যাসকে পূর্বাবস্থায় ফেরান</translation>
@@ -517,6 +524,7 @@
 <translation id="342781501876943858">Chromium-এর নীতি অনুযায়ী আপনার পাসওয়ার্ড বদলে ফেলা উচিত যদি আপনি সেটি অন্য কোনও সাইটে ব্যবহার করে থাকেন।</translation>
 <translation id="3428151540071562330">DnsOverHttpsTemplates সার্ভারের এক বা একাধিক টেমপ্লেট ইউআরআই সঠিক নয় এবং ব্যবহার করা যাবে না।</translation>
 <translation id="3431636764301398940">এই ডিভাইসে এই কার্ডটি সেভ করুন</translation>
+<translation id="3438790640050632698">আপনি এখনই প্রতারণামূলক একটি সাইটে আপনার পাসওয়ার্ড লিখেছেন। Chrome <ph name="WEBSITE_1" /> এবং <ph name="WEBSITE_2" />-এ গিয়ে এখনই পাসওয়ার্ড পরিবর্তন করার জন্য সাজেস্ট করছে।</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">এই ডিভাইসের মালিক ডাইনোসর গেমটি বন্ধ করেছেন৷</translation>
 <translation id="3447884698081792621">সার্টিফিকেট দেখান (<ph name="ISSUER" /> এর দ্বারা জারি করা)</translation>
@@ -531,6 +539,7 @@
 <translation id="3495081129428749620">এই পৃষ্ঠাতে খুঁজুন
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">একই নীতির গ্রুপের অন্য একটি নীতি অগ্রাধিকার পেয়েছে, তাই এই নীতি অগ্রাহ্য করা হয়েছে।</translation>
+<translation id="3525469219100414032">আপনি এখনই প্রতারণামূলক একটি সাইটে আপনার পাসওয়ার্ড লিখেছেন। Chrome <ph name="WEBSITE_1" />-এ গিয়ে এখনই পাসওয়ার্ড পরিবর্তন করার জন্য সাজেস্ট করছে।</translation>
 <translation id="3528171143076753409">সার্ভারের সার্টিফিকেট বিশ্বস্ত নয়৷</translation>
 <translation id="3528485271872257980">গাঢ় বাদামি</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{সিঙ্ক করা ডিভাইসে কমপক্ষে ১টি আইটেম}=1{১টি আইটেম (এবং সিঙ্ক করা ডিভাইসে আরও)}one{#টি আইটেম (এবং সিঙ্ক করা ডিভাইসে আরও)}other{#টি আইটেম (এবং সিঙ্ক করা ডিভাইসে আরও)}}</translation>
@@ -609,6 +618,7 @@
 <translation id="3858027520442213535">তারিখ এবং সময় আপডেট করুন</translation>
 <translation id="3884278016824448484">পরস্পর বিরোধী ডিভাইস সনাক্তকারী</translation>
 <translation id="3885155851504623709">প্যারিশ</translation>
+<translation id="388632593194507180">মনিটর করা হচ্ছে, সেটি শনাক্ত করা গেছে</translation>
 <translation id="3890664840433101773">ইমেল আইডি যোগ করুন</translation>
 <translation id="3897092660631435901">মেনু</translation>
 <translation id="3901925938762663762">কার্ডটির মেয়াদ শেষ হয়েছে</translation>
@@ -710,6 +720,7 @@
 <translation id="4305817255990598646">পাল্টান</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">অবরুদ্ধ করুন (ডিফল্ট)</translation>
+<translation id="4318312030194671742">Paint Preview কম্পোজিটর সার্ভিস</translation>
 <translation id="4318566738941496689">আপনার ডিভাইসের নাম এবং নেটওয়ার্ক ঠিকানা</translation>
 <translation id="4325863107915753736">নিবন্ধ খুঁজে পেতে ব্যর্থ হয়েছে</translation>
 <translation id="4326324639298822553">আপনার মেয়াদ শেষের তারিখ পরীক্ষা করে আবার চেষ্টা করুন</translation>
@@ -726,6 +737,7 @@
 <translation id="4372948949327679948">প্রত্যাশিত <ph name="VALUE_TYPE" /> মান৷</translation>
 <translation id="4377125064752653719">আপনি <ph name="DOMAIN" />-এ পৌঁছানোর প্রচেষ্টা করেছেন, তবে সার্ভারটি যে সার্টিফিকেটটি উপস্থাপন করেছে সেটির জারিকর্তা সেটিকে প্রত্যাহার করেছে৷ এর অর্থ হ'ল সার্ভারটি যে সুরক্ষা প্রমানপত্র উপস্থাপন করেছে তা কোনওমতেই বিশ্বাসযোগ্য নয়৷ হতে পারে আপনি একজন আক্রমণকারীর সাথে যোগাযোগ করছেন৷</translation>
 <translation id="4378154925671717803">ফোন</translation>
+<translation id="437847259914972036">ওয়েবে আপনার অ্যাক্টিভিটি ও লেখা যেকোনও তথ্যের উপর নজর রাখা হচ্ছে এবং আপনাকে না জানিয়েই কন্টেন্ট পরিবর্তন করা হতে পারে।</translation>
 <translation id="4398334096870680409">এই ফিচারটি আপনার ডিভাইসে উপলভ্য নেই।</translation>
 <translation id="4406896451731180161">সার্চের ফলাফলগুলি</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" />টি কুকিজ</translation>
@@ -961,6 +973,7 @@
 <translation id="5565735124758917034">সক্রিয়</translation>
 <translation id="5570825185877910964">অ্যাকাউন্ট সুরক্ষিত রাখুন</translation>
 <translation id="5571083550517324815">এই ঠিকানা থেকে পিক-আপ করা যাবে না। অন্য ঠিকানা বেছে নিন।</translation>
+<translation id="5572009199897554128">আপনি এখনই প্রতারণামূলক একটি সাইটে আপনার পাসওয়ার্ড লিখেছেন। Chromium <ph name="WEBSITE_1" /> এবং <ph name="WEBSITE_2" />-এ গিয়ে এখনই পাসওয়ার্ড পরিবর্তন করার জন্য সাজেস্ট করছে।</translation>
 <translation id="5580958916614886209">আপনার মেয়াদ শেষের মাস পরীক্ষা করে আবার চেষ্টা করুন</translation>
 <translation id="5586446728396275693">কোনও ঠিকানা সংরক্ষণ করা নেই</translation>
 <translation id="5595485650161345191">ঠিকানা সম্পাদনা করুন</translation>
@@ -1142,6 +1155,7 @@
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">আরও তথ্য যোগ করুন</translation>
 <translation id="6447842834002726250">কুকিজ</translation>
+<translation id="644931407731409778">পিডিএফ ডকুমেন্টে {COUNT,plural, =1{১টি পৃষ্ঠা}one{#টি পৃষ্ঠা}other{#টি পৃষ্ঠা}} আছে</translation>
 <translation id="6451458296329894277">ফর্ম পুনঃজমা নিশ্চিত করুন</translation>
 <translation id="6457206614190510200">স্যাডল স্টিচ</translation>
 <translation id="6465306955648956876">পাসওয়ার্ড পরিচালনা করুন...</translation>
@@ -1160,6 +1174,7 @@
 <translation id="6547208576736763147">বাঁদিকে ডুয়াল পাঞ্চ</translation>
 <translation id="6554795675067793129">আপনার অ্যাকাউন্ট <ph name="ENROLLMENT_DOMAIN" /> ম্যানেজ করে।</translation>
 <translation id="6556866813142980365">আবার করুন</translation>
+<translation id="6559565319173126218">এই কানেকশনের জন্য যে সার্টিফিকেট দেওয়া হয়েছে তা Chrome বিশ্বস্ত বলে মনে করে না, কারণ এটি ব্যবহার করে নেটওয়ার্ক ইন্টারসেপ্ট ও মনিটর করা হয়।</translation>
 <translation id="6569060085658103619">আপনি একটি এক্সটেনশন পৃষ্ঠা দেখছেন</translation>
 <translation id="6573200754375280815">ডানদিকে ডুয়াল পাঞ্চ</translation>
 <translation id="6578796323535178455">C2 (Envelope)</translation>
@@ -1193,6 +1208,7 @@
 <translation id="6710594484020273272">&lt;সার্চের পদ লিখুন&gt;</translation>
 <translation id="671076103358959139">নথিভুক্ত করার জন্য টোকেন:</translation>
 <translation id="6711464428925977395">প্রক্সী সার্ভারের কোনো সমস্যা হয়েছে, অথবা ঠিকানাটি ভুল।</translation>
+<translation id="6721811549156553509">আপনি যে সাইটগুলি দেখেছেন, নেটওয়ার্ক মনিটর সেগুলি নকল করতে পারে এবং আপনার অ্যাক্টিভিটি ও লেখা যেকোনও তথ্য দেখতে পারে (যেমন, পাসওয়ার্ড, মেসেজ বা ক্রেডিট কার্ড)। অনলাইনে গুরুত্বপূর্ণ কিছু করার সময়ে সতর্ক থাকুন কারণ আপনার অ্যাক্টিভিটি নেটওয়ার্ক মনিটর দেখতে এবং আপনার দেখা পৃষ্ঠার কন্টেন্ট পরিবর্তন করে দিতে পারে। এর মধ্যে আছে, অন্যান্য ব্রাউজারের অ্যাক্টিভিটি এবং ইন্টারনেট অ্যাক্সেস করছে এমন প্রোগ্রাম।</translation>
 <translation id="6738516213925468394"><ph name="TIME" />-এ আপনার <ph name="BEGIN_LINK" />সিঙ্ক পাসফ্রেজ<ph name="END_LINK" /> দিয়ে ডেটা এনক্রিপ্ট করা হয়েছিল। সিঙ্ক শুরু করতে সেটি লিখুন।</translation>
 <translation id="674375294223700098">অজানা সার্ভার সার্টিফিকেট ত্রুটি৷</translation>
 <translation id="6744009308914054259">কানেকশনের জন্য অপেক্ষা করার সময়, আপনি ডাউনলোডে গিয়ে অফলাইন নিবন্ধগুলি পড়তে পারেন।</translation>
@@ -1277,6 +1293,7 @@
 <translation id="721197778055552897">এই সমস্যাটি সম্পর্কে <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" />৷</translation>
 <translation id="7219179957768738017">এই সংযোগটি <ph name="SSL_VERSION" />টি ব্যবহার করে</translation>
 <translation id="7220786058474068424">প্রক্রিয়ায় রয়েছে</translation>
+<translation id="7239736667463137521">Chrome শনাক্ত করেছে যে, আপনার কানেকশন মনিটর করা হচ্ছে।</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">এই সাইটটিতে ম্যালওয়্যার আছে</translation>
 <translation id="724975217298816891">Enter the expiration date and CVC for <ph name="CREDIT_CARD" /> to update your card details. Once you confirm, your card details will be shared with this site.</translation>
@@ -1303,6 +1320,7 @@
 <translation id="7346048084945669753">অ্যাফিলিয়েট কিনা:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">কম্যান্ড লাইন</translation>
+<translation id="7353776484425559055">এই কানেকশনের সার্টিফিকেট Chromium বিশ্বস্ত বলে মনে করে না, কারণ এটি ব্যবহার করে নেটওয়ার্ক ইন্টারসেপ্ট ও মনিটর করা হয়। ডিভাইসে এই ধরনের সার্টিফিকেট ইনস্টল করার জন্য হয়ত, আপনি এই সমস্যা দেখছেন। কানেকশন সুরক্ষিত করার সময়ে, Chromium ব্যবহারকারীর কম্পিউটারে বা মোবাইল ডিভাইসে স্থানীয়ভাবে ইনস্টল করা সার্টিফিকেটকেই সঠিক বলে মনে করে। এটির জন্য ব্যবহারকারীরা টুল রান করাতে পারেন যা ওয়েবসাইট তৈরির সময়ে বা অভ্যন্তরীণ ট্র্যাফিক আটকানো বা মনিটর করার সময়ে তাদের কানেকশন ইন্টারসেপ্ট এবং ডিবাগ করতে পারে। সর্বজনীন ইন্টারনেটে এটির সাহায্যে ট্র্যাফিক আটকানোর চেষ্টা হলে, Chromium সতর্কতা বিজ্ঞপ্তি দেবে।</translation>
 <translation id="7372973238305370288">ফলাফল খুঁজুন</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">মিডিয়ার নিয়ন্ত্রণ</translation>
@@ -1364,6 +1382,7 @@
 <translation id="7592362899630581445">সার্ভারের সার্টিফিকেট, নামের সীমাবদ্ধতাগুলি লঙ্ঘন করে৷</translation>
 <translation id="7598391785903975535"><ph name="UPPER_ESTIMATE" /> এর কম</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> বর্তমানে এই অনুরোধটি পরিচালনা করতে অক্ষম।</translation>
+<translation id="7599841999395223597">এই কানেকশনের সার্টিফিকেট Chrome বিশ্বস্ত বলে মনে করে না, কারণ এটি ব্যবহার করে নেটওয়ার্ক ইন্টারসেপ্ট ও মনিটর করা হয়। ডিভাইসে এই ধরনের সার্টিফিকেট ইনস্টল করার জন্য হয়ত, আপনি এই সমস্যা দেখছেন। কানেকশন সুরক্ষিত করার সময়ে, Chrome ব্যবহারকারীর কম্পিউটারে বা মোবাইল ডিভাইসে স্থানীয়ভাবে ইনস্টল করা সার্টিফিকেটকেই, সঠিক বলে মনে করে। এটির জন্য ব্যবহারকারীরা টুল রান করাতে পারেন যা ওয়েবসাইট তৈরির সময়ে বা অভ্যন্তরীণ ট্র্যাফিক আটকানো বা মনিটর করার সময়ে তাদের কানেকশন ইন্টারসেপ্ট এবং ডিবাগ করতে পারে। সর্বজনীন ইন্টারনেটে এটির সাহায্যে ট্র্যাফিক আটকানোর চেষ্টা হলে, Chrome সতর্কতা বিজ্ঞপ্তি দেখায়।</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> কখনও অনুবাদ করবেন না</translation>
 <translation id="7610193165460212391">সীমার বাইরে মান <ph name="VALUE" />৷</translation>
 <translation id="7613889955535752492">মেয়াদোত্তীর্ণ: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -1680,6 +1699,7 @@
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">আপনি আপনার Google অ্যাকাউন্টে অ্যাক্সেস হারাতে পারেন। Chromium-এর প্রস্তাব হল যে আপনি আপনার পাসওয়ার্ড এখনই পরিবর্তন করুন। আপনাকে আবার সাইন-ইন করতে বলা হবে।</translation>
 <translation id="939736085109172342">নতুন ফোল্ডার</translation>
+<translation id="940786960229275114">আপনি এখনই প্রতারণামূলক একটি সাইটে আপনার পাসওয়ার্ড লিখেছেন। Chrome <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> এবং <ph name="WEBSITE_3" />-এ গিয়ে এখনই পাসওয়ার্ড পরিবর্তন করার জন্য সাজেস্ট করছে।</translation>
 <translation id="945855313015696284">নিচে দেওয়া তথ্য পরীক্ষা করুন এবং কোনও ভুল কার্ড থাকলে তা মুছে ফেলুন</translation>
 <translation id="950736567201356821">উপরে তিনটি পাঞ্চ</translation>
 <translation id="951104842009476243">এই ডেবিট ও প্রিপেড কার্ডগুলি গ্রহণ করা হয়</translation>

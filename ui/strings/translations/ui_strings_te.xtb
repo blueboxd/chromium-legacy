@@ -8,6 +8,7 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1ని}other{#ని}}</translation>
 <translation id="1181037720776840403">తీసివేయి</translation>
 <translation id="1201402288615127009">తరువాత</translation>
+<translation id="1218444235442067213"><ph name="APP_NAME" />, Play స్టోర్ యాప్</translation>
 <translation id="1243314992276662751">అప్‌లోడ్ చేయి</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" />ను షేర్ చేయడం సాధ్యపడలేదు</translation>
 <translation id="1269641567813814718">Win</translation>
@@ -18,6 +19,7 @@
 <translation id="1368832886055348810">ఎడమ నుండి కుడికి</translation>
 <translation id="1383876407941801731">వెతుకు</translation>
 <translation id="1398853756734560583">గరిష్ఠీకరించు</translation>
+<translation id="1414271762428216854"><ph name="APP_NAME" />, ఇన్‌స్టాల్ చేసిన యాప్</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> షేర్ చేయడం సాధ్యపడలేదు</translation>
 <translation id="1498028757988366001">మీరు దీని కోసం గతంలో వెతికారు. మీ చరిత్ర నుండి "<ph name="QUERY" />"ను తొలగిస్తే, మీ ఖాతాతో సైన్ ఇన్ చేసి ఉన్న మీ పరికరాలు అన్నింటిలో అది శాశ్వతంగా తీసివేయబడుతుంది.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 నిమిషం మరియు }other{# నిమిషాలు మరియు }}</translation>
@@ -30,6 +32,7 @@
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 నెల}other{# నెలలు}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 గంట మరియు }other{# గంటలు మరియు }}</translation>
+<translation id="1830308660060964064"><ph name="ITEM_TITLE" /> పిన్ తీసివేయబడింది</translation>
 <translation id="1842960171412779397">ఎంచుకోండి</translation>
 <translation id="1859234291848436338">వ్రాసే దిశ</translation>
 <translation id="1860796786778352021">నోటిఫికేషన్‌ను మూసివేయి</translation>
@@ -66,10 +69,12 @@
 <translation id="2666092431469916601">పైన</translation>
 <translation id="2701330563083355633"><ph name="DEVICE_NAME" /> నుండి షేర్ చేయబడింది</translation>
 <translation id="2743387203779672305">క్లిప్‌బోర్డ్‌కు కాపీ చేయి</translation>
+<translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">ఫోల్డర్‌ను తెరవండి</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 సంవత్సరం క్రితం}other{# సంవత్సరాల క్రితం}}</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1 రోజులో}other{# రోజులో}}</translation>
 <translation id="2931838996092594335">క్లిక్ చేయి</translation>
+<translation id="2981684127883932071">సూచనలను ప్రదర్శిస్తోంది</translation>
 <translation id="3036649622769666520">ఫైళ్ళను తెరువు</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3068711042108640621">అర ఎడమ వైపున ఉంది</translation>
@@ -84,6 +89,7 @@
 <translation id="3389286852084373014">వచనం చాలా పెద్దదిగా ఉంది</translation>
 <translation id="3479552764303398839">ఇప్పుడు కాదు</translation>
 <translation id="348799646910989694">అర ఆటోమేటిక్‌గా దాచి పెట్టబడుతుంది</translation>
+<translation id="3554637740840164787"><ph name="ITEM_TITLE" /> పిన్ చేయబడింది</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 రోజు మిగిలి ఉంది}other{# రోజులు మిగిలి ఉన్నాయి}}</translation>
 <translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" /> ఫైల్</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
@@ -105,8 +111,11 @@
 <translation id="4250229828105606438">స్క్రీన్‌షాట్</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 నెల క్రితం}other{# నెలల క్రితం}}</translation>
 <translation id="4289300219472526559">మాట్లాడటాన్ని ప్రారంభించు</translation>
+<translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> అనేది <ph name="FOLDER_NAME" /> ఫోల్డర్‌కు తరలించబడింది.</translation>
 <translation id="4316910396681052118">అన్ని అనువర్తనాలు</translation>
 <translation id="4588090240171750605">కుడికి స్క్రోల్ చేయి</translation>
+<translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, నక్షత్ర రేటింగ్ <ph name="RATING_SCORE" /></translation>
+<translation id="4648249871170053485"><ph name="APP_NAME" />, యాప్ సిఫార్సు</translation>
 <translation id="4690510401873698237">అర కింది భాగంలో ఉంది</translation>
 <translation id="4724120544754982507">నోటిఫికేషన్ కేంద్రం, <ph name="UNREAD_NOTIFICATION_COUNT" /> చదవని నోటిఫికేషన్‌లు</translation>
 <translation id="4730374152663651037">తరచుగా ఉపయోగించేవి</translation>
@@ -116,6 +125,7 @@
 <translation id="4971687151119236543">మీడియా మునుపటి ట్రాక్</translation>
 <translation id="5046499563572181734">ఇక్కడ నొక్కండి</translation>
 <translation id="5076340679995252485">&amp;అతికించు</translation>
+<translation id="5198715732953550718">కొత్త ఫోల్డర్‌ను సృష్టించడం కోసం <ph name="MOVED_APP_NAME" /> అనేది <ph name="IN_PLACE_APP" />తో కలపబడింది.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">కంటెంట్‌ను విస్తరింపజేసే లేదా కుదించే త్రిభుజం</translation>
 <translation id="5278860589123563674">పంపడం విఫలమైంది</translation>
@@ -129,6 +139,7 @@
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> సిస్టమ్</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">ఎడమ బాణం</translation>
+<translation id="5675363643668471212">అరలోని అంశం</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 నిమి.}other{# నిమి.}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{ఈ రోజు యాక్టివ్‌గా ఉంది}=1{1 రోజు క్రితం యాక్టివ్‌గా ఉంది}other{# రోజుల క్రితం యాక్టివ్‌గా ఉంది}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 రోజు మరియు }other{# రోజులు మరియు }}</translation>
@@ -208,6 +219,7 @@
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">పేజీ క్రిందికి</translation>
 <translation id="8245914219290430011">ట్యాబ్</translation>
+<translation id="8247998213073982446"><ph name="APP_NAME" />, యాప్</translation>
 <translation id="8259556432390118667">హెక్స్ రంగు విలువ</translation>
 <translation id="8328145009876646418">ఎడమ హద్దు</translation>
 <translation id="8331626408530291785">పైకి స్క్రోల్ చేయి</translation>
@@ -237,6 +249,8 @@
 <translation id="9150735707954472829">ట్యాబ్</translation>
 <translation id="9161053988251441839">సూచించబడిన అనువర్తనాలు</translation>
 <translation id="9170848237812810038">&amp;అన్డు</translation>
+<translation id="9178475906033259337"><ph name="QUERY" /> కోసం 1 ఫలితాన్ని ప్రదర్శిస్తోంది</translation>
 <translation id="932327136139879170">హోమ్</translation>
 <translation id="944069440740578670">చదవని నోటిఫికేషన్‌లు</translation>
+<translation id="974545358917229949"><ph name="QUERY" /> కోసం <ph name="RESULT_COUNT" /> ఫలితాలను ప్రదర్శిస్తోంది</translation>
 </translationbundle>

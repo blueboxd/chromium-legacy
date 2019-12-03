@@ -26,8 +26,6 @@
       <include name="IDR_GUEST_VIEW_CONTAINER_ELEMENT_JS" file="guest_view/guest_view_container_element.js" type="BINDATA" />
       <include name="IDR_GUEST_VIEW_DENY_JS" file="guest_view/guest_view_deny.js" type="BINDATA" />
       <include name="IDR_GUEST_VIEW_EVENTS_JS" file="guest_view/guest_view_events.js" type="BINDATA" />
-      <include name="IDR_GUEST_VIEW_IFRAME_CONTAINER_JS" file="guest_view/guest_view_iframe_container.js" type="BINDATA" />
-      <include name="IDR_GUEST_VIEW_IFRAME_JS" file="guest_view/guest_view_iframe.js" type="BINDATA" />
       <include name="IDR_GUEST_VIEW_JS" file="guest_view/guest_view.js" type="BINDATA" />
       <include name="IDR_IMAGE_UTIL_JS" file="image_util.js" type="BINDATA" />
       <include name="IDR_KEEP_ALIVE_JS" file="keep_alive.js" type="BINDATA" />

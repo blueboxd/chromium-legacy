@@ -4666,7 +4666,7 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
   if (url.is_valid() && url.SchemeIsHTTPOrHTTPS()) {
     StoragePartition* partition = source->GetProcess()->GetStoragePartition();
     partition->GetNetworkContext()->NotifyExternalCacheHit(
-        url, http_method, source->network_isolation_key());
+        url, http_method, source->GetNetworkIsolationKey());
   }
 }
 
@@ -4764,9 +4764,7 @@ void WebContentsImpl::ViewSource(RenderFrameHostImpl* frame) {
                                        std::string(":") +
                                        frame_entry->url().spec()));
 
-  navigation_entry->set_network_isolation_key(
-      net::NetworkIsolationKey(GetMainFrame()->GetLastCommittedOrigin(),
-                               frame->GetLastCommittedOrigin()));
+  navigation_entry->set_network_isolation_key(frame->GetNetworkIsolationKey());
 
   // Do not restore scroller position.
   // TODO(creis, lukasza, arthursonzogni): Do not reuse the original PageState,

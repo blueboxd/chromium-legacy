@@ -12,9 +12,9 @@
 <translation id="107147699690128016">Si vous modifiez l'extension du fichier, il peut s'ouvrir dans une application différente et poser un risque pour votre appareil.</translation>
 <translation id="1100066534610197918">Ouv. dans nouv ongl. dans groupe</translation>
 <translation id="1105960400813249514">Capture d'écran</translation>
-<translation id="1110022065703191351">Icônes</translation>
 <translation id="1111673857033749125">Les favoris enregistrés sur vos autres appareils s'afficheront ici.</translation>
 <translation id="1113597929977215864">Afficher l'affichage simplifié</translation>
+<translation id="1122278879166832009">Touchez ici pour accéder rapidement à votre page d'accueil à partir de n'importe où</translation>
 <translation id="1124772482545689468">Utilisateur</translation>
 <translation id="1129510026454351943">Détails : <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 téléchargement en attente.}one{# téléchargement en attente.}other{# téléchargements en attente.}}</translation>
@@ -379,6 +379,7 @@
 <translation id="3822502789641063741">Suppr. stock. des sites?</translation>
 <translation id="385051799172605136">Retour</translation>
 <translation id="3859306556332390985">Rechercher vers l'avant</translation>
+<translation id="388596076286380598">Consultez des articles, des vidéos et d'autres contenus sur les sites qui vous intéressent, même si vous êtes hors ligne ou si votre connexion est mauvaise.</translation>
 <translation id="3894427358181296146">Ajouter un dossier</translation>
 <translation id="3895926599014793903">Forcer l'activation du zoom</translation>
 <translation id="3912508018559818924">À la recherche du meilleur du Web…</translation>
@@ -490,6 +491,7 @@ D'autres formes d'historique de navigation, telles que les recherches et l'activ
 <translation id="4719927025381752090">Proposer une traduction</translation>
 <translation id="4720023427747327413">Ouvrir dans <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Aidez-nous à améliorer Chrome. <ph name="BEGIN_LINK" />Répondez à notre sondage<ph name="END_LINK" /></translation>
+<translation id="4732120983431207637">Dérouleur de pile</translation>
 <translation id="473775607612524610">Mise à jour</translation>
 <translation id="4738836084190194332">Dernière synchronisation : <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Ouvrir un nouvel onglet</translation>
@@ -542,7 +544,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5048398596102334565">Autoriser les sites à accéder à vos capteurs de mouvements (recommandé)</translation>
 <translation id="5063480226653192405">Utilisation</translation>
 <translation id="5087580092889165836">Ajouter une carte</translation>
-<translation id="5096950519211870196">Les sites ne pourront pas demander de vous montrer des notifications. Si un site demande d'afficher des notifications, une barre d'information s'affichera dans le bas de la page.</translation>
 <translation id="5100237604440890931">Réduit : cliquer pour développer</translation>
 <translation id="510275257476243843">Il reste 1 heure</translation>
 <translation id="5123685120097942451">Onglet de navigation privée</translation>
@@ -636,6 +637,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5684874026226664614">Oups… Impossible de traduire cette page.</translation>
 <translation id="5686790454216892815">Nom de fichier trop long</translation>
 <translation id="5689516760719285838">Lieu</translation>
+<translation id="5694049548840660018">Revenez facilement à votre page d'accueil</translation>
 <translation id="569536719314091526">Utilisez le bouton Plus d'options pour traduire cette page vers n'importe quelle langue</translation>
 <translation id="5710871682236653961">Demander avant d'autoriser les sites à envoyer et à recevoir de l'information lorsque vous touchez des appareils NFC (recommandé)</translation>
 <translation id="572328651809341494">Onglets récents</translation>
@@ -689,7 +691,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="6108923351542677676">Configuration en cours...</translation>
 <translation id="6111020039983847643">données utilisées</translation>
 <translation id="6112702117600201073">Actualisation de la page en cours</translation>
-<translation id="6113400363611269907">Montrer les invites en silence</translation>
 <translation id="6127379762771434464">Élément supprimé</translation>
 <translation id="6140912465461743537">Pays/région</translation>
 <translation id="614940544461990577">Essayez :</translation>
@@ -791,13 +792,13 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6818926723028410516">Sélectionner des éléments</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Traduire</translation>
-<translation id="6840155290835956714">Demander avant d'envoyer</translation>
 <translation id="6845325883481699275">Contribuer à améliorer la sécurité de Chrome</translation>
 <translation id="6846298663435243399">Chargement en cours...</translation>
 <translation id="6850409657436465440">Votre téléchargement est toujours en cours</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> onglets fermés</translation>
 <translation id="6864459304226931083">Télécharger l'image</translation>
 <translation id="6865313869410766144">Données de remplissage automatique de formulaires</translation>
+<translation id="6884306546558072722">Continuer d'explorer hors ligne</translation>
 <translation id="688738109438487280">Ajouter les données existantes à <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Déverrouillez pour copier votre mot de passe</translation>
 <translation id="6896758677409633944">Copier</translation>
@@ -1039,6 +1040,7 @@ Le site n'obtient PAS l'accès à l'appareil photo. Vous seul pouvez visionner l
 <translation id="8636825310635137004">Pour synchroniser vos onglets sur vos autres appareils, activez la synchronisation.</translation>
 <translation id="8641930654639604085">Essayer de bloquer les sites pour adultes</translation>
 <translation id="8655129584991699539">Vous pouvez effacer les données dans les paramètres de Chrome</translation>
+<translation id="8655599981421006542">Touchez ici pour créer des onglets et pour accéder aux onglets déjà ouverts</translation>
 <translation id="8662811608048051533">Vous déconnecte de la plupart des sites.</translation>
 <translation id="8664979001105139458">Ce nom de fichier existe déjà</translation>
 <translation id="8676374126336081632">Effacer l'entrée</translation>
@@ -1051,6 +1053,7 @@ Le site n'obtient PAS l'accès à l'appareil photo. Vous seul pouvez visionner l
 <translation id="8730621377337864115">Terminé</translation>
 <translation id="8748850008226585750">Contenus masqués</translation>
 <translation id="8751914237388039244">Sélectionner une image</translation>
+<translation id="8758557275681689734">Afficher tous vos onglets ouverts</translation>
 <translation id="8788265440806329501">L'historique de navigation est fermé</translation>
 <translation id="8788968922598763114">Rouvrir le dernier onglet fermé</translation>
 <translation id="8801436777607969138">Bloquez JavaScript sur un site en particulier.</translation>

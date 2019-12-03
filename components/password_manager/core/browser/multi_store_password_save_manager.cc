@@ -7,6 +7,7 @@
 #include "components/password_manager/core/browser/form_fetcher.h"
 #include "components/password_manager/core/browser/form_saver.h"
 #include "components/password_manager/core/browser/form_saver_impl.h"
+#include "components/password_manager/core/browser/password_feature_manager_impl.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_generation_manager.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
@@ -30,35 +31,44 @@ FormSaver* MultiStorePasswordSaveManager::GetFormSaverForGeneration() {
 }
 
 void MultiStorePasswordSaveManager::SaveInternal(
-    const PasswordForm& pending,
     const std::vector<const PasswordForm*>& matches,
     const base::string16& old_password) {
-  switch (pending.in_store) {
+  // For New Credentials, we should respect the default password store selected
+  // by user. In other cases such PSL matching, we respect the store in the
+  // retrieved credentials.
+  if (pending_credentials_state_ == PendingCredentialsState::NEW_LOGIN) {
+    pending_credentials_.in_store =
+        client_->GetPasswordFeatureManager()->GetDefaultPasswordStore();
+  }
+
+  switch (pending_credentials_.in_store) {
     case PasswordForm::Store::kAccountStore:
       if (account_store_form_saver_ && IsAccountStoreActive())
-        account_store_form_saver_->Save(pending, matches, old_password);
+        account_store_form_saver_->Save(pending_credentials_, matches,
+                                        old_password);
       break;
     case PasswordForm::Store::kProfileStore:
-      form_saver_->Save(pending, matches, old_password);
+      form_saver_->Save(pending_credentials_, matches, old_password);
       break;
     case PasswordForm::Store::kNotSet:
       if (account_store_form_saver_ && IsAccountStoreActive())
-        account_store_form_saver_->Save(pending, matches, old_password);
+        account_store_form_saver_->Save(pending_credentials_, matches,
+                                        old_password);
       else
-        form_saver_->Save(pending, matches, old_password);
+        form_saver_->Save(pending_credentials_, matches, old_password);
       break;
   }
 }
 
 void MultiStorePasswordSaveManager::UpdateInternal(
-    const PasswordForm& pending,
     const std::vector<const PasswordForm*>& matches,
     const base::string16& old_password) {
   // Try to update both stores anyway because if credentials don't exist, the
   // update operation is no-op.
-  form_saver_->Update(pending, matches, old_password);
+  form_saver_->Update(pending_credentials_, matches, old_password);
   if (account_store_form_saver_ && IsAccountStoreActive()) {
-    account_store_form_saver_->Update(pending, matches, old_password);
+    account_store_form_saver_->Update(pending_credentials_, matches,
+                                      old_password);
   }
 }
 

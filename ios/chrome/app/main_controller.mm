@@ -156,8 +156,6 @@
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MDCTypographyAdditions/MDFRobotoFontLoader+MDCTypographyAdditions.h"
-#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #import "ios/web/common/web_view_creation_util.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
@@ -696,9 +694,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // start.
   feature_engagement::TrackerFactory::GetForBrowserState(chromeBrowserState)
       ->NotifyEvent(feature_engagement::events::kChromeOpened);
-
-  // Make sure Roboto is available before any UI is created.
-  [MDCTypography setFontLoader:[MDFRobotoFontLoader sharedInstance]];
 
   // Ensure the main tab model is created. This also creates the BVC.
   [_browserViewWrangler createMainBrowser];

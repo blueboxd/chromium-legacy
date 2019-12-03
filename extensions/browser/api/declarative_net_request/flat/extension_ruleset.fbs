@@ -52,11 +52,11 @@ table UrlRuleMetadata {
   /// ID of the UrlRule for which this metadata is stored.
   id : uint (key);
 
-  /// Redirect url for this rule. Should represent a valid GURL.
+  /// Redirect url for this rule. Should represent a valid GURL. At most one of
+  /// |redirect_url| and |transform| should be specified for redirect rules.
   redirect_url : string;
 
-  /// UrlTransform for this rule. Exactly one of |redirect_url| or |transform|
-  /// should be specified for redirect rules.
+  /// UrlTransform for this rule.
   transform : UrlTransform;
 }
 
@@ -104,6 +104,9 @@ table RegexRule {
 
   /// The headers to be removed. Mask of RemoveHeaderType.
   remove_headers_mask: ubyte;
+
+  /// The regex substitution pattern for this rule if specified.
+  regex_substitution: string;
 }
 
 /// The top-level data structure used to store extensions URL rules for the

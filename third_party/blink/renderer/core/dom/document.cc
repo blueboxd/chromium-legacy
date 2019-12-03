@@ -1142,7 +1142,6 @@ Document::Document(const DocumentInit& initializer,
           GetTaskRunner(TaskType::kInternalLoading),
           this,
           &Document::DidAssociateFormControlsTimerFired),
-      timers_(GetTaskRunner(TaskType::kJavascriptTimer)),
       has_viewport_units_(false),
       parser_sync_policy_(kAllowAsynchronousParsing),
       node_count_(0),
@@ -4526,10 +4525,6 @@ void Document::writeln(v8::Isolate* isolate,
           exception_state);
 }
 
-DOMTimerCoordinator* Document::Timers() {
-  return &timers_;
-}
-
 EventTarget* Document::ErrorEventTarget() {
   return domWindow();
 }
@@ -6096,7 +6091,7 @@ const KURL Document::SiteForCookies() const {
 
   if (SchemeRegistry::ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
           origin->Protocol())) {
-    return origin->IsOpaque() ? NullURL() : KURL(origin->ToString());
+    return origin->IsOpaque() ? NullURL() : KURL(origin->ToRawString());
   }
 
   OriginAccessEntry access_entry(
@@ -6104,18 +6099,26 @@ const KURL Document::SiteForCookies() const {
 
   const Frame* current_frame = GetFrame();
   while (current_frame) {
+    const SecurityOrigin* cur_security_origin =
+        current_frame->GetSecurityContext()->GetSecurityOrigin();
     // We use 'matchesDomain' here, as it turns out that some folks embed HTTPS
     // login forms into HTTP pages; we should allow this kind of upgrade.
-    if (access_entry.MatchesDomain(
-            *current_frame->GetSecurityContext()->GetSecurityOrigin()) ==
-        network::cors::OriginAccessEntry::kDoesNotMatchOrigin) {
+    //
+    // The second clause bypasses strange permissiveness of OriginAccessEntry on
+    // empty domain names. See the beginning of OriginAccessEntry::MatchesDomain
+    // in services/network/public/cpp/cors/origin_access_entry.cc
+    if (access_entry.MatchesDomain(*cur_security_origin) ==
+            network::cors::OriginAccessEntry::kDoesNotMatchOrigin ||
+        (origin->Domain().IsEmpty() != cur_security_origin->Host().IsEmpty())) {
       return NullURL();
     }
 
     current_frame = current_frame->Tree().Parent();
   }
 
-  return origin->IsOpaque() ? NullURL() : KURL(origin->ToString());
+  // Note: don't want origin->ToString() here since that may mess up file:///,
+  // depending on AllowFileAccessFromFileURLs setting.
+  return origin->IsOpaque() ? NullURL() : KURL(origin->ToRawString());
 }
 
 ScriptPromise Document::hasStorageAccess(ScriptState* script_state) const {
@@ -8305,7 +8308,6 @@ void Document::Trace(Visitor* visitor) {
   visitor->Trace(custom_element_microtask_run_queue_);
   visitor->Trace(element_data_cache_);
   visitor->Trace(use_elements_needing_update_);
-  visitor->Trace(timers_);
   visitor->Trace(template_document_);
   visitor->Trace(template_document_host_);
   visitor->Trace(user_action_elements_);

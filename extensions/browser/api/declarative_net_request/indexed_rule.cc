@@ -357,18 +357,15 @@ ParseResult ParseRedirect(dnr_api::Redirect redirect,
     return ValidateTransform(*indexed_rule->url_transform);
   }
 
+  if (redirect.regex_substitution) {
+    if (redirect.regex_substitution->empty())
+      return ParseResult::ERROR_INVALID_REGEX_SUBSTITUTION;
+
+    indexed_rule->regex_substitution = std::move(*redirect.regex_substitution);
+    return ParseResult::SUCCESS;
+  }
+
   return ParseResult::ERROR_INVALID_REDIRECT;
-}
-
-bool IsValidRegex(const dnr_api::Rule& parsed_rule) {
-  DCHECK(parsed_rule.condition.regex_filter);
-
-  // TODO(karandeepb): Regex compilation can be expensive. Also, these need to
-  // be compiled again once the ruleset is loaded, which means duplicate work.
-  // We should maintain a global cache of compiled regexes.
-  re2::RE2 regex(*parsed_rule.condition.regex_filter,
-                 CreateRE2Options(IsCaseSensitive(parsed_rule)));
-  return regex.ok();
 }
 
 }  // namespace
@@ -426,6 +423,10 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
   // TODO(crbug.com/974391): Implement limits on the number of regex rules an
   // extension can specify.
   const bool is_regex_rule = !!parsed_rule.condition.regex_filter;
+
+  if (!is_regex_rule && indexed_rule->regex_substitution)
+    return ParseResult::ERROR_REGEX_SUBSTITUTION_WITHOUT_FILTER;
+
   if (is_regex_rule) {
     if (parsed_rule.condition.regex_filter->empty())
       return ParseResult::ERROR_EMPTY_REGEX_FILTER;
@@ -433,8 +434,23 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
     if (!base::IsStringASCII(*parsed_rule.condition.regex_filter))
       return ParseResult::ERROR_NON_ASCII_REGEX_FILTER;
 
-    if (!IsValidRegex(parsed_rule))
+    bool require_capturing = indexed_rule->regex_substitution.has_value();
+
+    // TODO(karandeepb): Regex compilation can be expensive. Also, these need to
+    // be compiled again once the ruleset is loaded, which means duplicate work.
+    // We should maintain a global cache of compiled regexes.
+    re2::RE2 regex(
+        *parsed_rule.condition.regex_filter,
+        CreateRE2Options(IsCaseSensitive(parsed_rule), require_capturing));
+
+    if (!regex.ok())
       return ParseResult::ERROR_INVALID_REGEX_FILTER;
+
+    std::string error;
+    if (indexed_rule->regex_substitution &&
+        !regex.CheckRewriteString(*indexed_rule->regex_substitution, &error)) {
+      return ParseResult::ERROR_INVALID_REGEX_SUBSTITUTION;
+    }
   }
 
   if (parsed_rule.condition.url_filter) {

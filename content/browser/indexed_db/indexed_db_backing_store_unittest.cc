@@ -18,6 +18,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
@@ -38,6 +39,7 @@
 #include "content/public/test/test_utils.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
@@ -318,22 +320,46 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
     blob_context_ = std::make_unique<storage::BlobStorageContext>();
 
     // useful keys and values during tests
-    blob_info_.push_back(
-        IndexedDBBlobInfo(CreateBlob(), base::UTF8ToUTF16("blob type"), 1));
-    blob_info_.push_back(IndexedDBBlobInfo(
-        CreateBlob(), base::FilePath(FILE_PATH_LITERAL("path/to/file")),
+    blob_info_.push_back(CreateBlobInfo(base::UTF8ToUTF16("blob type"), 1));
+    blob_info_.push_back(CreateBlobInfo(
+        base::FilePath(FILE_PATH_LITERAL("path/to/file")),
         base::UTF8ToUTF16("file name"), base::UTF8ToUTF16("file type")));
-    blob_info_.push_back(IndexedDBBlobInfo(CreateBlob(), base::FilePath(),
-                                           base::UTF8ToUTF16("file name"),
-                                           base::UTF8ToUTF16("file type")));
+    blob_info_.push_back(CreateBlobInfo(base::FilePath(),
+                                        base::UTF8ToUTF16("file name"),
+                                        base::UTF8ToUTF16("file type")));
     value3_ = IndexedDBValue("value3", blob_info_);
-
     key3_ = IndexedDBKey(ASCIIToUTF16("key3"));
   }
 
-  std::unique_ptr<storage::BlobDataHandle> CreateBlob() {
-    return blob_context_->AddFinishedBlob(
-        std::make_unique<storage::BlobDataBuilder>(base::GenerateGUID()));
+  IndexedDBBlobInfo CreateBlobInfo(const base::FilePath& file_path,
+                                   const base::string16& file_name,
+                                   const base::string16& type) {
+    auto uuid = base::GenerateGUID();
+    auto handle = blob_context_->AddFinishedBlob(
+        std::make_unique<storage::BlobDataBuilder>(uuid));
+
+    mojo::PendingRemote<blink::mojom::Blob> remote;
+    auto receiver = remote.InitWithNewPipeAndPassReceiver();
+    storage::BlobImpl::Create(std::move(handle), std::move(receiver));
+
+    handle = blob_context_->GetBlobDataFromUUID(uuid);
+    IndexedDBBlobInfo info(std::move(handle), std::move(remote), file_path,
+                           file_name, type);
+    return info;
+  }
+
+  IndexedDBBlobInfo CreateBlobInfo(const base::string16& type, int64_t size) {
+    auto uuid = base::GenerateGUID();
+    auto handle = blob_context_->AddFinishedBlob(
+        std::make_unique<storage::BlobDataBuilder>(uuid));
+
+    mojo::PendingRemote<blink::mojom::Blob> remote;
+    auto receiver = remote.InitWithNewPipeAndPassReceiver();
+    storage::BlobImpl::Create(std::move(handle), std::move(receiver));
+
+    handle = blob_context_->GetBlobDataFromUUID(uuid);
+    IndexedDBBlobInfo info(std::move(handle), std::move(remote), type, size);
+    return info;
   }
 
   // This just checks the data that survive getting stored and recalled, e.g.
@@ -607,10 +633,12 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRange) {
     TestCallback callback_creator1;
     std::unique_ptr<IndexedDBBackingStore::Transaction> transaction2;
     TestCallback callback_creator2;
-    std::vector<std::unique_ptr<storage::BlobDataHandle>> blobs;
+    std::vector<IndexedDBBlobInfo> blob_infos;
 
-    for (size_t j = 0; j < 4; ++j)
-      blobs.push_back(CreateBlob());
+    for (size_t j = 0; j < 4; ++j) {
+      std::string type = "type " + base::NumberToString(j);
+      blob_infos.push_back(CreateBlobInfo(base::UTF8ToUTF16(type), 1));
+    }
 
     idb_context_->TaskRunner()->PostTask(
         FROM_HERE, base::BindLambdaForTesting([&]() {
@@ -619,26 +647,11 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRange) {
           backing_store()->ClearRemovals();
 
           std::vector<IndexedDBValue> values = {
-              IndexedDBValue(
-                  "value0",
-                  {IndexedDBBlobInfo(
-                      std::make_unique<storage::BlobDataHandle>(*blobs[0]),
-                      base::UTF8ToUTF16("type 0"), 1)}),
-              IndexedDBValue(
-                  "value1",
-                  {IndexedDBBlobInfo(
-                      std::make_unique<storage::BlobDataHandle>(*blobs[1]),
-                      base::UTF8ToUTF16("type 1"), 1)}),
-              IndexedDBValue(
-                  "value2",
-                  {IndexedDBBlobInfo(
-                      std::make_unique<storage::BlobDataHandle>(*blobs[2]),
-                      base::UTF8ToUTF16("type 2"), 1)}),
-              IndexedDBValue(
-                  "value3",
-                  {IndexedDBBlobInfo(
-                      std::make_unique<storage::BlobDataHandle>(*blobs[3]),
-                      base::UTF8ToUTF16("type 3"), 1)})};
+              IndexedDBValue("value0", {blob_infos[0]}),
+              IndexedDBValue("value1", {blob_infos[1]}),
+              IndexedDBValue("value2", {blob_infos[2]}),
+              IndexedDBValue("value3", {blob_infos[3]}),
+          };
           ASSERT_GE(keys.size(), values.size());
 
           // Initiate transaction1 - write records.
@@ -728,10 +741,12 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRangeEmptyRange) {
     TestCallback callback_creator1;
     std::unique_ptr<IndexedDBBackingStore::Transaction> transaction2;
     TestCallback callback_creator2;
-    std::vector<std::unique_ptr<storage::BlobDataHandle>> blobs;
+    std::vector<IndexedDBBlobInfo> blob_infos;
 
-    for (size_t j = 0; j < 4; ++j)
-      blobs.push_back(CreateBlob());
+    for (size_t j = 0; j < 4; ++j) {
+      std::string type = "type " + base::NumberToString(j);
+      blob_infos.push_back(CreateBlobInfo(base::UTF8ToUTF16(type), 1));
+    }
 
     idb_context_->TaskRunner()->PostTask(
         FROM_HERE, base::BindLambdaForTesting([&]() {
@@ -740,26 +755,11 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRangeEmptyRange) {
           backing_store()->ClearRemovals();
 
           std::vector<IndexedDBValue> values = {
-              IndexedDBValue(
-                  "value0",
-                  {IndexedDBBlobInfo(
-                      std::make_unique<storage::BlobDataHandle>(*blobs[0]),
-                      base::UTF8ToUTF16("type 0"), 1)}),
-              IndexedDBValue(
-                  "value1",
-                  {IndexedDBBlobInfo(
-                      std::make_unique<storage::BlobDataHandle>(*blobs[1]),
-                      base::UTF8ToUTF16("type 1"), 1)}),
-              IndexedDBValue(
-                  "value2",
-                  {IndexedDBBlobInfo(
-                      std::make_unique<storage::BlobDataHandle>(*blobs[2]),
-                      base::UTF8ToUTF16("type 2"), 1)}),
-              IndexedDBValue(
-                  "value3",
-                  {IndexedDBBlobInfo(
-                      std::make_unique<storage::BlobDataHandle>(*blobs[3]),
-                      base::UTF8ToUTF16("type 3"), 1)})};
+              IndexedDBValue("value0", {blob_infos[0]}),
+              IndexedDBValue("value1", {blob_infos[1]}),
+              IndexedDBValue("value2", {blob_infos[2]}),
+              IndexedDBValue("value3", {blob_infos[3]}),
+          };
           ASSERT_GE(keys.size(), values.size());
 
           // Initiate transaction1 - write records.

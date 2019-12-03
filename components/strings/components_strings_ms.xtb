@@ -9,6 +9,7 @@
 <translation id="1036348656032585052">Matikan</translation>
 <translation id="1038842779957582377">nama tidak diketahui</translation>
 <translation id="1039626062703039346">Chrome boleh membantu anda melindungi Akaun Google anda dan menukar kata laluan anda. Tindakan ini akan memberitahu Google tentang tapak ini.</translation>
+<translation id="1044897699341250361">Maksudnya</translation>
 <translation id="1050038467049342496">Tutup apl lain</translation>
 <translation id="1055184225775184556">&amp;Buat Asal Tambahkan</translation>
 <translation id="1056898198331236512">Amaran</translation>
@@ -183,6 +184,7 @@
 <translation id="1745880797583122200">Penyemak imbas anda diurus</translation>
 <translation id="17513872634828108">Buka tab</translation>
 <translation id="1753706481035618306">Nombor halaman</translation>
+<translation id="175838129965056221">Chrome telah mengesan bahawa sambungan anda sedang dipantau</translation>
 <translation id="1763864636252898013">Pelayan ini tidak dapat membuktikan bahawa domainnya ialah <ph name="DOMAIN" />; sijil keselamatannya tidak dipercayai oleh sistem pengendalian peranti anda. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintasi sambungan anda.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Cuba jalankan Diagnostik Rangkaian Windows<ph name="END_LINK" />.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -251,6 +253,7 @@
 <translation id="2119867082804433120">Tebukan bawah sebelah kanan</translation>
 <translation id="2129079103035905234">Penderia Gerakan</translation>
 <translation id="2130448033692577677">Templat yang anda nyatakan tidak dapat digunakan kerana dasar DnsOverHttpsMode tidak ditetapkan.</translation>
+<translation id="2131277894177304644">Chromium telah mengesan bahawa sambungan anda sedang dipantau</translation>
 <translation id="213826338245044447">Penanda Halaman Mudah Alih</translation>
 <translation id="214556005048008348">Batalkan pembayaran</translation>
 <translation id="2147827593068025794">Penyegerakan Latar Belakang</translation>
@@ -298,6 +301,7 @@
 <translation id="2354001756790975382">Penanda halaman lain</translation>
 <translation id="2354430244986887761">Penyemakan Imbas Selamat Google <ph name="BEGIN_LINK" />menemui apl yang memudaratkan<ph name="END_LINK" /> di <ph name="SITE" /> baru-baru ini.</translation>
 <translation id="2355395290879513365">Penyerang mungkin dapat melihat imej yang anda lihat di tapak ini dan menipu anda dengan mengubah suainya.</translation>
+<translation id="2355474962185559967">Anda baru sahaja memasukkan kata laluan anda pada tapak yang menipu. Chromium mengesyorkan anda pergi ke <ph name="WEBSITE_1" /> dan menukar kata laluan anda sekarang.</translation>
 <translation id="2356070529366658676">Tanya</translation>
 <translation id="2359629602545592467">Berbilang</translation>
 <translation id="2359808026110333948">Teruskan</translation>
@@ -401,6 +405,7 @@
 <translation id="2799020568854403057">Tapak yang akan disemak imbas mengandungi apl yang memudaratkan</translation>
 <translation id="2799223571221894425">Lancarkan semula</translation>
 <translation id="2803306138276472711">Penyemakan Selamat Google <ph name="BEGIN_LINK" />mengesan perisian hasad<ph name="END_LINK" /> pada <ph name="SITE" /> baru-baru ini. Tapak web yang biasanya selamat kadangkala dijangkiti oleh perisian hasad.</translation>
+<translation id="281585763351939989">Chromium telah mengesan bahawa sambungan anda sedang dipantau.</translation>
 <translation id="2824775600643448204">Bar alamat dan carian</translation>
 <translation id="2826760142808435982">Sambungan disulitkan dan disahkan menggunakan <ph name="CIPHER" /> dan menggunakan <ph name="KX" /> sebagai mekanisme pertukaran kunci.</translation>
 <translation id="2835170189407361413">Kosongkan borang</translation>
@@ -445,6 +450,7 @@
 <translation id="3024663005179499861">Jenis dasar salah</translation>
 <translation id="3037605927509011580">Oh, Tidak!</translation>
 <translation id="3041612393474885105">Maklumat Sijil</translation>
+<translation id="304755864151473094">Sebab perkara ini berlaku</translation>
 <translation id="3057676462092457419">Mod DnsOverHttps <ph name="SECURE_DNS_MODE_SECURE" /> belum lagi disokong, mod telah ditetapkan pada <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">C9 (Sampul Surat)</translation>
 <translation id="3061707000357573562">Perkhidmatan Tampung</translation>
@@ -484,6 +490,7 @@
 <translation id="3228969707346345236">Gagal terjemah kerana halaman sudah dalam <ph name="LANGUAGE" />.</translation>
 <translation id="3229041911291329567">Maklumat versi tentang peranti dan penyemak imbas anda</translation>
 <translation id="323107829343500871">Masukkan CVC untuk <ph name="CREDIT_CARD" /></translation>
+<translation id="3234392465377209614">Anda baru sahaja memasukkan kata laluan anda pada tapak yang menipu. Chromium mengesyorkan anda pergi ke <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> dan <ph name="WEBSITE_3" /> serta menukar kata laluan anda sekarang.</translation>
 <translation id="3234666976984236645">Sentiasa kesan kandungan penting di tapak web ini</translation>
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> kelihatan serupa dengan <ph name="SUGGESTED_DOMAIN" />. Kadangkala penyerang meniru tapak dengan menggunakan URL serupa.</translation>
 <translation id="3270847123878663523">&amp;Buat asal Susun semula</translation>
@@ -516,6 +523,7 @@
 <translation id="342781501876943858">Chromium mengesyorkan penetapan semula kata laluan jika anda menggunakan semula kata laluan itu di tapak lain.</translation>
 <translation id="3428151540071562330">Satu atau beberapa URI templat pelayan DnsOverHttpsTemplates URI tidak sah dan tidak akan digunakan.</translation>
 <translation id="3431636764301398940">Simpan kad ini pada peranti ini</translation>
+<translation id="3438790640050632698">Anda baru sahaja memasukkan kata laluan anda pada tapak yang menipu. Chrome mengesyorkan anda pergi ke <ph name="WEBSITE_1" /> dan <ph name="WEBSITE_2" /> serta menukar kata laluan anda sekarang.</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">Pemilik peranti ini telah mematikan permainan dinosaur.</translation>
 <translation id="3447884698081792621">Tunjukkan sijil (yang dikeluarkan oleh <ph name="ISSUER" />)</translation>
@@ -530,6 +538,7 @@
 <translation id="3495081129428749620">Cari dalam halaman
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">Dasar ini diabaikan kerana dasar lain daripada kumpulan dasar yang sama mempunyai keutamaan yang lebih tinggi.</translation>
+<translation id="3525469219100414032">Anda baru sahaja memasukkan kata laluan anda pada tapak yang menipu. Chrome mengesyorkan anda pergi ke <ph name="WEBSITE_1" /> dan menukar kata laluan anda sekarang.</translation>
 <translation id="3528171143076753409">Sijil pelayan tidak dipercayai.</translation>
 <translation id="3528485271872257980">Coklat Gelap</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Sekurang-kurangnya 1 item pada peranti yang disegerakkan}=1{1 item (dan beberapa lagi pada peranti yang disegerakkan)}other{# item (dan beberapa lagi pada peranti yang disegerakkan)}}</translation>
@@ -609,6 +618,7 @@
 <translation id="3858027520442213535">Kemas kini tarikh dan masa</translation>
 <translation id="3884278016824448484">Pengecam peranti bercanggah</translation>
 <translation id="3885155851504623709">Mukim</translation>
+<translation id="388632593194507180">Pemantauan Dikesan</translation>
 <translation id="3890664840433101773">Tambah e-mel</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3901925938762663762">Kad telah tamat tempoh</translation>
@@ -710,6 +720,7 @@
 <translation id="4305817255990598646">Tukar</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Sekat (lalai)</translation>
+<translation id="4318312030194671742">Perkhidmatan Pengatur Huruf Pratonton Lukisan</translation>
 <translation id="4318566738941496689">Nama dan alamat rangkaian peranti anda</translation>
 <translation id="4325863107915753736">Gagal menemui artikel</translation>
 <translation id="4326324639298822553">Semak tarikh tamat tempoh anda dan cuba lagi</translation>
@@ -726,6 +737,7 @@
 <translation id="4372948949327679948">Nilai <ph name="VALUE_TYPE" /> yang dijangka.</translation>
 <translation id="4377125064752653719">Anda cuba untuk mencapai <ph name="DOMAIN" />, tetapi sijil yang diberi pelayan telah dibatalkan oleh pengeluarnya. Ini bermakna bahawa bukti kelayakan keselamatan yang diberi pelayan sememangnya tidak harus dipercayai. Anda mungkin berkomunikasi dengan penyerang.</translation>
 <translation id="4378154925671717803">Telefon</translation>
+<translation id="437847259914972036">Aktiviti anda menerusi web dan sebarang maklumat yang anda masukkan sedang diperhatikan dan kandungan boleh diubah tanpa pengetahuan anda.</translation>
 <translation id="4398334096870680409">Ciri ini tidak tersedia pada peranti anda.</translation>
 <translation id="4406896451731180161">hasil carian</translation>
 <translation id="4408413947728134509">Kuki <ph name="NUM_COOKIES" /></translation>
@@ -961,6 +973,7 @@
 <translation id="5565735124758917034">Aktif</translation>
 <translation id="5570825185877910964">Lindungi akaun</translation>
 <translation id="5571083550517324815">Tidak boleh mengambil dari alamat ini. Pilih alamat lain.</translation>
+<translation id="5572009199897554128">Anda baru sahaja memasukkan kata laluan anda pada tapak yang menipu. Chromium mengesyorkan anda pergi ke <ph name="WEBSITE_1" /> dan <ph name="WEBSITE_2" /> serta menukar kata laluan anda sekarang.</translation>
 <translation id="5580958916614886209">Semak bulan tamat tempoh anda dan cuba lagi</translation>
 <translation id="5586446728396275693">Tiada alamat yang disimpan</translation>
 <translation id="5595485650161345191">Edit alamat</translation>
@@ -1143,6 +1156,7 @@
 <translation id="6446163441502663861">Kahu (Sampul Surat)</translation>
 <translation id="6446608382365791566">Tambahkan maklumat lanjut</translation>
 <translation id="6447842834002726250">Kuki</translation>
+<translation id="644931407731409778">Dokumen PDF yang mengandungi {COUNT,plural, =1{1 halaman}other{# halaman}}</translation>
 <translation id="6451458296329894277">Sahkan Penyerahan Semula Borang</translation>
 <translation id="6457206614190510200">Jahitan pelana</translation>
 <translation id="6465306955648956876">Urus kata laluan...</translation>
@@ -1161,6 +1175,7 @@
 <translation id="6547208576736763147">Dua tebukan kiri</translation>
 <translation id="6554795675067793129">Akaun anda diurus oleh <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Buat semula</translation>
+<translation id="6559565319173126218">Sijil yang diberikan untuk sambungan ini tidak dipercayai oleh Chrome kerana sijil ini diketahui telah digunakan untuk pemintasan dan pemantauan rangkaian.</translation>
 <translation id="6569060085658103619">Anda sedang melihat halaman sambungan</translation>
 <translation id="6573200754375280815">Dua tebukan kanan</translation>
 <translation id="6578796323535178455">C2 (Sampul Surat)</translation>
@@ -1194,6 +1209,7 @@
 <translation id="6710594484020273272">&lt;Taip istilah carian&gt;</translation>
 <translation id="671076103358959139">Token Pendaftaran:</translation>
 <translation id="6711464428925977395">Ada sesuatu yang tidak kena dengan pelayan proksi atau alamat tidak betul.</translation>
+<translation id="6721811549156553509">Pemantau rangkaian boleh menyamar sebagai tapak yang anda lawati dan boleh melihat aktiviti anda serta sebarang maklumat yang anda masukkan (misalnya, kata laluan, mesej atau kad kredit). Anda harus berhati-hati apabila melakukan sebarang perkara sensitif dalam talian, kerana aktiviti tersebut boleh dilihat oleh pemantau rangkaian dan pemantau rangkaian boleh menukar kandungan pada halaman yang anda lawati. Ini termasuk aktiviti pada penyemak imbas lain dan atur cara yang mengakses Internet.</translation>
 <translation id="6738516213925468394">Data anda disulitkan dengan <ph name="BEGIN_LINK" />ungkapan laluan segerak<ph name="END_LINK" /> anda pada <ph name="TIME" />. Masukkannya untuk memulakan penyegerakan.</translation>
 <translation id="674375294223700098">Ralat sijil pelayan tidak diketahui.</translation>
 <translation id="6744009308914054259">Sementara menunggu sambungan, anda boleh melawati Muat turun untuk membaca artikel luar talian.</translation>
@@ -1278,6 +1294,7 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /> mengenai masalah ini.</translation>
 <translation id="7219179957768738017">Sambungan menggunakan <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Memproses</translation>
+<translation id="7239736667463137521">Chrome telah mengesan bahawa sambungan anda sedang dipantau.</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Tapak di hadapan mengandungi perisian hasad</translation>
 <translation id="724975217298816891">Masukkan tarikh tamat tempoh dan CVC untuk <ph name="CREDIT_CARD" /> bagi mengemas kini butiran kad anda. Setelah anda mengesahkan, butiran kad anda akan dikongsi dengan tapak ini.</translation>
@@ -1304,6 +1321,7 @@ Butiran tambahan:
 <translation id="7346048084945669753">Ialah ahli gabungan:</translation>
 <translation id="7349430561505560861">A4-Ekstra</translation>
 <translation id="7353601530677266744">Baris Perintah</translation>
+<translation id="7353776484425559055">Sijil untuk sambungan ini tidak dipercayai oleh Chromium kerana sijil ini diketahui telah digunakan untuk pemintasan dan pemantauan rangkaian. Anda mungkin melihat ralat ini disebabkan sijil yang anda pasang pada peranti anda. Apabila membuat sambungan selamat, Chromium mempercayai sijil yang telah dipasang secara setempat pada komputer atau peranti mudah alih pengguna. Tindakan ini membolehkan pengguna menjalankan alatan untuk memeriksa dan menyahpepijat sambungan mereka semasa pembangunan tapak web, atau untuk persekitaran korporat memintas dan memantau trafik dalaman. Chromium akan memaparkan amaran jika berlaku penyalahgunaan ciri ini untuk memintas trafik pada Internet awam.</translation>
 <translation id="7372973238305370288">hasil carian</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Kawalan Media</translation>
@@ -1365,6 +1383,7 @@ Butiran tambahan:
 <translation id="7592362899630581445">Sijil pelayan melanggar kekangan nama.</translation>
 <translation id="7598391785903975535">Kurang daripada <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> tidak dapat mengendalikan permintaan ini pada masa ini.</translation>
+<translation id="7599841999395223597">Sijil untuk sambungan ini tidak dipercayai oleh Chrome kerana sijil ini diketahui telah digunakan untuk pemintasan dan pemantauan rangkaian. Anda mungkin melihat ralat ini disebabkan sijil yang anda pasang pada peranti anda. Apabila membuat sambungan selamat, Chrome mempercayai sijil yang telah dipasang secara setempat pada komputer atau peranti mudah alih pengguna. Tindakan ini membolehkan pengguna menjalankan alatan untuk memeriksa dan menyahpepijat sambungan mereka semasa pembangunan tapak web, atau untuk persekitaran korporat memintas dan memantau trafik dalaman. Chrome akan memaparkan amaran jika berlaku penyalahgunaan ciri ini untuk memintas trafik pada Internet awam.</translation>
 <translation id="7600965453749440009">Jangan sekali-kali terjemahkan <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Nilai berada di luar julat <ph name="VALUE" /></translation>
 <translation id="7613889955535752492">Tamat: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -1682,6 +1701,7 @@ Butiran tambahan:
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">Anda mungkin akan kehilangan akses kepada Akaun Google anda. Chromium mengesyorkan supaya anda menukar kata laluan sekarang. Anda akan diminta untuk log masuk.</translation>
 <translation id="939736085109172342">Folder baharu</translation>
+<translation id="940786960229275114">Anda baru sahaja memasukkan kata laluan anda pada tapak yang menipu. Chrome mengesyorkan anda pergi ke <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> dan <ph name="WEBSITE_3" /> serta menukar kata laluan anda sekarang.</translation>
 <translation id="945855313015696284">Semak maklumat di bawah dan padamkan sebarang kad yang tidak sah</translation>
 <translation id="950736567201356821">Tiga tebukan atas</translation>
 <translation id="951104842009476243">Kad Debit dan Prabayar yang Diterima</translation>

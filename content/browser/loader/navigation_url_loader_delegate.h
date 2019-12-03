@@ -13,13 +13,13 @@
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace net {
 struct RedirectInfo;
 }
 
 namespace network {
-struct ResourceResponse;
 struct URLLoaderCompletionStatus;
 }
 
@@ -35,7 +35,7 @@ class CONTENT_EXPORT NavigationURLLoaderDelegate {
   // processing the request.
   virtual void OnRequestRedirected(
       const net::RedirectInfo& redirect_info,
-      const scoped_refptr<network::ResourceResponse>& response) = 0;
+      network::mojom::URLResponseHeadPtr response) = 0;
 
   // Called when the request receives its response. No further calls will be
   // made to the delegate. The response body can be retrieved by implementing an
@@ -52,7 +52,7 @@ class CONTENT_EXPORT NavigationURLLoaderDelegate {
   // |download_policy| specifies if downloading is disallowed.
   virtual void OnResponseStarted(
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-      const scoped_refptr<network::ResourceResponse>& response_head,
+      network::mojom::URLResponseHeadPtr response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
       const GlobalRequestID& request_id,
       bool is_download,

@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 
 namespace weblayer {
 
@@ -22,8 +23,15 @@ class ContentRendererClientImpl : public content::ContentRendererClient {
                         const blink::WebURLError& error,
                         const std::string& http_method,
                         std::string* error_html) override;
+  void RenderThreadStarted() override;
+  std::unique_ptr<content::URLLoaderThrottleProvider>
+  CreateURLLoaderThrottleProvider(
+      content::URLLoaderThrottleProviderType provider_type) override;
 
  private:
+  scoped_refptr<blink::ThreadSafeBrowserInterfaceBrokerProxy>
+      browser_interface_broker_;
+
   DISALLOW_COPY_AND_ASSIGN(ContentRendererClientImpl);
 };
 

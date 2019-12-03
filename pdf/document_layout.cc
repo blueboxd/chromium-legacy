@@ -4,6 +4,8 @@
 
 #include "pdf/document_layout.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/size.h"

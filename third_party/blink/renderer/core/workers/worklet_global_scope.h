@@ -85,12 +85,6 @@ class CORE_EXPORT WorkletGlobalScope
     return agent_cluster_id_;
   }
 
-  DOMTimerCoordinator* Timers() final {
-    // WorkletGlobalScopes don't have timers.
-    NOTREACHED();
-    return nullptr;
-  }
-
   // Implementation of the "fetch and invoke a worklet script" algorithm:
   // https://drafts.css-houdini.org/worklets/#fetch-and-invoke-a-worklet-script
   // When script evaluation is done or any exception happens, it's notified to

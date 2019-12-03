@@ -231,7 +231,7 @@ void SignedExchangeCertFetcher::OnReceiveResponse(
   if (devtools_proxy_) {
     DCHECK(cert_request_id_);
     devtools_proxy_->CertificateResponseReceived(*cert_request_id_,
-                                                 resource_request_->url, head);
+                                                 resource_request_->url, *head);
   }
 
   if (reporter_)

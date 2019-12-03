@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_notifier.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser_delegate.h"
+#include "third_party/blink/renderer/core/frame/dom_timer_coordinator.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
@@ -176,7 +177,10 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   // list" of tasks created by setTimeout and setInterval. The
   // DOMTimerCoordinator is owned by the ExecutionContext and should
   // not be used after the ExecutionContext is destroyed.
-  virtual DOMTimerCoordinator* Timers() = 0;
+  DOMTimerCoordinator* Timers() {
+    DCHECK(!IsWorkletGlobalScope());
+    return &timers_;
+  }
 
   virtual ResourceFetcher* Fetcher() const = 0;
 
@@ -335,6 +339,8 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   Member<Agent> agent_;
 
   Member<OriginTrialContext> origin_trial_context_;
+
+  DOMTimerCoordinator timers_;
 
   // Counter that keeps track of how many window interaction calls are allowed
   // for this ExecutionContext. Callers are expected to call

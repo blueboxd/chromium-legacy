@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/guid.h"
 #include "base/process/process.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
@@ -22,10 +23,12 @@
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
+#include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/transaction_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/database/database_util.h"
 #include "storage/browser/file_system/file_stream_reader.h"
 #include "url/origin.h"
@@ -444,6 +447,52 @@ void IndexedDBDispatcherHost::BindFileReader(
 void IndexedDBDispatcherHost::RemoveBoundReaders(const base::FilePath& path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   file_reader_map_.erase(path);
+}
+
+void IndexedDBDispatcherHost::CreateAllBlobs(
+    const std::vector<IndexedDBBlobInfo>& blob_infos,
+    std::vector<blink::mojom::IDBBlobInfoPtr>* output_infos) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  IDB_TRACE("IndexedDBDispatcherHost::CreateAllBlobs");
+
+  DCHECK_EQ(blob_infos.size(), output_infos->size());
+  if (blob_infos.empty())
+    return;
+
+  // First, handle all the "file path" value blobs on this sequence.
+  for (size_t i = 0; i < blob_infos.size(); ++i) {
+    auto& blob_info = blob_infos[i];
+    auto& output_info = (*output_infos)[i];
+
+    if (blob_info.is_remote_valid()) {
+      // TODO(enne): when blob handle gets removed entirely, there's no
+      // need for uuid to be stored here in IDBBlobInfoPtr.  For now,
+      // this needs to stay, unfortunately.
+      DCHECK(blob_info.blob_handle());
+      output_info->uuid = blob_info.blob_handle()->uuid();
+      blob_info.Clone(output_info->blob.InitWithNewPipeAndPassReceiver());
+      continue;
+    }
+
+    auto element = storage::mojom::BlobDataItem::New();
+    // TODO(enne): do we have to handle unknown size here??
+    element->size = blob_info.size();
+    element->side_data_size = 0;
+    element->content_type = base::UTF16ToUTF8(blob_info.type());
+    element->type = storage::mojom::BlobDataItemType::kIndexedDB;
+
+    BindFileReader(blob_info.file_path(), blob_info.last_modified(),
+                   blob_info.release_callback(),
+                   element->reader.InitWithNewPipeAndPassReceiver());
+
+    // Write results to output_info.
+    output_info->uuid = base::GenerateGUID();
+    auto receiver = output_info->blob.InitWithNewPipeAndPassReceiver();
+
+    mojo_blob_storage_context()->RegisterFromDataItem(
+        std::move(receiver), output_info->uuid, std::move(element));
+  }
 }
 
 void IndexedDBDispatcherHost::InvalidateWeakPtrsAndClearBindings() {

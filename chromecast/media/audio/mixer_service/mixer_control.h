@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/threading/sequence_bound.h"
 
 namespace chromecast {

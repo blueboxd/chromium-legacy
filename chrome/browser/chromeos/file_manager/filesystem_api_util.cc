@@ -244,8 +244,7 @@ void IsNonNativeLocalPathDirectory(Profile* profile,
 
   util::CheckIfDirectoryExists(
       GetFileSystemContextForExtensionId(profile, kFileManagerAppId), path,
-      base::Bind(&BoolCallbackAsFileErrorCallback,
-                 base::Passed(std::move(callback))));
+      base::BindOnce(&BoolCallbackAsFileErrorCallback, std::move(callback)));
 }
 
 void PrepareNonNativeLocalFileForWritableApp(

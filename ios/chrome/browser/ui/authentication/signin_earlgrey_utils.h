@@ -38,6 +38,9 @@
 // Induces a GREYAssert if an identity is signed in.
 - (void)checkSignedOut;
 
+// Removes |fakeIdentity| from the fake identity service.
+- (void)removeFakeIdentity:(FakeChromeIdentity*)fakeIdentity;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_EARLGREY_UTILS_H_

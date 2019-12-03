@@ -6,15 +6,17 @@ suite('history-toolbar', function() {
   let app;
   let element;
   let toolbar;
-  let TEST_HISTORY_RESULTS;
-
-  suiteSetup(function() {
-    TEST_HISTORY_RESULTS =
-        [createHistoryEntry('2016-03-15', 'https://google.com')];
-  });
+  let testService;
+  const TEST_HISTORY_RESULTS =
+      [createHistoryEntry('2016-03-15', 'https://google.com')];
 
   setup(function() {
-    app = replaceApp();
+    PolymerTest.clearBody();
+    testService = new TestBrowserService();
+    history.BrowserService.instance_ = testService;
+
+    app = document.createElement('history-app');
+    document.body.appendChild(app);
     element = app.$.history;
     toolbar = app.$.toolbar;
     return test_util.flushTasks();
@@ -44,29 +46,25 @@ suite('history-toolbar', function() {
     });
   });
 
-  test('search term gathered correctly from toolbar', function(done) {
+  test('search term gathered correctly from toolbar', function() {
     app.queryState_.queryingDisabled = false;
-    registerMessageCallback('queryHistory', this, function(info) {
-      assertEquals('Test', info[0]);
-      app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
-      done();
-    });
-
     toolbar.$$('cr-toolbar').fire('search-changed', 'Test');
+    return testService.whenCalled('queryHistory').then(query => {
+      assertEquals('Test', query);
+      app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
+    });
   });
 
-  test('spinner is active on search', function(done) {
+  test('spinner is active on search', function() {
     app.queryState_.queryingDisabled = false;
-    registerMessageCallback('queryHistory', this, function(info) {
-      test_util.flushTasks().then(function() {
-        assertTrue(toolbar.spinnerActive);
-        app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
-        assertFalse(toolbar.spinnerActive);
-        done();
-      });
-    });
-
     toolbar.$$('cr-toolbar').fire('search-changed', 'Test2');
+    return testService.whenCalled('queryHistory')
+        .then(test_util.flushTasks)
+        .then(() => {
+          assertTrue(toolbar.spinnerActive);
+          app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
+          assertFalse(toolbar.spinnerActive);
+        });
   });
 
   test('menu promo hides when drawer is opened', function() {
@@ -75,9 +73,5 @@ suite('history-toolbar', function() {
     Polymer.dom.flush();
     MockInteractions.tap(toolbar.$['main-toolbar'].$$('#menuButton'));
     assertFalse(app.showMenuPromo_);
-  });
-
-  teardown(function() {
-    registerMessageCallback('queryHistory', this, function() {});
   });
 });

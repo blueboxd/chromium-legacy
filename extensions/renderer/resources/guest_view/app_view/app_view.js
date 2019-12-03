@@ -49,7 +49,7 @@ AppViewImpl.prototype.connect = function(app, data, callback) {
   this.app = app;
   this.data = data;
 
-  this.guest.destroy($Function.bind(this.prepareForReattach$, this));
+  this.guest.destroy($Function.bind(this.prepareForReattach, this));
   this.guest.create(this.buildParams(), $Function.bind(function() {
     if (!this.guest.getId()) {
       var errorMsg = 'Unable to connect to app "' + app + '".';
@@ -60,7 +60,7 @@ AppViewImpl.prototype.connect = function(app, data, callback) {
       }
       return;
     }
-    this.attachWindow$();
+    this.attachWindow();
     if (callback) {
       callback(true);
     }

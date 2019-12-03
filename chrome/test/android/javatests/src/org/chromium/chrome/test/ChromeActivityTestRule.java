@@ -39,8 +39,8 @@ import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.UrlBar;
-import org.chromium.chrome.browser.settings.Preferences;
 import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -599,15 +599,18 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
     }
 
     /**
-     * Launches the preferences menu and starts the preferences activity named fragmentName.
+     * Launches the settings activity with the specified fragment.
      * Returns the activity that was started.
+     *
+     * TODO(chouinard): This seems like mostly a duplicate of {@link
+     * SettingsActivityTest#startSettingsActivity}, try to consolidate to one.
      */
-    public Preferences startPreferences(String fragmentName) {
+    public SettingsActivity startSettingsActivity(String fragmentName) {
         Context context = InstrumentationRegistry.getTargetContext();
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(context, fragmentName);
         Activity activity = InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
-        Assert.assertTrue(activity instanceof Preferences);
-        return (Preferences) activity;
+        Assert.assertTrue(activity instanceof SettingsActivity);
+        return (SettingsActivity) activity;
     }
 
     /**

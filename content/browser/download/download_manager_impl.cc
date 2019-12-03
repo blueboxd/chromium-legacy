@@ -668,6 +668,11 @@ void DownloadManagerImpl::CheckForFileRemoval(
     return;
   }
 
+  // Check whether an task is already queued or running for the current download
+  // and skip this check if it is the case.
+  if (!pending_disk_access_query_.insert(download_item->GetId()).second)
+    return;
+
   base::PostTaskAndReplyWithResult(
       disk_access_task_runner_.get(), FROM_HERE,
       base::BindOnce(&base::PathExists, download_item->GetTargetFilePath()),
@@ -678,6 +683,10 @@ void DownloadManagerImpl::CheckForFileRemoval(
 void DownloadManagerImpl::OnFileExistenceChecked(uint32_t download_id,
                                                  bool result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Remove the pending check flag for this download to allow new requests.
+  pending_disk_access_query_.erase(download_id);
+
   if (!result) {  // File does not exist.
     if (base::Contains(downloads_, download_id))
       downloads_[download_id]->OnDownloadedFileRemoved();
@@ -701,13 +710,13 @@ void DownloadManagerImpl::CreateSavePackageDownloadItem(
     int render_process_id,
     int render_frame_id,
     download::DownloadJob::CancelRequestCallback cancel_request_callback,
-    const DownloadItemImplCreated& item_created) {
+    DownloadItemImplCreated item_created) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  GetNextId(
-      base::BindOnce(&DownloadManagerImpl::CreateSavePackageDownloadItemWithId,
-                     weak_factory_.GetWeakPtr(), main_file_path, page_url,
-                     mime_type, render_process_id, render_frame_id,
-                     std::move(cancel_request_callback), item_created));
+  GetNextId(base::BindOnce(
+      &DownloadManagerImpl::CreateSavePackageDownloadItemWithId,
+      weak_factory_.GetWeakPtr(), main_file_path, page_url, mime_type,
+      render_process_id, render_frame_id, std::move(cancel_request_callback),
+      std::move(item_created)));
 }
 
 void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
@@ -717,7 +726,7 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
     int render_process_id,
     int render_frame_id,
     download::DownloadJob::CancelRequestCallback cancel_request_callback,
-    const DownloadItemImplCreated& item_created,
+    DownloadItemImplCreated item_created,
     uint32_t id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_NE(download::DownloadItem::kInvalidId, id);
@@ -730,7 +739,7 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
                                     render_process_id, render_frame_id));
   OnDownloadCreated(base::WrapUnique(download_item));
   if (!item_created.is_null())
-    item_created.Run(download_item);
+    std::move(item_created).Run(download_item);
 }
 
 // Resume a download of a specific URL. We send the request to the
@@ -789,7 +798,7 @@ void DownloadManagerImpl::ReportBytesWasted(
 void DownloadManagerImpl::InterceptNavigation(
     std::unique_ptr<network::ResourceRequest> resource_request,
     std::vector<GURL> url_chain,
-    scoped_refptr<network::ResourceResponse> response_head,
+    network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     net::CertStatus cert_status,
@@ -1161,7 +1170,7 @@ void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
     std::unique_ptr<network::ResourceRequest> resource_request,
     std::vector<GURL> url_chain,
     net::CertStatus cert_status,
-    scoped_refptr<network::ResourceResponse> response_head,
+    network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     bool is_download_allowed) {

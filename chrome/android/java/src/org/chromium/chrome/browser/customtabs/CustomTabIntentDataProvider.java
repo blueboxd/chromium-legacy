@@ -226,6 +226,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     @Nullable
     private String mUrlToLoad;
 
+    private boolean mHasCustomToolbarColor;
     private int mToolbarColor;
     private int mBottomBarColor;
     private boolean mEnableUrlBarHiding;
@@ -527,7 +528,8 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
             mToolbarColor = defaultColor;
             return; // Don't allow toolbar color customization for incognito tabs.
         }
-        int color = schemeParams.toolbarColor != null ? schemeParams.toolbarColor : defaultColor;
+        mHasCustomToolbarColor = (schemeParams.toolbarColor != null);
+        int color = mHasCustomToolbarColor ? schemeParams.toolbarColor : defaultColor;
         mToolbarColor = ColorUtils.getOpaqueColor(color);
     }
 
@@ -642,6 +644,11 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     @Override
     public int getToolbarColor() {
         return mToolbarColor;
+    }
+
+    @Override
+    public boolean hasCustomToolbarColor() {
+        return mHasCustomToolbarColor;
     }
 
     @Override

@@ -59,7 +59,8 @@ const syncer::SyncService* GetSyncService(
 IOSChromePasswordManagerClient::IOSChromePasswordManagerClient(
     id<PasswordManagerClientDelegate> delegate)
     : delegate_(delegate),
-      password_feature_manager_(GetSyncService(delegate_.browserState)),
+      password_feature_manager_(GetPrefs(),
+                                GetSyncService(delegate_.browserState)),
       credentials_filter_(
           this,
           base::BindRepeating(&GetSyncService, delegate_.browserState)),

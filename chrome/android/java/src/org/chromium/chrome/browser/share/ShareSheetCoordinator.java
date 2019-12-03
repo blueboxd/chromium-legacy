@@ -4,50 +4,83 @@
 
 package org.chromium.chrome.browser.share;
 
-import android.app.Activity;
+import android.content.Context;
+import android.support.v7.content.res.AppCompatResources;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
-import androidx.annotation.VisibleForTesting;
-
-import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.share.qrcode.QrCodeCoordinator;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.SimpleRecyclerViewAdapter;
 
 /**
  * Coordinator for displaying the share sheet.
  */
 public class ShareSheetCoordinator {
-    private ShareSheetMediator mMediator;
+    private static final int SHARE_SHEET_ITEM = 0;
 
-    /**
-     * Constructs a new ShareSheetCoordinator.
-     */
+    private final BottomSheetController mBottomSheetController;
+
     public ShareSheetCoordinator(BottomSheetController controller) {
-        mMediator = new ShareSheetMediator(new ShareSheetMediator.ShareSheetDelegate(), controller);
+        mBottomSheetController = controller;
     }
 
-    /**
-     * Triggered when the share menu item is selected.
-     * This creates and shows a share intent picker dialog or starts a share intent directly.
-     * @param activity The activity that triggered this share action.
-     * @param tab The tab containing the content to be shared.
-     * @param shareDirectly Whether it should share directly with the activity that was most
-     *         recently used to share.
-     * @param isIncognito Whether currentTab is incognito.
-     */
-    public void onShareSelected(
-            Activity activity, Tab currentTab, boolean shareDirectly, boolean isIncognito) {
-        mMediator.onShareSelected(activity, currentTab, shareDirectly, isIncognito);
+    protected void showShareSheet(ShareParams params) {
+        Context context = params.getWindow().getContext().get();
+        ShareSheetBottomSheetContent bottomSheet = new ShareSheetBottomSheetContent(context);
+
+        // QR Codes
+        PropertyModel qrcodePropertyModel =
+                new PropertyModel.Builder(ShareSheetItemViewProperties.ALL_KEYS)
+                        .with(ShareSheetItemViewProperties.ICON,
+                                AppCompatResources.getDrawable(context, R.drawable.ic_launcher))
+                        .with(ShareSheetItemViewProperties.LABEL,
+                                context.getResources().getString(R.string.qr_code_share_icon_label))
+                        .with(ShareSheetItemViewProperties.CLICK_LISTENER,
+                                (currentContext) -> {
+                                    QrCodeCoordinator qrCodeCoordinator =
+                                            new QrCodeCoordinator(context);
+                                    qrCodeCoordinator.show();
+                                })
+                        .build();
+
+        ModelList modelList = new ModelList();
+        modelList.add(new ListItem(SHARE_SHEET_ITEM, qrcodePropertyModel));
+        SimpleRecyclerViewAdapter adapter = new SimpleRecyclerViewAdapter(modelList);
+        RecyclerView rcView =
+                bottomSheet.getContentView().findViewById(R.id.share_sheet_chrome_apps);
+        adapter.registerType(SHARE_SHEET_ITEM, () -> {
+            return (ViewGroup) LayoutInflater.from(context).inflate(
+                    R.layout.share_sheet_item, (ViewGroup) rcView, false);
+        }, ShareSheetCoordinator::bindShareItem);
+
+        LinearLayoutManager layoutManager =
+                new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false);
+        rcView.setLayoutManager(layoutManager);
+        rcView.setAdapter(adapter);
+
+        mBottomSheetController.requestShowContent(bottomSheet, true);
     }
 
-    /**
-     * Triggers a share based on the provided {@link ShareParams}.
-     * @param params The container holding the share parameters.
-     */
-    public void share(ShareParams params) {
-        mMediator.share(params);
-    }
-
-    @VisibleForTesting
-    public static void setScreenshotCaptureSkippedForTesting(boolean value) {
-        ShareSheetMediator.setScreenshotCaptureSkippedForTesting(value);
+    private static void bindShareItem(
+            PropertyModel model, ViewGroup parent, PropertyKey propertyKey) {
+        if (ShareSheetItemViewProperties.ICON.equals(propertyKey)) {
+            ImageView view = (ImageView) parent.findViewById(R.id.icon);
+            view.setImageDrawable(model.get(ShareSheetItemViewProperties.ICON));
+        } else if (ShareSheetItemViewProperties.LABEL.equals(propertyKey)) {
+            TextView view = (TextView) parent.findViewById(R.id.text);
+            view.setText(model.get(ShareSheetItemViewProperties.LABEL));
+        } else if (ShareSheetItemViewProperties.CLICK_LISTENER.equals(propertyKey)) {
+            parent.setOnClickListener(model.get(ShareSheetItemViewProperties.CLICK_LISTENER));
+        }
     }
 }

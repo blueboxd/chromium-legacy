@@ -463,6 +463,7 @@
 <translation id="4204126831294769023">أزرق سماوي</translation>
 <translation id="4204864733111726379">أبيض زهري</translation>
 <translation id="4206289001967551965">داخل الجدول</translation>
+<translation id="4207770814752775793">يمكنك إعادة ضبط إعدادات "تحويل النص إلى كلام" على القيم التلقائية.</translation>
 <translation id="4209770650650780359">يُرجى الضغط على السهم المتجه للأعلى أو للأسفل لقائمة الإكمال التلقائي.</translation>
 <translation id="4215733775853809057">شريط التمرير التالي</translation>
 <translation id="42164919740161077">أزرق رمادي</translation>
@@ -766,6 +767,7 @@
 <translation id="6290434000785343030">ليس هناك مربع تحرير وسرد تالٍ.</translation>
 <translation id="6305702903308659374">‏التشغيل بصوت عادي حتى أثناء تحدُّث ChromeVox</translation>
 <translation id="6307969636681130414">مضغوط</translation>
+<translation id="6315652249189065725">فتح قائمة اختصارات لوحة المفاتيح</translation>
 <translation id="6322856989298155004">الأصوات</translation>
 <translation id="6324551002951139333">تم اكتشاف خطأ نحوي</translation>
 <translation id="6325241889020214828">نسخ <ph name="TEXT" />.</translation>
@@ -959,6 +961,7 @@
 <translation id="7668307052366682650">{COUNT,plural, =1{ساعة واحدة}zero{ساعات}two{ساعتان}few{ساعات}many{ساعة}other{ساعة}}</translation>
 <translation id="7674576868851035240">الرابط التالي</translation>
 <translation id="7674768236845044097">علامة</translation>
+<translation id="7676847077928500578">إعادة ضبط إعدادات "تحويل النص إلى كلام"</translation>
 <translation id="7684431668231950609">‏تعديل النص، إدخال عنوان URL</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">زر الاختيار السابق</translation>

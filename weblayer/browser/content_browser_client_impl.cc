@@ -242,16 +242,7 @@ ContentBrowserClientImpl::CreateURLLoaderThrottles(
   if (base::FeatureList::IsEnabled(features::kWebLayerSafeBrowsing) &&
       IsSafebrowsingSupported()) {
 #if defined(OS_ANDROID)
-    if (!safe_browsing_service_) {
-      // TODO(timvolodine): consider creating SafeBrowsingService elsewhere
-      // (especially in multiplatform support).
-      // Note: Initialize() needs to happen on UI thread.
-      safe_browsing_service_ =
-          std::make_unique<SafeBrowsingService>(GetUserAgent());
-      safe_browsing_service_->Initialize();
-    }
-
-    result.push_back(safe_browsing_service_->CreateURLLoaderThrottle(
+    result.push_back(GetSafeBrowsingService()->CreateURLLoaderThrottle(
         browser_context->GetResourceContext(), wc_getter, frame_tree_node_id));
 #endif
   }
@@ -314,7 +305,7 @@ ContentBrowserClientImpl::CreateThrottlesForNavigation(
   std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
   throttles.push_back(std::make_unique<SSLErrorNavigationThrottle>(
       handle, std::make_unique<SSLCertReporterImpl>(),
-      base::Bind(&HandleSSLError), base::Bind(&IsInHostedApp)));
+      base::BindOnce(&HandleSSLError), base::BindOnce(&IsInHostedApp)));
   return throttles;
 }
 
@@ -328,6 +319,31 @@ ContentBrowserClientImpl::GetGeneratedCodeCacheSettings(
   return content::GeneratedCodeCacheSettings(
       true, 0, ProfileImpl::GetCachePath(context));
 }
+
+void ContentBrowserClientImpl::ExposeInterfacesToRenderer(
+    service_manager::BinderRegistry* registry,
+    blink::AssociatedInterfaceRegistry* associated_registry,
+    content::RenderProcessHost* render_process_host) {
+  if (base::FeatureList::IsEnabled(features::kWebLayerSafeBrowsing) &&
+      IsSafebrowsingSupported()) {
+#if defined(OS_ANDROID)
+    GetSafeBrowsingService()->AddInterface(registry, render_process_host);
+#endif
+  }
+}
+
+#if defined(OS_ANDROID)
+SafeBrowsingService* ContentBrowserClientImpl::GetSafeBrowsingService() {
+  if (!safe_browsing_service_) {
+    // Create and initialize safe_browsing_service on first get.
+    // Note: Initialize() needs to happen on UI thread.
+    safe_browsing_service_ =
+        std::make_unique<SafeBrowsingService>(GetUserAgent());
+    safe_browsing_service_->Initialize();
+  }
+  return safe_browsing_service_.get();
+}
+#endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 void ContentBrowserClientImpl::GetAdditionalMappedFilesForChildProcess(

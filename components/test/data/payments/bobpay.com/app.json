@@ -1,5 +1,10 @@
 {
   "name": "BobPay",
+  "icons": [{
+    "src": "icon.png",
+    "sizes": "48x48",
+    "type": "image/png"
+  }],
   "related_applications": [{
     "platform": "play",
     "id": "com.bobpay",

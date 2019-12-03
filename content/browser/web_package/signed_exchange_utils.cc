@@ -22,7 +22,7 @@
 #include "content/public/common/content_switches.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/features.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace content {
 namespace signed_exchange_utils {
@@ -61,7 +61,7 @@ bool IsSignedExchangeReportingForDistributorsEnabled() {
 
 bool ShouldHandleAsSignedHTTPExchange(
     const GURL& request_url,
-    const network::ResourceResponseHead& head) {
+    const network::mojom::URLResponseHead& head) {
   // Currently we don't support the signed exchange which is returned from a
   // service worker.
   // TODO(crbug/803774): Decide whether we should support it or not.

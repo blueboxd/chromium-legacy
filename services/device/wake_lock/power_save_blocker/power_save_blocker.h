@@ -61,13 +61,6 @@ class PowerSaveBlocker {
   // };
   scoped_refptr<Delegate> delegate_;
 
-#if defined(USE_X11)
-  // Since display sleep prevention also implies system suspend prevention, for
-  // the Linux FreeDesktop API case, there needs to be a second delegate to
-  // block system suspend when screen saver / display sleep is blocked.
-  scoped_refptr<Delegate> freedesktop_suspend_delegate_;
-#endif
-
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 

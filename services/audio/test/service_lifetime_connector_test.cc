@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "media/audio/mock_audio_manager.h"
 #include "media/audio/test_audio_thread.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/audio/in_process_audio_manager_accessor.h"
 #include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/service.h"
@@ -86,8 +87,8 @@ TEST_F(AudioServiceLifetimeConnectorTest,
   connector_ = connector_factory.CreateConnector();
   task_environment_.RunUntilIdle();
 
-  mojom::SystemInfoPtr info;
-  connector_->BindInterface(mojom::kServiceName, &info);
+  mojo::Remote<mojom::SystemInfo> info;
+  connector_->Connect(mojom::kServiceName, info.BindNewPipeAndPassReceiver());
 
   // Make sure |info| is connected.
   base::RunLoop loop;
@@ -127,8 +128,8 @@ TEST_F(AudioServiceLifetimeConnectorTest,
   connector_ = connector_factory.CreateConnector();
   task_environment_.RunUntilIdle();
 
-  mojom::SystemInfoPtr info;
-  connector_->BindInterface(mojom::kServiceName, &info);
+  mojo::Remote<mojom::SystemInfo> info;
+  connector_->Connect(mojom::kServiceName, info.BindNewPipeAndPassReceiver());
 
   // Make sure |info| is connected.
   base::RunLoop loop;
@@ -156,8 +157,8 @@ TEST_F(AudioServiceLifetimeConnectorTest,
   connector_ = connector_factory.CreateConnector();
   task_environment_.RunUntilIdle();
 
-  mojom::SystemInfoPtr info;
-  connector_->BindInterface(mojom::kServiceName, &info);
+  mojo::Remote<mojom::SystemInfo> info;
+  connector_->Connect(mojom::kServiceName, info.BindNewPipeAndPassReceiver());
 
   // Make sure |info| is connected.
   base::RunLoop loop;
@@ -176,8 +177,8 @@ TEST_F(AudioServiceLifetimeConnectorTest,
 TEST_F(AudioServiceLifetimeConnectorTest, ServiceNotQuitWhenClientConnected) {
   EXPECT_CALL(quit_request_, Run()).Times(Exactly(0));
 
-  mojom::SystemInfoPtr info;
-  connector_->BindInterface(mojom::kServiceName, &info);
+  mojo::Remote<mojom::SystemInfo> info;
+  connector_->Connect(mojom::kServiceName, info.BindNewPipeAndPassReceiver());
   EXPECT_TRUE(info.is_bound());
 
   task_environment_.FastForwardBy(kQuitTimeout * 2);
@@ -186,8 +187,8 @@ TEST_F(AudioServiceLifetimeConnectorTest, ServiceNotQuitWhenClientConnected) {
 
 TEST_F(AudioServiceLifetimeConnectorTest,
        ServiceQuitAfterTimeoutWhenClientDisconnected) {
-  mojom::SystemInfoPtr info;
-  connector_->BindInterface(mojom::kServiceName, &info);
+  mojo::Remote<mojom::SystemInfo> info;
+  connector_->Connect(mojom::kServiceName, info.BindNewPipeAndPassReceiver());
 
   {
     // Make sure the service does not disconnect before a timeout.
@@ -205,14 +206,14 @@ TEST_F(AudioServiceLifetimeConnectorTest,
        ServiceNotQuitWhenAnotherClientQuicklyConnects) {
   EXPECT_CALL(quit_request_, Run()).Times(Exactly(0));
 
-  mojom::SystemInfoPtr info1;
-  connector_->BindInterface(mojom::kServiceName, &info1);
+  mojo::Remote<mojom::SystemInfo> info1;
+  connector_->Connect(mojom::kServiceName, info1.BindNewPipeAndPassReceiver());
   EXPECT_TRUE(info1.is_bound());
 
   info1.reset();
 
-  mojom::SystemInfoPtr info2;
-  connector_->BindInterface(mojom::kServiceName, &info2);
+  mojo::Remote<mojom::SystemInfo> info2;
+  connector_->Connect(mojom::kServiceName, info2.BindNewPipeAndPassReceiver());
   EXPECT_TRUE(info2.is_bound());
 
   task_environment_.FastForwardBy(kQuitTimeout);
@@ -221,14 +222,16 @@ TEST_F(AudioServiceLifetimeConnectorTest,
 
 TEST_F(AudioServiceLifetimeConnectorTest,
        ServiceNotQuitWhenOneClientRemainsConnected) {
-  mojom::SystemInfoPtr info1;
-  mojom::SystemInfoPtr info2;
+  mojo::Remote<mojom::SystemInfo> info1;
+  mojo::Remote<mojom::SystemInfo> info2;
   {
     EXPECT_CALL(quit_request_, Run()).Times(Exactly(0));
 
-    connector_->BindInterface(mojom::kServiceName, &info1);
+    connector_->Connect(mojom::kServiceName,
+                        info1.BindNewPipeAndPassReceiver());
     EXPECT_TRUE(info1.is_bound());
-    connector_->BindInterface(mojom::kServiceName, &info2);
+    connector_->Connect(mojom::kServiceName,
+                        info2.BindNewPipeAndPassReceiver());
     EXPECT_TRUE(info2.is_bound());
 
     task_environment_.FastForwardBy(kQuitTimeout);
@@ -250,17 +253,19 @@ TEST_F(AudioServiceLifetimeConnectorTest,
 
 TEST_F(AudioServiceLifetimeConnectorTest,
        QuitTimeoutIsNotShortenedAfterDelayedReconnect) {
-  mojom::SystemInfoPtr info1;
-  mojom::SystemInfoPtr info2;
+  mojo::Remote<mojom::SystemInfo> info1;
+  mojo::Remote<mojom::SystemInfo> info2;
   {
     EXPECT_CALL(quit_request_, Run()).Times(Exactly(0));
 
-    connector_->BindInterface(mojom::kServiceName, &info1);
+    connector_->Connect(mojom::kServiceName,
+                        info1.BindNewPipeAndPassReceiver());
     EXPECT_TRUE(info1.is_bound());
     info1.reset();
     task_environment_.FastForwardBy(kQuitTimeout * 0.75);
 
-    connector_->BindInterface(mojom::kServiceName, &info2);
+    connector_->Connect(mojom::kServiceName,
+                        info2.BindNewPipeAndPassReceiver());
     EXPECT_TRUE(info2.is_bound());
     info2.reset();
     task_environment_.FastForwardBy(kQuitTimeout * 0.75);

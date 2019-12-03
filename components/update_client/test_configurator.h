@@ -96,11 +96,8 @@ class TestConfigurator : public Configurator {
   PrefService* GetPrefService() const override;
   ActivityDataService* GetActivityDataService() const override;
   bool IsPerUserInstall() const override;
-  std::vector<uint8_t> GetRunActionKeyHash() const override;
-  std::string GetAppGuid() const override;
   std::unique_ptr<ProtocolHandlerFactory> GetProtocolHandlerFactory()
       const override;
-  RecoveryCRXElevator GetRecoveryCRXElevator() const override;
 
   void SetBrand(const std::string& brand);
   void SetOnDemandTime(int seconds);
@@ -110,7 +107,6 @@ class TestConfigurator : public Configurator {
   void SetEnabledComponentUpdates(bool enabled_component_updates);
   void SetUpdateCheckUrl(const GURL& url);
   void SetPingUrl(const GURL& url);
-  void SetAppGuid(const std::string& app_guid);
   network::TestURLLoaderFactory* test_url_loader_factory() {
     return &test_url_loader_factory_;
   }
@@ -129,7 +125,6 @@ class TestConfigurator : public Configurator {
   bool enabled_component_updates_;
   GURL update_check_url_;
   GURL ping_url_;
-  std::string app_guid_;
 
   scoped_refptr<update_client::UnzipChromiumFactory> unzip_factory_;
   scoped_refptr<update_client::PatchChromiumFactory> patch_factory_;

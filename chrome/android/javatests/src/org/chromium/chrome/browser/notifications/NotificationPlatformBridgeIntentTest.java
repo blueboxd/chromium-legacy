@@ -22,7 +22,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
-import org.chromium.chrome.browser.settings.Preferences;
+import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.website.SingleCategoryPreferences;
 import org.chromium.chrome.browser.settings.website.SingleWebsitePreferences;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -71,14 +71,15 @@ public class NotificationPlatformBridgeIntentTest {
                         .setClassName(context, ChromeLauncherActivity.class.getName())
                         .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-        Preferences activity = ActivityUtils.waitForActivity(
-                InstrumentationRegistry.getInstrumentation(), Preferences.class, new Runnable() {
+        SettingsActivity activity = ActivityUtils.waitForActivity(
+                InstrumentationRegistry.getInstrumentation(), SettingsActivity.class,
+                new Runnable() {
                     @Override
                     public void run() {
                         context.startActivity(intent);
                     }
                 });
-        Assert.assertNotNull("Could not find the Preferences activity", activity);
+        Assert.assertNotNull("Could not find the Settings activity", activity);
 
         SingleCategoryPreferences fragment =
                 ActivityUtils.waitForFragmentToAttach(activity, SingleCategoryPreferences.class);
@@ -110,14 +111,15 @@ public class NotificationPlatformBridgeIntentTest {
                         .putExtra(NotificationConstants.EXTRA_NOTIFICATION_TAG,
                                 "p#https://example.com#0" /* notificationId */);
 
-        Preferences activity = ActivityUtils.waitForActivity(
-                InstrumentationRegistry.getInstrumentation(), Preferences.class, new Runnable() {
+        SettingsActivity activity = ActivityUtils.waitForActivity(
+                InstrumentationRegistry.getInstrumentation(), SettingsActivity.class,
+                new Runnable() {
                     @Override
                     public void run() {
                         context.startActivity(intent);
                     }
                 });
-        Assert.assertNotNull("Could not find the Preferences activity", activity);
+        Assert.assertNotNull("Could not find the Settings activity", activity);
 
         SingleWebsitePreferences fragment =
                 ActivityUtils.waitForFragmentToAttach(activity, SingleWebsitePreferences.class);

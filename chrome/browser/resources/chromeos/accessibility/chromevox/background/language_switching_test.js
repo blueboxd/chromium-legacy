@@ -28,6 +28,7 @@ ChromeVoxLanguageSwitchingTest.prototype = {
 #include "base/callback.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "extensions/common/extension_l10n_util.h"
 
 // The following includes are necessary for this test file.
 #include "base/command_line.h"
@@ -48,6 +49,7 @@ ChromeVoxLanguageSwitchingTest.prototype = {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(::switches::kLang, "en-US");
 
   // Copy-pasted from chromevox_e2e_test_base.js.
+  auto allow = extension_l10n_util::AllowGzippedMessagesAllowedForTest();
   base::Closure load_cb =
     base::Bind(&chromeos::AccessibilityManager::EnableSpokenFeedback,
         base::Unretained(chromeos::AccessibilityManager::Get()),

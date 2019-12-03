@@ -13,11 +13,8 @@
 #include "content/common/content_export.h"
 #include "net/base/ip_address.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/gurl.h"
-
-namespace network {
-struct ResourceResponseHead;
-}  // namespace network
 
 namespace content {
 
@@ -29,7 +26,7 @@ class CONTENT_EXPORT SignedExchangeReporter {
   static std::unique_ptr<SignedExchangeReporter> MaybeCreate(
       const GURL& outer_url,
       const std::string& referrer,
-      const network::ResourceResponseHead& response,
+      const network::mojom::URLResponseHead& response,
       int frame_tree_node_id);
 
   ~SignedExchangeReporter();
@@ -45,7 +42,7 @@ class CONTENT_EXPORT SignedExchangeReporter {
  private:
   SignedExchangeReporter(const GURL& outer_url,
                          const std::string& referrer,
-                         const network::ResourceResponseHead& response,
+                         const network::mojom::URLResponseHead& response,
                          int frame_tree_node_id);
 
   network::mojom::SignedExchangeReportPtr report_;

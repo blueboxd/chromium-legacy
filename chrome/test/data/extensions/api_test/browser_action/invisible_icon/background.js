@@ -3,16 +3,16 @@
 // found in the LICENSE file.
 
 // First get an empty canvas.
-var invisible = document.getElementById("canvas").getContext('2d').getImageData(
-    0, 0, 21, 21);
+var canvas = new OffscreenCanvas(21, 21);
+
+var invisibleImageData = canvas.getContext('2d').getImageData(0, 0, 21, 21);
 
 // Fill the "canvas" element with some color.
-var ctx = document.getElementById("canvas").getContext('2d');
-ctx.fillStyle = "#FF0000";
-ctx.fillRect(0, 0, 42, 42);
+var ctx = canvas.getContext('2d');
+ctx.fillStyle = '#FF0000';
+ctx.fillRect(0, 0, 21, 21);
 
-var visible = document.getElementById("canvas").getContext('2d').getImageData(
-    0, 0, 21, 21);
+var visibleImageData = ctx.getImageData(0, 0, 21, 21);
 
 function setIcon(imageData) {
   return new Promise(function(resolve) {

@@ -20,7 +20,8 @@ public class WebappInfo {
 
     protected static BrowserServicesIntentDataProvider createEmptyIntentDataProvider() {
         return new WebappIntentDataProvider(WebappIntentDataProvider.getDefaultToolbarColor(),
-                WebappExtras.createEmpty(), WebApkExtras.createEmpty());
+                false /* hasCustomToolbarColor */, WebappExtras.createEmpty(),
+                WebApkExtras.createEmpty());
     }
 
     public static WebappInfo createEmpty() {
@@ -106,7 +107,7 @@ public class WebappInfo {
      * Returns whether the toolbar color specified in the Intent is valid.
      */
     public boolean hasValidToolbarColor() {
-        return getWebappExtras().hasCustomToolbarColor;
+        return mProvider.hasCustomToolbarColor();
     }
 
     /**

@@ -829,13 +829,8 @@ void RenderViewContextMenu::InitMenu() {
     AppendLinkItems();
     if (params_.media_type != ContextMenuDataMediaType::kNone)
       menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-  } else {
-    // Shown when non link item is highlighted to avoid showing click to call
-    // twice when you highlight a link of the form <a
-    // href="tel:+9876543210">+9876543210</a> and right click on it.
-    MaybeAppendClickToCallItem();
-    AppendSharedClipboardItems();
   }
+
   bool media_image = content_type_->SupportsGroup(
       ContextMenuContentType::ITEM_GROUP_MEDIA_IMAGE);
   if (media_image)
@@ -877,6 +872,9 @@ void RenderViewContextMenu::InitMenu() {
     DCHECK(!editable);
     AppendCopyItem();
   }
+
+  if (!content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_LINK))
+    AppendSharingItems();
 
   if (content_type_->SupportsGroup(
           ContextMenuContentType::ITEM_GROUP_SEARCH_PROVIDER) &&
@@ -1270,11 +1268,13 @@ void RenderViewContextMenu::AppendLinkItems() {
       }
     }
 #endif  // !defined(OS_CHROMEOS)
+
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+
     if (browser && send_tab_to_self::ShouldOfferFeatureForLink(
                        active_web_contents, params_.link_url)) {
       send_tab_to_self::RecordSendTabToSelfClickResult(
           send_tab_to_self::kLinkMenu, SendTabToSelfClickResult::kShowItem);
-      menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
       if (send_tab_to_self::GetValidDeviceCount(GetBrowser()->profile()) == 1) {
 #if defined(OS_MACOSX)
         menu_model_.AddItem(IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET,
@@ -1314,7 +1314,7 @@ void RenderViewContextMenu::AppendLinkItems() {
       }
     }
 
-    MaybeAppendClickToCallItem();
+    AppendClickToCallItem();
 
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVELINKAS,
@@ -1600,19 +1600,6 @@ void RenderViewContextMenu::AppendCopyItem() {
                                   IDS_CONTENT_CONTEXT_COPY);
 }
 
-// Context menu item for shared clipboard on selected text.
-void RenderViewContextMenu::AppendSharedClipboardItems() {
-  if (!ShouldOfferSharedClipboard(browser_context_, params_.selection_text))
-    return;
-
-  if (!shared_clipboard_context_menu_observer_) {
-    shared_clipboard_context_menu_observer_ =
-        std::make_unique<SharedClipboardContextMenuObserver>(this);
-    observers_.AddObserver(shared_clipboard_context_menu_observer_.get());
-  }
-  shared_clipboard_context_menu_observer_->InitMenu(params_);
-}
-
 void RenderViewContextMenu::AppendPrintItem() {
   if (GetPrefs(browser_context_)->GetBoolean(prefs::kPrintingEnabled) &&
       (params_.media_type == ContextMenuDataMediaType::kNone ||
@@ -1844,7 +1831,26 @@ void RenderViewContextMenu::AppendPictureInPictureItem() {
                                          IDS_CONTENT_CONTEXT_PICTUREINPICTURE);
 }
 
-void RenderViewContextMenu::MaybeAppendClickToCallItem() {
+void RenderViewContextMenu::AppendSharingItems() {
+  int items_initial = menu_model_.GetItemCount();
+  menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+  // Check if the starting separator got added.
+  int items_before_sharing = menu_model_.GetItemCount();
+  bool starting_separator_added = items_before_sharing > items_initial;
+
+  AppendClickToCallItem();
+  AppendSharedClipboardItem();
+
+  // Add an ending separator if there are sharing items, otherwise remove the
+  // starting separator iff we added one above.
+  int sharing_items = menu_model_.GetItemCount() - items_before_sharing;
+  if (sharing_items > 0)
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+  else if (starting_separator_added)
+    menu_model_.RemoveItemAt(items_initial);
+}
+
+void RenderViewContextMenu::AppendClickToCallItem() {
   SharingClickToCallEntryPoint entry_point;
   base::Optional<std::string> phone_number;
   if (ShouldOfferClickToCallForURL(browser_context_, params_.link_url)) {
@@ -1866,6 +1872,18 @@ void RenderViewContextMenu::MaybeAppendClickToCallItem() {
   }
 
   click_to_call_context_menu_observer_->BuildMenu(*phone_number, entry_point);
+}
+
+void RenderViewContextMenu::AppendSharedClipboardItem() {
+  if (!ShouldOfferSharedClipboard(browser_context_, params_.selection_text))
+    return;
+
+  if (!shared_clipboard_context_menu_observer_) {
+    shared_clipboard_context_menu_observer_ =
+        std::make_unique<SharedClipboardContextMenuObserver>(this);
+    observers_.AddObserver(shared_clipboard_context_menu_observer_.get());
+  }
+  shared_clipboard_context_menu_observer_->InitMenu(params_);
 }
 
 // Menu delegate functions -----------------------------------------------------

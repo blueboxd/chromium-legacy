@@ -49,7 +49,7 @@ bool GetAddress(const struct nlmsghdr* header,
   // Extract the message and update |header_length| to be the number of
   // remaining bytes.
   const struct ifaddrmsg* msg =
-      reinterpret_cast<struct ifaddrmsg*>(NLMSG_DATA(header));
+      reinterpret_cast<const struct ifaddrmsg*>(NLMSG_DATA(header));
   header_length -= NLMSG_HDRLEN;
 
   size_t address_length = 0;
@@ -123,7 +123,7 @@ T* SafelyCastNetlinkMsgData(const struct nlmsghdr* header, int length) {
   DCHECK(NLMSG_OK(header, static_cast<__u32>(length)));
   if (length <= 0 || static_cast<size_t>(length) < NLMSG_HDRLEN + sizeof(T))
     return nullptr;
-  return reinterpret_cast<T*>(NLMSG_DATA(header));
+  return reinterpret_cast<const T*>(NLMSG_DATA(header));
 }
 
 }  // namespace
@@ -362,7 +362,7 @@ void AddressTrackerLinux::HandleMessage(const char* buffer,
         return;
       case NLMSG_ERROR: {
         const struct nlmsgerr* msg =
-            SafelyCastNetlinkMsgData<struct nlmsgerr>(header, length);
+            SafelyCastNetlinkMsgData<const struct nlmsgerr>(header, length);
         if (msg == nullptr)
           return;
         LOG(ERROR) << "Unexpected netlink error " << msg->error << ".";
@@ -370,13 +370,14 @@ void AddressTrackerLinux::HandleMessage(const char* buffer,
       case RTM_NEWADDR: {
         IPAddress address;
         bool really_deprecated;
-        struct ifaddrmsg* msg =
-            SafelyCastNetlinkMsgData<struct ifaddrmsg>(header, length);
+        const struct ifaddrmsg* msg =
+            SafelyCastNetlinkMsgData<const struct ifaddrmsg>(header, length);
         if (msg == nullptr)
           return;
         if (IsInterfaceIgnored(msg->ifa_index))
           break;
         if (GetAddress(header, length, &address, &really_deprecated)) {
+          struct ifaddrmsg msg_copy = *msg;
           AddressTrackerAutoLock lock(*this, address_map_lock_);
           // Routers may frequently (every few seconds) output the IPv6 ULA
           // prefix which can cause the linux kernel to frequently output two
@@ -386,15 +387,15 @@ void AddressTrackerLinux::HandleMessage(const char* buffer,
           // messages by setting the deprecated flag based on the preferred
           // lifetime also.  http://crbug.com/268042
           if (really_deprecated)
-            msg->ifa_flags |= IFA_F_DEPRECATED;
+            msg_copy.ifa_flags |= IFA_F_DEPRECATED;
           // Only indicate change if the address is new or ifaddrmsg info has
           // changed.
           auto it = address_map_.find(address);
           if (it == address_map_.end()) {
-            address_map_.insert(it, std::make_pair(address, *msg));
+            address_map_.insert(it, std::make_pair(address, msg_copy));
             *address_changed = true;
-          } else if (memcmp(&it->second, msg, sizeof(*msg))) {
-            it->second = *msg;
+          } else if (memcmp(&it->second, &msg_copy, sizeof(msg_copy))) {
+            it->second = msg_copy;
             *address_changed = true;
           }
         }
@@ -402,7 +403,7 @@ void AddressTrackerLinux::HandleMessage(const char* buffer,
       case RTM_DELADDR: {
         IPAddress address;
         const struct ifaddrmsg* msg =
-            SafelyCastNetlinkMsgData<struct ifaddrmsg>(header, length);
+            SafelyCastNetlinkMsgData<const struct ifaddrmsg>(header, length);
         if (msg == nullptr)
           return;
         if (IsInterfaceIgnored(msg->ifa_index))
@@ -415,7 +416,7 @@ void AddressTrackerLinux::HandleMessage(const char* buffer,
       } break;
       case RTM_NEWLINK: {
         const struct ifinfomsg* msg =
-            SafelyCastNetlinkMsgData<struct ifinfomsg>(header, length);
+            SafelyCastNetlinkMsgData<const struct ifinfomsg>(header, length);
         if (msg == nullptr)
           return;
         if (IsInterfaceIgnored(msg->ifi_index))
@@ -443,7 +444,7 @@ void AddressTrackerLinux::HandleMessage(const char* buffer,
       } break;
       case RTM_DELLINK: {
         const struct ifinfomsg* msg =
-            SafelyCastNetlinkMsgData<struct ifinfomsg>(header, length);
+            SafelyCastNetlinkMsgData<const struct ifinfomsg>(header, length);
         if (msg == nullptr)
           return;
         if (IsInterfaceIgnored(msg->ifi_index))

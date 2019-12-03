@@ -75,10 +75,7 @@ void LayoutSVGPath::UpdateMarkers() {
     return;
 
   {
-    SVGMarkerData marker_data(
-        marker_positions_,
-        marker_start &&
-            marker_start->OrientType() == kSVGMarkerOrientAutoStartReverse);
+    SVGMarkerData marker_data(marker_positions_);
     GetPath().Apply(&marker_data, SVGMarkerData::UpdateFromPathElement);
     marker_data.PathIsDone();
   }
@@ -91,8 +88,8 @@ void LayoutSVGPath::UpdateMarkers() {
   for (const auto& position : marker_positions_) {
     if (LayoutSVGResourceMarker* marker = SVGMarkerData::MarkerForType(
             position.type, marker_start, marker_mid, marker_end)) {
-      boundaries.Unite(marker->MarkerBoundaries(marker->MarkerTransformation(
-          position.origin, position.angle, stroke_width)));
+      boundaries.Unite(marker->MarkerBoundaries(
+          marker->MarkerTransformation(position, stroke_width)));
     }
   }
 

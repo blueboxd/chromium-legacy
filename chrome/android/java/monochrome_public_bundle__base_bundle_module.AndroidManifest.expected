@@ -270,7 +270,7 @@
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
         android:exported="false"
         android:label="@string/preferences"
-        android:name="org.chromium.chrome.browser.settings.Preferences"
+        android:name="org.chromium.chrome.browser.settings.SettingsActivity"
         android:theme="@style/Theme.Chromium.Preferences"/>
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"

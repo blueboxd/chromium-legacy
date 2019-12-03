@@ -69,11 +69,8 @@ base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
         device_info_helper->AmountOfPhysicalMemory());
   }
 
-  // The fraction of the device's storage the browser is willing to
-  // use for temporary storage.
-  // Check Finch for an experimental value to use as temporary pool size ratio
-  // if experiment is enabled, otherwise fallback to ~66% for chromeOS and
-  // ~33% otherwise.
+  // The fraction of the device's storage the browser is willing to use for
+  // temporary storage.
   const double kTemporaryPoolSizeRatio =
       base::FeatureList::IsEnabled(features::kQuotaUnlimitedPoolSize)
           ? 1.0
@@ -110,8 +107,7 @@ base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
   const int64_t kMustRemainAvailableFixed = 1024 * kMBytes;  // 1GB
   const double kMustRemainAvailableRatio = 0.01;             // 1%
 
-  // Determines the portion of the temp pool that can be
-  // utilized by a single host (ie. 5 for 20%).
+  // The fraction of the temporary pool that can be utilized by a single host.
   const double kPerHostTemporaryRatio =
       base::FeatureList::IsEnabled(features::kQuotaUnlimitedPoolSize)
           ? 1.0

@@ -42,7 +42,7 @@ class CodeNode(object):
     - Graph structure
     CodeNode can be nested and |outer| points to the nesting CodeNode.  Also
     CodeNode can make a sequence and |prev| points to the previous CodeNode.
-    See also |SequenceNode|.
+    See also |ListNode|.
 
     - Template rendering
     CodeNode has template text and template variable bindings.  Either of
@@ -358,9 +358,9 @@ class TextNode(CodeNode):
         CodeNode.__init__(self, template_text=template_text)
 
 
-class SequenceNode(CodeNode):
+class ListNode(CodeNode):
     """
-    Represents a sequence of nodes.
+    Represents a list of nodes.
 
     append, extend, insert, and remove work just like built-in list's methods
     except that addition and removal of None have no effect.
@@ -458,7 +458,7 @@ ${node}\\
         node.reset_prev(None)
 
 
-class SymbolScopeNode(SequenceNode):
+class SymbolScopeNode(ListNode):
     """
     Represents a sequence of nodes.
 
@@ -467,7 +467,7 @@ class SymbolScopeNode(SequenceNode):
     """
 
     def __init__(self, code_nodes=None, separator="\n", separator_last=""):
-        SequenceNode.__init__(
+        ListNode.__init__(
             self,
             code_nodes=code_nodes,
             separator=separator,
@@ -833,11 +833,11 @@ ${{{return_type}}} ${{{name}}}(${{{arg_decls}}})\
             gensyms["name"]:
             name,
             gensyms["arg_decls"]:
-            SequenceNode(arg_decls, separator=", "),
+            ListNode(arg_decls, separator=", "),
             gensyms["return_type"]:
             return_type,
             gensyms["member_initializer_list"]:
-            SequenceNode(member_initializer_list, separator=", "),
+            ListNode(member_initializer_list, separator=", "),
             gensyms["body"]:
             body,
             gensyms["comment"]:

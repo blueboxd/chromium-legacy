@@ -726,7 +726,10 @@ class PpdProviderImpl : public PpdProvider {
 
     // Strip shard number from 2 digits following 'index'
     int idx_pos = url_str.find_first_of("0123456789", url_str.find("index-"));
-    return std::stoi(url_str.substr(idx_pos, 2));
+    int shard_number;
+    return base::StringToInt(url_str.substr(idx_pos, 2), &shard_number)
+               ? shard_number
+               : -1;
   }
 
   // Return the URL to get a localized manufacturers map.
@@ -1387,7 +1390,7 @@ class PpdProviderImpl : public PpdProvider {
   // |contents|, clears |contents| otherwise.
   PpdProvider::CallbackResultCode ValidateAndParseManufacturersJSON(
       std::vector<ManufacturersJSON>* contents) {
-    DCHECK(contents != NULL);
+    DCHECK(contents != nullptr);
     contents->clear();
 
     base::Value::ListStorage top_list;
@@ -1421,7 +1424,7 @@ class PpdProviderImpl : public PpdProvider {
   // |contents|, clears |contents| otherwise.
   PpdProvider::CallbackResultCode ValidateAndParsePrintersJSON(
       std::vector<PrintersJSON>* contents) {
-    DCHECK(contents != NULL);
+    DCHECK(contents != nullptr);
     contents->clear();
 
     base::Value::ListStorage top_list;

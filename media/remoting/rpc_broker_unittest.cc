@@ -11,8 +11,8 @@
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/task_environment.h"
 #include "media/remoting/media_remoting_rpc.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -133,7 +133,7 @@ TEST_F(RpcBrokerTest, TestProcessMessageFromRemoteUnregistered) {
 }
 
 TEST_F(RpcBrokerTest, TestSendMessageToRemote) {
-  std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
+  base::test::SingleThreadTaskEnvironment task_environment;
 
   std::unique_ptr<FakeMessageSender> fake_sender(new FakeMessageSender());
   ASSERT_FALSE(fake_sender->has_sent_message());
@@ -150,7 +150,7 @@ TEST_F(RpcBrokerTest, TestSendMessageToRemote) {
 }
 
 TEST_F(RpcBrokerTest, RpcBrokerSendMessageCallback) {
-  std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
+  base::test::SingleThreadTaskEnvironment task_environment;
 
   std::unique_ptr<FakeMessageSender> fake_sender(new FakeMessageSender());
   ASSERT_FALSE(fake_sender->has_sent_message());

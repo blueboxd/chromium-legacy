@@ -45,12 +45,7 @@ class SVGPathTraversalState final : public SVGPathConsumer {
   float TotalLength() const { return traversal_state_.total_length_; }
   FloatPoint ComputedPoint() const { return traversal_state_.current_; }
 
-  bool ProcessSegment() {
-    traversal_state_.ProcessSegment();
-    if (traversal_state_.success_)
-      return true;
-    return false;
-  }
+  bool IsDone() const { return traversal_state_.success_; }
 
  private:
   void EmitSegment(const PathSegmentData&) override;
@@ -59,6 +54,10 @@ class SVGPathTraversalState final : public SVGPathConsumer {
 };
 
 void SVGPathTraversalState::EmitSegment(const PathSegmentData& segment) {
+  // Arcs normalize to one or more cubic bezier segments, so if we've already
+  // processed enough (sub)segments we need not continue.
+  if (traversal_state_.success_)
+    return;
   switch (segment.command) {
     case kPathSegMoveToAbs:
       traversal_state_.total_length_ +=
@@ -78,6 +77,7 @@ void SVGPathTraversalState::EmitSegment(const PathSegmentData& segment) {
     default:
       NOTREACHED();
   }
+  traversal_state_.ProcessSegment();
 }
 
 void ExecuteQuery(const SVGPathByteStream& path_byte_stream,
@@ -93,7 +93,7 @@ void ExecuteQuery(const SVGPathByteStream& path_byte_stream,
     normalizer.EmitSegment(segment);
 
     has_more_data = source.HasMoreData();
-    if (traversal_state.ProcessSegment())
+    if (traversal_state.IsDone())
       break;
   }
 }

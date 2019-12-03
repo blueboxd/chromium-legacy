@@ -145,10 +145,6 @@ MimeUtil::MimeUtil() {
       MediaCodecUtil::IsVp8DecoderAvailable();
   platform_info_.has_platform_vp9_decoder =
       MediaCodecUtil::IsVp9DecoderAvailable();
-  platform_info_.has_platform_vp9_2_decoder =
-      MediaCodecUtil::IsVp9Profile2DecoderAvailable();
-  platform_info_.has_platform_vp9_3_decoder =
-      MediaCodecUtil::IsVp9Profile3DecoderAvailable();
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
   platform_info_.has_platform_hevc_decoder =
       MediaCodecUtil::IsHEVCDecoderAvailable();
@@ -640,16 +636,6 @@ bool MimeUtil::IsCodecSupportedOnAndroid(
 
       if (!platform_info.has_platform_vp9_decoder)
         return false;
-
-      if (video_profile == VP9PROFILE_PROFILE2 &&
-          !platform_info.has_platform_vp9_2_decoder) {
-        return false;
-      }
-
-      if (video_profile == VP9PROFILE_PROFILE3 &&
-          !platform_info.has_platform_vp9_3_decoder) {
-        return false;
-      }
 
       return true;
     }

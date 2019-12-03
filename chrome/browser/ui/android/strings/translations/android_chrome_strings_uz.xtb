@@ -12,9 +12,9 @@
 <translation id="107147699690128016">Agar fayl kengaytmasi oʻzgartirilsa, fayl boshqa ilovada ochilishi va qurilmaga zarar yetkazishi mumkin.</translation>
 <translation id="1100066534610197918">Guruhda yangi varaqda ochish</translation>
 <translation id="1105960400813249514">Ekranni suratga olish</translation>
-<translation id="1110022065703191351">Belgilar</translation>
 <translation id="1111673857033749125">Boshqa qurilmalaringizda saqlangan xatcho‘plar shu yerda ko‘rsatiladi.</translation>
 <translation id="1113597929977215864">Soddalashgan shaklda ko‘rsatish</translation>
+<translation id="1122278879166832009">Bosh sahifani ochish uchun shu belgini bosing</translation>
 <translation id="1124772482545689468">Foydalanuvchi</translation>
 <translation id="1129510026454351943">Tafsilotlar: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 ta fayl yuklab olinishi kutilmoqda.}other{# ta fayl yuklab olinishi kutilmoqda.}}</translation>
@@ -379,6 +379,7 @@
 <translation id="3822502789641063741">Sayt xotirasi tozalansinmi?</translation>
 <translation id="385051799172605136">Orqaga</translation>
 <translation id="3859306556332390985">Oldinga surish</translation>
+<translation id="388596076286380598">Sevimli saytlaringizda maqola, video va boshqa kontentni oflayn rejimda yoki uzilishli internetda ham ochishingiz mumkin.</translation>
 <translation id="3894427358181296146">Jild qo‘shish</translation>
 <translation id="3895926599014793903">Hajmni majburiy o‘zgartirish funksiyasini yoqish</translation>
 <translation id="3912508018559818924">Internetdan maʼlumotlar yuklanmoqda…</translation>
@@ -490,6 +491,7 @@ Google hisobingiz orqali amalga oshirgan qidiruvlaringiz, brauzer tarixi va bosh
 <translation id="4719927025381752090">Tarjima qilishni taklif qilish</translation>
 <translation id="4720023427747327413"><ph name="PRODUCT_NAME" /> orqali ochish</translation>
 <translation id="4720982865791209136">Chrome brauzerini yaxshilashga yordam bering. <ph name="BEGIN_LINK" />So‘rovnomada qatnashing.<ph name="END_LINK" /></translation>
+<translation id="4732120983431207637">Stack Unwinder</translation>
 <translation id="473775607612524610">Yangilash</translation>
 <translation id="4738836084190194332">Oxirgi sinxronizatsiya: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Yangi varaq ochish</translation>
@@ -542,7 +544,6 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="5048398596102334565">Saytlarga harakat sensorlaridan foydalanish uchun ruxsat berish (tavsiya etiladi)</translation>
 <translation id="5063480226653192405">Sarfi</translation>
 <translation id="5087580092889165836">Yangi karta qo‘shish</translation>
-<translation id="5096950519211870196">Saytlarning bildirishnoma yuborishga urinishlari bloklanadi. Agar sayt shunday soʻrov yuborsa, sahifaning quyi qismida axborot paneli chiqadi.</translation>
 <translation id="5100237604440890931">Yig‘ilgan - Kengaytirish uchun bosing</translation>
 <translation id="510275257476243843">1 soat qoldi</translation>
 <translation id="5123685120097942451">Inkognito varaq</translation>
@@ -636,6 +637,7 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="5684874026226664614">Bu sahifani tarjima qilib bo‘lmadi.</translation>
 <translation id="5686790454216892815">Fayl nomi juda uzun</translation>
 <translation id="5689516760719285838">Joylashuv</translation>
+<translation id="5694049548840660018">Bosh sahifaga tezkor yorliq</translation>
 <translation id="569536719314091526">“Yana” tugmasidan bu sahifani boshqa tilga tarjima qilishingiz mumkin</translation>
 <translation id="5710871682236653961">NFC qurilmalar ustiga bosilganda saytlarda axborot almashinuviga ruxsat soʻralsin (tavsiya etiladi)</translation>
 <translation id="572328651809341494">Yaqinda ochilgan ichki oynalar</translation>
@@ -689,7 +691,6 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="6108923351542677676">Sozlanmoqda...</translation>
 <translation id="6111020039983847643">sarflangan trafik</translation>
 <translation id="6112702117600201073">Sahifa yangilanmoqda</translation>
-<translation id="6113400363611269907">Saytlar bezovta qilmasin</translation>
 <translation id="6127379762771434464">Havola o‘chirildi</translation>
 <translation id="6140912465461743537">Mamlakat/mintaqa</translation>
 <translation id="614940544461990577">Quyidagilarni bajaring:</translation>
@@ -791,13 +792,13 @@ Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda re
 <translation id="6818926723028410516">Fayllarni tanlang</translation>
 <translation id="6820686453637990663">CVC kod</translation>
 <translation id="6831043979455480757">Tarjima</translation>
-<translation id="6840155290835956714">Yuborishdan oldin so‘ralsin</translation>
 <translation id="6845325883481699275">Chrome xavfsizligini yaxshilashga yordam bering</translation>
 <translation id="6846298663435243399">Yuklanmoqda…</translation>
 <translation id="6850409657436465440">Fayl hali ham yuklab olinmoqda</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> ta ichki oyna yopildi</translation>
 <translation id="6864459304226931083">Rasmni yuklab olish</translation>
 <translation id="6865313869410766144">Avtomatik to‘ldirish ma’lumotlari</translation>
+<translation id="6884306546558072722">Oflayn rejimda davom etish</translation>
 <translation id="688738109438487280">Mavjud ma’lumotlarni <ph name="TO_ACCOUNT" /> hisobiga qo‘shadi.</translation>
 <translation id="6891726759199484455">Paroldan nusxa olish uchun qulfni oching</translation>
 <translation id="6896758677409633944">Nusxa olish</translation>
@@ -1039,6 +1040,7 @@ Sayt bu seansda kamerani ISHLATMAYDI. Kamera rasmlari faqat siz uchun chiqadi.</
 <translation id="8636825310635137004">Boshqa qurilmalaringizdagi brauzer sahifalarini ko‘rish uchun sinxronizatsiyani yoqing.</translation>
 <translation id="8641930654639604085">Kattalar uchun mo‘ljallangan saytlar bloklansin</translation>
 <translation id="8655129584991699539">Maʼlumotlarni Chrome sozlamalaridan tozalashingiz mumkin</translation>
+<translation id="8655599981421006542">Yangi varaqlar ochish va avvalgilariga qaytish uchun shu belgini bosing</translation>
 <translation id="8662811608048051533">Bir nechta saytlardagi hisobingizdan chiqasiz.</translation>
 <translation id="8664979001105139458">Bunday nomli fayl allaqachon bor</translation>
 <translation id="8676374126336081632">Tozalash</translation>
@@ -1051,6 +1053,7 @@ Sayt bu seansda kamerani ISHLATMAYDI. Kamera rasmlari faqat siz uchun chiqadi.</
 <translation id="8730621377337864115">Tayyor</translation>
 <translation id="8748850008226585750">Kontent berkitildi</translation>
 <translation id="8751914237388039244">Rasmni tanlang</translation>
+<translation id="8758557275681689734">Barcha ochiq varaqlar</translation>
 <translation id="8788265440806329501">Sahifalar tarixi yopildi</translation>
 <translation id="8788968922598763114">Oxirgi yopilgan varaqni yana ochish</translation>
 <translation id="8801436777607969138">Muayyan saytda JavaScript kodini bloklash.</translation>

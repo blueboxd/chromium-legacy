@@ -22,7 +22,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.settings.ChromeImageViewPreference;
 import org.chromium.chrome.browser.settings.ExpandablePreferenceGroup;
-import org.chromium.chrome.browser.settings.Preferences;
+import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.website.SingleCategoryPreferences;
 import org.chromium.chrome.browser.settings.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.settings.website.SiteSettingsCategory;
@@ -74,14 +74,14 @@ public class TrustedWebActivityPreferencesUiTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mPermissionMananger.updatePermission(origin, mPackage, true));
 
-        Preferences preferenceActivity = SiteSettingsTestUtils.startSiteSettingsCategory(
+        SettingsActivity settingsActivity = SiteSettingsTestUtils.startSiteSettingsCategory(
                 SiteSettingsCategory.Type.NOTIFICATIONS);
         final String groupName = "managed_group";
 
         final SingleCategoryPreferences websitePreferences =
                 TestThreadUtils.runOnUiThreadBlocking(() -> {
                     final SingleCategoryPreferences preferences =
-                            (SingleCategoryPreferences) preferenceActivity.getMainFragment();
+                            (SingleCategoryPreferences) settingsActivity.getMainFragment();
                     final ExpandablePreferenceGroup group =
                             (ExpandablePreferenceGroup) preferences.findPreference(groupName);
                     preferences.onPreferenceClick(group);
@@ -110,7 +110,7 @@ public class TrustedWebActivityPreferencesUiTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> mPermissionMananger.unregister(origin));
 
-        preferenceActivity.finish();
+        settingsActivity.finish();
     }
 
     /**
@@ -129,12 +129,12 @@ public class TrustedWebActivityPreferencesUiTest {
 
         WebsiteAddress address = WebsiteAddress.create(site);
         Website website = new Website(address, address);
-        final Preferences preferenceActivity =
+        final SettingsActivity settingsActivity =
                 SiteSettingsTestUtils.startSingleWebsitePreferences(website);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             final SingleWebsitePreferences websitePreferences =
-                    (SingleWebsitePreferences) preferenceActivity.getMainFragment();
+                    (SingleWebsitePreferences) settingsActivity.getMainFragment();
             final ChromeImageViewPreference notificationPreference =
                     (ChromeImageViewPreference) websitePreferences.findPreference(
                             "push_notifications_list");
@@ -144,6 +144,6 @@ public class TrustedWebActivityPreferencesUiTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> mPermissionMananger.unregister(origin));
 
-        preferenceActivity.finish();
+        settingsActivity.finish();
     }
 }

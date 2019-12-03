@@ -1400,6 +1400,10 @@ const url::Origin& RenderFrameHostImpl::GetLastCommittedOrigin() {
   return last_committed_origin_;
 }
 
+const net::NetworkIsolationKey& RenderFrameHostImpl::GetNetworkIsolationKey() {
+  return network_isolation_key_;
+}
+
 void RenderFrameHostImpl::GetCanonicalUrlForSharing(
     mojom::Frame::GetCanonicalUrlForSharingCallback callback) {
   // TODO(https://crbug.com/859110): Remove this once frame_ can no longer be
@@ -2376,10 +2380,9 @@ GURL RenderFrameHostImpl::ComputeSiteForCookiesInternal(
   }
 #endif
 
-  const GURL& top_document_url = frame_tree_->root()
-                                     ->current_frame_host()
-                                     ->GetLastCommittedOrigin()
-                                     .GetURL();
+  const url::Origin& top_document_origin =
+      frame_tree_->root()->current_frame_host()->GetLastCommittedOrigin();
+  const GURL& top_document_url = top_document_origin.GetURL();
 
   if (GetContentClient()
           ->browser()
@@ -2392,7 +2395,8 @@ GURL RenderFrameHostImpl::ComputeSiteForCookiesInternal(
   // this will be a 3rd party cookie.
   for (const RenderFrameHostImpl* rfh = render_frame_host; rfh;
        rfh = rfh->parent_) {
-    if (!net::registry_controlled_domains::SameDomainOrHost(
+    if ((top_document_origin != rfh->last_committed_origin_) &&
+        !net::registry_controlled_domains::SameDomainOrHost(
             top_document_url, rfh->last_committed_origin_,
             net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
       return GURL::EmptyGURL();

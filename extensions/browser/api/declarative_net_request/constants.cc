@@ -54,6 +54,9 @@ const char kErrorJavascriptRedirect[] =
     "to javascript urls are not supported.";
 const char kErrorMultipleFilters[] =
     "Rule with id * can only specify one of \"*\" or \"*\" keys.";
+const char kErrorRegexSubstitutionWithoutFilter[] =
+    "Rule with id * can't specify the \"*\" key without specifying the \"*\" "
+    "key.";
 
 const char kErrorListNotPassed[] = "Rules file must contain a list.";
 

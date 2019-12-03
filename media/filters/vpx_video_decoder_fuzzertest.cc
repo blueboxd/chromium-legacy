@@ -12,8 +12,8 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/task_environment.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media.h"
 #include "media/base/media_util.h"
@@ -27,7 +27,7 @@ struct Env {
   }
 
   base::AtExitManager at_exit_manager;
-  base::MessageLoop message_loop;
+  base::test::SingleThreadTaskEnvironment task_environment;
 };
 
 void OnDecodeComplete(const base::Closure& quit_closure,

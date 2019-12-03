@@ -8,6 +8,7 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 นาที}other{# นาที}}</translation>
 <translation id="1181037720776840403">นำออก</translation>
 <translation id="1201402288615127009">ถัดไป</translation>
+<translation id="1218444235442067213"><ph name="APP_NAME" />, แอป Play Store</translation>
 <translation id="1243314992276662751">อัปโหลด</translation>
 <translation id="1266864766717917324">แชร์<ph name="CONTENT_TYPE" />ไม่ได้</translation>
 <translation id="1269641567813814718">Win</translation>
@@ -18,6 +19,7 @@
 <translation id="1368832886055348810">ซ้ายไปขวา</translation>
 <translation id="1383876407941801731">ค้นหา</translation>
 <translation id="1398853756734560583">ย่อ</translation>
+<translation id="1414271762428216854"><ph name="APP_NAME" />, ติดตั้งแอปแล้ว</translation>
 <translation id="1450753235335490080">แชร์<ph name="CONTENT_TYPE" />ไม่สำเร็จ</translation>
 <translation id="1498028757988366001">คุณเคยค้นหารายการนี้ การลบ "<ph name="QUERY" />" ออกจากประวัติการเข้าชมจะนำรายการนี้ออกจากบัญชีของคุณในอุปกรณ์ทุกเครื่องอย่างถาวร</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 นาทีกับอีก }other{# นาทีกับอีก }}</translation>
@@ -30,6 +32,7 @@
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 เดือน}other{# เดือน}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/วินาที</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 ชั่วโมงกับอีก }other{# ชั่วโมงกับอีก }}</translation>
+<translation id="1830308660060964064">เลิกตรึง <ph name="ITEM_TITLE" /> แล้ว</translation>
 <translation id="1842960171412779397">เลือก</translation>
 <translation id="1859234291848436338">การเขียนเส้นทาง</translation>
 <translation id="1860796786778352021">ปิดการแจ้งเตือน</translation>
@@ -66,10 +69,12 @@
 <translation id="2666092431469916601">ด้านบน</translation>
 <translation id="2701330563083355633">แชร์จาก <ph name="DEVICE_NAME" /></translation>
 <translation id="2743387203779672305">คัดลอกไว้ที่คลิปบอร์ด</translation>
+<translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">เปิดโฟลเดอร์</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 ปีที่ผ่านมา}other{# ปีที่ผ่านมา}}</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{ใน 1 วัน}other{ใน # วัน}}</translation>
 <translation id="2931838996092594335">คลิก</translation>
+<translation id="2981684127883932071">กำลังแสดงคำแนะนำ</translation>
 <translation id="3036649622769666520">เปิดไฟล์</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3068711042108640621">ชั้นวางอยู่ทางซ้าย</translation>
@@ -84,6 +89,7 @@
 <translation id="3389286852084373014">ข้อความมีขนาดใหญ่เกินไป</translation>
 <translation id="3479552764303398839">ไม่ใช่ตอนนี้</translation>
 <translation id="348799646910989694">ซ่อนชั้นวางโดยอัตโนมัติ</translation>
+<translation id="3554637740840164787">ตรึง <ph name="ITEM_TITLE" /> แล้ว</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{เหลือ 1 วัน}other{เหลือ # วัน}}</translation>
 <translation id="3600969208114796418">ไฟล์ <ph name="SAVEAS_EXTENSION_TYPE" /></translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
@@ -105,8 +111,11 @@
 <translation id="4250229828105606438">ภาพหน้าจอ</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 เดือนที่ผ่านมา}other{# เดือนที่ผ่านมา}}</translation>
 <translation id="4289300219472526559">เริ่มพูด</translation>
+<translation id="430191667033048642">ย้าย <ph name="MOVED_APP_NAME" /> ไปยังโฟลเดอร์ <ph name="FOLDER_NAME" /> แล้ว</translation>
 <translation id="4316910396681052118">แอปทั้งหมด</translation>
 <translation id="4588090240171750605">เลื่อนทางขวา</translation>
+<translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, การให้ดาว <ph name="RATING_SCORE" /></translation>
+<translation id="4648249871170053485"><ph name="APP_NAME" />, แอปแนะนำ</translation>
 <translation id="4690510401873698237">ชั้นวางอยู่ด้านล่าง</translation>
 <translation id="4724120544754982507">ศูนย์การแจ้งเตือนมีการแจ้งเตือนที่ยังไม่อ่าน <ph name="UNREAD_NOTIFICATION_COUNT" /> รายการ</translation>
 <translation id="4730374152663651037">แอปที่ใช้บ่อย</translation>
@@ -116,6 +125,7 @@
 <translation id="4971687151119236543">แทร็กก่อนหน้าของสื่อ</translation>
 <translation id="5046499563572181734">แตะที่นี่</translation>
 <translation id="5076340679995252485">&amp;วาง</translation>
+<translation id="5198715732953550718">รวม <ph name="MOVED_APP_NAME" /> กับ <ph name="IN_PLACE_APP" /> เพื่อสร้างโฟลเดอร์ใหม่แล้ว</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">สามเหลี่ยมซ่อนเนื้อหา</translation>
 <translation id="5278860589123563674">ส่งไม่สำเร็จ</translation>
@@ -129,6 +139,7 @@
 <translation id="5574202486608032840">ระบบ <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">ลูกศรซ้าย</translation>
+<translation id="5675363643668471212">รายการชั้นวาง</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 นาที}other{# นาที}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{ใช้งานวันนี้}=1{ใช้งานเมื่อ 1 วันที่ผ่านมา}other{ใช้งานเมื่อ # วันที่ผ่านมา}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 วันกับอีก }other{# วันกับอีก }}</translation>
@@ -208,6 +219,7 @@
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">เลื่อนหน้าลง</translation>
 <translation id="8245914219290430011">แท็บ</translation>
+<translation id="8247998213073982446"><ph name="APP_NAME" />, แอป</translation>
 <translation id="8259556432390118667">ค่าสีแบบเลขฐาน 16</translation>
 <translation id="8328145009876646418">ขอบซ้าย</translation>
 <translation id="8331626408530291785">เลื่อนขึ้น</translation>
@@ -237,6 +249,8 @@
 <translation id="9150735707954472829">แท็บ</translation>
 <translation id="9161053988251441839">แอปที่แนะนำ</translation>
 <translation id="9170848237812810038">เ&amp;ลิกทำ</translation>
+<translation id="9178475906033259337">กำลังแสดงผลการค้นหา 1 รายการสำหรับ "<ph name="QUERY" />"</translation>
 <translation id="932327136139879170">หน้าแรก</translation>
 <translation id="944069440740578670">การแจ้งเตือนที่ยังไม่อ่าน</translation>
+<translation id="974545358917229949">กำลังแสดงผลการค้นหา <ph name="RESULT_COUNT" /> รายการสำหรับ "<ph name="QUERY" />"</translation>
 </translationbundle>

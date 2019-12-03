@@ -276,6 +276,7 @@ void ExecutionContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(csp_delegate_);
   visitor->Trace(agent_);
   visitor->Trace(origin_trial_context_);
+  visitor->Trace(timers_);
   ContextLifecycleNotifier::Trace(visitor);
   ConsoleLogger::Trace(visitor);
   Supplementable<ExecutionContext>::Trace(visitor);

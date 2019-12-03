@@ -545,7 +545,7 @@ void Session::CreateVideoEncodeAccelerator(
   if (gpu_ && gpu_channel_host_ && !supported_profiles_.empty()) {
     if (!vea_provider_) {
       gpu_->CreateVideoEncodeAcceleratorProvider(
-          mojo::MakeRequest(&vea_provider_));
+          vea_provider_.BindNewPipeAndPassReceiver());
     }
     mojo::PendingRemote<media::mojom::VideoEncodeAccelerator> vea;
     vea_provider_->CreateVideoEncodeAccelerator(

@@ -11,10 +11,10 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -165,9 +165,9 @@ TEST_F(DemuxerStreamAdapterTest, NoDelay) {
   demuxer_stream_.reset(new DemuxerStreamForTest(
       -1, cycle_count, delayed_frame_count, config_idx_));
 
-  std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
+  base::test::SingleThreadTaskEnvironment task_environment;
   Initialize(demuxer_stream_.get());
-  message_loop->task_runner()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&DemuxerStreamAdapterTest::Start, base::Unretained(this)));
   base::RunLoop().Run();
@@ -185,9 +185,9 @@ TEST_F(DemuxerStreamAdapterTest, AllDelayed) {
   demuxer_stream_.reset(new DemuxerStreamForTest(
       -1, cycle_count, delayed_frame_count, config_idx_));
 
-  std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
+  base::test::SingleThreadTaskEnvironment task_environment;
   Initialize(demuxer_stream_.get());
-  message_loop->task_runner()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&DemuxerStreamAdapterTest::Start, base::Unretained(this)));
   base::RunLoop().Run();
@@ -206,9 +206,9 @@ TEST_F(DemuxerStreamAdapterTest, AllDelayedEarlyFlush) {
   demuxer_stream_.reset(new DemuxerStreamForTest(
       -1, cycle_count, delayed_frame_count, config_idx_));
 
-  std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
+  base::test::SingleThreadTaskEnvironment task_environment;
   Initialize(demuxer_stream_.get());
-  message_loop->task_runner()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&DemuxerStreamAdapterTest::Start, base::Unretained(this)));
   base::RunLoop().Run();

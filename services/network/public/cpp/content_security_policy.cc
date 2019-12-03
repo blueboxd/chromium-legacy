@@ -274,6 +274,7 @@ mojom::CSPSourceListPtr ParseFrameAncestorsSourceList(
 // https://crbug.com/916265.
 bool ParseReportDirective(const GURL& request_url,
                           base::StringPiece value,
+                          bool using_reporting_api,
                           std::vector<std::string>* report_endpoints) {
   for (const auto& uri : base::SplitStringPiece(
            value, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
@@ -285,14 +286,15 @@ bool ParseReportDirective(const GURL& request_url,
     // - "report-to (endpoint)+"
     //   |endpoint| is an arbitrary string. It refers to an endpoint declared in
     //   the "Report-To" header. See https://w3c.github.io/reporting
-    //
-    // TODO(lfg): The |endpoint| for the 'report-to' directive shouldn't be
-    // resolved.
-    GURL url = request_url.Resolve(uri);
+    if (using_reporting_api) {
+      report_endpoints->push_back(uri.as_string());
+    } else {
+      GURL url = request_url.Resolve(uri);
 
-    if (!url.is_valid())
-      return false;
-    report_endpoints->push_back(url.spec());
+      if (!url.is_valid())
+        return false;
+      report_endpoints->push_back(url.spec());
+    }
   }
   return true;
 }
@@ -372,7 +374,9 @@ bool ContentSecurityPolicy::Parse(const GURL& base_url,
     }
 
     if (report_endpoints != directives.end()) {
-      if (!ParseReportEndpoint(base_url, report_endpoints->second)) {
+      if (!ParseReportEndpoint(
+              base_url, report_endpoints->second,
+              content_security_policy_ptr_->use_reporting_api)) {
         content_security_policy_ptr_.reset();
         return false;
       }
@@ -406,16 +410,16 @@ bool ContentSecurityPolicy::ParseFrameAncestors(
   return true;
 }
 
-bool ContentSecurityPolicy::ParseReportEndpoint(
-    const GURL& base_url,
-    base::StringPiece header_value) {
+bool ContentSecurityPolicy::ParseReportEndpoint(const GURL& base_url,
+                                                base::StringPiece header_value,
+                                                bool using_reporting_api) {
   // A report-uri directive has already been parsed. Skip further directives per
   // https://www.w3.org/TR/CSP3/#parse-serialized-policy.
   if (!content_security_policy_ptr_->report_endpoints.empty())
     return true;
 
   if (!ParseReportDirective(
-          base_url, header_value,
+          base_url, header_value, using_reporting_api,
           &(content_security_policy_ptr_->report_endpoints))) {
     // TODO(lfg): Emit a warning to the user when parsing an invalid
     // expression.

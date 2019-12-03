@@ -120,6 +120,8 @@ class V4L2StatelessVideoDecoderBackend : public V4L2VideoDecoderBackend,
 
   // Check whether request api is supported or not.
   bool CheckRequestAPISupport();
+  // Allocate necessary request buffers is request api is supported.
+  bool AllocateRequests();
 
   // Returns whether |profile| is supported by a v4l2 stateless decoder driver.
   bool IsSupportedProfile(VideoCodecProfile profile);
@@ -167,9 +169,10 @@ class V4L2StatelessVideoDecoderBackend : public V4L2VideoDecoderBackend,
   std::vector<VideoCodecProfile> supported_profiles_;
   // Set to true during Initialize() if the codec driver supports request API.
   bool supports_requests_ = false;
-
-  // Reference to request queue to get free requests.
-  V4L2RequestsQueue* requests_queue_;
+  // FIFO queue of requests, only used if supports_requests_ is true.
+  base::queue<base::ScopedFD> requests_;
+  // Stores the media file descriptor, only used if supports_requests_ is true.
+  base::ScopedFD media_fd_;
 
   base::WeakPtr<V4L2StatelessVideoDecoderBackend> weak_this_;
   base::WeakPtrFactory<V4L2StatelessVideoDecoderBackend> weak_this_factory_{

@@ -56,7 +56,8 @@ class COMPONENT_EXPORT(NETWORK_CPP) ContentSecurityPolicy {
 
   // Parses the report-uri directive of a Content-Security-Policy header.
   bool ParseReportEndpoint(const GURL& base_url,
-                           base::StringPiece header_value);
+                           base::StringPiece header_value,
+                           bool using_reporting_api);
 
   mojom::ContentSecurityPolicyPtr content_security_policy_ptr_;
 };

@@ -236,7 +236,7 @@ TEST_F(FidoGetAssertionHandlerTest, TestIncompatibleUserVerificationSetting) {
   discovery()->AddDevice(std::move(device));
 
   task_environment_.FastForwardUntilNoTasksRemain();
-  EXPECT_EQ(GetAssertionStatus::kUserConsentButCredentialNotRecognized,
+  EXPECT_EQ(GetAssertionStatus::kAuthenticatorMissingUserVerification,
             get_assertion_callback().status());
 }
 
@@ -259,7 +259,7 @@ TEST_F(FidoGetAssertionHandlerTest,
   discovery()->AddDevice(std::move(device));
 
   task_environment_.FastForwardUntilNoTasksRemain();
-  EXPECT_EQ(GetAssertionStatus::kUserConsentButCredentialNotRecognized,
+  EXPECT_EQ(GetAssertionStatus::kAuthenticatorMissingUserVerification,
             get_assertion_callback().status());
 }
 

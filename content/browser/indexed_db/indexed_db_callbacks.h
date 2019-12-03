@@ -35,62 +35,14 @@ struct IndexedDBDatabaseMetadata;
 }
 
 namespace content {
-class IndexedDBBlobInfo;
 class IndexedDBConnection;
 class IndexedDBCursor;
 class IndexedDBDatabase;
 struct IndexedDBDataLossInfo;
-struct IndexedDBValue;
 
 class CONTENT_EXPORT IndexedDBCallbacks
     : public base::RefCounted<IndexedDBCallbacks> {
  public:
-  // IndexedDBValueBlob stores information about a given IndexedDBValue's
-  // blobs so they can be created on the IO thread.
-  //
-  // This class holds a const reference to its creating blob info, so
-  // should only be used as a temporary object to pass to a function,
-  // and not something that should be persisted or posttasked.
-  class IndexedDBValueBlob {
-   public:
-    // IndexedDBValueBlob() takes a std::vector<IDBBlobInfoPtr>* which it
-    // accesses during its invocation but doesn't keep a copy of it.  The
-    // std::vector<IDBBlobInfoPtr>* must only be alive for the duration of the
-    // invocation.
-    IndexedDBValueBlob(const IndexedDBBlobInfo& blob_info,
-                       blink::mojom::IDBBlobInfoPtr* blob_or_file_info);
-    IndexedDBValueBlob(IndexedDBValueBlob&& other);
-    ~IndexedDBValueBlob();
-
-    // GetIndexedDBValueBlobs() takes a std::vector<IDBBlobInfoPtr>* which it
-    // passes to IndexedDBValueBlob().  Neither of them hold the pointer after
-    // the call.
-    static void GetIndexedDBValueBlobs(
-        std::vector<IndexedDBValueBlob>* value_blobs,
-        const std::vector<IndexedDBBlobInfo>& blob_info,
-        std::vector<blink::mojom::IDBBlobInfoPtr>* blob_or_file_info);
-    // GetIndexedDBValueBlobs() takes a std::vector<IDBBlobInfoPtr>* which it
-    // passes to IndexedDBValueBlob().  Neither of them hold the pointer after
-    // the call.
-    static std::vector<IndexedDBValueBlob> GetIndexedDBValueBlobs(
-        const std::vector<IndexedDBBlobInfo>& blob_info,
-        std::vector<blink::mojom::IDBBlobInfoPtr>* blob_or_file_info);
-
-   private:
-    friend class IndexedDBCallbacks;
-    friend class IndexedDBCursor;
-
-    const IndexedDBBlobInfo& blob_info_;
-    std::string uuid_;
-    mojo::PendingReceiver<blink::mojom::Blob> receiver_;
-  };
-
-  // Create blobs for all of the receivers in |value_blobs|.
-  // |dispatcher_host| must be non-null.
-  // TODO(enne): maybe this function should live in dispatcher host?
-  static void CreateAllBlobs(IndexedDBDispatcherHost* dispatcher_host,
-                             std::vector<IndexedDBValueBlob> value_blobs);
-
   IndexedDBCallbacks(base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
                      const url::Origin& origin,
                      mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks>

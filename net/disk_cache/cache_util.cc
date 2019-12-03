@@ -153,7 +153,7 @@ bool DelayedCacheCleanup(const base::FilePath& full_path) {
 
 // Returns the preferred maximum number of bytes for the cache given the
 // number of available bytes.
-int PreferredCacheSize(int64_t available) {
+int PreferredCacheSize(int64_t available, net::CacheType type) {
   // Percent of cache size to use, relative to the default size. "100" means to
   // use 100% of the default size.
   int percent_relative_size;
@@ -173,6 +173,7 @@ int PreferredCacheSize(int64_t available) {
   int64_t scaled_default_disk_cache_size =
       static_cast<int64_t>(disk_cache::kDefaultCacheSize) *
       percent_relative_size / 100;
+
   if (available < 0)
     return static_cast<int32_t>(scaled_default_disk_cache_size);
 
@@ -184,6 +185,12 @@ int PreferredCacheSize(int64_t available) {
     preferred_cache_size = preferred_cache_size * percent_relative_size / 100;
     if (preferred_cache_size > available / 5)
       preferred_cache_size = available / 5;
+  }
+
+  // Native code entries can be large, so we would like a larger cache.
+  // Make the size limit 50% larger in that case.
+  if (type == net::GENERATED_NATIVE_CODE_CACHE) {
+    scaled_default_disk_cache_size = (scaled_default_disk_cache_size / 2) * 3;
   }
 
   // Limit cache size to somewhat less than kint32max to avoid potential

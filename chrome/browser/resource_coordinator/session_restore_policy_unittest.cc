@@ -13,6 +13,8 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "chrome/browser/notifications/notification_permission_context.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -386,6 +388,40 @@ TEST_F(SessionRestorePolicyTest, ShouldLoadBackgroundData) {
   TabData* tab_data = iter.first->second.get();
   tab_data->used_in_bg = true;
   EXPECT_TRUE(policy_->ShouldLoad(contents1_.get()));
+}
+
+TEST_F(SessionRestorePolicyTest, NotificationPermissionSetUsedInBgBit) {
+  CreatePolicy(true);
+  WaitForFinalTabScores();
+
+  auto iter = policy_->tab_data_.find(contents1_.get());
+  EXPECT_TRUE(iter != policy_->tab_data_.end());
+  EXPECT_FALSE(iter->second->UsedInBg());
+
+  // Allow |contents1_| to display notifications, this should cause the
+  // |used_in_bg| bit to change to true.
+
+  const GURL kTestURL("https://foo.com/");
+  NotificationPermissionContext::UpdatePermission(profile(), kTestURL,
+                                                  CONTENT_SETTING_ALLOW);
+  content::WebContentsTester::For(contents1_.get())
+      ->SetLastCommittedURL(kTestURL);
+
+  // Adding/Removing the tab for scoring will cause the callback to be called a
+  // few times, ignore this.
+  EXPECT_CALL(mock_, NotifyTabScoreChanged(::testing::_, ::testing::_))
+      .Times(::testing::AnyNumber());
+
+  policy_->RemoveTabForScoring(contents1_.get());
+  policy_->AddTabForScoring(contents1_.get());
+  WaitForFinalTabScores();
+
+  iter = policy_->tab_data_.find(contents1_.get());
+  EXPECT_TRUE(iter != policy_->tab_data_.end());
+  EXPECT_TRUE(iter->second->UsedInBg());
+
+  NotificationPermissionContext::UpdatePermission(profile(), kTestURL,
+                                                  CONTENT_SETTING_DEFAULT);
 }
 
 TEST_F(SessionRestorePolicyTest, MultipleAllTabsDoneCallbacks) {

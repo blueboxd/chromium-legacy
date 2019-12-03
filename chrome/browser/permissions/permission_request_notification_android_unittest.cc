@@ -190,7 +190,7 @@ TEST_F(PermissionRequestNotificationAndroidTest, ShouldShowAsNotification) {
   AdaptiveNotificationPermissionUiSelector::GetForProfile(profile())
       ->set_should_show_quiet_ui_for_testing(true);
 
-  EXPECT_TRUE(PermissionRequestNotificationAndroid::ShouldShowAsNotification(
+  EXPECT_FALSE(PermissionRequestNotificationAndroid::ShouldShowAsNotification(
       profile(), ContentSettingsType::NOTIFICATIONS));
   EXPECT_FALSE(PermissionRequestNotificationAndroid::ShouldShowAsNotification(
       profile(), ContentSettingsType::GEOLOCATION));

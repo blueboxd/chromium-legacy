@@ -199,8 +199,15 @@ void UnifiedSystemTrayController::UpdateDrag(const gfx::Point& location) {
   // Ignore swipe collapsing when a detailed view is shown as it's confusing.
   if (detailed_view_controller_)
     return;
-  animation_->Reset(GetDragExpandedAmount(location));
+  double drag_expanded_amount = GetDragExpandedAmount(location);
+  animation_->Reset(drag_expanded_amount);
   UpdateExpandedAmount();
+
+  if (was_expanded_ &&
+      drag_expanded_amount < kNotificationCenterDragExpandThreshold)
+    bubble_->ExpandMessageCenter();
+  else if (drag_expanded_amount >= kNotificationCenterDragExpandThreshold)
+    bubble_->CollapseMessageCenter();
 }
 
 void UnifiedSystemTrayController::StartAnimation(bool expand) {
@@ -229,6 +236,11 @@ void UnifiedSystemTrayController::EndDrag(const gfx::Point& location) {
                               TOGGLE_EXPANDED_TYPE_COUNT);
   }
 
+  if (expanded)
+    bubble_->CollapseMessageCenter();
+  else
+    bubble_->ExpandMessageCenter();
+
   // If dragging is finished, animate to closer state.
   StartAnimation(expanded);
 }
@@ -238,7 +250,14 @@ void UnifiedSystemTrayController::Fling(int velocity) {
   if (detailed_view_controller_)
     return;
   // Expand when flinging up. Collapse otherwise.
-  StartAnimation(velocity < 0);
+  bool expand = (velocity < 0);
+
+  if (expand)
+    bubble_->CollapseMessageCenter();
+  else
+    bubble_->ExpandMessageCenter();
+
+  StartAnimation(expand);
 }
 
 void UnifiedSystemTrayController::ShowUserChooserView() {

@@ -80,9 +80,10 @@ android_resources("test_java_resources") {
   ]
 }
 
-junit_binary("junit") {
+java_library("junit") {
+  # Skip platform checks since Robolectric depends on requires_android targets.
+  bypass_platform_checks = true
   testonly = true
-
   java_files = [ "java/src/org/chromium/chrome/browser/ui/appmenu/AppMenuPopupPositionTest.java" ]
   deps = [
     ":java",

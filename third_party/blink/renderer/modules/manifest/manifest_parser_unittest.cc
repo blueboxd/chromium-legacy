@@ -1075,182 +1075,376 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
 }
 
 TEST_F(ManifestParserTest, FileHandlerParseRules) {
-  // Does not contain file_handler field.
+  // Does not contain file_handlers field.
   {
     auto& manifest = ParseManifest("{ }");
-    EXPECT_FALSE(manifest->file_handler.get());
-    EXPECT_EQ(0u, GetErrorCount());
+    ASSERT_EQ(0u, GetErrorCount());
+    EXPECT_EQ(0u, manifest->file_handlers.size());
   }
 
-  // Contains empty file_handler field.
+  // file_handlers is not an array.
   {
-    auto& manifest = ParseManifest("{ \"file_handler\": { } }");
-    EXPECT_FALSE(manifest->file_handler.get());
-    EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("property 'file_handler' ignored. Property 'action' is invalid.",
+    auto& manifest = ParseManifest("{ \"file_handlers\": { } }");
+    ASSERT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("property 'file_handlers' ignored, type array expected.",
               errors()[0]);
+    EXPECT_EQ(0u, manifest->file_handlers.size());
   }
 
-  // Contains file_handler field but no file handlers.
+  // Contains file_handlers field but no file handlers.
   {
-    auto& manifest =
-        ParseManifest("{ \"file_handler\": { \"action\": \"/files\" } }");
-    EXPECT_FALSE(manifest->file_handler.get());
-
-    EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("no file handlers were specified.", errors()[0]);
+    auto& manifest = ParseManifest("{ \"file_handlers\": [ ] }");
+    ASSERT_EQ(0u, GetErrorCount());
+    EXPECT_EQ(0u, manifest->file_handlers.size());
   }
 
-  // Contains file_handler field but files list is empty.
-  {
-    auto& manifest = ParseManifest(
-        "{ \"file_handler\": { \"action\": \"/files\", \"files\": [] } }");
-    EXPECT_FALSE(manifest->file_handler.get());
-    EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("no file handlers were specified.", errors()[0]);
-  }
-
-  // Invalid action causes parsing to fail.
+  // Entries must be objects
   {
     auto& manifest = ParseManifest(
         "{"
-        "  \"file_handler\": {"
-        "    \"files\": ["
-        "      {"
-        "        \"name\": \"name\", "
-        "        \"accept\": \"image/png\""
-        "      }"
-        "    ]"
-        "  }"
+        "  \"file_handlers\": ["
+        "    \"hello world\""
+        "  ]"
         "}");
-    manifest->scope = KURL("http://frobnicate.notatld");
-    EXPECT_FALSE(manifest->file_handler.get());
-    EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("property 'file_handler' ignored. Property 'action' is invalid.",
-              errors()[0]);
+    ASSERT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("FileHandler ignored, type object expected.", errors()[0]);
+    EXPECT_EQ(0u, manifest->file_handlers.size());
   }
 
-  // Single accept value can be parsed from string.
+  // Entry without an action is invalid.
   {
     auto& manifest = ParseManifest(
         "{"
-        "  \"file_handler\": {"
-        "    \"files\": ["
-        "      {"
-        "        \"name\": \"name\", "
-        "        \"accept\": \"image/png\""
-        "      }"
-        "    ], "
-        "    \"action\": \"/files\""
-        "  }"
-        "}");
-    EXPECT_TRUE(manifest->file_handler.get());
-
-    auto& file_handler = manifest->file_handler;
-    EXPECT_EQ(file_handler->action, KURL("http://foo.com/files"));
-    EXPECT_EQ(file_handler->files.size(), 1u);
-    EXPECT_EQ(file_handler->files[0]->name, "name");
-    EXPECT_EQ(file_handler->files[0]->accept.size(), 1u);
-    EXPECT_EQ(file_handler->files[0]->accept[0], "image/png");
-
-    EXPECT_EQ(0u, GetErrorCount());
-  }
-
-  // Single accept value can be parsed from list.
-  {
-    auto& manifest = ParseManifest(
-        "{"
-        "  \"file_handler\": {"
-        "    \"action\": \"/files\", "
-        "    \"files\": ["
-        "      {"
-        "        \"name\": \"name\", "
-        "        \"accept\": ["
-        "          \"image/png\""
-        "        ]"
-        "      }"
-        "    ]"
-        "  }"
-        "}");
-    EXPECT_TRUE(manifest->file_handler.get());
-
-    auto& file_handler = manifest->file_handler;
-    EXPECT_EQ(file_handler->action, KURL("http://foo.com/files"));
-    EXPECT_EQ(file_handler->files.size(), 1u);
-    EXPECT_EQ(file_handler->files[0]->name, "name");
-    EXPECT_EQ(file_handler->files[0]->accept.size(), 1u);
-    EXPECT_EQ(file_handler->files[0]->accept[0], "image/png");
-
-    EXPECT_EQ(0u, GetErrorCount());
-  }
-
-  // Multiple accept values can be parsed.
-  {
-    auto& manifest = ParseManifest(
-        "{"
-        "  \"file_handler\": {"
-        "    \"action\": \"/files\", "
-        "    \"files\": ["
-        "      {"
-        "        \"name\": \"name\", "
-        "        \"accept\": ["
-        "          \"image/png\", "
+        "  \"file_handlers\": ["
+        "    {"
+        "      \"name\": \"name\","
+        "      \"accept\": {"
+        "        \"image/png\": ["
         "          \".png\""
         "        ]"
         "      }"
-        "    ]"
-        "  }"
+        "    }"
+        "  ]"
         "}");
-    EXPECT_TRUE(manifest->file_handler.get());
-
-    auto& file_handler = manifest->file_handler;
-    EXPECT_EQ(file_handler->action, KURL("http://foo.com/files"));
-    EXPECT_EQ(file_handler->files.size(), 1u);
-    EXPECT_EQ(file_handler->files[0]->name, "name");
-    EXPECT_EQ(file_handler->files[0]->accept.size(), 2u);
-    EXPECT_EQ(file_handler->files[0]->accept[0], "image/png");
-    EXPECT_EQ(file_handler->files[0]->accept[1], ".png");
-    EXPECT_EQ(0u, GetErrorCount());
+    ASSERT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("FileHandler ignored. Property 'action' is invalid.",
+              errors()[0]);
+    EXPECT_EQ(0u, manifest->file_handlers.size());
   }
 
-  // Multiple file handlers can be parsed.
+  // Entry with an action on a different origin is invalid.
   {
     auto& manifest = ParseManifest(
         "{"
-        "  \"file_handler\": {"
-        "    \"action\": \"/files\", "
-        "    \"files\": ["
-        "      {"
-        "        \"name\": \"name\", "
-        "        \"accept\": ["
-        "          \"image/png\", "
+        "  \"file_handlers\": ["
+        "    {"
+        "      \"name\": \"name\","
+        "      \"action\": \"https://example.com/files\","
+        "      \"accept\": {"
+        "        \"image/png\": ["
         "          \".png\""
         "        ]"
-        "      }, "
-        "      {"
-        "        \"name\": \"svgish\", "
-        "        \"accept\": ["
+        "      }"
+        "    }"
+        "  ]"
+        "}");
+    ASSERT_EQ(2u, GetErrorCount());
+    EXPECT_EQ("property 'action' ignored, should be same origin as document.",
+              errors()[0]);
+    EXPECT_EQ("FileHandler ignored. Property 'action' is invalid.",
+              errors()[1]);
+    EXPECT_EQ(0u, manifest->file_handlers.size());
+  }
+
+  // Entry without a name is valid.
+  {
+    auto& manifest = ParseManifest(
+        "{"
+        "  \"file_handlers\": ["
+        "    {"
+        "      \"action\": \"/files\","
+        "      \"accept\": {"
+        "        \"image/png\": ["
+        "          \".png\""
+        "        ]"
+        "      }"
+        "    }"
+        "  ]"
+        "}");
+    ASSERT_EQ(0u, GetErrorCount());
+    EXPECT_EQ(1u, manifest->file_handlers.size());
+  }
+
+  // Entry without an accept is invalid.
+  {
+    auto& manifest = ParseManifest(
+        "{"
+        "  \"file_handlers\": ["
+        "    {"
+        "      \"name\": \"name\","
+        "      \"action\": \"/files\""
+        "    }"
+        "  ]"
+        "}");
+    ASSERT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("FileHandler ignored. Property 'accept' is invalid.",
+              errors()[0]);
+    EXPECT_EQ(0u, manifest->file_handlers.size());
+  }
+
+  // Entry where accept is not an object is invalid.
+  {
+    auto& manifest = ParseManifest(
+        "{"
+        "  \"file_handlers\": ["
+        "    {"
+        "      \"name\": \"name\","
+        "      \"action\": \"/files\","
+        "      \"accept\": \"image/png\""
+        "    }"
+        "  ]"
+        "}");
+    ASSERT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("FileHandler ignored. Property 'accept' is invalid.",
+              errors()[0]);
+    EXPECT_EQ(0u, manifest->file_handlers.size());
+  }
+
+  // Entry where accept extensions are not an array or string is invalid.
+  {
+    auto& manifest = ParseManifest(
+        "{"
+        "  \"file_handlers\": ["
+        "    {"
+        "      \"name\": \"name\","
+        "      \"action\": \"/files\","
+        "      \"accept\": {"
+        "        \"image/png\": {}"
+        "      }"
+        "    }"
+        "  ]"
+        "}");
+    ASSERT_EQ(2u, GetErrorCount());
+    EXPECT_EQ(
+        "property 'accept' type ignored. File extensions must be type array or "
+        "type string.",
+        errors()[0]);
+    EXPECT_EQ("FileHandler ignored. Property 'accept' is invalid.",
+              errors()[1]);
+    EXPECT_EQ(0u, manifest->file_handlers.size());
+  }
+
+  // Entry where accept extensions are not an array or string is invalid.
+  {
+    auto& manifest = ParseManifest(
+        "{"
+        "  \"file_handlers\": ["
+        "    {"
+        "      \"name\": \"name\","
+        "      \"action\": \"/files\","
+        "      \"accept\": {"
+        "        \"image/png\": ["
+        "          {}"
+        "        ]"
+        "      }"
+        "    }"
+        "  ]"
+        "}");
+    ASSERT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("property 'accept' file extension ignored, type string expected.",
+              errors()[0]);
+    EXPECT_EQ(1u, manifest->file_handlers.size());
+  }
+
+  // Entry with an empty list of extensions is valid.
+  {
+    auto& manifest = ParseManifest(
+        "{"
+        "  \"file_handlers\": ["
+        "    {"
+        "      \"name\": \"name\","
+        "      \"action\": \"/files\","
+        "      \"accept\": {"
+        "        \"image/png\": []"
+        "      }"
+        "    }"
+        "  ]"
+        "}");
+    auto& file_handlers = manifest->file_handlers;
+
+    ASSERT_EQ(0u, GetErrorCount());
+    ASSERT_EQ(1u, file_handlers.size());
+
+    EXPECT_EQ("name", file_handlers[0]->name);
+    EXPECT_EQ(KURL("http://foo.com/files"), file_handlers[0]->action);
+    ASSERT_TRUE(file_handlers[0]->accept.Contains("image/png"));
+    EXPECT_EQ(0u, file_handlers[0]->accept.find("image/png")->value.size());
+  }
+
+  // Extensions that do not start with a '.' are invalid.
+  {
+    auto& manifest = ParseManifest(
+        "{"
+        "  \"file_handlers\": ["
+        "    {"
+        "      \"name\": \"name\","
+        "      \"action\": \"/files\","
+        "      \"accept\": {"
+        "        \"image/png\": ["
+        "          \"png\""
+        "        ]"
+        "      }"
+        "    }"
+        "  ]"
+        "}");
+    auto& file_handlers = manifest->file_handlers;
+
+    ASSERT_EQ(1u, GetErrorCount());
+    EXPECT_EQ(
+        "property 'accept' file extension ignored, must start with a '.'.",
+        errors()[0]);
+    ASSERT_EQ(1u, file_handlers.size());
+
+    EXPECT_EQ("name", file_handlers[0]->name);
+    EXPECT_EQ(KURL("http://foo.com/files"), file_handlers[0]->action);
+    ASSERT_TRUE(file_handlers[0]->accept.Contains("image/png"));
+    EXPECT_EQ(0u, file_handlers[0]->accept.find("image/png")->value.size());
+  }
+
+  // Extensions specified as a single string is valid.
+  {
+    auto& manifest = ParseManifest(
+        "{"
+        "  \"file_handlers\": ["
+        "    {"
+        "      \"name\": \"name\","
+        "      \"action\": \"/files\","
+        "      \"accept\": {"
+        "        \"image/png\": \".png\""
+        "      }"
+        "    }"
+        "  ]"
+        "}");
+    auto& file_handlers = manifest->file_handlers;
+
+    ASSERT_EQ(0u, GetErrorCount());
+    ASSERT_EQ(1u, file_handlers.size());
+
+    EXPECT_EQ("name", file_handlers[0]->name);
+    EXPECT_EQ(KURL("http://foo.com/files"), file_handlers[0]->action);
+    ASSERT_TRUE(file_handlers[0]->accept.Contains("image/png"));
+    ASSERT_EQ(1u, file_handlers[0]->accept.find("image/png")->value.size());
+    EXPECT_EQ(".png", file_handlers[0]->accept.find("image/png")->value[0]);
+  }
+
+  // An array of extensions is valid.
+  {
+    auto& manifest = ParseManifest(
+        "{"
+        "  \"file_handlers\": ["
+        "    {"
+        "      \"name\": \"name\","
+        "      \"action\": \"/files\","
+        "      \"accept\": {"
+        "        \"image/jpg\": ["
+        "          \".jpg\","
+        "          \".jpeg\""
+        "        ]"
+        "      }"
+        "    }"
+        "  ]"
+        "}");
+    auto& file_handlers = manifest->file_handlers;
+
+    ASSERT_EQ(0u, GetErrorCount());
+    ASSERT_EQ(1u, file_handlers.size());
+
+    EXPECT_EQ("name", file_handlers[0]->name);
+    EXPECT_EQ(KURL("http://foo.com/files"), file_handlers[0]->action);
+    ASSERT_TRUE(file_handlers[0]->accept.Contains("image/jpg"));
+    ASSERT_EQ(2u, file_handlers[0]->accept.find("image/jpg")->value.size());
+    EXPECT_EQ(".jpg", file_handlers[0]->accept.find("image/jpg")->value[0]);
+    EXPECT_EQ(".jpeg", file_handlers[0]->accept.find("image/jpg")->value[1]);
+  }
+
+  // Multiple mime types are valid.
+  {
+    auto& manifest = ParseManifest(
+        "{"
+        "  \"file_handlers\": ["
+        "    {"
+        "      \"name\": \"Image\","
+        "      \"action\": \"/files\","
+        "      \"accept\": {"
+        "        \"image/png\": \".png\","
+        "        \"image/jpg\": ["
+        "          \".jpg\","
+        "          \".jpeg\""
+        "        ]"
+        "      }"
+        "    }"
+        "  ]"
+        "}");
+    auto& file_handlers = manifest->file_handlers;
+
+    ASSERT_EQ(0u, GetErrorCount());
+    ASSERT_EQ(1u, file_handlers.size());
+
+    EXPECT_EQ("Image", file_handlers[0]->name);
+    EXPECT_EQ(KURL("http://foo.com/files"), file_handlers[0]->action);
+
+    ASSERT_TRUE(file_handlers[0]->accept.Contains("image/jpg"));
+    ASSERT_EQ(2u, file_handlers[0]->accept.find("image/jpg")->value.size());
+    EXPECT_EQ(".jpg", file_handlers[0]->accept.find("image/jpg")->value[0]);
+    EXPECT_EQ(".jpeg", file_handlers[0]->accept.find("image/jpg")->value[1]);
+
+    ASSERT_TRUE(file_handlers[0]->accept.Contains("image/png"));
+    ASSERT_EQ(1u, file_handlers[0]->accept.find("image/png")->value.size());
+    EXPECT_EQ(".png", file_handlers[0]->accept.find("image/png")->value[0]);
+  }
+
+  // file_handlers with multiple entries is valid.
+  {
+    auto& manifest = ParseManifest(
+        "{"
+        "  \"file_handlers\": ["
+        "    {"
+        "      \"name\": \"Graph\","
+        "      \"action\": \"/graph\","
+        "      \"accept\": {"
+        "        \"text/svg+xml\": ["
         "          \".svg\","
-        "          \"xml/svg\""
+        "          \".graph\""
         "        ]"
         "      }"
-        "    ]"
-        "  }"
+        "    },"
+        "    {"
+        "      \"name\": \"Raw\","
+        "      \"action\": \"/raw\","
+        "      \"accept\": {"
+        "        \"text/csv\": \".csv\""
+        "      }"
+        "    }"
+        "  ]"
         "}");
-    EXPECT_TRUE(manifest->file_handler.get());
+    auto& file_handlers = manifest->file_handlers;
 
-    auto& file_handler = manifest->file_handler;
-    EXPECT_EQ(file_handler->action, KURL("http://foo.com/files"));
-    EXPECT_EQ(file_handler->files.size(), 2u);
-    EXPECT_EQ(file_handler->files[0]->name, "name");
-    EXPECT_EQ(file_handler->files[0]->accept.size(), 2u);
-    EXPECT_EQ(file_handler->files[0]->accept[0], "image/png");
-    EXPECT_EQ(file_handler->files[0]->accept[1], ".png");
-    EXPECT_EQ(file_handler->files[1]->name, "svgish");
-    EXPECT_EQ(file_handler->files[1]->accept.size(), 2u);
-    EXPECT_EQ(file_handler->files[1]->accept[0], ".svg");
-    EXPECT_EQ(file_handler->files[1]->accept[1], "xml/svg");
-    EXPECT_EQ(0u, GetErrorCount());
+    ASSERT_EQ(0u, GetErrorCount());
+    ASSERT_EQ(2u, file_handlers.size());
+
+    EXPECT_EQ("Graph", file_handlers[0]->name);
+    EXPECT_EQ(KURL("http://foo.com/graph"), file_handlers[0]->action);
+    ASSERT_TRUE(file_handlers[0]->accept.Contains("text/svg+xml"));
+    ASSERT_EQ(2u, file_handlers[0]->accept.find("text/svg+xml")->value.size());
+    EXPECT_EQ(".svg", file_handlers[0]->accept.find("text/svg+xml")->value[0]);
+    EXPECT_EQ(".graph",
+              file_handlers[0]->accept.find("text/svg+xml")->value[1]);
+
+    EXPECT_EQ("Raw", file_handlers[1]->name);
+    EXPECT_EQ(KURL("http://foo.com/raw"), file_handlers[1]->action);
+    ASSERT_TRUE(file_handlers[1]->accept.Contains("text/csv"));
+    ASSERT_EQ(1u, file_handlers[1]->accept.find("text/csv")->value.size());
+    EXPECT_EQ(".csv", file_handlers[1]->accept.find("text/csv")->value[0]);
   }
 }
 

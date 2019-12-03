@@ -417,17 +417,16 @@ void TestRenderFrameHost::PrepareForCommitInternal(
   CHECK(url_loader);
 
   // Simulate the network stack commit.
-  scoped_refptr<network::ResourceResponse> response(
-      new network::ResourceResponse);
-  response->head.remote_endpoint = remote_endpoint;
-  response->head.was_fetched_via_cache = was_fetched_via_cache;
-  response->head.is_signed_exchange_inner_response =
+  auto response = network::mojom::URLResponseHead::New();
+  response->remote_endpoint = remote_endpoint;
+  response->was_fetched_via_cache = was_fetched_via_cache;
+  response->is_signed_exchange_inner_response =
       is_signed_exchange_inner_response;
-  response->head.connection_info = connection_info;
-  response->head.ssl_info = ssl_info;
+  response->connection_info = connection_info;
+  response->ssl_info = ssl_info;
   // TODO(carlosk): Ideally, it should be possible someday to
   // fully commit the navigation at this call to CallOnResponseStarted.
-  url_loader->CallOnResponseStarted(response);
+  url_loader->CallOnResponseStarted(std::move(response));
 }
 
 void TestRenderFrameHost::SimulateCommitProcessed(

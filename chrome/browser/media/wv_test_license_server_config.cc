@@ -48,8 +48,8 @@ bool WVTestLicenseServerConfig::GetServerCommandLine(
   base::FilePath license_server_path;
   GetLicenseServerPath(&license_server_path);
   if (!base::PathExists(license_server_path)) {
-    DVLOG(0) << "Missing license server file at "
-             << license_server_path.value();
+    LOG(WARNING) << "Missing license server file at "
+                 << license_server_path.value();
     return false;
   }
 
@@ -60,7 +60,8 @@ bool WVTestLicenseServerConfig::GetServerCommandLine(
   if (!base::PathExists(config_path.Append(kKeysFileName)) ||
       !base::PathExists(config_path.Append(kPoliciesFileName)) ||
       !base::PathExists(config_path.Append(kProfilesFileName))) {
-    DVLOG(0) << "Missing license server configuration files.";
+    LOG(WARNING) << "Missing license server configuration files at "
+                 << config_path;
     return false;
   }
 
@@ -98,7 +99,7 @@ WVTestLicenseServerConfig::GetServerEnvironment() {
   // Add the Python protocol buffers files directory to Python path.
   base::FilePath pyproto_dir;
   if (!GetPyProtoPath(&pyproto_dir)) {
-    DVLOG(0) << "Cannot find pyproto directory required by license server.";
+    LOG(WARNING) << "Cannot find pyproto directory required by license server.";
     return base::nullopt;
   }
 
@@ -122,8 +123,8 @@ bool WVTestLicenseServerConfig::SelectServerPort() {
       return true;
     }
   }
-  DVLOG(0) << "Could not find an open port in the range of " <<  kMinPort <<
-             " to " << kMinPort + kPortRangeSize;
+  LOG(WARNING) << "Could not find an open port in the range of " << kMinPort
+               << " to " << kMinPort + kPortRangeSize;
   return false;
 }
 

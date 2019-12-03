@@ -12,9 +12,9 @@
 <translation id="107147699690128016">ប្រសិនបើអ្នក​ប្ដូរកន្ទុយ​ឯកសារ ឯកសារនេះ​អាចបើកនៅក្នុងកម្មវិធី​ផ្សេង និងអាចបង្កគ្រោះថ្នាក់ដល់​ឧបករណ៍​របស់អ្នក។</translation>
 <translation id="1100066534610197918">បើកនៅក្នុងផ្ទាំងថ្មី​នៅក្នុងក្រុម</translation>
 <translation id="1105960400813249514">ការថត​អេក្រង់</translation>
-<translation id="1110022065703191351">រូបតំណាង</translation>
 <translation id="1111673857033749125">ចំណាំដែលបានរក្សាទុកនៅលើឧបករណ៍ផ្សេងទៀតរបស់អ្នកនឹងបង្ហាញនៅទីនេះ</translation>
 <translation id="1113597929977215864">បង្ហាញ​ទិដ្ឋភាព​សាមញ្ញ</translation>
+<translation id="1122278879166832009">ចុចត្រង់នេះ ដើម្បី​ចូលប្រើ​ទំព័រដើម​របស់អ្នក​បានយ៉ាងរហ័ស​ពីគ្រប់កម្មវិធី</translation>
 <translation id="1124772482545689468">អ្នកប្រើ</translation>
 <translation id="1129510026454351943">ព័ត៌មានលម្អិត៖ <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{ការទាញយក 1 មិនទាន់​សម្រេច។}other{ការទាញយក # មិនទាន់​សម្រេច។}}</translation>
@@ -379,6 +379,7 @@
 <translation id="3822502789641063741">ជម្រះទំហំផ្ទុកគេហទំព័រឬ?</translation>
 <translation id="385051799172605136">ថយក្រោយ</translation>
 <translation id="3859306556332390985">ស្វែងរក​ទៅ​មុខ</translation>
+<translation id="388596076286380598">ទទួលបាន​អត្ថបទ វីដេអូ និង​ខ្លឹមសារ​ផ្សេងទៀតពី​គេហទំព័រ​ដែលអ្នក​ចូលចិត្ត ទោះបីជា​អ្នកគ្មានអ៊ីនធឺណិត ឬការតភ្ជាប់​របស់អ្នក​ខ្សោយក៏ដោយ។</translation>
 <translation id="3894427358181296146">បន្ថែមថតឯកសារ</translation>
 <translation id="3895926599014793903">បង្ខំបើកដំណើរការពង្រីក</translation>
 <translation id="3912508018559818924">កំពុង​ស្វែងរក​អ្វីដែលល្អបំផុត​ពីបណ្ដាញ…</translation>
@@ -490,6 +491,7 @@
 <translation id="4719927025381752090">ផ្តល់ជូន​ការ​បកប្រែ</translation>
 <translation id="4720023427747327413">បើកនៅក្នុង <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">ជួយ​កែលម្អ Chrome ។<ph name="BEGIN_LINK" />សូម​ធ្វើការ​ស្ទង់មតិ<ph name="END_LINK" /></translation>
+<translation id="4732120983431207637">Stack Unwinder</translation>
 <translation id="473775607612524610">ធ្វើបច្ចុប្បន្នភាព</translation>
 <translation id="4738836084190194332">ធ្វើសមកាលកម្មចុងក្រោយ៖ <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">បើកផ្ទាំងថ្មី</translation>
@@ -542,7 +544,6 @@
 <translation id="5048398596102334565">អនុញ្ញាតឱ្យ​គេហទំព័រ​ចូលប្រើ​ឧបករណ៍​ចាប់ចលនា (បាន​ណែនាំ)</translation>
 <translation id="5063480226653192405">ការប្រើប្រាស់</translation>
 <translation id="5087580092889165836">បន្ថែមកាត</translation>
-<translation id="5096950519211870196">គេហទំព័រ​នឹងត្រូវបាន​ទប់ស្កាត់មិន​ឱ្យស្នើសុំ​បង្ហាញការជូនដំណឹង​ដល់អ្នក។ ប្រសិនបើ​គេហទំព័រស្នើសុំ​ការជូនដំណឹង របារព័ត៌មាន​នឹងបង្ហាញ​នៅផ្នែកខាងក្រោមទំព័រ។</translation>
 <translation id="5100237604440890931">បានបំបែក - ចុចដើម្បីពង្រីក</translation>
 <translation id="510275257476243843">នៅសល់ 1 ម៉ោងទៀត</translation>
 <translation id="5123685120097942451">ផ្ទាំង​អនាមិក</translation>
@@ -636,6 +637,7 @@
 <translation id="5684874026226664614">អូ។ ទំព័រនេះមិនអាចបកប្រែទេ។</translation>
 <translation id="5686790454216892815">ឈ្មោះ​ឯកសារ​វែងពេក</translation>
 <translation id="5689516760719285838">ទីតាំង</translation>
+<translation id="5694049548840660018">ត្រឡប់ទៅ​ទំព័រដើមវិញ​បានយ៉ាង​ងាយស្រួល</translation>
 <translation id="569536719314091526">បកប្រែ​ទំព័រនេះ​ទៅជាភាសា​ណាមួយពី​ប៊ូតុងជម្រើស​ច្រើនទៀត</translation>
 <translation id="5710871682236653961">សួរ​មុនពេល​អនុញ្ញាតឱ្យ​គេហទំព័រផ្ញើ និងទទួល​ព័ត៌មាន នៅពេល​អ្នកចុច​ឧបករណ៍ NFC (បានណែនាំ)</translation>
 <translation id="572328651809341494">ផ្ទាំងកន្លងទៅថ្មីៗ</translation>
@@ -689,7 +691,6 @@
 <translation id="6108923351542677676">ការដំឡើងកំពុងដំណើរការ…</translation>
 <translation id="6111020039983847643">ទិន្នន័យ​ដែល​បានប្រើ</translation>
 <translation id="6112702117600201073">កំពុងធ្វើឲ្យទំព័រថ្មីឡើងវិញ</translation>
-<translation id="6113400363611269907">បង្ហាញ​សារជំរុញ​ដោយស្ងាត់ៗ</translation>
 <translation id="6127379762771434464">ធាតុត្រូវបានយកចេញ</translation>
 <translation id="6140912465461743537">ប្រទេស/តំបន់៖</translation>
 <translation id="614940544461990577">សាកល្បង៖</translation>
@@ -791,13 +792,13 @@
 <translation id="6818926723028410516">ជ្រើសរើសធាតុ</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">បកប្រែ</translation>
-<translation id="6840155290835956714">សួរមុនពេលផ្ញើ</translation>
 <translation id="6845325883481699275">ជួយ​កែលម្អ​សុវត្ថិភាព Chrome</translation>
 <translation id="6846298663435243399">កំពុងដំណើរការ...</translation>
 <translation id="6850409657436465440">ការទាញយក​របស់អ្នក​កំពុង​ដំណើរការ​នៅឡើយ</translation>
 <translation id="6850830437481525139">បានបិទផ្ទាំង <ph name="TAB_COUNT" /></translation>
 <translation id="6864459304226931083">ទាញយករូបភាព</translation>
 <translation id="6865313869410766144">បំពេញទិន្នន័យបែបបទស្វ័យប្រវត្តិ</translation>
+<translation id="6884306546558072722">បន្តរុករក​ដោយគ្មាន​អ៊ីនធឺណិត</translation>
 <translation id="688738109438487280">បន្ថែមទិន្នន័យដែលមានស្រាប់ទៅ <ph name="TO_ACCOUNT" /> ។</translation>
 <translation id="6891726759199484455">ដោះសោ​ដើម្បី​ចម្លង​ពាក្យសម្ងាត់​របស់អ្នក</translation>
 <translation id="6896758677409633944">ចម្លង</translation>
@@ -1039,6 +1040,7 @@
 <translation id="8636825310635137004">ដើម្បីទទួលបានផ្ទាំងរបស់អ្នកពីឧបករណ៍ផ្សេងទៀតរបស់អ្នក សូមបើកការធ្វើសមកាលកម្ម</translation>
 <translation id="8641930654639604085">ព្យាយាម​រារាំង​ទំព័រ​សម្រាប់​មនុស្ស​ធំ</translation>
 <translation id="8655129584991699539">អ្នកអាច​សម្អាតទិន្នន័យ​នៅក្នុងការកំណត់ Chrome</translation>
+<translation id="8655599981421006542">ចុច​ត្រង់នេះ ដើម្បី​បង្កើត​ផ្ទាំងថ្មី និង​ត្រឡប់ទៅកាន់​ផ្ទាំង​មុនវិញ</translation>
 <translation id="8662811608048051533">ធ្វើឱ្យអ្នកចាកចេញពីទំព័រភាគច្រើន។</translation>
 <translation id="8664979001105139458">ឈ្មោះ​ឯកសារ​មានរួច​ហើយ</translation>
 <translation id="8676374126336081632">ជម្រះការបញ្ចូល</translation>
@@ -1051,6 +1053,7 @@
 <translation id="8730621377337864115">រួចរាល់</translation>
 <translation id="8748850008226585750">បានលាក់មាតិកា</translation>
 <translation id="8751914237388039244">ជ្រើសរើស​រូបភាព</translation>
+<translation id="8758557275681689734">មើលផ្ទាំង​ដែលបើក​ទាំងអស់​របស់អ្នក</translation>
 <translation id="8788265440806329501">បាន​បិទប្រវត្តិរុករក</translation>
 <translation id="8788968922598763114">បើកផ្ទាំងដែលបានបិទចុងក្រោយឡើងវិញ</translation>
 <translation id="8801436777607969138">ទប់ស្កាត់ JavaScript សម្រាប់គេហទំព័រជាក់លាក់។</translation>

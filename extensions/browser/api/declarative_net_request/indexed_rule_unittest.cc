@@ -673,6 +673,101 @@ TEST_F(IndexedRuleTest, RegexFilterParsing) {
   }
 }
 
+TEST_F(IndexedRuleTest, MultipleFiltersSpecified) {
+  dnr_api::Rule rule = CreateGenericParsedRule();
+  rule.condition.url_filter = std::make_unique<std::string>("google");
+  rule.condition.regex_filter = std::make_unique<std::string>("example");
+
+  IndexedRule indexed_rule;
+  ParseResult result = IndexedRule::CreateIndexedRule(
+      std::move(rule), GetBaseURL(), &indexed_rule);
+  EXPECT_EQ(ParseResult::ERROR_MULTIPLE_FILTERS_SPECIFIED, result);
+}
+
+TEST_F(IndexedRuleTest, RegexSubstitutionParsing) {
+  struct {
+    // |regex_filter| may be null.
+    const char* regex_filter;
+    std::string regex_substitution;
+    ParseResult result;
+  } cases[] = {
+      {nullptr, "http://google.com",
+       ParseResult::ERROR_REGEX_SUBSTITUTION_WITHOUT_FILTER},
+      // \0 in |regex_substitution| refers to the entire matching text.
+      {R"(^http://(.*)\.com/)", R"(https://redirect.com?referrer=\0)",
+       ParseResult::SUCCESS},
+      {R"(^http://google\.com?q1=(.*)&q2=(.*))",
+       R"(https://redirect.com?&q1=\0&q2=\2)", ParseResult::SUCCESS},
+      // Referencing invalid capture group.
+      {R"(^http://google\.com?q1=(.*)&q2=(.*))",
+       R"(https://redirect.com?&q1=\1&q2=\3)",
+       ParseResult::ERROR_INVALID_REGEX_SUBSTITUTION},
+      // Empty substitution.
+      {R"(^http://(.*)\.com/)", "",
+       ParseResult::ERROR_INVALID_REGEX_SUBSTITUTION},
+      // '\' must always be followed by a '\' or a digit.
+      {R"(^http://(.*)\.com/)", R"(https://example.com?q=\a)",
+       ParseResult::ERROR_INVALID_REGEX_SUBSTITUTION},
+  };
+
+  for (const auto& test_case : cases) {
+    SCOPED_TRACE(test_case.regex_substitution);
+
+    dnr_api::Rule rule = CreateGenericParsedRule();
+    rule.condition.url_filter.reset();
+    if (test_case.regex_filter) {
+      rule.condition.regex_filter =
+          std::make_unique<std::string>(test_case.regex_filter);
+    }
+
+    rule.priority = std::make_unique<int>(kMinValidPriority);
+    rule.action.type = dnr_api::RULE_ACTION_TYPE_REDIRECT;
+    rule.action.redirect = std::make_unique<dnr_api::Redirect>();
+    rule.action.redirect->regex_substitution =
+        std::make_unique<std::string>(test_case.regex_substitution);
+
+    IndexedRule indexed_rule;
+    ParseResult result = IndexedRule::CreateIndexedRule(
+        std::move(rule), GetBaseURL(), &indexed_rule);
+    EXPECT_EQ(test_case.result, result);
+
+    if (result == ParseResult::SUCCESS) {
+      EXPECT_EQ(flat_rule::UrlPatternType_REGEXP,
+                indexed_rule.url_pattern_type);
+      ASSERT_TRUE(indexed_rule.regex_substitution);
+      EXPECT_EQ(test_case.regex_substitution, *indexed_rule.regex_substitution);
+    }
+  }
+}
+
+// Tests the parsing behavior when multiple keys in "Redirect" dictionary are
+// specified.
+TEST_F(IndexedRuleTest, MultipleRedirectKeys) {
+  dnr_api::Rule rule = CreateGenericParsedRule();
+  rule.priority = std::make_unique<int>(kMinValidPriority);
+  rule.condition.url_filter.reset();
+  rule.condition.regex_filter = std::make_unique<std::string>("\\.*");
+  rule.action.type = dnr_api::RULE_ACTION_TYPE_REDIRECT;
+  rule.action.redirect = std::make_unique<dnr_api::Redirect>();
+
+  dnr_api::Redirect& redirect = *rule.action.redirect;
+  redirect.url = std::make_unique<std::string>("http://google.com");
+  redirect.regex_substitution =
+      std::make_unique<std::string>("http://example.com");
+  redirect.transform = std::make_unique<dnr_api::URLTransform>();
+  redirect.transform->scheme = std::make_unique<std::string>("https");
+
+  IndexedRule indexed_rule;
+  ParseResult result = IndexedRule::CreateIndexedRule(
+      std::move(rule), GetBaseURL(), &indexed_rule);
+  EXPECT_EQ(ParseResult::SUCCESS, result);
+
+  // The redirect "url" is given preference in this case.
+  EXPECT_FALSE(indexed_rule.url_transform);
+  EXPECT_FALSE(indexed_rule.regex_substitution);
+  EXPECT_EQ("http://google.com", indexed_rule.redirect_url);
+}
+
 }  // namespace
 }  // namespace declarative_net_request
 }  // namespace extensions

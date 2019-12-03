@@ -6,7 +6,7 @@
     "scripts": ["background.js"]
   },
   "permissions": [
-    "http://*/*"
+    "http://*/*test_file.txt"
   ],
   "browser_action": {
     "default_title": "Make this page red",

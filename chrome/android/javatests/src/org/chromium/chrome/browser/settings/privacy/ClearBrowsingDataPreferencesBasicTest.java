@@ -24,7 +24,7 @@ import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.settings.Preferences;
+import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.privacy.ClearBrowsingDataPreferences.DialogOption;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -106,12 +106,12 @@ public class ClearBrowsingDataPreferencesBasicTest {
     @Test
     @SmallTest
     public void testCheckBoxTextNonsigned() {
-        final Preferences preferences = mActivityTestRule.startPreferences(
+        final SettingsActivity settingsActivity = mActivityTestRule.startSettingsActivity(
                 ClearBrowsingDataPreferencesBasic.class.getName());
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ClearBrowsingDataPreferencesBasic fragment =
-                    (ClearBrowsingDataPreferencesBasic) preferences.getMainFragment();
+                    (ClearBrowsingDataPreferencesBasic) settingsActivity.getMainFragment();
             PreferenceScreen screen = fragment.getPreferenceScreen();
 
             String cookiesSummary = getCheckboxSummary(screen,
@@ -137,12 +137,12 @@ public class ClearBrowsingDataPreferencesBasicTest {
         SigninTestUtil.addAndSignInTestAccount();
         setSyncable(false);
 
-        final Preferences preferences = mActivityTestRule.startPreferences(
+        final SettingsActivity settingsActivity = mActivityTestRule.startSettingsActivity(
                 ClearBrowsingDataPreferencesBasic.class.getName());
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ClearBrowsingDataPreferencesBasic fragment =
-                    (ClearBrowsingDataPreferencesBasic) preferences.getMainFragment();
+                    (ClearBrowsingDataPreferencesBasic) settingsActivity.getMainFragment();
             PreferenceScreen screen = fragment.getPreferenceScreen();
 
             String cookiesSummary = getCheckboxSummary(screen,
@@ -168,12 +168,12 @@ public class ClearBrowsingDataPreferencesBasicTest {
         SigninTestUtil.addAndSignInTestAccount();
         setSyncable(true);
 
-        final Preferences preferences = mActivityTestRule.startPreferences(
+        final SettingsActivity settingsActivity = mActivityTestRule.startSettingsActivity(
                 ClearBrowsingDataPreferencesBasic.class.getName());
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ClearBrowsingDataPreferencesBasic fragment =
-                    (ClearBrowsingDataPreferencesBasic) preferences.getMainFragment();
+                    (ClearBrowsingDataPreferencesBasic) settingsActivity.getMainFragment();
             PreferenceScreen screen = fragment.getPreferenceScreen();
 
             String cookiesSummary = getCheckboxSummary(screen,

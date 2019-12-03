@@ -11,7 +11,22 @@ namespace games {
 
 namespace {
 
-const size_t kMaxCatalogSizeInBytes = 1024 * 1024;  // 1 MB
+const size_t kMaxFileSizeInBytes = 1024 * 1024;  // 1 MB
+
+bool ParseProtoFromFile(const base::FilePath& file_path,
+                        google::protobuf::MessageLite* out_proto) {
+  if (!out_proto) {
+    return false;
+  }
+
+  std::string file_content;
+  if (!base::ReadFileToStringWithMaxSize(file_path, &file_content,
+                                         kMaxFileSizeInBytes)) {
+    return false;
+  }
+
+  return out_proto->ParseFromString(file_content);
+}
 
 }  //  namespace
 
@@ -21,16 +36,13 @@ DataFilesParser::~DataFilesParser() = default;
 
 bool DataFilesParser::TryParseCatalog(const base::FilePath& install_dir,
                                       GamesCatalog* out_catalog) {
-  const auto catalog_path = GetGamesCatalogPath(install_dir);
+  return ParseProtoFromFile(GetGamesCatalogPath(install_dir), out_catalog);
+}
 
-  std::string file_content;
-  if (!base::ReadFileToStringWithMaxSize(catalog_path, &file_content,
-                                         kMaxCatalogSizeInBytes)) {
-    return false;
-  }
-
-  out_catalog->ParseFromString(file_content);
-  return true;
+bool DataFilesParser::TryParseHighlightedGames(
+    const base::FilePath& install_dir,
+    HighlightedGamesResponse* out_response) {
+  return ParseProtoFromFile(GetHighlightedGamesPath(install_dir), out_response);
 }
 
 }  // namespace games

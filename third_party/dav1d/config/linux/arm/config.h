@@ -29,6 +29,8 @@
 
 #define HAVE_AS_FUNC 0
 
+#define HAVE_CLOCK_GETTIME 1
+
 #define HAVE_GETAUXVAL 1
 
 #define HAVE_POSIX_MEMALIGN 1

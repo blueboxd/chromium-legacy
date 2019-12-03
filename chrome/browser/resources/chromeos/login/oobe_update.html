@@ -41,7 +41,7 @@
           hidden="[[!checkingForUpdate]]">
       </paper-progress>
       <div slot="footer" class="flex layout vertical center-justified center">
-        <img class="update-illustration"
+        <img class="update-illustration oobe-illustration"
             srcset="images/1x/updating_1x.svg 1x,
                     images/2x/updating_2x.svg 2x">
       </div>
@@ -58,7 +58,7 @@
           [[i18nDynamic(locale, 'updateOverCellularPromptMessage')]]
       </div>
       <div slot="footer" class="flex layout vertical center-justified center">
-        <img class="update-illustration"
+        <img class="update-illustration oobe-illustration"
             srcset="images/1x/updating_1x.svg 1x,
                     images/2x/updating_2x.svg 2x">
       </div>
@@ -90,18 +90,18 @@
           value="[[progressValue]]" hidden="[[updateCompleted]]">
       </paper-progress>
       <div slot="footer" class="flex layout vertical">
-        <div id="estimated-time-left" class="progress-message text"
+        <div id="estimated-time-left" class="progress-message"
             hidden="[[isNotAllowedOrUpdateCompleted_(estimatedTimeLeftShown,
                                                      updateCompleted)]]">
           [[estimatedTimeLeft]]
         </div>
-        <div id="progress-message" class="progress-message text"
+        <div id="progress-message" class="progress-message"
             hidden="[[isNotAllowedOrUpdateCompleted_(progressMessageShown,
                                                      updateCompleted)]]">
           [[progressMessage]]
         </div>
         <div class="flex layout vertical center-justified center">
-          <img class="update-illustration"
+          <img class="update-illustration oobe-illustration"
               srcset="images/1x/updating_1x.svg 1x,
                       images/2x/updating_2x.svg 2x">
         </div>

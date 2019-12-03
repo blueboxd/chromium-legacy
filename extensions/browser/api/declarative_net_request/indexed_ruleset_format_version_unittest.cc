@@ -71,6 +71,7 @@ table RegexRule {
   url_rule: url_pattern_index.flat.UrlRule;
   action_type: ActionType;
   remove_headers_mask: ubyte;
+  regex_substitution: string;
 }
 table ExtensionIndexedRuleset {
   index_list : [url_pattern_index.flat.UrlPatternIndex];
@@ -143,7 +144,7 @@ TEST_F(IndexedRulesetFormatVersionTest, CheckVersionUpdated) {
   EXPECT_EQ(StripCommentsAndWhitespace(kFlatbufferSchemaExpected),
             StripCommentsAndWhitespace(flatbuffer_schema))
       << "Schema change detected; update this test and the schema version.";
-  EXPECT_EQ(12, GetIndexedRulesetFormatVersionForTesting())
+  EXPECT_EQ(13, GetIndexedRulesetFormatVersionForTesting())
       << "Update this test if you update the schema version.";
 }
 

@@ -1,6 +1,7 @@
 luci.list_view(
     name = 'tryserver.chromium.android',
     entries = [
+        'try/android-bfcache-debug',
         'try/android-opus-kitkat-arm-rel',
         'try/android_archive_rel_ng',
         'try/android-binary-size',

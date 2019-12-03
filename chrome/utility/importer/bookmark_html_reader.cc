@@ -106,8 +106,8 @@ static std::string stripDt(const std::string& lineDt) {
 }
 
 void ImportBookmarksFile(
-    const base::Callback<bool(void)>& cancellation_callback,
-    const base::Callback<bool(const GURL&)>& valid_url_callback,
+    base::RepeatingCallback<bool(void)> cancellation_callback,
+    base::RepeatingCallback<bool(const GURL&)> valid_url_callback,
     const base::FilePath& file_path,
     std::vector<ImportedBookmarkEntry>* bookmarks,
     std::vector<importer::SearchEngineInfo>* search_engines,

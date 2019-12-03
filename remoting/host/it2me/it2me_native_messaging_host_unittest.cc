@@ -16,10 +16,10 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringize_macros.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/policy/core/common/fake_async_policy_loader.h"
@@ -253,8 +253,7 @@ class It2MeNativeMessagingHostTest : public testing::Test {
   base::File input_write_file_;
   base::File output_read_file_;
 
-  // Message loop of the test thread.
-  std::unique_ptr<base::MessageLoop> test_message_loop_;
+  std::unique_ptr<base::test::SingleThreadTaskEnvironment> task_environment_;
   std::unique_ptr<base::RunLoop> test_run_loop_;
 
   std::unique_ptr<base::Thread> host_thread_;
@@ -274,7 +273,8 @@ class It2MeNativeMessagingHostTest : public testing::Test {
 };
 
 void It2MeNativeMessagingHostTest::SetUp() {
-  test_message_loop_.reset(new base::MessageLoop());
+  task_environment_ =
+      std::make_unique<base::test::SingleThreadTaskEnvironment>();
   test_run_loop_.reset(new base::RunLoop());
 
   // Run the host on a dedicated thread.
@@ -318,7 +318,8 @@ void It2MeNativeMessagingHostTest::TearDown() {
 
 void It2MeNativeMessagingHostTest::SetPolicies(
     const base::DictionaryValue& dict) {
-  DCHECK(test_message_loop_->task_runner()->RunsTasksInCurrentSequence());
+  DCHECK(task_environment_->GetMainThreadTaskRunner()
+             ->RunsTasksInCurrentSequence());
   // Copy |dict| into |policy_bundle|.
   policy::PolicyNamespace policy_namespace =
       policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string());
@@ -557,7 +558,7 @@ void It2MeNativeMessagingHostTest::StartHost() {
           std::move(context), std::move(factory)));
   it2me_host->SetPolicyErrorClosureForTesting(
       base::Bind(base::IgnoreResult(&base::TaskRunner::PostTask),
-                 test_message_loop_->task_runner(), FROM_HERE,
+                 task_environment_->GetMainThreadTaskRunner(), FROM_HERE,
                  base::Bind(&It2MeNativeMessagingHostTest::ExitPolicyRunLoop,
                             base::Unretained(this))));
   it2me_host->Start(pipe_.get());
@@ -569,8 +570,9 @@ void It2MeNativeMessagingHostTest::StartHost() {
 }
 
 void It2MeNativeMessagingHostTest::ExitTest() {
-  if (!test_message_loop_->task_runner()->RunsTasksInCurrentSequence()) {
-    test_message_loop_->task_runner()->PostTask(
+  if (!task_environment_->GetMainThreadTaskRunner()
+           ->RunsTasksInCurrentSequence()) {
+    task_environment_->GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&It2MeNativeMessagingHostTest::ExitTest,
                                   base::Unretained(this)));
     return;
@@ -579,7 +581,8 @@ void It2MeNativeMessagingHostTest::ExitTest() {
 }
 
 void It2MeNativeMessagingHostTest::ExitPolicyRunLoop() {
-  DCHECK(test_message_loop_->task_runner()->RunsTasksInCurrentSequence());
+  DCHECK(task_environment_->GetMainThreadTaskRunner()
+             ->RunsTasksInCurrentSequence());
   if (policy_run_loop_) {
     policy_run_loop_->Quit();
   }

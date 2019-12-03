@@ -94,7 +94,7 @@ content::BrowserControlsState GetBrowserControlsStateConstraints(
   // Keep top-chrome visible while a permission bubble is visible.
   auto* permission_manager =
       PermissionRequestManager::FromWebContents(contents);
-  if (permission_manager && permission_manager->IsBubbleVisible())
+  if (permission_manager && permission_manager->IsRequestInProgress())
     return content::BROWSER_CONTROLS_STATE_SHOWN;
 
   return content::BROWSER_CONTROLS_STATE_BOTH;

@@ -356,7 +356,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_textAtOffset(
 
   LONG start = FindIA2Boundary(boundary_type, offset,
                                ui::AXTextBoundaryDirection::kBackwards);
-  LONG end = FindIA2Boundary(boundary_type, start,
+  LONG end = FindIA2Boundary(boundary_type, offset,
                              ui::AXTextBoundaryDirection::kForwards);
   if (end < offset)
     return S_FALSE;

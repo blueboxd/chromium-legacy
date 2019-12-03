@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/containers/flat_map.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
 
 namespace base {
@@ -214,6 +215,7 @@ class WebViewImpl : public WebView {
   std::unique_ptr<HeapSnapshotTaker> heap_snapshot_taker_;
   std::unique_ptr<DebuggerTracker> debugger_;
   std::unique_ptr<CastTracker> cast_tracker_;
+  base::flat_map<int, TouchEvent> touch_points_;
 };
 
 // Responsible for locking a WebViewImpl and its associated data structure to

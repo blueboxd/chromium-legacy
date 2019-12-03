@@ -181,7 +181,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) Session final
   std::unique_ptr<viz::Gpu> gpu_;
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host_;
   gpu::VideoEncodeAcceleratorSupportedProfiles supported_profiles_;
-  media::mojom::VideoEncodeAcceleratorProviderPtr vea_provider_;
+  mojo::Remote<media::mojom::VideoEncodeAcceleratorProvider> vea_provider_;
 
   base::WeakPtrFactory<Session> weak_factory_{this};
 };

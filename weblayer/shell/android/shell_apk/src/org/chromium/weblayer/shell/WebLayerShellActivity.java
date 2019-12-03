@@ -62,6 +62,7 @@ public class WebLayerShellActivity extends FragmentActivity {
     private int mMainViewId;
     private ViewGroup mTopContentsContainer;
     private List<Tab> mPreviousTabList = new ArrayList<>();
+    private Runnable mExitFullscreenRunnable;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -181,6 +182,7 @@ public class WebLayerShellActivity extends FragmentActivity {
 
             @Override
             public void onEnterFullscreen(Runnable exitFullscreenRunnable) {
+                mExitFullscreenRunnable = exitFullscreenRunnable;
                 // This comes from Chrome code to avoid an extra resize.
                 final WindowManager.LayoutParams attrs = getWindow().getAttributes();
                 attrs.flags |= WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
@@ -200,6 +202,7 @@ public class WebLayerShellActivity extends FragmentActivity {
 
             @Override
             public void onExitFullscreen() {
+                mExitFullscreenRunnable = null;
                 View decorView = getWindow().getDecorView();
                 decorView.setSystemUiVisibility(mSystemVisibilityToRestore);
 
@@ -311,6 +314,10 @@ public class WebLayerShellActivity extends FragmentActivity {
 
     @Override
     public void onBackPressed() {
+        if (mExitFullscreenRunnable != null) {
+            mExitFullscreenRunnable.run();
+            return;
+        }
         if (mBrowser != null) {
             NavigationController controller = mBrowser.getActiveTab().getNavigationController();
             if (controller.canGoBack()) {

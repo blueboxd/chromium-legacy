@@ -76,7 +76,7 @@ class PaymentRequest : public mojom::PaymentRequest,
   void Show(bool is_user_gesture, bool wait_for_updated_details) override;
   void Retry(mojom::PaymentValidationErrorsPtr errors) override;
   void UpdateWith(mojom::PaymentDetailsPtr details) override;
-  void NoUpdatedPaymentDetails() override;
+  void OnPaymentDetailsNotUpdated() override;
   void Abort() override;
   void Complete(mojom::PaymentComplete result) override;
   void CanMakePayment() override;

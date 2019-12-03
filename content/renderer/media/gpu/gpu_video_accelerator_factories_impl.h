@@ -27,6 +27,7 @@
 #include "media/mojo/mojom/video_encode_accelerator.mojom.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "media/video/supported_video_decoder_config.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -68,7 +69,8 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
       bool enable_video_accelerator,
       mojo::PendingRemote<media::mojom::InterfaceFactory>
           interface_factory_remote,
-      media::mojom::VideoEncodeAcceleratorProviderPtrInfo vea_provider_info);
+      mojo::PendingRemote<media::mojom::VideoEncodeAcceleratorProvider>
+          vea_provider_remote);
 
   // media::GpuVideoAcceleratorFactories implementation.
   bool IsGpuVideoAcceleratorEnabled() override;
@@ -137,12 +139,14 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
       bool enable_video_accelerator,
       mojo::PendingRemote<media::mojom::InterfaceFactory>
           interface_factory_remote,
-      media::mojom::VideoEncodeAcceleratorProviderPtrInfo vea_provider_info);
+      mojo::PendingRemote<media::mojom::VideoEncodeAcceleratorProvider>
+          vea_provider_remote);
 
   void BindOnTaskRunner(
       mojo::PendingRemote<media::mojom::InterfaceFactory>
           interface_factory_remote,
-      media::mojom::VideoEncodeAcceleratorProviderPtrInfo vea_provider_info);
+      mojo::PendingRemote<media::mojom::VideoEncodeAcceleratorProvider>
+          vea_provider_remote);
 
   // viz::ContextLostObserver implementation.
   void OnContextLost() override;
@@ -178,7 +182,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   gpu::GpuMemoryBufferManager* const gpu_memory_buffer_manager_;
 
   mojo::Remote<media::mojom::InterfaceFactory> interface_factory_;
-  media::mojom::VideoEncodeAcceleratorProviderPtr vea_provider_;
+  mojo::Remote<media::mojom::VideoEncodeAcceleratorProvider> vea_provider_;
 
   // SupportedDecoderConfigs state.
   mojo::Remote<media::mojom::VideoDecoder> video_decoder_;

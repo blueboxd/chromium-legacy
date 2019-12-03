@@ -94,7 +94,7 @@ OriginPolicyThrottle::WillProcessResponse() {
           ? GetTestOriginPolicy()
           : NavigationRequest::From(navigation_handle())
                 ->response()
-                ->head.origin_policy;
+                ->origin_policy;
 
   // If there is no origin_policy, treat this case as
   // network::OriginPolicyState::kNoPolicyApplies.

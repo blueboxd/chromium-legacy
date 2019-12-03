@@ -208,6 +208,10 @@ const char* g_nested_origin_b_in_origin_b =
     "first_party/nested-originB-in-originB.html";
 const char* g_nested_src_doc = "first_party/nested-srcdoc.html";
 
+KURL ToFile(const char* file) {
+  return ToKURL(std::string("file:///") + file);
+}
+
 KURL ToOriginA(const char* file) {
   return ToKURL(std::string(g_base_url_origin_a) + file);
 }
@@ -280,6 +284,8 @@ void WebDocumentFirstPartyTest::SetUpTestCase() {
   RegisterMockedURLLoad(ToOriginB(g_empty_file), g_empty_file);
   RegisterMockedURLLoad(ToOriginB(g_nested_origin_a), g_nested_origin_a);
   RegisterMockedURLLoad(ToOriginB(g_nested_origin_b), g_nested_origin_b);
+
+  RegisterMockedURLLoad(ToFile(g_nested_origin_a), g_nested_origin_a);
 }
 
 void WebDocumentFirstPartyTest::Load(const char* file) {
@@ -509,6 +515,14 @@ TEST_F(WebDocumentFirstPartyTest,
                            NestedDocument()->TopFrameOrigin()));
   ASSERT_TRUE(OriginsEqual(g_nested_origin_a_in_origin_b,
                            NestedNestedDocument()->TopFrameOrigin()));
+}
+
+TEST_F(WebDocumentFirstPartyTest, FileScheme) {
+  web_view_helper_.InitializeAndLoad(std::string("file:///") +
+                                     g_nested_origin_a);
+
+  EXPECT_EQ("file:///", TopDocument()->SiteForCookies().GetString());
+  EXPECT_EQ(NullURL(), NestedDocument()->SiteForCookies());
 }
 
 }  // namespace blink

@@ -68,7 +68,7 @@ bool ChromeContentUtilityClient::OnMessageReceived(
 void ChromeContentUtilityClient::RegisterNetworkBinders(
     service_manager::BinderRegistry* registry) {
   if (g_network_binder_creation_callback.Get())
-    g_network_binder_creation_callback.Get().Run(registry);
+    std::move(g_network_binder_creation_callback.Get()).Run(registry);
 }
 
 mojo::ServiceFactory*
@@ -84,6 +84,6 @@ mojo::ServiceFactory* ChromeContentUtilityClient::GetIOThreadServiceFactory() {
 
 // static
 void ChromeContentUtilityClient::SetNetworkBinderCreationCallback(
-    const NetworkBinderCreationCallback& callback) {
-  g_network_binder_creation_callback.Get() = callback;
+    NetworkBinderCreationCallback callback) {
+  g_network_binder_creation_callback.Get() = std::move(callback);
 }

@@ -10,10 +10,10 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
+#include "base/task/single_thread_task_executor.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/video_frame.h"
 #include "media/muxers/webm_muxer.h"
@@ -37,7 +37,7 @@ static struct {
 struct Env {
   Env() { logging::SetMinLogLevel(logging::LOG_FATAL); }
 
-  base::MessageLoop message_loop;
+  base::SingleThreadTaskExecutor task_executor;
 };
 Env* env = new Env();
 

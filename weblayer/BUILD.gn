@@ -208,6 +208,8 @@ jumbo_static_library("weblayer_lib") {
       "browser/safe_browsing/url_checker_delegate_impl.cc",
       "browser/safe_browsing/url_checker_delegate_impl.h",
       "browser/weblayer_impl_android.cc",
+      "renderer/url_loader_throttle_provider.cc",
+      "renderer/url_loader_throttle_provider.h",
     ]
   }
 
@@ -286,12 +288,15 @@ jumbo_static_library("weblayer_lib") {
       "//android_webview:generate_aw_strings",
       "//components/crash/android:crashpad_main",
       "//components/metrics",
+      "//components/minidump_uploader",
       "//components/safe_browsing",
       "//components/safe_browsing/android:remote_database_manager",
       "//components/safe_browsing/android:safe_browsing_api_handler",
       "//components/safe_browsing/browser",
       "//components/safe_browsing/browser:network_context",
+      "//components/safe_browsing/common",
       "//components/safe_browsing/db:database_manager",
+      "//components/safe_browsing/renderer:throttles",
       "//components/version_info/android:channel_getter",
     ]
   }

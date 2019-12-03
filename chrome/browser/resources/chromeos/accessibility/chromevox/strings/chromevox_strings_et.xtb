@@ -463,6 +463,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="4204126831294769023">Taevasinine</translation>
 <translation id="4204864733111726379">Loodusvalge</translation>
 <translation id="4206289001967551965">Tabelis</translation>
+<translation id="4207770814752775793">Lähtestage kõnesünteesi seaded vaikeväärtustele.</translation>
 <translation id="4209770650650780359">Automaatseks täitmiseks vajutage üles- või allanoolt.</translation>
 <translation id="4215733775853809057">Järgmine liugur</translation>
 <translation id="42164919740161077">Hallikassinine</translation>
@@ -766,6 +767,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="6290434000785343030">Järgmist liitboksi ei ole.</translation>
 <translation id="6305702903308659374">Esita tavapärase helitugevusega isegi siis, kui ChromeVox räägib</translation>
 <translation id="6307969636681130414">Vajutatud</translation>
+<translation id="6315652249189065725">Avab klaviatuuri otseteede menüü</translation>
 <translation id="6322856989298155004">Helid</translation>
 <translation id="6324551002951139333">Tuvastati grammatiline viga</translation>
 <translation id="6325241889020214828">kopeeri tekst <ph name="TEXT" />.</translation>
@@ -959,6 +961,7 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="7668307052366682650">{COUNT,plural, =1{tund}other{tundi}}</translation>
 <translation id="7674576868851035240">Järgmine link</translation>
 <translation id="7674768236845044097">mark</translation>
+<translation id="7676847077928500578">Lähtestab kõnesünteesi seaded</translation>
 <translation id="7684431668231950609">URL-i muutmine</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">Eelmine raadionupp</translation>

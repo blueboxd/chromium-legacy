@@ -23,9 +23,9 @@ is untenable.
 ## Quick Reference
 
 1. During the week, turn [OS=Mac status:Unconfirmed][unconfirmed] bugs into
-   [label:Mac status:Untriaged][untriaged] bugs.
-2. During the triage meeting, turn [label:Mac status:Untriaged][untriaged]
-   bugs into any of:
+   [label:Mac status:Untriaged][untriaged-m] bugs.
+2. During the triage meeting, turn [label:Mac status:Untriaged][untriaged-m]
+   and [unlabelled Mac bugs][untriaged-c] into any of:
     * [label:Mac status:Available][available]
     * [label:Mac status:Assigned][assigned]
     * Untriaged in any component that does triage, without the Mac label
@@ -85,9 +85,10 @@ Some useful debugging questions here:
 
 Second-phase triage is the step which either moves a bug to another team's
 triage queue, or assigns a priority, component, and (possibly) owner to a bug.
-This phase operates on [label:Mac status:Untriaged][untriaged] bugs. The
-first part of this phase is deciding whether a bug should be worked on by the
-Mac team. If so, the bug moves to one of:
+This phase operates on [label:Mac status:Untriaged][untriaged-m] and [untagged
+status:Untriaged][untriaged-c] bugs. The first part of this phase is deciding
+whether a bug should be worked on by the Mac team. If so, the bug moves to one
+of:
 
 * Pri=2,3 in label:Mac, Assigned with an owner if one is obvious, Available
   otherwise
@@ -134,12 +135,26 @@ If the bug is Mac-specific and in scope for the Mac team, try to:
     * `Mac-PlatformIntegration`: sdy@
     * `Mac-Polish`: sdy@
     * `Mac-TechDebt`: ellyjones@
+    * `Mac-UI`: anyone
 
 **Caveat lector**: If you are outside the Mac team please do not use this
 assignment map - just mark bugs as Untriaged with label `Mac` and allow the Mac
 triage rotation to assign them. People go on vacation and such :)
 
-[unconfirmed]: https://bugs.chromium.org/p/chromium/issues/list?q=OS%3DMac%20status%3AUnconfirmed&can=2
-[untriaged]: https://bugs.chromium.org/p/chromium/issues/list?q=has%3AMac%20status%3AUntriaged&can=2
+These are the other components we put bugs into that we assume have their own
+triage processes:
+* Admin
+* Blink
+* Infra
+* Internals>Headless, Network, Plugins, Printing, Skia, Views
+* IO>Bluetooth, USB
+* Platform
+* Services>Chromoting
+* Test>Telemetry
+* UI>Browser>WebUI
+
+[unconfirmed]: https://bugs.chromium.org/p/chromium/issues/list?q=OS%3DMac%20status%3AUnconfirmed%20-component%3ABlink%2CEnterprise%2CInternals%3ENetwork%2CPlatform%3EDevtools%2CServices%3ESync&can=2
+[untriaged-m]: https://bugs.chromium.org/p/chromium/issues/list?q=has%3AMac%20status%3AUntriaged&can=2
+[untriaged-c]: https://bugs.chromium.org/p/chromium/issues/list?q=OS%3DMac%20-OS%3DWindows%2CLinux%2CChrome%2CAndroid%2CiOS%20status%3AUntriaged%20-component%3AAdmin%2CBlink%2CInfra%2CInternals%3EHeadless%2CInternals%3ENetwork%2CInternals%3EPlugins%3EPDF%2CInternals%3EPrinting%2CInternals%3ESkia%2CInternals%3EViews%2CIO%3EBluetooth%2CIO%3EUSB%2CPlatform%2CServices%3EChromoting%2CTest%3ETelemetry%2CUI%3EBrowser%3EWebUI&can=2
 [available]: https://bugs.chromium.org/p/chromium/issues/list?q=has%3AMac%20status%3AAvailable&can=2
 [assigned]: https://bugs.chromium.org/p/chromium/issues/list?q=has%3AMac%20status%3AAssigned&can=2

@@ -9,6 +9,7 @@
 <translation id="1036348656032585052">Dezactivează</translation>
 <translation id="1038842779957582377">nume necunoscut</translation>
 <translation id="1039626062703039346">Chrome te poate ajuta să îți protejezi Contul Google și să îți schimbi parola. Se va genera o notificare către Google despre acest site.</translation>
+<translation id="1044897699341250361">Ce înseamnă aceasta</translation>
 <translation id="1050038467049342496">închide celelalte aplicații;</translation>
 <translation id="1055184225775184556">&amp;Anulați adăugarea</translation>
 <translation id="1056898198331236512">Avertisment</translation>
@@ -183,6 +184,7 @@
 <translation id="1745880797583122200">Browserul tău este gestionat</translation>
 <translation id="17513872634828108">File deschise</translation>
 <translation id="1753706481035618306">Numărul paginii</translation>
+<translation id="175838129965056221">Chrome a detectat că folosești o conexiune monitorizată</translation>
 <translation id="1763864636252898013">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; sistemul de operare al dispozitivului nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Rulează Diagnostice rețea Windows<ph name="END_LINK" />.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -251,6 +253,7 @@
 <translation id="2119867082804433120">Perforare în dreapta jos</translation>
 <translation id="2129079103035905234">Senzori de mișcare</translation>
 <translation id="2130448033692577677">Șabloanele specificate nu pot fi aplicate, deoarece politica DnsOverHttpsMode nu este setată.</translation>
+<translation id="2131277894177304644">Chromium a detectat că folosești o conexiune monitorizată</translation>
 <translation id="213826338245044447">Marcaje mobile</translation>
 <translation id="214556005048008348">Anulează plata</translation>
 <translation id="2147827593068025794">Sincronizare în fundal</translation>
@@ -298,6 +301,7 @@
 <translation id="2354001756790975382">Alte marcaje</translation>
 <translation id="2354430244986887761">Navigarea sigură Google <ph name="BEGIN_LINK" />a descoperit recent aplicații dăunătoare<ph name="END_LINK" /> pe <ph name="SITE" />.</translation>
 <translation id="2355395290879513365">Este posibil ca atacatorii să poată vedea imaginile la care te uiți pe acest site și să te păcălească prin modificarea lor.</translation>
+<translation id="2355474962185559967">Ai introdus parola pe un site înșelător. Chromium recomandă să accesezi <ph name="WEBSITE_1" /> și să-ți schimbi acum parola.</translation>
 <translation id="2356070529366658676">Întreabă-mă</translation>
 <translation id="2359629602545592467">Mai multe</translation>
 <translation id="2359808026110333948">Continuă</translation>
@@ -399,6 +403,7 @@
 <translation id="2799020568854403057">Site-ul pe care urmează să îl accesezi conține aplicații dăunătoare</translation>
 <translation id="2799223571221894425">Repornește</translation>
 <translation id="2803306138276472711">Navigarea sigură Google <ph name="BEGIN_LINK" />a detectat recent programe malware<ph name="END_LINK" /> pe <ph name="SITE" />. Site-urile care sunt de obicei sigure sunt uneori infectate cu programe malware.</translation>
+<translation id="281585763351939989">Chromium a detectat că folosești o conexiune monitorizată.</translation>
 <translation id="2824775600643448204">Bara de adrese și de căutare</translation>
 <translation id="2826760142808435982">Conexiunea este criptată și autentificată utilizând <ph name="CIPHER" /> și folosește <ph name="KX" /> ca mecanism de schimb al cheii.</translation>
 <translation id="2835170189407361413">Golește formularul</translation>
@@ -443,6 +448,7 @@
 <translation id="3024663005179499861">Tip de politică greșit</translation>
 <translation id="3037605927509011580">Of, nu mai merge!</translation>
 <translation id="3041612393474885105">Informații despre certificat</translation>
+<translation id="304755864151473094">De ce se întâmplă acest lucru</translation>
 <translation id="3057676462092457419">Modul DnsOverHttps <ph name="SECURE_DNS_MODE_SECURE" /> nu este încă acceptat. Modul a fost setat la <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">C9 (Plic)</translation>
 <translation id="3061707000357573562">Serviciu de corecție</translation>
@@ -482,6 +488,7 @@
 <translation id="3228969707346345236">Pagina nu a fost tradusă, deoarece aceasta este deja în <ph name="LANGUAGE" />.</translation>
 <translation id="3229041911291329567">Informații despre versiunea dispozitivului și browserului</translation>
 <translation id="323107829343500871">Introdu codul CVC pentru <ph name="CREDIT_CARD" /></translation>
+<translation id="3234392465377209614">Ai introdus parola pe un site înșelător. Chromium recomandă să accesezi <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> și <ph name="WEBSITE_3" /> și să-ți schimbi acum parola.</translation>
 <translation id="3234666976984236645">Detectează întotdeauna conținutul important pe acest site</translation>
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> este similar cu <ph name="SUGGESTED_DOMAIN" />. Uneori, atacatorii imită site-uri folosind adrese URL similare.</translation>
 <translation id="3270847123878663523">&amp;Anulați reordonarea</translation>
@@ -514,6 +521,7 @@
 <translation id="342781501876943858">Chromium îți recomandă să resetezi parola dacă ai folosit-o și pe alte site-uri.</translation>
 <translation id="3428151540071562330">Una sau mai multe dintre adresele URI pentru șabloanele de server DnsOverHttpsTemplates este nevalidă și nu va fi folosită.</translation>
 <translation id="3431636764301398940">Salvează cardul pe acest dispozitiv</translation>
+<translation id="3438790640050632698">Ai introdus parola pe un site înșelător. Chrome recomandă să accesezi <ph name="WEBSITE_1" /> și <ph name="WEBSITE_2" /> și să-ți schimbi acum parola.</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">Proprietarul acestui dispozitiv a dezactivat jocul cu dinozaurul.</translation>
 <translation id="3447884698081792621">Afișează certificatul (emis de <ph name="ISSUER" />)</translation>
@@ -528,6 +536,7 @@
 <translation id="3495081129428749620">Caută în pagină
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">Această politică este ignorată deoarece o altă politică din același grup de politici are prioritate ridicată.</translation>
+<translation id="3525469219100414032">Ai introdus parola pe un site înșelător. Chrome recomandă să accesezi <ph name="WEBSITE_1" /> și să-ți schimbi acum parola.</translation>
 <translation id="3528171143076753409">Certificatul serverului nu este de încredere.</translation>
 <translation id="3528485271872257980">Maro închis</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Cel puțin 1 element pe dispozitivele sincronizate}=1{1 element (și mai multe pe dispozitivele sincronizate)}few{# elemente (și mai multe pe dispozitivele sincronizate)}other{# de elemente (și mai multe pe dispozitivele sincronizate)}}</translation>
@@ -606,6 +615,7 @@
 <translation id="3858027520442213535">Actualizează data și ora</translation>
 <translation id="3884278016824448484">Identificator de gadget în conflict</translation>
 <translation id="3885155851504623709">Parohie</translation>
+<translation id="388632593194507180">S-a detectat monitorizarea</translation>
 <translation id="3890664840433101773">Adaugă o adresă de e-mail</translation>
 <translation id="3897092660631435901">Meniu</translation>
 <translation id="3901925938762663762">Cardul este expirat</translation>
@@ -707,6 +717,7 @@
 <translation id="4305817255990598646">Comută</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Blochează (în mod prestabilit)</translation>
+<translation id="4318312030194671742">Serviciul Paint Preview Compositor</translation>
 <translation id="4318566738941496689">Numele și adresa de rețea ale dispozitivului tău</translation>
 <translation id="4325863107915753736">Articolul nu a fost găsit</translation>
 <translation id="4326324639298822553">Verifică data de expirare și încearcă din nou</translation>
@@ -723,6 +734,7 @@
 <translation id="4372948949327679948">Se aștepta valoarea <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">Ați încercat să accesați <ph name="DOMAIN" />, dar certificatul furnizat de server a fost revocat de emitentul său. Aceasta înseamnă că acreditările de securitate furnizate de server nu sunt deloc de încredere. Este posibil să comunicați cu un atacator.</translation>
 <translation id="4378154925671717803">Telefon</translation>
+<translation id="437847259914972036">Activitatea ta pe web și toate informațiile pe care le introduci sunt urmărite, iar conținutul poate fi modificat fără știrea ta.</translation>
 <translation id="4398334096870680409">Această funcție nu este disponibilă pe dispozitivul tău.</translation>
 <translation id="4406896451731180161">rezultate ale căutării</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" /> cookie-uri</translation>
@@ -958,6 +970,7 @@
 <translation id="5565735124758917034">Activ</translation>
 <translation id="5570825185877910964">Protejează contul</translation>
 <translation id="5571083550517324815">Nu se poate prelua de la această adresă. Selectează altă adresă.</translation>
+<translation id="5572009199897554128">Ai introdus parola pe un site înșelător. Chromium recomandă să accesezi <ph name="WEBSITE_1" /> și <ph name="WEBSITE_2" /> și să-ți schimbi acum parola.</translation>
 <translation id="5580958916614886209">Verifică luna în care expiră și încearcă din nou</translation>
 <translation id="5586446728396275693">Nu există adrese salvate</translation>
 <translation id="5595485650161345191">Editează adresa</translation>
@@ -1140,6 +1153,7 @@
 <translation id="6446163441502663861">Kahu (Plic)</translation>
 <translation id="6446608382365791566">Adaugă mai multe informații</translation>
 <translation id="6447842834002726250">Cookie-uri</translation>
+<translation id="644931407731409778">Documentul PDF conține {COUNT,plural, =1{o pagină}few{# pagini}other{# de pagini}}</translation>
 <translation id="6451458296329894277">Confirmă retrimiterea formularului</translation>
 <translation id="6457206614190510200">Broșare pe mijloc</translation>
 <translation id="6465306955648956876">Gestionează parolele...</translation>
@@ -1158,6 +1172,7 @@
 <translation id="6547208576736763147">Perforare dublă în stânga</translation>
 <translation id="6554795675067793129">Contul tău este administrat de <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Repetă</translation>
+<translation id="6559565319173126218">Chrome nu are încredere în certificatul afișat pentru această conexiune, deoarece el se folosește pentru interceptarea și monitorizarea rețelelor.</translation>
 <translation id="6569060085658103619">Se afișează pagina unei extensii</translation>
 <translation id="6573200754375280815">Perforare dublă în dreapta</translation>
 <translation id="6578796323535178455">C2 (Plic)</translation>
@@ -1191,6 +1206,7 @@
 <translation id="6710594484020273272">&lt;Introdu termenul de căutare&gt;</translation>
 <translation id="671076103358959139">Indicativ de înregistrare:</translation>
 <translation id="6711464428925977395">A apărut o problemă la serverul proxy sau adresa nu este corectă.</translation>
+<translation id="6721811549156553509">Instrumentul de monitorizare a rețelei își asumă identitatea site-urilor pe care le accesezi și îți poate vedea activitatea și toate informațiile pe care le introduci (de exemplu, parole, mesaje sau carduri de credit). Ai grijă când faci acțiuni delicate online, deoarece acestea vor fi vizibile pentru instrumentul de monitorizare a rețelei, care poate să modifice conținutul paginilor pe care le accesezi. Aici sunt incluse activitățile în alte browsere și programe care au acces la internet.</translation>
 <translation id="6738516213925468394">Datele au fost criptate cu <ph name="BEGIN_LINK" />expresia de acces pentru sincronizare<ph name="END_LINK" /> la <ph name="TIME" />. Introdu expresia de acces pentru a începe sincronizarea.</translation>
 <translation id="674375294223700098">Eroare de certificat de server necunoscută.</translation>
 <translation id="6744009308914054259">În timp ce aștepți o conexiune, poți accesa Descărcările pentru a citi articole offline.</translation>
@@ -1275,6 +1291,7 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /> despre această problemă.</translation>
 <translation id="7219179957768738017">Conexiunea utilizează <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Se procesează</translation>
+<translation id="7239736667463137521">Chrome a detectat că folosești o conexiune monitorizată.</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Site-ul pe care urmează să îl accesezi conține programe malware</translation>
 <translation id="724975217298816891">Introdu data de expirare și codul CVC pentru <ph name="CREDIT_CARD" />, pentru a actualiza detaliile cardului. După ce confirmi, acest site va avea acces la detaliile cardului tău.</translation>
@@ -1301,6 +1318,7 @@ Detalii suplimentare:
 <translation id="7346048084945669753">Este afiliat:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Linie de comandă</translation>
+<translation id="7353776484425559055">Chromium nu are încredere în certificatul pentru această conexiune, deoarece el se folosește pentru interceptarea și monitorizarea rețelelor. Este posibil ca această eroare să apară din cauza unui certificat instalat pe dispozitiv. Când stabilește conexiuni securizate, Chromium are încredere în certificatele instalate local pe computerul sau dispozitivul mobil al utilizatorului. Astfel, utilizatorii pot rula instrumente pentru verificarea conexiunilor și remedierea erorilor legate de acestea în timpul dezvoltării site-ului sau pentru ca mediile corporative să intercepteze și monitorizeze traficul intern. În cazul în care această funcție este folosită abuziv pentru a intercepta traficul de pe internetul public, Chromium afișează un avertisment.</translation>
 <translation id="7372973238305370288">rezultat al căutării</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Comenzi media</translation>
@@ -1362,6 +1380,7 @@ Detalii suplimentare:
 <translation id="7592362899630581445">Certificatul serverului încalcă limitările privind numele.</translation>
 <translation id="7598391785903975535">Mai puțin de <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187">Momentan, <ph name="HOST_NAME" /> nu poate procesa această solicitare.</translation>
+<translation id="7599841999395223597">Chrome nu are încredere în certificatul pentru această conexiune, deoarece el se folosește pentru interceptarea și monitorizarea rețelelor. Este posibil ca această eroare să apară din cauza unui certificat instalat pe dispozitiv. Când stabilește conexiuni securizate, Chrome are încredere în certificatele instalate local pe computerul sau dispozitivul mobil al utilizatorului. Astfel, utilizatorii pot rula instrumente pentru verificarea conexiunilor și remedierea erorilor legate de acestea în timpul dezvoltării site-ului sau pentru ca mediile corporative să intercepteze și monitorizeze traficul intern. În cazul în care această funcție este folosită abuziv pentru a intercepta traficul de pe internetul public, Chrome afișează un avertisment.</translation>
 <translation id="7600965453749440009">Nu traduce niciodată din <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Valoarea este în afara intervalului <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Expiră pe: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -1679,6 +1698,7 @@ Detalii suplimentare:
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">Este posibil să pierzi accesul la Contul Google. Chromium îți recomandă să îți schimbi parola acum. Ți se va cere să te conectezi.</translation>
 <translation id="939736085109172342">Dosar nou</translation>
+<translation id="940786960229275114">Ai introdus parola pe un site înșelător. Chrome recomandă să accesezi <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> și <ph name="WEBSITE_3" /> și să-ți schimbi acum parola.</translation>
 <translation id="945855313015696284">Verifică informațiile de mai jos și șterge cardurile nevalide</translation>
 <translation id="950736567201356821">Perforare triplă în partea de sus</translation>
 <translation id="951104842009476243">Carduri de debit și preplătite acceptate</translation>

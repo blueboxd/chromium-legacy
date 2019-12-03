@@ -14,8 +14,6 @@
 #include "components/safe_browsing/browser/threat_details.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 
 using content::BrowserThread;
 

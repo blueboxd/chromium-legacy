@@ -8,4 +8,4 @@ navigator.serviceWorker.register('empty_service_worker.js')
   .then(() => navigator.serviceWorker.ready)
   .then(registration => registration.sync.register('foo'))
   .then(() => parent.postMessage('registration succeeded', '*'),
-        () => parent.postMessage('registration failed', '*'));
+      () => parent.postMessage('registration failed', '*'));

@@ -185,14 +185,13 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
   // existing content-security-policy on the response.
   if (is_response_check && base::FeatureList::IsEnabled(
                                network::features::kOutOfBlinkFrameAncestors)) {
-    if (network::mojom::ContentSecurityPolicyPtr policy =
-            request->response()->head.content_security_policy) {
+    if (auto& policy = request->response()->content_security_policy) {
       // TODO(arthursonzogni): Remove content::ContentSecurityPolicy in favor of
       // network::mojom::ContentSecurityPolicy, this will avoid conversion
       // between type here.
       // TODO(lfg): Pass every ContentSecurityPolicy here instead of one.
       std::vector<ContentSecurityPolicy> policies = {
-          ContentSecurityPolicy(std::move(policy)),
+          ContentSecurityPolicy(policy.Clone()),
       };
       // TODO(lfg): If the initiating document is known and correspond to the
       // navigating frame's current document, consider using:

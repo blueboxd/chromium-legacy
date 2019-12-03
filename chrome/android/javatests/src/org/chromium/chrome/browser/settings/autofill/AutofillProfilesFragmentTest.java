@@ -22,8 +22,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
-import org.chromium.chrome.browser.settings.Preferences;
-import org.chromium.chrome.browser.settings.PreferencesTest;
+import org.chromium.chrome.browser.settings.SettingsActivity;
+import org.chromium.chrome.browser.settings.SettingsActivityTest;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -64,9 +64,9 @@ public class AutofillProfilesFragmentTest {
     @MediumTest
     @Feature({"Preferences"})
     public void testAddProfile() throws Exception {
-        Preferences activity =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        AutofillProfilesFragment.class.getName());
+        SettingsActivity activity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                AutofillProfilesFragment.class.getName());
         AutofillProfilesFragment autofillProfileFragment =
                 (AutofillProfilesFragment) activity.getMainFragment();
 
@@ -107,9 +107,9 @@ public class AutofillProfilesFragmentTest {
     @MediumTest
     @Feature({"Preferences"})
     public void testAddIncompletedProfile() throws Exception {
-        Preferences activity =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        AutofillProfilesFragment.class.getName());
+        SettingsActivity activity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                AutofillProfilesFragment.class.getName());
         AutofillProfilesFragment autofillProfileFragment =
                 (AutofillProfilesFragment) activity.getMainFragment();
 
@@ -132,9 +132,9 @@ public class AutofillProfilesFragmentTest {
     @MediumTest
     @Feature({"Preferences"})
     public void testDeleteProfile() throws Exception {
-        Preferences activity =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        AutofillProfilesFragment.class.getName());
+        SettingsActivity activity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                AutofillProfilesFragment.class.getName());
         AutofillProfilesFragment autofillProfileFragment =
                 (AutofillProfilesFragment) activity.getMainFragment();
 
@@ -166,9 +166,9 @@ public class AutofillProfilesFragmentTest {
     @MediumTest
     @Feature({"Preferences"})
     public void testEditProfile() throws Exception {
-        Preferences activity =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        AutofillProfilesFragment.class.getName());
+        SettingsActivity activity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                AutofillProfilesFragment.class.getName());
         AutofillProfilesFragment autofillProfileFragment =
                 (AutofillProfilesFragment) activity.getMainFragment();
 
@@ -210,9 +210,9 @@ public class AutofillProfilesFragmentTest {
     @MediumTest
     @Feature({"Preferences"})
     public void testOpenProfileWithCompleteState() throws Exception {
-        Preferences activity =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        AutofillProfilesFragment.class.getName());
+        SettingsActivity activity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                AutofillProfilesFragment.class.getName());
         AutofillProfilesFragment autofillProfileFragment =
                 (AutofillProfilesFragment) activity.getMainFragment();
 
@@ -238,9 +238,9 @@ public class AutofillProfilesFragmentTest {
     @MediumTest
     @Feature({"Preferences"})
     public void testOpenProfileWithInvalidState() throws Exception {
-        Preferences activity =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        AutofillProfilesFragment.class.getName());
+        SettingsActivity activity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                AutofillProfilesFragment.class.getName());
         AutofillProfilesFragment autofillProfileFragment =
                 (AutofillProfilesFragment) activity.getMainFragment();
 
@@ -266,9 +266,9 @@ public class AutofillProfilesFragmentTest {
     @MediumTest
     @Feature({"Preferences"})
     public void testKeyboardShownOnDpadCenter() throws TimeoutException {
-        Preferences activity =
-                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                        AutofillProfilesFragment.class.getName());
+        SettingsActivity activity = SettingsActivityTest.startSettingsActivity(
+                InstrumentationRegistry.getInstrumentation(),
+                AutofillProfilesFragment.class.getName());
 
         PreferenceFragmentCompat fragment = (PreferenceFragmentCompat) activity.getMainFragment();
         AutofillProfileEditorPreference addProfile =
@@ -301,7 +301,8 @@ public class AutofillProfilesFragmentTest {
         activity.finish();
     }
 
-    private void waitForKeyboardStatus(final boolean keyboardVisible, final Preferences activity) {
+    private void waitForKeyboardStatus(
+            final boolean keyboardVisible, final SettingsActivity activity) {
         CriteriaHelper.pollUiThread(
                 new Criteria("Keyboard was not " + (keyboardVisible ? "shown." : "hidden.")) {
                     @Override

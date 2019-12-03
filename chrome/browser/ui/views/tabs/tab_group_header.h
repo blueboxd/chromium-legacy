@@ -24,6 +24,7 @@ class View;
 class TabGroupHeader : public TabSlotView {
  public:
   TabGroupHeader(TabStrip* tab_strip, TabGroupId group);
+  ~TabGroupHeader() override = default;
 
   // TabSlotView:
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -53,7 +54,7 @@ class TabGroupHeader : public TabSlotView {
   class EditorBubbleTracker : public views::WidgetObserver {
    public:
     EditorBubbleTracker() = default;
-    ~EditorBubbleTracker() override = default;
+    ~EditorBubbleTracker() override;
 
     void Opened(views::Widget* bubble_widget);
     bool is_open() const { return is_open_; }
@@ -63,6 +64,7 @@ class TabGroupHeader : public TabSlotView {
 
    private:
     bool is_open_ = false;
+    views::Widget* widget_;
   };
 
   EditorBubbleTracker editor_bubble_tracker_;

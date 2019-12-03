@@ -26,6 +26,8 @@ android_library("java") {
     "org/chromium/weblayer/BrowsingDataType.java",
     "org/chromium/weblayer/Callback.java",
     "org/chromium/weblayer/ChildProcessService.java",
+    "org/chromium/weblayer/CrashReporterCallback.java",
+    "org/chromium/weblayer/CrashReporterController.java",
     "org/chromium/weblayer/DownloadCallback.java",
     "org/chromium/weblayer/ErrorPageCallback.java",
     "org/chromium/weblayer/FullscreenCallback.java",

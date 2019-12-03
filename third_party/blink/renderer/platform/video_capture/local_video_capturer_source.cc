@@ -43,7 +43,7 @@ void LocalVideoCapturerSource::StartCapture(
   stop_capture_cb_ = manager_->StartCapture(
       session_id_, params,
       media::BindToLoop(task_runner_,
-                        ConvertToBaseCallback(CrossThreadBindRepeating(
+                        ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
                             &LocalVideoCapturerSource::OnStateUpdate,
                             weak_factory_.GetWeakPtr()))),
       new_frame_callback);

@@ -576,7 +576,7 @@ void AppCacheRequestHandler::MaybeCreateLoaderInternal(
 
 bool AppCacheRequestHandler::MaybeCreateLoaderForResponse(
     const network::ResourceRequest& request,
-    const network::ResourceResponseHead& response,
+    network::mojom::URLResponseHeadPtr* response,
     mojo::ScopedDataPipeConsumerHandle* response_body,
     mojo::PendingRemote<network::mojom::URLLoader>* loader,
     mojo::PendingReceiver<network::mojom::URLLoaderClient>* client_receiver,
@@ -603,7 +603,7 @@ bool AppCacheRequestHandler::MaybeCreateLoaderForResponse(
                                std::move(client));
       },
       *(request_->GetResourceRequest()), loader, client_receiver, &was_called);
-  request_->set_response(response);
+  request_->set_response(std::move(*response));
   if (!MaybeLoadFallbackForResponse(nullptr)) {
     DCHECK(!was_called);
     loader_callback_.Reset();

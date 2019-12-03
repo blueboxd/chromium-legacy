@@ -75,4 +75,8 @@
                              @"Unexpected signed in user");
 }
 
+- (void)removeFakeIdentity:(FakeChromeIdentity*)fakeIdentity {
+  [SigninEarlGreyUtilsAppInterface removeFakeIdentity:fakeIdentity];
+}
+
 @end

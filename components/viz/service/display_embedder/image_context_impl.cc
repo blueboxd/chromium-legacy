@@ -58,6 +58,12 @@ ImageContextImpl::~ImageContextImpl() {
 
 void ImageContextImpl::CreateFallbackImage(
     gpu::SharedContextState* context_state) {
+  // We can't allocate a fallback texture as the original texture was externally
+  // allocated. Skia will skip drawing a null SkPromiseImageTexture, do nothing
+  // and leave it null.
+  if (backend_format().textureType() == GrTextureType::kExternal)
+    return;
+
   DCHECK(!fallback_context_state_);
   fallback_context_state_ = context_state;
 

@@ -37,13 +37,13 @@ _DOC = (
     'Still reading?\n'
     '- You can edit this file manually to suppress an issue\n'
     '  globally if it is not applicable to the project.\n'
+    '  When inserting new tags, keep this file in sorted order.\n'
     '- You can also automatically add issues found so for in the\n'
     '  build process by running:\n\n'
     '    ' + os.path.relpath(_THIS_FILE, host_paths.DIR_SOURCE_ROOT) + '\n\n'
     '  which will generate this file (Comments are not preserved).\n'
     '  Note: PRODUCT_DIR will be substituted at run-time with actual\n'
-    '  directory path (e.g. out/Debug)\n'
-)
+    '  directory path (e.g. out/Debug)\n')
 
 
 _Issue = collections.namedtuple('Issue', ['severity', 'paths', 'regexps'])

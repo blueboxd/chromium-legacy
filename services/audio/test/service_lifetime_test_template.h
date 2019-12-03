@@ -55,12 +55,13 @@ TYPED_TEST_SUITE_P(ServiceLifetimeTestTemplate);
 
 TYPED_TEST_P(ServiceLifetimeTestTemplate,
              DISABLED_ServiceQuitsWhenClientDisconnects) {
-  mojom::SystemInfoPtr info;
+  mojo::Remote<mojom::SystemInfo> info;
   {
     base::RunLoop wait_loop;
     EXPECT_CALL(*this->service_observer_, ServiceStarted())
         .WillOnce(testing::Invoke(&wait_loop, &base::RunLoop::Quit));
-    this->connector()->BindInterface(mojom::kServiceName, &info);
+    this->connector()->Connect(mojom::kServiceName,
+                               info.BindNewPipeAndPassReceiver());
     wait_loop.Run();
   }
   {
@@ -74,12 +75,13 @@ TYPED_TEST_P(ServiceLifetimeTestTemplate,
 
 TYPED_TEST_P(ServiceLifetimeTestTemplate,
              DISABLED_ServiceQuitsWhenLastClientDisconnects) {
-  mojom::SystemInfoPtr info;
+  mojo::Remote<mojom::SystemInfo> info;
   {
     base::RunLoop wait_loop;
     EXPECT_CALL(*this->service_observer_, ServiceStarted())
         .WillOnce(testing::Invoke(&wait_loop, &base::RunLoop::Quit));
-    this->connector()->BindInterface(mojom::kServiceName, &info);
+    this->connector()->Connect(mojom::kServiceName,
+                               info.BindNewPipeAndPassReceiver());
     wait_loop.Run();
   }
   {
@@ -89,12 +91,14 @@ TYPED_TEST_P(ServiceLifetimeTestTemplate,
     EXPECT_CALL(*this->service_observer_, ServiceStarted())
         .Times(testing::Exactly(0));
 
-    mojom::SystemInfoPtr info2;
-    this->connector()->BindInterface(mojom::kServiceName, &info2);
+    mojo::Remote<mojom::SystemInfo> info2;
+    this->connector()->Connect(mojom::kServiceName,
+                               info2.BindNewPipeAndPassReceiver());
     info2.FlushForTesting();
 
-    mojom::SystemInfoPtr info3;
-    this->connector()->BindInterface(mojom::kServiceName, &info3);
+    mojo::Remote<mojom::SystemInfo> info3;
+    this->connector()->Connect(mojom::kServiceName,
+                               info3.BindNewPipeAndPassReceiver());
     info3.FlushForTesting();
 
     info.reset();
@@ -106,12 +110,13 @@ TYPED_TEST_P(ServiceLifetimeTestTemplate,
 
 TYPED_TEST_P(ServiceLifetimeTestTemplate,
              DISABLED_ServiceRestartsWhenClientReconnects) {
-  mojom::SystemInfoPtr info;
+  mojo::Remote<mojom::SystemInfo> info;
   {
     base::RunLoop wait_loop;
     EXPECT_CALL(*this->service_observer_, ServiceStarted())
         .WillOnce(testing::Invoke(&wait_loop, &base::RunLoop::Quit));
-    this->connector()->BindInterface(mojom::kServiceName, &info);
+    this->connector()->Connect(mojom::kServiceName,
+                               info.BindNewPipeAndPassReceiver());
     wait_loop.Run();
   }
   {
@@ -125,7 +130,8 @@ TYPED_TEST_P(ServiceLifetimeTestTemplate,
     base::RunLoop wait_loop;
     EXPECT_CALL(*this->service_observer_, ServiceStarted())
         .WillOnce(testing::Invoke(&wait_loop, &base::RunLoop::Quit));
-    this->connector()->BindInterface(mojom::kServiceName, &info);
+    this->connector()->Connect(mojom::kServiceName,
+                               info.BindNewPipeAndPassReceiver());
     wait_loop.Run();
   }
   {

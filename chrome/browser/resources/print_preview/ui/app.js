@@ -308,8 +308,7 @@ Polymer({
           settings.previewIsPdf, settings.documentTitle,
           settings.documentHasSelection);
       this.$.model.setStickySettings(settings.serializedAppStateStr);
-      this.$.model.setPolicySettings(
-          settings.headerFooter, settings.isHeaderFooterManaged);
+      this.$.model.setPolicySettings(settings.policies);
       this.measurementSystem_ = new MeasurementSystem(
           settings.thousandsDelimiter, settings.decimalDelimiter,
           settings.unitType);

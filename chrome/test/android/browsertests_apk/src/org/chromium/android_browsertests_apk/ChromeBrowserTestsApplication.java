@@ -15,7 +15,7 @@ import org.chromium.ui.base.ResourceBundle;
  * A basic chrome.browser.tests {@link android.app.Application}.
  */
 public class ChromeBrowserTestsApplication extends NativeBrowserTestApplication {
-    static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
+    static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "android_browsertests";
 
     @Override
     protected void attachBaseContext(Context base) {

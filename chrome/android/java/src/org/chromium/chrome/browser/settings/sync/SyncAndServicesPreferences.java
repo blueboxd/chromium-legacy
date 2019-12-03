@@ -51,7 +51,7 @@ import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
 import org.chromium.chrome.browser.settings.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.settings.PreferenceUtils;
-import org.chromium.chrome.browser.settings.Preferences;
+import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.password.PasswordUIView;
 import org.chromium.chrome.browser.settings.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
@@ -76,7 +76,8 @@ import java.lang.annotation.RetentionPolicy;
  */
 public class SyncAndServicesPreferences extends PreferenceFragmentCompat
         implements PassphraseDialogFragment.Listener, Preference.OnPreferenceChangeListener,
-                   ProfileSyncService.SyncStateChangedListener, Preferences.OnBackPressedListener {
+                   ProfileSyncService.SyncStateChangedListener,
+                   SettingsActivity.OnBackPressedListener {
     private static final String IS_FROM_SIGNIN_SCREEN =
             "SyncAndServicesPreferences.isFromSigninScreen";
 
@@ -280,7 +281,7 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            if (!mIsFromSigninScreen) return false; // Let Preferences activity handle it.
+            if (!mIsFromSigninScreen) return false; // Let Settings activity handle it.
             showCancelSyncDialog();
             return true;
         } else if (item.getItemId() == R.id.menu_id_targeted_help) {

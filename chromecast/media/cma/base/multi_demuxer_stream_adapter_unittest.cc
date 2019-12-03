@@ -8,9 +8,9 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -160,8 +160,8 @@ TEST_F(MultiDemuxerStreamAdaptersTest, EarlyEos) {
 
   total_expected_frames_ = frame_count_short + frame_count_long;
 
-  std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
-  message_loop->task_runner()->PostTask(
+  base::test::SingleThreadTaskEnvironment task_environment;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&MultiDemuxerStreamAdaptersTest::Start,
                                 base::Unretained(this)));
   base::RunLoop().Run();

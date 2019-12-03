@@ -18,7 +18,7 @@
 #include "net/http/http_server_properties.h"
 #include "net/http/transport_security_state.h"
 #include "net/quic/mock_crypto_client_stream_factory.h"
-#include "net/quic/quic_context.h"
+#include "net/quic/mock_quic_context.h"
 #include "net/quic/quic_http_stream.h"
 #include "net/quic/test_task_runner.h"
 #include "net/socket/fuzzed_datagram_client_socket.h"
@@ -26,8 +26,6 @@
 #include "net/socket/socket_tag.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/gtest_util.h"
-#include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
-#include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 
 namespace net {
@@ -54,8 +52,8 @@ const int kCertVerifyFlags = 0;
 
 // Static initialization for persistent factory data
 struct Env {
-  Env() : host_port_pair(kServerHostName, kServerPort), random_generator(0) {
-    clock.AdvanceTime(quic::QuicTime::Delta::FromSeconds(1));
+  Env() : host_port_pair(kServerHostName, kServerPort) {
+    quic_context.AdvanceTime(quic::QuicTime::Delta::FromSeconds(1));
     ssl_config_service = std::make_unique<SSLConfigServiceDefaults>();
     crypto_client_stream_factory.set_use_mock_crypter(true);
     cert_verifier = std::make_unique<MockCertVerifier>();
@@ -66,12 +64,10 @@ struct Env {
     verify_details.cert_verify_result.is_issued_by_known_root = true;
   }
 
-  quic::MockClock clock;
   std::unique_ptr<SSLConfigService> ssl_config_service;
   ProofVerifyDetailsChromium verify_details;
   MockCryptoClientStreamFactory crypto_client_stream_factory;
   HostPortPair host_port_pair;
-  quic::test::MockRandom random_generator;
   NetLogWithSource net_log;
   std::unique_ptr<CertVerifier> cert_verifier;
   TransportSecurityState transport_security_state;
@@ -79,7 +75,7 @@ struct Env {
   quic::QuicTagVector client_connection_options;
   std::unique_ptr<CTVerifier> cert_transparency_verifier;
   DefaultCTPolicyEnforcer ct_policy_enforcer;
-  QuicContext quic_context;
+  MockQuicContext quic_context;
 };
 
 static struct Env* env = new Env();

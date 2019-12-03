@@ -58,7 +58,7 @@ bool IsSignedExchangeReportingForDistributorsEnabled();
 // check IsSignedExchangeHandlingEnabled() before really enabling the feature.
 bool ShouldHandleAsSignedHTTPExchange(
     const GURL& request_url,
-    const network::ResourceResponseHead& head);
+    const network::mojom::URLResponseHead& head);
 
 // Extracts the signed exchange version [1] from |content_type|, and converts it
 // to SignedExchanveVersion. Returns nullopt if the mime type is not a variant

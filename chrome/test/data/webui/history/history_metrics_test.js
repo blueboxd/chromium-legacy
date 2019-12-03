@@ -12,54 +12,21 @@ const TestMetricsBrowserService = function() {
 };
 
 suite('Metrics', function() {
-  let service;
+  let testService;
   let app;
   let histogramMap;
   let actionMap;
 
   suiteSetup(function() {
     disableLinkClicks();
-
-    TestMetricsBrowserService.prototype = {
-      __proto__: history.BrowserService.prototype,
-
-      /** @override */
-      recordHistogram: function(histogram, value, max) {
-        assertTrue(value < max);
-
-        if (!(histogram in this.histogramMap)) {
-          this.histogramMap[histogram] = {};
-        }
-
-        if (!(value in this.histogramMap[histogram])) {
-          this.histogramMap[histogram][value] = 0;
-        }
-
-        this.histogramMap[histogram][value]++;
-      },
-
-      /** @override */
-      recordAction: function(action) {
-        if (!(action in this.actionMap)) {
-          this.actionMap[action] = 0;
-        }
-
-        this.actionMap[action]++;
-      },
-
-      /** @override */
-      deleteItems: function() {
-        return test_util.flushTasks();
-      }
-    };
   });
 
   setup(function() {
-    history.BrowserService.instance_ = new TestMetricsBrowserService();
-    service = history.BrowserService.getInstance();
+    history.BrowserService.instance_ = new TestBrowserService();
+    testService = history.BrowserService.getInstance();
 
-    actionMap = service.actionMap;
-    histogramMap = service.histogramMap;
+    actionMap = testService.actionMap;
+    histogramMap = testService.histogramMap;
 
     app = replaceApp();
     updateSignInState(false);
@@ -158,6 +125,10 @@ suite('Metrics', function() {
         })
         .then(() => {
           MockInteractions.tap(app.$.history.$$('#menuRemoveButton'));
+          return testService.whenCalled('deleteItems');
+        })
+        .then(() => {
+          deleteComplete();
           return test_util.flushTasks();
         })
         .then(() => {

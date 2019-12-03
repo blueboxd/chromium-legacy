@@ -43,6 +43,11 @@ public class PaymentManifestDownloaderTest implements ManifestDownloadCallback {
 
     private static final String EXPECTED_WEB_APP_MANIFEST = "{\n"
             + "  \"name\": \"BobPay\",\n"
+            + "  \"icons\": [{\n"
+            + "    \"src\": \"icon.png\",\n"
+            + "    \"sizes\": \"48x48\",\n"
+            + "    \"type\": \"image/png\"\n"
+            + "  }],\n"
             + "  \"related_applications\": [{\n"
             + "    \"platform\": \"play\",\n"
             + "    \"id\": \"com.bobpay\",\n"

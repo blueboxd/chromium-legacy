@@ -8,6 +8,7 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 daqiqa}other{# daqiqa}}</translation>
 <translation id="1181037720776840403">Olib tashlash</translation>
 <translation id="1201402288615127009">Keyingisi</translation>
+<translation id="1218444235442067213"><ph name="APP_NAME" />, Play Market ilovasi</translation>
 <translation id="1243314992276662751">Yuklash</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> yuborilmadi</translation>
 <translation id="1269641567813814718">Win</translation>
@@ -18,6 +19,7 @@
 <translation id="1368832886055348810">Chapdan o‘ngga</translation>
 <translation id="1383876407941801731">Qidiruv</translation>
 <translation id="1398853756734560583">Yoyish</translation>
+<translation id="1414271762428216854"><ph name="APP_NAME" />, Ilova oʻrnatildi</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> yuborilmadi</translation>
 <translation id="1498028757988366001">Buni oldin qidirgan edingiz. Qidiruv tarixidan “<ph name="QUERY" />” oʻchirib tashlanganda u barcha . qurilmalaringizdagi hisobingizdan butunlay olib tashlanadi.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 daqiqa va }other{# daqiqa va }}</translation>
@@ -30,6 +32,7 @@
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 oy}other{# oy}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 soat va }other{# soat va }}</translation>
+<translation id="1830308660060964064">Yechib olindi: <ph name="ITEM_TITLE" /></translation>
 <translation id="1842960171412779397">tanlash</translation>
 <translation id="1859234291848436338">Yozuv yo‘nalishi</translation>
 <translation id="1860796786778352021">Bildirishnomani yopish</translation>
@@ -66,10 +69,12 @@
 <translation id="2666092431469916601">Tepaga</translation>
 <translation id="2701330563083355633"><ph name="DEVICE_NAME" /> orqali ulashilgan</translation>
 <translation id="2743387203779672305">Vaqtincha xotiraga nusxalash</translation>
+<translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Jildni ochish</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 yil oldin}other{# yil oldin}}</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1 kundan keyin}other{# kundan keyin}}</translation>
 <translation id="2931838996092594335">bosish</translation>
+<translation id="2981684127883932071">Takliflar chiqarildi</translation>
 <translation id="3036649622769666520">Ochiq fayllar</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3068711042108640621">Javon chapda</translation>
@@ -84,6 +89,7 @@
 <translation id="3389286852084373014">Matn juda katta</translation>
 <translation id="3479552764303398839">Hozir emas</translation>
 <translation id="348799646910989694">Vaqtincha xotira avtomatik yopildi</translation>
+<translation id="3554637740840164787">Mahkamlandi: <ph name="ITEM_TITLE" /></translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{ 1 kun qoldi}other{ # kun qoldi}}</translation>
 <translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" /> fayli</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
@@ -105,8 +111,11 @@
 <translation id="4250229828105606438">Skrinshot</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 oy oldin}other{# oy oldin}}</translation>
 <translation id="4289300219472526559">Gapirishni boshlang</translation>
+<translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> ilovasi <ph name="FOLDER_NAME" /> jildiga olindi.</translation>
 <translation id="4316910396681052118">BARCHA ILOVALAR</translation>
 <translation id="4588090240171750605">O‘ngga aylantirish</translation>
+<translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, Bahosi: <ph name="RATING_SCORE" /></translation>
+<translation id="4648249871170053485"><ph name="APP_NAME" />, Ilova tavsiyasi</translation>
 <translation id="4690510401873698237">Javon pastda</translation>
 <translation id="4724120544754982507">Bildirishnomalar markazi, <ph name="UNREAD_NOTIFICATION_COUNT" /> ta o‘qilmagan bildirishnoma</translation>
 <translation id="4730374152663651037">TEZ-TEZ ISHLATILADIGAN</translation>
@@ -116,6 +125,7 @@
 <translation id="4971687151119236543">Avvalgi trek</translation>
 <translation id="5046499563572181734">Bu yerga bosing</translation>
 <translation id="5076340679995252485">&amp;Qo‘shib qo‘yish</translation>
+<translation id="5198715732953550718"><ph name="MOVED_APP_NAME" /> va <ph name="IN_PLACE_APP" /> ilovalari yangi jildga birlashtirildi.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Yoyiluvchi uchburchak</translation>
 <translation id="5278860589123563674">Yuborilmadi</translation>
@@ -129,6 +139,7 @@
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> tizimi</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Chap strelka</translation>
+<translation id="5675363643668471212">Javondagi element</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 daqiqa}other{# daqiqa}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Bugun onlayn edi}=1{1 kun oldin onlayn edi}other{# kun oldin onlayn edi}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 kun va }other{# kun va }}</translation>
@@ -208,6 +219,7 @@
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Pastga o‘tkazish</translation>
 <translation id="8245914219290430011">Tab</translation>
+<translation id="8247998213073982446"><ph name="APP_NAME" />, Ilova</translation>
 <translation id="8259556432390118667">Rangning 16 raqamli qiymati</translation>
 <translation id="8328145009876646418">Chap chekka</translation>
 <translation id="8331626408530291785">Tepaga o‘tkazish</translation>
@@ -237,6 +249,8 @@
 <translation id="9150735707954472829">Varaq</translation>
 <translation id="9161053988251441839">TAVSIYA ETILGAN ILOVALAR</translation>
 <translation id="9170848237812810038">&amp;Bekor qilish</translation>
+<translation id="9178475906033259337"><ph name="QUERY" /> – 1 ta natija chiqdi</translation>
 <translation id="932327136139879170">Bosh sahifa</translation>
 <translation id="944069440740578670">Yangi bildirishnomalar</translation>
+<translation id="974545358917229949"><ph name="QUERY" /> – <ph name="RESULT_COUNT" /> natija chiqdi</translation>
 </translationbundle>

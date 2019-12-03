@@ -581,7 +581,7 @@ IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest, SignedInNoUsername) {
   OpenProfileMenuView(browser());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ProfileMenuViewExtensionsParamTest,
                          ::testing::Bool());
 

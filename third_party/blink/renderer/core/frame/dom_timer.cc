@@ -174,10 +174,6 @@ void DOMTimer::Fired() {
   ClearContext();
 }
 
-scoped_refptr<base::SingleThreadTaskRunner> DOMTimer::TimerTaskRunner() const {
-  return GetExecutionContext()->Timers()->TimerTaskRunner();
-}
-
 void DOMTimer::Trace(blink::Visitor* visitor) {
   visitor->Trace(action_);
   ContextLifecycleObserver::Trace(visitor);

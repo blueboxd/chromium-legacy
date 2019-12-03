@@ -95,8 +95,9 @@ void ImageElementTiming::NotifyImagePainted(
     return;
 
   auto it = images_notified_.find(std::make_pair(layout_object, cached_image));
-  DCHECK(it != images_notified_.end());
-  if (!it->value.is_painted_ && cached_image) {
+  // It is possible that the pair is not in |images_notified_|. See
+  // https://crbug.com/1027948
+  if (it != images_notified_.end() && !it->value.is_painted_ && cached_image) {
     it->value.is_painted_ = true;
     NotifyImagePaintedInternal(layout_object->GetNode(), *layout_object,
                                *cached_image, current_paint_chunk_properties,

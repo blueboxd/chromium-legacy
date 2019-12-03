@@ -123,27 +123,8 @@ void DedicatedWorkerHost::StartScriptLoad(
     return;
   }
 
-  // Walk up the RenderFrameHostImpl::GetParent() chain to get to the top
-  // RenderFrameHostImpl, instead of using the frame tree node.
-  // If the root has already navigated to a different render frame host by
-  // the time that we get here, the old root render frame host should still
-  // be around in pending deletion state (i.e. running its unload handler)
-  // and reachable via this walk even though it's no longer the same as
-  // root()->current_frame_host(). The old root render frame host will still
-  // have its old origin in GetLastCommittedOrigin(). See crbug.com/986167
-  RenderFrameHostImpl* top_frame = nullptr;
-  for (RenderFrameHostImpl* frame = nearest_ancestor_render_frame_host; frame;
-       frame = frame->GetParent()) {
-    top_frame = frame;
-  }
-
-  // Compute the network isolation key using the old root's last committed
-  // origin as top-frame origin.
-  url::Origin top_frame_origin(top_frame->GetLastCommittedOrigin());
-  url::Origin current_frame_origin(
-      nearest_ancestor_render_frame_host->GetLastCommittedOrigin());
   network_isolation_key_ =
-      net::NetworkIsolationKey(top_frame_origin, current_frame_origin);
+      nearest_ancestor_render_frame_host->GetNetworkIsolationKey();
 
   // Get a storage domain.
   SiteInstance* site_instance =

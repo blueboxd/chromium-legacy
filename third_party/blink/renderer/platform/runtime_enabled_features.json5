@@ -268,6 +268,7 @@
     },
     {
       name: "CacheStorageCodeCacheHint",
+      origin_trial_feature_name: "CacheStorageCodeCacheHint",
       status: "experimental",
     },
     {
@@ -344,6 +345,8 @@
     },
     {
       name: "ContentIndex",
+      origin_trial_feature_name: "ContentIndex",
+      origin_trial_os: ["android"],
       status: "experimental",
     },
     {
@@ -1095,6 +1098,7 @@
     },
     {
       name: "NewSystemColors",
+      status: "stable",
     },
     {
       name: "NoIdleEncodingForWebTests",

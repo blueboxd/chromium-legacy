@@ -110,8 +110,9 @@ TabImpl::TabImpl(ProfileImpl* profile,
   }
 
   UpdateRendererPrefs(false);
-  locale_change_subscription_ = i18n::RegisterLocaleChangeCallback(
-      base::Bind(&TabImpl::UpdateRendererPrefs, base::Unretained(this), true));
+  locale_change_subscription_ =
+      i18n::RegisterLocaleChangeCallback(base::BindRepeating(
+          &TabImpl::UpdateRendererPrefs, base::Unretained(this), true));
 
   std::unique_ptr<UserData> user_data = std::make_unique<UserData>();
   user_data->controller = this;
@@ -290,6 +291,8 @@ void TabImpl::RunFileChooser(
 }
 
 int TabImpl::GetTopControlsHeight() {
+  if (is_fullscreen_)
+    return 0;
 #if defined(OS_ANDROID)
   return top_controls_container_view_
              ? top_controls_container_view_->GetTopControlsHeight()

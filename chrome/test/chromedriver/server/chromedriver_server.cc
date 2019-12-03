@@ -79,7 +79,7 @@ int ListenOnIPv6(net::ServerSocket* socket, uint16_t port, bool allow_remote) {
 bool RequestIsSafeToServe(const net::HttpServerRequestInfo& info) {
   // To guard against browser-originating cross-site requests, when host header
   // and/or origin header are present, serve only those coming from localhost.
-  std::string host_header = info.headers["host"];
+  std::string host_header = info.GetHeaderValue("host");
   if (!host_header.empty()) {
     GURL url = GURL("http://" + host_header);
     if (!net::IsLocalhost(url)) {
@@ -87,7 +87,7 @@ bool RequestIsSafeToServe(const net::HttpServerRequestInfo& info) {
       return false;
     }
   }
-  std::string origin_header = info.headers["origin"];
+  std::string origin_header = info.GetHeaderValue("origin");
   if (!origin_header.empty()) {
     GURL url = GURL(origin_header);
     if (!net::IsLocalhost(url)) {

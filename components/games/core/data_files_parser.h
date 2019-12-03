@@ -7,6 +7,7 @@
 
 #include "base/files/file_path.h"
 #include "components/games/core/proto/games_catalog.pb.h"
+#include "components/games/core/proto/highlighted_games.pb.h"
 
 namespace games {
 
@@ -17,6 +18,9 @@ class DataFilesParser {
 
   virtual bool TryParseCatalog(const base::FilePath& install_dir,
                                GamesCatalog* out_catalog);
+
+  virtual bool TryParseHighlightedGames(const base::FilePath& install_dir,
+                                        HighlightedGamesResponse* out_response);
 
   DISALLOW_COPY_AND_ASSIGN(DataFilesParser);
 };

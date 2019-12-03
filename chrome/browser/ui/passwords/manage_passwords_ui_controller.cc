@@ -41,6 +41,7 @@
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
@@ -59,7 +60,8 @@ password_manager::PasswordStore* GetPasswordStore(
     content::WebContents* web_contents) {
   return PasswordStoreFactory::GetForProfile(
              Profile::FromBrowserContext(web_contents->GetBrowserContext()),
-             ServiceAccessType::EXPLICIT_ACCESS).get();
+             ServiceAccessType::EXPLICIT_ACCESS)
+      .get();
 }
 
 std::vector<std::unique_ptr<autofill::PasswordForm>> CopyFormVector(
@@ -315,12 +317,19 @@ ManagePasswordsUIController::GetPasswordFormMetricsRecorder() {
   return form_manager ? form_manager->GetMetricsRecorder() : nullptr;
 }
 
+password_manager::PasswordFeatureManager*
+ManagePasswordsUIController::GetPasswordFeatureManager() {
+  password_manager::PasswordManagerClient* client =
+      ChromePasswordManagerClient::FromWebContents(web_contents());
+  return client->GetPasswordFeatureManager();
+}
+
 password_manager::ui::State ManagePasswordsUIController::GetState() const {
   return passwords_data_.state();
 }
 
-const autofill::PasswordForm& ManagePasswordsUIController::
-    GetPendingPassword() const {
+const autofill::PasswordForm& ManagePasswordsUIController::GetPendingPassword()
+    const {
   if (GetState() == password_manager::ui::AUTO_SIGNIN_STATE)
     return *GetCurrentForms()[0];
 

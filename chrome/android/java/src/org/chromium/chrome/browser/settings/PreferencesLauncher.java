@@ -104,16 +104,16 @@ public class PreferencesLauncher {
     public static Intent createIntentForSettingsPage(
             Context context, @Nullable String fragmentName, @Nullable Bundle fragmentArgs) {
         Intent intent = new Intent();
-        intent.setClass(context, Preferences.class);
+        intent.setClass(context, SettingsActivity.class);
         if (!(context instanceof Activity)) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         }
         if (fragmentName != null) {
-            intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT, fragmentName);
+            intent.putExtra(SettingsActivity.EXTRA_SHOW_FRAGMENT, fragmentName);
         }
         if (fragmentArgs != null) {
-            intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
+            intent.putExtra(SettingsActivity.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
         }
         return intent;
     }

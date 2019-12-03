@@ -157,7 +157,7 @@ bool SVGImage::CurrentFrameHasSingleSecurityOrigin() const {
   for (Node* node = root_element; node; node = FlatTreeTraversal::Next(*node)) {
     if (IsSVGForeignObjectElement(*node))
       return false;
-    if (auto* image = ToSVGImageElementOrNull(*node)) {
+    if (auto* image = DynamicTo<SVGImageElement>(*node)) {
       if (!image->CurrentFrameHasSingleSecurityOrigin())
         return false;
     } else if (auto* fe_image = DynamicTo<SVGFEImageElement>(*node)) {

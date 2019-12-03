@@ -587,8 +587,7 @@ void PaymentRequestState::SetDefaultProfileSelections() {
   PaymentApp::SortApps(&available_apps_);
 
   selected_app_ = nullptr;
-  if (!available_apps_.empty() && available_apps_[0]->IsCompleteForPayment() &&
-      available_apps_[0]->IsExactlyMatchingMerchantRequest()) {
+  if (!available_apps_.empty() && available_apps_[0]->CanPreselect()) {
     selected_app_ = available_apps_[0].get();
   }
 

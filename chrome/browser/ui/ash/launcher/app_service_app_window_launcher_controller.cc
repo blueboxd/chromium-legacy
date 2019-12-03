@@ -13,6 +13,9 @@
 #include "chrome/browser/ui/ash/launcher/app_window_base.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/services/app_service/public/cpp/instance.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "extensions/common/constants.h"
@@ -231,6 +234,17 @@ void AppServiceAppWindowLauncherController::RegisterAppWindow(
   if (app_window_it != aura_window_to_app_window_.end())
     return;
 
+  // For Chrome apps for Web apps, if the window is opened in a browser tab, we
+  // don't need to register app window, because
+  // BrowserShortcutLauncherItemController sets the window's property. If
+  // register app window for the app opened in a browser tab, the window is
+  // added to aura_window_to_app_window_, and when the window is destroyed, it
+  // could cause crash in RemoveFromShelf, because
+  // BrowserShortcutLauncherItemController manages the window, and sets
+  // related window properties, so it could cause the conflict settings.
+  if (IsOpenedInBrowserTab(shelf_id.app_id))
+    return;
+
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
   auto app_window_ptr = std::make_unique<AppWindowBase>(shelf_id, widget);
   AppWindowBase* app_window = app_window_ptr.get();
@@ -328,4 +342,21 @@ void AppServiceAppWindowLauncherController::OnItemDelegateDiscarded(
 
     UnregisterAppWindow(it.second.get());
   }
+}
+
+bool AppServiceAppWindowLauncherController::IsOpenedInBrowserTab(
+    const std::string& app_id) {
+  apps::mojom::AppType app_type = proxy_->AppRegistryCache().GetAppType(app_id);
+  if (app_type != apps::mojom::AppType::kExtension &&
+      app_type != apps::mojom::AppType::kWeb)
+    return false;
+
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (!browser->is_type_app()) {
+      continue;
+    }
+    if (web_app::GetAppIdFromApplicationName(browser->app_name()) == app_id)
+      return true;
+  }
+  return false;
 }

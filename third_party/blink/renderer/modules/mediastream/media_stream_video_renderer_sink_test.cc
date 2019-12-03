@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_registry.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_source.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 using ::testing::_;
 using ::testing::AtLeast;
@@ -47,8 +48,9 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
 
     media_stream_video_renderer_sink_ = new MediaStreamVideoRendererSink(
         blink_track_,
-        base::Bind(&MediaStreamVideoRendererSinkTest::RepaintCallback,
-                   base::Unretained(this)),
+        ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
+            &MediaStreamVideoRendererSinkTest::RepaintCallback,
+            CrossThreadUnretained(this))),
         Platform::Current()->GetIOTaskRunner(),
         scheduler::GetSingleThreadTaskRunnerForTesting());
     base::RunLoop().RunUntilIdle();
@@ -152,9 +154,10 @@ class MediaStreamVideoRendererSinkTransparencyTest
   MediaStreamVideoRendererSinkTransparencyTest() {
     media_stream_video_renderer_sink_ = new MediaStreamVideoRendererSink(
         blink_track_,
-        base::Bind(&MediaStreamVideoRendererSinkTransparencyTest::
-                       VerifyTransparentFrame,
-                   base::Unretained(this)),
+        ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
+            &MediaStreamVideoRendererSinkTransparencyTest::
+                VerifyTransparentFrame,
+            CrossThreadUnretained(this))),
         Platform::Current()->GetIOTaskRunner(),
         scheduler::GetSingleThreadTaskRunnerForTesting());
   }

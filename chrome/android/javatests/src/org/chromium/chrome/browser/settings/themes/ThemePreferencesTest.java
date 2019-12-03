@@ -23,8 +23,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.settings.Preferences;
-import org.chromium.chrome.browser.settings.PreferencesTest;
+import org.chromium.chrome.browser.settings.SettingsActivity;
+import org.chromium.chrome.browser.settings.SettingsActivityTest;
 import org.chromium.chrome.browser.settings.themes.ThemePreferences.ThemeSetting;
 import org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
@@ -62,9 +62,9 @@ public class ThemePreferencesTest extends DummyUiActivityTestCase {
     public void setUpTest() throws Exception {
         super.setUpTest();
         SharedPreferencesManager.getInstance().removeKey(UI_THEME_SETTING_KEY);
-        Preferences preferences = PreferencesTest.startPreferences(
+        SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
                 InstrumentationRegistry.getInstrumentation(), ThemePreferences.class.getName());
-        mFragment = (ThemePreferences) preferences.getMainFragment();
+        mFragment = (ThemePreferences) settingsActivity.getMainFragment();
         mPreference = (RadioButtonGroupThemePreference) mFragment.findPreference(
                 ThemePreferences.PREF_UI_THEME_PREF);
     }

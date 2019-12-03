@@ -103,7 +103,7 @@ class ComponentInstallerPolicy {
   // rules when issuing an update response.
   // Valid values for the name part of an attribute match
   // ^[-_a-zA-Z0-9]{1,256}$ and valid values the value part of an attribute
-  // match ^[-.,;+_=a-zA-Z0-9]{0,256}$ .
+  // match ^[-.,;+_=$a-zA-Z0-9]{0,256}$ .
   virtual update_client::InstallerAttributes GetInstallerAttributes() const = 0;
 };
 

@@ -11,13 +11,10 @@
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/common/navigation_params.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 
 namespace net {
 struct RedirectInfo;
-}
-
-namespace network {
-struct ResourceResponse;
 }
 
 namespace content {
@@ -49,9 +46,8 @@ class TestNavigationURLLoader
 
   void CallOnRequestRedirected(
       const net::RedirectInfo& redirect_info,
-      const scoped_refptr<network::ResourceResponse>& response_head);
-  void CallOnResponseStarted(
-      const scoped_refptr<network::ResourceResponse>& response_head);
+      network::mojom::URLResponseHeadPtr response_head);
+  void CallOnResponseStarted(network::mojom::URLResponseHeadPtr response_head);
 
   int redirect_count() { return redirect_count_; }
 

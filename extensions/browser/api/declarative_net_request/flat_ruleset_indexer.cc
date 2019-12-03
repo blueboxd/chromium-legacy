@@ -185,16 +185,18 @@ void FlatRulesetIndexer::AddUrlRule(const IndexedRule& indexed_rule) {
       builder->IndexUrlRule(offset);
   } else {
     // A UrlPatternIndex is not built for regex rules. These are stored
-    // separately.
-    regex_rules_.push_back(
-        flat::CreateRegexRule(builder_, offset, GetActionType(indexed_rule),
-                              GetRemoveHeadersMask(indexed_rule)));
+    // separately as part of flat::ExtensionIndexedRuleset.
+    FlatStringOffset regex_substitution_offset =
+        indexed_rule.regex_substitution
+            ? builder_.CreateSharedString(*indexed_rule.regex_substitution)
+            : FlatStringOffset();
+    regex_rules_.push_back(flat::CreateRegexRule(
+        builder_, offset, GetActionType(indexed_rule),
+        GetRemoveHeadersMask(indexed_rule), regex_substitution_offset));
   }
 
   // Store additional metadata required for a redirect rule.
   if (indexed_rule.action_type == dnr_api::RULE_ACTION_TYPE_REDIRECT) {
-    DCHECK(indexed_rule.redirect_url || indexed_rule.url_transform);
-
     if (indexed_rule.redirect_url) {
       DCHECK(!indexed_rule.redirect_url->empty());
       FlatStringOffset redirect_url_offset =
@@ -202,12 +204,15 @@ void FlatRulesetIndexer::AddUrlRule(const IndexedRule& indexed_rule) {
       metadata_.push_back(flat::CreateUrlRuleMetadata(
           builder_, indexed_rule.id, redirect_url_offset,
           FlatOffset<flat::UrlTransform>()));
-    } else {
+    } else if (indexed_rule.url_transform) {
       FlatOffset<flat::UrlTransform> transform_offset =
           BuildTransformOffset(&builder_, *indexed_rule.url_transform);
       metadata_.push_back(flat::CreateUrlRuleMetadata(
           builder_, indexed_rule.id, FlatStringOffset() /* redirect_url */,
           transform_offset));
+    } else {
+      // This was already indexed as part of |regex_rules_|.
+      DCHECK(indexed_rule.regex_substitution);
     }
   }
 }

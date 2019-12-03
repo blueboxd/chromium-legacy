@@ -21,12 +21,12 @@ namespace content {
 
 SignedExchangeDevToolsProxy::SignedExchangeDevToolsProxy(
     const GURL& outer_request_url,
-    const network::ResourceResponseHead& outer_response,
+    network::mojom::URLResponseHeadPtr outer_response,
     int frame_tree_node_id,
     base::Optional<const base::UnguessableToken> devtools_navigation_token,
     bool report_raw_headers)
     : outer_request_url_(outer_request_url),
-      outer_response_(outer_response),
+      outer_response_(std::move(outer_response)),
       frame_tree_node_id_(frame_tree_node_id),
       devtools_navigation_token_(devtools_navigation_token),
       devtools_enabled_(report_raw_headers) {
@@ -70,7 +70,7 @@ void SignedExchangeDevToolsProxy::CertificateRequestSent(
 void SignedExchangeDevToolsProxy::CertificateResponseReceived(
     const base::UnguessableToken& request_id,
     const GURL& url,
-    const network::ResourceResponseHead& head) {
+    const network::mojom::URLResponseHead& head) {
   if (!devtools_enabled_)
     return;
 
@@ -118,7 +118,8 @@ void SignedExchangeDevToolsProxy::OnSignedExchangeReceived(
 
   devtools_instrumentation::OnSignedExchangeReceived(
       frame_tree_node, devtools_navigation_token_, outer_request_url_,
-      outer_response_, envelope, certificate, ssl_info_opt, std::move(errors_));
+      *outer_response_, envelope, certificate, ssl_info_opt,
+      std::move(errors_));
 }
 
 }  // namespace content

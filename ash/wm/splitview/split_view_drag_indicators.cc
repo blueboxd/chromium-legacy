@@ -271,13 +271,15 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
     previous_window_dragging_state_ = window_dragging_state_;
     window_dragging_state_ = window_dragging_state;
 
+    SplitViewController* split_view_controller =
+        SplitViewController::Get(GetWidget()->GetNativeWindow());
     const bool previews_only =
         window_dragging_state == WindowDraggingState::kFromShelf ||
         window_dragging_state == WindowDraggingState::kFromTop ||
-        SplitViewController::Get(GetWidget()->GetNativeWindow())
-            ->InSplitViewMode();
+        split_view_controller->InSplitViewMode();
     const bool can_dragged_window_be_snapped =
-        dragged_window_ && CanSnapInSplitview(dragged_window_);
+        dragged_window_ &&
+        split_view_controller->CanSnapWindow(dragged_window_);
     if (!previews_only) {
       left_rotated_view_->OnWindowDraggingStateChanged(
           window_dragging_state, previous_window_dragging_state_,

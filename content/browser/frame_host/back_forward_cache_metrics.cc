@@ -237,16 +237,6 @@ void BackForwardCacheMetrics::UpdateNotRestoredReasonsForNavigation(
         static_cast<size_t>(NotRestoredReason::kNotMostRecentNavigationEntry));
   }
 
-  DCHECK(!navigation->IsServedFromBackForwardCache() ||
-         not_restored_reasons_.none())
-      << "If the navigation is served from bfcache, no not restored reasons "
-         "should be recorded";
-
-  if (!not_restored_reasons_.none() ||
-      navigation->IsServedFromBackForwardCache()) {
-    return;
-  }
-
   // |last_committed_main_frame_navigation_id_| is -1 when navigation history
   // has never been initialized. This can happen only when the session history
   // has been restored.
@@ -257,15 +247,22 @@ void BackForwardCacheMetrics::UpdateNotRestoredReasonsForNavigation(
 
   // This should not happen, but record this as an 'unknown' reason just in
   // case.
-  if (not_restored_reasons_.none()) {
+  if (not_restored_reasons_.none() &&
+      !navigation->IsServedFromBackForwardCache()) {
     not_restored_reasons_.set(static_cast<size_t>(NotRestoredReason::kUnknown));
     // TODO(altimin): Add a (D)CHECK here, but this code is reached in
     // unittests.
+    return;
   }
 }
 
 void BackForwardCacheMetrics::RecordMetricsForHistoryNavigationCommit(
     NavigationRequest* navigation) const {
+  DCHECK(!navigation->IsServedFromBackForwardCache() ||
+         not_restored_reasons_.none())
+      << "If the navigation is served from bfcache, no not restored reasons "
+         "should be recorded";
+
   HistoryNavigationOutcome outcome = HistoryNavigationOutcome::kNotRestored;
   if (navigation->IsServedFromBackForwardCache()) {
     outcome = HistoryNavigationOutcome::kRestored;
@@ -332,7 +329,7 @@ void BackForwardCacheMetrics::RecordEvictedAfterDocumentRestored(
 bool BackForwardCacheMetrics::ShouldRecordBrowsingInstanceNotSwappedReason()
     const {
   for (NotRestoredReason reason :
-       {NotRestoredReason::kConflictingBrowsingInstance,
+       {NotRestoredReason::kRelatedActiveContentsExist,
         NotRestoredReason::kRenderFrameHostReused_SameSite,
         NotRestoredReason::kRenderFrameHostReused_CrossSite}) {
     if (not_restored_reasons_.test(static_cast<size_t>(reason)))

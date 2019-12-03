@@ -141,6 +141,7 @@ constexpr double kNotificationIconAnimationScaleFactor = 0.77;
 constexpr int kNotificationIconAnimationUpDurationMs = 50;
 constexpr int kNotificationIconAnimationDownDurationMs = 17;
 constexpr int kNotificationIconAnimationOutDurationMs = 67;
+constexpr double kNotificationCenterDragExpandThreshold = 0.8;
 
 // Constants used in FeaturePodsView of UnifiedSystemTray.
 constexpr gfx::Size kUnifiedFeaturePodIconSize(48, 48);

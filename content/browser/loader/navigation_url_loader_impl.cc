@@ -339,7 +339,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         proxied_factory_remote_(std::move(proxied_factory_remote)),
         known_schemes_(std::move(known_schemes)),
         bypass_redirect_checks_(bypass_redirect_checks),
-        browser_context_(browser_context) {}
+        browser_context_(browser_context),
+        head_(network::mojom::URLResponseHead::New()) {}
 
   ~URLLoaderRequestController() override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -547,7 +548,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     }
     interceptor_index_ = 0;
     received_response_ = false;
-    head_ = network::ResourceResponseHead();
+    head_ = network::mojom::URLResponseHead::New();
     MaybeStartLoader(nullptr /* interceptor */,
                      {} /* single_request_factory */);
   }
@@ -827,7 +828,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // Wait for OnStartLoadingResponseBody() before sending anything to the
     // renderer process.
     if (!response_body_.is_valid()) {
-      head_ = head;
+      head_ = std::move(head);
       return;
     }
     received_response_ = true;
@@ -835,7 +836,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // If the default loader (network) was used to handle the URL load request
     // we need to see if the interceptors want to potentially create a new
     // loader for the response. e.g. AppCache.
-    if (MaybeCreateLoaderForResponse(head))
+    if (MaybeCreateLoaderForResponse(&head))
       return;
 
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints;
@@ -874,7 +875,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       // No plugin throttles intercepted the response. Ask if the plugin
       // registered to PluginService wants to handle the request.
       CheckPluginAndContinueOnReceiveResponse(
-          head, std::move(url_loader_client_endpoints),
+          std::move(head), std::move(url_loader_client_endpoints),
           true /* is_download_if_not_handled_by_plugin */,
           std::vector<WebPluginInfo>());
       return;
@@ -885,13 +886,13 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     is_download =
         !head->intercepted_by_plugin && (must_download || !known_mime_type);
 
-    CallOnReceivedResponse(head, std::move(url_loader_client_endpoints),
-                           is_download);
+    CallOnReceivedResponse(std::move(head),
+                           std::move(url_loader_client_endpoints), is_download);
   }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   void CheckPluginAndContinueOnReceiveResponse(
-      const network::ResourceResponseHead& head,
+      network::mojom::URLResponseHeadPtr head,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       bool is_download_if_not_handled_by_plugin,
       const std::vector<WebPluginInfo>& plugins) {
@@ -904,13 +905,13 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     int routing_id = frame_tree_node->current_frame_host()->GetRoutingID();
     bool has_plugin = PluginService::GetInstance()->GetPluginInfo(
         render_process_id, routing_id, resource_request_->url, url::Origin(),
-        head.mime_type, false /* allow_wildcard */, &stale, &plugin, nullptr);
+        head->mime_type, false /* allow_wildcard */, &stale, &plugin, nullptr);
 
     if (stale) {
       // Refresh the plugins asynchronously.
       PluginService::GetInstance()->GetPlugins(base::BindOnce(
           &URLLoaderRequestController::CheckPluginAndContinueOnReceiveResponse,
-          weak_factory_.GetWeakPtr(), head,
+          weak_factory_.GetWeakPtr(), std::move(head),
           std::move(url_loader_client_endpoints),
           is_download_if_not_handled_by_plugin));
       return;
@@ -918,20 +919,17 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
     bool is_download = !has_plugin && is_download_if_not_handled_by_plugin;
 
-    CallOnReceivedResponse(head, std::move(url_loader_client_endpoints),
-                           is_download);
+    CallOnReceivedResponse(std::move(head),
+                           std::move(url_loader_client_endpoints), is_download);
   }
 #endif
 
   void CallOnReceivedResponse(
-      const network::ResourceResponseHead& head,
+      network::mojom::URLResponseHeadPtr head,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       bool is_download) {
-    scoped_refptr<network::ResourceResponse> response(
-        new network::ResourceResponse());
-    response->head = head;
-
-    owner_->OnReceiveResponse(response, std::move(url_loader_client_endpoints),
+    owner_->OnReceiveResponse(std::move(head),
+                              std::move(url_loader_client_endpoints),
                               std::move(response_body_), global_request_id_,
                               is_download, ui_to_io_time_, base::Time::Now());
   }
@@ -975,15 +973,12 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // our interceptors_ a chance to intercept the request for the new location.
     redirect_info_ = redirect_info;
 
-    scoped_refptr<network::ResourceResponse> response(
-        new network::ResourceResponse());
-    response->head = head;
     url_ = redirect_info.new_url;
 
     base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&NavigationURLLoaderImpl::OnReceiveRedirect, owner_,
-                       redirect_info, response, base::Time::Now()));
+                       redirect_info, std::move(head), base::Time::Now()));
   }
 
   void OnUploadProgress(int64_t current_position,
@@ -1001,7 +996,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle response_body) override {
     response_body_ = std::move(response_body);
-    OnReceiveResponse(head_);
+    OnReceiveResponse(std::move(head_));
   }
 
   void OnComplete(const network::URLLoaderCompletionStatus& status) override {
@@ -1030,9 +1025,10 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // Note: Despite having received a response, the HTTP_NOT_MODIFIED(304) ones
     //       are ignored using OnComplete(net::ERR_ABORTED). No interceptor must
     //       be used in this case.
-    if (!received_response_ &&
-        MaybeCreateLoaderForResponse(network::ResourceResponseHead())) {
-      return;
+    if (!received_response_) {
+      auto response = network::mojom::URLResponseHead::New();
+      if (MaybeCreateLoaderForResponse(&response))
+        return;
     }
 
     status_ = status;
@@ -1044,9 +1040,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   // Returns true if an interceptor wants to handle the response, i.e. return a
   // different response. For e.g. AppCache may have fallback content.
   bool MaybeCreateLoaderForResponse(
-      const network::ResourceResponseHead& response) {
+      network::mojom::URLResponseHeadPtr* response) {
     if (!default_loader_used_ &&
-        !web_bundle_utils::CanLoadAsWebBundle(url_, response.mime_type)) {
+        !web_bundle_utils::CanLoadAsWebBundle(url_, (*response)->mime_type)) {
       return false;
     }
     for (size_t i = 0u; i < interceptors_.size(); ++i) {
@@ -1241,7 +1237,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   // Only used when NavigationLoaderOnUI is enabled:
   BrowserContext* browser_context_;
 
-  network::ResourceResponseHead head_;
+  network::mojom::URLResponseHeadPtr head_;
   mojo::ScopedDataPipeConsumerHandle response_body_;
 
   mutable base::WeakPtrFactory<URLLoaderRequestController> weak_factory_{this};
@@ -1427,7 +1423,7 @@ void NavigationURLLoaderImpl::FollowRedirect(
 }
 
 void NavigationURLLoaderImpl::OnReceiveResponse(
-    scoped_refptr<network::ResourceResponse> response_head,
+    network::mojom::URLResponseHeadPtr response_head,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     mojo::ScopedDataPipeConsumerHandle response_body,
     const GlobalRequestID& global_request_id,
@@ -1460,7 +1456,7 @@ void NavigationURLLoaderImpl::OnReceiveResponse(
 
 void NavigationURLLoaderImpl::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    scoped_refptr<network::ResourceResponse> response_head,
+    network::mojom::URLResponseHeadPtr response_head,
     base::Time io_post_time) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   io_to_ui_time_ += (base::Time::Now() - io_post_time);

@@ -110,6 +110,10 @@ namespace declarativeNetRequest {
      URLTransform? transform;
      // The redirect url. Redirects to JavaScript urls are not allowed.
      DOMString? url;
+     // TODO(crbug.com/974391): Add documentation once the implementation is
+     // complete.
+     [nodoc]
+     DOMString? regexSubstitution;
   };
 
   dictionary RuleCondition {

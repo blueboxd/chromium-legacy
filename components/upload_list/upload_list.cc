@@ -65,8 +65,8 @@ void UploadList::Load(base::OnceClosure callback) {
   load_callback_ = std::move(callback);
   base::PostTaskAndReplyWithResult(
       FROM_HERE, kLoadingTaskTraits,
-      base::Bind(&UploadList::LoadUploadList, this),
-      base::Bind(&UploadList::OnLoadComplete, this));
+      base::BindOnce(&UploadList::LoadUploadList, this),
+      base::BindOnce(&UploadList::OnLoadComplete, this));
 }
 
 void UploadList::Clear(const base::Time& begin,

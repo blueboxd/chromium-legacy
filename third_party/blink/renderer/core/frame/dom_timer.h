@@ -79,11 +79,7 @@ class CORE_EXPORT DOMTimer final : public GarbageCollected<DOMTimer>,
   void Stop() override;
 
  private:
-  friend class DOMTimerCoordinator;  // For Create().
-
   void Fired() override;
-
-  scoped_refptr<base::SingleThreadTaskRunner> TimerTaskRunner() const override;
 
   int timeout_id_;
   int nesting_level_;

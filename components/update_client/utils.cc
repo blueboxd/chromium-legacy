@@ -122,9 +122,9 @@ bool IsValidInstallerAttributeName(const std::string& name) {
   return IsValidInstallerAttributePart(name, "-_", 1, 256);
 }
 
-// Returns true if the |value| parameter matches ^[-.,;+_=a-zA-Z0-9]{0,256}$ .
+// Returns true if the |value| parameter matches ^[-.,;+_=$a-zA-Z0-9]{0,256}$ .
 bool IsValidInstallerAttributeValue(const std::string& value) {
-  return IsValidInstallerAttributePart(value, "-.,;+_=", 0, 256);
+  return IsValidInstallerAttributePart(value, "-.,;+_=$", 0, 256);
 }
 
 bool IsValidInstallerAttribute(const InstallerAttribute& attr) {

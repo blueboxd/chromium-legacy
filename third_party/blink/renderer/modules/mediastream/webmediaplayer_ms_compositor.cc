@@ -160,11 +160,11 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
         *video_frame_compositor_task_runner_, FROM_HERE,
         CrossThreadBindOnce(&WebMediaPlayerMSCompositor::InitializeSubmitter,
                             weak_ptr_factory_.GetWeakPtr()));
-    update_submission_state_callback_ =
-        media::BindToLoop(video_frame_compositor_task_runner_,
-                          ConvertToBaseCallback(CrossThreadBindRepeating(
-                              &WebMediaPlayerMSCompositor::SetIsSurfaceVisible,
-                              weak_ptr_factory_.GetWeakPtr())));
+    update_submission_state_callback_ = media::BindToLoop(
+        video_frame_compositor_task_runner_,
+        ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
+            &WebMediaPlayerMSCompositor::SetIsSurfaceVisible,
+            weak_ptr_factory_.GetWeakPtr())));
   }
 
   WebVector<WebMediaStreamTrack> video_tracks;
@@ -177,7 +177,7 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
   if (remote_video && Platform::Current()->RTCSmoothnessAlgorithmEnabled()) {
     base::AutoLock auto_lock(current_frame_lock_);
     rendering_frame_buffer_.reset(new media::VideoRendererAlgorithm(
-        ConvertToBaseCallback(CrossThreadBindRepeating(
+        ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
             &WebMediaPlayerMSCompositor::MapTimestampsToRenderTimeTicks,
             CrossThreadUnretained(this))),
         &media_log_));

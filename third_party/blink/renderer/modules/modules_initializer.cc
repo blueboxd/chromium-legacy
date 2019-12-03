@@ -314,11 +314,11 @@ void ModulesInitializer::DidChangeManifest(LocalFrame& frame) {
 
 void ModulesInitializer::RegisterInterfaces(mojo::BinderMap& binders) {
   DCHECK(Platform::Current());
+  binders.Add(ConvertToBaseRepeatingCallback(
+                  CrossThreadBindRepeating(&WebDatabaseImpl::Create)),
+              Platform::Current()->GetIOTaskRunner());
   binders.Add(
-      ConvertToBaseCallback(CrossThreadBindRepeating(&WebDatabaseImpl::Create)),
-      Platform::Current()->GetIOTaskRunner());
-  binders.Add(
-      ConvertToBaseCallback(CrossThreadBindRepeating(
+      ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
           &PeerConnectionTracker::Bind,
           WTF::CrossThreadUnretained(PeerConnectionTracker::GetInstance()))),
       Thread::MainThread()->GetTaskRunner());

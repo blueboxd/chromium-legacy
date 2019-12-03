@@ -189,6 +189,7 @@ group("polymer3_elements") {
 }
 
 js_type_check("cr_elements_module_resources") {
+  uses_js_modules = true
   deps = [
     ":cr_container_shadow_behavior.m",
   ]

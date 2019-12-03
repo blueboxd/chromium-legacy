@@ -149,6 +149,7 @@ void CardExpirationDateFixFlowViewBridge::DeleteSelf() {
 
   _expirationDatePicker =
       [[ExpirationDatePicker alloc] initWithFrame:CGRectZero];
+  _expirationDatePicker.backgroundColor = [UIColor clearColor];
   __weak CardExpirationDateFixFlowViewController* weakSelf = self;
   _expirationDatePicker.onDateSelected = ^(NSString* month, NSString* year) {
     CardExpirationDateFixFlowViewController* strongSelf = weakSelf;

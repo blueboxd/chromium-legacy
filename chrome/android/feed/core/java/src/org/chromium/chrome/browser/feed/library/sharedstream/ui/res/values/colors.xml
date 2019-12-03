@@ -5,7 +5,6 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 <resources>
-  <color name="button_compat_color">#FFFFFF</color>
   <color name="google_blue_500">#4285F4</color>
   <color name="feed_modern_blue_600">#1A73E8</color>
   <!-- feed_modern_blue_600 with a 10% opacity -->
@@ -13,7 +12,6 @@ found in the LICENSE file.
   <color name="feed_modern_blue_300">#8AB4F8</color>
   <!-- feed_modern_blue_300 with a 10% opacity -->
   <color name="feed_alpha_10_modern_blue_300">#198AB4F8</color>
-  <color name="black_alpha_54">#8A000000</color>
   <color name="black_alpha_87">#DE000000</color>
 
   <!-- Text colors -->

@@ -854,13 +854,13 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 
       Modelos formatados incorretamente serão ignorados.</translation>
 <translation id="2345547870894930157">Ativar DNS sobre HTTPS sem substituto inseguro</translation>
-<translation id="2347264058558503729">Permite que o <ph name="PRODUCT_NAME" /> envie documentos para o <ph name="CLOUD_PRINT_NAME" /> para impressão.  OBSERVAÇÃO: isso apenas afeta compatibilidade do <ph name="CLOUD_PRINT_NAME" /> com o <ph name="PRODUCT_NAME" />.  Isso não impede que os usuários enviem trabalhos de impressão em sites.
+<translation id="2347264058558503729">Permite que o <ph name="PRODUCT_NAME" /> envie documentos para impressão no <ph name="CLOUD_PRINT_NAME" />.  OBSERVAÇÃO: isso só afeta a compatibilidade do <ph name="CLOUD_PRINT_NAME" /> com o <ph name="PRODUCT_NAME" />.  Os usuários não são impedidos de enviar trabalhos de impressão em sites.
 
       Se essa configuração for ativada ou não for configurada, os usuários poderão imprimir no <ph name="CLOUD_PRINT_NAME" /> pela caixa de diálogo de impressão do <ph name="PRODUCT_NAME" />.
 
       Se essa configuração for desativada, os usuários não poderão imprimir no <ph name="CLOUD_PRINT_NAME" /> pela caixa de diálogo de impressão do <ph name="PRODUCT_NAME" />.
 
-      Para manter os destinos do <ph name="CLOUD_PRINT_NAME" /> detectáveis, é necessário que essa política seja definida como verdadeira e que "nuvem" não esteja incluído na política PrinterTypeDenyList.</translation>
+      Para manter os destinos do <ph name="CLOUD_PRINT_NAME" /> detectáveis, é necessário que essa política seja definida como verdadeira e que "cloud" não esteja incluído na política PrinterTypeDenyList.</translation>
 <translation id="237494535617297575">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para exibir notificações. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultNotificationsSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="2386362615870139244">Permitir bloqueios de ativação da tela</translation>
 <translation id="2398554235599593694"> Esta política controla se a caixa de seleção "Sempre aberto" é exibida ou não em prompts de confirmação de inicialização de protocolo externo.
@@ -2331,17 +2331,17 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
       Essas solicitações são criadas quando os usuários tentam instalar uma extensão que não foi autorizada na <ph name="EXTENSION_INSTALL_WHITELIST" /> nem nas <ph name="EXTENSION_SETTINGS" />.
 
       Esta política só é eficaz quando a máquina está inscrita no <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> e se <ph name="CLOUD_REPORTING_ENABLED" /> está ativado.</translation>
-<translation id="4638162097046412832">As impressoras colocadas na lista de proibições terão a descoberta desativada ou não terão as funcionalidades buscadas.
+<translation id="4638162097046412832">Se o tipo da impressora estiver na lista de proibições, não será possível descobrir esse equipamento ou buscar suas funcionalidades.
 
       Colocar todos os tipos de impressora na lista de proibições desativa a impressão de modo eficaz, uma vez que não haveria destinos disponíveis para enviar um documento para impressão.
 
-      Incluir "nuvem" na lista de proibições tem o mesmo efeito que definir a política CloudPrintSubmitEnabled como falsa. Para que os destinos do <ph name="CLOUD_PRINT_NAME" /> continuem disponíveis, é necessário que a política CloudPrintSubmitEnabled seja definida como verdadeira e "nuvem" não esteja na lista de proibições.
+      Incluir "cloud" na lista de proibições tem o mesmo efeito que definir a política CloudPrintSubmitEnabled como falsa. Para que os destinos do <ph name="CLOUD_PRINT_NAME" /> continuem disponíveis, é necessário que a política CloudPrintSubmitEnabled seja definida como verdadeira e "cloud" não esteja na lista de proibições.
 
       Se a política não for configurada ou for configurada como uma lista vazia, todos os tipos de impressora estarão disponíveis para descoberta.
 
       As impressoras de extensão também são conhecidas como destinos de provedores de impressão e incluem qualquer destino que pertença a uma extensão do <ph name="PRODUCT_NAME" />.
 
-      As impressoras locais também são conhecidas como destinos de impressão nativos e incluem destinos disponíveis para as máquinas locais e impressoras de rede compartilhada.</translation>
+      As impressoras locais também são conhecidas como destinos de impressão nativos e incluem os destinos disponíveis para as impressoras de rede compartilhada e de máquinas locais.</translation>
 <translation id="4639407427807680016">Nomes dos hosts de mensagens nativas a serem mantidos fora da lista de proibições</translation>
 <translation id="4649395978608361979">Destinos de impressoras locais</translation>
 <translation id="4650759511838826572">Desativar esquemas do protocolo de URL</translation>
@@ -2989,7 +2989,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="5645779841392247734">Permitir cookies nestes sites</translation>
 <translation id="5656177735561364047">Ativa o recurso de área de transferência compartilhada</translation>
 <translation id="5666457529647159548">Permite que o usuário gerencie certificados do cliente instalados.</translation>
-<translation id="5676740747107495269">Exibir opções de acessibilidade no menu da bandeja do sistema na tela de login</translation>
+<translation id="5676740747107495269">Exibir opções de acessibilidade no menu da bandeja do sistema, na tela de login</translation>
 <translation id="5689430183304951538">Tamanho da página de impressão padrão</translation>
 <translation id="5693469654327063861">Permitir migração de dados</translation>
 <translation id="5694594914843889579">Quando esta política é definida como "true", o armazenamento externo não fica disponível no navegador de arquivos.

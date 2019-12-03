@@ -9,6 +9,7 @@
 <translation id="1036348656032585052">آف کریں</translation>
 <translation id="1038842779957582377">نامعلوم نام</translation>
 <translation id="1039626062703039346">‏Chrome آپ کو اپنا Google اکاؤنٹ محفوظ اور پاس ورڈ تبدیل کرنے میں مدد کر سکتا ہے۔ یہ Google کو اس سائٹ کے بارے میں مطلع کرے گا۔</translation>
+<translation id="1044897699341250361">اس کا کیا مطلب ہے</translation>
 <translation id="1050038467049342496">دیگر ایپس بند کریں</translation>
 <translation id="1055184225775184556">شامل کریں کو &amp;کالعدم کریں</translation>
 <translation id="1056898198331236512">وارننگ</translation>
@@ -184,6 +185,7 @@
 <translation id="1745880797583122200">آپ کا براؤزر زیر انتظام ہے</translation>
 <translation id="17513872634828108">کھلے ٹیبز</translation>
 <translation id="1753706481035618306">صفحہ نمبر</translation>
+<translation id="175838129965056221">‏Chrome کو پتا چلا ہے کہ آپ کے کنکشن کو مانیٹر کیا جا رہا ہے</translation>
 <translation id="1763864636252898013">یہ سرور یہ ثابت نہیں کر سکا کہ یہ <ph name="DOMAIN" /> ہے؛ اس کا سیکیورٹی سرٹیفیکیٹ آپ کے آلہ کے آپریٹنگ سسٹم کے ذریعے بھروسہ مند نہیں ہے۔ یہ غلط کنفیگریشن یا آپ کے کنکشن میں مانع بن رہے کسی حملہ آور کی وجہ سے ہو سکتا ہے۔</translation>
 <translation id="1768211456781949159">‏<ph name="BEGIN_LINK" />Windows نیٹ ورک کی تشخیصات چلانے کی کوشش کریں<ph name="END_LINK" />۔</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -252,6 +254,7 @@
 <translation id="2119867082804433120">نیچے دائیں طرف سوراخ</translation>
 <translation id="2129079103035905234">موشن سینسرز</translation>
 <translation id="2130448033692577677">‏ہو سکتا ہے کہ آپ کے ذریعے متعینہ تمثیلات DnsOverHttpsMode پالیسی سیٹ نہ ہونے کی وجہ سے لاگو نہ ہو۔</translation>
+<translation id="2131277894177304644">‏Chromium کو پتا چلا ہے کہ آپ کے کنکشن کو مانیٹر کیا جا رہا ہے</translation>
 <translation id="213826338245044447">موبائل بُک مارکس</translation>
 <translation id="214556005048008348">ادائیگی منسوخ کریں</translation>
 <translation id="2147827593068025794">پس منظر کی مطابقت پذیری</translation>
@@ -299,6 +302,7 @@
 <translation id="2354001756790975382">دیگر بُک مارکس</translation>
 <translation id="2354430244986887761">‏Google محفوظ براؤزنگ کو حال ہی میں <ph name="SITE" /> پر <ph name="BEGIN_LINK" />نقصاندہ ایپس ملی ہیں<ph name="END_LINK" />۔</translation>
 <translation id="2355395290879513365">حملہ آور ان تصاویر کو دیکھ سکتے ہیں جنہیں آپ اس سائٹ پر دیکھ رہے ہیں اور ان میں ترمیم کر کے آپ کو دھوکہ دے سکتے ہیں۔</translation>
+<translation id="2355474962185559967">‏آپ نے ابھی ایک پُرفریب سائٹ پر اپنا پاس ورڈ درج کیا ہے۔ Chromium آپ کو <ph name="WEBSITE_1" /> پر جا کر ابھی اپنا پاس ورڈ تبدیل کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="2356070529366658676">پوچھیں</translation>
 <translation id="2359629602545592467">متعدد</translation>
 <translation id="2359808026110333948">جاری رکھیں</translation>
@@ -397,6 +401,7 @@
 <translation id="2799020568854403057">آگے کی سائٹ نقصاندہ ایپس پر مشتمل ہے</translation>
 <translation id="2799223571221894425">دوبارہ شروع کریں</translation>
 <translation id="2803306138276472711">‏Google سیف براؤزنگ کو حال ہی میں <ph name="SITE" /> پر <ph name="BEGIN_LINK" />میلویئر کا پتہ چلا<ph name="END_LINK" />۔ جو ویب سائٹس عام طور پر محفوظ ہوتی ہیں وہ کبھی کبھی میلویئر سے متاثر ہو جاتی ہیں۔</translation>
+<translation id="281585763351939989">‏Chromium کو پتا چلا ہے کہ آپ کے کنکشن کو مانیٹر کیا جا رہا ہے۔</translation>
 <translation id="2824775600643448204">پتہ اور تلاش بار</translation>
 <translation id="2826760142808435982">کنکشن کو <ph name="CIPHER" /> کا استعمال کر کے مرموز کیا گیا ہے اور اس کی توثیق کی گئی ہے اور یہ کلید کے تبادلہ کے طریقہ کار کے بطور <ph name="KX" /> کا استعمال کرتا ہے۔</translation>
 <translation id="2835170189407361413">فارم صاف کریں</translation>
@@ -441,6 +446,7 @@
 <translation id="3024663005179499861">پالیسی کی غلط قسم</translation>
 <translation id="3037605927509011580">ارے، رکیں!</translation>
 <translation id="3041612393474885105">سرٹیفکیٹ کی معلومات</translation>
+<translation id="304755864151473094">یہ کیوں دکھایا جا رہا ہے</translation>
 <translation id="3057676462092457419">‏DnsOverHttps موڈ <ph name="SECURE_DNS_MODE_SECURE" /> ابھی تک تعاون یافتہ نہیں ہے، موڈ <ph name="SECURE_DNS_MODE_OFF" /> پر سیٹ کر دیا گیا ہے۔</translation>
 <translation id="3060227939791841287">C9 ‎(Envelope‎)‎</translation>
 <translation id="3061707000357573562">پیچ سروس</translation>
@@ -481,6 +487,7 @@
 <translation id="3228969707346345236">ترجمہ ناکام ہو گیا کیونکہ صفحہ پہلے سے ہی <ph name="LANGUAGE" /> میں ہے۔</translation>
 <translation id="3229041911291329567">آپ کے آلے اور براؤزر کے بارے میں ورژن کی معلومات</translation>
 <translation id="323107829343500871">‏<ph name="CREDIT_CARD" /> کا CVC درج کریں</translation>
+<translation id="3234392465377209614">‏آپ نے ابھی ایک پُرفریب سائٹ پر اپنا پاس ورڈ درج کیا ہے۔ Chromium آپ کو <ph name="WEBSITE_1" />، <ph name="WEBSITE_2" />، اور <ph name="WEBSITE_3" /> پر جا کر ابھی اپنا پاس ورڈ تبدیل کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="3234666976984236645">اس سائٹ پر اہم مواد کا ہمیشہ پتا لگائیں</translation>
 <translation id="3262069459091978471">‏<ph name="LOOKALIKE_DOMAIN" /> <ph name="SUGGESTED_DOMAIN" /> کے مماثل لگ رہا ہے۔ بعض اوقات حملہ آور مماثل URLs کا استعمال کر کے سائٹس کی نقل کرتے ہیں۔</translation>
 <translation id="3270847123878663523">دوبارہ ترتیب &amp;کالعدم کریں</translation>
@@ -513,6 +520,7 @@
 <translation id="342781501876943858">‏اگر آپ نے اپنا پاس ورڈ دیگر سائٹس پر دوبارہ استعمال کیا ہے تو Chromium آپ کو اپنا پاس ورڈ ری سیٹ کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="3428151540071562330">‏ایک یا ایک سے زیادہ DnsOverHttpsTemplates سرور تمثیل URIs غلط ہیں اور استعمال نہیں کیے جائیں گے۔</translation>
 <translation id="3431636764301398940">اس کارڈ کو اس آلہ میں محفوظ کریں</translation>
+<translation id="3438790640050632698">‏آپ نے ابھی ایک پُرفریب سائٹ پر اپنا پاس ورڈ درج کیا ہے۔ Chrome آپ کو <ph name="WEBSITE_1" /> اور <ph name="WEBSITE_2" /> پر جا کر ابھی اپنا پاس ورڈ تبدیل کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">اس آلہ کے مالک نے ڈائناسور گیم کو آف کر دیا ہے۔</translation>
 <translation id="3447884698081792621">سرٹیفیکیٹ دکھائیں (<ph name="ISSUER" /> کی جانب سے جاری کردہ)</translation>
@@ -527,6 +535,7 @@
 <translation id="3495081129428749620"><ph name="PAGE_TITLE" />
 صفحے میں تلاش کریں</translation>
 <translation id="3512163584740124171">اسی پالیسی گروپ کی طرف سے آنے والی دوسری پالیسی میں ایک اعلی ترجیح ہونے کی وجہ سے یہ پالیسی نظر انداز کی جاتی ہے۔</translation>
+<translation id="3525469219100414032">‏آپ نے ابھی ایک پُرفریب سائٹ پر اپنا پاس ورڈ درج کیا ہے۔ Chrome آپ کو <ph name="WEBSITE_1" /> پر جا کر ابھی اپنا پاس ورڈ تبدیل کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="3528171143076753409">سرور کا سرٹیفکیٹ بھروسہ مند نہیں ہے۔</translation>
 <translation id="3528485271872257980">گہرا بھورا</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{مطابقت پذیر آلات پر کم از کم 1 آئٹم}=1{1 آئٹم (اور مطابقت پذیر آلات پر مزید)}other{# آئٹمز (اور مطابقت پذیر آلات پر مزید)}}</translation>
@@ -600,6 +609,7 @@
 <translation id="3858027520442213535">تاریخ اور وقت اپ ڈیٹ کریں</translation>
 <translation id="3884278016824448484">متنازع آلہ شناخت کنندہ</translation>
 <translation id="3885155851504623709">پیرش</translation>
+<translation id="388632593194507180">مانیٹر کرنے کا پتہ چلا</translation>
 <translation id="3890664840433101773">ای میل شامل کریں</translation>
 <translation id="3897092660631435901">مینو</translation>
 <translation id="3901925938762663762">اس کارڈ کی میعاد ختم ہو گئی ہے</translation>
@@ -701,6 +711,7 @@
 <translation id="4305817255990598646">سوئچ کریں</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">مسدود کریں (ڈیفالٹ)</translation>
+<translation id="4318312030194671742">پینٹ پیش منظر کے کمپوزیٹر کی سروس</translation>
 <translation id="4318566738941496689">آپ کے آلے کا نام اور نیٹ ورک پتہ</translation>
 <translation id="4325863107915753736">مضمون تلاش کرنے میں ناکام ہوگیا</translation>
 <translation id="4326324639298822553">اپنی اختتامی تاریخ چیک کریں اور دوبارہ کوشش کریں</translation>
@@ -717,6 +728,7 @@
 <translation id="4372948949327679948">متوقع <ph name="VALUE_TYPE" /> قدر۔</translation>
 <translation id="4377125064752653719">آپ نے <ph name="DOMAIN" /> تک رسائی کی کوشش کی، لیکن سرور کے ذریعے پیش کردہ سرٹیفیکیٹ کو اس کے جاری کنندہ نے منسوخ کر دیا ہے۔ اس کا مطلب ہے کہ سرور کے ذریعے پیش کردہ سیکیورٹی اسنادات پر مطلق طور پر بھروسہ نہیں کیا جانا چاہیے۔ ممکن ہے کہ آپ کی مواصلت ایک حملہ آور کے ساتھ ہو رہی ہو۔</translation>
 <translation id="4378154925671717803">فون</translation>
+<translation id="437847259914972036">ویب پر کی جانے والی آپ کی سرگرمی اور آپ کی داخل کردہ ہر معلومات پر نظر رکھی جا رہی ہے، اور مواد کو آپ کے علم کے بغیر تبدیل کیا جا سکتا ہے۔</translation>
 <translation id="4398334096870680409">یہ خصوصیت آپ کے آلے پر دستیاب نہیں ہے۔</translation>
 <translation id="4406896451731180161">تلاش کے نتائج</translation>
 <translation id="4408413947728134509">کوکیز <ph name="NUM_COOKIES" /></translation>
@@ -951,6 +963,7 @@
 <translation id="5565735124758917034">فعال</translation>
 <translation id="5570825185877910964">اکاؤنٹ محفوظ کریں</translation>
 <translation id="5571083550517324815">اس پتے سے پِک اپ نہیں کر سکتے۔ کوئی مختلف پتہ منتخب کریں۔</translation>
+<translation id="5572009199897554128">‏آپ نے ابھی ایک پُرفریب سائٹ پر اپنا پاس ورڈ درج کیا ہے۔ Chromium آپ کو <ph name="WEBSITE_1" />، <ph name="WEBSITE_2" /> پر جا کر ابھی اپنا پاس ورڈ تبدیل کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="5580958916614886209">اپنا اختتامی مہینہ چیک کریں اور دوبارہ کوشش کریں</translation>
 <translation id="5586446728396275693">کوئي پتہ محفوظ نہیں ہے</translation>
 <translation id="5595485650161345191">پتے میں ترمیم کریں</translation>
@@ -1134,6 +1147,7 @@
 <translation id="6446163441502663861">Kahu ‎(Envelope‎)‎</translation>
 <translation id="6446608382365791566">مزید معلومات شامل کریں</translation>
 <translation id="6447842834002726250">کوکیز</translation>
+<translation id="644931407731409778">PDF دستاویز {COUNT,plural, =1{1 صفحہ}other{# صفحات}} پر مشتمل ہے</translation>
 <translation id="6451458296329894277">فارم دوبارہ جمع کرانے کی توثیق کریں</translation>
 <translation id="6457206614190510200">سیڈل سلائی</translation>
 <translation id="6465306955648956876">پاسورڈز کا نظم کریں...</translation>
@@ -1152,6 +1166,7 @@
 <translation id="6547208576736763147">بائیں طرف دُہرا سوراخ</translation>
 <translation id="6554795675067793129"><ph name="ENROLLMENT_DOMAIN" /> آپ کے اکاؤنٹ کا نظم کرتا ہے۔</translation>
 <translation id="6556866813142980365">واپس لائیں</translation>
+<translation id="6559565319173126218">‏Chrome اس کنکشن کے لیے پیش کردہ سرٹیفکیٹ پر اعتبار نہیں کرتا ہے، کیونکہ اسے نیٹ ورک کی مداخلت اور نگرانی کے استعمال کے لیے جانا جاتا ہے۔</translation>
 <translation id="6569060085658103619">آپ ایک ایکسٹینشن صفحہ دیکھ رہے ہیں</translation>
 <translation id="6573200754375280815">دائیں طرف دُہرا سوراخ</translation>
 <translation id="6578796323535178455">C2 ‎(Envelope‎)‎</translation>
@@ -1185,6 +1200,7 @@
 <translation id="6710594484020273272">&lt;تلاش کی اصطلاح ٹائپ کریں&gt;</translation>
 <translation id="671076103358959139">اندراج کا ٹوکن:</translation>
 <translation id="6711464428925977395">پراکسی سرور میں کچھ غلط ہے یا پتہ درست نہیں ہے۔</translation>
+<translation id="6721811549156553509">نیٹ ورک مانیٹر ان سائٹوں پر ہونے کا دکھاوا کر سکتا ہے جن کا آپ ملاحظہ کرتے ہیں، اور آپ کی سرگرمی اور آپ کی داخل کردہ ہر معلومات (مثال کے طور پر، پاس ورڈز، پیغامات، یا کریڈٹ کارڈز) دیکھ سکتا ہے۔ آن لائن کوئی بھی حساس کام کرتے وقت آپ کو دھیان رکھنا چاہیے، کیونکہ نیٹ ورک مانیٹر پر یہ نظر آئے گا، اور نیٹ ورک مانیٹر ان صفحات پر موجود مواد کو تبدیل کر سکتا ہے جن کا آپ ملاحظہ کرتے ہیں۔ اس میں انٹرنیٹ تک رسائی حاصل کرنے والے دیگر براؤزرز اور پروگرامز کی سرگرمی شامل ہے۔</translation>
 <translation id="6738516213925468394">آپ کے ڈیٹا کی آپ کے <ph name="BEGIN_LINK" />مطابقت پذیر پاس فریز<ph name="END_LINK" /> کے ساتھ <ph name="TIME" /> کو مرموز کاری کی گئی تھی۔ مطابقت پذیری شروع کرنے کیلئے اسے درج کریں۔</translation>
 <translation id="674375294223700098">سرور سرٹیفکیٹ میں نامعلوم خرابی۔</translation>
 <translation id="6744009308914054259">کنکشن کا انتظار کرنے کے دوران، آف لائن مضامین پڑھنے کے لیے آپ ڈاؤن لوڈز ملاحظہ کر سکتے ہیں۔</translation>
@@ -1269,6 +1285,7 @@
 <translation id="721197778055552897">اس مسئلہ کے بارے میں <ph name="BEGIN_LINK" />مزید جانیں<ph name="END_LINK" />۔</translation>
 <translation id="7219179957768738017">کنکشن <ph name="SSL_VERSION" /> کا استعمال کرتا ہے۔</translation>
 <translation id="7220786058474068424">کارروائی ہورہی ہے</translation>
+<translation id="7239736667463137521">‏Chrome کو پتا چلا ہے کہ آپ کے کنکشن کو مانیٹر کیا جا رہا ہے۔</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />، <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">آگے کی سائٹ میلویئر پر مشتمل ہے</translation>
 <translation id="724975217298816891">‏اپنے کارڈ کی تفصیلات اپ ڈیٹ کرنے کیلئے <ph name="CREDIT_CARD" /> کی اختتامی تاریخ اور CVC درج کریں۔ آپ کے توثیق کرنے کے بعد، اس سائٹ کے ساتھ آپ کے کارڈ کی تفصیلات کا اشتراک کیا جائے گا۔</translation>
@@ -1295,6 +1312,7 @@
 <translation id="7346048084945669753">الحاق یافتہ ہے:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">کمانڈ لائن</translation>
+<translation id="7353776484425559055">‏Chromium اس کنکشن کے سرٹیفکیٹ پر اعتبار نہیں کرتا ہے، کیونکہ اسے نیٹ ورک کی مداخلت اور نگرانی کے استعمال کے لیے جانا جاتا ہے۔ ممکن ہے آپ کو اپنے آلہ پر آپ کے انسٹال کردہ سرٹیفکیٹ کی وجہ سے یہ خرابی نظر آئے۔ محفوظ کنکشنز کرتے وقت، Chromium ان سرٹیفکیٹس پر اعتماد کرتا ہے جو مقامی طور پر صارف کے کمپیوٹر یا موبائل آلہ پر انسٹال کیے جا چکے ہیں۔ صارف کو اس سے ویب سائٹ ڈیولپمنٹ کے دوران اپنے کنکشنز کا معائنہ اور ڈیبگ کرنے، یا کارپوریٹ کے ماحولوں کو اندرونی ٹریفک کو روکنے اور مانیٹر کرنے کے لیے ٹولز چلانے میں سہولت ہوتی ہے۔ ایسے معاملات کے لیے جہاں عوامی انٹرنیٹ پر ٹریفک کو روکنے کے لیے اس کے ساتھ بدسلوکی کی جا رہی ہو، تو Chromium انتباہ دکھاتا ہے۔</translation>
 <translation id="7372973238305370288">تلاش کا نتیجہ</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">میڈیا کنٹرولز</translation>
@@ -1356,6 +1374,7 @@
 <translation id="7592362899630581445">سرور سرٹیفیکیٹ نام کی پابندیوں کی خلاف ورزی کرتا ہے۔</translation>
 <translation id="7598391785903975535"><ph name="UPPER_ESTIMATE" /> سے کم</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> فی الحال اس درخواست کو نمٹانے سے قاصر ہے۔</translation>
+<translation id="7599841999395223597">‏Chrome اس کنکشن کے سرٹیفکیٹ پر اعتبار نہیں کرتا ہے، کیونکہ اسے نیٹ ورک کی مداخلت اور نگرانی کے استعمال کے لیے جانا جاتا ہے۔ ممکن ہے آپ کو اپنے آلہ پر آپ کے انسٹال کردہ سرٹیفکیٹ کی وجہ سے یہ خرابی نظر آئے۔ محفوظ کنکشنز کرتے وقت، Chrome ان سرٹیفکیٹس پر اعتماد کرتا ہے جو مقامی طور پر صارف کے کمپیوٹر یا موبائل آلہ پر انسٹال کیے جا چکے ہیں۔ صارف کو اس سے ویب سائٹ ڈیولپمنٹ کے دوران اپنے کنکشنز کا معائنہ اور ڈیبگ کرنے، یا کارپوریٹ کے ماحولوں کو اندرونی ٹریفک کو روکنے اور مانیٹر کرنے کے لیے ٹولز چلانے میں سہولت ہوتی ہے۔ ایسے معاملات کے لیے جہاں عوامی انٹرنیٹ پر ٹریفک کو روکنے کے لیے اس کے ساتھ بدسلوکی کی جا رہی ہو، تو Chrome انتباہ دکھاتا ہے۔</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> کا کبھی بھی ترجمہ نہ کریں</translation>
 <translation id="7610193165460212391">قدر رینج سے باہر کی ہے <ph name="VALUE" />۔</translation>
 <translation id="7613889955535752492">‏اختتامی تاریخ: ‎<ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" />‎</translation>
@@ -1673,6 +1692,7 @@
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">‏آپ اپنے Google اکاؤنٹ تک رسائی سے محروم ہو سکتے ہیں۔ Chromium تجویز کرتا ہے کہ آپ ابھی اپنا پاس ورڈ تبدیل کریں۔ آپ سے سائن ان کرنے کو کہا جائے گا۔</translation>
 <translation id="939736085109172342">نیا فولڈر</translation>
+<translation id="940786960229275114">‏آپ نے ابھی ایک پُرفریب سائٹ پر اپنا پاس ورڈ درج کیا ہے۔ Chrome آپ کو <ph name="WEBSITE_1" />، <ph name="WEBSITE_2" />، اور <ph name="WEBSITE_3" /> پر جا کر ابھی اپنا پاس ورڈ تبدیل کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="945855313015696284">مندرجہ ذیل معلومات چیک کریں اور کسی بھی غلط کارڈ کو حذف کریں</translation>
 <translation id="950736567201356821">اوپر تین بار سوراخ</translation>
 <translation id="951104842009476243">قبول کردہ ڈیبٹ اور پیشگی ادائیگی والے کارڈز</translation>

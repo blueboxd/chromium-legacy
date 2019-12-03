@@ -65,7 +65,6 @@ void ClickToCallContextMenuObserver::BuildMenu(
   if (devices_.empty())
     return;
 
-  proxy_->AddSeparator();
   if (devices_.size() == 1) {
 #if defined(OS_MACOSX)
     proxy_->AddMenuItem(
@@ -96,7 +95,6 @@ void ClickToCallContextMenuObserver::BuildMenu(
         sub_menu_model_.get(), vector_icons::kCallIcon);
 #endif
   }
-  proxy_->AddSeparator();
 }
 
 void ClickToCallContextMenuObserver::BuildSubMenu() {

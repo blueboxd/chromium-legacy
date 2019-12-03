@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//components/nacl/features.gni")
 import("//remoting/build/config/remoting_build.gni")
 
 group("remoting_all") {
@@ -11,13 +10,7 @@ group("remoting_all") {
   deps = [
     ":remoting_unittests",
     "//remoting/test:chromoting_test_driver",
-    "//remoting/webapp:browser_test_resources",
-    "//remoting/webapp:unit_tests",
   ]
-
-  if ((is_linux && !is_chromeos) || is_win || is_mac) {
-    deps += [ "//remoting/webapp" ]
-  }
 
   if (is_win) {
     deps += [
@@ -79,10 +72,6 @@ group("remoting_all") {
     if (is_chrome_branded) {
       deps += [ "//remoting/host:remoting_me2me_host_archive" ]
     }
-  }
-
-  if (enable_nacl) {
-    deps += [ "//remoting/tools/javascript_key_tester" ]
   }
 }
 

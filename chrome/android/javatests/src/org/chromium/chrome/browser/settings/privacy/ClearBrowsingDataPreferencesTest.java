@@ -39,7 +39,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataTab;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
-import org.chromium.chrome.browser.settings.Preferences;
+import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.privacy.ClearBrowsingDataPreferences.DialogOption;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabState;
@@ -121,15 +121,15 @@ public class ClearBrowsingDataPreferencesTest {
         clearButton.callOnClick();
     }
 
-    private Preferences startPreferences() {
-        Preferences preferences = mActivityTestRule.startPreferences(
+    private SettingsActivity startPreferences() {
+        SettingsActivity settingsActivity = mActivityTestRule.startSettingsActivity(
                 ClearBrowsingDataPreferencesAdvanced.class.getName());
         ClearBrowsingDataFetcher fetcher = new ClearBrowsingDataFetcher();
         ClearBrowsingDataPreferences fragment =
-                (ClearBrowsingDataPreferences) preferences.getMainFragment();
+                (ClearBrowsingDataPreferences) settingsActivity.getMainFragment();
         fragment.setClearBrowsingDataFetcher(fetcher);
         TestThreadUtils.runOnUiThreadBlocking(fetcher::fetchImportantSites);
-        return preferences;
+        return settingsActivity;
     }
 
     /**
@@ -218,29 +218,29 @@ public class ClearBrowsingDataPreferencesTest {
     }
 
     /**
-     * A helper Runnable that opens the Preferences activity containing
+     * A helper Runnable that opens the Settings activity containing
      * a ClearBrowsingDataPreferences fragment and clicks the "Clear" button.
      */
     static class OpenPreferencesEnableDialogAndClickClearRunnable implements Runnable {
-        final Preferences mPreferences;
+        final SettingsActivity mSettingsActivity;
 
         /**
          * Instantiates this OpenPreferencesEnableDialogAndClickClearRunnable.
-         * @param preferences A Preferences activity containing ClearBrowsingDataPreferences
+         * @param settingsActivity A Settings activity containing ClearBrowsingDataPreferences
          *         fragment.
          */
-        public OpenPreferencesEnableDialogAndClickClearRunnable(Preferences preferences) {
-            mPreferences = preferences;
+        public OpenPreferencesEnableDialogAndClickClearRunnable(SettingsActivity settingsActivity) {
+            mSettingsActivity = settingsActivity;
         }
 
         @Override
         public void run() {
             ClearBrowsingDataPreferences fragment =
-                    (ClearBrowsingDataPreferences) mPreferences.getMainFragment();
+                    (ClearBrowsingDataPreferences) mSettingsActivity.getMainFragment();
             PreferenceScreen screen = fragment.getPreferenceScreen();
 
             // Enable the dialog and click the "Clear" button.
-            ((ClearBrowsingDataPreferences) mPreferences.getMainFragment())
+            ((ClearBrowsingDataPreferences) mSettingsActivity.getMainFragment())
                     .getClearBrowsingDataFetcher()
                     .enableDialogAboutOtherFormsOfBrowsingHistory();
             clickClearButton(fragment);
@@ -249,24 +249,24 @@ public class ClearBrowsingDataPreferencesTest {
 
     /**
      * A criterion that is satisfied when a ClearBrowsingDataPreferences fragment in the given
-     * Preferences activity is closed.
+     * Settings activity is closed.
      */
     static class PreferenceScreenClosedCriterion extends Criteria {
-        final Preferences mPreferences;
+        final SettingsActivity mSettingsActivity;
 
         /**
          * Instantiates this PreferenceScreenClosedCriterion.
-         * @param preferences A Preferences activity containing ClearBrowsingDataPreferences
+         * @param settingsActivity A Settings activity containing ClearBrowsingDataPreferences
          *         fragment.
          */
-        public PreferenceScreenClosedCriterion(Preferences preferences) {
-            mPreferences = preferences;
+        public PreferenceScreenClosedCriterion(SettingsActivity settingsActivity) {
+            mSettingsActivity = settingsActivity;
         }
 
         @Override
         public boolean isSatisfied() {
             ClearBrowsingDataPreferences fragment =
-                    (ClearBrowsingDataPreferences) mPreferences.getMainFragment();
+                    (ClearBrowsingDataPreferences) mSettingsActivity.getMainFragment();
             return fragment == null || !fragment.isVisible();
         }
     }
@@ -287,26 +287,26 @@ public class ClearBrowsingDataPreferencesTest {
         // History is not selected. We still need to select some other datatype, otherwise the
         // "Clear" button won't be enabled.
         setDataTypesToClear(new ArraySet<>(Arrays.asList(DialogOption.CLEAR_CACHE)));
-        final Preferences preferences1 = startPreferences();
+        final SettingsActivity settingsActivity1 = startPreferences();
         TestThreadUtils.runOnUiThreadBlocking(
-                new OpenPreferencesEnableDialogAndClickClearRunnable(preferences1));
+                new OpenPreferencesEnableDialogAndClickClearRunnable(settingsActivity1));
 
         // The dialog about other forms of history is not shown. The Clear Browsing Data preferences
         // is closed as usual.
-        CriteriaHelper.pollUiThread(new PreferenceScreenClosedCriterion(preferences1));
+        CriteriaHelper.pollUiThread(new PreferenceScreenClosedCriterion(settingsActivity1));
 
         // Reopen Clear Browsing Data preferences, this time with history selected for clearing.
         setDataTypesToClear(new ArraySet<>(Arrays.asList(DialogOption.CLEAR_HISTORY)));
-        final Preferences preferences2 = startPreferences();
+        final SettingsActivity settingsActivity2 = startPreferences();
         TestThreadUtils.runOnUiThreadBlocking(
-                new OpenPreferencesEnableDialogAndClickClearRunnable(preferences2));
+                new OpenPreferencesEnableDialogAndClickClearRunnable(settingsActivity2));
 
         // The dialog about other forms of history should now be shown.
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 ClearBrowsingDataPreferences fragment =
-                        (ClearBrowsingDataPreferences) preferences2.getMainFragment();
+                        (ClearBrowsingDataPreferences) settingsActivity2.getMainFragment();
                 OtherFormsOfHistoryDialogFragment dialog =
                         fragment.getDialogAboutOtherFormsOfBrowsingHistory();
                 return dialog != null && dialog.getActivity() != null;
@@ -316,24 +316,24 @@ public class ClearBrowsingDataPreferencesTest {
         // Close that dialog.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ClearBrowsingDataPreferences fragment =
-                    (ClearBrowsingDataPreferences) preferences2.getMainFragment();
+                    (ClearBrowsingDataPreferences) settingsActivity2.getMainFragment();
             fragment.getDialogAboutOtherFormsOfBrowsingHistory().onClick(
                     null, AlertDialog.BUTTON_POSITIVE);
         });
 
         // That should close the preference screen as well.
-        CriteriaHelper.pollUiThread(new PreferenceScreenClosedCriterion(preferences2));
+        CriteriaHelper.pollUiThread(new PreferenceScreenClosedCriterion(settingsActivity2));
 
         // Reopen Clear Browsing Data preferences and clear history once again.
         setDataTypesToClear(new ArraySet<>(Arrays.asList(DialogOption.CLEAR_HISTORY)));
-        final Preferences preferences3 = startPreferences();
+        final SettingsActivity settingsActivity3 = startPreferences();
         TestThreadUtils.runOnUiThreadBlocking(
-                new OpenPreferencesEnableDialogAndClickClearRunnable(preferences3));
+                new OpenPreferencesEnableDialogAndClickClearRunnable(settingsActivity3));
 
         // The dialog about other forms of browsing history is still enabled, and history has been
         // selected for deletion. However, the dialog has already been shown before, and therefore
         // we won't show it again. Expect that the preference screen closes.
-        CriteriaHelper.pollUiThread(new PreferenceScreenClosedCriterion(preferences3));
+        CriteriaHelper.pollUiThread(new PreferenceScreenClosedCriterion(settingsActivity3));
     }
 
     /** This presses the 'clear' button on the root preference page. */
@@ -469,16 +469,16 @@ public class ClearBrowsingDataPreferencesTest {
         Assert.assertEquals(
                 "true", mActivityTestRule.runJavaScriptCodeInCurrentTab("hasAllStorage()"));
 
-        Preferences preferences = startPreferences();
+        SettingsActivity settingsActivity = startPreferences();
         ClearBrowsingDataPreferences fragment =
-                (ClearBrowsingDataPreferences) preferences.getMainFragment();
+                (ClearBrowsingDataPreferences) settingsActivity.getMainFragment();
         TestThreadUtils.runOnUiThreadBlocking(getPressClearRunnable(fragment));
         // Check that the important sites dialog is shown, and the list is visible.
         waitForImportantDialogToShow(fragment, 2);
         // Press the cancel button.
         TestThreadUtils.runOnUiThreadBlocking(
                 getPressButtonInImportantDialogRunnable(fragment, AlertDialog.BUTTON_NEGATIVE));
-        preferences.finish();
+        settingsActivity.finish();
         mActivityTestRule.loadUrl(testUrl);
         Assert.assertEquals(
                 "true", mActivityTestRule.runJavaScriptCodeInCurrentTab("hasAllStorage()"));
@@ -512,9 +512,9 @@ public class ClearBrowsingDataPreferencesTest {
         Assert.assertEquals(
                 "true", mActivityTestRule.runJavaScriptCodeInCurrentTab("hasAllStorage()"));
 
-        final Preferences preferences = startPreferences();
+        final SettingsActivity settingsActivity = startPreferences();
         final ClearBrowsingDataPreferences fragment =
-                (ClearBrowsingDataPreferences) preferences.getMainFragment();
+                (ClearBrowsingDataPreferences) settingsActivity.getMainFragment();
 
         // Uncheck the first item (our internal web server).
         TestThreadUtils.runOnUiThreadBlocking(getPressClearRunnable(fragment));

@@ -99,6 +99,11 @@ bool GetPDFDocInfo(base::span<const uint8_t> pdf_buffer,
                    int* page_count,
                    double* max_page_width);
 
+// Whether the PDF is Tagged (see 10.7 "Tagged PDF" in PDF Reference 1.7).
+// Returns true if it's a tagged (accessible) PDF, false if it's a valid
+// PDF but untagged, and nullopt if the PDF can't be parsed.
+base::Optional<bool> IsPDFDocTagged(base::span<const uint8_t> pdf_buffer);
+
 // Gets the dimensions of a specific page in a document.
 // |pdf_buffer| is the buffer that contains the entire PDF document to be
 //     rendered.

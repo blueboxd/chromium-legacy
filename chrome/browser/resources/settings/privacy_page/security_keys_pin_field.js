@@ -6,6 +6,21 @@
  * @fileoverview 'settings-security-keys-pin-field' is a component for entering
  * a security key PIN.
  */
+
+cr.define('settings', function() {
+  /**
+   * A function that submits a PIN to a security key. It returns a Promise which
+   * resolves with null if the PIN was correct, or with the number of retries
+   * remaining otherwise.
+   * @typedef function(string): Promise<?number>
+   */
+  let PINFieldSubmitFunc;
+
+  return {
+    PINFieldSubmitFunc: PINFieldSubmitFunc,
+  };
+});
+
 Polymer({
   is: 'settings-security-keys-pin-field',
 
@@ -14,20 +29,20 @@ Polymer({
   ],
 
   properties: {
-    // The validation error label of the input field.
-    error: {
+    /* @private */
+    error_: {
       type: String,
       observer: 'errorChanged_',
     },
 
-    // The value of the input field.
-    value: String,
+    /* @private */
+    value_: String,
 
-    /**
-     * Whether the contents of the input field are visible.
-     * @private
-     */
-    inputVisible_: Boolean,
+    /* @private */
+    inputVisible_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /** @override */
@@ -35,8 +50,6 @@ Polymer({
     Polymer.RenderStatus.afterNextRender(this, function() {
       Polymer.IronA11yAnnouncer.requestAvailability();
     });
-
-    this.inputVisible_ = false;
   },
 
   /** Focuses the PIN input field. */
@@ -47,21 +60,43 @@ Polymer({
   /**
    * Validates the PIN and sets the validation error if it is not valid.
    * @return {boolean} True iff the PIN is valid.
+   * @private
    */
-  validate: function() {
-    const error = this.isValidPIN_(this.value);
+  validate_: function() {
+    const error = this.isValidPIN_(this.value_);
     if (error != '') {
-      this.error = error;
+      this.error_ = error;
       return false;
     }
     return true;
   },
 
   /**
+   * Attempts submission of the PIN by invoking |submitFunc|. Updates the UI to
+   * show an error if the PIN was incorrect.
+   * @param {!settings.PINFieldSubmitFunc} submitFunc
+   * @return {!Promise} resolves if the PIN was correct, else rejects
+   */
+  trySubmit: function(submitFunc) {
+    if (!this.validate_()) {
+      this.focus();
+      return Promise.reject();
+    }
+    return submitFunc(this.value_).then(retries => {
+      if (retries != null) {
+        this.showIncorrectPINError_(retries);
+        this.focus();
+        return Promise.reject();
+      }
+    });
+  },
+
+  /**
    * Sets the validation error to indicate the PIN was incorrect.
    * @param {number} retries The number of retries remaining.
+   * @private
    */
-  showIncorrectPINError: function(retries) {
+  showIncorrectPINError_: function(retries) {
     // Warn the user if the number of retries is getting low.
     let error;
     if (1 < retries && retries <= 3) {
@@ -72,14 +107,14 @@ Polymer({
     } else {
       error = this.i18n('securityKeysPINIncorrect');
     }
-    this.error = error;
+    this.error_ = error;
   },
 
   /** @private */
   onPINInput_: function() {
     // Typing in the PIN box after an error makes the error message
     // disappear.
-    this.error = '';
+    this.error_ = '';
   },
 
   /**
@@ -167,6 +202,6 @@ Polymer({
   errorChanged_: function() {
     // Make screen readers announce changes to the PIN validation error
     // label.
-    this.fire('iron-announce', {text: this.error});
+    this.fire('iron-announce', {text: this.error_});
   },
 });

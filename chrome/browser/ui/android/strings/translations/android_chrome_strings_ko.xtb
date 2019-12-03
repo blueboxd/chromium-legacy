@@ -12,9 +12,9 @@
 <translation id="107147699690128016">파일 확장자를 변경하면 파일이 다른 애플리케이션에서 열리고 기기가 위험에 노출될 수도 있습니다.</translation>
 <translation id="1100066534610197918">새 탭을 그룹에서 열기</translation>
 <translation id="1105960400813249514">화면 캡처</translation>
-<translation id="1110022065703191351">아이콘</translation>
 <translation id="1111673857033749125">다른 기기에서 저장한 북마크가 여기에 표시됩니다.</translation>
 <translation id="1113597929977215864">간단히 보기 표시</translation>
+<translation id="1122278879166832009">어디에서나 홈페이지에 빠르게 액세스하려면 여기를 탭하세요.</translation>
 <translation id="1124772482545689468">사용자</translation>
 <translation id="1129510026454351943">세부정보: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{다운로드 1개 대기 중}other{다운로드 #개 대기 중}}</translation>
@@ -379,6 +379,7 @@
 <translation id="3822502789641063741">사이트 저장공간을 삭제하시겠습니까?</translation>
 <translation id="385051799172605136">뒤로</translation>
 <translation id="3859306556332390985">앞으로 탐색</translation>
+<translation id="388596076286380598">오프라인 상태이거나 연결 상태가 좋지 못할 때도 좋아하는 사이트의 기사, 동영상 및 기타 콘텐츠를 볼 수 있습니다.</translation>
 <translation id="3894427358181296146">폴더 추가</translation>
 <translation id="3895926599014793903">확대/축소 강제 사용</translation>
 <translation id="3912508018559818924">웹에서 최상의 결과를 찾는 중…</translation>
@@ -490,6 +491,7 @@
 <translation id="4719927025381752090">번역 옵션 제공</translation>
 <translation id="4720023427747327413"><ph name="PRODUCT_NAME" />에서 열기</translation>
 <translation id="4720982865791209136">Chrome을 개선하는 데 도움을 주세요. <ph name="BEGIN_LINK" />설문조사 참여하기<ph name="END_LINK" /></translation>
+<translation id="4732120983431207637">스택 언와인더</translation>
 <translation id="473775607612524610">업데이트</translation>
 <translation id="4738836084190194332">마지막 동기화 시간: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">새 탭 열기</translation>
@@ -542,7 +544,6 @@
 <translation id="5048398596102334565">사이트의 움직임 감지 센서 액세스 허용(권장)</translation>
 <translation id="5063480226653192405">사용</translation>
 <translation id="5087580092889165836">카드 추가</translation>
-<translation id="5096950519211870196">사이트가 알림 표시를 요청하지 못하도록 차단됩니다. 사이트에서 알림을 요청하면 페이지 하단에 정보 표시줄이 나타납니다.</translation>
 <translation id="5100237604440890931">접힘 - 펼치려면 클릭</translation>
 <translation id="510275257476243843">1시간 남음</translation>
 <translation id="5123685120097942451">시크릿 탭</translation>
@@ -636,6 +637,7 @@
 <translation id="5684874026226664614">죄송합니다. 이 페이지를 번역할 수 없습니다.</translation>
 <translation id="5686790454216892815">파일 이름이 너무 깁니다.</translation>
 <translation id="5689516760719285838">위치</translation>
+<translation id="5694049548840660018">홈으로 쉽게 돌아가기</translation>
 <translation id="569536719314091526">옵션 더보기 버튼을 눌러 이 페이지를 원하는 언어로 번역하세요</translation>
 <translation id="5710871682236653961">NFC 기기를 탭하면 사이트가 정보를 주고받도록 허용할지 확인(권장)</translation>
 <translation id="572328651809341494">최근 탭</translation>
@@ -689,7 +691,6 @@
 <translation id="6108923351542677676">설정 진행 중...</translation>
 <translation id="6111020039983847643">데이터 사용됨</translation>
 <translation id="6112702117600201073">페이지 새로고침</translation>
-<translation id="6113400363611269907">무음으로 메시지 표시</translation>
 <translation id="6127379762771434464">항목 삭제됨</translation>
 <translation id="6140912465461743537">국가/지역</translation>
 <translation id="614940544461990577">다음 방법을 시도해 보세요.</translation>
@@ -791,13 +792,13 @@
 <translation id="6818926723028410516">항목 선택</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">번역</translation>
-<translation id="6840155290835956714">보내기 전에 확인</translation>
 <translation id="6845325883481699275">Chrome 보안 강화 개선에 참여하기</translation>
 <translation id="6846298663435243399">로드 중...</translation>
 <translation id="6850409657436465440">아직 다운로드 중</translation>
 <translation id="6850830437481525139">탭 <ph name="TAB_COUNT" />개를 닫았습니다.</translation>
 <translation id="6864459304226931083">이미지 다운로드</translation>
 <translation id="6865313869410766144">양식 데이터 자동 완성</translation>
+<translation id="6884306546558072722">오프라인에서 계속 탐색</translation>
 <translation id="688738109438487280"><ph name="TO_ACCOUNT" />에 기존 데이터 추가</translation>
 <translation id="6891726759199484455">비밀번호를 복사하려면 잠금 해제하세요</translation>
 <translation id="6896758677409633944">복사</translation>
@@ -1039,6 +1040,7 @@
 <translation id="8636825310635137004">다른 기기에서 탭을 가져오려면 동기화를 사용 설정하세요.</translation>
 <translation id="8641930654639604085">성인용 사이트 차단 시도</translation>
 <translation id="8655129584991699539">Chrome 설정에서 데이터를 삭제할 수 있습니다.</translation>
+<translation id="8655599981421006542">새 탭을 만들고 이전 탭으로 돌아가려면 여기를 탭하세요.</translation>
 <translation id="8662811608048051533">대부분의 사이트에서 로그아웃됩니다.</translation>
 <translation id="8664979001105139458">이미 존재하는 이름입니다.</translation>
 <translation id="8676374126336081632">입력내용 지우기</translation>
@@ -1051,6 +1053,7 @@
 <translation id="8730621377337864115">완료</translation>
 <translation id="8748850008226585750">숨겨진 콘텐츠</translation>
 <translation id="8751914237388039244">이미지 선택</translation>
+<translation id="8758557275681689734">열려 있는 탭 모두 보기</translation>
 <translation id="8788265440806329501">탐색 기록 닫힘</translation>
 <translation id="8788968922598763114">마지막으로 닫은 탭 다시 열기</translation>
 <translation id="8801436777607969138">특정 사이트의 자바스크립트를 차단합니다.</translation>

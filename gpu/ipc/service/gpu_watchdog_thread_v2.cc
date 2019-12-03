@@ -115,7 +115,11 @@ void GpuWatchdogThreadImplV2::OnForegrounded() {
 // Called from the gpu thread when gpu init has completed.
 void GpuWatchdogThreadImplV2::OnInitComplete() {
   DCHECK(watched_gpu_task_runner_->BelongsToCurrentThread());
-  in_gpu_initialization_ = false;
+
+  task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&GpuWatchdogThreadImplV2::UpdateInitializationFlag,
+                     base::Unretained(this)));
   Disarm();
 }
 
@@ -313,6 +317,10 @@ void GpuWatchdogThreadImplV2::StopWatchdogTimeoutTask(
 
   // Revoke any pending watchdog timeout task
   weak_factory_.InvalidateWeakPtrs();
+}
+
+void GpuWatchdogThreadImplV2::UpdateInitializationFlag() {
+  in_gpu_initialization_ = false;
 }
 
 // Called from the gpu main thread.

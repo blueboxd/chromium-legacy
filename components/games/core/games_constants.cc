@@ -9,4 +9,7 @@ namespace games {
 const base::FilePath::CharType kGamesCatalogFileName[] =
     FILE_PATH_LITERAL("games-catalog.pb");
 
+const base::FilePath::CharType kHighlightedGamesFileName[] =
+    FILE_PATH_LITERAL("highlighted-games.pb");
+
 }  // namespace games

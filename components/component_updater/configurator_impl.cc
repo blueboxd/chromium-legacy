@@ -121,13 +121,6 @@ bool ConfiguratorImpl::EnabledCupSigning() const {
   return true;
 }
 
-std::vector<uint8_t> ConfiguratorImpl::GetRunActionKeyHash() const {
-  return std::vector<uint8_t>{0x5f, 0x94, 0xe0, 0x3c, 0x64, 0x30, 0x9f, 0xbc,
-                              0xfe, 0x00, 0x9a, 0x27, 0x3e, 0x52, 0xbf, 0xa5,
-                              0x84, 0xb9, 0xb3, 0x75, 0x07, 0x29, 0xde, 0xfa,
-                              0x32, 0x76, 0xd9, 0x93, 0xb5, 0xa3, 0xce, 0x02};
-}
-
 // The default implementation for most embedders returns an empty string.
 // Desktop embedders, such as the Windows component updater can provide a
 // meaningful implementation for this function.
@@ -138,11 +131,6 @@ std::string ConfiguratorImpl::GetAppGuid() const {
 std::unique_ptr<update_client::ProtocolHandlerFactory>
 ConfiguratorImpl::GetProtocolHandlerFactory() const {
   return std::make_unique<update_client::ProtocolHandlerFactoryJSON>();
-}
-
-update_client::RecoveryCRXElevator ConfiguratorImpl::GetRecoveryCRXElevator()
-    const {
-  return {};
 }
 
 }  // namespace component_updater

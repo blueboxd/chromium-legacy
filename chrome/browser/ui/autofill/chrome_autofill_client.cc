@@ -511,14 +511,15 @@ bool ChromeAutofillClient::IsContextSecure() {
     return false;
 
   const auto security_level = helper->GetSecurityLevel();
+  content::NavigationEntry* entry =
+      web_contents()->GetController().GetVisibleEntry();
 
-  // Cases with mixed passive content are safe enough to allow autofill, so
-  // allow NONE in addition to the secure cases.
+  // Only dangerous security states should prevent autofill.
   //
-  // TODO(crbug.com/701018): Once passive mixed content is less common, just use
-  // IsSslCertificateValid().
-  return security_state::IsSslCertificateValid(security_level) ||
-         security_level == security_state::NONE;
+  // TODO(crbug.com/701018): Once passive mixed content and legacy TLS are less
+  // common, just use IsSslCertificateValid().
+  return entry->GetURL().SchemeIsCryptographic() &&
+         security_level != security_state::DANGEROUS;
 }
 
 bool ChromeAutofillClient::ShouldShowSigninPromo() {

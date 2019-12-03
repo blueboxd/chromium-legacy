@@ -9,6 +9,7 @@
 <translation id="1036348656032585052">Çaktivizo</translation>
 <translation id="1038842779957582377">emër i panjohur</translation>
 <translation id="1039626062703039346">Chrome mund të të ndihmojë ta mbrosh "Llogarinë tënde të Google" dhe të ndryshosh fjalëkalimin tënd. Kjo do ta njoftojë Google për këtë sajt.</translation>
+<translation id="1044897699341250361">Çfarë do të thotë kjo</translation>
 <translation id="1050038467049342496">Mbyll aplikacionet e tjera</translation>
 <translation id="1055184225775184556">&amp;Zhbëj shtimin</translation>
 <translation id="1056898198331236512">Paralajmërim</translation>
@@ -183,6 +184,7 @@
 <translation id="1745880797583122200">Shfletuesi yt është i menaxhuar</translation>
 <translation id="17513872634828108">Hap skedat</translation>
 <translation id="1753706481035618306">Numri i faqes</translation>
+<translation id="175838129965056221">Chrome ka zbuluar se lidhja jote po monitorohet</translation>
 <translation id="1763864636252898013">Ky server nuk mundi të dëshmonte se ky është <ph name="DOMAIN" />; certifikata e tij e sigurisë nuk është e besueshme nga Chromium. Kjo mund të shkaktohet nga keqkonfigurimi ose ndonjë sulmues që po kap lidhjen tënde.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Provo të ekzekutosh diagnostikimin e rrjetit të Windows<ph name="END_LINK" />.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -251,6 +253,7 @@
 <translation id="2119867082804433120">Shpim poshtë djathtas</translation>
 <translation id="2129079103035905234">Sensorët e lëvizjes</translation>
 <translation id="2130448033692577677">Shabllonet që ke specifikuar mund të mos zbatohen për shkak se politika DnsOverHttpsMode nuk është caktuar.</translation>
+<translation id="2131277894177304644">Chromium ka zbuluar se lidhja jote po monitorohet</translation>
 <translation id="213826338245044447">Faqeshënuesit celularë</translation>
 <translation id="214556005048008348">Anulo pagesën</translation>
 <translation id="2147827593068025794">Sinkronizimi në sfond</translation>
@@ -298,6 +301,7 @@
 <translation id="2354001756790975382">Faqeshënues të tjerë</translation>
 <translation id="2354430244986887761">"Shfletimi i sigurt i Google" zbuloi së fundi <ph name="BEGIN_LINK" />aplikacione të dëmshme<ph name="END_LINK" /> në <ph name="SITE" />.</translation>
 <translation id="2355395290879513365">Sulmuesit mund të arrijnë t'i shikojnë imazhet që po shikon në këtë sajt dhe të të mashtrojnë duke i modifikuar ato.</translation>
+<translation id="2355474962185559967">Sapo fute fjalëkalimin tënd në një sajt mashtrues. Chromium rekomandon që të shkosh te <ph name="WEBSITE_1" /> dhe të ndryshosh fjalëkalimin tani.</translation>
 <translation id="2356070529366658676">Pyet</translation>
 <translation id="2359629602545592467">Disa</translation>
 <translation id="2359808026110333948">Vazhdo</translation>
@@ -391,6 +395,7 @@
 <translation id="2799020568854403057">Sajti përpara përmban aplikacione të dëmshme</translation>
 <translation id="2799223571221894425">Nis sërish</translation>
 <translation id="2803306138276472711">Kohët e fundit "Shfletimi i sigurt me Google" <ph name="BEGIN_LINK" />zbuloi softuerin keqdashës<ph name="END_LINK" /> në <ph name="SITE" />. Faqet që zakonisht janë të sigurta ndonjëherë infektohen me softuerë keqdashës.</translation>
+<translation id="281585763351939989">Chromium ka zbuluar se lidhja jote po monitorohet.</translation>
 <translation id="2824775600643448204">Shiriti i adresës dhe i kërkimit</translation>
 <translation id="2826760142808435982">Lidhja është e enkriptuar dhe e vërtetuar me <ph name="CIPHER" /> dhe përdor <ph name="KX" /> si mekanizëm kryesor shkëmbimi.</translation>
 <translation id="2835170189407361413">Pastro formularin</translation>
@@ -435,6 +440,7 @@
 <translation id="3024663005179499861">Lloj i gabuar politike</translation>
 <translation id="3037605927509011580">Ndërprerje aksidentale!</translation>
 <translation id="3041612393474885105">Informacioni i certifikatës</translation>
+<translation id="304755864151473094">Pse po ndodh kjo</translation>
 <translation id="3057676462092457419">Modaliteti DnsOverHttps <ph name="SECURE_DNS_MODE_SECURE" /> nuk mbështetet ende, modaliteti është caktuar në <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">C9 (Zarf)</translation>
 <translation id="3061707000357573562">Shërbimi i korrigjimit</translation>
@@ -474,6 +480,7 @@
 <translation id="3228969707346345236">Përkthimi dështoi pasi faqja është tashmë në <ph name="LANGUAGE" />.</translation>
 <translation id="3229041911291329567">Informacioni i versionit rreth pajisjes dhe shfletuesit tënd</translation>
 <translation id="323107829343500871">Shkruaj kodin CVC për <ph name="CREDIT_CARD" /></translation>
+<translation id="3234392465377209614">Sapo fute fjalëkalimin tënd në një sajt mashtrues. Chromium rekomandon që të shkosh te <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> dhe <ph name="WEBSITE_3" /> dhe të ndryshosh fjalëkalimin tani.</translation>
 <translation id="3234666976984236645">Zbulo gjithmonë përmbajtje të rëndësishme në këtë sajt</translation>
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> duket i ngjashëm me <ph name="SUGGESTED_DOMAIN" />. Sulmuesit ndonjëherë i imitojnë sajtet duke përdorur URL të ngjashme.</translation>
 <translation id="3270847123878663523">&amp;Zhbëj rirenditjen</translation>
@@ -506,6 +513,7 @@
 <translation id="342781501876943858">Chromium rekomandon rivendosjen e fjalëkalimit tënd nëse e ke ripërdorur në sajte të tjera.</translation>
 <translation id="3428151540071562330">Një ose disa nga URI-të e shablloneve të serverit DnsOverHttpsTemplates janë të pavlefshme dhe nuk do të përdoren.</translation>
 <translation id="3431636764301398940">Ruaje këtë kartë në këtë pajisje</translation>
+<translation id="3438790640050632698">Sapo fute fjalëkalimin tënd në një sajt mashtrues. Chrome rekomandon që të shkosh te <ph name="WEBSITE_1" /> dhe <ph name="WEBSITE_2" /> dhe të ndryshosh fjalëkalimin tani.</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">Zotëruesi i kësaj pajisjeje ka çaktivizuar lojën me dinozaurë.</translation>
 <translation id="3447884698081792621">Shfaq certifikatën (lëshuar nga <ph name="ISSUER" />)</translation>
@@ -520,6 +528,7 @@
 <translation id="3495081129428749620">Gjej në faqen
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">Kjo politikë shpërfillet pasi një politikë tjetër nga i njëjti grup politikash ka përparësi më të lartë.</translation>
+<translation id="3525469219100414032">Sapo fute fjalëkalimin tënd në një sajt mashtrues. Chrome rekomandon që të shkosh te <ph name="WEBSITE_1" /> dhe të ndryshosh fjalëkalimin tani.</translation>
 <translation id="3528171143076753409">Certifikata e serverit nuk është e besuar.</translation>
 <translation id="3528485271872257980">Kafe e errët</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Të paktën 1 artikull në pajisjet e sinkronizuara}=1{1 artikull (dhe më shumë në pajisjet e sinkronizuara)}other{# artikuj (dhe më shumë në pajisjet e sinkronizuara)}}</translation>
@@ -593,6 +602,7 @@
 <translation id="3858027520442213535">Përditëso datën dhe kohën</translation>
 <translation id="3884278016824448484">Identifikuesi i pajisjes bie në konflikt</translation>
 <translation id="3885155851504623709">Famullia</translation>
+<translation id="388632593194507180">U zbulua monitorim</translation>
 <translation id="3890664840433101773">Shto një email</translation>
 <translation id="3897092660631435901">Menyja</translation>
 <translation id="3901925938762663762">Karta ka skaduar</translation>
@@ -694,6 +704,7 @@
 <translation id="4305817255990598646">Ndërro</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Blloko (parazgjedhja)</translation>
+<translation id="4318312030194671742">Shërbimi i krijuesit të Versionit paraprak të Paint</translation>
 <translation id="4318566738941496689">Emri i pajisjes dhe adresa e rrjetit</translation>
 <translation id="4325863107915753736">Dështoi në gjetjen e artikullit</translation>
 <translation id="4326324639298822553">Kontrollo datën e skadimit dhe provo përsëri</translation>
@@ -710,6 +721,7 @@
 <translation id="4372948949327679948">Pritet një vlerë <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">U përpoqe të arrije domenin <ph name="DOMAIN" />, por certifikata që paraqiti serveri është revokuar nga lëshuesi i saj. Kjo do të thotë se kredencialet e sigurisë që paraqiti serveri nuk duhet të besohen në mënyrë absolute. Mund të jesh duke komunikuar me ndonjë sulmues.</translation>
 <translation id="4378154925671717803">Telefoni</translation>
+<translation id="437847259914972036">Aktiviteti yt në ueb dhe çdo informacion që fut po shikohet, si dhe përmbajtjet mund të ndryshohen pa dijeninë tënde.</translation>
 <translation id="4398334096870680409">Kjo veçori nuk ofrohet në pajisjen tënde.</translation>
 <translation id="4406896451731180161">rezultatet e kërkimit</translation>
 <translation id="4408413947728134509">Kukit <ph name="NUM_COOKIES" /></translation>
@@ -944,6 +956,7 @@
 <translation id="5565735124758917034">Aktiv</translation>
 <translation id="5570825185877910964">Mbroje llogarinë</translation>
 <translation id="5571083550517324815">Nuk mund të merret nga kjo adresë. Zgjidh një adresë tjetër.</translation>
+<translation id="5572009199897554128">Sapo fute fjalëkalimin tënd në një sajt mashtrues. Chromium rekomandon që të shkosh te <ph name="WEBSITE_1" /> dhe <ph name="WEBSITE_2" /> dhe të ndryshosh fjalëkalimin tani.</translation>
 <translation id="5580958916614886209">Kontrollo muajin e skadimit dhe provo përsëri</translation>
 <translation id="5586446728396275693">Nuk ka adresa të ruajtura</translation>
 <translation id="5595485650161345191">Redakto adresën</translation>
@@ -1125,6 +1138,7 @@
 <translation id="6446163441502663861">Kahu (Zarf)</translation>
 <translation id="6446608382365791566">Shto më shumë informacion</translation>
 <translation id="6447842834002726250">Kukit</translation>
+<translation id="644931407731409778">Dokument PDF që përmban {COUNT,plural, =1{1 faqe}other{# faqe}}</translation>
 <translation id="6451458296329894277">Konfirmo ridërgimin e formularit</translation>
 <translation id="6457206614190510200">Qepje në kurrizin e palosjes</translation>
 <translation id="6465306955648956876">Menaxho fjalëkalimet...</translation>
@@ -1143,6 +1157,7 @@
 <translation id="6547208576736763147">Dy shpime majtas</translation>
 <translation id="6554795675067793129">Llogaria jote menaxhohet nga <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Ribëje</translation>
+<translation id="6559565319173126218">Certifikata e paraqitur për këtë lidhje nuk është e besuar nga Chrome, pasi është e njohur se është përdorur për monitorimin dhe ndërhyrjen në rrjet.</translation>
 <translation id="6569060085658103619">Po shikon një faqe të shtesës</translation>
 <translation id="6573200754375280815">Dy shpime djathtas</translation>
 <translation id="6578796323535178455">C2 (Zarf)</translation>
@@ -1176,6 +1191,7 @@
 <translation id="6710594484020273272">&lt;Shkruaj termin e kërkimit&gt;</translation>
 <translation id="671076103358959139">Tokeni i regjistrimit:</translation>
 <translation id="6711464428925977395">Ka një gabim me serverin përfaqësues ose adresa është e pasaktë.</translation>
+<translation id="6721811549156553509">Monitoruesi i rrjetit mund të hiqet si faqet që viziton dhe mund të shikosh aktivitetin tënd dhe çdo informacion që fut (për shembull, fjalëkalimet, mesazhet ose kartat e kreditit). Duhet të kesh kujdes kur bën diçka delikate në linjë, sepse mund të jetë e dukshme për monitoruesin e rrjetit dhe monitoruesi i rrjetit mund të ndryshojë përmbajtjen në faqet që viziton. Kjo përfshin aktivitetin në shfletuesit dhe programet e tjera që kanë qasje në internet.</translation>
 <translation id="6738516213925468394">Të dhënat e tua u enkriptuan me <ph name="BEGIN_LINK" />frazën e kalimit të sinkronizimit <ph name="END_LINK" /> më <ph name="TIME" />. Fute atë për të nisur sinkronizmin.</translation>
 <translation id="674375294223700098">Gabim i panjohur i certifikatës së serverit</translation>
 <translation id="6744009308914054259">Ndërkohë që pret për një lidhje, mund të vizitosh "Shkarkimet" për të lexuar artikuj jashtë linje.</translation>
@@ -1260,6 +1276,7 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Mëso më shumë<ph name="END_LINK" /> rreth këtij problemi.</translation>
 <translation id="7219179957768738017">Lidhja përdor <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Po përpunohet</translation>
+<translation id="7239736667463137521">Chrome ka zbuluar se lidhja jote po monitorohet.</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Sajti përpara përmban softuerë keqdashës</translation>
 <translation id="724975217298816891">Shkruaj datën e skadimit dhe kodin CVC për <ph name="CREDIT_CARD" /> për të përditësuar të dhënat e kartës. Pasi të konfirmohet, të dhënat e kartës do të ndahen me këtë sajt.</translation>
@@ -1286,6 +1303,7 @@ Detaje shtesë:
 <translation id="7346048084945669753">Është i lidhur:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Linja e komandave</translation>
+<translation id="7353776484425559055">Certifikata për këtë lidhje nuk është e besuar nga Chromium, pasi është e njohur se është përdorur për monitorimin dhe ndërhyrjen në rrjet. Mund të jesh duke e parë këtë gabim për shkak të një certifikate që instalove në pajisjen tënde. Kur bën lidhje të sigurta, Chromium beson te certifikatat që janë instaluar lokalisht në një kompjuter ose pajisje celulare të përdoruesit. Kjo u lejon përdoruesve të ekzekutojnë vegla për të inspektuar dhe korrigjuar gabimet e lidhjeve të tyre gjatë zhvillimit të faqes së internetit ose për mjedise korporate për të interceptuar dhe monitoruar trafikun e brendshëm. Për rastet ku kjo po abuzohet për të interceptuar trafikun në internetin publik, Chromium shfaq një paralajmërim.</translation>
 <translation id="7372973238305370288">rezultati i kërkimit</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Kontrollet e klipeve media</translation>
@@ -1347,6 +1365,7 @@ Detaje shtesë:
 <translation id="7592362899630581445">Certifikata e serverit shkel kufizimet për serverin.</translation>
 <translation id="7598391785903975535">Më pak se <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> nuk mund ta administrojë këtë kërkesë aktualisht.</translation>
+<translation id="7599841999395223597">Certifikata për këtë lidhje nuk është e besuar nga Chrome, pasi është e njohur se është përdorur për monitorimin dhe ndërhyrjen në rrjet. Mund të jesh duke e parë këtë gabim për shkak të një certifikate që instalove në pajisjen tënde. Kur bën lidhje të sigurta, Chrome beson te certifikatat që janë instaluar lokalisht në një kompjuter ose pajisje celulare të përdoruesit. Kjo u lejon përdoruesve të ekzekutojnë vegla për të inspektuar dhe korrigjuar gabimet e lidhjeve të tyre gjatë zhvillimit të faqes së internetit ose për mjedise korporate për të interceptuar dhe monitoruar trafikun e brendshëm. Për rastet ku kjo po abuzohet për të interceptuar trafikun në internetin publik, Chrome shfaq një paralajmërim.</translation>
 <translation id="7600965453749440009">Asnjëherë mos përkthe <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Vlera është jashtë gamës <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Data e skadimit: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -1663,6 +1682,7 @@ Detaje shtesë:
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">Mund të humbësh qasjen në "Llogarinë tënde të Google". Chromium rekomandon që ta ndryshosh fjalëkalimin tani. Do të të kërkohet që të identifikohesh.</translation>
 <translation id="939736085109172342">Dosje e re</translation>
+<translation id="940786960229275114">Sapo fute fjalëkalimin tënd në një sajt mashtrues. Chrome rekomandon që të shkosh te <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> dhe <ph name="WEBSITE_3" /> dhe të ndryshosh fjalëkalimin tani.</translation>
 <translation id="945855313015696284">Kontrollo informacionin më poshtë dhe fshi çdo kartë të pavlefshme</translation>
 <translation id="950736567201356821">Tri shpime lart</translation>
 <translation id="951104842009476243">Kartat e pranuara të debitit dhe me parapagesë</translation>

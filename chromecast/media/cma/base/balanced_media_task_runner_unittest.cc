@@ -11,11 +11,11 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -212,7 +212,7 @@ void BalancedMediaTaskRunnerTest::OnTestTimeout() {
 }
 
 TEST_F(BalancedMediaTaskRunnerTest, OneTaskRunner) {
-  std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
+  base::test::SingleThreadTaskEnvironment task_environment;
 
   // Timestamps of tasks for the single task runner.
   int timestamps0_ms[] = {0, 10, 20, 30, 40, 30, 50, 60, 20, 30, 70};
@@ -240,7 +240,7 @@ TEST_F(BalancedMediaTaskRunnerTest, OneTaskRunner) {
 }
 
 TEST_F(BalancedMediaTaskRunnerTest, TwoTaskRunnerUnbalanced) {
-  std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
+  base::test::SingleThreadTaskEnvironment task_environment;
 
   // Timestamps of tasks for the 2 task runners.
   int timestamps0_ms[] = {0, 10, 20, 30, 40, 30, 50, 60, 20, 30, 70};
@@ -273,7 +273,7 @@ TEST_F(BalancedMediaTaskRunnerTest, TwoTaskRunnerUnbalanced) {
 }
 
 TEST_F(BalancedMediaTaskRunnerTest, TwoStreamsOfDifferentLength) {
-  std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
+  base::test::SingleThreadTaskEnvironment task_environment;
 
   std::vector<std::vector<int>> timestamps = {
       // One longer stream and one shorter stream.

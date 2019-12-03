@@ -159,6 +159,14 @@ bool DlpTriggeredRulesOK(
   return true;
 }
 
+std::string GetFileMimeType(base::FilePath path) {
+  // TODO(crbug.com/1013252): Obtain a more accurate MimeType by parsing the
+  // file content.
+  std::string mime_type;
+  net::GetMimeTypeFromFile(path, &mime_type);
+  return mime_type;
+}
+
 // File types supported for DLP scanning.
 // Keep sorted for efficient access.
 constexpr const std::array<const base::FilePath::CharType*, 36>
@@ -458,26 +466,12 @@ void DeepScanningDialogDelegate::StringRequestCallback(
   MaybeCompleteScanRequest();
 }
 
-void DeepScanningDialogDelegate::FileRequestCallback(
+void DeepScanningDialogDelegate::CompleteFileRequestCallback(
+    size_t index,
     base::FilePath path,
     BinaryUploadService::Result result,
-    DeepScanningClientResponse response) {
-  // Find the path in the set of files that are being scanned.
-  auto it = std::find(data_.paths.begin(), data_.paths.end(), path);
-  DCHECK(it != data_.paths.end());
-  size_t index = std::distance(data_.paths.begin(), it);
-
-  if (access_point_.has_value()) {
-    RecordDeepScanMetrics(access_point_.value(),
-                          base::TimeTicks::Now() - upload_start_time_,
-                          file_info_[index].size, result, response);
-  }
-
-  // TODO(crbug.com/1013252): Obtain a more accurate MimeType by parsing the
-  // file content.
-  std::string mime_type;
-  net::GetMimeTypeFromFile(path, &mime_type);
-
+    DeepScanningClientResponse response,
+    std::string mime_type) {
   MaybeReportDeepScanningVerdict(
       Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
       web_contents_->GetLastCommittedURL(), path.AsUTF8Unsafe(),
@@ -497,6 +491,30 @@ void DeepScanningDialogDelegate::FileRequestCallback(
 
   ++file_result_count_;
   MaybeCompleteScanRequest();
+}
+
+void DeepScanningDialogDelegate::FileRequestCallback(
+    base::FilePath path,
+    BinaryUploadService::Result result,
+    DeepScanningClientResponse response) {
+  // Find the path in the set of files that are being scanned.
+  auto it = std::find(data_.paths.begin(), data_.paths.end(), path);
+  DCHECK(it != data_.paths.end());
+  size_t index = std::distance(data_.paths.begin(), it);
+
+  if (access_point_.has_value()) {
+    RecordDeepScanMetrics(access_point_.value(),
+                          base::TimeTicks::Now() - upload_start_time_,
+                          file_info_[index].size, result, response);
+  }
+
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+      base::BindOnce(&GetFileMimeType, path),
+      base::BindOnce(&DeepScanningDialogDelegate::CompleteFileRequestCallback,
+                     weak_ptr_factory_.GetWeakPtr(), index, path, result,
+                     response));
 }
 
 // static

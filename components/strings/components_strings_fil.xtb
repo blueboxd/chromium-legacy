@@ -9,6 +9,7 @@
 <translation id="1036348656032585052">I-off</translation>
 <translation id="1038842779957582377">Hindi kilalang pangalan</translation>
 <translation id="1039626062703039346">Matutulungan ka ng Chrome na protektahan ang iyong Google Account at palitan ang password mo. Aabisuhan nito ang Google tungkol sa site na ito.</translation>
+<translation id="1044897699341250361">Ano ang ibig sabihin nito</translation>
 <translation id="1050038467049342496">Isara ang iba pang app</translation>
 <translation id="1055184225775184556">&amp;I-undo ang Pagdagdag</translation>
 <translation id="1056898198331236512">Babala</translation>
@@ -183,6 +184,7 @@
 <translation id="1745880797583122200">Pinapamahalaan ang iyong browser</translation>
 <translation id="17513872634828108">Mga bukas na tab</translation>
 <translation id="1753706481035618306">Numero ng page</translation>
+<translation id="175838129965056221">Na-detect ng Chrome na sinusubaybayan ang iyong koneksyon</translation>
 <translation id="1763864636252898013">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; hindi pinagkakatiwalaan ng operating system ng iyong device ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Subukang patakbuhin ang Windows Network Diagnostics<ph name="END_LINK" />.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -251,6 +253,7 @@
 <translation id="2119867082804433120">Punch bottom right</translation>
 <translation id="2129079103035905234">Mga Sensor ng Paggalaw</translation>
 <translation id="2130448033692577677">Posibleng hindi mailapat ang mga template na tinukoy mo dahil hindi naitakda ang patakarang DnsOverHttpsMode.</translation>
+<translation id="2131277894177304644">Na-detect ng Chromium na sinusubaybayan ang iyong koneksyon</translation>
 <translation id="213826338245044447">Mga Bookmark sa Mobile</translation>
 <translation id="214556005048008348">Kanselahin ang pagbabayad</translation>
 <translation id="2147827593068025794">Pag-sync sa Background</translation>
@@ -298,6 +301,7 @@
 <translation id="2354001756790975382">Iba pang mga bookmark</translation>
 <translation id="2354430244986887761"><ph name="BEGIN_LINK" />May nahanap na mga mapanganib na app<ph name="END_LINK" /> kamakailan ang Ligtas na Pag-browse ng Google sa <ph name="SITE" />.</translation>
 <translation id="2355395290879513365">Maaaring makita ng mga umaatake ang mga larawang tinitingnan mo sa site na ito at lilinlangin ka sa pamamagitan ng pagbago sa mga ito.</translation>
+<translation id="2355474962185559967">Kakalagay mo lang ng iyong password sa isang mapanlinang na site. Inirerekomenda ng Chromium na pumunta ka sa <ph name="WEBSITE_1" /> at palitan mo ang iyong password ngayon.</translation>
 <translation id="2356070529366658676">Magtanong</translation>
 <translation id="2359629602545592467">Marami</translation>
 <translation id="2359808026110333948">Magpatuloy</translation>
@@ -393,6 +397,7 @@
 <translation id="2799020568854403057">Naglalaman ng mga mapaminsalang app ang pupuntahang site</translation>
 <translation id="2799223571221894425">Ilunsad Muli</translation>
 <translation id="2803306138276472711">Kamakailan lang, ang Google Safe Browsing ay <ph name="BEGIN_LINK" />nakakita ng malware<ph name="END_LINK" /> sa <ph name="SITE" />. Paminsan-minsan, nagkakaroon ng malware ang mga website na karaniwang ligtas.</translation>
+<translation id="281585763351939989">Natukoy ng Chromium na sinusubaybayan ang iyong koneksyon.</translation>
 <translation id="2824775600643448204">Address bar at bar sa paghahanap</translation>
 <translation id="2826760142808435982">Ine-encrypt at pinapatotoo ang koneksyon gamit ang <ph name="CIPHER" /> at ginagamit ang <ph name="KX" /> bilang key exchange mechanism.</translation>
 <translation id="2835170189407361413">I-clear ang form</translation>
@@ -437,6 +442,7 @@
 <translation id="3024663005179499861">Maling uri ng patakaran</translation>
 <translation id="3037605927509011580">Ay, Naku!</translation>
 <translation id="3041612393474885105">Impormasyon sa Certificate</translation>
+<translation id="304755864151473094">Bakit nangyayari ito</translation>
 <translation id="3057676462092457419">Ang DnsOverHttps mode <ph name="SECURE_DNS_MODE_SECURE" /> ay hindi pa sinusuportahan, itinakda sa <ph name="SECURE_DNS_MODE_OFF" /> ang mode.</translation>
 <translation id="3060227939791841287">C9 (Envelope)</translation>
 <translation id="3061707000357573562">Serbisyo sa Pag-patch</translation>
@@ -476,6 +482,7 @@
 <translation id="3228969707346345236">Nabigo ang pag-translate dahil nasa <ph name="LANGUAGE" /> na ang pahina.</translation>
 <translation id="3229041911291329567">Impormasyon ng bersyon tungkol sa iyong device at browser</translation>
 <translation id="323107829343500871">Ilagay ang iyong CVC para sa <ph name="CREDIT_CARD" /></translation>
+<translation id="3234392465377209614">Kakalagay mo lang ng iyong password sa isang mapanlinang na site. Inirerekomenda ng Chromium na pumunta ka sa <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, at <ph name="WEBSITE_3" /> at palitan mo ang iyong password ngayon.</translation>
 <translation id="3234666976984236645">Palaging tukuyin ang mahalagang content sa site na ito</translation>
 <translation id="3262069459091978471">Mukhang katulad ng <ph name="LOOKALIKE_DOMAIN" /> ang <ph name="SUGGESTED_DOMAIN" />. Kung minsan, ginagaya ng mga attacker ang mga site sa pamamagitan ng paggamit ng mga katulad na URL.</translation>
 <translation id="3270847123878663523">&amp;I-undo ang Pagbabago sa Ayos</translation>
@@ -508,6 +515,7 @@
 <translation id="342781501876943858">Inirerekomenda ng Chromium na i-reset ang iyong password kung ginamit mo ito sa iba pang site.</translation>
 <translation id="3428151540071562330">Invalid at hindi gagamitin ang isa o higit pa sa mga URI ng template ng server ng DnsOverHttpsTemplates.</translation>
 <translation id="3431636764301398940">I-save ang card na ito sa device na ito</translation>
+<translation id="3438790640050632698">Kakalagay mo lang ng iyong password sa isang mapanlinang na site. Inirerekomenda ng Chrome na pumunta ka sa <ph name="WEBSITE_1" /> at <ph name="WEBSITE_2" /> at palitan mo ang iyong password ngayon.</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">Na-off ng may-ari ng device na ito ang larong dinosaur.</translation>
 <translation id="3447884698081792621">Ipakita ang certificate (ibinigay ng <ph name="ISSUER" />)</translation>
@@ -522,6 +530,7 @@
 <translation id="3495081129428749620">Hanapin sa page
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">Binabalewala ang patakarang ito dahil may isa pang patakaran mula sa parehong pangkat ng patakaran na may mas mataas na priyoridad.</translation>
+<translation id="3525469219100414032">Kakalagay mo lang ng iyong password sa isang mapanlinang na site. Inirerekomenda ng Chrome na pumunta ka sa <ph name="WEBSITE_1" /> at palitan mo ang iyong password ngayon.</translation>
 <translation id="3528171143076753409">Hindi pinagkakatiwalaan ang certificate ng server.</translation>
 <translation id="3528485271872257980">Dark Brown</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Hindi bababa sa 1 item sa mga naka-sync na device}=1{1 item (at higit pa sa mga naka-sync na device)}one{# item (at higit pa sa mga naka-sync na device)}other{# na item (at higit pa sa mga naka-sync na device)}}</translation>
@@ -595,6 +604,7 @@
 <translation id="3858027520442213535">I-update ang petsa at oras</translation>
 <translation id="3884278016824448484">Sumasalungat na tagatukoy ng device</translation>
 <translation id="3885155851504623709">Parish</translation>
+<translation id="388632593194507180">May Na-detect na Pagsubaybay</translation>
 <translation id="3890664840433101773">Magdagdag ng email</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3901925938762663762">Na-expire na ang card</translation>
@@ -696,6 +706,7 @@
 <translation id="4305817255990598646">Lumipat</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">I-block (default)</translation>
+<translation id="4318312030194671742">Serbisyo ng Paint Preview Compositor</translation>
 <translation id="4318566738941496689">Ang pangalan ng iyong device at address ng network</translation>
 <translation id="4325863107915753736">Hindi nahanap ang artikulo</translation>
 <translation id="4326324639298822553">Tingnan ang iyong petsa ng pag-expire at subukang muli</translation>
@@ -712,6 +723,7 @@
 <translation id="4372948949327679948">Inaasahang <ph name="VALUE_TYPE" /> na halaga.</translation>
 <translation id="4377125064752653719">Tinangka mong maabot ang <ph name="DOMAIN" />, subalit ang certificate na ipinakita ng server ay binawi ng nagbigay nito. Nangangahulugan ito na ang mga kredensyal sa seguridad na ipinakita ng server ay talagang hindi dapat pagkatiwalaan. Maaaring nakikipag-ugnay ka sa isang nang-aatake.</translation>
 <translation id="4378154925671717803">Telepono</translation>
+<translation id="437847259914972036">Binabantayan ang iyong aktibidad sa web at ang anumang impormasyong inilalagay mo, at puwedeng mabago ang content nang hindi mo alam.</translation>
 <translation id="4398334096870680409">Hindi available ang feature na ito sa iyong device</translation>
 <translation id="4406896451731180161">mga resulta ng paghahanap</translation>
 <translation id="4408413947728134509">Cookies <ph name="NUM_COOKIES" /></translation>
@@ -946,6 +958,7 @@
 <translation id="5565735124758917034">Aktibo</translation>
 <translation id="5570825185877910964">Protektahan ang account</translation>
 <translation id="5571083550517324815">Hindi maaaring mag-pick up mula sa address na ito. Pumili ng ibang address.</translation>
+<translation id="5572009199897554128">Kakalagay mo lang ng iyong password sa isang mapanlinang na site. Inirerekomenda ng Chromium na pumunta ka sa <ph name="WEBSITE_1" /> at <ph name="WEBSITE_2" /> at palitan mo ang iyong password ngayon.</translation>
 <translation id="5580958916614886209">Tingnan ang iyong buwan ng pag-expire at subukang muli</translation>
 <translation id="5586446728396275693">Walang naka-save na address</translation>
 <translation id="5595485650161345191">Mag-edit ng address</translation>
@@ -1128,6 +1141,7 @@
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">Magdagdag ng higit pang impormasyon</translation>
 <translation id="6447842834002726250">Cookies</translation>
+<translation id="644931407731409778">PDF na dokumentong naglalaman ng {COUNT,plural, =1{1 page}one{# page}other{# na page}}</translation>
 <translation id="6451458296329894277">Muling pagsusumite ng Form sa Pagkumpirma</translation>
 <translation id="6457206614190510200">Saddle stitch</translation>
 <translation id="6465306955648956876">Pamahalaan ang mga password...</translation>
@@ -1146,6 +1160,7 @@
 <translation id="6547208576736763147">Dual punch left</translation>
 <translation id="6554795675067793129">Pinapamahalaan ng <ph name="ENROLLMENT_DOMAIN" /> ang iyong account.</translation>
 <translation id="6556866813142980365">Redo</translation>
+<translation id="6559565319173126218">Hindi pinagkakatiwalaan ng Chrome ang certificate na ipinakita para sa koneksyong ito, dahil kilala itong ginagamit para sa pag-intercept at pagsubaybay ng network.</translation>
 <translation id="6569060085658103619">Isang page ng extension ang tinitingnan mo</translation>
 <translation id="6573200754375280815">Dual punch right</translation>
 <translation id="6578796323535178455">C2 (Envelope)</translation>
@@ -1179,6 +1194,7 @@
 <translation id="6710594484020273272">&lt;I-type ang termino para sa paghahanap&gt;</translation>
 <translation id="671076103358959139">Token sa Pag-enroll</translation>
 <translation id="6711464428925977395">May problema sa proxy server, o mali ang address.</translation>
+<translation id="6721811549156553509">Puwedeng magpanggap ang monitor ng network na mga site na binibisita mo, at puwede nitong makita ang iyong aktibidad at ang anumang impormasyong inilalagay mo (halimbawa, mga password, mensahe, o credit card). Dapat kang mag-ingat kapag gumagawa ng anumang sensitibong bagay online, dahil makikita ito ng monitor ng network, at puwedeng baguhin ng monitor ng network ang content sa mga page na binibisita mo. Kabilang dito ang aktibidad sa iba pang browser at program na nag-a-access sa Internet.</translation>
 <translation id="6738516213925468394">Na-encrypt ang data mo gamit ang iyong <ph name="BEGIN_LINK" />passphrase sa pag-sync<ph name="END_LINK" /> noong <ph name="TIME" />. Ilagay ito para simulan ang pag-sync.</translation>
 <translation id="674375294223700098">Hindi alam na error sa certificate ng server</translation>
 <translation id="6744009308914054259">Habang naghihintay ng koneksyon, maaari mong bisitahin ang Mga Download para magbasa ng mga offline na artikulo.</translation>
@@ -1263,6 +1279,7 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Dagdagan ang nalalaman<ph name="END_LINK" /> tungkol sa problemang ito.</translation>
 <translation id="7219179957768738017">Gumagamit ng <ph name="SSL_VERSION" /> ang koneksyon.</translation>
 <translation id="7220786058474068424">Pinoproseso</translation>
+<translation id="7239736667463137521">Na-detect ng Chrome na sinusubaybayan ang iyong koneksyon.</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Naglalaman ng malware ang site</translation>
 <translation id="724975217298816891">Ilagay ang petsa ng expiration at CVC para sa <ph name="CREDIT_CARD" /> upang i-update ang mga detalye ng iyong card. Kapag nagkumpirma ka na, ibabahagi ang mga detalye ng iyong card sa site na ito.</translation>
@@ -1289,6 +1306,7 @@ Mga karagdagang detalye:
 <translation id="7346048084945669753">Naka-affiliate:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Command Line</translation>
+<translation id="7353776484425559055">Hindi pinagkakatiwalaan ng Chromium ang certificate para sa koneksyong ito, dahil kilala itong ginagamit para sa pag-intercept at pagsubaybay ng network. Posibleng nakikita mo ang error na ito dahil sa isang certificate na na-install mo sa iyong device. Kapag gumagawa ng mga secure na koneksyon, pinagkakatiwalaan ng Chromium ang mga certificate na lokal na na-install sa computer o mobile device ng isang user. Binibigyang-daan nito ang mga user na gumamit ng mga tool para suriin at i-debug ang kanilang mga koneksyon habang gumagawa ng website, o para i-intercept at subaybayan ng mga pangkumpanyang environment ang internal na trapiko. Para sa mga sitwasyon kung saan inaabuso ito para i-intercept ang trapiko sa pampublikong Internet, nagpapakita ng babala ang Chromium.</translation>
 <translation id="7372973238305370288">resulta ng paghahanap</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Mga Kontrol ng Media</translation>
@@ -1350,6 +1368,7 @@ Mga karagdagang detalye:
 <translation id="7592362899630581445">Lumabag ang certificate ng server sa limitasyon sa pangalan.</translation>
 <translation id="7598391785903975535">Wala pang <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187">Sa kasalukuyan, hindi magagawa ng <ph name="HOST_NAME" /> ang kahilingang ito.</translation>
+<translation id="7599841999395223597">Hindi pinagkakatiwalaan ng Chrome ang certificate para sa koneksyong ito, dahil kilala itong ginagamit para sa pag-intercept at pagsubaybay ng network. Posibleng nakikita mo ang error na ito dahil sa isang certificate na na-install mo sa iyong device. Kapag gumagawa ng mga secure na koneksyon, pinagkakatiwalaan ng Chrome ang mga certificate na lokal na na-install sa computer o mobile device ng isang user. Binibigyang-daan nito ang mga user na gumamit ng mga tool para suriin at i-debug ang kanilang mga koneksyon habang gumagawa ng website, o para i-intercept at subaybayan ng mga pangkumpanyang environment ang internal na trapiko. Para sa mga sitwasyon kung saan inaabuso ito para i-intercept ang trapiko sa pampublikong Internet, nagpapakita ng babala ang Chrome.</translation>
 <translation id="7600965453749440009">Huwag isalin kailanman ang <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Wala sa sakop ang halaga <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Exp: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -1666,6 +1685,7 @@ Mga karagdagang detalye:
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">Maaari kang mawalan ng access sa iyong Google Account. Inirerekomenda ng Chromium na palitan na ang iyong password. Hihilingin sa iyong mag-sign in.</translation>
 <translation id="939736085109172342">Bagong folder</translation>
+<translation id="940786960229275114">Kakalagay mo lang ng iyong password sa isang mapanlinang na site. Inirerekomenda ng Chrome na pumunta ka sa <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, at <ph name="WEBSITE_3" /> at palitan mo ang iyong password ngayon.</translation>
 <translation id="945855313015696284">Tingnan ang impormasyon sa ibaba at mag-delete ng anumang invalid na card</translation>
 <translation id="950736567201356821">Triple punch top</translation>
 <translation id="951104842009476243">Mga Tinatanggap na Debit at Prepaid Card</translation>

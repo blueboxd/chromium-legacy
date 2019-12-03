@@ -83,7 +83,7 @@ function onGetSandboxDiagnostics(results) {
   }
 
   // Titles.
-  addRow(['Process', 'Type', 'Name', 'Sandbox', 'Intregity', 'Mitigations']);
+  addRow(['Process', 'Type', 'Name', 'Sandbox', 'Integrity', 'Mitigations']);
 
   // Browser Processes.
   for (const process of results.browser) {

@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProv
  */
 public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider {
     private int mToolbarColor;
+    private boolean mHasCustomToolbarColor;
     private WebappExtras mWebappExtras;
     private WebApkExtras mWebApkExtras;
 
@@ -26,9 +27,10 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
         return Color.WHITE;
     }
 
-    WebappIntentDataProvider(
-            int toolbarColor, WebappExtras webappExtras, WebApkExtras webApkExtras) {
+    WebappIntentDataProvider(int toolbarColor, boolean hasCustomToolbarColor,
+            WebappExtras webappExtras, WebApkExtras webApkExtras) {
         mToolbarColor = toolbarColor;
+        mHasCustomToolbarColor = hasCustomToolbarColor;
         mWebappExtras = webappExtras;
         mWebApkExtras = webApkExtras;
     }
@@ -36,6 +38,11 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
     @Override
     public int getToolbarColor() {
         return mToolbarColor;
+    }
+
+    @Override
+    public boolean hasCustomToolbarColor() {
+        return mHasCustomToolbarColor;
     }
 
     @Override

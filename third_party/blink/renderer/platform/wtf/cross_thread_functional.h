@@ -57,7 +57,7 @@ decltype(auto) CoerceFunctorForCrossThreadBind(T&& functor) {
 template <typename Signature>
 base::RepeatingCallback<Signature> CoerceFunctorForCrossThreadBind(
     CrossThreadFunction<Signature>&& functor) {
-  return ConvertToBaseCallback(std::move(functor));
+  return ConvertToBaseRepeatingCallback(std::move(functor));
 }
 
 template <typename Signature>

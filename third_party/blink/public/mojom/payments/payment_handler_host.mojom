@@ -65,7 +65,7 @@ interface PaymentHandlerHost {
   // The Merchant renderer then responds to the browser via
   // PaymentRequest.UpdateWith(details) to update the total or other details of
   // the payment request based on the selected instrument/shipping address/
-  // shipping option or PaymentRequest.NoUpdatedPaymentDetails() if the
+  // shipping option or PaymentRequest.OnPaymentDetailsNotUpdated() if the
   // total and other details are unchanged. The total can change, for example,
   // based on the billing address of the selected instrument or the selected
   // shipping address/option. The list of available shipping options can change

@@ -614,23 +614,43 @@ Status WebViewImpl::DispatchTouchEventWithMultiPoints(
     return Status(kOk);
 
   base::DictionaryValue params;
-  std::unique_ptr<base::ListValue> point_list(new base::ListValue);
   Status status(kOk);
-  for (auto it = events.begin(); it != events.end(); ++it) {
-    std::string type = GetAsString(it->type);
-    if (!type.empty())
-      params.SetString("type", type);
+  size_t touch_count = 1;
+  for (const TouchEvent& event : events) {
+    std::unique_ptr<base::ListValue> point_list(new base::ListValue);
+    int32_t current_time =
+        (base::Time::Now() - base::Time::UnixEpoch()).InMilliseconds();
+    params.SetInteger("timestamp", current_time);
+    std::string type = GetAsString(event.type);
+    params.SetString("type", type);
     if (type == "touchStart" || type == "touchMove") {
-      std::unique_ptr<base::DictionaryValue> point = GenerateTouchPoint(*it);
-      point_list->Append(std::move(point));
+      point_list->Append(GenerateTouchPoint(event));
+      for (auto point = touch_points_.begin(); point != touch_points_.end();
+           ++point) {
+        if (point->first != event.id) {
+          point_list->Append(GenerateTouchPoint(point->second));
+        }
+      }
+      touch_points_[event.id] = event;
     }
-  }
-  params.Set("touchPoints", std::move(point_list));
-  if (async_dispatch_events) {
-    status = client_->SendCommandAndIgnoreResponse("Input.dispatchTouchEvent",
-                                                   params);
-  } else {
-    status = client_->SendCommand("Input.dispatchTouchEvent", params);
+    params.Set("touchPoints", std::move(point_list));
+
+    if (async_dispatch_events || touch_count < events.size()) {
+      status = client_->SendCommandAndIgnoreResponse("Input.dispatchTouchEvent",
+                                                     params);
+    } else {
+      status = client_->SendCommand("Input.dispatchTouchEvent", params);
+    }
+    if (status.IsError())
+      return status;
+
+    if (type != "touchStart" && type != "touchMove") {
+      for (auto point = touch_points_.begin(); point != touch_points_.end();) {
+        point = touch_points_.erase(point);
+      }
+      break;
+    }
+    touch_count++;
   }
   return Status(kOk);
 }

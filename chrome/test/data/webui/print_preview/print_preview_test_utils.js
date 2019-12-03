@@ -22,7 +22,6 @@ export function getDefaultInitialSettings() {
     documentTitle: 'title',
     documentHasSelection: true,
     shouldPrintSelectionOnly: false,
-    isHeaderFooterManaged: false,
     printerName: 'FooDevice',
     serializedAppStateStr: null,
     serializedDefaultDestinationSelectionRulesStr: null,

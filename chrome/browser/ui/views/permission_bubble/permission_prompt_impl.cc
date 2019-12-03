@@ -36,7 +36,7 @@ PermissionPromptImpl::PermissionPromptImpl(Browser* browser,
       showing_quiet_prompt_(false) {
   PermissionRequestManager* manager =
       PermissionRequestManager::FromWebContents(web_contents_);
-  if (manager->ShouldShowQuietPermissionPrompt()) {
+  if (manager->ShouldCurrentRequestUseQuietUI()) {
     showing_quiet_prompt_ = true;
     // Shows the prompt as an indicator in the right side of the omnibox.
     content_settings::UpdateLocationBarUiForWebContents(web_contents_);

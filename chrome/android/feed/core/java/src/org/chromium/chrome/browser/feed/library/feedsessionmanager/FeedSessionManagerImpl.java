@@ -113,7 +113,7 @@ public final class FeedSessionManagerImpl
 
     // Keep track of sessions being created which haven't been added to the SessionCache.
     // This is accessed on the main thread and the background thread.
-    @GuardedBy("lock")
+    @GuardedBy("mLock")
     private final List<InitializableSession> mSessionsUnderConstruction = new ArrayList<>();
 
     // This captures the NO_CARDS_ERROR when a request fails. The request fails in one task and this

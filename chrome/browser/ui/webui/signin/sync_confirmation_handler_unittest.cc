@@ -70,7 +70,7 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
   static const char kConsentText5[];
 
   SyncConfirmationHandlerTest()
-      : did_user_explicitly_interact(false),
+      : did_user_explicitly_interact_(false),
         on_sync_confirmation_ui_closed_called_(false),
         sync_confirmation_ui_closed_result_(LoginUIService::ABORT_SIGNIN),
         web_ui_(new content::TestWebUI),
@@ -103,7 +103,7 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
     identity_test_env_adaptor_.reset();
     BrowserWithTestWindowTest::TearDown();
 
-    EXPECT_EQ(did_user_explicitly_interact ? 0 : 1,
+    EXPECT_EQ(did_user_explicitly_interact_ ? 0 : 1,
               user_action_tester()->GetActionCount("Signin_Abort_Signin"));
   }
 
@@ -185,7 +185,7 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
   }
 
  protected:
-  bool did_user_explicitly_interact;
+  bool did_user_explicitly_interact_;
   bool on_sync_confirmation_ui_closed_called_;
   LoginUIService::SyncConfirmationUIClosedResult
       sync_confirmation_ui_closed_result_;
@@ -280,7 +280,7 @@ TEST_F(SyncConfirmationHandlerTest,
 
 TEST_F(SyncConfirmationHandlerTest, TestHandleUndo) {
   handler()->HandleUndo(nullptr);
-  did_user_explicitly_interact = true;
+  did_user_explicitly_interact_ = true;
 
   EXPECT_TRUE(on_sync_confirmation_ui_closed_called_);
   EXPECT_EQ(LoginUIService::ABORT_SIGNIN, sync_confirmation_ui_closed_result_);
@@ -310,7 +310,7 @@ TEST_F(SyncConfirmationHandlerTest, TestHandleConfirm) {
   args.Append(std::move(consent_confirmation));
 
   handler()->HandleConfirm(&args);
-  did_user_explicitly_interact = true;
+  did_user_explicitly_interact_ = true;
 
   EXPECT_TRUE(on_sync_confirmation_ui_closed_called_);
   EXPECT_EQ(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS,
@@ -351,7 +351,7 @@ TEST_F(SyncConfirmationHandlerTest, TestHandleConfirmWithAdvancedSyncSettings) {
   args.Append(std::move(consent_confirmation));
 
   handler()->HandleGoToSettings(&args);
-  did_user_explicitly_interact = true;
+  did_user_explicitly_interact_ = true;
 
   EXPECT_TRUE(on_sync_confirmation_ui_closed_called_);
   EXPECT_EQ(LoginUIService::CONFIGURE_SYNC_FIRST,

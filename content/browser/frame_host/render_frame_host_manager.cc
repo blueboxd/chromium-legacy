@@ -1124,15 +1124,6 @@ RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   if (!frame_tree_node_->IsMainFrame())
     return ShouldSwapBrowsingInstance::kNo_NotMainFrame;
 
-  // If the navigation has resulted in an error page, do not swap
-  // BrowsingInstance and keep the error page in a related SiteInstance. If
-  // later a reload of this navigation is successful, it will correctly
-  // create a new BrowsingInstance if needed.
-  if (is_failure && SiteIsolationPolicy::IsErrorPageIsolationEnabled(
-                        frame_tree_node_->IsMainFrame())) {
-    return ShouldSwapBrowsingInstance::kNo_ErrorPage;
-  }
-
   // If new_entry already has a SiteInstance, assume it is correct.  We only
   // need to force a swap if it is in a different BrowsingInstance.
   if (destination_site_instance) {
@@ -1310,6 +1301,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
 
   scoped_refptr<SiteInstance> new_instance =
       ConvertToSiteInstance(new_instance_descriptor, candidate_instance);
+
   // If |force_swap| is true, we must use a different SiteInstance than the
   // current one. If we didn't, we would have two RenderFrameHosts in the same
   // SiteInstance and the same frame, breaking lookup of RenderFrameHosts by
@@ -1454,23 +1446,26 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
     }
   }
 
+  // If error page navigations should be isolated, ensure a dedicated
+  // SiteInstance is used for them.
+  if (is_failure && SiteIsolationPolicy::IsErrorPageIsolationEnabled(
+                        frame_tree_node_->IsMainFrame())) {
+    // If the target URL requires a BrowsingInstance swap, put the error page
+    // in a new BrowsingInstance, since the scripting relationships would
+    // have been broken anyway if there were no error. Otherwise, we keep it
+    // in the same BrowsingInstance to preserve scripting relationships after
+    // reloads.
+    return SiteInstanceDescriptor(browser_context, GURL(kUnreachableWebDataURL),
+                                  force_browsing_instance_swap
+                                      ? SiteInstanceRelation::UNRELATED
+                                      : SiteInstanceRelation::RELATED);
+  }
+
   // If a swap is required, we need to force the SiteInstance AND
   // BrowsingInstance to be different ones, using CreateForURL.
   if (force_browsing_instance_swap) {
     return SiteInstanceDescriptor(browser_context, dest_url,
                                   SiteInstanceRelation::UNRELATED);
-  }
-
-  // If error page navigations should be isolated, ensure a dedicated
-  // SiteInstance is used for them.
-  if (is_failure && SiteIsolationPolicy::IsErrorPageIsolationEnabled(
-                        frame_tree_node_->IsMainFrame())) {
-    // Keep the error page in the same BrowsingInstance, such that in the case
-    // of transient network errors, a subsequent successful load of the same
-    // document will not result in broken scripting relationships between
-    // windows.
-    return SiteInstanceDescriptor(browser_context, GURL(kUnreachableWebDataURL),
-                                  SiteInstanceRelation::RELATED);
   }
 
   // TODO(https://crbug.com/566091): Don't create OOPIFs on the NTP.  Remove

@@ -15,7 +15,7 @@ Polymer({
 
     /**
      * TODO(jimmyxgong): Determine how subtext should be set and what
-     * information it should have.
+     * information it should have, including necessary ARIA labeling
      * The additional information subtext for a printer.
      * @type {string}
      */

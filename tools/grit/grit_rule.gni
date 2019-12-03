@@ -480,7 +480,8 @@ template("grit") {
     sources = []
     foreach(output, grit_outputs) {
       extension = get_path_info(output, "extension")
-      if (extension != "json" && extension != "pak" && extension != "xml") {
+      if (extension != "json" && extension != "gz" && extension != "pak" &&
+          extension != "xml") {
         sources += [ output ]
       }
     }

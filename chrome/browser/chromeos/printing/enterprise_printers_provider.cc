@@ -48,11 +48,11 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
     // initialization of pref_change_registrar
     pref_change_registrar_.Init(profile->GetPrefs());
 
-    // Binds instances of BulkPrintersCalculator to policies.
-    policies_binder_ = CalculatorsPoliciesBinder::Create(settings, profile);
     // Get instance of BulkPrintersCalculator for device policies.
     device_printers_ = BulkPrintersCalculatorFactory::Get()->GetForDevice();
     if (device_printers_) {
+      devices_binder_ =
+          CalculatorsPoliciesBinder::DeviceBinder(settings, device_printers_);
       device_printers_->AddObserver(this);
       RecalculateCompleteFlagForDevicePrinters();
     }
@@ -64,6 +64,8 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
       account_id_ = user->GetAccountId();
       user_printers_ =
           BulkPrintersCalculatorFactory::Get()->GetForAccountId(account_id_);
+      profile_binder_ = CalculatorsPoliciesBinder::UserBinder(
+          profile->GetPrefs(), user_printers_);
       user_printers_->AddObserver(this);
       RecalculateCompleteFlagForUserPrinters();
     }
@@ -227,7 +229,8 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
   base::WeakPtr<BulkPrintersCalculator> user_printers_;
 
   // Policies binder (bridge between policies and calculators). Owned.
-  std::unique_ptr<CalculatorsPoliciesBinder> policies_binder_;
+  std::unique_ptr<CalculatorsPoliciesBinder> devices_binder_;
+  std::unique_ptr<CalculatorsPoliciesBinder> profile_binder_;
 
   // Profile (user) settings.
   Profile* profile_;

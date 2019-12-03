@@ -464,7 +464,7 @@ int WebRtcAudioRenderer::Render(base::TimeDelta delay,
     if (!audio_fifo_ && prior_frames_skipped != source_frames_per_buffer) {
       audio_fifo_ = std::make_unique<media::AudioPullFifo>(
           sink_params_.channels(), source_frames_per_buffer,
-          ConvertToBaseCallback(
+          ConvertToBaseRepeatingCallback(
               CrossThreadBindRepeating(&WebRtcAudioRenderer::SourceCallback,
                                        CrossThreadUnretained(this))));
     }
@@ -738,7 +738,7 @@ void WebRtcAudioRenderer::PrepareSink() {
          audio_fifo_->SizeInFrames() != source_frames_per_buffer)) {
       audio_fifo_ = std::make_unique<media::AudioPullFifo>(
           channels, source_frames_per_buffer,
-          ConvertToBaseCallback(
+          ConvertToBaseRepeatingCallback(
               CrossThreadBindRepeating(&WebRtcAudioRenderer::SourceCallback,
                                        CrossThreadUnretained(this))));
     }

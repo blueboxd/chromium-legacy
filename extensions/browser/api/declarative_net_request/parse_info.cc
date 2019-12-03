@@ -173,6 +173,16 @@ std::string ParseInfo::GetErrorDescription() const {
                                              base::NumberToString(*rule_id_),
                                              kUrlFilterKey, kRegexFilterKey);
       break;
+    case ParseResult::ERROR_REGEX_SUBSTITUTION_WITHOUT_FILTER:
+      error = ErrorUtils::FormatErrorMessage(
+          kErrorRegexSubstitutionWithoutFilter, base::NumberToString(*rule_id_),
+          kRegexSubstitutionKey, kRegexFilterKey);
+      break;
+    case ParseResult::ERROR_INVALID_REGEX_SUBSTITUTION:
+      error = ErrorUtils::FormatErrorMessage(kErrorInvalidKey,
+                                             base::NumberToString(*rule_id_),
+                                             kRegexSubstitutionPath);
+      break;
   }
   return error;
 }

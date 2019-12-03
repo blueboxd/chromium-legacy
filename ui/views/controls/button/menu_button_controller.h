@@ -92,10 +92,6 @@ class VIEWS_EXPORT MenuButtonController : public ButtonController {
 
   void DecrementPressedLocked();
 
-  // Compute the maximum X coordinate for the current screen. MenuButtons
-  // use this to make sure a menu is never shown off screen.
-  int GetMaximumScreenXCoordinate();
-
   // Our listener. Not owned.
   ButtonListener* const listener_;
 

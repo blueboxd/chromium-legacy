@@ -462,6 +462,7 @@
 <translation id="4204126831294769023">湛蓝色</translation>
 <translation id="4204864733111726379">花卉白色</translation>
 <translation id="4206289001967551965">在表格内</translation>
+<translation id="4207770814752775793">将文字转语音设置重置为默认值。</translation>
 <translation id="4209770650650780359">按向上或向下箭头即可浏览自动填写建议。</translation>
 <translation id="4215733775853809057">下一个滑块</translation>
 <translation id="42164919740161077">军服蓝</translation>
@@ -765,6 +766,7 @@
 <translation id="6290434000785343030">不存在下一个组合框。</translation>
 <translation id="6305702903308659374">即使在 ChromeVox 朗读时也以正常音量播放音频</translation>
 <translation id="6307969636681130414">已按下</translation>
+<translation id="6315652249189065725">打开键盘快捷键菜单</translation>
 <translation id="6322856989298155004">提示音</translation>
 <translation id="6324551002951139333">检测到语法错误</translation>
 <translation id="6325241889020214828">复制<ph name="TEXT" />。</translation>
@@ -958,6 +960,7 @@
 <translation id="7668307052366682650">{COUNT,plural, =1{小时}other{小时}}</translation>
 <translation id="7674576868851035240">下一个链接</translation>
 <translation id="7674768236845044097">标记</translation>
+<translation id="7676847077928500578">重置文字转语音设置</translation>
 <translation id="7684431668231950609">编辑文本，网址条目</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">上一个单选按钮</translation>

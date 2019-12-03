@@ -108,7 +108,7 @@ void PaintWorkletPaintDispatcher::DispatchWorklets(
   // specified, base::RepeatingClosure will trigger immediately and so the
   // callback will still happen.
   base::RepeatingClosure repeating_on_done = base::BarrierClosure(
-      ongoing_jobs_.size(), ConvertToBaseCallback(std::move(on_done)));
+      ongoing_jobs_.size(), ConvertToBaseRepeatingCallback(std::move(on_done)));
 
   // Now dispatch the calls to the registered painters. For each input, we match
   // the id to a registered worklet and dispatch a cross-thread call to it,

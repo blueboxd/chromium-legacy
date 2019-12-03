@@ -2385,13 +2385,13 @@
       Dit beleid is alleen effectief als de machine is ingeschreven bij <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> en <ph name="CLOUD_REPORTING_ENABLED" /> is ingeschakeld.</translation>
 <translation id="4638162097046412832">De printertypen die op de weigeringslijst zijn geplaatst, kunnen niet worden gevonden en hun mogelijkheden kunnen niet worden opgehaald.
 
-      Als je alle printertypen op de weigeringslijst plaatst, schakel je in feite de afdrukfunctie uit. Er zijn dan geen bestemmingen beschikbaar waar een document naartoe kan worden gestuurd voor afdrukken.
+      Als je alle printertypen op de weigeringslijst plaatst, schakel je in feite de afdrukfunctie uit. Er zijn dan geen bestemmingen beschikbaar waar een document naartoe kan worden gestuurd om af te drukken.
 
       Als je 'cloud' opneemt op de weigeringslijst, heeft dit hetzelfde effect als het beleid 'CloudPrintSubmitEnabled' instellen op False. Je kunt ervoor zorgen dat <ph name="CLOUD_PRINT_NAME" />-bestemmingen vindbaar blijven door het beleid 'CloudPrintSubmitEnabled' in te stellen op True en 'cloud' niet op te nemen op de weigeringslijst.
 
       Als het beleid niet is ingesteld of is ingesteld op een lege lijst, kunnen alle printertypen worden gevonden.
 
-      Extensieprinters staan ook bekend als afdrukproviderbestemmingen en omvatten elke bestemming die hoort bij een <ph name="PRODUCT_NAME" />-extensie.
+      Extensieprinters staan ook bekend als afdrukproviderbestemmingen en omvatten elke bestemming die bij een <ph name="PRODUCT_NAME" />-extensie hoort.
 
       Lokale printers staan ook bekend als systeemeigen afdrukbestemmingen en omvatten bestemmingen die beschikbaar zijn voor de lokale computer en gedeelde netwerkprinters.</translation>
 <translation id="4639407427807680016">Namen van de hosts voor systeemeigen berichten die moeten worden vrijgesteld van de zwarte lijst</translation>

@@ -8,38 +8,41 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 
-import org.chromium.chrome.browser.settings.Preferences;
 import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.SettingsActivity;
 
 /**
  * Util functions for testing SiteSettings functionality.
  */
 public class SiteSettingsTestUtils {
-    public static Preferences startSiteSettingsMenu(String category) {
+    public static SettingsActivity startSiteSettingsMenu(String category) {
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putString(SingleCategoryPreferences.EXTRA_CATEGORY, category);
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(
                 InstrumentationRegistry.getTargetContext(), SiteSettingsPreferences.class.getName(),
                 fragmentArgs);
-        return (Preferences) InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
+        return (SettingsActivity) InstrumentationRegistry.getInstrumentation().startActivitySync(
+                intent);
     }
 
-    public static Preferences startSiteSettingsCategory(@SiteSettingsCategory.Type int type) {
+    public static SettingsActivity startSiteSettingsCategory(@SiteSettingsCategory.Type int type) {
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putString(
                 SingleCategoryPreferences.EXTRA_CATEGORY, SiteSettingsCategory.preferenceKey(type));
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(
                 InstrumentationRegistry.getTargetContext(),
                 SingleCategoryPreferences.class.getName(), fragmentArgs);
-        return (Preferences) InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
+        return (SettingsActivity) InstrumentationRegistry.getInstrumentation().startActivitySync(
+                intent);
     }
 
-    public static Preferences startSingleWebsitePreferences(Website site) {
+    public static SettingsActivity startSingleWebsitePreferences(Website site) {
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putSerializable(SingleWebsitePreferences.EXTRA_SITE, site);
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(
                 InstrumentationRegistry.getTargetContext(),
                 SingleWebsitePreferences.class.getName(), fragmentArgs);
-        return (Preferences) InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
+        return (SettingsActivity) InstrumentationRegistry.getInstrumentation().startActivitySync(
+                intent);
     }
 }

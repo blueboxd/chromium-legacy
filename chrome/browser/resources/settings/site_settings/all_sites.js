@@ -132,6 +132,13 @@ Polymer({
           /** @type {!CustomEvent<!{item: !SiteGroup, index: number}>} */ (e);
       this.selectedItem_ = event.detail;
     });
+
+    if (loadTimeData.getBoolean('enableStoragePressureUI')) {
+      const sortParam = settings.getQueryParameters().get('sort');
+      if (Object.values(this.sortMethods_).includes(sortParam)) {
+        this.$.sortMethod.value = sortParam;
+      }
+    }
     this.sortMethod_ = this.$.sortMethod.value;
   },
 

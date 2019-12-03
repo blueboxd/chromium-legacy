@@ -37,7 +37,7 @@ namespace dnr_api = api::declarative_net_request;
 // url_pattern_index.fbs. Whenever an extension with an indexed ruleset format
 // version different from the one currently used by Chrome is loaded, the
 // extension ruleset will be reindexed.
-constexpr int kIndexedRulesetFormatVersion = 12;
+constexpr int kIndexedRulesetFormatVersion = 13;
 
 // This static assert is meant to catch cases where
 // url_pattern_index::kUrlPatternIndexFormatVersion is incremented without
@@ -221,7 +221,8 @@ dnr_api::RequestDetails CreateRequestDetails(const WebRequestInfo& request) {
   return details;
 }
 
-re2::RE2::Options CreateRE2Options(bool is_case_sensitive) {
+re2::RE2::Options CreateRE2Options(bool is_case_sensitive,
+                                   bool require_capturing) {
   re2::RE2::Options options;
 
   // RE2 supports UTF-8 and Latin1 encoding. We only need to support ASCII, so
@@ -232,9 +233,7 @@ re2::RE2::Options CreateRE2Options(bool is_case_sensitive) {
   options.set_case_sensitive(is_case_sensitive);
 
   // Don't capture unless needed, for efficiency.
-  // TODO(crbug.com/974391): Capturing should be supported for regex based
-  // substitutions which are not implemented yet.
-  options.set_never_capture(true);
+  options.set_never_capture(!require_capturing);
 
   return options;
 }

@@ -12,6 +12,7 @@ assert(!is_ios, "Chromium/iOS shouldn't use anything in //chrome")
 if (closure_compile) {
   group("closure_compile") {
     deps = [
+      "components:closure_compile",
       "engagement:closure_compile",
       "interventions_internals:closure_compile",
       "reset_password:closure_compile",

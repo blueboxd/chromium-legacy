@@ -343,7 +343,7 @@ void PaymentRequest::UpdateWith(mojom::PaymentDetailsPtr details) {
   }
 
   if (state()->selected_app() && state()->IsPaymentAppInvoked() &&
-      payment_handler_host_.is_changing()) {
+      payment_handler_host_.is_waiting_for_payment_details_update()) {
     payment_handler_host_.UpdateWith(
         PaymentDetailsConverter::ConvertToPaymentRequestDetailsUpdate(
             details, state()->selected_app()->HandlesShippingAddress(),
@@ -368,7 +368,7 @@ void PaymentRequest::UpdateWith(mojom::PaymentDetailsPtr details) {
   }
 }
 
-void PaymentRequest::NoUpdatedPaymentDetails() {
+void PaymentRequest::OnPaymentDetailsNotUpdated() {
   // This Mojo call is triggered by the user of the API doing nothing in
   // response to a shipping address update event, so the error messages cannot
   // be more verbose.
@@ -386,8 +386,9 @@ void PaymentRequest::NoUpdatedPaymentDetails() {
 
   spec_->RecomputeSpecForDetails();
 
-  if (state()->IsPaymentAppInvoked() && payment_handler_host_.is_changing()) {
-    payment_handler_host_.NoUpdatedPaymentDetails();
+  if (state()->IsPaymentAppInvoked() &&
+      payment_handler_host_.is_waiting_for_payment_details_update()) {
+    payment_handler_host_.OnPaymentDetailsNotUpdated();
   }
 }
 
@@ -599,6 +600,8 @@ bool PaymentRequest::SatisfiesSkipUIConstraints() {
       is_show_user_gesture_ && state()->IsInitialized() &&
       spec()->IsInitialized() && state()->available_apps().size() == 1 &&
       spec()->stringified_method_data().size() == 1 &&
+      // The available app should be preselectable.
+      state()->selected_app() != nullptr &&
       (!spec()->request_shipping() ||
        state()->available_apps().front()->HandlesShippingAddress()) &&
       (!spec()->request_payer_name() ||

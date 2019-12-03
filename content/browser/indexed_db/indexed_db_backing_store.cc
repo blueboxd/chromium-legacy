@@ -3016,6 +3016,7 @@ Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction(
             WriteDescriptor(entry.file_path(), next_blob_key, entry.size(),
                             entry.last_modified()));
       } else {
+        // TODO(enne): convert this to use mojo interfaces instead of handle.
         new_files_to_write->push_back(
             WriteDescriptor(entry.blob_handle(), next_blob_key, entry.size(),
                             entry.last_modified()));

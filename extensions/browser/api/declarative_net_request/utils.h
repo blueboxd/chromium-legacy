@@ -66,7 +66,8 @@ api::declarative_net_request::RequestDetails CreateRequestDetails(
     const WebRequestInfo& request);
 
 // Creates default RE2::Options.
-re2::RE2::Options CreateRE2Options(bool is_case_sensitive);
+re2::RE2::Options CreateRE2Options(bool is_case_sensitive,
+                                   bool require_capturing);
 
 }  // namespace declarative_net_request
 }  // namespace extensions

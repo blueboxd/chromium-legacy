@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -156,6 +157,8 @@ public class UrlBarIntegrationTest {
     @Test
     @SmallTest
     @Feature({"Omnibox"})
+    // TODO(crbug.com/1048469): Investigate and enable this test for the search engine logo feature.
+    @DisableFeatures("OmniboxSearchEngineLogo")
     @RetryOnFailure
     public void testLongPress() {
         // This is a more realistic test than HUGE_URL because ita's full of separator characters

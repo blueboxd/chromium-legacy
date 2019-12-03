@@ -4,8 +4,12 @@
 
 #include "components/arc/property/arc_property_bridge.h"
 
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/field_trial.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/session/arc_bridge_service.h"
 
@@ -60,6 +64,8 @@ void ArcPropertyBridge::OnConnectionReady() {
     property_instance->GetGcaMigrationProperty(std::move(pending_request));
   }
   pending_requests_.clear();
+
+  SyncMinimizeOnBackButton();
 }
 
 void ArcPropertyBridge::GetGcaMigrationProperty(
@@ -73,6 +79,19 @@ void ArcPropertyBridge::GetGcaMigrationProperty(
   }
 
   property_instance->GetGcaMigrationProperty(std::move(callback));
+}
+
+void ArcPropertyBridge::SyncMinimizeOnBackButton() {
+  mojom::PropertyInstance* property_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service_->property(), SetMinimizeOnBackButton);
+  if (!property_instance)
+    return;
+  const std::string group =
+      base::FieldTrialList::FindFullName(kMinimizeOnBackButtonTrialName);
+  if (group == kMinimizeOnBackButtonEnabled)
+    property_instance->SetMinimizeOnBackButton(true);
+  else if (group == kMinimizeOnBackButtonDisabled)
+    property_instance->SetMinimizeOnBackButton(false);
 }
 
 }  // namespace arc

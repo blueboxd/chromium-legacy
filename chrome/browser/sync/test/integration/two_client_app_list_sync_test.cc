@@ -11,12 +11,16 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/apps_helper.h"
 #include "chrome/browser/sync/test/integration/extensions_helper.h"
+#include "chrome/browser/sync/test/integration/os_sync_test.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_app_list_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
+#include "chromeos/constants/chromeos_features.h"
+#include "components/prefs/pref_service.h"
+#include "components/sync/base/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_prefs.h"
@@ -488,8 +492,6 @@ IN_PROC_BROWSER_TEST_P(RemoveDefaultAppSyncTest, Remove) {
 
 INSTANTIATE_TEST_SUITE_P(All, RemoveDefaultAppSyncTest, ::testing::Bool());
 
-#if !defined(OS_MACOSX)
-
 // Install some apps on both clients, then sync. Move an app on one client
 // to a folder and sync. The app lists, including folders, should match.
 IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, MoveToFolder) {
@@ -570,4 +572,48 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, FolderAddRemove) {
   ASSERT_TRUE(AllProfilesHaveSameAppList());
 }
 
-#endif  // !defined(OS_MACOSX)
+// Tests for SplitSettingsSync.
+class TwoClientAppListOsSyncTest : public TwoClientAppListSyncTest {
+ public:
+  TwoClientAppListOsSyncTest() {
+    settings_feature_list_.InitAndEnableFeature(
+        chromeos::features::kSplitSettingsSync);
+  }
+  ~TwoClientAppListOsSyncTest() override = default;
+
+  // SyncTest
+  bool SetupClients() override {
+    if (!TwoClientAppListSyncTest::SetupClients())
+      return false;
+    // Enable the OS sync feature for all profiles.
+    for (Profile* profile : GetAllProfiles()) {
+      profile->GetPrefs()->SetBoolean(syncer::prefs::kOsSyncFeatureEnabled,
+                                      true);
+    }
+    return true;
+  }
+
+ private:
+  base::test::ScopedFeatureList settings_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(TwoClientAppListOsSyncTest, DisableOsSync) {
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(AllProfilesHaveSameAppList());
+
+  // Install a Chrome app and sync.
+  InstallApp(GetProfile(0), 0);
+  AwaitQuiescenceAndInstallAppsPendingForSync();
+  ASSERT_TRUE(AllProfilesHaveSameAppList());
+
+  // Disable OS sync on the second client.
+  GetProfile(1)->GetPrefs()->SetBoolean(syncer::prefs::kOsSyncFeatureEnabled,
+                                        false);
+
+  // Install another Chrome app and sync.
+  InstallApp(GetProfile(0), 1);
+  AwaitQuiescenceAndInstallAppsPendingForSync();
+
+  // App list sync still occurs.
+  ASSERT_TRUE(AllProfilesHaveSameAppList());
+}

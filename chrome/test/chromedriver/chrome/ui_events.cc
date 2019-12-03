@@ -29,6 +29,8 @@ MouseEvent::MouseEvent(const MouseEvent& other) = default;
 
 MouseEvent::~MouseEvent() {}
 
+TouchEvent::TouchEvent() : TouchEvent(kPause, 0, 0) {}
+
 TouchEvent::TouchEvent(TouchEventType type, int x, int y)
     : type(type),
       x(x),

@@ -69,7 +69,7 @@ bool StructTraits<blink::mojom::ManifestDataView, ::blink::Manifest>::Read(
   if (!data.ReadShareTarget(&out->share_target))
     return false;
 
-  if (!data.ReadFileHandler(&out->file_handler))
+  if (!data.ReadFileHandlers(&out->file_handlers))
     return false;
 
   if (!data.ReadRelatedApplications(&out->related_applications))
@@ -204,7 +204,13 @@ bool StructTraits<blink::mojom::ManifestFileHandlerDataView,
   if (!data.ReadAction(&out->action))
     return false;
 
-  return data.ReadFiles(&out->files);
+  if (!data.ReadName(&out->name))
+    return false;
+
+  if (!data.ReadAccept(&out->accept))
+    return false;
+
+  return true;
 }
 
 }  // namespace mojo

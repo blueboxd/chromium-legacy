@@ -176,6 +176,11 @@ TEST_F(ScreenOrientationControllerTest, LockOrientation) {
   Lock(child_window.get(), OrientationLockType::kLandscape);
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
   EXPECT_TRUE(RotationLocked());
+
+  auto modal = CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  modal->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
+  EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
+  EXPECT_TRUE(RotationLocked());
 }
 
 // Tests that a Window can unlock rotation.

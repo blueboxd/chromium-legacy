@@ -9,8 +9,11 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/sync/driver/model_type_controller.h"
 #include "components/sync/driver/sync_service_observer.h"
+
+class PrefService;
 
 namespace syncer {
 class ModelTypeControllerDelegate;
@@ -28,6 +31,7 @@ class PasswordModelTypeController : public syncer::ModelTypeController,
           delegate_for_full_sync_mode,
       std::unique_ptr<syncer::ModelTypeControllerDelegate>
           delegate_for_transport_mode,
+      PrefService* pref_service,
       syncer::SyncService* sync_service,
       const base::RepeatingClosure& state_changed_callback);
   ~PasswordModelTypeController() override;
@@ -37,13 +41,19 @@ class PasswordModelTypeController : public syncer::ModelTypeController,
                   const ModelLoadCallback& model_load_callback) override;
   void Stop(syncer::ShutdownReason shutdown_reason,
             StopCallback callback) override;
+  PreconditionState GetPreconditionState() const override;
 
   // SyncServiceObserver overrides.
   void OnStateChanged(syncer::SyncService* sync) override;
 
  private:
+  void OnOptInPrefChanged();
+
+  PrefService* const pref_service_;
   syncer::SyncService* const sync_service_;
   const base::RepeatingClosure state_changed_callback_;
+
+  PrefChangeRegistrar pref_registrar_;
 
   // Passed in to LoadModels(), and cached here for later use in Stop().
   syncer::SyncMode sync_mode_ = syncer::SyncMode::kFull;

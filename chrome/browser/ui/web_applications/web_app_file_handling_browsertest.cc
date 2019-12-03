@@ -49,17 +49,13 @@ class WebAppFileHandlingBrowserTest
     web_app_info->app_url = url;
     web_app_info->scope = url.GetWithoutFilename();
     web_app_info->title = base::ASCIIToUTF16("A Hosted App");
-    web_app_info->file_handler = blink::Manifest::FileHandler();
-    web_app_info->file_handler->action = GetFileHandlerActionURL();
 
-    {
-      std::vector<blink::Manifest::FileFilter> filters;
-      blink::Manifest::FileFilter text = {
-          base::ASCIIToUTF16("text"),
-          {base::ASCIIToUTF16(".txt"), base::ASCIIToUTF16("text/*")}};
-      filters.push_back(text);
-      web_app_info->file_handler->files = std::move(filters);
-    }
+    blink::Manifest::FileHandler entry;
+    entry.action = GetFileHandlerActionURL();
+    entry.name = base::ASCIIToUTF16("text");
+    entry.accept[base::ASCIIToUTF16("text/*")].push_back(
+        base::ASCIIToUTF16(".txt"));
+    web_app_info->file_handlers.push_back(std::move(entry));
 
     return WebAppControllerBrowserTest::InstallWebApp(std::move(web_app_info));
   }

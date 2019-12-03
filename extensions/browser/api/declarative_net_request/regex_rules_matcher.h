@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "components/url_matcher/substring_set_matcher.h"
-#include "extensions/browser/api/declarative_net_request/ruleset_matcher_interface.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_matcher_base.h"
 #include "third_party/re2/src/re2/filtered_re2.h"
 
 namespace extensions {
@@ -45,7 +45,7 @@ struct RegexRuleInfo {
 //    even further by checking if the rule metadata matches the request.
 // 5. Given the list of potentially matching rules, we finally match the actual
 //    regexes against the request url, as required.
-class RegexRulesMatcher final : public RulesetMatcherInterface {
+class RegexRulesMatcher final : public RulesetMatcherBase {
  public:
   using RegexRulesList =
       ::flatbuffers::Vector<flatbuffers::Offset<flat::RegexRule>>;
@@ -54,7 +54,7 @@ class RegexRulesMatcher final : public RulesetMatcherInterface {
                     const RegexRulesList* regex_list,
                     const ExtensionMetadataList* metadata_list);
 
-  // RulesetMatcherInterface override:
+  // RulesetMatcherBase override:
   ~RegexRulesMatcher() override;
   base::Optional<RequestAction> GetBlockOrCollapseAction(
       const RequestParams& params) const override;
@@ -66,7 +66,7 @@ class RegexRulesMatcher final : public RulesetMatcherInterface {
       const RequestParams& params) const override;
   uint8_t GetRemoveHeadersMask(
       const RequestParams& params,
-      uint8_t ignored_mask,
+      uint8_t excluded_remove_headers_mask,
       std::vector<RequestAction>* remove_headers_actions) const override;
   bool IsExtraHeadersMatcher() const override {
     return is_extra_headers_matcher_;
@@ -78,7 +78,7 @@ class RegexRulesMatcher final : public RulesetMatcherInterface {
 
   // Returns the highest priority matching rule for the given request |params|
   // and action |type|, or null if no rules match.
-  const url_pattern_index::flat::UrlRule* GetHighestPriorityMatchingRule(
+  const RegexRuleInfo* GetHighestPriorityMatchingRule(
       const RequestParams& params,
       flat::ActionType type) const;
 

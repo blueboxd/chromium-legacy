@@ -455,7 +455,8 @@ class TabListMediator {
                                                     .getCurrentTabModelFilter();
                     int index = filter.indexOf(tab);
                     if (index == TabList.INVALID_TAB_INDEX
-                            || getRelatedTabsForId(tab.getId()).size() == 1) {
+                            || getRelatedTabsForId(tab.getId()).size() == 1
+                            || index >= mModel.size()) {
                         return;
                     }
                     Tab currentGroupSelectedTab = filter.getTabAt(index);

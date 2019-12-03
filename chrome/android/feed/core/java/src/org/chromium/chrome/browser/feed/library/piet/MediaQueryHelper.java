@@ -66,6 +66,7 @@ public class MediaQueryHelper {
                         return mFrameWidthPx < targetWidth;
                     case NOT_EQUALS:
                         return mFrameWidthPx != targetWidth;
+                    default:
                 }
                 throw new PietFatalException(ErrorCode.ERR_INVALID_MEDIA_QUERY_CONDITION,
                         String.format("Unhandled ComparisonCondition: %s",

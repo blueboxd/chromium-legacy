@@ -148,7 +148,7 @@ void PrefetchURLLoader::OnReceiveResponse(
     network::mojom::URLResponseHeadPtr response) {
   if (is_signed_exchange_handling_enabled_ &&
       signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(
-          resource_request_.url, response)) {
+          resource_request_.url, *response)) {
     DCHECK(!signed_exchange_prefetch_handler_);
     if (prefetched_signed_exchange_cache_adapter_) {
       prefetched_signed_exchange_cache_adapter_->OnReceiveOuterResponse(
@@ -158,7 +158,7 @@ void PrefetchURLLoader::OnReceiveResponse(
     // network. (Until |this| calls the handler's FollowRedirect.)
     signed_exchange_prefetch_handler_ =
         std::make_unique<SignedExchangePrefetchHandler>(
-            frame_tree_node_id_, resource_request_, response,
+            frame_tree_node_id_, resource_request_, std::move(response),
             mojo::ScopedDataPipeConsumerHandle(), loader_.Unbind(),
             client_receiver_.Unbind(), network_loader_factory_,
             url_loader_throttles_getter_, this,

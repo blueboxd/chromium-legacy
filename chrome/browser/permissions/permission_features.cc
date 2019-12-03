@@ -32,19 +32,13 @@ QuietNotificationsPromptConfig::UIFlavorToUse() {
   if (!base::FeatureList::IsEnabled(features::kQuietNotificationPrompts))
     return UIFlavor::NONE;
 
+#if defined(OS_ANDROID)
+  return UIFlavor::MINI_INFOBAR;
+#else   // OS_ANDROID
   std::string ui_flavor = base::GetFieldTrialParamValueByFeature(
       features::kQuietNotificationPrompts,
       kQuietNotificationPromptsUIFlavorParameterName);
 
-#if defined(OS_ANDROID)
-  if (ui_flavor == kQuietNotificationPromptsHeadsUpNotification) {
-    return UIFlavor::HEADS_UP_NOTIFICATION;
-  } else if (ui_flavor == kQuietNotificationPromptsMiniInfobar) {
-    return UIFlavor::MINI_INFOBAR;
-  } else {
-    return UIFlavor::QUIET_NOTIFICATION;
-  }
-#else   // OS_ANDROID
   if (ui_flavor == kQuietNotificationPromptsStaticIcon) {
     return UIFlavor::STATIC_ICON;
   } else if (ui_flavor == kQuietNotificationPromptsAnimatedIcon) {

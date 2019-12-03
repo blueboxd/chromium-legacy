@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind_helpers.h"
+#include "base/run_loop.h"
 #include "chrome/browser/vr/test/multi_class_browser_test.h"
 #include "chrome/browser/vr/test/ui_utils.h"
 #include "chrome/browser/vr/test/webxr_vr_browser_test.h"
@@ -29,6 +30,7 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(
   // MockPermissionPromptFactory?).
   t->RunJavaScriptOrFail(
       "navigator.geolocation.getCurrentPosition( ()=>{}, ()=>{} )");
+  base::RunLoop().RunUntilIdle();
   auto utils = UiUtils::Create();
   utils->PerformActionAndWaitForVisibilityStatus(
       UserFriendlyElementName::kWebXrExternalPromptNotification,

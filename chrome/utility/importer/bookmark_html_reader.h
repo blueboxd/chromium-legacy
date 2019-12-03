@@ -44,8 +44,8 @@ namespace bookmark_html_reader {
 // |favicons| is a pointer to a vector, which is filled with the favicons of
 // imported bookmarks. It may be NULL, in which case favicons are not imported.
 void ImportBookmarksFile(
-    const base::Callback<bool(void)>& cancellation_callback,
-    const base::Callback<bool(const GURL&)>& valid_url_callback,
+    base::RepeatingCallback<bool(void)> cancellation_callback,
+    base::RepeatingCallback<bool(const GURL&)> valid_url_callback,
     const base::FilePath& file_path,
     std::vector<ImportedBookmarkEntry>* bookmarks,
     std::vector<importer::SearchEngineInfo>* search_engines,

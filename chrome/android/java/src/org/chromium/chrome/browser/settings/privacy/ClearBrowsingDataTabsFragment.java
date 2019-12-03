@@ -26,7 +26,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataTab;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.settings.Preferences;
+import org.chromium.chrome.browser.settings.SettingsActivity;
 
 import java.util.Locale;
 
@@ -93,7 +93,7 @@ public class ClearBrowsingDataTabsFragment extends Fragment {
         tabLayout.addOnTabSelectedListener(new TabSelectListener());
 
         // Remove elevation to avoid shadow between title and tabs.
-        Preferences activity = (Preferences) getActivity();
+        SettingsActivity activity = (SettingsActivity) getActivity();
         activity.getSupportActionBar().setElevation(0.0f);
 
         return view;

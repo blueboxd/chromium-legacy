@@ -463,6 +463,7 @@
 <translation id="4204126831294769023">সমুদ্রের নীলিমা</translation>
 <translation id="4204864733111726379">ফুলের মতো সাদা</translation>
 <translation id="4206289001967551965">সারণীর অভ্যন্তরে</translation>
+<translation id="4207770814752775793">ডিফল্ট মানে টেক্সট টু স্পিচ সেটিংস রিসেট করুন।</translation>
 <translation id="4209770650650780359">নিজে থেকে সম্পূর্ণ করার জন্য উপরের অথবা নিচের তীরচিহ্ন বোতামটি টিপুন।</translation>
 <translation id="4215733775853809057">পরবর্তী স্লাইডার</translation>
 <translation id="42164919740161077">ক্যাডেট নীল</translation>
@@ -766,6 +767,7 @@
 <translation id="6290434000785343030">কোনো পরবর্তী কম্বোবক্স ল্যান্ডমার্ক নেই৷</translation>
 <translation id="6305702903308659374">ChromeVox কথা বলতে থাকলেও সাধারণ ভলিউমে বাজান</translation>
 <translation id="6307969636681130414">টেপা হয়েছে</translation>
+<translation id="6315652249189065725">কীবোর্ডের শর্টকাট মেনু চালু করুন</translation>
 <translation id="6322856989298155004">সাউন্ডগুলি</translation>
 <translation id="6324551002951139333">ব্যকরণগত ত্রুটি শনাক্ত হয়েছে</translation>
 <translation id="6325241889020214828"><ph name="TEXT" /> কপি করুন।</translation>
@@ -959,6 +961,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="7668307052366682650">{COUNT,plural, =1{ঘণ্টা}one{ঘণ্টা}other{ঘণ্টা}}</translation>
 <translation id="7674576868851035240">পরবর্তী লিঙ্ক</translation>
 <translation id="7674768236845044097">চিহ্নিত</translation>
+<translation id="7676847077928500578">টেক্সট টু স্পিচ সেটিংস রিসেট করুন</translation>
 <translation id="7684431668231950609">URL এন্ট্রি, পাঠ্য সম্পাদনা করুন</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">আগের রেডিও বোতাম</translation>

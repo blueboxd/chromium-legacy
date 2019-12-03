@@ -755,10 +755,6 @@ std::vector<Dispatcher::JsResourceInfo> Dispatcher::GetJsResources() {
 
       // Platform app sources that are not API-specific..
       {"platformApp", IDR_PLATFORM_APP_JS},
-
-      // GuestView.
-      {"guestViewIframe", IDR_GUEST_VIEW_IFRAME_JS},
-      {"guestViewIframeContainer", IDR_GUEST_VIEW_IFRAME_CONTAINER_JS},
   };
 
   return resources;
@@ -1306,12 +1302,8 @@ void Dispatcher::UpdateOriginPermissions(const Extension& extension) {
 
 void Dispatcher::EnableCustomElementWhiteList() {
   blink::WebCustomElement::AddEmbedderCustomElementName("appview");
-  blink::WebCustomElement::AddEmbedderCustomElementName("appviewbrowserplugin");
   blink::WebCustomElement::AddEmbedderCustomElementName("extensionoptions");
-  blink::WebCustomElement::AddEmbedderCustomElementName(
-      "extensionoptionsbrowserplugin");
   blink::WebCustomElement::AddEmbedderCustomElementName("webview");
-  blink::WebCustomElement::AddEmbedderCustomElementName("webviewbrowserplugin");
 }
 
 void Dispatcher::UpdateAllBindings() {
@@ -1428,11 +1420,6 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
     delegate_->RequireWebViewModules(context);
   } else if (web_view_permission_exists) {
     module_system->Require("webViewDeny");
-  }
-
-  if (requires_guest_view_module) {
-    module_system->Require("guestViewIframe");
-    module_system->Require("guestViewIframeContainer");
   }
 
   if (requires_guest_view_module) {

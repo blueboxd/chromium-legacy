@@ -462,6 +462,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="4204126831294769023">Gök Mavisi</translation>
 <translation id="4204864733111726379">Çiçek Beyazı</translation>
 <translation id="4206289001967551965">Tablo içinde</translation>
+<translation id="4207770814752775793">Metin okuma ayarları varsayılan değerlerine sıfırlandı.</translation>
 <translation id="4209770650650780359">Otomatik tamamlamalar için yukarı veya aşağı ok tuşuna basın.</translation>
 <translation id="4215733775853809057">Sonraki kaydırma çubuğu</translation>
 <translation id="42164919740161077">Camgöbeği</translation>
@@ -765,6 +766,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="6290434000785343030">Sonraki birleşik giriş kutusu yok.</translation>
 <translation id="6305702903308659374">ChromeVox konuşurken bile normal ses seviyesinde çal</translation>
 <translation id="6307969636681130414">Basıldı</translation>
+<translation id="6315652249189065725">Klavye kısayolları menüsünü aç</translation>
 <translation id="6322856989298155004">Ses</translation>
 <translation id="6324551002951139333">Dil bilgisi hatası algılandı</translation>
 <translation id="6325241889020214828"><ph name="TEXT" />metnini kopyala.</translation>
@@ -958,6 +960,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="7668307052366682650">{COUNT,plural, =1{saat}other{saat}}</translation>
 <translation id="7674576868851035240">Sonraki bağlantı</translation>
 <translation id="7674768236845044097">mark</translation>
+<translation id="7676847077928500578">Metin okuma ayarlarını sıfırla</translation>
 <translation id="7684431668231950609">Metni düzenle, URL girişi</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">Önceki radyo düğmesi</translation>

@@ -68,8 +68,8 @@ content::WebUIDataSource* CreateComponentsUIHTMLSource(Profile* profile) {
 #endif
   );
   source->UseStringsJs();
-  source->AddResourcePath("components.js", IDR_COMPONENTS_JS);
-  source->SetDefaultResource(IDR_COMPONENTS_HTML);
+  source->AddResourcePath("components.js", IDR_COMPONENTS_COMPONENTS_JS);
+  source->SetDefaultResource(IDR_COMPONENTS_COMPONENTS_HTML);
   return source;
 }
 

@@ -21,7 +21,7 @@ namespace content {
 SignedExchangePrefetchHandler::SignedExchangePrefetchHandler(
     int frame_tree_node_id,
     const network::ResourceRequest& resource_request,
-    const network::ResourceResponseHead& response_head,
+    network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     mojo::PendingRemote<network::mojom::URLLoader> network_loader,
     mojo::PendingReceiver<network::mojom::URLLoaderClient>
@@ -44,17 +44,18 @@ SignedExchangePrefetchHandler::SignedExchangePrefetchHandler(
   const uint32_t url_loader_options =
       network::mojom::kURLLoadOptionSendSSLInfoWithResponse;
 
+  auto reporter = SignedExchangeReporter::MaybeCreate(
+      resource_request.url, resource_request.referrer.spec(), *response_head,
+      frame_tree_node_id);
+  auto devtools_proxy = std::make_unique<SignedExchangeDevToolsProxy>(
+      resource_request.url, response_head.Clone(), frame_tree_node_id,
+      base::nullopt /* devtools_navigation_token */,
+      resource_request.report_raw_headers);
   signed_exchange_loader_ = std::make_unique<SignedExchangeLoader>(
-      resource_request, response_head, std::move(response_body),
+      resource_request, std::move(response_head), std::move(response_body),
       loader_client_receiver_.BindNewPipeAndPassRemote(), std::move(endpoints),
       url_loader_options, false /* should_redirect_to_fallback */,
-      std::make_unique<SignedExchangeDevToolsProxy>(
-          resource_request.url, response_head, frame_tree_node_id,
-          base::nullopt /* devtools_navigation_token */,
-          resource_request.report_raw_headers),
-      SignedExchangeReporter::MaybeCreate(resource_request.url,
-                                          resource_request.referrer.spec(),
-                                          response_head, frame_tree_node_id),
+      std::move(devtools_proxy), std::move(reporter),
       std::move(url_loader_factory), loader_throttles_getter,
       frame_tree_node_id, std::move(metric_recorder), accept_langs);
 }

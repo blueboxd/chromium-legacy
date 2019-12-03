@@ -78,12 +78,22 @@ var availableTests = [
           function(result) {
             callbackResult(result);
 
+            //Confirm kEmail2 was added to the list of users.
+            chrome.usersPrivate.getWhitelistedUsers(
+              function(users) {
+                chrome.test.assertTrue(users.length == 1);
+                chrome.test.assertEq(kEmail2, users[0].email);
+                chrome.test.assertEq(kName2, users[0].name);
+                chrome.test.succeed();
+              });
+
             // We never added kEmail1 so this should return false.
             chrome.usersPrivate.isWhitelistedUser(
               kEmail1,
               function(result) {
                 chrome.test.assertFalse(result);
 
+                // We did add kEmail2 so this should return true.
                 chrome.usersPrivate.isWhitelistedUser(
                   kEmail2,
                   function(user) {

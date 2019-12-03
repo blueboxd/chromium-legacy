@@ -13,6 +13,7 @@ js_type_check("closure_compile") {
 }
 
 js_type_check("closure_compile_modules") {
+  uses_js_modules = true
   deps = [
     ":event_target.m",
   ]

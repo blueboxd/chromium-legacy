@@ -106,7 +106,7 @@ void OpenNewTab(Profile* profile, const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Check the validity of the pointer so that the closure from
-  // base::Bind(&OpenNewTab, profile) can be passed between threads.
+  // base::BindOnce(&OpenNewTab, profile) can be passed between threads.
   if (!g_browser_process->profile_manager()->IsValidProfile(profile))
     return;
 

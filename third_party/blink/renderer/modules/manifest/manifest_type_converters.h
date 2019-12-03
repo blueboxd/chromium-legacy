@@ -53,6 +53,13 @@ struct TypeConverter<blink::Manifest::FileFilter,
 };
 
 template <>
+struct TypeConverter<blink::Manifest::FileHandler,
+                     blink::mojom::blink::ManifestFileHandlerPtr> {
+  static blink::Manifest::FileHandler Convert(
+      const blink::mojom::blink::ManifestFileHandlerPtr& input);
+};
+
+template <>
 struct TypeConverter<blink::Manifest::RelatedApplication,
                      blink::mojom::blink::ManifestRelatedApplicationPtr> {
   static blink::Manifest::RelatedApplication Convert(

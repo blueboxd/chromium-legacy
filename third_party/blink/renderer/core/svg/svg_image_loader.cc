@@ -31,7 +31,7 @@ void SVGImageLoader::DispatchLoadEvent() {
   if (GetContent()->ErrorOccurred()) {
     GetElement()->DispatchEvent(*Event::Create(event_type_names::kError));
   } else {
-    SVGImageElement* image_element = ToSVGImageElement(GetElement());
+    auto* image_element = To<SVGImageElement>(GetElement());
     image_element->SendSVGLoadEventToSelfAndAncestorChainIfPossible();
   }
 }

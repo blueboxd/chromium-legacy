@@ -241,8 +241,8 @@ void SVGShapePainter::PaintMarker(const PaintInfo& paint_info,
   if (!marker.ShouldPaint())
     return;
 
-  AffineTransform transform = marker.MarkerTransformation(
-      position.origin, position.angle, stroke_width);
+  AffineTransform transform =
+      marker.MarkerTransformation(position, stroke_width);
 
   cc::PaintCanvas* canvas = paint_info.context.Canvas();
 

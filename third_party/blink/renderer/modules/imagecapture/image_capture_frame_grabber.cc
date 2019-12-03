@@ -96,8 +96,9 @@ void ImageCaptureFrameGrabber::SingleShotFrameHandler::OnVideoFrameOnIOThread(
   sk_sp<SkSurface> surface = SkSurface::MakeRaster(info);
   DCHECK(surface);
 
-  auto wrapper_callback = media::BindToLoop(
-      std::move(task_runner), ConvertToBaseCallback(std::move(callback)));
+  auto wrapper_callback =
+      media::BindToLoop(std::move(task_runner),
+                        ConvertToBaseRepeatingCallback(std::move(callback)));
 
   SkPixmap pixmap;
   if (!skia::GetWritablePixels(surface->getCanvas(), &pixmap)) {
@@ -210,7 +211,7 @@ void ImageCaptureFrameGrabber::GrabFrame(
   frame_grab_in_progress_ = true;
   MediaStreamVideoSink::ConnectToTrack(
       *track,
-      ConvertToBaseCallback(CrossThreadBindRepeating(
+      ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
           &SingleShotFrameHandler::OnVideoFrameOnIOThread,
           base::MakeRefCounted<SingleShotFrameHandler>(),
           WTF::Passed(CrossThreadBindRepeating(

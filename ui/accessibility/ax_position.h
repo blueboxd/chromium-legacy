@@ -797,15 +797,20 @@ class AXPosition {
     return CreateAncestorPosition(LowestCommonAnchor(second));
   }
 
+  // See "CreateParentPosition" for an explanation of the use of
+  // "boundary_direction".
   AXPositionInstance CreateAncestorPosition(
-      const AXNodeType* ancestor_anchor) const {
+      const AXNodeType* ancestor_anchor,
+      AXTextBoundaryDirection boundary_direction =
+          AXTextBoundaryDirection::kForwards) const {
     if (!ancestor_anchor)
       return CreateNullPosition();
 
     AXPositionInstance ancestor_position = Clone();
     while (!ancestor_position->IsNullPosition() &&
            ancestor_position->GetAnchor() != ancestor_anchor) {
-      ancestor_position = ancestor_position->CreateParentPosition();
+      ancestor_position =
+          ancestor_position->CreateParentPosition(boundary_direction);
     }
     return ancestor_position;
   }
@@ -1340,7 +1345,30 @@ class AXPosition {
     return CreateNullPosition();
   }
 
-  AXPositionInstance CreateParentPosition() const {
+  // Creates a parent equivalent position.
+  //
+  // "boundary_direction" is used only in the case of a text position, when in
+  // the process of searching for a text boundary, and on platforms where child
+  // nodes are represented by embedded object characters. On such platforms, the
+  // "IsEmbeddedObjectInParent" method returns true. We need to decide whether
+  // to create a parent equivalent position that is before or after the child
+  // node, since moving to a parent position would always cause us to lose some
+  // information. We can't simply re-use the text offset of the child position
+  // because by definition the parent node doesn't include all the text of the
+  // child node, but only a single embedded object character.
+  //
+  // staticText name='Line one' IA2-hypertext='<embedded_object>'
+  // ++inlineTextBox name='Line one'
+  //
+  // If we are given a text position pointing to somewhere inside the
+  // inlineTextBox, and we move to the parent equivalent position, we need to
+  // decide whether the parent position would be set to point to before the
+  // embedded object character or after it. Both are valid, depending on the
+  // direction on motion, e.g. if we are trying to find the start of the line
+  // vs. the end of the line.
+  AXPositionInstance CreateParentPosition(
+      AXTextBoundaryDirection boundary_direction =
+          AXTextBoundaryDirection::kForwards) const {
     if (IsNullPosition())
       return CreateNullPosition();
 
@@ -1357,23 +1385,63 @@ class AXPosition {
       case AXPositionKind::TREE_POSITION:
         return CreateTreePosition(tree_id, parent_id, AnchorIndexInParent());
       case AXPositionKind::TEXT_POSITION: {
-        // If our parent contains all our text, we need to maintain the affinity
-        // and the text offset. Otherwise, we return a position that is either
-        // before or after the child. We always recompute the affinity when the
-        // position is after the child.
-        // Recomputing the affinity is important because even though a text
-        // position might unambiguously be at the end of a line, its parent
-        // position might be the same as the parent position of the position
-        // representing the start of the next line.
+        // On some platforms, such as Android, Mac and Chrome OS, the inner text
+        // of a node is made up by concatenating the text of child nodes. On
+        // other platforms, such as Windows IA2 and Linux ATK, child nodes are
+        // represented by a single embedded object character.
+        //
+        // If our parent's inner text is a concatenation of all its children's
+        // text, we need to maintain the affinity and compute the corresponding
+        // text offset. Otherwise, we have no choice but to return a position
+        // that is either before or after this child, losing some information in
+        // the process. Regardless to whether our parent contains all our text,
+        // we always recompute the affinity when the position is after the
+        // child.
+        //
+        // Recomputing the affinity in the latter situation is important because
+        // even though a text position might unambiguously be at the end of a
+        // line, its parent position might be the same as the parent position of
+        // a position that represents the start of the next line. For example:
+        //
+        // staticText name='Line oneLine two'
+        // ++inlineTextBox name='Line one'
+        // ++inlineTextBox name='Line two'
+        //
+        // If the original position is at the end of the inline text box for
+        // "Line one", then the resulting parent equivalent position would be
+        // the same as the one that would have been computed if the original
+        // position were at the start of the inline text box for "Line two".
         const int max_text_offset = MaxTextOffset();
         const int max_text_offset_in_parent =
             IsEmbeddedObjectInParent() ? 1 : max_text_offset;
         int parent_offset = AnchorTextOffsetInParent();
         ax::mojom::TextAffinity parent_affinity = affinity_;
         if (max_text_offset == max_text_offset_in_parent) {
+          // Our parent contains all our text. No information would be lost when
+          // moving to a parent equivalent position.
           parent_offset += text_offset_;
         } else if (text_offset_ > 0) {
-          parent_offset += max_text_offset_in_parent;
+          // If "text_offset_" == 0, then the child position is clearly before
+          // any embedded object character. No information would be lost when
+          // moving to a parent equivalent position, including affinity
+          // information. Otherwise, we should decide whether to set the parent
+          // position to be before or after the child, based on the direction of
+          // motion, and also reset the affinity.
+          switch (boundary_direction) {
+            case AXTextBoundaryDirection::kBackwards:
+              // Keep the offset to be right before the embedded object
+              // character.
+              break;
+            case AXTextBoundaryDirection::kForwards:
+              // Set the offset to be after the embedded object character.
+              parent_offset += max_text_offset_in_parent;
+              break;
+          }
+
+          // The original affinity doesn't apply any more. In most cases, it
+          // should be downstream, unless there is an ambiguity as to whether
+          // the parent position is between the end of one line and the start of
+          // the next. We perform this check below.
           parent_affinity = ax::mojom::TextAffinity::kDownstream;
         }
 
@@ -1393,12 +1461,12 @@ class AXPosition {
         }
 
         // We check if the parent position has introduced ambiguity as to
-        // whether it refers to the end of the current or the start of the next
-        // line. We do this check by creating the parent position and testing if
+        // whether it refers to the end of a line or the start of the next.
+        // We do this check by creating the parent position and testing if
         // it is erroneously at the start of the next line. We could not have
-        // checked if the child was at the end of the line, because our line end
-        // testing logic takes into account line breaks, which don't apply in
-        // this situation.
+        // checked if the child was at the end of the line, because our
+        // "AtEndOfLine" predicate takes into account trailing line breaks,
+        // which would create false positives.
         if (text_offset_ == max_text_offset && parent_position->AtStartOfLine())
           parent_position->affinity_ = ax::mojom::TextAffinity::kUpstream;
         return parent_position;
@@ -1602,7 +1670,8 @@ class AXPosition {
     // is not.
     const AXNodeType* common_anchor = text_position->LowestCommonAnchor(*this);
     if (GetAnchor() == common_anchor) {
-      text_position = text_position->CreateAncestorPosition(common_anchor);
+      text_position = text_position->CreateAncestorPosition(
+          common_anchor, AXTextBoundaryDirection::kForwards);
     } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
       NOTREACHED() << "Original text position was not at end of anchor.";
     }
@@ -1664,7 +1733,8 @@ class AXPosition {
     // is not.
     const AXNodeType* common_anchor = text_position->LowestCommonAnchor(*this);
     if (GetAnchor() == common_anchor) {
-      text_position = text_position->CreateAncestorPosition(common_anchor);
+      text_position = text_position->CreateAncestorPosition(
+          common_anchor, AXTextBoundaryDirection::kBackwards);
     } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
       NOTREACHED() << "Original text position was not at start of anchor.";
     }
@@ -2070,7 +2140,8 @@ class AXPosition {
     // position that might be in the shadow DOM when this position is not.
     const AXNodeType* common_anchor = text_position->LowestCommonAnchor(*this);
     if (GetAnchor() == common_anchor) {
-      text_position = text_position->CreateAncestorPosition(common_anchor);
+      text_position = text_position->CreateAncestorPosition(common_anchor,
+                                                            boundary_direction);
     } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
       return (boundary_direction == AXTextBoundaryDirection::kForwards)
                  ? CreatePositionAtEndOfAnchor()
@@ -2153,7 +2224,8 @@ class AXPosition {
     // position that might be in the shadow DOM when this position is not.
     const AXNodeType* common_anchor = text_position->LowestCommonAnchor(*this);
     if (GetAnchor() == common_anchor) {
-      text_position = text_position->CreateAncestorPosition(common_anchor);
+      text_position = text_position->CreateAncestorPosition(common_anchor,
+                                                            boundary_direction);
     } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
       return (boundary_direction == AXTextBoundaryDirection::kForwards)
                  ? CreatePositionAtEndOfAnchor()
@@ -2492,7 +2564,7 @@ class AXPosition {
   AXPositionInstance CreateNextAnchorPosition(
       const AbortMovePredicate& abort_predicate) const {
     if (IsNullPosition())
-      return CreateNullPosition();
+      return Clone();
 
     AXPositionInstance current_position = AsTreePosition();
     DCHECK(!current_position->IsNullPosition());
@@ -2548,7 +2620,7 @@ class AXPosition {
   AXPositionInstance CreatePreviousAnchorPosition(
       const AbortMovePredicate& abort_predicate) const {
     if (IsNullPosition())
-      return CreateNullPosition();
+      return Clone();
 
     AXPositionInstance current_position = AsTreePosition();
     DCHECK(!current_position->IsNullPosition());
@@ -2556,7 +2628,7 @@ class AXPosition {
     AXPositionInstance parent_position =
         current_position->CreateParentPosition();
     if (parent_position->IsNullPosition())
-      return CreateNullPosition();
+      return parent_position;
 
     // If there is no previous sibling, move up to the parent.
     const int index_in_parent = current_position->AnchorIndexInParent();

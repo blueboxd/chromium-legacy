@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_marker.h"
 
 #include "base/auto_reset.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_marker_data.h"
 #include "third_party/blink/renderer/core/layout/svg/transform_helper.h"
 
 namespace blink {
@@ -96,17 +97,24 @@ SVGMarkerOrientType LayoutSVGResourceMarker::OrientType() const {
 }
 
 AffineTransform LayoutSVGResourceMarker::MarkerTransformation(
-    const FloatPoint& origin,
-    float auto_angle,
+    const MarkerPosition& position,
     float stroke_width) const {
   // Apply scaling according to markerUnits ('strokeWidth' or 'userSpaceOnUse'.)
   float marker_scale =
       MarkerUnits() == kSVGMarkerUnitsStrokeWidth ? stroke_width : 1;
 
+  double computed_angle = position.angle;
+  SVGMarkerOrientType orient_type = OrientType();
+  if (orient_type == kSVGMarkerOrientAngle) {
+    computed_angle = Angle();
+  } else if (position.type == kStartMarker &&
+             orient_type == kSVGMarkerOrientAutoStartReverse) {
+    computed_angle += 180;
+  }
+
   AffineTransform transform;
-  transform.Translate(origin.X(), origin.Y());
-  transform.Rotate(OrientType() == kSVGMarkerOrientAngle ? Angle()
-                                                         : auto_angle);
+  transform.Translate(position.origin.X(), position.origin.Y());
+  transform.Rotate(computed_angle);
   transform.Scale(marker_scale);
 
   // The reference point (refX, refY) is in the coordinate space of the marker's

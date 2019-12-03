@@ -1717,7 +1717,7 @@ AtomicString GetUrlStringFromNode(const Node& node) {
   // HitTestResult::absoluteImageURL.
   if (IsHTMLImageElement(node) || IsHTMLInputElement(node))
     return To<HTMLElement>(node).FastGetAttribute(html_names::kSrcAttr);
-  if (IsSVGImageElement(node))
+  if (IsA<SVGImageElement>(node))
     return To<SVGElement>(node).ImageSourceURL();
   if (IsHTMLEmbedElement(node) || IsHTMLObjectElement(node) ||
       IsA<HTMLCanvasElement>(node))

@@ -11,9 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "net/base/network_isolation_key.h"
 
 namespace predictors {
 
@@ -54,16 +52,8 @@ void NetworkHintsHandlerImpl::Preconnect(int32_t render_frame_id,
   if (!render_frame_host)
     return;
 
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(render_frame_host);
-  if (!web_contents)
-    return;
-
-  net::NetworkIsolationKey network_isolation_key(
-      web_contents->GetMainFrame()->GetLastCommittedOrigin(),
-      render_frame_host->GetLastCommittedOrigin());
-  preconnect_manager_->StartPreconnectUrl(url, allow_credentials,
-                                          network_isolation_key);
+  preconnect_manager_->StartPreconnectUrl(
+      url, allow_credentials, render_frame_host->GetNetworkIsolationKey());
 }
 
 NetworkHintsHandlerImpl::NetworkHintsHandlerImpl(int32_t render_process_id)

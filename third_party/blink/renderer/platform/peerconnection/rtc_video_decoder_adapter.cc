@@ -385,7 +385,7 @@ void RTCVideoDecoderAdapter::InitializeOnMediaThread(
   // Encryption is not supported.
   media::CdmContext* cdm_context = nullptr;
 
-  media::VideoDecoder::OutputCB output_cb = ConvertToBaseCallback(
+  media::VideoDecoder::OutputCB output_cb = ConvertToBaseRepeatingCallback(
       CrossThreadBindRepeating(&RTCVideoDecoderAdapter::OnOutput, weak_this_));
   video_decoder_->Initialize(config, low_delay, cdm_context,
                              ConvertToBaseOnceCallback(std::move(init_cb)),

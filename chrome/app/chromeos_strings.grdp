@@ -3567,6 +3567,57 @@
   <message name="IDS_CROSTINI_UPGRADING_SUBTEXT" desc="Description for upgrade dialog warning user of delay starting container due to running upgrades.">
     Your app will open when the upgrade is finished. Upgrades can take a few minutes.
   </message>
+  <message name="IDS_CROSTINI_UPGRADER_TITLE" desc="Title of the Crostini upgrader, a dialog for upgrading Linux.">
+    Upgrade Linux (Beta)
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_BODY" desc="Description for the Crostini upgrader, a dialog for upgrading Linux.">
+    We recommend you back up your current Linux container prior to upgrading.
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_UPGRADE_BUTTON" desc="Label for the button in the Crostini upgrader dialog to begin upgrading Linux.">
+    Upgrade
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_LAUNCH_BUTTON" desc="Label for the button in the Crostini upgrader dialog to launch the Linux terminal after upgrading Linux.">
+    Launch
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_BACKING_UP_TITLE" desc="Title of the Crostini upgrader when the container backup is in progress.">
+    Backing up Linux apps and files
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_BACKING_UP_MESSAGE" desc="Text shown by the Crostini upgrader when the container backup is in progress.">
+    This may take up to 30 minutes.
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_BACKUP_SUCCEEDED_TITLE" desc="Title of the Crostini upgrader when the container backup completed successfully, prior to the main upgrade.">
+    Backing up complete
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_BACKUP_SUCCEEDED_MESSAGE" desc="Text shown by the Crostini upgrader when the container backup completed successfully, prior to the main upgrade.">
+    Linux apps and files have been successfully backed up. Upgrade will begin shortly.
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_UPGRADING_TITLE" desc="Title of the Crostini upgrader when the upgrade is in progress.">
+    Upgrading Linux
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_UPGRADING" desc="Text shown by the Crostini upgrader when the upgrade is in progress.">
+    This may take up to 30 minutes.
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_SUCCEEDED_TITLE" desc="Title of the Crostini upgrader when the upgrade is finished successfully.">
+    Upgrading Linux
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_SUCCEEDED" desc="Text shown by the Crostini upgrader when the upgrade is finished successfully.">
+    Linux has been successfully upgraded.
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_ERROR_TITLE" desc="Title of the Crostini upgrader when an error occurs.">
+    Error upgrading Linux
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_CANCELING_TITLE" desc="Title of the Crostini upgrader when the upgrade is canceled.">
+    Cancelling Linux upgrade
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_CANCELING" desc="Text shown in the Crostini upgrader dialog when the upgrade is canceled.">
+    This window will close after cancellation is complete.
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_BACKUP_CHECKBOX_MESSAGE" desc="Text shown in the Crostini upgrader dialog next to the backup checkbox.">
+    Back up my apps and files to Downloads folder before upgrading Linux.
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_BACKUP_CHANGE_LOCATION" desc="Text shown in the Crostini upgrader dialog next to the backup checkbox with a link enabling the user to change the location to which files are backed up.">
+    Change location
+  </message>
   <message name="IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_LABEL" translateable="false" desc="Label for dialog warning user of unavailable Linux container until software configurations are applied.">
     Linux is being configured by your administrator
   </message>

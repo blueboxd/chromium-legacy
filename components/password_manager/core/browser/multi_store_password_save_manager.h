@@ -31,12 +31,10 @@ class MultiStorePasswordSaveManager : public PasswordSaveManagerImpl {
                                 std::unique_ptr<FormSaver> account_form_saver);
   ~MultiStorePasswordSaveManager() override;
 
-  void SaveInternal(const autofill::PasswordForm& pending,
-                    const std::vector<const autofill::PasswordForm*>& matches,
+  void SaveInternal(const std::vector<const autofill::PasswordForm*>& matches,
                     const base::string16& old_password) override;
 
-  void UpdateInternal(const autofill::PasswordForm& pending,
-                      const std::vector<const autofill::PasswordForm*>& matches,
+  void UpdateInternal(const std::vector<const autofill::PasswordForm*>& matches,
                       const base::string16& old_password) override;
 
   void PermanentlyBlacklist(

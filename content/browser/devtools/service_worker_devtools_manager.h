@@ -16,12 +16,12 @@
 #include "base/observer_list.h"
 #include "base/unguessable_token.h"
 #include "content/common/content_export.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 #include "url/gurl.h"
 
 namespace network {
 struct ResourceRequest;
-struct ResourceResponseHead;
 struct URLLoaderCompletionStatus;
 }
 
@@ -85,7 +85,7 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
       int worker_route_id,
       const std::string& request_id,
       const GURL& url,
-      const network::ResourceResponseHead& head);
+      const network::mojom::URLResponseHead& head);
   void NavigationPreloadCompleted(
       int worker_process_id,
       int worker_route_id,

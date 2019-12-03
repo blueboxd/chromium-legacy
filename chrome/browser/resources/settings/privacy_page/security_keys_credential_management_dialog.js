@@ -91,14 +91,9 @@ Polymer({
     this.checkedCredentialIds_ = new Set();
     this.browserProxy_ =
         settings.SecurityKeysCredentialBrowserProxyImpl.getInstance();
-    this.browserProxy_.startCredentialManagement().then(
-        this.collectPin_.bind(this));
-  },
-
-  /** @private */
-  collectPin_: function() {
-    this.dialogPage_ = CredentialManagementDialogPage.PIN_PROMPT;
-    this.$.pin.focus();
+    this.browserProxy_.startCredentialManagement().then(() => {
+      this.dialogPage_ = CredentialManagementDialogPage.PIN_PROMPT;
+    });
   },
 
   /**
@@ -112,35 +107,20 @@ Polymer({
 
   /** @private */
   submitPIN_: function() {
-    if (!this.$.pin.validate()) {
-      return;
-    }
+    // Disable the confirm button to prevent concurrent submissions.
     this.confirmButtonDisabled_ = true;
-    this.browserProxy_.providePIN(this.$.pin.value).then((retries) => {
-      this.confirmButtonDisabled_ = false;
-      if (retries != null) {
-        this.$.pin.showIncorrectPINError(retries);
-        this.collectPin_();
-        return;
-      }
-      this.browserProxy_.enumerateCredentials().then(
-          this.onCredentials_.bind(this));
-    });
-  },
 
-  /**
-   * @param {number} retries
-   * @return {string} localized error string for an invalid PIN attempt and a
-   *     given number of remaining retries.
-   */
-  pinRetriesError_: function(retries) {
-    // Warn the user if the number of retries is getting low.
-    if (1 < retries && retries <= 3) {
-      return this.i18n('securityKeysPINIncorrectRetriesPl', retries.toString());
-    }
-    return this.i18n(
-        retries == 1 ? 'securityKeysPINIncorrectRetriesSin' :
-                       'securityKeysPINIncorrect');
+    this.$.pin.trySubmit(pin => this.browserProxy_.providePIN(pin))
+        .then(
+            () => {
+              // Leave confirm button disabled while enumerating credentials.
+              this.browserProxy_.enumerateCredentials().then(
+                  this.onCredentials_.bind(this));
+            },
+            () => {
+              // Wrong PIN.
+              this.confirmButtonDisabled_ = false;
+            });
   },
 
   /**
@@ -171,6 +151,7 @@ Polymer({
         this.confirmButtonDisabled_ = false;
         this.confirmButtonVisible_ = true;
         this.closeButtonVisible_ = false;
+        this.$.pin.focus();
         break;
       case CredentialManagementDialogPage.CREDENTIALS:
         this.cancelButtonVisible_ = true;

@@ -448,6 +448,7 @@ const newTreeElement = (() => {
     const input = /** @type {HTMLInputElement} */ (event.currentTarget);
     const file = input.files.item(0);
     const fileUrl = URL.createObjectURL(file);
+    startWorkerForFileName(file.name)
 
     _dataUrlInput.value = '';
     _dataUrlInput.dispatchEvent(new Event('change'));

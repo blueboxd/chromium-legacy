@@ -50,6 +50,8 @@ enum class ParseResult {
   ERROR_NON_ASCII_REGEX_FILTER,
   ERROR_INVALID_REGEX_FILTER,
   ERROR_MULTIPLE_FILTERS_SPECIFIED,
+  ERROR_REGEX_SUBSTITUTION_WITHOUT_FILTER,
+  ERROR_INVALID_REGEX_SUBSTITUTION,
 };
 
 // Describes the ways in which updating dynamic rules can fail.
@@ -97,6 +99,7 @@ extern const char kErrorInvalidTransformScheme[];
 extern const char kErrorQueryAndTransformBothSpecified[];
 extern const char kErrorJavascriptRedirect[];
 extern const char kErrorMultipleFilters[];
+extern const char kErrorRegexSubstitutionWithoutFilter[];
 
 extern const char kErrorListNotPassed[];
 

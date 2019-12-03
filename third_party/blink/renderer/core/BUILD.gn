@@ -1554,6 +1554,7 @@ jumbo_source_set("unit_tests") {
     "svg/graphics/svg_image_test.cc",
     "svg/svg_foreign_object_element_test.cc",
     "svg/svg_path_parser_test.cc",
+    "svg/svg_path_query_test.cc",
     "svg/svg_text_content_element_test.cc",
     "svg/svg_use_element_test.cc",
     "svg/unsafe_svg_attribute_sanitization_test.cc",

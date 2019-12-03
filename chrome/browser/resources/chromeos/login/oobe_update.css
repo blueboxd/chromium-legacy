@@ -2,28 +2,13 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-:host .text {
-  color: #333;
-  line-height: 18px;
-}
-
 oobe-dialog {
   outline: unset;
 }
 
-.update-subtitle {
-  color: #333;
-}
-
-#estimated-time-left,
-#progress-message {
-  padding-top: 31px; /* = 44 - font size */
-}
-
-#checkingForUpdateCancelHint,
-#updatingCancelHint {
-  color: rgb(170, 0, 0);
-  padding: 0;
+.progress-message {
+  color: var(--oobe-subheader-text-color);
+  margin-top: 32px;
 }
 
 .update-illustration {

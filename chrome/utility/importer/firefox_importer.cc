@@ -51,12 +51,10 @@ void LoadDefaultBookmarks(const base::FilePath& app_path,
 
   std::vector<ImportedBookmarkEntry> bookmarks;
   std::vector<importer::SearchEngineInfo> search_engines;
-  bookmark_html_reader::ImportBookmarksFile(base::Callback<bool(void)>(),
-                                            base::Callback<bool(const GURL&)>(),
-                                            file,
-                                            &bookmarks,
-                                            &search_engines,
-                                            NULL);
+  bookmark_html_reader::ImportBookmarksFile(
+      base::RepeatingCallback<bool(void)>(),
+      base::RepeatingCallback<bool(const GURL&)>(), file, &bookmarks,
+      &search_engines, nullptr);
   for (size_t i = 0; i < bookmarks.size(); ++i)
     urls->insert(bookmarks[i].url);
 }

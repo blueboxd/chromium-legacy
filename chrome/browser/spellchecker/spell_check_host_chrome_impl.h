@@ -9,8 +9,11 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "build/build_config.h"
 #include "components/spellcheck/browser/spell_check_host_impl.h"
-#include "components/spellcheck/browser/spelling_service_client.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+
+#if BUILDFLAG(ENABLE_SPELLING_SERVICE)
+#include "components/spellcheck/browser/spelling_service_client.h"
+#endif
 
 class SpellcheckCustomDictionary;
 class SpellcheckService;
@@ -63,9 +66,9 @@ class SpellCheckHostChromeImpl : public SpellCheckHostImpl {
       const std::vector<SpellCheckResult>& service_results);
 #endif
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
-  // Non-Mac and non-Win(i.e., Android) implementations of the following APIs
-  // are in the base class SpellCheckHostImpl.
+#if BUILDFLAG(USE_BROWSER_SPELLCHECKER) && BUILDFLAG(ENABLE_SPELLING_SERVICE)
+  // Implementations of the following APIs for build configs that don't use the
+  // spelling service are in the base class SpellCheckHostImpl.
   void CheckSpelling(const base::string16& word,
                      int route_id,
                      CheckSpellingCallback callback) override;
@@ -86,7 +89,8 @@ class SpellCheckHostChromeImpl : public SpellCheckHostImpl {
   // All pending requests.
   std::set<std::unique_ptr<SpellingRequest>, base::UniquePtrComparator>
       requests_;
-#endif  // defined(OS_MACOSX) || defined(OS_WIN)
+#endif  //  BUILDFLAG(USE_BROWSER_SPELLCHECKER) &&
+        //  BUILDFLAG(ENABLE_SPELLING_SERVICE)
 
 #if defined(OS_MACOSX)
   int ToDocumentTag(int route_id);
@@ -101,10 +105,14 @@ class SpellCheckHostChromeImpl : public SpellCheckHostImpl {
   // The process ID of the renderer.
   const int render_process_id_;
 
+#if BUILDFLAG(ENABLE_SPELLING_SERVICE)
   // A JSON-RPC client that calls the remote Spelling service.
   SpellingServiceClient client_;
+#endif
 
+#if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
   base::WeakPtrFactory<SpellCheckHostChromeImpl> weak_factory_{this};
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(SpellCheckHostChromeImpl);
 };

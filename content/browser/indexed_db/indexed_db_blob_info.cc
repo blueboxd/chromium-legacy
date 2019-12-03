@@ -41,13 +41,18 @@ IndexedDBBlobInfo::IndexedDBBlobInfo()
 
 IndexedDBBlobInfo::IndexedDBBlobInfo(
     std::unique_ptr<storage::BlobDataHandle> blob_handle,
+    mojo::PendingRemote<blink::mojom::Blob> blob_remote,
     const base::string16& type,
     int64_t size)
     : is_file_(false),
       blob_handle_(*blob_handle),
+      blob_remote_(std::move(blob_remote)),
       type_(type),
       size_(size),
-      key_(DatabaseMetaDataKey::kInvalidBlobKey) {}
+      key_(DatabaseMetaDataKey::kInvalidBlobKey) {
+  // blob_handle and blob_remote must either both or neither be true.
+  DCHECK(!blob_handle_.has_value() ^ blob_remote_.is_bound());
+}
 
 IndexedDBBlobInfo::IndexedDBBlobInfo(const base::string16& type,
                                      int64_t size,
@@ -56,16 +61,21 @@ IndexedDBBlobInfo::IndexedDBBlobInfo(const base::string16& type,
 
 IndexedDBBlobInfo::IndexedDBBlobInfo(
     std::unique_ptr<storage::BlobDataHandle> blob_handle,
+    mojo::PendingRemote<blink::mojom::Blob> blob_remote,
     const base::FilePath& file_path,
     const base::string16& file_name,
     const base::string16& type)
     : is_file_(true),
       blob_handle_(*blob_handle),
+      blob_remote_(std::move(blob_remote)),
       type_(type),
       size_(-1),
       file_name_(file_name),
       file_path_(file_path),
-      key_(DatabaseMetaDataKey::kInvalidBlobKey) {}
+      key_(DatabaseMetaDataKey::kInvalidBlobKey) {
+  // blob_handle and blob_remote must either both or neither be true.
+  DCHECK(!blob_handle_.has_value() ^ blob_remote_.is_bound());
+}
 
 IndexedDBBlobInfo::IndexedDBBlobInfo(int64_t key,
                                      const base::string16& type,
@@ -82,6 +92,12 @@ IndexedDBBlobInfo::~IndexedDBBlobInfo() = default;
 
 IndexedDBBlobInfo& IndexedDBBlobInfo::operator=(
     const IndexedDBBlobInfo& other) = default;
+
+void IndexedDBBlobInfo::Clone(
+    mojo::PendingReceiver<blink::mojom::Blob> receiver) const {
+  DCHECK(is_remote_valid());
+  blob_remote_->Clone(std::move(receiver));
+}
 
 void IndexedDBBlobInfo::set_size(int64_t size) {
   DCHECK_EQ(-1, size_);

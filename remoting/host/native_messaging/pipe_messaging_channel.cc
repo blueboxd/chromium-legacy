@@ -9,59 +9,38 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/files/file.h"
 #include "base/location.h"
 #include "base/process/process_info.h"
 #include "base/values.h"
 #include "build/build_config.h"
 
-#if defined(OS_POSIX)
-#include <unistd.h>
-
-#include "base/posix/eintr_wrapper.h"
-#endif
-
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
-
-namespace {
-
-base::File DuplicatePlatformFile(base::File file) {
-  base::PlatformFile result;
-#if defined(OS_WIN)
-  if (!DuplicateHandle(GetCurrentProcess(),
-                       file.TakePlatformFile(),
-                       GetCurrentProcess(),
-                       &result,
-                       0,
-                       FALSE,
-                       DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
-    PLOG(ERROR) << "Failed to duplicate handle " << file.GetPlatformFile();
-    return base::File();
-  }
-  return base::File(result);
-#elif defined(OS_POSIX)
-  result = HANDLE_EINTR(dup(file.GetPlatformFile()));
-  return base::File(result);
-#else
-#error Not implemented.
-#endif
-}
-
-}  // namespace
-
 namespace remoting {
 
 PipeMessagingChannel::PipeMessagingChannel(base::File input, base::File output)
-    : native_messaging_reader_(DuplicatePlatformFile(std::move(input))),
-      native_messaging_writer_(
-          new NativeMessagingWriter(DuplicatePlatformFile(std::move(output)))),
+    : native_messaging_reader_(input.Duplicate()),
+      native_messaging_writer_(new NativeMessagingWriter(output.Duplicate())),
       event_handler_(nullptr) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
 }
 
 PipeMessagingChannel::~PipeMessagingChannel() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+// static
+void PipeMessagingChannel::ReopenStdinStdout() {
+#if defined(OS_POSIX)
+  base::FilePath dev_null("/dev/null");
+  int new_stdin =
+      base::File(dev_null, base::File::FLAG_OPEN | base::File::FLAG_READ)
+          .TakePlatformFile();
+  DCHECK_EQ(new_stdin, STDIN_FILENO);
+  int new_stdout =
+      base::File(dev_null, base::File::FLAG_OPEN | base::File::FLAG_WRITE)
+          .TakePlatformFile();
+  DCHECK_EQ(new_stdout, STDOUT_FILENO);
+#endif  // defined(OS_POSIX)
 }
 
 void PipeMessagingChannel::Start(EventHandler* event_handler) {

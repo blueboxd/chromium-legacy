@@ -19,7 +19,7 @@ from py_utils import cloud_storage
 from core import path_util
 from core.results_processor import formatters
 from core.results_processor import util
-from core.results_processor import trace_processor
+from core.tbmv3 import trace_processor
 
 
 def ArgumentParser(standalone=False):

@@ -45,7 +45,7 @@ WebRtcAudioSink::WebRtcAudioSink(
                                              std::move(track_source),
                                              std::move(signaling_task_runner),
                                              std::move(main_task_runner))),
-      fifo_(ConvertToBaseCallback(
+      fifo_(ConvertToBaseRepeatingCallback(
           CrossThreadBindRepeating(&WebRtcAudioSink::DeliverRebufferedAudio,
                                    CrossThreadUnretained(this)))) {
   DVLOG(1) << "WebRtcAudioSink::WebRtcAudioSink()";

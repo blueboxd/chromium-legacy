@@ -1635,7 +1635,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="3317459757438853210">Obostrano</translation>
 <translation id="3317678681329786349">Kamera i mikrofon su blokirani</translation>
 <translation id="3319048459796106952">Novi &amp;anonimni prozor</translation>
-<translation id="3323521181261657960">Bonus! Vrijeme upotrebe ti je produženo</translation>
+<translation id="3323521181261657960">Bonus! Vrijeme korištenja uređaja ti je produženo</translation>
 <translation id="3325910708063135066">Kamera i mikrofon su isključeni u Postavkama Mac sistema</translation>
 <translation id="3328489342742826322">Vraćanje iz sigurnosne kopije će izbrisati postojeće Linux aplikacije i podatke u vašem folderu s Linux fajlovima.</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
@@ -1788,7 +1788,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="3555812735919707620">Ukloni ekstenziju</translation>
 <translation id="3556000484321257665">Sada je <ph name="URL" /> vaš pretraživač.</translation>
 <translation id="3556433843310711081">Vaš upravitelj ga može deblokirati za vas</translation>
-<translation id="3557101512409028104">Postavite ograničenja pristupa web lokacijama i ograničenja vremena upotrebe s Family Linkom.</translation>
+<translation id="3557101512409028104">Postavite ograničenja pristupa web lokacijama i ograničenja vremena korištenja uređaja s Family Linkom.</translation>
 <translation id="3559262020195162408">Instaliranje pravila na ovaj uređaj nije uspjelo.</translation>
 <translation id="3560034655160545939">&amp;Provjera pravopisa</translation>
 <translation id="3562423906127931518">Ovo može potrajati nekoliko minuta. Postavljanje spremnika za Linux.</translation>
@@ -2211,7 +2211,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="4099060993766194518">Vratiti zadani pretraživač?</translation>
 <translation id="4099874310852108874">Došlo je do greške na mreži.</translation>
 <translation id="4100733287846229632">Količina prostora na disku je kritično mala</translation>
-<translation id="4100853287411968461">Novo vremensko ograničenje upotrebe</translation>
+<translation id="4100853287411968461">Novo ograničenje vremena korištenja uređaja</translation>
 <translation id="4103091233824664032">Unesite lozinku da konfigurirate zaključavanje ekrana i prijavu</translation>
 <translation id="4104163789986725820">I&amp;zvezi...</translation>
 <translation id="4107048419833779140">Prepoznavanje i isključivanje uređaja za pohranu</translation>

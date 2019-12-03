@@ -82,18 +82,16 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
 
   DialogDelegate::set_default_button(error_->GetDefaultDialogButton());
   DialogDelegate::set_buttons(
-      (error_->ShouldUseExtraView() &&
-       !error_->GetBubbleViewCancelButtonLabel().empty())
+      !error_->GetBubbleViewCancelButtonLabel().empty()
           ? (ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL)
           : ui::DIALOG_BUTTON_OK);
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
                                    error_->GetBubbleViewAcceptButtonLabel());
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
                                    error_->GetBubbleViewCancelButtonLabel());
-  if (!error_->GetBubbleViewCancelButtonLabel().empty() &&
-      error_->ShouldUseExtraView()) {
+  if (!error_->GetBubbleViewDetailsButtonLabel().empty()) {
     DialogDelegate::SetExtraView(views::MdTextButton::CreateSecondaryUiButton(
-        this, error_->GetBubbleViewCancelButtonLabel()));
+        this, error_->GetBubbleViewDetailsButtonLabel()));
   }
 
   if (!anchor_view) {
@@ -203,5 +201,5 @@ void GlobalErrorBubbleView::CloseBubbleView() {
 void GlobalErrorBubbleView::ButtonPressed(views::Button* sender,
                                           const ui::Event& event) {
   if (error_)
-    error_->BubbleViewCancelButtonPressed(browser_);
+    error_->BubbleViewDetailsButtonPressed(browser_);
 }

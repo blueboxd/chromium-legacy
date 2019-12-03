@@ -852,7 +852,7 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 
       Template dengan format yang salah akan diabaikan.</translation>
 <translation id="2345547870894930157">Aktifkan DNS-over-HTTPS tanpa fallback yang tidak aman</translation>
-<translation id="2347264058558503729">Memungkinkan <ph name="PRODUCT_NAME" /> mengirimkan dokumen ke <ph name="CLOUD_PRINT_NAME" /> untuk dicetak.  CATATAN: Ini hanya memengaruhi dukungan <ph name="CLOUD_PRINT_NAME" /> di <ph name="PRODUCT_NAME" />.  Kebijakan ini tidak mencegah pengguna dalam mengirimkan pekerjaan cetak di situs.
+<translation id="2347264058558503729">Memungkinkan <ph name="PRODUCT_NAME" /> mengirimkan dokumen ke <ph name="CLOUD_PRINT_NAME" /> untuk dicetak.  CATATAN: Ini hanya memengaruhi dukungan <ph name="CLOUD_PRINT_NAME" /> di <ph name="PRODUCT_NAME" />.  Kebijakan ini tidak mencegah pengguna mengirimkan pekerjaan cetak di situs web.
 
       Jika setelan ini diaktifkan atau tidak dikonfigurasi, pengguna dapat mencetak ke <ph name="CLOUD_PRINT_NAME" /> dari dialog cetak <ph name="PRODUCT_NAME" />.
 
@@ -2354,7 +2354,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 
       Printer ekstensi juga disebut sebagai tujuan penyedia cetak, dan menyertakan semua tujuan yang termasuk dalam ekstensi <ph name="PRODUCT_NAME" />.
 
-      Printer lokal juga disebut sebagai tujuan cetak asli, dan menyertakan tujuan yang tersedia untuk mesin lokal dan printer jaringan bersama.</translation>
+      Printer lokal juga disebut sebagai tujuan cetak native, dan menyertakan tujuan yang tersedia untuk mesin lokal dan printer jaringan bersama.</translation>
 <translation id="4639407427807680016">Nama hosting perpesanan asli untuk dikeluarkan dari daftar hitam</translation>
 <translation id="4649395978608361979">Tujuan printer lokal</translation>
 <translation id="4650759511838826572">Nonaktifkan skema protokol URL</translation>

@@ -210,8 +210,8 @@ class VolumeManagerTest : public testing::Test {
               power_manager_client,
               disk_manager,
               file_system_provider_service_.get(),
-              base::Bind(&ProfileEnvironment::GetFakeMtpStorageInfo,
-                         base::Unretained(this)))),
+              base::BindRepeating(&ProfileEnvironment::GetFakeMtpStorageInfo,
+                                  base::Unretained(this)))),
           account_id_(
               AccountId::FromUserEmailGaiaId(profile_->GetProfileUserName(),
                                              "id")),

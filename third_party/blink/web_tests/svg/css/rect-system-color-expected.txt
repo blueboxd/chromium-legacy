@@ -12,7 +12,7 @@ PASS computedStyleText.fill is computedStyleDiv.color
 PASS computedStyleText.stroke is computedStyleDiv.color
 Testing system colorActiveText
 PASS computedStyleText.fill is computedStyleDiv.color
-FAIL computedStyleText.stroke should be rgb(0, 0, 0). Was rgb(255, 0, 0).
+PASS computedStyleText.stroke is computedStyleDiv.color
 Testing system colorAppWorkspace
 PASS computedStyleText.fill is computedStyleDiv.color
 PASS computedStyleText.stroke is computedStyleDiv.color
@@ -42,7 +42,7 @@ PASS computedStyleText.fill is computedStyleDiv.color
 PASS computedStyleText.stroke is computedStyleDiv.color
 Testing system colorField
 PASS computedStyleText.fill is computedStyleDiv.color
-FAIL computedStyleText.stroke should be rgb(0, 0, 0). Was rgb(255, 255, 255).
+PASS computedStyleText.stroke is computedStyleDiv.color
 Testing system colorFieldText
 PASS computedStyleText.fill is computedStyleDiv.color
 PASS computedStyleText.stroke is computedStyleDiv.color

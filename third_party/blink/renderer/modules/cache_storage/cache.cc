@@ -84,9 +84,10 @@ enum class CodeCachePolicy {
   kNone,
 };
 
-CodeCachePolicy GetCodeCachePolicy(ScriptState* script_state,
+CodeCachePolicy GetCodeCachePolicy(ExecutionContext* context,
                                    const Response* response) {
-  if (!RuntimeEnabledFeatures::CacheStorageCodeCacheHintEnabled())
+  DCHECK(context);
+  if (!RuntimeEnabledFeatures::CacheStorageCodeCacheHintEnabled(context))
     return CodeCachePolicy::kAuto;
 
   // We should never see an opaque response here.  We should have bailed out
@@ -103,9 +104,7 @@ CodeCachePolicy GetCodeCachePolicy(ScriptState* script_state,
     return CodeCachePolicy::kAuto;
 
   // Count the hint usage regardless of its value.
-  auto* context = ExecutionContext::From(script_state);
-  if (context)
-    context->CountUse(mojom::WebFeature::kCacheStorageCodeCacheHint);
+  context->CountUse(mojom::WebFeature::kCacheStorageCodeCacheHint);
 
   if (header_value.LowerASCII() == "none")
     return CodeCachePolicy::kNone;
@@ -126,7 +125,7 @@ bool ShouldGenerateV8CodeCache(ScriptState* script_state,
   if (!HasJavascriptMimeType(response))
     return false;
 
-  auto policy = GetCodeCachePolicy(script_state, response);
+  auto policy = GetCodeCachePolicy(context, response);
   if (policy == CodeCachePolicy::kNone)
     return false;
 

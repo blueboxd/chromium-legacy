@@ -105,88 +105,88 @@
     # Big alignment at start of section.
     "META": {"align": 100},
     "includes": [9500],
-    "structures": [9900],
+    "structures": [9910],
   },
   "chrome/browser/resources/bookmarks/bookmarks_resources.grd": {
-    "includes": [9930],
-    "structures": [9950],
+    "includes": [9940],
+    "structures": [9960],
   },
   "chrome/browser/resources/bookmarks/bookmarks_resources_vulcanized.grd": {
-    "includes": [9970],
+    "includes": [9980],
   },
   "chrome/browser/resources/chromeos/camera/camera_resources.grd": {
-    "includes": [9980],
-    "structures": [10050],
+    "includes": [9990],
+    "structures": [10060],
   },
   "chrome/browser/resources/chromeos/camera/src/strings/camera_strings.grd": {
-    "messages": [10110],
+    "messages": [10120],
   },
   "chrome/browser/resources/chromeos/cellular_setup/cellular_setup_resources.grd": {
-    "structures": [10200],
-  },
-  "chrome/browser/resources/chromeos/multidevice_setup/multidevice_setup_resources.grd": {
     "structures": [10210],
   },
+  "chrome/browser/resources/chromeos/multidevice_setup/multidevice_setup_resources.grd": {
+    "structures": [10220],
+  },
   "chrome/browser/resources/component_extension_resources.grd": {
-    "includes": [10220],
-    "structures": [10360],
+    "includes": [10230],
+    "structures": [10370],
   },
   "chrome/browser/resources/downloads/downloads_resources_vulcanized.grd": {
-    "includes": [10370],
+    "includes": [10380],
   },
   "chrome/browser/resources/downloads/downloads_resources.grd": {
-    "includes": [10380],
-    "structures": [10390],
+    "includes": [10390],
+    "structures": [10400],
   },
   "chrome/browser/resources/extensions/extensions_resources_vulcanized.grd": {
-    "includes": [10400],
+    "includes": [10410],
   },
   "chrome/browser/resources/extensions/extensions_resources.grd": {
-    "includes": [10410],
-    "structures": [10450],
+    "includes": [10420],
+    "structures": [10460],
   },
   "chrome/browser/resources/history/history_resources_vulcanized.grd": {
-    "includes": [10470],
+    "includes": [10480],
   },
   "chrome/browser/resources/history/history_resources.grd": {
-    "includes": [10490],
+    "includes": [10500],
   },
   "chrome/browser/resources/local_ntp/local_ntp_resources.grd": {
-    "includes": [10530],
+    "includes": [10540],
   },
  "chrome/browser/resources/new_tab_page/new_tab_page_resources.grd": {
-    "includes": [10570],
-    "structures": [10580],
+    "includes": [10580],
+    "structures": [10590],
   },
   "chrome/browser/resources/print_preview/print_preview_resources_vulcanized.grd": {
-    "includes": [10590],
+    "includes": [10600],
   },
   "chrome/browser/resources/print_preview/print_preview_resources.grd": {
-    "includes": [10600],
-    "structures": [10650],
+    "includes": [10610],
+    "structures": [10660],
   },
   "chrome/browser/resources/settings/os_settings_resources_vulcanized.grd": {
-    "includes": [10690],
+    "includes": [10700],
   },
   "chrome/browser/resources/settings/os_settings_resources.grd": {
-    "structures": [10700],
+    "structures": [10710],
   },
   "chrome/browser/resources/settings/settings_resources_vulcanized.grd": {
-    "includes": [11240],
+    "includes": [11250],
   },
   "chrome/browser/resources/settings/settings_resources.grd": {
-    "structures": [11250],
+    "structures": [11260],
   },
   "chrome/browser/resources/tab_strip/tab_strip_resources.grd": {
-    "structures": [11840],
-    "includes": [11860],
+    "structures": [11850],
+    "includes": [11870],
   },
   "chrome/browser/resources/welcome/welcome_resources.grd": {
-    "includes": [11880],
-    "structures": [11910],
+    "includes": [11890],
+    "structures": [11920],
   },
   "chrome/browser/vr/testapp/vr_testapp_resources.grd": {
-    "includes": [11930],
+    "includes": [11940],
   },
   # END chrome/browser section.
 

@@ -22,6 +22,35 @@ from .codegen_utils import write_code_node_to_file
 from .mako_renderer import MakoRenderer
 
 
+_DICT_MEMBER_PRESENCE_PREDICATES = {
+    "ScriptValue": "{}.IsEmpty()",
+    "ScriptPromise": "{}.IsEmpty()",
+}
+
+
+def _is_member_always_present(member):
+    assert isinstance(member, web_idl.DictionaryMember)
+    return member.is_required or member.default_value is not None
+
+
+def _does_use_presence_flag(member):
+    assert isinstance(member, web_idl.DictionaryMember)
+    return (not _is_member_always_present(member) and blink_type_info(
+        member.idl_type).member_t not in _DICT_MEMBER_PRESENCE_PREDICATES)
+
+
+def _member_presence_expr(member):
+    assert isinstance(member, web_idl.DictionaryMember)
+    if _is_member_always_present(member):
+        return "true"
+    if _does_use_presence_flag(member):
+        return name_style.member_var("has", member.identifier)
+    blink_type = blink_type_info(member.idl_type).member_t
+    assert blink_type in _DICT_MEMBER_PRESENCE_PREDICATES
+    _1 = name_style.member_var(member.identifier)
+    return _format(_DICT_MEMBER_PRESENCE_PREDICATES[blink_type], _1)
+
+
 def make_dict_member_get_def(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
@@ -39,6 +68,9 @@ def make_dict_member_get_def(cg_context):
 
     body = func_def.body
     body.add_template_vars(cg_context.template_bindings())
+
+    _1 = name_style.api_func("has", member.identifier)
+    body.append(T(_format("DCHECK({_1}());", _1=_1)))
 
     _1 = name_style.member_var(member.identifier)
     body.append(T(_format("return {_1};", _1=_1)))
@@ -60,9 +92,8 @@ def make_dict_member_has_def(cg_context):
         name=T(func_name), arg_decls=[], return_type=T("bool"))
 
     body = func_def.body
-    body.add_template_vars(cg_context.template_bindings())
 
-    _1 = name_style.member_var("has", member.identifier)
+    _1 = _member_presence_expr(member)
     body.append(T(_format("return {_1};", _1=_1)))
 
     return func_def
@@ -91,6 +122,10 @@ def make_dict_member_set_def(cg_context):
 
     _1 = name_style.member_var(member.identifier)
     body.append(T(_format("{_1} = value;", _1=_1)))
+
+    if _does_use_presence_flag(member):
+        _1 = name_style.member_var("has", member.identifier)
+        body.append(T(_format("{_1} = true;", _1=_1)))
 
     return func_def
 
@@ -190,19 +225,22 @@ v8::Local<v8::Context> current_context = isolate->GetCurrentContext();"""
     # TODO(peria): Support runtime enabled / origin trial members.
     for key_index, member in enumerate(own_members):
         _1 = name_style.api_func("has", member.identifier)
-        _2 = name_style.api_func(member.identifier)
-        _3 = key_index
-        pattern = ("""
+        _2 = key_index
+        _3 = name_style.api_func(member.identifier)
+        pattern = ("""\
 if ({_1}()) {{
-  v8::Local<v8::Value> v8_value = ToV8({_2}(), creation_context, isolate);
-  v8::Local<v8::Name> key = member_names[{_3}].Get(isolate);
-  if (!v8_dictionary->CreateDataProperty(current_context, key, v8_value)
+  if (!v8_dictionary
+           ->CreateDataProperty(
+               current_context,
+               member_names[{_2}].Get(isolate),
+               ToV8({_3}(), creation_context, isolate))
            .ToChecked()) {{
     return false;
   }}
 }}\
 """)
         body.append(T(_format(pattern, _1=_1, _2=_2, _3=_3)))
+
     body.append(T("return true;"))
 
     return func_def
@@ -424,7 +462,7 @@ def make_dict_trace_def(cg_context):
 
 
 def generate_dictionaries(web_idl_database, output_dirs):
-    dictionary = web_idl_database.find("RTCTrackEventInit")
+    dictionary = web_idl_database.find("InternalDictionary")
     filename = "example_dictionary.cc"
     filepath = os.path.join(output_dirs['core'], filename)
 

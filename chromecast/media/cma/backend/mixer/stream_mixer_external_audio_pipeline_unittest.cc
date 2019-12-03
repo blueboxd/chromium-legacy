@@ -8,9 +8,9 @@
 
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/media/audio/fake_external_audio_pipeline_support.h"
 #include "chromecast/media/audio/mixer_service/loopback_connection.h"
@@ -76,9 +76,7 @@ class ExternalAudioPipelineTest : public ::testing::Test {
  public:
   ExternalAudioPipelineTest()
       : external_audio_pipeline_support_(
-            testing::GetFakeExternalAudioPipelineSupport()),
-        message_loop_(
-            std::make_unique<base::MessageLoop>(base::MessagePumpType::IO)) {}
+            testing::GetFakeExternalAudioPipelineSupport()) {}
 
   void SetUp() override {
     // Set that external library is supported.
@@ -95,7 +93,8 @@ class ExternalAudioPipelineTest : public ::testing::Test {
   // Run async operations in the stream mixer.
   void RunLoopForMixer() {
     base::RunLoop run_loop;
-    message_loop_->task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  run_loop.QuitClosure());
     run_loop.Run();
   }
 
@@ -115,7 +114,8 @@ class ExternalAudioPipelineTest : public ::testing::Test {
       external_audio_pipeline_support_;
 
  private:
-  const std::unique_ptr<base::MessageLoop> message_loop_;
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
 
   DISALLOW_COPY_AND_ASSIGN(ExternalAudioPipelineTest);
 };

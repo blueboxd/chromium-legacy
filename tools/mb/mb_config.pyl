@@ -666,6 +666,7 @@
     },
 
     'tryserver.chromium.android': {
+      'android-bfcache-debug': 'android_debug_static_bot',
       'android-opus-kitkat-arm-rel': 'android_release_trybot',
       # TODO(crbug/597596): Switch this back to debug_trybot when cronet's
       # shared library loading is fixed.
@@ -810,6 +811,7 @@
       'linux-annotator-rel': 'release_trybot',
       'linux-blink-heap-concurrent-marking-tsan-rel': 'release_trybot_tsan',
       'linux-blink-heap-verification-try': 'release_trybot_enable_blink_heap_verification',
+      'linux-bfcache-debug': 'debug_bot',
       'linux-clang-tidy-dbg': 'debug_trybot',
       'linux-clang-tidy-rel': 'release_trybot',
       'linux-dcheck-off-rel': 'release_trybot_dcheck_off',

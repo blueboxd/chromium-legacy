@@ -96,7 +96,7 @@ class VideoTrackRecorderTest
   void InitializeRecorder(VideoTrackRecorder::CodecId codec) {
     video_track_recorder_ = MakeGarbageCollected<VideoTrackRecorder>(
         codec, blink_track_,
-        ConvertToBaseCallback(
+        ConvertToBaseRepeatingCallback(
             CrossThreadBindRepeating(&VideoTrackRecorderTest::OnEncodedVideo,
                                      CrossThreadUnretained(this))),
         0 /* bits_per_second */,

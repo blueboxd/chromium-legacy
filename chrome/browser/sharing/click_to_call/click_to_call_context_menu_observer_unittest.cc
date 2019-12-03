@@ -40,8 +40,6 @@ namespace {
 
 const char kPhoneNumber[] = "+9876543210";
 
-constexpr int kSeparatorCommandId = -1;
-
 class ClickToCallContextMenuObserverTest : public testing::Test {
  public:
   ClickToCallContextMenuObserverTest() = default;
@@ -128,21 +126,12 @@ TEST_F(ClickToCallContextMenuObserverTest, SingleDevice_ShowMenu) {
       .WillOnce(Return(ByMove(std::move(devices))));
 
   BuildMenu(kPhoneNumber);
+  ASSERT_EQ(1U, menu_.GetMenuSize());
 
-  // Assert item ordering.
   MockRenderViewContextMenu::MockMenuItem item;
-  int item_id = 0;
-  ASSERT_TRUE(menu_.GetMenuItem(item_id++, &item));
-  EXPECT_EQ(kSeparatorCommandId, item.command_id);
-
-  ASSERT_TRUE(menu_.GetMenuItem(item_id++, &item));
+  ASSERT_TRUE(menu_.GetMenuItem(0, &item));
   EXPECT_EQ(IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE,
             item.command_id);
-
-  ASSERT_TRUE(menu_.GetMenuItem(item_id++, &item));
-  EXPECT_EQ(kSeparatorCommandId, item.command_id);
-
-  EXPECT_EQ(item_id, static_cast<int>(menu_.GetMenuSize()));
 
   // Emulate click on the device.
   EXPECT_CALL(*service(), SendMessageToDevice(Eq(guid), Eq(kSendMessageTimeout),
@@ -163,26 +152,18 @@ TEST_F(ClickToCallContextMenuObserverTest, MultipleDevices_ShowMenu) {
       .WillOnce(Return(ByMove(std::move(devices))));
 
   BuildMenu(kPhoneNumber);
+  ASSERT_EQ(device_count + 1U, menu_.GetMenuSize());
 
   // Assert item ordering.
   MockRenderViewContextMenu::MockMenuItem item;
-  int item_id = 0;
-  ASSERT_TRUE(menu_.GetMenuItem(item_id++, &item));
-  EXPECT_EQ(kSeparatorCommandId, item.command_id);
-
-  ASSERT_TRUE(menu_.GetMenuItem(item_id++, &item));
+  ASSERT_TRUE(menu_.GetMenuItem(0, &item));
   EXPECT_EQ(IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES,
             item.command_id);
 
   for (int i = 0; i < device_count; i++) {
-    ASSERT_TRUE(menu_.GetMenuItem(item_id++, &item));
+    ASSERT_TRUE(menu_.GetMenuItem(i + 1, &item));
     EXPECT_EQ(kSubMenuFirstDeviceCommandId + i, item.command_id);
   }
-
-  ASSERT_TRUE(menu_.GetMenuItem(item_id++, &item));
-  EXPECT_EQ(kSeparatorCommandId, item.command_id);
-
-  EXPECT_EQ(item_id, static_cast<int>(menu_.GetMenuSize()));
 
   // Emulate clicks on all commands to check for commands with no device
   // assigned.
@@ -212,26 +193,18 @@ TEST_F(ClickToCallContextMenuObserverTest,
       .WillOnce(Return(ByMove(std::move(devices))));
 
   BuildMenu(kPhoneNumber);
+  ASSERT_EQ(kMaxDevicesShown + 1U, menu_.GetMenuSize());
 
   // Assert item ordering.
   MockRenderViewContextMenu::MockMenuItem item;
-  int item_id = 0;
-  ASSERT_TRUE(menu_.GetMenuItem(item_id++, &item));
-  EXPECT_EQ(kSeparatorCommandId, item.command_id);
-
-  ASSERT_TRUE(menu_.GetMenuItem(item_id++, &item));
+  ASSERT_TRUE(menu_.GetMenuItem(0, &item));
   EXPECT_EQ(IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES,
             item.command_id);
 
   for (int i = 0; i < kMaxDevicesShown; i++) {
-    ASSERT_TRUE(menu_.GetMenuItem(item_id++, &item));
+    ASSERT_TRUE(menu_.GetMenuItem(i + 1, &item));
     EXPECT_EQ(kSubMenuFirstDeviceCommandId + i, item.command_id);
   }
-
-  ASSERT_TRUE(menu_.GetMenuItem(item_id++, &item));
-  EXPECT_EQ(kSeparatorCommandId, item.command_id);
-
-  EXPECT_EQ(item_id, static_cast<int>(menu_.GetMenuSize()));
 
   // Emulate clicks on all device commands to check for commands outside valid
   // range too.

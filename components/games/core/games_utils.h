@@ -12,6 +12,7 @@
 namespace games {
 
 const base::FilePath GetGamesCatalogPath(const base::FilePath& dir);
+const base::FilePath GetHighlightedGamesPath(const base::FilePath& dir);
 
 }  // namespace games
 

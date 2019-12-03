@@ -314,10 +314,10 @@ SkColor LocationBarView::GetColor(OmniboxPart part) const {
                          part);
 }
 
-SkColor LocationBarView::GetOpaqueBorderColor(bool incognito) const {
+SkColor LocationBarView::GetOpaqueBorderColor() const {
   return color_utils::GetResultingPaintColor(
-      GetBorderColor(), ThemeProperties::GetDefaultColor(
-                            ThemeProperties::COLOR_TOOLBAR, incognito));
+      GetBorderColor(),
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR));
 }
 
 int LocationBarView::GetBorderRadius() const {
@@ -1006,7 +1006,7 @@ void LocationBarView::OnPaintBorder(gfx::Canvas* canvas) {
     return;  // The border is painted by our Background.
 
   gfx::Rect bounds(GetContentsBounds());
-  const SkColor border_color = GetOpaqueBorderColor(profile_->IsOffTheRecord());
+  const SkColor border_color = GetOpaqueBorderColor();
   canvas->DrawLine(gfx::PointF(bounds.x(), bounds.y()),
                    gfx::PointF(bounds.right(), bounds.y()), border_color);
   canvas->DrawLine(gfx::PointF(bounds.x(), bounds.bottom() - 1),

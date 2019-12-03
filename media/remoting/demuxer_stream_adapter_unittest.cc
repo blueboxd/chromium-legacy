@@ -9,9 +9,9 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/task_environment.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
 #include "media/remoting/fake_media_resource.h"
@@ -130,7 +130,8 @@ class DemuxerStreamAdapterTest : public ::testing::Test {
         stream_sender.InitWithNewPipeAndPassReceiver(),
         std::move(consumer_end)));
     demuxer_stream_adapter_.reset(new MockDemuxerStreamAdapter(
-        message_loop_.task_runner(), message_loop_.task_runner(), "test",
+        task_environment_.GetMainThreadTaskRunner(),
+        task_environment_.GetMainThreadTaskRunner(), "test",
         demuxer_stream_.get(), std::move(stream_sender),
         std::move(producer_end)));
     // DemuxerStreamAdapter constructor posts task to main thread to
@@ -147,7 +148,7 @@ class DemuxerStreamAdapterTest : public ::testing::Test {
   void SetUp() override { SetUpDataPipe(); }
 
   // TODO(miu): Add separate media thread, to test threading also.
-  base::MessageLoop message_loop_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<FakeDemuxerStream> demuxer_stream_;
   std::unique_ptr<FakeRemotingDataStreamSender> data_stream_sender_;
   std::unique_ptr<MockDemuxerStreamAdapter> demuxer_stream_adapter_;

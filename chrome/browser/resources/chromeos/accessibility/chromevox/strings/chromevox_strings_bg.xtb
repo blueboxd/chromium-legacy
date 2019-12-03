@@ -462,6 +462,7 @@
 <translation id="4204126831294769023">ясно небе</translation>
 <translation id="4204864733111726379">флоралнобяло</translation>
 <translation id="4206289001967551965">В таблицата сте.</translation>
+<translation id="4207770814752775793">Възстановяване на настройките по подразбиране за синтезиран говор.</translation>
 <translation id="4209770650650780359">За автоматични довършвания натиснете клавиша със стрелка нагоре или надолу.</translation>
 <translation id="4215733775853809057">Следващият плъзгач</translation>
 <translation id="42164919740161077">ненаситен тъмен циан</translation>
@@ -765,6 +766,7 @@
 <translation id="6290434000785343030">Няма следващ разгъващ се списък.</translation>
 <translation id="6305702903308659374">Възпроизвеждане с нормална сила на звука дори ако ChromeVox говори</translation>
 <translation id="6307969636681130414">Натиснато</translation>
+<translation id="6315652249189065725">Отваряне на менюто за клавишни комбинации</translation>
 <translation id="6322856989298155004">Звуци</translation>
 <translation id="6324551002951139333">Открита е граматична грешка</translation>
 <translation id="6325241889020214828">копиране на <ph name="TEXT" />.</translation>
@@ -958,6 +960,7 @@
 <translation id="7668307052366682650">{COUNT,plural, =1{час}other{часа}}</translation>
 <translation id="7674576868851035240">Следващата връзка</translation>
 <translation id="7674768236845044097">маркиране</translation>
+<translation id="7676847077928500578">Нулиране на настройките за синтезиран говор</translation>
 <translation id="7684431668231950609">Поле за въвеждане на URL адрес</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">Предишният бутон за избор</translation>

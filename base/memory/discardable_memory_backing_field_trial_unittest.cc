@@ -54,33 +54,33 @@ TEST_F(DiscardableMemoryBackingFieldTrialTest, TrialActiveOnlyIfCapable) {
 
 TEST_F(DiscardableMemoryBackingFieldTrialTest,
        EmulatedSharedMemoryBackingMatchesTrialGroup) {
-  if (!DiscardableMemoryBackingFieldTrialIsEnabled())
-    return;
   std::unique_ptr<test::ScopedFeatureList> scoped_feature =
       GetScopedFeatureListForDiscardableMemoryTrialGroup(
           DiscardableMemoryTrialGroup::kEmulatedSharedMemory);
+  if (!DiscardableMemoryBackingFieldTrialIsEnabled())
+    return;
   DiscardableMemoryBacking backing = GetDiscardableMemoryBacking();
   EXPECT_EQ(backing, DiscardableMemoryBacking::kSharedMemory);
 }
 
 TEST_F(DiscardableMemoryBackingFieldTrialTest,
        MadvFreeBackingMatchesTrialGroup) {
-  if (!DiscardableMemoryBackingFieldTrialIsEnabled())
-    return;
   std::unique_ptr<test::ScopedFeatureList> scoped_feature =
       GetScopedFeatureListForDiscardableMemoryTrialGroup(
           DiscardableMemoryTrialGroup::kMadvFree);
+  if (!DiscardableMemoryBackingFieldTrialIsEnabled())
+    return;
   DiscardableMemoryBacking backing = GetDiscardableMemoryBacking();
   EXPECT_EQ(backing, DiscardableMemoryBacking::kMadvFree);
 }
 
 #if defined(OS_ANDROID)
 TEST_F(DiscardableMemoryBackingFieldTrialTest, AshmemBackingMatchesTrialGroup) {
-  if (!DiscardableMemoryBackingFieldTrialIsEnabled())
-    return;
   std::unique_ptr<test::ScopedFeatureList> scoped_feature =
       GetScopedFeatureListForDiscardableMemoryTrialGroup(
           DiscardableMemoryTrialGroup::kAshmem);
+  if (!DiscardableMemoryBackingFieldTrialIsEnabled())
+    return;
   DiscardableMemoryBacking backing = GetDiscardableMemoryBacking();
   EXPECT_EQ(backing, DiscardableMemoryBacking::kSharedMemory);
 }

@@ -171,7 +171,8 @@ IN_PROC_BROWSER_TEST_F(DragToOverviewTest, DragWindow) {
   EXPECT_TRUE(ash::ShellTestApi().IsOverviewSelecting());
 }
 
-IN_PROC_BROWSER_TEST_F(DragToOverviewTest, DragTab) {
+// TODO(http://crbug.com/1028386): Test flakily fails.
+IN_PROC_BROWSER_TEST_F(DragToOverviewTest, DISABLED_DragTab) {
   set_tab_drag_test(true);
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());

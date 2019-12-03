@@ -86,13 +86,8 @@ class StackAddressInterpreter(object):
     stack_input_path = os.path.join(self.tmp_dir, 'stack_input.txt')
     with open(stack_input_path, 'w') as f:
       for address in addresses:
-        formatted_address = '0x' + '0' * (16 - len(address)) + address
-        # Pretend that this is Chromium's stack traces output in logcat.
-        # Note that the date, time, pid, tid, frame number, and frame address
-        # are all fake and they are irrelevant.
-        f.write(('11-15 00:00:00.000 11111 11111 '
-                 'E chromium: #00 0x0000001111111111 %s+%s\n') % (
-                     lib_path, formatted_address))
+        f.write(StackAddressInterpreter._ConvertAddressToFakeTraceLine(
+            address, lib_path) + '\n')
 
     stack_output = StackAddressInterpreter.RunStackScript(
         self.args.output_directory, stack_input_path)
@@ -155,7 +150,7 @@ class SimplePerfRunner(object):
   def Run(self):
     """Run the simpleperf and do the post processing."""
     perf_data_path = os.path.join(self.tmp_dir, 'perf.data')
-    SimplePerfRunner.RunSimplePerf(perf_data_path)
+    SimplePerfRunner.RunSimplePerf(perf_data_path, self.args.record_options)
     lines = SimplePerfRunner.GetOriginalReportHtml(
         perf_data_path,
         os.path.join(self.tmp_dir, 'unprocessed_report.html'))
@@ -175,13 +170,15 @@ class SimplePerfRunner(object):
                  self.args.report_path)
 
   @staticmethod
-  def RunSimplePerf(perf_data_path):
+  def RunSimplePerf(perf_data_path, record_options):
     """Runs the simple perf commandline."""
     cmd = ['third_party/android_ndk/simpleperf/app_profiler.py',
            '--app', 'org.chromium.webview_shell',
            '--activity', '.TelemetryActivity',
            '--perf_data_path', perf_data_path,
            '--skip_collect_binaries']
+    if record_options:
+      cmd.extend(['--record_options', record_options])
     subprocess.check_call(cmd)
 
   def _GetCurrentWebViewProvider(self):
@@ -256,6 +253,13 @@ def main(raw_args):
                       default='report.html', help='Report path')
   parser.add_argument('--adb-path',
                       help='Absolute path to the adb binary to use.')
+  parser.add_argument('--record-options',
+                      help=('Set recording options for app_profiler.py command.'
+                            ' Example: "-e task-clock:u -f 1000 -g --duration'
+                            ' 10" where -f means sampling frequency per second.'
+                            ' Try `app_profiler.py record -h` for more '
+                            ' information. Note that not setting this defaults'
+                            ' to the default record options.'))
 
   script_common.AddDeviceArguments(parser)
   logging_common.AddLoggingArguments(parser)

@@ -74,10 +74,10 @@ public class PaymentHandlerHost {
      * ongoing.
      * @return True after payment handler called changePaymentMethod(), changeShippingAddress(), or
      *         changeShippingOption() and before the merchant replies with either updateWith() or
-     *         noUpdatedPaymentDetails().
+     *         onPaymentDetailsNotUpdated().
      */
-    public boolean isChanging() {
-        return PaymentHandlerHostJni.get().isChanging(mNativePointer);
+    public boolean isWaitingForPaymentDetailsUpdate() {
+        return PaymentHandlerHostJni.get().isWaitingForPaymentDetailsUpdate(mNativePointer);
     }
 
     /**
@@ -104,8 +104,8 @@ public class PaymentHandlerHost {
      * Notifies the payment handler that the merchant ignored the the payment-method,
      * shipping-address, or shipping-option change event.
      */
-    public void noUpdatedPaymentDetails() {
-        PaymentHandlerHostJni.get().noUpdatedPaymentDetails(mNativePointer);
+    public void onPaymentDetailsNotUpdated() {
+        PaymentHandlerHostJni.get().onPaymentDetailsNotUpdated(mNativePointer);
     }
 
     /** Destroys the native bridge. This object shouldn't be used afterwards. */
@@ -153,7 +153,7 @@ public class PaymentHandlerHost {
          * currently in progress.
          * @param nativePaymentHandlerHost The pointer to the native payment handler host bridge.
          */
-        boolean isChanging(long nativePaymentHandlerHost);
+        boolean isWaitingForPaymentDetailsUpdate(long nativePaymentHandlerHost);
 
         /**
          * Returns the native pointer to the payment handler host (not the bridge). The native
@@ -175,7 +175,7 @@ public class PaymentHandlerHost {
          * address, or shipping option change event.
          * @param nativePaymentHandlerHost The pointer to the native payment handler host bridge.
          */
-        void noUpdatedPaymentDetails(long nativePaymentHandlerHost);
+        void onPaymentDetailsNotUpdated(long nativePaymentHandlerHost);
 
         /**
          * Destroys the native payment handler host bridge.

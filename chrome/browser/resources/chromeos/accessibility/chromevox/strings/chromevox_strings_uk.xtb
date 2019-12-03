@@ -462,6 +462,7 @@
 <translation id="4204126831294769023">Лазуровий</translation>
 <translation id="4204864733111726379">Квітково-білий</translation>
 <translation id="4206289001967551965">Усередині таблиці</translation>
+<translation id="4207770814752775793">Скинути налаштування синтезу мовлення до значень за умовчанням.</translation>
 <translation id="4209770650650780359">Натискайте стрілки вгору чи вниз для автозаповнення.</translation>
 <translation id="4215733775853809057">Наступний повзунок</translation>
 <translation id="42164919740161077">Сіро-синій</translation>
@@ -765,6 +766,7 @@
 <translation id="6290434000785343030">Немає наступного комбінованого вікна.</translation>
 <translation id="6305702903308659374">Не змінювати гучність, навіть коли ChromeVox зчитує з екрана</translation>
 <translation id="6307969636681130414">Натиснуто</translation>
+<translation id="6315652249189065725">Відкрити меню комбінацій клавіш</translation>
 <translation id="6322856989298155004">Звуки</translation>
 <translation id="6324551002951139333">Виявлено граматичну помилку</translation>
 <translation id="6325241889020214828">копіювати <ph name="TEXT" />.</translation>
@@ -958,6 +960,7 @@
 <translation id="7668307052366682650">{COUNT,plural, =1{година}one{година}few{години}many{годин}other{години}}</translation>
 <translation id="7674576868851035240">Наступне посилання</translation>
 <translation id="7674768236845044097">виділений текст</translation>
+<translation id="7676847077928500578">Скинути налаштування синтезу мовлення</translation>
 <translation id="7684431668231950609">Редагування введеного тексту, URL-адреси</translation>
 <translation id="7685589220304187312">панель інструментів</translation>
 <translation id="7693840228159394336">Попередній перемикач</translation>

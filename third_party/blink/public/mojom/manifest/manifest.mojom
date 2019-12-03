@@ -34,7 +34,7 @@ struct Manifest {
   // experiment. See:
   // https://github.com/WICG/file-handling/blob/master/explainer.md
   // As such, this field should not be exposed to the drive-by web.
-  ManifestFileHandler? file_handler;
+  array<ManifestFileHandler> file_handlers;
 
   array<ManifestRelatedApplication> related_applications;
 
@@ -152,7 +152,9 @@ struct ManifestShareTarget {
 struct ManifestFileHandler {
   // The URL that will be opened when the file handler is invoked.
   url.mojom.Url action;
-  array<ManifestFileFilter> files;
+  mojo_base.mojom.String16? name;
+  // A mapping of a MIME types to a corresponding list of file extensions.
+  map<mojo_base.mojom.String16, array<mojo_base.mojom.String16>> accept;
 };
 
 // Debug information for a parsed manifest.

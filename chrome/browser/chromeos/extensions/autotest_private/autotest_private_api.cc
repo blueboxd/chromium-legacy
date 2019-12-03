@@ -623,6 +623,13 @@ int GetMouseEventFlags(api::autotest_private::MouseButton button) {
   return ui::EF_NONE;
 }
 
+void EnableMouseEventsIfNecessary(aura::Window* root_window) {
+  aura::client::CursorClient* cursor_client =
+      aura::client::GetCursorClient(root_window);
+  if (!cursor_client->IsMouseEventsEnabled())
+    cursor_client->EnableMouseEvents();
+}
+
 }  // namespace
 
 class WindowStateChangeObserver : public aura::WindowObserver {
@@ -1306,6 +1313,7 @@ AutotestPrivateGetHistogramFunction::GetHistogram(const std::string& name) {
   std::unique_ptr<base::HistogramSamples> samples =
       histogram->SnapshotSamples();
   api::autotest_private::Histogram result;
+  result.sum = samples->sum();
 
   for (std::unique_ptr<base::SampleCountIterator> it = samples->Iterator();
        !it->Done(); it->Next()) {
@@ -3574,6 +3582,8 @@ ExtensionFunction::ResponseAction AutotestPrivateMouseClickFunction::Run() {
   if (!root_window)
     return RespondNow(Error("Failed to find the root window"));
 
+  EnableMouseEventsIfNecessary(root_window);
+
   gfx::PointF location_in_host(env->last_mouse_location().x(),
                                env->last_mouse_location().y());
   wm::ConvertPointFromScreen(root_window, &location_in_host);
@@ -3617,6 +3627,8 @@ ExtensionFunction::ResponseAction AutotestPrivateMousePressFunction::Run() {
   if (!root_window)
     return RespondNow(Error("Failed to find the root window"));
 
+  EnableMouseEventsIfNecessary(root_window);
+
   gfx::PointF location_in_host(env->last_mouse_location().x(),
                                env->last_mouse_location().y());
   wm::ConvertPointFromScreen(root_window, &location_in_host);
@@ -3658,6 +3670,8 @@ ExtensionFunction::ResponseAction AutotestPrivateMouseReleaseFunction::Run() {
   if (!root_window)
     return RespondNow(Error("Failed to find the root window"));
 
+  EnableMouseEventsIfNecessary(root_window);
+
   gfx::PointF location_in_host(env->last_mouse_location().x(),
                                env->last_mouse_location().y());
   wm::ConvertPointFromScreen(root_window, &location_in_host);
@@ -3689,6 +3703,8 @@ ExtensionFunction::ResponseAction AutotestPrivateMouseMoveFunction::Run() {
   auto* root_window = ash::Shell::GetRootWindowForDisplayId(display_id);
   if (!root_window)
     return RespondNow(Error("Failed to find the root window"));
+
+  EnableMouseEventsIfNecessary(root_window);
 
   auto* host = root_window->GetHost();
   const gfx::PointF location_in_root(params->location.x, params->location.y);

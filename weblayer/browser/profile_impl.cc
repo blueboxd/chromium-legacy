@@ -19,6 +19,7 @@
 #include "components/user_prefs/user_prefs.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/resource_context.h"
@@ -104,8 +105,9 @@ bool IsNameValid(const std::string& name) {
 class ProfileImpl::BrowserContextImpl : public content::BrowserContext {
  public:
   BrowserContextImpl(ProfileImpl* profile_impl, const base::FilePath& path)
-      : profile_impl_(profile_impl), path_(path) {
-    resource_context_ = std::make_unique<ResourceContextImpl>();
+      : profile_impl_(profile_impl),
+        path_(path),
+        resource_context_(new ResourceContextImpl()) {
     content::BrowserContext::Initialize(this, path_);
 
     CreateUserPrefService();
@@ -207,7 +209,15 @@ class ProfileImpl::BrowserContextImpl : public content::BrowserContext {
 
   ProfileImpl* const profile_impl_;
   base::FilePath path_;
-  std::unique_ptr<ResourceContextImpl> resource_context_;
+  // ResourceContext needs to be deleted on the IO thread in general (and in
+  // particular due to the destruction of the safebrowsing mojo interface
+  // that has been added in ContentBrowserClient::ExposeInterfacesToRenderer
+  // on IO thread, see crbug.com/1029317). Also this is similar to how Chrome
+  // handles ProfileIOData.
+  // TODO(timvolodine): consider a more general Profile shutdown/destruction
+  // sequence for the IO/UI bits (crbug.com/1029879).
+  std::unique_ptr<ResourceContextImpl, content::BrowserThread::DeleteOnIOThread>
+      resource_context_;
   DownloadManagerDelegateImpl download_delegate_;
   SSLHostStateDelegateImpl ssl_host_state_delegate_;
   std::unique_ptr<PrefService> user_pref_service_;
@@ -283,8 +293,9 @@ ProfileImpl::ProfileImpl(const std::string& name) : name_(name) {
 
   browser_context_ = std::make_unique<BrowserContextImpl>(this, data_path_);
 
-  locale_change_subscription_ = i18n::RegisterLocaleChangeCallback(
-      base::Bind(&ProfileImpl::OnLocaleChanged, base::Unretained(this)));
+  locale_change_subscription_ =
+      i18n::RegisterLocaleChangeCallback(base::BindRepeating(
+          &ProfileImpl::OnLocaleChanged, base::Unretained(this)));
 }
 
 ProfileImpl::~ProfileImpl() {

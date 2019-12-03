@@ -83,7 +83,6 @@ SpellCheckProvider::SpellCheckProvider(
     SpellCheck* spellcheck,
     service_manager::LocalInterfaceProvider* embedder_provider)
     : content::RenderFrameObserver(render_frame),
-      content::RenderFrameObserverTracker<SpellCheckProvider>(render_frame),
       spellcheck_(spellcheck),
       embedder_provider_(embedder_provider) {
   DCHECK(spellcheck_);

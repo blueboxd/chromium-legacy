@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//components/spellcheck/spellcheck_build_features.gni")
+
 if (is_android) {
   import("//build/config/android/rules.gni")
 }
@@ -20,9 +22,14 @@ source_set("browser") {
     "spellcheck_platform_mac.mm",
     "spellchecker_session_bridge_android.cc",
     "spellchecker_session_bridge_android.h",
-    "spelling_service_client.cc",
-    "spelling_service_client.h",
   ]
+
+  if (enable_spelling_service) {
+    sources += [
+      "spelling_service_client.cc",
+      "spelling_service_client.h",
+    ]
+  }
 
   if (is_win) {
     sources += [ "spellcheck_platform_win.cc" ]

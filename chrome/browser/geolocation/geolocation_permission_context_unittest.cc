@@ -363,7 +363,7 @@ bool GeolocationPermissionContextTests::HasActivePrompt(
     content::WebContents* web_contents) {
   PermissionRequestManager* manager =
       PermissionRequestManager::FromWebContents(web_contents);
-  return manager->IsBubbleVisible();
+  return manager->IsRequestInProgress();
 }
 
 void GeolocationPermissionContextTests::AcceptPrompt() {
@@ -375,18 +375,21 @@ void GeolocationPermissionContextTests::AcceptPrompt(
   PermissionRequestManager* manager =
       PermissionRequestManager::FromWebContents(web_contents);
   manager->Accept();
+  base::RunLoop().RunUntilIdle();
 }
 
 void GeolocationPermissionContextTests::DenyPrompt() {
   PermissionRequestManager* manager =
       PermissionRequestManager::FromWebContents(web_contents());
   manager->Deny();
+  base::RunLoop().RunUntilIdle();
 }
 
 void GeolocationPermissionContextTests::ClosePrompt() {
   PermissionRequestManager* manager =
       PermissionRequestManager::FromWebContents(web_contents());
   manager->Closing();
+  base::RunLoop().RunUntilIdle();
 }
 
 base::string16 GeolocationPermissionContextTests::GetPromptText() {

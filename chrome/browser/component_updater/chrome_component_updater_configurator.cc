@@ -4,8 +4,6 @@
 
 #include "chrome/browser/component_updater/chrome_component_updater_configurator.h"
 
-#include <stdint.h>
-
 #include <memory>
 #include <string>
 #include <vector>
@@ -42,7 +40,6 @@
 
 #if defined(OS_WIN)
 #include "base/enterprise_util.h"
-#include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/google_update_settings.h"
 #endif
 
@@ -81,11 +78,8 @@ class ChromeConfigurator : public update_client::Configurator {
   PrefService* GetPrefService() const override;
   update_client::ActivityDataService* GetActivityDataService() const override;
   bool IsPerUserInstall() const override;
-  std::vector<uint8_t> GetRunActionKeyHash() const override;
-  std::string GetAppGuid() const override;
   std::unique_ptr<update_client::ProtocolHandlerFactory>
   GetProtocolHandlerFactory() const override;
-  update_client::RecoveryCRXElevator GetRecoveryCRXElevator() const override;
 
  private:
   friend class base::RefCountedThreadSafe<ChromeConfigurator>;
@@ -240,28 +234,9 @@ bool ChromeConfigurator::IsPerUserInstall() const {
   return component_updater::IsPerUserInstall();
 }
 
-std::vector<uint8_t> ChromeConfigurator::GetRunActionKeyHash() const {
-  return configurator_impl_.GetRunActionKeyHash();
-}
-
-std::string ChromeConfigurator::GetAppGuid() const {
-#if defined(OS_WIN)
-  return install_static::UTF16ToUTF8(install_static::GetAppGuid());
-#else
-  return configurator_impl_.GetAppGuid();
-#endif
-}
-
 std::unique_ptr<update_client::ProtocolHandlerFactory>
 ChromeConfigurator::GetProtocolHandlerFactory() const {
   return configurator_impl_.GetProtocolHandlerFactory();
-}
-
-// TODO(sorin): remove the members related to elevation, action runners, and
-// recovery component. crbug.com/1027395
-update_client::RecoveryCRXElevator ChromeConfigurator::GetRecoveryCRXElevator()
-    const {
-  return configurator_impl_.GetRecoveryCRXElevator();
 }
 
 }  // namespace

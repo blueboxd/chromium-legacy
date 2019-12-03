@@ -15,7 +15,7 @@
 
 class PasswordsModelDelegateMock
     : public PasswordsModelDelegate,
-      public base::SupportsWeakPtr<PasswordsModelDelegateMock>{
+      public base::SupportsWeakPtr<PasswordsModelDelegateMock> {
  public:
   PasswordsModelDelegateMock();
   ~PasswordsModelDelegateMock() override;
@@ -23,6 +23,8 @@ class PasswordsModelDelegateMock
   MOCK_CONST_METHOD0(GetWebContents, content::WebContents*());
   MOCK_METHOD0(GetPasswordFormMetricsRecorder,
                password_manager::PasswordFormMetricsRecorder*());
+  MOCK_METHOD0(GetPasswordFeatureManager,
+               password_manager::PasswordFeatureManager*());
   MOCK_CONST_METHOD0(GetOrigin, const GURL&());
   MOCK_CONST_METHOD0(GetState, password_manager::ui::State());
   MOCK_CONST_METHOD0(GetPendingPassword, const autofill::PasswordForm&());
@@ -43,8 +45,9 @@ class PasswordsModelDelegateMock
   MOCK_METHOD0(OnPasswordsRevealed, void());
   MOCK_METHOD2(SavePassword,
                void(const base::string16&, const base::string16&));
-  MOCK_METHOD2(ChooseCredential, void(const autofill::PasswordForm&,
-                                      password_manager::CredentialType));
+  MOCK_METHOD2(ChooseCredential,
+               void(const autofill::PasswordForm&,
+                    password_manager::CredentialType));
   MOCK_METHOD1(NavigateToPasswordManagerAccountDashboard,
                void(password_manager::ManagePasswordsReferrer));
   MOCK_METHOD1(NavigateToPasswordManagerSettingsPage,

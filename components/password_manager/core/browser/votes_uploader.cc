@@ -466,6 +466,10 @@ void VotesUploader::MaybeSendSingleUsernameVote(bool credentials_saved) {
   if (!single_username_vote_data_)
     return;
 
+  FieldInfoManager* field_info_manager = client_->GetFieldInfoManager();
+  if (!field_info_manager)
+    return;
+
   const FormPredictions& predictions =
       single_username_vote_data_->form_predictions;
   std::vector<FieldSignature> field_signatures;
@@ -485,6 +489,12 @@ void VotesUploader::MaybeSendSingleUsernameVote(bool credentials_saved) {
     ServerFieldType type = autofill::UNKNOWN_TYPE;
     uint32_t field_renderer_id = predictions.fields[i].renderer_id;
     if (field_renderer_id == single_username_vote_data_->renderer_id) {
+      if (field_info_manager->GetFieldType(predictions.form_signature,
+                                           predictions.fields[i].signature) !=
+          autofill::UNKNOWN_TYPE) {
+        // The vote for this field has been already sent. Don't send again.
+        return;
+      }
       type = credentials_saved && !has_username_edited_vote_
                  ? autofill::SINGLE_USERNAME
                  : autofill::NOT_USERNAME;

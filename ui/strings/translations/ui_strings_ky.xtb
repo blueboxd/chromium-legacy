@@ -8,6 +8,7 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1мүн}other{#мүн}}</translation>
 <translation id="1181037720776840403">Алып салуу</translation>
 <translation id="1201402288615127009">Кийинки</translation>
+<translation id="1218444235442067213"><ph name="APP_NAME" />, Play Store колдонмосу</translation>
 <translation id="1243314992276662751">Жүктөп берүү</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> менен бөлүшүлгөн жок</translation>
 <translation id="1269641567813814718">Win</translation>
@@ -18,6 +19,7 @@
 <translation id="1368832886055348810">Солдон оңго</translation>
 <translation id="1383876407941801731">Издөө</translation>
 <translation id="1398853756734560583">Чоңойтуу</translation>
+<translation id="1414271762428216854"><ph name="APP_NAME" />, Орнотулган колдонмо</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> менен бөлүшүү мүмкүн эмес</translation>
 <translation id="1498028757988366001">Муну буга чейин издегенсиз. "<ph name="QUERY" />" таржымалыңыздан өчүрүлсө, ал бардык түзмөктөрүңүздөгү аккаунтуңуздан биротоло өчүрүлөт.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 мүнөт жана }other{# мүнөт жана }}</translation>
@@ -30,6 +32,7 @@
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 ай}other{# ай}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> Mб/сек</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 саат жана }other{# саат жана }}</translation>
+<translation id="1830308660060964064"><ph name="ITEM_TITLE" /> бошотулду</translation>
 <translation id="1842960171412779397">тандоо</translation>
 <translation id="1859234291848436338">Жазуу багыты</translation>
 <translation id="1860796786778352021">Эскертмени жабуу</translation>
@@ -66,10 +69,12 @@
 <translation id="2666092431469916601">Өйдө</translation>
 <translation id="2701330563083355633"><ph name="DEVICE_NAME" /> аркылуу бөлүшүлдү</translation>
 <translation id="2743387203779672305">Алмашуу буферине көчүрүү</translation>
+<translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Куржунду ачуу</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 жыл мурун}other{# жыл мурун}}</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1 к. кийин}other{# к. кийин}}</translation>
 <translation id="2931838996092594335">чыкылдатуу</translation>
+<translation id="2981684127883932071">Сунуштар көрсөтүлүүдө</translation>
 <translation id="3036649622769666520">Файлдарды ачуу</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> Мб</translation>
 <translation id="3068711042108640621">Текче экрандын сол жагында</translation>
@@ -84,6 +89,7 @@
 <translation id="3389286852084373014">Тексттин көлөмү өтө чоң</translation>
 <translation id="3479552764303398839">Азыр эмес</translation>
 <translation id="348799646910989694">Текче автоматтык түрдө жашырылды</translation>
+<translation id="3554637740840164787"><ph name="ITEM_TITLE" /> кадалды</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 күн калды}other{# күн калды}}</translation>
 <translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" /> файл</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
@@ -105,8 +111,11 @@
 <translation id="4250229828105606438">Скриншот</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 ай мурун}other{# ай мурун}}</translation>
 <translation id="4289300219472526559">Сүйлөп баштаңыз</translation>
+<translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> <ph name="FOLDER_NAME" /> папкасына жылдырылды.</translation>
 <translation id="4316910396681052118">БАРДЫК КОЛДОНМОЛОР</translation>
 <translation id="4588090240171750605">Оңго сыдырып кароо</translation>
+<translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, Рейтинги: <ph name="RATING_SCORE" /></translation>
+<translation id="4648249871170053485"><ph name="APP_NAME" />, Сунушталган колдонмо</translation>
 <translation id="4690510401873698237">Текче экрандын ылдый жагында</translation>
 <translation id="4724120544754982507">Эскертмелер борбору, <ph name="UNREAD_NOTIFICATION_COUNT" /> окулбаган эскертме бар</translation>
 <translation id="4730374152663651037">КӨП КОЛДОНУЛГАН КОЛДОНМОЛОР</translation>
@@ -116,6 +125,7 @@
 <translation id="4971687151119236543">Медиа мурунку трэк</translation>
 <translation id="5046499563572181734">Бул жерди таптаңыз</translation>
 <translation id="5076340679995252485">&amp;Чаптоо</translation>
+<translation id="5198715732953550718">Жаңы папка түзүү үчүн <ph name="MOVED_APP_NAME" /> менен <ph name="IN_PLACE_APP" /> бириктирилди.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> Пб</translation>
 <translation id="5266161281976477809">Ачып көрсөтүүчү үч бурчтук</translation>
 <translation id="5278860589123563674">Жөнөтүлгөн жок</translation>
@@ -129,6 +139,7 @@
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> тутуму</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Сол жебе</translation>
+<translation id="5675363643668471212">Текчедеги нерсе</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 мүн.}other{# мүн.}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Акыркы аракеттер: бүгүн}=1{Акыркы аракеттер: 1 күн мурун}other{Акыркы аракеттер: # күн мурун}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 күн жана }other{# күн жана }}</translation>
@@ -208,6 +219,7 @@
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Ылдый барактоо</translation>
 <translation id="8245914219290430011">Өтмөк</translation>
+<translation id="8247998213073982446"><ph name="APP_NAME" />, Колдонмо</translation>
 <translation id="8259556432390118667">Он алты түстүү код</translation>
 <translation id="8328145009876646418">Сол кыры</translation>
 <translation id="8331626408530291785">Өйдө сыдырып кароо</translation>
@@ -237,6 +249,8 @@
 <translation id="9150735707954472829">Өтмөк</translation>
 <translation id="9161053988251441839">СУНУШТАЛГАН КОЛДОНМОЛОР</translation>
 <translation id="9170848237812810038">&amp;Кайтаруу</translation>
+<translation id="9178475906033259337"><ph name="QUERY" /> сурамы боюнча 1 натыйжа көрсөтүлүүдө</translation>
 <translation id="932327136139879170">Башкы</translation>
 <translation id="944069440740578670">Окулбаган билдирмелер</translation>
+<translation id="974545358917229949"><ph name="QUERY" /> сурамы боюнча <ph name="RESULT_COUNT" /> натыйжа көрсөтүлүүдө</translation>
 </translationbundle>

@@ -28,6 +28,7 @@ luci.list_view(
         'try/layout_test_leak_detection',
         'try/leak_detection_linux',
         'try/linux-annotator-rel',
+        'try/linux-bfcache-debug',
         'try/linux-dcheck-off-rel',
         'try/linux-gcc-rel',
         'try/linux-libfuzzer-asan-rel',

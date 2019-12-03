@@ -176,6 +176,9 @@ void ContentsView::ResetForShow() {
   // SetActiveState() since it checks the visibility of the pages.
   horizontal_page_container_->SetVisible(true);
   search_results_page_view_->SetVisible(false);
+  // SearchBoxView::UpdateOpacity() may change search result page opacity during
+  // drag - make sure that opacity value is reset to 1.0f.
+  search_results_page_view_->layer()->SetOpacity(1.0f);
   if (assistant_page_view_)
     assistant_page_view_->SetVisible(false);
   SetActiveState(ash::AppListState::kStateApps, /*animate=*/false);

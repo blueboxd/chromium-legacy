@@ -4,17 +4,22 @@
 
 #include "weblayer/renderer/content_renderer_client_impl.h"
 
+#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "content/public/renderer/render_thread.h"
 #include "net/base/escape.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "weblayer/common/features.h"
 #include "weblayer/renderer/ssl_error_helper.h"
 
 #if defined(OS_ANDROID)
 #include "android_webview/grit/aw_resources.h"
 #include "android_webview/grit/aw_strings.h"
+#include "weblayer/renderer/url_loader_throttle_provider.h"
 #endif
 
 namespace weblayer {
@@ -101,6 +106,27 @@ void ContentRendererClientImpl::PrepareErrorPage(
 #if defined(OS_ANDROID)
   PopulateErrorPageHTML(error, error_html);
 #endif
+}
+
+void ContentRendererClientImpl::RenderThreadStarted() {
+  browser_interface_broker_ =
+      blink::Platform::Current()->GetBrowserInterfaceBroker();
+}
+
+std::unique_ptr<content::URLLoaderThrottleProvider>
+ContentRendererClientImpl::CreateURLLoaderThrottleProvider(
+    content::URLLoaderThrottleProviderType provider_type) {
+  if (base::FeatureList::IsEnabled(features::kWebLayerSafeBrowsing)) {
+#if defined(OS_ANDROID)
+    // Note: currently the throttle provider is only needed for safebrowsing.
+    return std::make_unique<URLLoaderThrottleProvider>(
+        browser_interface_broker_.get(), provider_type);
+#else
+    return nullptr;
+#endif
+  }
+
+  return nullptr;
 }
 
 }  // namespace weblayer

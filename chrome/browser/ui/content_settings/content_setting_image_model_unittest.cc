@@ -404,11 +404,11 @@ TEST_F(ContentSettingImageModelTest, NotificationsPrompt) {
   EXPECT_FALSE(content_setting_image_model->is_visible());
   manager_->AddRequest(&request_);
   WaitForBubbleToBeShown();
-  EXPECT_TRUE(manager_->ShouldShowQuietPermissionPrompt());
+  EXPECT_TRUE(manager_->ShouldCurrentRequestUseQuietUI());
   content_setting_image_model->Update(web_contents());
   EXPECT_TRUE(content_setting_image_model->is_visible());
   manager_->Accept();
-  EXPECT_FALSE(manager_->ShouldShowQuietPermissionPrompt());
+  EXPECT_FALSE(manager_->ShouldCurrentRequestUseQuietUI());
   content_setting_image_model->Update(web_contents());
   EXPECT_FALSE(content_setting_image_model->is_visible());
 #endif  // !defined(OS_ANDROID)

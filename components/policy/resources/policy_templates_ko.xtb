@@ -878,7 +878,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="2345547870894930157">안전하지 않은 대체 없이 DNS-over-HTTPS 사용</translation>
 <translation id="2347264058558503729"><ph name="PRODUCT_NAME" />에서 인쇄를 위해 <ph name="CLOUD_PRINT_NAME" />에 문서를 제출하도록 허용합니다.  참고: 이렇게 하면 <ph name="PRODUCT_NAME" />의 <ph name="CLOUD_PRINT_NAME" /> 지원 기능만 영향을 받으며  사용자는 웹사이트에서 인쇄 작업을 계속해서 제출할 수 있습니다.
 
-      이 설정을 사용하거나 구성되지 않으면 사용자는 <ph name="PRODUCT_NAME" /> 인쇄 대화상자에서 <ph name="CLOUD_PRINT_NAME" />(으)로 인쇄할 수 있습니다.
+      이 설정을 사용하거나 설정이 구성되어 있지 않으면 사용자는 <ph name="PRODUCT_NAME" /> 인쇄 대화상자에서 <ph name="CLOUD_PRINT_NAME" />(으)로 인쇄할 수 있습니다.
 
       설정을 사용 중지하면 사용자는 <ph name="PRODUCT_NAME" /> 인쇄 대화상자에서 <ph name="CLOUD_PRINT_NAME" />(으)로 인쇄할 수 없습니다.
 

@@ -7,7 +7,7 @@ import unittest
 from .code_node import FunctionDefinitionNode
 from .code_node import LikelyExitNode
 from .code_node import LiteralNode
-from .code_node import SequenceNode
+from .code_node import ListNode
 from .code_node import SymbolNode
 from .code_node import SymbolScopeNode
 from .code_node import TextNode
@@ -57,10 +57,10 @@ class CodeNodeTest(unittest.TestCase):
 
     def test_list_operations_of_sequence_node(self):
         """
-        Tests that list operations (insert, append, and extend) of SequenceNode
+        Tests that list operations (insert, append, and extend) of ListNode
         work just same as Python built-in list.
         """
-        root = SequenceNode(separator=",")
+        root = ListNode(separator=",")
         root.extend([
             LiteralNode("2"),
             LiteralNode("4"),
@@ -76,9 +76,9 @@ class CodeNodeTest(unittest.TestCase):
         self.assertRenderResult(root, "2,3,5")
 
     def test_nested_sequence(self):
-        """Tests nested SequenceNodes."""
-        root = SequenceNode(separator=",")
-        nested = SequenceNode(separator=",")
+        """Tests nested ListNodes."""
+        root = ListNode(separator=",")
+        nested = ListNode(separator=",")
         nested.extend([
             LiteralNode("2"),
             LiteralNode("3"),

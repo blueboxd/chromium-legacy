@@ -12,9 +12,9 @@
 <translation id="107147699690128016">Калі вы зменіце пашырэнне файла, ён можа адкрыцца ў іншай праграме, што можа быць небяспечным для вашай прылады.</translation>
 <translation id="1100066534610197918">У новай укладцы ў групе</translation>
 <translation id="1105960400813249514">Здымак экрана</translation>
-<translation id="1110022065703191351">Значкі</translation>
 <translation id="1111673857033749125">Тут з'явяцца закладкі, захаваныя на вашых іншых прыладах.</translation>
 <translation id="1113597929977215864">Паказаць у спрошчаным выглядзе</translation>
+<translation id="1122278879166832009">Каб хутка трапіць на галоўную старонку з любой іншай, націсніце тут</translation>
 <translation id="1124772482545689468">Карыстальнік</translation>
 <translation id="1129510026454351943">Падрабязнасці: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{Чакаецца 1 спампоўка.}one{Чакаецца # спампоўка.}few{Чакаецца # спампоўкі.}many{Чакаецца # спамповак.}other{Чакаецца # спампоўкі.}}</translation>
@@ -379,6 +379,7 @@
 <translation id="3822502789641063741">Ачысц. сховішча сайтаў?</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3859306556332390985">Перайсці ўперад</translation>
+<translation id="388596076286380598">Чытайце артыкулы, глядзіце відэа і іншае змесціва на любімых сайтах, нават калі вы не падключаны да інтэрнэту або якасць падключэння дрэнная.</translation>
 <translation id="3894427358181296146">Дадаць папку</translation>
 <translation id="3895926599014793903">Прымусовае ўключэнне павелічэння</translation>
 <translation id="3912508018559818924">Пошук найлепшага ў інтэрнэце…</translation>
@@ -490,6 +491,7 @@
 <translation id="4719927025381752090">Прапаноўваць пераклад</translation>
 <translation id="4720023427747327413">Адкрыць у <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Дапамажыце палепшыць Chrome. <ph name="BEGIN_LINK" />Прыміце ўдзел у апытанні<ph name="END_LINK" /></translation>
+<translation id="4732120983431207637">Размотчык стэка</translation>
 <translation id="473775607612524610">Абнавіць</translation>
 <translation id="4738836084190194332">Апошняя сінхранізацыя: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Адкрыць новую ўкладку</translation>
@@ -542,7 +544,6 @@
 <translation id="5048398596102334565">Дазваляць сайтам доступ да датчыкаў руху (рэкамендуецца)</translation>
 <translation id="5063480226653192405">Выкарыстанне</translation>
 <translation id="5087580092889165836">Дадаць картку</translation>
-<translation id="5096950519211870196">Сайтам будзе забаронена запытваць дазвол на паказ апавяшчэнняў. Калі сайт запытае дазвол на паказ апавяшчэнняў, унізе старонкі з'явіцца панэль інфармацыі.</translation>
 <translation id="5100237604440890931">Згорнута – каб разгарнуць, націсніце тут.</translation>
 <translation id="510275257476243843">Засталася 1 гадзіна</translation>
 <translation id="5123685120097942451">Укладка інкогніта</translation>
@@ -636,6 +637,7 @@
 <translation id="5684874026226664614">Памылка. Не ўдалося перакласці гэту старонку.</translation>
 <translation id="5686790454216892815">Назва файла занадта доўгая</translation>
 <translation id="5689516760719285838">Месцазнаходжанне</translation>
+<translation id="5694049548840660018">Вяртацца на галоўную старонку проста</translation>
 <translation id="569536719314091526">Перакладзіце гэту старонку на любую мову з дапамогай кнопкі "Дадатковыя параметры"</translation>
 <translation id="5710871682236653961">Пытацца, перш чым дазволіць сайтам адпраўляць і атрымліваць інфармацыю, калі вы націсканнем выбіраеце прылады NFC (рэкамендуецца)</translation>
 <translation id="572328651809341494">Нядаўнія ўкладкі</translation>
@@ -689,7 +691,6 @@
 <translation id="6108923351542677676">Ідзе наладка…</translation>
 <translation id="6111020039983847643">выкарыстаны трафік</translation>
 <translation id="6112702117600201073">Абнаўленне старонкі</translation>
-<translation id="6113400363611269907">Паказваць запыты бязгучна</translation>
 <translation id="6127379762771434464">Элемент выдалены</translation>
 <translation id="6140912465461743537">Краіна або рэгіён</translation>
 <translation id="614940544461990577">Паспрабуйце наступнае:</translation>
@@ -791,13 +792,13 @@
 <translation id="6818926723028410516">Выберыце элементы</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Перакласці</translation>
-<translation id="6840155290835956714">Запытваць перад адпраўкай</translation>
 <translation id="6845325883481699275">Дапамагаць павысіць бяспеку Chrome</translation>
 <translation id="6846298663435243399">Ідзе загрузка…</translation>
 <translation id="6850409657436465440">Спампоўка ўсё яшчэ працягваецца</translation>
 <translation id="6850830437481525139">Закрытыя ўкладкі (<ph name="TAB_COUNT" />)</translation>
 <translation id="6864459304226931083">Спампаваць відарыс</translation>
 <translation id="6865313869410766144">Даныя для аўтазапаўнення</translation>
+<translation id="6884306546558072722">Праглядайце змесціва ў пазасеткавым рэжыме</translation>
 <translation id="688738109438487280">Дадаць існуючыя даныя ва ўліковы запіс <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Разблакіруйце, каб скапіраваць пароль</translation>
 <translation id="6896758677409633944">Капіраваць</translation>
@@ -1039,6 +1040,7 @@
 <translation id="8636825310635137004">Каб глядзець укладкі са сваіх іншых прылад, уключыце сінхранізацыю.</translation>
 <translation id="8641930654639604085">Спрабаваць блакіраваць сайты для дарослых</translation>
 <translation id="8655129584991699539">Даныя можна выдаліць у наладах Chrome</translation>
+<translation id="8655599981421006542">Націсніце тут, каб стварыць новыя ўкладкі і вярнуцца да папярэдніх</translation>
 <translation id="8662811608048051533">Будзе выкананы выхад з уліковых запісаў на большасці сайтаў.</translation>
 <translation id="8664979001105139458">Файл з такой назвай ужо існуе</translation>
 <translation id="8676374126336081632">Ачысціць поле ўводу</translation>
@@ -1051,6 +1053,7 @@
 <translation id="8730621377337864115">Гатова</translation>
 <translation id="8748850008226585750">Змесціва схавана</translation>
 <translation id="8751914237388039244">Выберыце відарыс</translation>
+<translation id="8758557275681689734">Праглядайце ўсе адкрытыя ўкладкі</translation>
 <translation id="8788265440806329501">Гісторыя навігацыі закрыта</translation>
 <translation id="8788968922598763114">Адкрыць апошнюю закрытую ўкладку</translation>
 <translation id="8801436777607969138">Блакіраванне JavaScript для канкрэтнага сайта.</translation>

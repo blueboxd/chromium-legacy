@@ -81,9 +81,7 @@ void ManifestParser::Parse() {
   if (share_target.has_value())
     manifest_->share_target = std::move(*share_target);
 
-  auto file_handler = ParseFileHandler(root_object.get());
-  if (file_handler.has_value())
-    manifest_->file_handler = std::move(*file_handler);
+  manifest_->file_handlers = ParseFileHandlers(root_object.get());
 
   manifest_->related_applications = ParseRelatedApplications(root_object.get());
   manifest_->prefer_related_applications =
@@ -627,30 +625,118 @@ ManifestParser::ParseShareTarget(const JSONObject* object) {
   return share_target;
 }
 
+Vector<mojom::blink::ManifestFileHandlerPtr> ManifestParser::ParseFileHandlers(
+    const JSONObject* object) {
+  Vector<mojom::blink::ManifestFileHandlerPtr> result;
+
+  if (!object->Get("file_handlers"))
+    return result;
+
+  JSONArray* entry_array = object->GetArray("file_handlers");
+  if (!entry_array) {
+    AddErrorInfo("property 'file_handlers' ignored, type array expected.");
+    return result;
+  }
+
+  for (wtf_size_t i = 0; i < entry_array->size(); ++i) {
+    JSONObject* json_entry = JSONObject::Cast(entry_array->at(i));
+    if (!json_entry) {
+      AddErrorInfo("FileHandler ignored, type object expected.");
+      continue;
+    }
+
+    base::Optional<mojom::blink::ManifestFileHandlerPtr> entry =
+        ParseFileHandler(json_entry);
+    if (!entry)
+      continue;
+
+    result.push_back(std::move(entry.value()));
+  }
+
+  return result;
+}
+
 base::Optional<mojom::blink::ManifestFileHandlerPtr>
-ManifestParser::ParseFileHandler(const JSONObject* object) {
-  const JSONObject* file_handler_object = object->GetJSONObject("file_handler");
-  if (!file_handler_object)
+ManifestParser::ParseFileHandler(const JSONObject* file_handler) {
+  mojom::blink::ManifestFileHandlerPtr entry =
+      mojom::blink::ManifestFileHandler::New();
+  entry->action = ParseURL(file_handler, "action", manifest_url_,
+                           ParseURLOriginRestrictions::kSameOriginOnly);
+  if (!entry->action.IsValid()) {
+    AddErrorInfo("FileHandler ignored. Property 'action' is invalid.");
     return base::nullopt;
+  }
 
-  auto file_handler = mojom::blink::ManifestFileHandler::New();
-  file_handler->action = ParseURL(file_handler_object, "action", manifest_url_,
-                                  ParseURLOriginRestrictions::kSameOriginOnly);
-  if (!file_handler->action.IsValid()) {
+  entry->name = ParseString(file_handler, "name", Trim).value_or("");
+
+  entry->accept = ParseFileHandlerAccept(file_handler->GetJSONObject("accept"));
+  if (entry->accept.IsEmpty()) {
+    AddErrorInfo("FileHandler ignored. Property 'accept' is invalid.");
+    return base::nullopt;
+  }
+
+  return entry;
+}
+
+HashMap<String, Vector<String>> ManifestParser::ParseFileHandlerAccept(
+    const JSONObject* accept) {
+  HashMap<String, Vector<String>> result;
+  if (!accept)
+    return result;
+
+  for (wtf_size_t i = 0; i < accept->size(); ++i) {
+    JSONObject::Entry entry = accept->at(i);
+    String& mimetype = entry.first;
+
+    Vector<String> extensions;
+    String extension;
+    JSONArray* extensions_array = JSONArray::Cast(entry.second);
+    if (extensions_array) {
+      for (wtf_size_t j = 0; j < extensions_array->size(); ++j) {
+        JSONValue* value = extensions_array->at(j);
+        if (!value->AsString(&extension)) {
+          AddErrorInfo(
+              "property 'accept' file extension ignored, type string "
+              "expected.");
+          continue;
+        }
+
+        if (!ParseFileHandlerAcceptExtension(value, &extension)) {
+          // Errors are added by ParseFileHandlerAcceptExtension.
+          continue;
+        }
+
+        extensions.push_back(extension);
+      }
+    } else if (ParseFileHandlerAcceptExtension(entry.second, &extension)) {
+      extensions.push_back(extension);
+    } else {
+      // Parsing errors will already have been added.
+      continue;
+    }
+
+    result.Set(mimetype, std::move(extensions));
+  }
+
+  return result;
+}
+
+bool ManifestParser::ParseFileHandlerAcceptExtension(const JSONValue* extension,
+                                                     String* output) {
+  if (!extension->AsString(output)) {
     AddErrorInfo(
-        "property 'file_handler' ignored. Property 'action' is "
-        "invalid.");
-    return base::nullopt;
+        "property 'accept' type ignored. File extensions must be type array or "
+        "type string.");
+    return false;
   }
 
-  file_handler->files = ParseTargetFiles("files", file_handler_object);
-
-  if (file_handler->files.size() == 0) {
-    AddErrorInfo("no file handlers were specified.");
-    return base::nullopt;
+  if (!output->StartsWith(".")) {
+    AddErrorInfo(
+        "property 'accept' file extension ignored, must start with a '.'.");
+    return false;
   }
 
-  return file_handler;
+  return true;
 }
 
 String ManifestParser::ParseRelatedApplicationPlatform(

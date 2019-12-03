@@ -13,10 +13,7 @@ window.policy_tests = {};
 policy_tests.suiteName = 'PolicyTest';
 /** @enum {string} */
 policy_tests.TestNames = {
-  EnableHeaderFooterByPref: 'enable header and footer by pref',
-  DisableHeaderFooterByPref: 'disable header and footer by pref',
-  EnableHeaderFooterByPolicy: 'enable header and footer by policy',
-  DisableHeaderFooterByPolicy: 'disable header and footer by policy',
+  HeaderFooterPolicy: 'header/footer policy',
 };
 
 suite(policy_tests.suiteName, function() {
@@ -29,6 +26,7 @@ suite(policy_tests.suiteName, function() {
    *     loading.
    */
   function loadInitialSettings(initialSettings) {
+    PolymerTest.clearBody();
     const nativeLayer = new NativeLayerStub();
     nativeLayer.setInitialSettings(initialSettings);
     nativeLayer.setLocalDestinationCapabilities(
@@ -38,10 +36,8 @@ suite(policy_tests.suiteName, function() {
     const pluginProxy = new PDFPluginStub();
     PluginProxy.setInstance(pluginProxy);
 
-    PolymerTest.clearBody();
     page = document.createElement('print-preview-app');
     document.body.appendChild(page);
-    const previewArea = page.$.previewArea;
 
     // Wait for initialization to complete.
     return Promise
@@ -56,22 +52,31 @@ suite(policy_tests.suiteName, function() {
 
   /**
    * Sets up the Print Preview app, and loads initial settings with the given
-   * prefs/policies.
-   * @param headerFooter {boolean} Value for the
-   *     'printing.print_header_footer' pref.
-   * @param isHeaderFooterManaged {boolean} Whether the
-   *     'printing.print_header_footer' is controlled by an enterprise policy.
+   * policies.
+   * @param {boolean|undefined} allowedMode Allowed value for the header/footer
+   *     setting.
+   * @param {boolean|undefined} defaultMode Default value for the header/footer
+   *     setting.
    * @return {!Promise} A Promise that resolves once initial settings are done
    *     loading.
    */
-  function doSetup(headerFooter, isHeaderFooterManaged) {
+  function doHeaderFooterSetup(allowedMode, defaultMode) {
     const initialSettings = getDefaultInitialSettings();
-    initialSettings.headerFooter = headerFooter;
-    initialSettings.isHeaderFooterManaged = isHeaderFooterManaged;
+
+    if (allowedMode !== undefined || defaultMode !== undefined) {
+      const headerFooterPolicy = {};
+      if (allowedMode !== undefined) {
+        headerFooterPolicy.allowedMode = allowedMode;
+      }
+      if (defaultMode !== undefined) {
+        headerFooterPolicy.defaultMode = defaultMode;
+      }
+      initialSettings.policies = {headerFooter: headerFooterPolicy};
+    }
     // We want to make sure sticky settings get overridden.
     initialSettings.serializedAppStateStr = JSON.stringify({
       version: 2,
-      isHeaderFooterEnabled: !headerFooter,
+      isHeaderFooterEnabled: !defaultMode,
     });
     return loadInitialSettings(initialSettings);
   }
@@ -82,57 +87,58 @@ suite(policy_tests.suiteName, function() {
     moreSettingsElement.$.label.click();
   }
 
-  function getCheckbox() {
+  function getHeaderFooterCheckbox() {
     return page.$$('print-preview-sidebar')
         .$$('print-preview-other-options-settings')
         .$$('#headerFooter');
   }
 
   /**
-   * Tests that 'printing.print_header_footer' pref checks the header/footer
-   * checkbox.
+   * Tests different scenarios of applying header/footer policy.
    */
-  test(assert(policy_tests.TestNames.EnableHeaderFooterByPref), function() {
-    doSetup(true, false).then(function() {
-      toggleMoreSettings();
-      assertFalse(getCheckbox().disabled);
-      assertTrue(getCheckbox().checked);
-    });
-  });
-
-  /**
-   * Tests that 'printing.print_header_footer' pref unchecks the header/footer
-   * checkbox.
-   */
-  test(assert(policy_tests.TestNames.DisableHeaderFooterByPref), function() {
-    doSetup(false, false).then(function() {
-      toggleMoreSettings();
-      assertFalse(getCheckbox().disabled);
-      assertFalse(getCheckbox().checked);
-    });
-  });
-
-  /**
-   * Tests that 'force enable header/footer' policy disables the header/footer
-   * checkbox and checks it.
-   */
-  test(assert(policy_tests.TestNames.EnableHeaderFooterByPolicy), function() {
-    doSetup(true, true).then(function() {
-      toggleMoreSettings();
-      assertTrue(getCheckbox().disabled);
-      assertTrue(getCheckbox().checked);
-    });
-  });
-
-  /**
-   * Tests that 'force enable header/footer' policy disables the header/footer
-   * checkbox and unchecks it.
-   */
-  test(assert(policy_tests.TestNames.DisableHeaderFooterByPolicy), function() {
-    doSetup(false, true).then(function() {
-      toggleMoreSettings();
-      assertTrue(getCheckbox().disabled);
-      assertFalse(getCheckbox().checked);
+  test(assert(policy_tests.TestNames.HeaderFooterPolicy), function() {
+    [{
+      // No policies.
+      allowedMode: undefined,
+      defaultMode: undefined,
+      expectedDisabled: false,
+      expectedChecked: false,
+    },
+     {
+       // Restrict header/footer to be enabled.
+       allowedMode: true,
+       defaultMode: undefined,
+       expectedDisabled: true,
+       expectedChecked: true,
+     },
+     {
+       // Restrict header/footer to be disabled.
+       allowedMode: false,
+       defaultMode: undefined,
+       expectedDisabled: true,
+       expectedChecked: false,
+     },
+     {
+       // Check header/footer checkbox.
+       allowedMode: undefined,
+       defaultMode: true,
+       expectedDisabled: false,
+       expectedChecked: true,
+     },
+     {
+       // Uncheck header/footer checkbox.
+       allowedMode: undefined,
+       defaultMode: false,
+       expectedDisabled: false,
+       expectedChecked: false,
+     }].forEach(subtestParams => {
+      doHeaderFooterSetup(subtestParams.allowedMode, subtestParams.defaultMode)
+          .then(function() {
+            toggleMoreSettings();
+            const checkbox = getHeaderFooterCheckbox();
+            assertEquals(subtestParams.expectedDisabled, checkbox.disabled);
+            assertEquals(subtestParams.expectedChecked, checkbox.checked);
+          });
     });
   });
 });

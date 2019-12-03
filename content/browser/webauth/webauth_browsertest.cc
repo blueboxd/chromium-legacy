@@ -989,7 +989,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
 // Tests that when navigator.credentials.get() is called with user verification
 // required, we get an NotAllowedError because the virtual device isn't
 // configured with UV and GetAssertionRequestHandler will return
-// |kUserConsentButCredentialNotRecognized| when such an authenticator is
+// |kAuthenticatorMissingUserVerification| when such an authenticator is
 // touched in that case.
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        GetPublicKeyCredentialUserVerification) {

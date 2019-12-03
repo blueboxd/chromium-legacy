@@ -50,6 +50,7 @@ using autofill::PasswordFormFillData;
 using autofill::PasswordFormGenerationData;
 using autofill::ServerFieldType;
 using autofill::SINGLE_USERNAME;
+using autofill::UNKNOWN_TYPE;
 using base::ASCIIToUTF16;
 using base::TestMockTimeTaskRunner;
 using testing::_;
@@ -2152,6 +2153,12 @@ TEST_P(PasswordFormManagerTest, UsernameFirstFlowVotes) {
   field_prediction.type = autofill::SINGLE_USERNAME;
   predictions.fields.push_back(field_prediction);
   possible_username_data.form_predictions = predictions;
+
+  MockFieldInfoManager mock_field_manager;
+  ON_CALL(mock_field_manager, GetFieldType(_, _))
+      .WillByDefault(Return(UNKNOWN_TYPE));
+  ON_CALL(client_, GetFieldInfoManager())
+      .WillByDefault(Return(&mock_field_manager));
 
   // Simulate submission a form without username. Data from
   // |possible_username_data| will be taken for setting username.

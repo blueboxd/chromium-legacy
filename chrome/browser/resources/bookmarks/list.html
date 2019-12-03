@@ -35,12 +35,18 @@
 <iron-list id="list"
     items="[[displayedList_]]"
     hidden$="[[isEmptyList_(displayedList_.length)]]"
-    role="group"
+    role="grid"
     aria-label="$i18n{listAxLabel}">
   <template>
-    <bookmarks-item item-id="[[item.id]]" draggable="true"
-        tabindex$="[[tabIndex]]" iron-list-tab-index="[[tabIndex]]">
-    </bookmarks-item>
+    <div role="row" id$="bookmark_[[index]]"
+        aria-rowindex$="[[getAriaRowindex_(index)]]">
+      <bookmarks-item item-id="[[item.id]]"
+          draggable="true"
+          role="gridcell"
+          tabindex$="[[tabIndex]]"
+          iron-list-tab-index="[[tabIndex]]">
+      </bookmarks-item>
+    </div>
   </template>
 </iron-list>
 <div id="message" class="centered-message"

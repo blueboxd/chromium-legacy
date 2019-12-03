@@ -91,6 +91,12 @@ bool GetPDFDocInfo(base::span<const uint8_t> pdf_buffer,
   return engine_exports->GetPDFDocInfo(pdf_buffer, page_count, max_page_width);
 }
 
+base::Optional<bool> IsPDFDocTagged(base::span<const uint8_t> pdf_buffer) {
+  ScopedSdkInitializer scoped_sdk_initializer(/*enable_v8=*/true);
+  PDFEngineExports* engine_exports = PDFEngineExports::Get();
+  return engine_exports->IsPDFDocTagged(pdf_buffer);
+}
+
 bool GetPDFPageSizeByIndex(base::span<const uint8_t> pdf_buffer,
                            int page_number,
                            double* width,

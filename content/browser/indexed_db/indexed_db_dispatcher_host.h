@@ -18,6 +18,7 @@
 #include "base/sequence_checker.h"
 #include "base/strings/string16.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
+#include "content/browser/indexed_db/indexed_db_blob_info.h"
 #include "content/browser/indexed_db/indexed_db_execution_context_connection_tracker.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
@@ -106,6 +107,11 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
       mojo::PendingReceiver<storage::mojom::BlobDataItemReader> receiver);
   // Removes all readers for this file path.
   void RemoveBoundReaders(const base::FilePath& path);
+
+  // Create blobs from |blob_infos| and store the uuid/receiver results in
+  // |output_infos|.  |output_infos| must be the same length as |blob_infos|.
+  void CreateAllBlobs(const std::vector<IndexedDBBlobInfo>& blob_infos,
+                      std::vector<blink::mojom::IDBBlobInfoPtr>* output_infos);
 
   // Called by UI thread. Used to kill outstanding bindings and weak pointers
   // in callbacks.

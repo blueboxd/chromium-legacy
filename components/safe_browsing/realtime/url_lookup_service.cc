@@ -5,6 +5,7 @@
 #include "components/safe_browsing/realtime/url_lookup_service.h"
 
 #include "base/base64url.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
@@ -107,7 +108,7 @@ void RealTimeUrlLookupService::StartLookup(
   owned_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
       base::BindOnce(&RealTimeUrlLookupService::OnURLLoaderComplete,
-                     GetWeakPtr(), loader));
+                     GetWeakPtr(), loader, base::TimeTicks::Now()));
 
   pending_requests_[owned_loader.release()] = std::move(response_callback);
 
@@ -126,11 +127,15 @@ RealTimeUrlLookupService::~RealTimeUrlLookupService() {
 
 void RealTimeUrlLookupService::OnURLLoaderComplete(
     network::SimpleURLLoader* url_loader,
+    base::TimeTicks request_start_time,
     std::unique_ptr<std::string> response_body) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   auto it = pending_requests_.find(url_loader);
   DCHECK(it != pending_requests_.end()) << "Request not found";
+
+  UMA_HISTOGRAM_TIMES("SafeBrowsing.RT.Network.Time",
+                      base::TimeTicks::Now() - request_start_time);
 
   int net_error = url_loader->NetError();
   int response_code = 0;

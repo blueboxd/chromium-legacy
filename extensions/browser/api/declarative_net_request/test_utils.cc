@@ -100,6 +100,111 @@ std::ostream& operator<<(std::ostream& output, const RequestAction& action) {
   return output;
 }
 
+std::ostream& operator<<(std::ostream& output, const ParseResult& result) {
+  switch (result) {
+    case ParseResult::SUCCESS:
+      output << "SUCCESS";
+      break;
+    case ParseResult::ERROR_RESOURCE_TYPE_DUPLICATED:
+      output << "ERROR_RESOURCE_TYPE_DUPLICATED";
+      break;
+    case ParseResult::ERROR_EMPTY_REDIRECT_RULE_PRIORITY:
+      output << "ERROR_EMPTY_REDIRECT_RULE_PRIORITY";
+      break;
+    case ParseResult::ERROR_EMPTY_UPGRADE_RULE_PRIORITY:
+      output << "ERROR_EMPTY_UPGRADE_RULE_PRIORITY";
+      break;
+    case ParseResult::ERROR_INVALID_RULE_ID:
+      output << "ERROR_INVALID_RULE_ID";
+      break;
+    case ParseResult::ERROR_INVALID_REDIRECT_RULE_PRIORITY:
+      output << "ERROR_INVALID_REDIRECT_RULE_PRIORITY";
+      break;
+    case ParseResult::ERROR_INVALID_UPGRADE_RULE_PRIORITY:
+      output << "ERROR_INVALID_UPGRADE_RULE_PRIORITY";
+      break;
+    case ParseResult::ERROR_NO_APPLICABLE_RESOURCE_TYPES:
+      output << "ERROR_NO_APPLICABLE_RESOURCE_TYPES";
+      break;
+    case ParseResult::ERROR_EMPTY_DOMAINS_LIST:
+      output << "ERROR_EMPTY_DOMAINS_LIST";
+      break;
+    case ParseResult::ERROR_EMPTY_RESOURCE_TYPES_LIST:
+      output << "ERROR_EMPTY_RESOURCE_TYPES_LIST";
+      break;
+    case ParseResult::ERROR_EMPTY_URL_FILTER:
+      output << "ERROR_EMPTY_URL_FILTER";
+      break;
+    case ParseResult::ERROR_INVALID_REDIRECT_URL:
+      output << "ERROR_INVALID_REDIRECT_URL";
+      break;
+    case ParseResult::ERROR_DUPLICATE_IDS:
+      output << "ERROR_DUPLICATE_IDS";
+      break;
+    case ParseResult::ERROR_PERSISTING_RULESET:
+      output << "ERROR_PERSISTING_RULESET";
+      break;
+    case ParseResult::ERROR_NON_ASCII_URL_FILTER:
+      output << "ERROR_NON_ASCII_URL_FILTER";
+      break;
+    case ParseResult::ERROR_NON_ASCII_DOMAIN:
+      output << "ERROR_NON_ASCII_DOMAIN";
+      break;
+    case ParseResult::ERROR_NON_ASCII_EXCLUDED_DOMAIN:
+      output << "ERROR_NON_ASCII_EXCLUDED_DOMAIN";
+      break;
+    case ParseResult::ERROR_INVALID_URL_FILTER:
+      output << "ERROR_INVALID_URL_FILTER";
+      break;
+    case ParseResult::ERROR_EMPTY_REMOVE_HEADERS_LIST:
+      output << "ERROR_EMPTY_REMOVE_HEADERS_LIST";
+      break;
+    case ParseResult::ERROR_INVALID_REDIRECT:
+      output << "ERROR_INVALID_REDIRECT";
+      break;
+    case ParseResult::ERROR_INVALID_EXTENSION_PATH:
+      output << "ERROR_INVALID_EXTENSION_PATH";
+      break;
+    case ParseResult::ERROR_INVALID_TRANSFORM_SCHEME:
+      output << "ERROR_INVALID_TRANSFORM_SCHEME";
+      break;
+    case ParseResult::ERROR_INVALID_TRANSFORM_PORT:
+      output << "ERROR_INVALID_TRANSFORM_PORT";
+      break;
+    case ParseResult::ERROR_INVALID_TRANSFORM_QUERY:
+      output << "ERROR_INVALID_TRANSFORM_QUERY";
+      break;
+    case ParseResult::ERROR_INVALID_TRANSFORM_FRAGMENT:
+      output << "ERROR_INVALID_TRANSFORM_FRAGMENT";
+      break;
+    case ParseResult::ERROR_QUERY_AND_TRANSFORM_BOTH_SPECIFIED:
+      output << "ERROR_QUERY_AND_TRANSFORM_BOTH_SPECIFIED";
+      break;
+    case ParseResult::ERROR_JAVASCRIPT_REDIRECT:
+      output << "ERROR_JAVASCRIPT_REDIRECT";
+      break;
+    case ParseResult::ERROR_EMPTY_REGEX_FILTER:
+      output << "ERROR_EMPTY_REGEX_FILTER";
+      break;
+    case ParseResult::ERROR_NON_ASCII_REGEX_FILTER:
+      output << "ERROR_NON_ASCII_REGEX_FILTER";
+      break;
+    case ParseResult::ERROR_INVALID_REGEX_FILTER:
+      output << "ERROR_INVALID_REGEX_FILTER";
+      break;
+    case ParseResult::ERROR_MULTIPLE_FILTERS_SPECIFIED:
+      output << "ERROR_MULTIPLE_FILTERS_SPECIFIED";
+      break;
+    case ParseResult::ERROR_REGEX_SUBSTITUTION_WITHOUT_FILTER:
+      output << "ERROR_REGEX_SUBSTITUTION_WITHOUT_FILTER";
+      break;
+    case ParseResult::ERROR_INVALID_REGEX_SUBSTITUTION:
+      output << "ERROR_INVALID_REGEX_SUBSTITUTION";
+      break;
+  }
+  return output;
+}
+
 bool HasValidIndexedRuleset(const Extension& extension,
                             content::BrowserContext* browser_context) {
   int expected_checksum;

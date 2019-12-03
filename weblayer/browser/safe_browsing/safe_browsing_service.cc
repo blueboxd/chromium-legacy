@@ -12,8 +12,10 @@
 #include "components/safe_browsing/browser/browser_url_loader_throttle.h"
 #include "components/safe_browsing/browser/mojo_safe_browsing_impl.h"
 #include "components/safe_browsing/browser/safe_browsing_network_context.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_context.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
@@ -148,6 +150,21 @@ void SafeBrowsingService::CreateURLLoaderFactoryForIO(
   url_loader_factory_params->is_corb_enabled = false;
   network_context_->GetNetworkContext()->CreateURLLoaderFactory(
       std::move(receiver), std::move(url_loader_factory_params));
+}
+
+void SafeBrowsingService::AddInterface(
+    service_manager::BinderRegistry* registry,
+    content::RenderProcessHost* render_process_host) {
+  content::ResourceContext* resource_context =
+      render_process_host->GetBrowserContext()->GetResourceContext();
+  registry->AddInterface(
+      base::BindRepeating(
+          &safe_browsing::MojoSafeBrowsingImpl::MaybeCreate,
+          render_process_host->GetID(), resource_context,
+          base::BindRepeating(
+              &SafeBrowsingService::GetSafeBrowsingUrlCheckerDelegate,
+              base::Unretained(this))),
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}));
 }
 
 }  // namespace weblayer

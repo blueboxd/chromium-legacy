@@ -39,7 +39,7 @@ ExtensionOptionsImpl.prototype.buildContainerParams = function() {
 
 ExtensionOptionsImpl.prototype.createGuest = function() {
   // Destroy the old guest if one exists.
-  this.guest.destroy($Function.bind(this.prepareForReattach$, this));
+  this.guest.destroy($Function.bind(this.prepareForReattach, this));
 
   this.guest.create(this.buildParams(), $Function.bind(function() {
     if (!this.guest.getId()) {
@@ -48,7 +48,7 @@ ExtensionOptionsImpl.prototype.createGuest = function() {
       var createFailedEvent = new Event('createfailed', { bubbles: true });
       this.dispatchEvent(createFailedEvent);
     } else {
-      this.attachWindow$();
+      this.attachWindow();
     }
   }, this));
 };

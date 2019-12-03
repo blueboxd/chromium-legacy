@@ -45,7 +45,6 @@ class NullExecutionContext : public GarbageCollected<NullExecutionContext>,
 
   SecurityContext& GetSecurityContext() final { return *this; }
   const SecurityContext& GetSecurityContext() const final { return *this; }
-  DOMTimerCoordinator* Timers() override { return nullptr; }
 
   void AddConsoleMessageImpl(ConsoleMessage*,
                              bool discard_duplicates) override {}

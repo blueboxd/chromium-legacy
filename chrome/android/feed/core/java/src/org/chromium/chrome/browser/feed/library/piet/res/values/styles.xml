@@ -10,11 +10,6 @@ found in the LICENSE file.
     <item name="android:textAlignment">viewStart</item>
   </style>
 
-  <style name="gm_font_weight_thin">
-    <item name="android:fontFamily">sans-serif-thin</item>
-    <item name="android:textAlignment">viewStart</item>
-  </style>
-
   <style name="gm_font_weight_light">
     <item name="android:fontFamily">sans-serif-light</item>
     <item name="android:textAlignment">viewStart</item>
@@ -22,11 +17,6 @@ found in the LICENSE file.
 
   <style name="gm_font_weight_medium">
     <item name="android:fontFamily">sans-serif-medium</item>
-    <item name="android:textAlignment">viewStart</item>
-  </style>
-
-  <style name="gm_font_weight_black">
-    <item name="android:fontFamily">sans-serif-black</item>
     <item name="android:textAlignment">viewStart</item>
   </style>
 </resources>

@@ -125,8 +125,8 @@
           "-v",
           "--browser=android-chromium",
           "--upload-results",
-          "--run-ref-build",
           "--test-shard-map-filename=android_nexus5_perf_map.json",
+          "--run-ref-build",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",
@@ -172,8 +172,8 @@
           "-v",
           "--browser=android-webview",
           "--upload-results",
-          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk",
           "--test-shard-map-filename=android_nexus5x_webview_perf_map.json",
+          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_webview_test_suite",
@@ -219,8 +219,8 @@
           "-v",
           "--browser=android-webview",
           "--upload-results",
-          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk",
           "--test-shard-map-filename=android_nexus6_webview_perf_map.json",
+          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_webview_test_suite",
@@ -460,8 +460,8 @@
           "-v",
           "--browser=release_x64",
           "--upload-results",
-          "--run-ref-build",
           "--test-shard-map-filename=win_7_nvidia_gpu_perf_map.json",
+          "--run-ref-build",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",
@@ -620,8 +620,8 @@
           "-v",
           "--browser=release",
           "--upload-results",
-          "--run-ref-build",
-          "--test-shard-map-filename=win_7_perf_map.json"
+          "--test-shard-map-filename=win_7_perf_map.json",
+          "--run-ref-build"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -866,8 +866,8 @@
           "-v",
           "--browser=android-chrome",
           "--upload-results",
-          "--run-ref-build",
-          "--test-shard-map-filename=android-go-perf_map.json"
+          "--test-shard-map-filename=android-go-perf_map.json",
+          "--run-ref-build"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -912,8 +912,8 @@
           "-v",
           "--browser=android-webview-google",
           "--upload-results",
-          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk",
-          "--test-shard-map-filename=android-go_webview-perf_map.json"
+          "--test-shard-map-filename=android-go_webview-perf_map.json",
+          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "performance_webview_test_suite",
         "merge": {
@@ -1193,8 +1193,8 @@
           "-v",
           "--browser=android-chromium",
           "--upload-results",
-          "--run-ref-build",
           "--test-shard-map-filename=android-nexus5x-perf_map.json",
+          "--run-ref-build",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",
@@ -1240,8 +1240,8 @@
           "-v",
           "--browser=android-chrome",
           "--upload-results",
-          "--run-ref-build",
-          "--test-shard-map-filename=android-pixel2-perf_map.json"
+          "--test-shard-map-filename=android-pixel2-perf_map.json",
+          "--run-ref-build"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -1286,9 +1286,9 @@
           "-v",
           "--browser=android-weblayer",
           "--upload-results",
+          "--test-shard-map-filename=android-pixel2_weblayer-perf_map.json",
           "--webview-embedder-apk=../../out/Release/apks/WebLayerShell.apk",
-          "--webview-embedder-apk=../../out/Release/apks/WebLayerSupport.apk",
-          "--test-shard-map-filename=android-pixel2_weblayer-perf_map.json"
+          "--webview-embedder-apk=../../out/Release/apks/WebLayerSupport.apk"
         ],
         "isolate_name": "performance_weblayer_test_suite",
         "merge": {
@@ -1333,8 +1333,8 @@
           "-v",
           "--browser=android-webview-google",
           "--upload-results",
-          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk",
-          "--test-shard-map-filename=android-pixel2_webview-perf_map.json"
+          "--test-shard-map-filename=android-pixel2_webview-perf_map.json",
+          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "performance_webview_test_suite",
         "merge": {
@@ -1359,7 +1359,7 @@
           "hard_timeout": 43200,
           "ignore_task_failure": false,
           "io_timeout": 21600,
-          "shards": 28
+          "shards": 21
         },
         "trigger_script": {
           "args": [
@@ -1789,8 +1789,8 @@
           "-v",
           "--browser=release",
           "--upload-results",
-          "--run-ref-build",
           "--test-shard-map-filename=linux-perf_map.json",
+          "--run-ref-build",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",
@@ -1848,8 +1848,9 @@
           "dimension_sets": [
             {
               "gpu": "8086:1626",
-              "os": "Mac-10.12",
-              "pool": "chrome.tests.perf"
+              "os": "Mac-10.12.6",
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "MacBookAir7,2_x86-64-i5-5350U_Intel Broadwell HD Graphics 6000_8192_APPLE SSD SM0128G"
             }
           ],
           "expiration": 7200,
@@ -1885,8 +1886,9 @@
           "dimension_sets": [
             {
               "gpu": "8086:1626",
-              "os": "Mac-10.12",
-              "pool": "chrome.tests.perf"
+              "os": "Mac-10.12.6",
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "MacBookAir7,2_x86-64-i5-5350U_Intel Broadwell HD Graphics 6000_8192_APPLE SSD SM0128G"
             }
           ],
           "expiration": 7200,
@@ -1909,8 +1911,8 @@
           "-v",
           "--browser=release",
           "--upload-results",
-          "--run-ref-build",
           "--test-shard-map-filename=mac-10_12_laptop_low_end-perf_map.json",
+          "--run-ref-build",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",
@@ -1926,8 +1928,9 @@
           "dimension_sets": [
             {
               "gpu": "8086:1626",
-              "os": "Mac-10.12",
-              "pool": "chrome.tests.perf"
+              "os": "Mac-10.12.6",
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "MacBookAir7,2_x86-64-i5-5350U_Intel Broadwell HD Graphics 6000_8192_APPLE SSD SM0128G"
             }
           ],
           "expiration": 7200,
@@ -1969,7 +1972,7 @@
               "gpu": "1002:6821-4.0.20-3.2.8",
               "os": "Mac-10.13.3",
               "pool": "chrome.tests.perf",
-              "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_1_475936.0"
+              "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_APPLE SSD SM0512G"
             }
           ],
           "expiration": 7200,
@@ -2007,7 +2010,7 @@
               "gpu": "1002:6821-4.0.20-3.2.8",
               "os": "Mac-10.13.3",
               "pool": "chrome.tests.perf",
-              "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_1_475936.0"
+              "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_APPLE SSD SM0512G"
             }
           ],
           "expiration": 7200,
@@ -2045,7 +2048,7 @@
               "gpu": "1002:6821-4.0.20-3.2.8",
               "os": "Mac-10.13.3",
               "pool": "chrome.tests.perf",
-              "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_1_475936.0"
+              "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_APPLE SSD SM0512G"
             }
           ],
           "expiration": 7200,
@@ -2083,7 +2086,7 @@
               "gpu": "1002:6821-4.0.20-3.2.8",
               "os": "Mac-10.13.3",
               "pool": "chrome.tests.perf",
-              "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_1_475936.0"
+              "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_APPLE SSD SM0512G"
             }
           ],
           "expiration": 7200,
@@ -2121,7 +2124,7 @@
               "gpu": "1002:6821-4.0.20-3.2.8",
               "os": "Mac-10.13.3",
               "pool": "chrome.tests.perf",
-              "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_1_475936.0"
+              "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_APPLE SSD SM0512G"
             }
           ],
           "expiration": 7200,
@@ -2159,7 +2162,7 @@
               "gpu": "1002:6821-4.0.20-3.2.8",
               "os": "Mac-10.13.3",
               "pool": "chrome.tests.perf",
-              "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_1_475936.0"
+              "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_APPLE SSD SM0512G"
             }
           ],
           "expiration": 7200,
@@ -2182,8 +2185,8 @@
           "-v",
           "--browser=release",
           "--upload-results",
-          "--run-ref-build",
           "--test-shard-map-filename=mac-10_13_laptop_high_end-perf_map.json",
+          "--run-ref-build",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",
@@ -2201,7 +2204,7 @@
               "gpu": "1002:6821-4.0.20-3.2.8",
               "os": "Mac-10.13.3",
               "pool": "chrome.tests.perf",
-              "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_1_475936.0"
+              "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_APPLE SSD SM0512G"
             }
           ],
           "expiration": 7200,
@@ -2463,8 +2466,8 @@
           "-v",
           "--browser=release_x64",
           "--upload-results",
-          "--run-ref-build",
           "--test-shard-map-filename=win-10-perf_map.json",
+          "--run-ref-build",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",

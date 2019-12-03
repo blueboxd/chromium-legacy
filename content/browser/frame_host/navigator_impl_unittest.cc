@@ -369,12 +369,12 @@ TEST_F(NavigatorTest, NoContent) {
   EXPECT_TRUE(GetSpeculativeRenderFrameHost(node));
 
   // Commit an HTTP 204 response.
-  scoped_refptr<network::ResourceResponse> response(
-      new network::ResourceResponse);
+  auto response = network::mojom::URLResponseHead::New();
   const char kNoContentHeaders[] = "HTTP/1.1 204 No Content\0\0";
-  response->head.headers = new net::HttpResponseHeaders(
+  response->headers = new net::HttpResponseHeaders(
       std::string(kNoContentHeaders, base::size(kNoContentHeaders)));
-  GetLoaderForNavigationRequest(main_request)->CallOnResponseStarted(response);
+  GetLoaderForNavigationRequest(main_request)
+      ->CallOnResponseStarted(std::move(response));
 
   // There should be no pending nor speculative RenderFrameHost; the navigation
   // was aborted.
@@ -395,11 +395,12 @@ TEST_F(NavigatorTest, NoContent) {
   EXPECT_TRUE(GetSpeculativeRenderFrameHost(node));
 
   // Commit an HTTP 205 response.
-  response = new network::ResourceResponse;
+  response = network::mojom::URLResponseHead::New();
   const char kResetContentHeaders[] = "HTTP/1.1 205 Reset Content\0\0";
-  response->head.headers = new net::HttpResponseHeaders(
+  response->headers = new net::HttpResponseHeaders(
       std::string(kResetContentHeaders, base::size(kResetContentHeaders)));
-  GetLoaderForNavigationRequest(main_request)->CallOnResponseStarted(response);
+  GetLoaderForNavigationRequest(main_request)
+      ->CallOnResponseStarted(std::move(response));
 
   // There should be no pending nor speculative RenderFrameHost; the navigation
   // was aborted.

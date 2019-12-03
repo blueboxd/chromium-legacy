@@ -79,7 +79,7 @@ static float ResolveHeightForRatio(float width,
 }
 
 IntSize LayoutSVGImage::GetOverriddenIntrinsicSize() const {
-  if (auto* svg_image = ToSVGImageElementOrNull(GetElement())) {
+  if (auto* svg_image = DynamicTo<SVGImageElement>(GetElement())) {
     if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled())
       return svg_image->GetOverriddenIntrinsicSize();
   }
@@ -173,7 +173,7 @@ void LayoutSVGImage::UpdateLayout() {
   DCHECK(!needs_boundaries_update_);
   DCHECK(!needs_transform_update_);
 
-  if (auto* svg_image_element = ToSVGImageElementOrNull(GetElement())) {
+  if (auto* svg_image_element = DynamicTo<SVGImageElement>(GetElement())) {
     media_element_parser_helpers::ReportUnsizedMediaViolation(
         this, svg_image_element->IsDefaultIntrinsicSize());
   }

@@ -16,6 +16,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -51,6 +52,7 @@ FeaturePodIconButton::FeaturePodIconButton(views::ButtonListener* listener,
   SetImageVerticalAlignment(ALIGN_MIDDLE);
   TrayPopupUtils::ConfigureTrayPopupButton(this);
   views::InstallCircleHighlightPathGenerator(this);
+  GetViewAccessibility().OverrideIsLeaf(true);
 }
 
 FeaturePodIconButton::~FeaturePodIconButton() = default;
@@ -137,6 +139,7 @@ FeaturePodLabelButton::FeaturePodLabelButton(views::ButtonListener* listener)
       sub_label_(new views::Label),
       detailed_view_arrow_(new views::ImageView) {
   SetBorder(views::CreateEmptyBorder(kUnifiedFeaturePodHoverPadding));
+  GetViewAccessibility().OverrideIsLeaf(true);
 
   ConfigureFeaturePodLabel(label_);
   ConfigureFeaturePodLabel(sub_label_);

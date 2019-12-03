@@ -20,6 +20,7 @@
 #include "components/cloud_devices/common/printer_description.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "printing/pdf_render_settings.h"
 #include "printing/pwg_raster_settings.h"
@@ -53,8 +54,8 @@ class PwgRasterConverterHelper
 
   PdfRenderSettings settings_;
   PwgRasterSettings bitmap_settings_;
-  mojo::InterfacePtr<printing::mojom::PdfToPwgRasterConverter>
-      pdf_to_pwg_raster_converter_ptr_;
+  mojo::Remote<printing::mojom::PdfToPwgRasterConverter>
+      pdf_to_pwg_raster_converter_remote_;
   PwgRasterConverter::ResultCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PwgRasterConverterHelper);
@@ -79,8 +80,8 @@ void PwgRasterConverterHelper::Convert(
   callback_ = std::move(callback);
 
   GetPrintingService()->BindPdfToPwgRasterConverter(
-      mojo::MakeRequest(&pdf_to_pwg_raster_converter_ptr_));
-  pdf_to_pwg_raster_converter_ptr_.set_connection_error_handler(
+      pdf_to_pwg_raster_converter_remote_.BindNewPipeAndPassReceiver());
+  pdf_to_pwg_raster_converter_remote_.set_disconnect_handler(
       base::BindOnce(&PwgRasterConverterHelper::RunCallback, this,
                      base::ReadOnlySharedMemoryRegion(), /*page_count=*/0));
 
@@ -94,7 +95,7 @@ void PwgRasterConverterHelper::Convert(
   // TODO(thestig): Write |data| into shared memory in the first place, to avoid
   // this memcpy().
   memcpy(memory.mapping.memory(), data->front(), data->size());
-  pdf_to_pwg_raster_converter_ptr_->Convert(
+  pdf_to_pwg_raster_converter_remote_->Convert(
       std::move(memory.region), settings_, bitmap_settings_,
       base::BindOnce(&PwgRasterConverterHelper::RunCallback, this));
 }
@@ -115,7 +116,7 @@ void PwgRasterConverterHelper::RunCallback(
       std::move(callback_).Run(base::ReadOnlySharedMemoryRegion());
     }
   }
-  pdf_to_pwg_raster_converter_ptr_.reset();
+  pdf_to_pwg_raster_converter_remote_.reset();
 }
 
 class PwgRasterConverterImpl : public PwgRasterConverter {

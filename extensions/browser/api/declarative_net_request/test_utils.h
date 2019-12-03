@@ -9,6 +9,7 @@
 #include <ostream>
 #include <vector>
 
+#include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
@@ -48,6 +49,7 @@ RequestAction CreateRequestActionForTesting(
 bool operator==(const RequestAction& lhs, const RequestAction& rhs);
 std::ostream& operator<<(std::ostream& output, RequestAction::Type type);
 std::ostream& operator<<(std::ostream& output, const RequestAction& action);
+std::ostream& operator<<(std::ostream& output, const ParseResult& result);
 
 // Returns true if the given extension has a valid indexed ruleset. Should be
 // called on a sequence where file IO is allowed.

@@ -83,24 +83,12 @@ GuestViewInternalCustomBindings::~GuestViewInternalCustomBindings() {}
 
 void GuestViewInternalCustomBindings::AddRoutes() {
   RouteHandlerFunction(
-      "AttachGuest",
-      base::BindRepeating(&GuestViewInternalCustomBindings::AttachGuest,
-                          base::Unretained(this)));
-  RouteHandlerFunction(
-      "DetachGuest",
-      base::BindRepeating(&GuestViewInternalCustomBindings::DetachGuest,
-                          base::Unretained(this)));
-  RouteHandlerFunction(
       "AttachIframeGuest",
       base::BindRepeating(&GuestViewInternalCustomBindings::AttachIframeGuest,
                           base::Unretained(this)));
   RouteHandlerFunction(
       "DestroyContainer",
       base::BindRepeating(&GuestViewInternalCustomBindings::DestroyContainer,
-                          base::Unretained(this)));
-  RouteHandlerFunction(
-      "GetContentWindow",
-      base::BindRepeating(&GuestViewInternalCustomBindings::GetContentWindow,
                           base::Unretained(this)));
   RouteHandlerFunction(
       "GetViewFromID",
@@ -151,89 +139,6 @@ void GuestViewInternalCustomBindings::ResetMapEntry(
   // Let the GuestViewManager know that a GuestView has been garbage collected.
   content::RenderThread::Get()->Send(
       new GuestViewHostMsg_ViewGarbageCollected(view_instance_id));
-}
-
-void GuestViewInternalCustomBindings::AttachGuest(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  // Allow for an optional callback parameter.
-  CHECK(args.Length() >= 3 && args.Length() <= 4);
-  // Element Instance ID.
-  CHECK(args[0]->IsInt32());
-  // Guest Instance ID.
-  CHECK(args[1]->IsInt32());
-  // Attach Parameters.
-  CHECK(args[2]->IsObject());
-  // Optional Callback Function.
-  CHECK(args.Length() < 4 || args[3]->IsFunction());
-
-  int element_instance_id = args[0].As<v8::Int32>()->Value();
-  // An element instance ID uniquely identifies a GuestViewContainer.
-  auto* guest_view_container =
-      guest_view::GuestViewContainer::FromID(element_instance_id);
-
-  // TODO(fsamuel): Should we be reporting an error if the element instance ID
-  // is invalid?
-  if (!guest_view_container)
-    return;
-  // Retain a weak pointer so we can easily test if the container goes away.
-  auto weak_ptr = guest_view_container->GetWeakPtr();
-
-  int guest_instance_id = args[1].As<v8::Int32>()->Value();
-
-  std::unique_ptr<base::DictionaryValue> params = base::DictionaryValue::From(
-      content::V8ValueConverter::Create()->FromV8Value(
-          args[2], context()->v8_context()));
-  CHECK(params);
-
-  // We should be careful that some malicious JS in the GuestView's embedder
-  // hasn't destroyed |guest_view_container| during the enumeration of the
-  // properties of the guest's object during extraction of |params| above
-  // (see https://crbug.com/683523).
-  if (!weak_ptr)
-    return;
-
-  // Add flag to |params| to indicate that the element size is specified in
-  // logical units.
-  params->SetBoolean(guest_view::kElementSizeIsLogical, true);
-
-  std::unique_ptr<guest_view::GuestViewRequest> request(
-      new guest_view::GuestViewAttachRequest(
-          guest_view_container, guest_instance_id, std::move(params),
-          args.Length() == 4 ? args[3].As<v8::Function>()
-                             : v8::Local<v8::Function>(),
-          args.GetIsolate()));
-  guest_view_container->IssueRequest(std::move(request));
-
-  args.GetReturnValue().Set(v8::Boolean::New(context()->isolate(), true));
-}
-
-void GuestViewInternalCustomBindings::DetachGuest(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  // Allow for an optional callback parameter.
-  CHECK(args.Length() >= 1 && args.Length() <= 2);
-  // Element Instance ID.
-  CHECK(args[0]->IsInt32());
-  // Optional Callback Function.
-  CHECK(args.Length() < 2 || args[1]->IsFunction());
-
-  int element_instance_id = args[0].As<v8::Int32>()->Value();
-  // An element instance ID uniquely identifies a GuestViewContainer.
-  auto* guest_view_container =
-      guest_view::GuestViewContainer::FromID(element_instance_id);
-
-  // TODO(fsamuel): Should we be reporting an error if the element instance ID
-  // is invalid?
-  if (!guest_view_container)
-    return;
-
-  std::unique_ptr<guest_view::GuestViewRequest> request(
-      new guest_view::GuestViewDetachRequest(
-          guest_view_container, args.Length() == 2 ? args[1].As<v8::Function>()
-                                                   : v8::Local<v8::Function>(),
-          args.GetIsolate()));
-  guest_view_container->IssueRequest(std::move(request));
-
-  args.GetReturnValue().Set(v8::Boolean::New(context()->isolate(), true));
 }
 
 void GuestViewInternalCustomBindings::AttachIframeGuest(
@@ -330,31 +235,6 @@ void GuestViewInternalCustomBindings::DestroyContainer(
   // a GuestViewContainer. That won't be necessary once GuestViewContainer
   // always runs w/o plugin.
   guest_view_container->Destroy(false /* embedder_frame_destroyed */);
-}
-
-void GuestViewInternalCustomBindings::GetContentWindow(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  // Default to returning null.
-  args.GetReturnValue().SetNull();
-
-  if (args.Length() != 1)
-    return;
-
-  // The routing ID for the RenderView.
-  if (!args[0]->IsInt32())
-    return;
-
-  int view_id = args[0].As<v8::Int32>()->Value();
-  if (view_id == MSG_ROUTING_NONE)
-    return;
-
-  content::RenderView* view = content::RenderView::FromRoutingID(view_id);
-  if (!view)
-    return;
-
-  blink::WebFrame* frame = view->GetWebView()->MainFrame();
-  v8::Local<v8::Value> window = frame->GlobalProxy();
-  args.GetReturnValue().Set(window);
 }
 
 void GuestViewInternalCustomBindings::GetViewFromID(

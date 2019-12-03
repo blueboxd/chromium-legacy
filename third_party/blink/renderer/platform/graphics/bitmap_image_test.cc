@@ -869,51 +869,6 @@ INSTANTIATE_TEST_SUITE_P(
     DecodedImageOrientationHistogramTest,
     testing::ValuesIn(kDecodedImageOrientationHistogramTestParams));
 
-using DecodedImageDensityHistogramTest100px = BitmapHistogramTest<int>;
-
-TEST_P(DecodedImageDensityHistogramTest100px, JpegDensity) {
-  RunTest("Blink.DecodedImage.JpegDensity.100px");
-}
-
-const DecodedImageDensityHistogramTest100px::ParamType
-    kDecodedImageDensityHistogramTest100pxParams[] = {
-        // 64x64 too small to report any metric
-        {"rgb-jpeg-red.jpg",
-         DecodedImageDensityHistogramTest100px::kNoSamplesReported},
-        // 439x154, 23220 bytes --> 2.74 bpp
-        {"cropped_mandrill.jpg", 274},
-        // 320x320, 74017 bytes --> 5.78
-        {"blue-wheel-srgb-color-profile.jpg", 578},
-        // 632x475 too big for the 100-399px range.
-        {"cat.jpg", DecodedImageDensityHistogramTest100px::kNoSamplesReported}};
-
-INSTANTIATE_TEST_SUITE_P(
-    DecodedImageDensityHistogramTest100px,
-    DecodedImageDensityHistogramTest100px,
-    testing::ValuesIn(kDecodedImageDensityHistogramTest100pxParams));
-
-using DecodedImageDensityHistogramTest400px = BitmapHistogramTest<int>;
-
-TEST_P(DecodedImageDensityHistogramTest400px, JpegDensity) {
-  RunTest("Blink.DecodedImage.JpegDensity.400px");
-}
-
-const DecodedImageDensityHistogramTest400px::ParamType
-    kDecodedImageDensityHistogramTest400pxParams[] = {
-        // 439x154, only one dimension is big enough.
-        {"cropped_mandrill.jpg",
-         DecodedImageDensityHistogramTest400px::kNoSamplesReported},
-        // 320x320, not big enough.
-        {"blue-wheel-srgb-color-profile.jpg",
-         DecodedImageDensityHistogramTest400px::kNoSamplesReported},
-        // 632x475, 68826 bytes --> 1.83
-        {"cat.jpg", 183}};
-
-INSTANTIATE_TEST_SUITE_P(
-    DecodedImageDensityHistogramTest400px,
-    DecodedImageDensityHistogramTest400px,
-    testing::ValuesIn(kDecodedImageDensityHistogramTest400pxParams));
-
 using DecodedImageDensityHistogramTestKiBWeighted = BitmapHistogramTest<int>;
 
 TEST_P(DecodedImageDensityHistogramTestKiBWeighted, JpegDensity) {
@@ -924,7 +879,7 @@ const DecodedImageDensityHistogramTestKiBWeighted::ParamType
     kDecodedImageDensityHistogramTestKiBWeightedParams[] = {
         // 64x64 too small to report any metric
         {"rgb-jpeg-red.jpg",
-         DecodedImageDensityHistogramTest100px::kNoSamplesReported},
+         DecodedImageDensityHistogramTestKiBWeighted::kNoSamplesReported},
         // 439x154, 23220 bytes --> 2.74 bpp, 23 KiB (rounded up)
         {"cropped_mandrill.jpg", 274, 23},
         // 320x320, 74017 bytes --> 5.78, 72 KiB (rounded down)

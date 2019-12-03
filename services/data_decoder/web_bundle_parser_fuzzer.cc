@@ -10,8 +10,8 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/i18n/icu_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/task/single_thread_task_executor.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/data_decoder/web_bundle_parser.h"
@@ -113,7 +113,7 @@ struct Environment {
 
   // Used by ICU integration.
   base::AtExitManager at_exit_manager;
-  base::MessageLoop message_loop;
+  base::SingleThreadTaskExecutor task_executor;
 };
 
 }  // namespace
@@ -124,7 +124,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   WebBundleParserFuzzer fuzzer(data, size);
   base::RunLoop run_loop;
-  env->message_loop.task_runner()->PostTask(
+  env->task_executor.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&WebBundleParserFuzzer::FuzzBundle,
                                 base::Unretained(&fuzzer), &run_loop));
   run_loop.Run();

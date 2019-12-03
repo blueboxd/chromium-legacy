@@ -37,10 +37,10 @@ public class TimingUtils implements Dumpable {
     private final ThreadUtils mThreadUtils = new ThreadUtils();
     private final Object mLock = new Object();
 
-    @GuardedBy("lock")
+    @GuardedBy("mLock")
     private final Queue<ThreadState> mThreadDumps = new ArrayDeque<>(MAX_TO_DUMP);
 
-    @GuardedBy("lock")
+    @GuardedBy("mLock")
     private final LongSparseArray<ThreadStack> mThreadStacks = new LongSparseArray<>();
 
     /**

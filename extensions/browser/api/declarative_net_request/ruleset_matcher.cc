@@ -115,7 +115,7 @@ base::Optional<RequestAction> RulesetMatcher::GetUpgradeAction(
 
 uint8_t RulesetMatcher::GetRemoveHeadersMask(
     const RequestParams& params,
-    uint8_t ignored_mask,
+    uint8_t excluded_remove_headers_mask,
     std::vector<RequestAction>* remove_headers_actions) const {
   DCHECK(remove_headers_actions);
   static_assert(
@@ -123,9 +123,10 @@ uint8_t RulesetMatcher::GetRemoveHeadersMask(
       "flat::RemoveHeaderType can't fit in a uint8_t");
 
   uint8_t mask = url_pattern_index_matcher_.GetRemoveHeadersMask(
-      params, ignored_mask, remove_headers_actions);
-  return mask | regex_matcher_.GetRemoveHeadersMask(params, ignored_mask | mask,
-                                                    remove_headers_actions);
+      params, excluded_remove_headers_mask, remove_headers_actions);
+  return mask | regex_matcher_.GetRemoveHeadersMask(
+                    params, excluded_remove_headers_mask | mask,
+                    remove_headers_actions);
 }
 
 bool RulesetMatcher::IsExtraHeadersMatcher() const {
@@ -146,7 +147,7 @@ RulesetMatcher::RulesetMatcher(
     size_t priority,
     api::declarative_net_request::SourceType source_type,
     const ExtensionId& extension_id)
-    : RulesetMatcherInterface(extension_id, source_type),
+    : RulesetMatcherBase(extension_id, source_type),
       ruleset_data_(std::move(ruleset_data)),
       root_(flat::GetExtensionIndexedRuleset(ruleset_data_.data())),
       id_(id),

@@ -9,6 +9,7 @@
 <translation id="1036348656032585052">關閉</translation>
 <translation id="1038842779957582377">不明名稱</translation>
 <translation id="1039626062703039346">Chrome 可協助你保護 Google 帳戶並變更密碼。這項服務會將此網站的相關資訊告知 Google。</translation>
+<translation id="1044897699341250361">說明</translation>
 <translation id="1050038467049342496">關閉其他應用程式</translation>
 <translation id="1055184225775184556">復原新增(&amp;U)</translation>
 <translation id="1056898198331236512">警告</translation>
@@ -183,6 +184,7 @@
 <translation id="1745880797583122200">你的瀏覽器受到管理</translation>
 <translation id="17513872634828108">開啟的分頁</translation>
 <translation id="1753706481035618306">頁碼</translation>
+<translation id="175838129965056221">Chrome 偵測到你的連線正遭到監控</translation>
 <translation id="1763864636252898013">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得你裝置作業系統的信任。這可能是因為設定錯誤，或有攻擊者攔截你的連線所致。</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />嘗試執行 Windows 網路診斷<ph name="END_LINK" />。</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -251,6 +253,7 @@
 <translation id="2119867082804433120">打孔 (右下方)</translation>
 <translation id="2129079103035905234">動作感應器</translation>
 <translation id="2130448033692577677">你並未設定 DnsOverHttpsMode 政策，因此系統無法套用你指定的範本。</translation>
+<translation id="2131277894177304644">Chromium 偵測到你的連線正遭到監控</translation>
 <translation id="213826338245044447">行動版書籤</translation>
 <translation id="214556005048008348">取消付款</translation>
 <translation id="2147827593068025794">背景同步處理</translation>
@@ -298,6 +301,7 @@
 <translation id="2354001756790975382">其他書籤</translation>
 <translation id="2354430244986887761">Google 安全瀏覽服務最近在 <ph name="SITE" /> <ph name="BEGIN_LINK" />發現有害的應用程式<ph name="END_LINK" />。</translation>
 <translation id="2355395290879513365">攻擊者可能會看到你正在這個網站上瀏覽的圖片，並以修改圖片內容的方式讓你受騙。</translation>
+<translation id="2355474962185559967">你剛才在詐騙網站上輸入了密碼。Chromium 建議你立即前往 <ph name="WEBSITE_1" /> 變更密碼。</translation>
 <translation id="2356070529366658676">詢問</translation>
 <translation id="2359629602545592467">多種</translation>
 <translation id="2359808026110333948">繼續</translation>
@@ -391,6 +395,7 @@
 <translation id="2799020568854403057">你要造訪的網站含有有害的應用程式</translation>
 <translation id="2799223571221894425">重新啟動</translation>
 <translation id="2803306138276472711">Google 安全瀏覽功能最近在 <ph name="SITE" /> 上<ph name="BEGIN_LINK" />偵測到惡意軟體<ph name="END_LINK" />。即使是平常可以安全使用的網站，有時也會遭到惡意軟體感染。</translation>
+<translation id="281585763351939989">Chromium 偵測到你的連線正遭到監控。</translation>
 <translation id="2824775600643448204">網址與搜尋列</translation>
 <translation id="2826760142808435982">連線採用 <ph name="CIPHER" /> 加密，並設有 <ph name="KX" /> 金鑰交換機制。</translation>
 <translation id="2835170189407361413">清除表單</translation>
@@ -435,6 +440,7 @@
 <translation id="3024663005179499861">政策類型有誤</translation>
 <translation id="3037605927509011580">糟糕！</translation>
 <translation id="3041612393474885105">憑證資訊</translation>
+<translation id="304755864151473094">顯示警告訊息的原因</translation>
 <translation id="3057676462092457419">目前不支援將 DnsOverHttps 模式設為 <ph name="SECURE_DNS_MODE_SECURE" />，已將模式設為 <ph name="SECURE_DNS_MODE_OFF" />。</translation>
 <translation id="3060227939791841287">C9 (信封)</translation>
 <translation id="3061707000357573562">修補服務</translation>
@@ -474,6 +480,7 @@
 <translation id="3228969707346345236">網頁已經是<ph name="LANGUAGE" />，翻譯作業失敗。</translation>
 <translation id="3229041911291329567">裝置和瀏覽器的版本資訊</translation>
 <translation id="323107829343500871">輸入 <ph name="CREDIT_CARD" /> 的信用卡安全碼</translation>
+<translation id="3234392465377209614">你剛才在詐騙網站上輸入了密碼。Chromium 建議你立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 和 <ph name="WEBSITE_3" /> 變更密碼。</translation>
 <translation id="3234666976984236645">一律偵測這個網站的重要內容</translation>
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> 與 <ph name="SUGGESTED_DOMAIN" /> 相似。攻擊者有時會使用相似的網址來仿冒網站。</translation>
 <translation id="3270847123878663523">復原重新排序(&amp;U)</translation>
@@ -506,6 +513,7 @@
 <translation id="342781501876943858">如果你在其他網站上重複使用過你的密碼，Chromium 會建議你重設密碼。</translation>
 <translation id="3428151540071562330">一或多個 DnsOverHttpsTemplates 伺服器範本 URI 無效，因此系統不會採用這些伺服器範本 URI。</translation>
 <translation id="3431636764301398940">將這張信用卡儲存到這個裝置</translation>
+<translation id="3438790640050632698">你剛才在詐騙網站上輸入了密碼。Chrome 建議你立即前往 <ph name="WEBSITE_1" /> 和 <ph name="WEBSITE_2" /> 變更密碼。</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">這個裝置的擁有者已關閉恐龍遊戲。</translation>
 <translation id="3447884698081792621">顯示憑證 (核發者：<ph name="ISSUER" />)</translation>
@@ -520,6 +528,7 @@
 <translation id="3495081129428749620">在
     「<ph name="PAGE_TITLE" />」網頁中尋找</translation>
 <translation id="3512163584740124171">由於相同政策群組中有其他政策的優先順序更高，因此系統已忽略這項政策。</translation>
+<translation id="3525469219100414032">你剛才在詐騙網站上輸入了密碼。Chrome 建議你立即前往 <ph name="WEBSITE_1" /> 變更密碼。</translation>
 <translation id="3528171143076753409">伺服器憑證授權不可靠。</translation>
 <translation id="3528485271872257980">深棕色</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{在已同步的裝置上至少有 1 個項目}=1{1 個項目 (在已同步的裝置上還有更多項目)}other{# 個項目 (在已同步的裝置上還有更多項目)}}</translation>
@@ -593,6 +602,7 @@
 <translation id="3858027520442213535">更新日期和時間</translation>
 <translation id="3884278016824448484">裝置識別碼發生衝突</translation>
 <translation id="3885155851504623709">教區</translation>
+<translation id="388632593194507180">偵測到你正遭到監控</translation>
 <translation id="3890664840433101773">新增電子郵件地址</translation>
 <translation id="3897092660631435901">選單</translation>
 <translation id="3901925938762663762">這張信用卡已過期</translation>
@@ -694,6 +704,7 @@
 <translation id="4305817255990598646">切換</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">封鎖 (預設)</translation>
+<translation id="4318312030194671742">繪製預覽合成器服務</translation>
 <translation id="4318566738941496689">你的裝置名稱和網路位址</translation>
 <translation id="4325863107915753736">找不到文章</translation>
 <translation id="4326324639298822553">請檢查信用卡到期日，然後再試一次</translation>
@@ -710,6 +721,7 @@
 <translation id="4372948949327679948">預期的「<ph name="VALUE_TYPE" />」值。</translation>
 <translation id="4377125064752653719">你嘗試前往 <ph name="DOMAIN" />，但是發行者已撤銷伺服器提供的憑證。在這種情況下，請勿信任伺服器提供的安全性憑證，因為你的連線對象可能是攻擊者的電腦。</translation>
 <translation id="4378154925671717803">電話</translation>
+<translation id="437847259914972036">你的網路活動和輸入的資訊都會遭到監視，且網站內容可能會在你不知情的情況下遭到變更。</translation>
 <translation id="4398334096870680409">你的裝置不支援這項功能。</translation>
 <translation id="4406896451731180161">搜尋結果</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" /> 個 Cookie</translation>
@@ -944,6 +956,7 @@
 <translation id="5565735124758917034">管理中</translation>
 <translation id="5570825185877910964">保護帳戶</translation>
 <translation id="5571083550517324815">無法在這個地址取件，請改用其他地址。</translation>
+<translation id="5572009199897554128">你剛才在詐騙網站上輸入了密碼。Chromium 建議你立即前往 <ph name="WEBSITE_1" /> 和 <ph name="WEBSITE_2" /> 變更密碼。</translation>
 <translation id="5580958916614886209">請檢查信用卡到期月份，然後再試一次</translation>
 <translation id="5586446728396275693">沒有已儲存的地址</translation>
 <translation id="5595485650161345191">編輯地址</translation>
@@ -1126,6 +1139,7 @@
 <translation id="6446163441502663861">Kahu (信封)</translation>
 <translation id="6446608382365791566">新增詳細資訊</translation>
 <translation id="6447842834002726250">Cookie</translation>
+<translation id="644931407731409778">PDF 文件，共 {COUNT,plural, =1{1 頁}other{# 頁}}</translation>
 <translation id="6451458296329894277">確認重新提交表單</translation>
 <translation id="6457206614190510200">騎馬訂</translation>
 <translation id="6465306955648956876">管理密碼...</translation>
@@ -1144,6 +1158,7 @@
 <translation id="6547208576736763147">雙孔 (左側)</translation>
 <translation id="6554795675067793129">你的帳戶是由 <ph name="ENROLLMENT_DOMAIN" /> 管理。</translation>
 <translation id="6556866813142980365">重做</translation>
+<translation id="6559565319173126218">Chrome 不信任這個連線顯示的憑證，因為該憑證曾用於網路攔截及監控。</translation>
 <translation id="6569060085658103619">目前顯示的是擴充功能頁面</translation>
 <translation id="6573200754375280815">雙孔 (右側)</translation>
 <translation id="6578796323535178455">C2 (信封)</translation>
@@ -1177,6 +1192,7 @@
 <translation id="6710594484020273272">&lt;輸入搜尋字詞&gt;</translation>
 <translation id="671076103358959139">註冊憑證：</translation>
 <translation id="6711464428925977395">Proxy 伺服器發生錯誤，或是位址不正確。</translation>
+<translation id="6721811549156553509">網路監控工具可能會偽裝成你造訪的網站，並可查看你的活動和你輸入的任何資訊 (例如密碼、訊息或信用卡資料)。在網路上進行涉及敏感資訊的作業時，請務必當心，因為網路監控工具不但可以查看這些資訊，還能變更你造訪網頁上的內容。這類作業包括你在其他瀏覽器和使用網際網路的程式中的活動。</translation>
 <translation id="6738516213925468394">你在 <ph name="TIME" />已使用<ph name="BEGIN_LINK" />同步通關密語<ph name="END_LINK" />將資料加密。如要開始同步處理資料，請輸入通關密語。</translation>
 <translation id="674375294223700098">不明的伺服器憑證錯誤。</translation>
 <translation id="6744009308914054259">等待連線的同時，你可以前往「下載」頁面閱讀離線文章。</translation>
@@ -1261,6 +1277,7 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />進一步瞭解<ph name="END_LINK" />這個問題。</translation>
 <translation id="7219179957768738017">這個連線使用 <ph name="SSL_VERSION" />。</translation>
 <translation id="7220786058474068424">處理中</translation>
+<translation id="7239736667463137521">Chrome 偵測到你的連線正遭到監控。</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />，<ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">你要造訪的網站含有惡意軟體</translation>
 <translation id="724975217298816891">請輸入 <ph name="CREDIT_CARD" /> 的有效日期和信用卡安全碼，更新您的信用卡詳細資訊。完成驗證後，這個網站就會取得您的信用卡詳細資訊。</translation>
@@ -1287,6 +1304,7 @@
 <translation id="7346048084945669753">是否已建立關聯：</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">命令列</translation>
+<translation id="7353776484425559055">Chromium 不信任這個連線的憑證，因為該憑證曾用於網路攔截及監控。如果你在裝置上安裝的憑證具有風險，就可能會看到這則錯誤訊息。建立安全連線時，Chromium 會信任使用者安裝在電腦或行動裝置本機上的憑證。如此一來，使用者可以在網站開發過程中使用工具檢查及偵錯連線，或在公司環境中攔截及監控內部流量。如果使用者濫用這種方式攔截公開網際網路上的流量，Chromium 會顯示警告。</translation>
 <translation id="7372973238305370288">搜尋結果</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">媒體控制項</translation>
@@ -1348,6 +1366,7 @@
 <translation id="7592362899630581445">伺服器憑證的名稱不符合限制。</translation>
 <translation id="7598391785903975535">不到 <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> 目前無法處理這項要求。</translation>
+<translation id="7599841999395223597">Chrome 不信任這個連線的憑證，因為該憑證曾用於網路攔截及監控。如果你在裝置上安裝的憑證具有風險，就可能會看到這則錯誤訊息。建立安全連線時，Chrome 會信任使用者安裝在電腦或行動裝置本機上的憑證。如此一來，使用者可以在網站開發過程中使用工具檢查及偵錯連線，或在公司環境中攔截及監控內部流量。如果使用者濫用這種方式攔截公開網際網路上的流量，Chrome 會顯示警告。</translation>
 <translation id="7600965453749440009">一律不翻譯<ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">值超出 <ph name="VALUE" /> 的範圍。</translation>
 <translation id="7613889955535752492">有效期限：<ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -1664,6 +1683,7 @@
 <translation id="936474030629450166">Super-B</translation>
 <translation id="936602727769022409">為避免失去 Google 帳戶存取權，Chromium 建議你立即變更密碼。系統會要求你登入帳戶。</translation>
 <translation id="939736085109172342">新增資料夾</translation>
+<translation id="940786960229275114">你剛才在詐騙網站上輸入了密碼。Chrome 建議你立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 和 <ph name="WEBSITE_3" /> 變更密碼。</translation>
 <translation id="945855313015696284">查看下方資訊並刪除所有無效的卡片</translation>
 <translation id="950736567201356821">三孔 (頂端)</translation>
 <translation id="951104842009476243">接受的簽帳金融卡和預付卡</translation>

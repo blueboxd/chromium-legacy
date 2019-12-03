@@ -463,6 +463,7 @@
 <translation id="4204126831294769023">ಆಕಾಶ ನೀಲಿ</translation>
 <translation id="4204864733111726379">ಹೂವಿನ ಬಿಳುಪು</translation>
 <translation id="4206289001967551965">ಕೋಷ್ಟಕದ ಒಳಗೆ</translation>
+<translation id="4207770814752775793">ಡೀಫಾಲ್ಟ್ ಮೌಲ್ಯಗಳಿಗೆ ಪಠ್ಯದಿಂದ ಧ್ವನಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಮರುಹೊಂದಿಸಿ.</translation>
 <translation id="4209770650650780359">ಸ್ವಯಂ-ಪೂರ್ಣಗೊಳಿಸುವಿಕೆಯ ಆಯ್ಕೆಗಳನ್ನು ನೋಡಲು ಮೇಲಿನ ಬಾಣದ ಗುರುತು ಅಥವಾ ಕೆಳಗಿನ ಬಾಣದ ಗುರುತನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="4215733775853809057">ಮುಂದಿನ ಸ್ಲೈಡರ್</translation>
 <translation id="42164919740161077">ಕ್ಯಾಡೆಟ್ ಬ್ಲೂ</translation>
@@ -766,6 +767,7 @@
 <translation id="6290434000785343030">ಮುಂದಿನ ಕಾಂಬೊ ಪೆಟ್ಟಿಗೆಯಿಲ್ಲ.</translation>
 <translation id="6305702903308659374">ChromeVox ಮಾತನಾಡುತ್ತಿರುವಾಗಲೂ ಸಹ ಸಾಮಾನ್ಯ ವಾಲ್ಯೂಮ್‌‌ನಲ್ಲಿ ಪ್ಲೇ ಮಾಡಿ</translation>
 <translation id="6307969636681130414">ಒತ್ತಿದ</translation>
+<translation id="6315652249189065725">ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳ ಮೆನು ತೆರೆಯಿರಿ</translation>
 <translation id="6322856989298155004">ಧ್ವನಿಗಳು</translation>
 <translation id="6324551002951139333">ವ್ಯಾಕರಣ ತಪ್ಪು ಕಂಡುಬಂದಿದೆ</translation>
 <translation id="6325241889020214828"><ph name="TEXT" /> ಅನ್ನು ನಕಲಿಸಿ.</translation>
@@ -959,6 +961,7 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="7668307052366682650">{COUNT,plural, =1{ಗಂಟೆ}one{ಗಂಟೆಗಳು}other{ಗಂಟೆಗಳು}}</translation>
 <translation id="7674576868851035240">ಮುಂದಿನ ಲಿಂಕ್</translation>
 <translation id="7674768236845044097">ಗುರುತು</translation>
+<translation id="7676847077928500578">ಪಠ್ಯದಿಂದ ಧ್ವನಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಮರುಹೊಂದಿಸಿ</translation>
 <translation id="7684431668231950609">ಪಠ್ಯ ಎಡಿಟ್ ಮಾಡಿ, URL ನಮೂದು</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">ಹಿಂದಿನ ರೇಡಿಯೊ ಬಟನ್</translation>

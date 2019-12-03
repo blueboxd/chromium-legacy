@@ -44,6 +44,32 @@ function isBookmarkList(element) {
 }
 
 /**
+ * @param {?Element} element
+ * @return {?Element}
+ */
+function getPreviousElementSibling(element) {
+  if (isBookmarkItem(element)) {
+    // Need to get previous element cousin.
+    const parentSibling = element.parentElement.previousElementSibling;
+    return parentSibling ? parentSibling.querySelector('bookmarks-item') : null;
+  }
+  return element.previousElementSibling;
+}
+
+/**
+ * @param {?Element} element
+ * @return {?Element}
+ */
+function getNextElementSibling(element) {
+  if (isBookmarkItem(element)) {
+    // Need to get next element cousin.
+    const parentSibling = element.parentElement.nextElementSibling;
+    return parentSibling ? parentSibling.querySelector('bookmarks-item') : null;
+  }
+  return element.nextElementSibling;
+}
+
+/**
  * @param {Element} element
  * @return {boolean}
  */
@@ -728,7 +754,7 @@ export class DNDManager {
     let validDropPositions = DropPosition.NONE;
 
     // Cannot drop above if the item above is already in the drag source.
-    const previousElem = overElement.previousElementSibling;
+    const previousElem = getPreviousElementSibling(overElement);
     if (!previousElem || !dragInfo.isDraggingBookmark(previousElem.itemId)) {
       validDropPositions |= DropPosition.ABOVE;
     }
@@ -740,8 +766,7 @@ export class DNDManager {
       return validDropPositions;
     }
 
-    const nextElement = overElement.nextElementSibling;
-
+    const nextElement = getNextElementSibling(overElement);
     // Cannot drop below if the item below is already in the drag source.
     if (!nextElement || !dragInfo.isDraggingBookmark(nextElement.itemId)) {
       validDropPositions |= DropPosition.BELOW;

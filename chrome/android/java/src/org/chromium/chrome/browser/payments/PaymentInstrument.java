@@ -289,11 +289,17 @@ public abstract class PaymentInstrument extends EditableOption {
     public void updateWith(PaymentMethodChangeResponse response) {}
 
     /** Called when the merchant ignored the payment method change event. */
+    public void onPaymentDetailsNotUpdated() {}
+
+    /**
+     * Called when the merchant ignored the payment method change event.
+     * TODO(sahel): Remove this stub after updating clank code. crbug.com/984694
+     */
     public void noUpdatedPaymentDetails() {}
 
     /**
      * @return True after changePaymentMethodFromInvokedApp(), before update updateWith() or
-     * noUpdatedPaymentDetails().
+     * onPaymentDetailsNotUpdated().
      * TODO(sahel): Remove this stub after updating clank code. crbug.com/984694
      */
     public boolean isChangingPaymentMethod() {
@@ -303,9 +309,9 @@ public abstract class PaymentInstrument extends EditableOption {
     /**
      * @return True after changePaymentMethodFromInvokedApp(), changeShippingOptionFromInvokedApp(),
      *         or changeShippingAddressFromInvokedApp() and before update updateWith() or
-     *         noUpdatedPaymentDetails().
+     *         onPaymentDetailsNotUpdated().
      */
-    public boolean isChanging() {
+    public boolean isWaitingForPaymentDetailsUpdate() {
         return false;
     }
 

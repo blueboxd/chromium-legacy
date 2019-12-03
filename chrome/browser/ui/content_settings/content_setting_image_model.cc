@@ -887,11 +887,11 @@ bool ContentSettingNotificationsImageModel::UpdateAndGetVisibility(
   // Show promo the first time a quiet prompt is shown to the user.
   // TODO(hkamila) Check that this is only shown the first time the promo is
   // shown.
-  if (manager && manager->ShouldShowQuietPermissionPrompt() &&
+  if (manager && manager->ShouldCurrentRequestUseQuietUI() &&
       adaptive_notification_permission_ui_selector->ShouldShowPromo()) {
     set_should_show_promo(true);
   }
-  return manager ? manager->ShouldShowQuietPermissionPrompt() : false;
+  return manager ? manager->ShouldCurrentRequestUseQuietUI() : false;
 }
 
 void ContentSettingNotificationsImageModel::SetPromoWasShown(

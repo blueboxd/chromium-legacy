@@ -262,8 +262,8 @@ void ParseSizeInfo(const char* gzipped, unsigned long len, SizeInfo* info) {
   if (has_components) {
     // List of component names
     int n_components = ReadLoneInt(&rest);
-    if (n_components <= 0) {
-      std::cerr << "Unexpected non-positive components list length: "
+    if (n_components < 0) {
+      std::cerr << "Unexpected negative components list length: "
                 << n_components << std::endl;
       exit(1);
     }

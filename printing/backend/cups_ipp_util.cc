@@ -40,6 +40,12 @@ constexpr double kMMPerInch = 25.4;
 constexpr double kMicronsPerInch = kMMPerInch * kMicronsPerMM;
 constexpr double kCmPerInch = kMMPerInch * 0.1;
 
+// Defines two prefixes of a special breed of media sizes not meant for
+// users' eyes. CUPS incidentally returns these IPP values to us, but
+// we have no use for them.
+constexpr base::StringPiece kMediaCustomMinPrefix = "custom_min";
+constexpr base::StringPiece kMediaCustomMaxPrefix = "custom_max";
+
 enum Unit {
   INCHES,
   MILLIMETERS,
@@ -138,8 +144,11 @@ PrinterSemanticCapsAndDefaults::Paper ParsePaper(base::StringPiece value) {
 
   std::vector<base::StringPiece> pieces = base::SplitStringPiece(
       value, "_", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  // we expect at least a display string and a dimension string
-  if (pieces.size() < 2)
+  // We expect at least a display string and a dimension string.
+  // Additionally, we drop the "custom_min*" and "custom_max*" special
+  // "sizes" (not for users' eyes).
+  if (pieces.size() < 2 || value.starts_with(kMediaCustomMinPrefix) ||
+      value.starts_with(kMediaCustomMaxPrefix))
     return PrinterSemanticCapsAndDefaults::Paper();
 
   base::StringPiece dimensions = pieces.back();

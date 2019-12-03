@@ -194,7 +194,7 @@ NewWindow.prototype.getInterfaceObject = function() {
         webViewImpl.onAttach(this.event.partition);
       }
 
-      var attached = webViewImpl.attachWindow$(this.event.windowId);
+      var attached = webViewImpl.attachWindow(this.event.windowId);
       if (!attached) {
         window.console.error(ERROR_MSG_NEWWINDOW_UNABLE_TO_ATTACH);
       }

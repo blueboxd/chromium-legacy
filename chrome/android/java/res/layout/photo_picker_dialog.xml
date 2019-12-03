@@ -24,8 +24,8 @@
         android:layout_marginEnd="20dp"
         android:layout_marginBottom="20dp"
         android:layout_centerHorizontal="true"
-        android:background="@drawable/photo_picker_zoom_background"
-        android:src="@drawable/zoom_in"
+        android:background="@drawable/navigation_bubble_shadow"
+        app:srcCompat="@drawable/zoom_in"
         android:visibility="gone" />
 
     <RelativeLayout

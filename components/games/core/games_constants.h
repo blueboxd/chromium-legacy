@@ -10,6 +10,7 @@
 namespace games {
 
 extern const base::FilePath::CharType kGamesCatalogFileName[];
+extern const base::FilePath::CharType kHighlightedGamesFileName[];
 
 }  // namespace games
 

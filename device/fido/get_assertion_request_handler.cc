@@ -284,7 +284,7 @@ void GetAssertionRequestHandler::DispatchRequest(
                       << " cannot satisfy assertion request. Requesting "
                          "touch in order to handle error case.";
       authenticator->GetTouch(base::BindOnce(
-          &GetAssertionRequestHandler::HandleInapplicableAuthenticator,
+          &GetAssertionRequestHandler::HandleAuthenticatorMissingUV,
           weak_factory_.GetWeakPtr(), authenticator));
       return;
 
@@ -516,13 +516,13 @@ void GetAssertionRequestHandler::HandleTouch(FidoAuthenticator* authenticator) {
                      weak_factory_.GetWeakPtr()));
 }
 
-void GetAssertionRequestHandler::HandleInapplicableAuthenticator(
+void GetAssertionRequestHandler::HandleAuthenticatorMissingUV(
     FidoAuthenticator* authenticator) {
   // User touched an authenticator that cannot handle this request.
   state_ = State::kFinished;
   CancelActiveAuthenticators(authenticator->GetId());
   std::move(completion_callback_)
-      .Run(GetAssertionStatus::kUserConsentButCredentialNotRecognized,
+      .Run(GetAssertionStatus::kAuthenticatorMissingUserVerification,
            base::nullopt, nullptr);
 }
 

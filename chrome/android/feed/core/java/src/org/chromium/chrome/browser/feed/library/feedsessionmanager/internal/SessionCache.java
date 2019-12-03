@@ -62,10 +62,10 @@ public final class SessionCache implements Dumpable {
     private final Object mLock = new Object();
 
     // Sessions with ModelProviders (attached).
-    @GuardedBy("lock")
+    @GuardedBy("mLock")
     private final Map<String, Session> mAttachedSessions = new HashMap<>();
 
-    @GuardedBy("lock")
+    @GuardedBy("mLock")
     private final Map<String, SessionMetadata> mSessionsMetadata = new HashMap<>();
 
     private final HeadSessionImpl mHead;

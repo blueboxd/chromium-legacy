@@ -29,6 +29,7 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/browser_url_handler.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/navigation_controller.h"
@@ -3145,6 +3146,36 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   EXPECT_TRUE(navigation_1.has_committed());
   EXPECT_FALSE(navigation_0.was_same_document());
   EXPECT_FALSE(navigation_1.was_same_document());
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+                       NonDeterministicUrlRewritesUseLastUrl) {
+  // Lambda expressions cannot be assigned to function pointers if they use
+  // captures, so track how many times the handler is called using a non-const
+  // static variable.
+  static int rewrite_count;
+  rewrite_count = 0;
+
+  BrowserURLHandler::URLHandler handler_method =
+      [](GURL* url, BrowserContext* browser_context) {
+        GURL::Replacements replace_path;
+        if (rewrite_count > 0) {
+          replace_path.SetPathStr("title2.html");
+        } else {
+          replace_path.SetPathStr("title1.html");
+        }
+        *url = url->ReplaceComponents(replace_path);
+        rewrite_count++;
+        return true;
+      };
+  BrowserURLHandler::GetInstance()->AddHandlerPair(
+      handler_method, BrowserURLHandler::null_handler());
+
+  TestNavigationObserver observer(shell()->web_contents());
+  EXPECT_TRUE(NavigateToURL(
+      shell(), GURL(embedded_test_server()->GetURL("/virtual-url.html"))));
+  EXPECT_EQ("/title2.html", observer.last_navigation_url().path());
+  EXPECT_EQ(2, rewrite_count);
 }
 
 }  // namespace content

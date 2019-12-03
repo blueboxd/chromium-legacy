@@ -518,6 +518,12 @@ class PDFEngineExports {
                              int* page_count,
                              double* max_page_width) = 0;
 
+  // Whether the PDF is Tagged (see 10.7 "Tagged PDF" in PDF Reference 1.7).
+  // Returns true if it's a tagged (accessible) PDF, false if it's a valid
+  // PDF but untagged, and nullopt if the PDF can't be parsed.
+  virtual base::Optional<bool> IsPDFDocTagged(
+      base::span<const uint8_t> pdf_buffer) = 0;
+
   // See the definition of GetPDFPageSizeByIndex in pdf.cc for details.
   virtual bool GetPDFPageSizeByIndex(base::span<const uint8_t> pdf_buffer,
                                      int page_number,

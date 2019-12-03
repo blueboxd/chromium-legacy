@@ -23,10 +23,15 @@
           <img id="linkify-13" srcset="data:,abc 1x,data:,def 2x">
       </picture>
       <a id="linkify-14" href="http://www.google.com">a link</a>
+      <svg width="200" height="200"
+        xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <image id="linkify-15" xlink:href="./kitten-small.png" height="200" width="200"/>
+        <image id="linkify-16" href="./kitten-small.png" height="200" width="200"/>
+      </svg>
     `);
 
   var i = 0;
-  var last = 14;
+  var last = 16;
 
   function check() {
     i++;

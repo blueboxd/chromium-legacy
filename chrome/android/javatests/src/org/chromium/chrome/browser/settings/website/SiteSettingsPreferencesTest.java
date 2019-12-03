@@ -32,7 +32,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
 import org.chromium.chrome.browser.settings.LocationSettings;
-import org.chromium.chrome.browser.settings.Preferences;
+import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
@@ -75,12 +75,12 @@ public class SiteSettingsPreferencesTest {
 
     private void setAllowLocation(final boolean enabled) {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
-        final Preferences preferenceActivity = SiteSettingsTestUtils.startSiteSettingsCategory(
+        final SettingsActivity settingsActivity = SiteSettingsTestUtils.startSiteSettingsCategory(
                 SiteSettingsCategory.Type.DEVICE_LOCATION);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SingleCategoryPreferences websitePreferences =
-                    (SingleCategoryPreferences) preferenceActivity.getMainFragment();
+                    (SingleCategoryPreferences) settingsActivity.getMainFragment();
             ChromeSwitchPreference location =
                     (ChromeSwitchPreference) websitePreferences.findPreference(
                             SingleCategoryPreferences.BINARY_TOGGLE_KEY);
@@ -88,7 +88,7 @@ public class SiteSettingsPreferencesTest {
             websitePreferences.onPreferenceChange(location, enabled);
             Assert.assertEquals("Location should be " + (enabled ? "allowed" : "blocked"), enabled,
                     LocationSettings.getInstance().areAllLocationSettingsEnabled());
-            preferenceActivity.finish();
+            settingsActivity.finish();
         });
     }
 
@@ -146,12 +146,12 @@ public class SiteSettingsPreferencesTest {
         Assert.assertTrue(mActivityTestRule.getInfoBars().isEmpty());
     }
 
-    private void setCookiesEnabled(final Preferences preferenceActivity, final boolean enabled) {
+    private void setCookiesEnabled(final SettingsActivity settingsActivity, final boolean enabled) {
         TestThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 final SingleCategoryPreferences websitePreferences =
-                        (SingleCategoryPreferences) preferenceActivity.getMainFragment();
+                        (SingleCategoryPreferences) settingsActivity.getMainFragment();
                 final ChromeSwitchPreference cookies =
                         (ChromeSwitchPreference) websitePreferences.findPreference(
                                 SingleCategoryPreferences.BINARY_TOGGLE_KEY);
@@ -175,11 +175,11 @@ public class SiteSettingsPreferencesTest {
         });
     }
 
-    private void setThirdPartyCookiesEnabled(final Preferences preferenceActivity,
-            final boolean enabled) {
+    private void setThirdPartyCookiesEnabled(
+            final SettingsActivity settingsActivity, final boolean enabled) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             final SingleCategoryPreferences websitePreferences =
-                    (SingleCategoryPreferences) preferenceActivity.getMainFragment();
+                    (SingleCategoryPreferences) settingsActivity.getMainFragment();
             final ChromeBaseCheckBoxPreference thirdPartyCookies =
                     (ChromeBaseCheckBoxPreference) websitePreferences.findPreference(
                             SingleCategoryPreferences.THIRD_PARTY_COOKIES_TOGGLE_KEY);
@@ -194,33 +194,33 @@ public class SiteSettingsPreferencesTest {
 
     private void setGlobalToggleForCategory(
             final @SiteSettingsCategory.Type int type, final boolean enabled) {
-        final Preferences preferenceActivity =
+        final SettingsActivity settingsActivity =
                 SiteSettingsTestUtils.startSiteSettingsCategory(type);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SingleCategoryPreferences preferences =
-                    (SingleCategoryPreferences) preferenceActivity.getMainFragment();
+                    (SingleCategoryPreferences) settingsActivity.getMainFragment();
             ChromeSwitchPreference toggle = (ChromeSwitchPreference) preferences.findPreference(
                     SingleCategoryPreferences.BINARY_TOGGLE_KEY);
             preferences.onPreferenceChange(toggle, enabled);
         });
-        preferenceActivity.finish();
+        settingsActivity.finish();
     }
 
     private void setGlobalTriStateToggleForCategory(
             final @SiteSettingsCategory.Type int type, final int newValue) {
-        final Preferences preferenceActivity =
+        final SettingsActivity settingsActivity =
                 SiteSettingsTestUtils.startSiteSettingsCategory(type);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SingleCategoryPreferences preferences =
-                    (SingleCategoryPreferences) preferenceActivity.getMainFragment();
+                    (SingleCategoryPreferences) settingsActivity.getMainFragment();
             TriStateSiteSettingsPreference triStateToggle =
                     (TriStateSiteSettingsPreference) preferences.findPreference(
                             SingleCategoryPreferences.TRI_STATE_TOGGLE_KEY);
             preferences.onPreferenceChange(triStateToggle, newValue);
         });
-        preferenceActivity.finish();
+        settingsActivity.finish();
     }
 
     private void setEnablePopups(final boolean enabled) {
@@ -249,12 +249,12 @@ public class SiteSettingsPreferencesTest {
      */
     private void checkPreferencesForCategory(
             final @SiteSettingsCategory.Type int type, String[] expectedKeys) {
-        final Preferences preferenceActivity =
+        final SettingsActivity settingsActivity =
                 SiteSettingsTestUtils.startSiteSettingsCategory(type);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PreferenceFragmentCompat preferenceFragment =
-                    (PreferenceFragmentCompat) preferenceActivity.getMainFragment();
+                    (PreferenceFragmentCompat) settingsActivity.getMainFragment();
             PreferenceScreen preferenceScreen = preferenceFragment.getPreferenceScreen();
             int preferenceCount = preferenceScreen.getPreferenceCount();
 
@@ -271,7 +271,7 @@ public class SiteSettingsPreferencesTest {
                     actualKeys.toString() + " should match " + Arrays.toString(expectedKeys),
                     Arrays.equals(actualKeys.toArray(), expectedKeys));
         });
-        preferenceActivity.finish();
+        settingsActivity.finish();
     }
 
     /**
@@ -281,13 +281,13 @@ public class SiteSettingsPreferencesTest {
     @SmallTest
     @Feature({"Preferences"})
     public void testThirdPartyCookieToggleGetsDisabled() {
-        Preferences preferenceActivity =
+        SettingsActivity settingsActivity =
                 SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
-        setCookiesEnabled(preferenceActivity, true);
-        setThirdPartyCookiesEnabled(preferenceActivity, false);
-        setThirdPartyCookiesEnabled(preferenceActivity, true);
-        setCookiesEnabled(preferenceActivity, false);
-        preferenceActivity.finish();
+        setCookiesEnabled(settingsActivity, true);
+        setThirdPartyCookiesEnabled(settingsActivity, false);
+        setThirdPartyCookiesEnabled(settingsActivity, true);
+        setCookiesEnabled(settingsActivity, false);
+        settingsActivity.finish();
     }
 
     /**
@@ -297,10 +297,10 @@ public class SiteSettingsPreferencesTest {
     @SmallTest
     @Feature({"Preferences"})
     public void testCookiesNotBlocked() throws Exception {
-        Preferences preferenceActivity =
+        SettingsActivity settingsActivity =
                 SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
-        setCookiesEnabled(preferenceActivity, true);
-        preferenceActivity.finish();
+        setCookiesEnabled(settingsActivity, true);
+        settingsActivity.finish();
 
         final String url = mTestServer.getURL("/chrome/test/data/android/cookie.html");
 
@@ -324,10 +324,10 @@ public class SiteSettingsPreferencesTest {
     @SmallTest
     @Feature({"Preferences"})
     public void testCookiesBlocked() throws Exception {
-        Preferences preferenceActivity =
+        SettingsActivity settingsActivity =
                 SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
-        setCookiesEnabled(preferenceActivity, false);
-        preferenceActivity.finish();
+        setCookiesEnabled(settingsActivity, false);
+        settingsActivity.finish();
 
         final String url = mTestServer.getURL("/chrome/test/data/android/cookie.html");
 
@@ -390,14 +390,14 @@ public class SiteSettingsPreferencesTest {
 
     private void resetSite(WebsiteAddress address) {
         Website website = new Website(address, address);
-        final Preferences preferenceActivity =
+        final SettingsActivity settingsActivity =
                 SiteSettingsTestUtils.startSingleWebsitePreferences(website);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SingleWebsitePreferences websitePreferences =
-                    (SingleWebsitePreferences) preferenceActivity.getMainFragment();
+                    (SingleWebsitePreferences) settingsActivity.getMainFragment();
             websitePreferences.resetSite();
         });
-        preferenceActivity.finish();
+        settingsActivity.finish();
     }
 
     /**
@@ -439,8 +439,8 @@ public class SiteSettingsPreferencesTest {
     @SmallTest
     @Feature({"Preferences"})
     public void testSiteSettingsMenu() {
-        final Preferences preferenceActivity = SiteSettingsTestUtils.startSiteSettingsMenu("");
-        preferenceActivity.finish();
+        final SettingsActivity settingsActivity = SiteSettingsTestUtils.startSiteSettingsMenu("");
+        settingsActivity.finish();
     }
 
     /**

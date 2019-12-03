@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -196,12 +197,33 @@ class MODULES_EXPORT ManifestParser {
   base::Optional<mojom::blink::ManifestShareTargetPtr> ParseShareTarget(
       const JSONObject* object);
 
-  // Parses the 'file_handler' field of a Manifest, as defined in:
+  // Parses the 'file_handlers' field of a Manifest, as defined in:
   // https://github.com/WICG/file-handling/blob/master/explainer.md
-  // Returns the parsed file handler information. The returned FileHandler is
-  // null if the field didn't exist, parsing failed, or it was empty.
-  base::Optional<mojom::blink::ManifestFileHandlerPtr> ParseFileHandler(
+  // Returns the parsed list of FileHandlers. The returned FileHandlers are
+  // empty if the field didn't exist, parsing failed, or the input list was
+  // empty.
+  Vector<mojom::blink::ManifestFileHandlerPtr> ParseFileHandlers(
       const JSONObject* object);
+
+  // Parses a FileHandler from an entry in the 'file_handlers' list, as
+  // defined in: https://github.com/WICG/file-handling/blob/master/explainer.md.
+  // Returns |base::nullopt| if the FileHandler was invalid, or a
+  // FileHandler, if parsing succeeded.
+  base::Optional<mojom::blink::ManifestFileHandlerPtr> ParseFileHandler(
+      const JSONObject* file_handler_entry);
+
+  // Parses the 'accept' field of a FileHandler, as defined in:
+  // https://github.com/WICG/file-handling/blob/master/explainer.md.
+  // Returns the parsed accept map. Invalid accept entries are ignored.
+  HashMap<String, Vector<String>> ParseFileHandlerAccept(
+      const JSONObject* accept);
+
+  // Parses an extension in the 'accept' field of a FileHandler, as defined in:
+  // https://github.com/WICG/file-handling/blob/master/explainer.md. Returns
+  // whether the parsing was successful and, if so, populates |output| with the
+  // parsed extension.
+  bool ParseFileHandlerAcceptExtension(const JSONValue* extension,
+                                       String* ouput);
 
   // Parses the 'platform' field of a related application, as defined in:
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-platform-member-of-an-application

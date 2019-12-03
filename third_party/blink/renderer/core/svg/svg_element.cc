@@ -535,7 +535,7 @@ SVGElement* SVGElement::viewportElement() const {
   // work otherwhise.
   ContainerNode* n = ParentOrShadowHostNode();
   while (n) {
-    if (IsA<SVGSVGElement>(*n) || IsSVGImageElement(*n) ||
+    if (IsA<SVGSVGElement>(*n) || IsA<SVGImageElement>(*n) ||
         IsA<SVGSymbolElement>(*n))
       return To<SVGElement>(n);
 

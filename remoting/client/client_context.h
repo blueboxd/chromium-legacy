@@ -20,8 +20,6 @@ namespace remoting {
 // process.
 class ClientContext {
  public:
-  // |main_task_runner| is the task runner for the main plugin thread
-  // that is used for all PPAPI calls, e.g. network and graphics.
   ClientContext(
       const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner);
   virtual ~ClientContext();

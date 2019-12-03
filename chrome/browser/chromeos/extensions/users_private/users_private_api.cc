@@ -197,9 +197,6 @@ ExtensionFunction::ResponseAction UsersPrivateIsWhitelistedUserFunction::Run() {
       api::users_private::IsWhitelistedUser::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
-  // GetUsersList called to clear the stale user name cache
-  GetUsersList(chrome_details_.GetProfile(), browser_context());
-
   std::string username = gaia::CanonicalizeEmail(parameters->email);
   if (IsExistingWhitelistedUser(username)) {
     return RespondNow(OneArgument(std::make_unique<base::Value>(true)));

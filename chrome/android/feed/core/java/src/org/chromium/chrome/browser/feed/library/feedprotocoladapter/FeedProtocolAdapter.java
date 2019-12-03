@@ -27,7 +27,6 @@ import org.chromium.components.feed.core.proto.libraries.api.internal.StreamData
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamStructure.Operation;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamToken;
 import org.chromium.components.feed.core.proto.wire.ContentIdProto.ContentId;
-import org.chromium.components.feed.core.proto.wire.ContentIdProto.ContentId.Builder;
 import org.chromium.components.feed.core.proto.wire.DataOperationProto.DataOperation;
 import org.chromium.components.feed.core.proto.wire.FeatureProto.Feature;
 import org.chromium.components.feed.core.proto.wire.FeatureProto.Feature.RenderableUnit;
@@ -87,7 +86,7 @@ public final class FeedProtocolAdapter implements ProtocolAdapter, Dumpable {
             Logger.e(TAG, e, "Error converting content ID to wire format");
             return Result.failure();
         }
-        Builder builder = ContentId.newBuilder().setId(id);
+        ContentId.Builder builder = ContentId.newBuilder().setId(id);
         if (!table.isEmpty()) {
             builder.setTable(table);
         }

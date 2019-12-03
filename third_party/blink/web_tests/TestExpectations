@@ -356,6 +356,10 @@ crbug.com/1018273 [ Mac ] paint/overflow/composited-scroll-vertical-rl.html [ Fa
 crbug.com/1025019 compositing/overflow/scroller-with-border-radius.html [ Crash ]
 crbug.com/1025019 virtual/prefer_compositing_to_lcd_text/compositing/overflow/scroller-with-border-radius.html [ Crash ]
 
+crbug.com/583097 crbug.com/633012 [ Linux ] external/wpt/svg/painting/marker-orient-001.svg [ Failure ]
+crbug.com/583097 crbug.com/633012 [ Mac ] external/wpt/svg/painting/marker-orient-001.svg [ Failure ]
+crbug.com/583097 crbug.com/633012 [ Win ] external/wpt/svg/painting/marker-orient-001.svg [ Failure ]
+
 # ====== Paint team owned tests to here ======
 
 crbug.com/922249 virtual/android/fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure Pass ]
@@ -2844,21 +2848,12 @@ crbug.com/626703 [ Linux ] external/wpt/css/css-text/word-boundary/word-boundary
 crbug.com/626703 [ Mac ] external/wpt/css/css-text/word-boundary/word-boundary-106.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-text/word-boundary/word-boundary-106.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/standard-font-family.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/content-dpr/tiled-background-image-with-content-dpr.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/content-dpr/tiled-background-image-with-content-dpr.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/content-dpr/tiled-background-image-with-content-dpr.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-fonts/standard-font-family-19.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/standard-font-family-19.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-fonts/standard-font-family-19.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/content-dpr/image-pseudo-element-content-dpr.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/content-dpr/image-pseudo-element-content-dpr.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/content-dpr/image-pseudo-element-content-dpr.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-fonts/standard-font-family-20.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/standard-font-family-20.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-fonts/standard-font-family-20.html [ Failure ]
-crbug.com/583097 crbug.com/633012 [ Linux ] external/wpt/svg/painting/marker-orient-001.svg [ Failure ]
-crbug.com/583097 crbug.com/633012 [ Mac ] external/wpt/svg/painting/marker-orient-001.svg [ Failure ]
-crbug.com/583097 crbug.com/633012 [ Win ] external/wpt/svg/painting/marker-orient-001.svg [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/infrastructure/reftest/reftest_wait_TestRendered.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/infrastructure/reftest/reftest_wait_TestRendered.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/infrastructure/reftest/reftest_wait_TestRendered.html [ Timeout ]
@@ -5895,7 +5890,7 @@ crbug.com/1014810 [ Mac ] virtual/threaded/external/wpt/animation-worklet/statef
 crbug.com/1019662 external/wpt/html/dom/idlharness.worker.html [ Pass Timeout ]
 
 # Temporarily disable to land source map changes that log error on failure
-crbug.com/1016772 http/tests/devtools/compiler-script-mapping.js [ Pass Failure ]
+crbug.com/1016772 http/tests/devtools/compiler-script-mapping.js [ Pass Failure Timeout ]
 crbug.com/1016772 http/tests/devtools/sources/debugger-ui/source-url-comment.js [ Pass Failure ]
 
 # Temporarily disabled to a breakpoint non-determinism issue.
@@ -5965,6 +5960,8 @@ crbug.com/963183 http/tests/devtools/sources/debugger-pause/debugger-change-vari
 crbug.com/963183 http/tests/devtools/sources/debugger-pause/debugger-eval-on-call-frame-inside-iframe.js [ Pass Failure ]
 crbug.com/963183 http/tests/devtools/sources/debugger-pause/debugger-eval-while-paused.js [ Pass Failure ]
 
+crbug.com/1016815 external/wpt/longtask-timing/buffered-flag.window.html [ Failure ]
+
 # Sheriff 2019-11-21
 crbug.com/1027287 css3/filters/effect-reference-image-lazy-attach.html [ Pass Failure ]
 
@@ -5985,6 +5982,7 @@ crbug.com/1027434 virtual/not-site-per-process/external/wpt/html/browsers/origin
 # Sheriff 2019-12-02
 crbug.com/1029713 external/wpt/cookie-store/cookieStoreManager_getSubscriptions_multiple.tentative.https.any.html [ Pass Failure ]
 crbug.com/1029528 [ Linux ] http/tests/devtools/network/oopif-content.js [ Pass Failure ]
+crbug.com/1028477 [ Mac Win ] http/tests/devtools/appcache/appcache-manifest-with-non-existing-file.js [ Pass Timeout ]
 
 # Temporary suppression to allow Skia change to opaqueness tracking
 crbug.com/1028116 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-border-radius.html [ Pass Failure ]

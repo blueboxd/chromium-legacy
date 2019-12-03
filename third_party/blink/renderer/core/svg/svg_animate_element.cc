@@ -351,7 +351,7 @@ void SVGAnimateElement::CalculateAnimatedValue(
   DCHECK_EQ(result_animation_element->GetAnimatedPropertyType(),
             GetAnimatedPropertyType());
 
-  if (IsSVGSetElement(*this))
+  if (IsA<SVGSetElement>(*this))
     percentage = 1;
 
   if (GetCalcMode() == kCalcModeDiscrete)
@@ -420,7 +420,7 @@ bool SVGAnimateElement::CalculateFromAndByValues(const String& from_string,
       !AnimatedPropertyTypeSupportsAddition())
     return false;
 
-  DCHECK(!IsSVGSetElement(*this));
+  DCHECK(!IsA<SVGSetElement>(*this));
 
   from_property_ = CreatePropertyForAnimation(from_string);
   from_property_value_type_ = PropertyValueType(AttributeName(), from_string);

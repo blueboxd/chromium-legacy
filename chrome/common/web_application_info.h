@@ -76,7 +76,7 @@ struct WebApplicationInfo {
   bool open_as_window;
 
   // The extensions and mime types the app can handle.
-  base::Optional<blink::Manifest::FileHandler> file_handler;
+  std::vector<blink::Manifest::FileHandler> file_handlers;
 };
 
 #endif  // CHROME_COMMON_WEB_APPLICATION_INFO_H_

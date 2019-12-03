@@ -3011,10 +3011,11 @@ void WindowSizeDuringDraggingTestStep2(
 
 }  // namespace
 
+// TODO(http://crbug.com/1028386): Test fails flakily.
 // Tests that when drgging a tab out of a browser window, the dragged window's
 // size should be equal or larger than its minimum size.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
-                       WindowSizeDuringDraggingTest) {
+                       DISABLED_WindowSizeDuringDraggingTest) {
   // Set the display size small enough.
   display::test::DisplayManagerTestApi(ash::Shell::Get()->display_manager())
       .UpdateDisplay(base::NumberToString(

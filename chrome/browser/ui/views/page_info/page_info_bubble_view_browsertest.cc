@@ -887,10 +887,17 @@ class ViewFocusTracker : public FocusTracker, public views::ViewObserver {
 
 }  // namespace
 
+#if defined(OS_MACOSX)
+// https://crbug.com/1029882
+#define MAYBE_FocusReturnsToContentOnClose DISABLED_FocusReturnsToContentOnClose
+#else
+#define MAYBE_FocusReturnsToContentOnClose FocusReturnsToContentOnClose
+#endif
+
 // Test that when the PageInfo bubble is closed, focus is returned to the web
 // contents pane.
 IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
-                       FocusReturnsToContentOnClose) {
+                       MAYBE_FocusReturnsToContentOnClose) {
   content::WebContents* const web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   WebContentsFocusTracker web_contents_focus_tracker(web_contents);
@@ -908,12 +915,21 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   EXPECT_TRUE(web_contents_focus_tracker.focused());
 }
 
+#if defined(OS_MACOSX)
+// https://crbug.com/1029882
+#define MAYBE_FocusDoesNotReturnToContentsOnReloadPrompt \
+  DISABLED_FocusDoesNotReturnToContentsOnReloadPrompt
+#else
+#define MAYBE_FocusDoesNotReturnToContentsOnReloadPrompt \
+  FocusDoesNotReturnToContentsOnReloadPrompt
+#endif
+
 // Test that when the PageInfo bubble is closed and a reload prompt is
 // displayed, focus is NOT returned to the web contents pane, but rather returns
 // to the location bar so accessibility users must tab through the reload prompt
 // before getting back to web contents (see https://crbug.com/910067).
 IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
-                       FocusDoesNotReturnToContentsOnReloadPrompt) {
+                       MAYBE_FocusDoesNotReturnToContentsOnReloadPrompt) {
   content::WebContents* const web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   WebContentsFocusTracker web_contents_focus_tracker(web_contents);

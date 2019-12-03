@@ -592,6 +592,7 @@ public class NotificationPlatformBridge {
                         .setHideLargeIcon(notificationType == NotificationType.PERMISSION_REQUEST);
 
         if (notificationType == NotificationType.PERMISSION_REQUEST) {
+            assert false; // Notification permission requests are not used anymore.
             @PermissionFieldTrial.UIFlavor
             int ui_flavor = PermissionFieldTrial.uiFlavorToUse();
 

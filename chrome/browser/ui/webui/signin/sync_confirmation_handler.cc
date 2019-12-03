@@ -28,14 +28,15 @@
 #include "content/public/browser/web_ui.h"
 #include "url/gurl.h"
 
+namespace {
 const int kProfileImageSize = 128;
+}  // namespace
 
 SyncConfirmationHandler::SyncConfirmationHandler(
     Browser* browser,
     const std::unordered_map<std::string, int>& string_to_grd_id_map)
     : profile_(browser->profile()),
       browser_(browser),
-      did_user_explicitly_interact(false),
       string_to_grd_id_map_(string_to_grd_id_map),
       identity_manager_(IdentityManagerFactory::GetForProfile(profile_)) {
   DCHECK(profile_);
@@ -49,7 +50,7 @@ SyncConfirmationHandler::~SyncConfirmationHandler() {
 
   // Abort signin and prevent sync from starting if none of the actions on the
   // sync confirmation dialog are taken by the user.
-  if (!did_user_explicitly_interact) {
+  if (!did_user_explicitly_interact_) {
     HandleUndo(nullptr);
     base::RecordAction(base::UserMetricsAction("Signin_Abort_Signin"));
   }
@@ -82,20 +83,20 @@ void SyncConfirmationHandler::RegisterMessages() {
 }
 
 void SyncConfirmationHandler::HandleConfirm(const base::ListValue* args) {
-  did_user_explicitly_interact = true;
+  did_user_explicitly_interact_ = true;
   RecordConsent(args);
   CloseModalSigninWindow(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
 }
 
 void SyncConfirmationHandler::HandleGoToSettings(const base::ListValue* args) {
   DCHECK(profile_->IsSyncAllowed());
-  did_user_explicitly_interact = true;
+  did_user_explicitly_interact_ = true;
   RecordConsent(args);
   CloseModalSigninWindow(LoginUIService::CONFIGURE_SYNC_FIRST);
 }
 
 void SyncConfirmationHandler::HandleUndo(const base::ListValue* args) {
-  did_user_explicitly_interact = true;
+  did_user_explicitly_interact_ = true;
   CloseModalSigninWindow(LoginUIService::ABORT_SIGNIN);
 }
 

@@ -61,7 +61,7 @@ void HtmlAudioElementCapturerSource::SetAudioCallback() {
   if (audio_source_ && is_started_) {
     // WTF::Unretained() is safe here since EnsureSourceIsStopped() guarantees
     // no more calls to OnAudioBus().
-    audio_source_->SetCopyAudioCallback(ConvertToBaseCallback(
+    audio_source_->SetCopyAudioCallback(ConvertToBaseRepeatingCallback(
         CrossThreadBindRepeating(&HtmlAudioElementCapturerSource::OnAudioBus,
                                  CrossThreadUnretained(this))));
   }

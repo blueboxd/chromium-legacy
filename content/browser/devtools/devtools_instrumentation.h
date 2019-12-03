@@ -17,6 +17,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 
 class GURL;
 
@@ -28,10 +29,6 @@ namespace net {
 class SSLInfo;
 class X509Certificate;
 }  // namespace net
-
-namespace network {
-struct ResourceResponse;
-}
 
 namespace content {
 class SignedExchangeEnvelope;
@@ -72,8 +69,9 @@ bool WillCreateURLLoaderFactory(
 
 void OnResetNavigationRequest(NavigationRequest* navigation_request);
 void OnNavigationRequestWillBeSent(const NavigationRequest& navigation_request);
-void OnNavigationResponseReceived(const NavigationRequest& nav_request,
-                                  const network::ResourceResponse& response);
+void OnNavigationResponseReceived(
+    const NavigationRequest& nav_request,
+    const network::mojom::URLResponseHead& response);
 void OnNavigationRequestFailed(
     const NavigationRequest& nav_request,
     const network::URLLoaderCompletionStatus& status);
@@ -86,7 +84,7 @@ void OnSignedExchangeReceived(
     FrameTreeNode* frame_tree_node,
     base::Optional<const base::UnguessableToken> devtools_navigation_token,
     const GURL& outer_request_url,
-    const network::ResourceResponseHead& outer_response,
+    const network::mojom::URLResponseHead& outer_response,
     const base::Optional<SignedExchangeEnvelope>& header,
     const scoped_refptr<net::X509Certificate>& certificate,
     const base::Optional<net::SSLInfo>& ssl_info,
@@ -102,7 +100,7 @@ void OnSignedExchangeCertificateResponseReceived(
     const base::UnguessableToken& request_id,
     const base::UnguessableToken& loader_id,
     const GURL& url,
-    const network::ResourceResponseHead& head);
+    const network::mojom::URLResponseHead& head);
 void OnSignedExchangeCertificateRequestCompleted(
     FrameTreeNode* frame_tree_node,
     const base::UnguessableToken& request_id,

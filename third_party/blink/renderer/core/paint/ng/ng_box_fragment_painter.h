@@ -202,6 +202,11 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                            const HitTestLocation& hit_test_location,
                            const PhysicalOffset& physical_offset,
                            HitTestAction);
+  bool HitTestTextItem(HitTestResult& result,
+                       const NGFragmentItem& text_item,
+                       const HitTestLocation& hit_test_location,
+                       const PhysicalOffset& physical_offset,
+                       HitTestAction action);
 
   // Hit tests the given line box fragment.
   // @param physical_offset Physical offset of the line box fragment in paint

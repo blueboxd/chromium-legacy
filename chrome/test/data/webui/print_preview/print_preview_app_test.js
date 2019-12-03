@@ -44,7 +44,6 @@ suite(print_preview_app_test.suiteName, function() {
     documentHasSelection: false,
     shouldPrintSelectionOnly: false,
     printerName: 'FooDevice',
-    isHeaderFooterManaged: false,
     serializedAppStateStr: null,
     serializedDefaultDestinationSelectionRulesStr: null,
     pdfPrinterDisabled: false,
@@ -129,7 +128,7 @@ suite(print_preview_app_test.suiteName, function() {
   test(
       assert(print_preview_app_test.TestNames.HeaderFooterManaged),
       async () => {
-        initialSettings.isHeaderFooterManaged = true;
+        initialSettings.policies = {headerFooter: {allowedMode: true}};
         await initialize();
         const sidebar = page.$$('print-preview-sidebar');
         assertTrue(sidebar.controlsManaged);

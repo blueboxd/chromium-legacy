@@ -255,7 +255,7 @@ void SavePackage::InternalInit() {
 }
 
 bool SavePackage::Init(
-    const SavePackageDownloadCreatedCallback& download_created_callback) {
+    SavePackageDownloadCreatedCallback download_created_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(page_url_.is_valid());
   // Set proper running state.
@@ -278,20 +278,20 @@ bool SavePackage::Init(
                                                : "text/html"),
       frame_host->GetProcess()->GetID(), frame_host->GetRoutingID(),
       base::BindOnce(&CancelSavePackage, AsWeakPtr()),
-      base::Bind(&SavePackage::InitWithDownloadItem, AsWeakPtr(),
-                 download_created_callback));
+      base::BindOnce(&SavePackage::InitWithDownloadItem, AsWeakPtr(),
+                     std::move(download_created_callback)));
   return true;
 }
 
 void SavePackage::InitWithDownloadItem(
-    const SavePackageDownloadCreatedCallback& download_created_callback,
+    SavePackageDownloadCreatedCallback download_created_callback,
     download::DownloadItemImpl* item) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(item);
   download_ = item;
   // Confirm above didn't delete the tab out from under us.
   if (!download_created_callback.is_null())
-    download_created_callback.Run(download_);
+    std::move(download_created_callback).Run(download_);
 
   // Check save type and process the save page job.
   if (save_type_ == SAVE_PAGE_TYPE_AS_COMPLETE_HTML) {
@@ -1316,17 +1316,14 @@ void SavePackage::ContinueGetSaveInfo(bool can_save_as_complete,
     default_extension = kDefaultHtmlExtension;
 
   download_manager_->GetDelegate()->ChooseSavePath(
-      web_contents(),
-      suggested_path,
-      default_extension,
-      can_save_as_complete,
-      base::Bind(&SavePackage::OnPathPicked, AsWeakPtr()));
+      web_contents(), suggested_path, default_extension, can_save_as_complete,
+      base::BindOnce(&SavePackage::OnPathPicked, AsWeakPtr()));
 }
 
 void SavePackage::OnPathPicked(
     const base::FilePath& final_name,
     SavePageType type,
-    const SavePackageDownloadCreatedCallback& download_created_callback) {
+    SavePackageDownloadCreatedCallback download_created_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK((type == SAVE_PAGE_TYPE_AS_ONLY_HTML) ||
          (type == SAVE_PAGE_TYPE_AS_MHTML) ||
@@ -1347,7 +1344,7 @@ void SavePackage::OnPathPicked(
         FILE_PATH_LITERAL("_files"));
   }
 
-  Init(download_created_callback);
+  Init(std::move(download_created_callback));
 }
 
 void SavePackage::FinalizeDownloadEntry() {

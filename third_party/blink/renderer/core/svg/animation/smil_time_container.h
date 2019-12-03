@@ -50,10 +50,11 @@ class SMILTimeContainer final : public GarbageCollected<SMILTimeContainer> {
   void Reschedule(SVGSMILElement*, SMILTime interval_time);
   void Unschedule(SVGSMILElement*);
 
-  // Returns the time we are currently updating.
+  // Returns the current animation time.
   SMILTime Elapsed() const;
-  // Returns the current time in the document.
-  SMILTime CurrentDocumentTime() const;
+  // Returns the time that we last updated timed elements to. This differs from
+  // the above in that it only moves during animation update steps.
+  SMILTime LatestUpdatePresentationTime() const;
 
   bool IsPaused() const;
   bool IsStarted() const;

@@ -245,7 +245,7 @@ void VRUiHostImpl::SetWebXRWebContents(content::WebContents* contents) {
 
       // There might already be a visible permission bubble from before
       // we registered the observer, show the HMD message now in that case.
-      if (permission_request_manager_->IsBubbleVisible())
+      if (permission_request_manager_->IsRequestInProgress())
         OnBubbleAdded();
     } else {
       DVLOG(1) << __func__ << ": No PermissionRequestManager";

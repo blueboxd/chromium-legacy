@@ -1196,7 +1196,7 @@ void PaymentRequest::OnPaymentMethodChange(const String& method_name,
   DCHECK(!complete_resolver_);
 
   if (!RuntimeEnabledFeatures::PaymentMethodChangeEventEnabled()) {
-    payment_provider_->NoUpdatedPaymentDetails();
+    payment_provider_->OnPaymentDetailsNotUpdated();
     return;
   }
 
@@ -1552,7 +1552,7 @@ void PaymentRequest::DispatchPaymentRequestUpdateEvent(
     GetExecutionContext()->AddConsoleMessage(
         ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
                                mojom::ConsoleMessageLevel::kWarning, message));
-    payment_provider_->NoUpdatedPaymentDetails();
+    payment_provider_->OnPaymentDetailsNotUpdated();
     // Make sure that updateWith() is only allowed to be called within the same
     // event loop as the event dispatch. See
     // https://w3c.github.io/payment-request/#paymentrequest-updated-algorithm

@@ -27,6 +27,8 @@
 
 #define HAVE_ASM 1
 
+#define HAVE_CLOCK_GETTIME 1
+
 #define HAVE_POSIX_MEMALIGN 1
 
 #define HAVE_UNISTD_H 1

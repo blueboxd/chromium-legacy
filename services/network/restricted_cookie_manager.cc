@@ -512,6 +512,9 @@ bool RestrictedCookieManager::ValidateAccessToCookiesAt(
     // rely on SameDomainOrHost because that function checks for the hosts being
     // non-empty and equal. This may also be different for tests because some
     // scheme-registering functions like RegisterContentSchemes are not called.
+    //
+    // This also shows up for regular file:/// URLs, when those have cookie
+    // support turned on (as they normally don't have a host name, either).
     site_for_cookies_ok =
         (site_for_cookies == site_for_cookies_) ||
         net::registry_controlled_domains::SameDomainOrHost(

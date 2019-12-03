@@ -116,7 +116,7 @@ class LocationBarView : public LocationBar,
 
   // Returns the location bar border color blended with the toolbar color.
   // It's guaranteed to be opaque.
-  SkColor GetOpaqueBorderColor(bool incognito) const;
+  SkColor GetOpaqueBorderColor() const;
 
   // Returns a background that paints an (optionally stroked) rounded rect with
   // the given color.

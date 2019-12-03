@@ -2651,8 +2651,19 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, Redirect) {
   transform->query = "?new_query";
   transform->fragment = "#new_fragment";
 
-  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
-      {rule1, rule2, rule3}, "test_extension", {URLPattern::kAllUrlsPattern}));
+  TestRule rule4 = CreateGenericRule();
+  rule4.condition->resource_types = std::vector<std::string>({"main_frame"});
+  rule4.id = kMinValidID + 3;
+  rule4.condition->url_filter.reset();
+  rule4.condition->regex_filter = R"(^(.+?)://(abc|def)\.exy\.com(.*)$)";
+  rule4.action->type = std::string("redirect");
+  rule4.priority = kMinValidPriority + 1;
+  rule4.action->redirect.emplace();
+  rule4.action->redirect->regex_substitution = R"(\1://www.\2.com\3)";
+
+  ASSERT_NO_FATAL_FAILURE(
+      LoadExtensionWithRules({rule1, rule2, rule3, rule4}, "test_extension",
+                             {URLPattern::kAllUrlsPattern}));
 
   struct {
     GURL url;
@@ -2670,6 +2681,15 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, Redirect) {
                      "/manifest.json?query#fragment")},
                {embedded_test_server()->GetURL("ex.com",
                                                "/pages_with_script/index.html"),
+                embedded_test_server()->GetURL(
+                    "google.com", "/pages_with_script/index.html")},
+               // Because of a priority higher than |rule1|, |rule4| is chosen.
+               {embedded_test_server()->GetURL("abc.exy.com",
+                                               "/pages_with_script/page.html"),
+                embedded_test_server()->GetURL("www.abc.com",
+                                               "/pages_with_script/page.html")},
+               {embedded_test_server()->GetURL("xyz.exy.com",
+                                               "/pages_with_script/page.html"),
                 embedded_test_server()->GetURL(
                     "google.com", "/pages_with_script/index.html")}};
 

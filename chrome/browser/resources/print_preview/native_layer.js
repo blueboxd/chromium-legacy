@@ -8,7 +8,7 @@ import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
 import {Cdd, Destination} from './data/destination.js';
 import {PrinterType} from './data/destination_match.js';
 // <if expr="chromeos">
-import {Policies} from './data/destination_policies.js';
+import {DestinationPolicies} from './data/destination_policies.js';
 // </if>
 import {MeasurementSystemUnitType} from './data/measurement_system.js';
 
@@ -30,10 +30,21 @@ export let PreviewSettings;
  *   printerDescription: (string | undefined),
  *   cupsEnterprisePrinter: (boolean | undefined),
  *   printerOptions: (Object | undefined),
- *   policies: (Policies | undefined),
+ *   policies: (DestinationPolicies | undefined),
  * }}
  */
 export let LocalDestinationInfo;
+
+/**
+ * Policies affecting print settings values and availability.
+ * @typedef {{
+ *   headerFooter: ({
+ *     allowedMode: (boolean | undefined),
+ *     defaultMode: (boolean | undefined),
+ *   } | undefined),
+ * }}
+ */
+export let Policies;
 
 /**
  * @typedef {{
@@ -50,8 +61,7 @@ export let LocalDestinationInfo;
  *   documentHasSelection: boolean,
  *   shouldPrintSelectionOnly: boolean,
  *   printerName: string,
- *   headerFooter: (boolean | undefined),
- *   isHeaderFooterManaged: boolean,
+ *   policies: (Policies | undefined),
  *   serializedAppStateStr: ?string,
  *   serializedDefaultDestinationSelectionRulesStr: ?string,
  *   pdfPrinterDisabled: boolean,
@@ -92,7 +102,7 @@ export let CapabilitiesResponse;
  *   printerId: string,
  *   success: boolean,
  *   capabilities: !Cdd,
- *   policies: (Policies | undefined),
+ *   policies: (DestinationPolicies | undefined),
  * }}
  */
 export let PrinterSetupResponse;

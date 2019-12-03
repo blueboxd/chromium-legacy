@@ -5330,8 +5330,8 @@ class BrowsingInstanceSwapContentBrowserClient
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        ErrorPageNavigationReloadBrowsingInstanceSwap) {
   StartEmbeddedServer();
-  GURL url(embedded_test_server()->GetURL("/title1.html"));
-  GURL error_url(embedded_test_server()->GetURL("/empty.html"));
+  GURL url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL error_url(embedded_test_server()->GetURL("b.com", "/empty.html"));
   std::unique_ptr<URLLoaderInterceptor> url_interceptor =
       SetupRequestFailForURL(error_url);
   NavigationControllerImpl& nav_controller =
@@ -5345,10 +5345,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       shell()->web_contents()->GetMainFrame()->GetSiteInstance();
   EXPECT_EQ(1, nav_controller.GetEntryCount());
 
-  BrowsingInstanceSwapContentBrowserClient content_browser_client;
-  ContentBrowserClient* old_client =
-      SetBrowserClientForTesting(&content_browser_client);
-
   // Navigate to an url resulting in an error page and ensure a new entry
   // was added to session history.
   EXPECT_FALSE(NavigateToURL(shell(), error_url));
@@ -5357,9 +5353,14 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   scoped_refptr<SiteInstance> initial_instance =
       shell()->web_contents()->GetMainFrame()->GetSiteInstance();
   EXPECT_EQ(GURL(kUnreachableWebDataURL), initial_instance->GetSiteURL());
-  EXPECT_TRUE(
-      success_site_instance->IsRelatedSiteInstance(initial_instance.get()));
   EXPECT_TRUE(IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), error_url));
+  if (IsProactivelySwapBrowsingInstanceEnabled()) {
+    EXPECT_FALSE(
+        success_site_instance->IsRelatedSiteInstance(initial_instance.get()));
+  } else {
+    EXPECT_TRUE(
+        success_site_instance->IsRelatedSiteInstance(initial_instance.get()));
+  }
 
   // Reload of the error page that still results in an error should stay in
   // the same SiteInstance. Ensure this works for both browser-initiated
@@ -5370,8 +5371,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
     reload_observer.Wait();
     EXPECT_FALSE(reload_observer.last_navigation_succeeded());
     EXPECT_EQ(2, nav_controller.GetEntryCount());
-    EXPECT_EQ(initial_instance,
-              shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+    if (!IsProactivelySwapBrowsingInstanceEnabled()) {
+      EXPECT_EQ(initial_instance,
+                shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+    }
     EXPECT_TRUE(
         IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), error_url));
   }
@@ -5381,11 +5384,20 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
     reload_observer.Wait();
     EXPECT_FALSE(reload_observer.last_navigation_succeeded());
     EXPECT_EQ(2, nav_controller.GetEntryCount());
-    EXPECT_EQ(initial_instance,
-              shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+    if (!IsProactivelySwapBrowsingInstanceEnabled()) {
+      EXPECT_EQ(initial_instance,
+                shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+    }
     EXPECT_TRUE(
         IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), error_url));
   }
+
+  // Install a client forcing every navigation to swap BrowsingInstances.
+  // Do not do it earlier to ensure that we don't force BrowsingInstance swap
+  // for the reloads above.
+  BrowsingInstanceSwapContentBrowserClient content_browser_client;
+  ContentBrowserClient* old_client =
+      SetBrowserClientForTesting(&content_browser_client);
 
   // Allow the navigation to succeed and ensure it swapped to a non-related
   // SiteInstance.
@@ -5403,6 +5415,97 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   }
 
   SetBrowserClientForTesting(old_client);
+}
+
+class RenderFrameHostManagerProactivelySwapBrowsingInstancesTest
+    : public RenderFrameHostManagerTest {
+ public:
+  RenderFrameHostManagerProactivelySwapBrowsingInstancesTest() {
+    feature_list_.InitAndEnableFeature(
+        features::kProactivelySwapBrowsingInstance);
+  }
+
+  ~RenderFrameHostManagerProactivelySwapBrowsingInstancesTest() override {}
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Test to ensure that the error page navigation does not change
+// BrowsingInstances when window.open is present.
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostManagerProactivelySwapBrowsingInstancesTest,
+    ErrorPageNavigationWithWindowOpenDoesNotChangeBrowsingInstance) {
+  StartEmbeddedServer();
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  GURL error_url(embedded_test_server()->GetURL("/empty.html"));
+  std::unique_ptr<URLLoaderInterceptor> url_interceptor =
+      SetupRequestFailForURL(error_url);
+  NavigationControllerImpl& nav_controller =
+      static_cast<NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+
+  // Start with a successful navigation to a document and verify there is
+  // only one entry in session history.
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  scoped_refptr<SiteInstance> success_site_instance =
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance();
+  EXPECT_EQ(1, nav_controller.GetEntryCount());
+
+  // Open a new window to ensure that we can't swap BrowsingInstances
+  // as we have to preserve the scripting relationship.
+  EXPECT_TRUE(OpenPopup(shell(), GURL(url::kAboutBlankURL), ""));
+
+  // Navigate to an url resulting in an error page and ensure a new entry
+  // was added to session history.
+  EXPECT_FALSE(NavigateToURL(shell(), error_url));
+  EXPECT_EQ(2, nav_controller.GetEntryCount());
+
+  scoped_refptr<SiteInstance> initial_instance =
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance();
+  EXPECT_EQ(GURL(kUnreachableWebDataURL), initial_instance->GetSiteURL());
+  EXPECT_TRUE(IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), error_url));
+  EXPECT_TRUE(success_site_instance->IsRelatedSiteInstance(
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance()));
+
+  // Reload of the error page that still results in an error should stay in
+  // the related SiteInstance. Ensure this works for both browser-initiated
+  // reloads and renderer-initiated ones.
+  {
+    TestNavigationObserver reload_observer(shell()->web_contents());
+    shell()->web_contents()->GetController().Reload(ReloadType::NORMAL, false);
+    reload_observer.Wait();
+    EXPECT_FALSE(reload_observer.last_navigation_succeeded());
+    EXPECT_EQ(2, nav_controller.GetEntryCount());
+    EXPECT_TRUE(
+        IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), error_url));
+    EXPECT_TRUE(success_site_instance->IsRelatedSiteInstance(
+        shell()->web_contents()->GetMainFrame()->GetSiteInstance()));
+  }
+  {
+    TestNavigationObserver reload_observer(shell()->web_contents());
+    EXPECT_TRUE(ExecuteScript(shell(), "location.reload();"));
+    reload_observer.Wait();
+    EXPECT_FALSE(reload_observer.last_navigation_succeeded());
+    EXPECT_EQ(2, nav_controller.GetEntryCount());
+    EXPECT_TRUE(
+        IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), error_url));
+    EXPECT_TRUE(success_site_instance->IsRelatedSiteInstance(
+        shell()->web_contents()->GetMainFrame()->GetSiteInstance()));
+  }
+
+  // Allow the navigation to succeed and ensure the new SiteInstance
+  // stays related.
+  url_interceptor.reset();
+  {
+    TestNavigationObserver reload_observer(shell()->web_contents());
+    EXPECT_TRUE(ExecuteScript(shell(), "location.reload();"));
+    reload_observer.Wait();
+    EXPECT_TRUE(reload_observer.last_navigation_succeeded());
+    EXPECT_EQ(2, nav_controller.GetEntryCount());
+    EXPECT_TRUE(success_site_instance->IsRelatedSiteInstance(
+        shell()->web_contents()->GetMainFrame()->GetSiteInstance()));
+  }
 }
 
 // Helper class to simplify testing of unload handlers.  It allows waiting for

@@ -22,12 +22,6 @@ source_set("power_save_blocker") {
 
   sources = [
     "power_save_blocker.h",
-    "power_save_blocker_android.cc",
-    "power_save_blocker_chromeos.cc",
-    "power_save_blocker_mac.cc",
-    "power_save_blocker_stub.cc",
-    "power_save_blocker_win.cc",
-    "power_save_blocker_x11.cc",
   ]
 
   public_deps = [
@@ -42,48 +36,40 @@ source_set("power_save_blocker") {
     deps += [ "//dbus" ]
   }
 
-  if (use_x11) {
-    configs += [ "//build/config/linux:x11" ]
-    if (!is_chromeos) {
-      configs += [ "//build/config/linux:xscrnsaver" ]
-    }
-    deps += [
-      "//ui/gfx",
-      "//ui/gfx/x",
-    ]
-  }
-
-  # Dealing with power_save_blocker_{x11,stub}.cc is a little complicated
-  # given the interaction between os_chromeos and the feature flags for X11 and
-  # ozone, so do it all in one spot.
-  #
-  # stub implementation is only used at the moment non-chromeOS Ozone platforms
-  # such as Chromecast.
-  if (is_chromeos || !use_ozone) {
-    sources -= [ "power_save_blocker_stub.cc" ]
-  }
-
-  if (is_chromeos || !use_x11 || !use_dbus) {
-    sources -= [ "power_save_blocker_x11.cc" ]
-  }
-
   if (is_android) {
+    sources += [ "power_save_blocker_android.cc" ]
     deps += [ ":jni_headers" ]
     public_deps += [ "//ui/android" ]
-  }
-
-  if (is_chromeos) {
+  } else if (is_chromeos) {
+    sources += [ "power_save_blocker_chromeos.cc" ]
     deps += [
       "//chromeos/dbus/power",
       "//chromeos/dbus/power:power_manager_proto",
     ]
-  }
-
-  if (is_mac) {
+  } else if (is_linux && use_dbus) {
+    sources += [ "power_save_blocker_linux.cc" ]
+    deps += [
+      "//dbus",
+      "//ui/gfx",
+    ]
+    if (use_x11) {
+      configs += [
+        "//build/config/linux:x11",
+        "//build/config/linux:xscrnsaver",
+      ]
+      deps += [ "//ui/gfx/x" ]
+    }
+  } else if (is_mac) {
+    sources += [ "power_save_blocker_mac.cc" ]
     libs = [
       "CoreFoundation.framework",
       "IOKit.framework",
     ]
+  } else if (is_win) {
+    sources += [ "power_save_blocker_win.cc" ]
+  } else {
+    # Fuchsia and non-DBus Linux.
+    sources += [ "power_save_blocker_stub.cc" ]
   }
 }
 

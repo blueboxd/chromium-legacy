@@ -387,7 +387,6 @@ void ValidateRequestMatchesEntry(NavigationRequest* request,
     return;
   }
 
-  DCHECK_EQ(request->common_params().url, frame_entry->url());
   DCHECK_EQ(request->common_params().method, frame_entry->method());
 
   size_t redirect_size = request->commit_params().redirects.size();
@@ -3111,13 +3110,15 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
 
     CHECK(virtual_url == entry->GetVirtualURL());
 
-    // This is a DCHECK and not a CHECK as URL rewrite has non-deterministic
-    // behavior in the field: it is possible for two calls to
-    // RewriteUrlForNavigation to return different results, leading to a
-    // different URL in the NavigationRequest and FrameEntry. This will be fixed
-    // once we remove the pending NavigationEntry, as we'll only make one call
-    // to RewriteUrlForNavigation.
-    DCHECK_EQ(url_to_load, frame_entry->url());
+    // This is a LOG and not a CHECK/DCHECK as URL rewrite has non-deterministic
+    // behavior: it is possible for two calls to RewriteUrlForNavigation to
+    // return different results, leading to a different URL in the
+    // NavigationRequest and FrameEntry. This will be fixed once we remove the
+    // pending NavigationEntry, as we'll only make one call to
+    // RewriteUrlForNavigation.
+    VLOG_IF(1, (url_to_load != frame_entry->url()))
+        << "NavigationRequest and FrameEntry have different URLs: "
+        << url_to_load << " vs " << frame_entry->url();
 
     // TODO(clamy): In order to remove the pending NavigationEntry,
     // |virtual_url| and |reverse_on_redirect| should be stored in the

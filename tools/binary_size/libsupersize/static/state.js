@@ -325,15 +325,17 @@ function _makeIconTemplateGetter() {
    * @returns {SVGSVGElement}
    */
   function getDiffStatusTemplate(node) {
+    const entries = Object.entries(node.childStats);
     let key = 'unchanged';
-    // Leaf nodes only have one stat entry.
-    const statsEntry = Object.entries(node.childStats)[0][1];
-    if (statsEntry.added) {
-      key = 'added';
-    } else if (statsEntry.removed) {
-      key = 'removed';
-    } else if (statsEntry.changed) {
-      key = 'changed';
+    if (entries.length != 0) {
+      const statsEntry = entries[0][1];
+      if (statsEntry.added) {
+        key = 'added';
+      } else if (statsEntry.removed) {
+        key = 'removed';
+      } else if (statsEntry.changed) {
+        key = 'changed';
+      }
     }
     return statusIcons[key].cloneNode(true);
   }

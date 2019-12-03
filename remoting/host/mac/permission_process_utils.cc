@@ -4,8 +4,12 @@
 
 #include "remoting/host/mac/permission_process_utils.h"
 
+#include <fcntl.h>
+
 #include "base/command_line.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "remoting/host/mac/constants_mac.h"
@@ -32,11 +36,21 @@ bool CheckHostPermission(base::FilePath exe_path, std::string command_switch) {
   base::CommandLine cmdLine(exe_path);
   cmdLine.AppendSwitch(command_switch);
 
+  // Redirect stdout to /dev/null, otherwise the child will inherit stdout from
+  // the parent, possibly corrupting the native-messaging channels.
+  // LaunchProcess() already redirects stdin to /dev/null, so no need to do it
+  // here.
+  base::ScopedFD null_fd(HANDLE_EINTR(open("/dev/null", O_WRONLY)));
+  if (!null_fd.is_valid()) {
+    PLOG(ERROR) << "Failed to open /dev/null";
+    return false;
+  }
   base::LaunchOptions options;
   options.disclaim_responsibility = true;
+  options.fds_to_remap.push_back(std::make_pair(null_fd.get(), STDOUT_FILENO));
   base::Process process = base::LaunchProcess(cmdLine, options);
   if (!process.IsValid()) {
-    LOG(ERROR) << "Unable to launch host process";
+    PLOG(ERROR) << "Unable to launch host process";
     return false;
   }
   int exit_code;

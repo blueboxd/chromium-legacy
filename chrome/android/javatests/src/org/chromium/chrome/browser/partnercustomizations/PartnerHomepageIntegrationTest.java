@@ -13,6 +13,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -23,7 +29,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
 import org.chromium.chrome.browser.settings.HomepageEditor;
 import org.chromium.chrome.browser.settings.HomepagePreferences;
-import org.chromium.chrome.browser.settings.Preferences;
+import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -36,11 +42,6 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.test.util.UiUtils;
 import org.chromium.net.test.EmbeddedTestServer;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.util.concurrent.TimeoutException;
 
@@ -146,8 +147,8 @@ public class PartnerHomepageIntegrationTest {
     @RetryOnFailure
     public void testPreferenceCustomUriFixup() {
         // Change home page custom URI on hompage edit screen.
-        final Preferences editHomepagePreferenceActivity =
-                mActivityTestRule.startPreferences(HomepageEditor.class.getName());
+        final SettingsActivity editHomepagePreferenceActivity =
+                mActivityTestRule.startSettingsActivity(HomepageEditor.class.getName());
         TestThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             // TODO(crbug.com/635567): Fix this properly.
@@ -235,8 +236,8 @@ public class PartnerHomepageIntegrationTest {
      */
     private void toggleHomepageSwitchPreference(boolean expected) {
         // Launch preference activity with Homepage settings fragment.
-        Preferences homepagePreferenceActivity =
-                mActivityTestRule.startPreferences(HomepagePreferences.class.getName());
+        SettingsActivity homepagePreferenceActivity =
+                mActivityTestRule.startSettingsActivity(HomepagePreferences.class.getName());
         PreferenceFragmentCompat fragment =
                 (PreferenceFragmentCompat) homepagePreferenceActivity.getSupportFragmentManager()
                         .findFragmentById(android.R.id.content);

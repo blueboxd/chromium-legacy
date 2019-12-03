@@ -6,14 +6,15 @@
 #define CHROME_BROWSER_CHROMEOS_PRINTING_CALCULATORS_POLICIES_BINDER_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/printing/bulk_printers_calculator.h"
 
-class Profile;
-
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
+class PrefService;
+class PrefRegistrySimple;
 
 namespace chromeos {
 
@@ -24,18 +25,58 @@ class CrosSettings;
 // profile. All methods must be called from the same sequence (UI).
 class CalculatorsPoliciesBinder {
  public:
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  // |settings| is the source of device policies. |profile| is a user profile.
-  static std::unique_ptr<CalculatorsPoliciesBinder> Create(
+  // Binds events from |settings| to the appropriate fields in |calculator|.
+  static std::unique_ptr<CalculatorsPoliciesBinder> DeviceBinder(
       CrosSettings* settings,
-      Profile* profile);
-  virtual ~CalculatorsPoliciesBinder() = default;
+      base::WeakPtr<BulkPrintersCalculator> calculator);
+
+  // Binds events from |profile| to the appropriate fields in |calculator|.
+  static std::unique_ptr<CalculatorsPoliciesBinder> UserBinder(
+      PrefService* prefs,
+      base::WeakPtr<BulkPrintersCalculator> calculator);
+
+  virtual ~CalculatorsPoliciesBinder();
 
  protected:
-  CalculatorsPoliciesBinder() = default;
+  // |access_mode_name| is the name of the access mode policy.  |blacklist_name|
+  // is the name of the blacklist policy.  |whitelist_name| is the name of the
+  // whitelist policy.  |calculator| will receive updates from the bound
+  // policies.
+  CalculatorsPoliciesBinder(const char* access_mode_name,
+                            const char* blacklist_name,
+                            const char* whitelist_name,
+                            base::WeakPtr<BulkPrintersCalculator> calculator);
+
+  // Returns a WeakPtr to the Derived class.
+  base::WeakPtr<CalculatorsPoliciesBinder> GetWeakPtr();
+
+  // Binds |policy_name| to |callback| for each policy name, using the
+  // appropriate preference system.
+  virtual void Bind(const char* policy_name,
+                    base::RepeatingClosure callback) = 0;
+
+  // Returns the access mode integer preference for |name|.
+  virtual int GetAccessMode(const char* name) const = 0;
+
+  // Returns a string list for the prefrence |name|.
+  virtual std::vector<std::string> GetStringList(const char* name) const = 0;
 
  private:
+  // Attaches bindings since they cannot be safely bound in the constructor.
+  void Init();
+
+  void UpdateAccessMode();
+  void UpdateWhitelist();
+  void UpdateBlacklist();
+
+  const char* access_mode_name_;
+  const char* blacklist_name_;
+  const char* whitelist_name_;
+  base::WeakPtr<BulkPrintersCalculator> calculator_;
+  base::WeakPtrFactory<CalculatorsPoliciesBinder> weak_ptr_factory_{this};
+
   DISALLOW_COPY_AND_ASSIGN(CalculatorsPoliciesBinder);
 };
 

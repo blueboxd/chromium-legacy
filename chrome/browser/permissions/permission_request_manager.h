@@ -6,11 +6,13 @@
 #define CHROME_BROWSER_PERMISSIONS_PERMISSION_REQUEST_MANAGER_H_
 
 #include <unordered_map>
+#include <utility>
 
 #include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/permissions/permission_request_auto_blocker.h"
 #include "chrome/browser/ui/permission_bubble/permission_prompt.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -68,10 +70,6 @@ class PermissionRequestManager
   // Will reposition the bubble (may change parent if necessary).
   void UpdateAnchorPosition();
 
-  // True if a permission bubble is currently visible.
-  // TODO(hcarmona): Remove this as part of the bubble API work.
-  bool IsBubbleVisible();
-
   // Get the native window of the bubble.
   // TODO(hcarmona): Remove this as part of the bubble API work.
   gfx::NativeWindow GetBubbleWindow();
@@ -80,7 +78,9 @@ class PermissionRequestManager
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  bool ShouldShowQuietPermissionPrompt();
+  bool ShouldCurrentRequestUseQuietUI();
+
+  bool IsRequestInProgress();
 
   // Do NOT use this methods in production code. Use this methods in browser
   // tests that need to accept or deny permissions when requested in
@@ -107,6 +107,17 @@ class PermissionRequestManager
   void Deny() override;
   void Closing() override;
 
+  // For testing only, used to override the default autoblocker.
+  void set_autoblocker_for_testing(
+      std::unique_ptr<PermissionRequestAutoBlocker> blocker) {
+    blocker_ = std::move(blocker);
+  }
+
+  PermissionRequestAutoBlocker::Response
+  current_request_autoblocker_response_for_testing() {
+    return current_request_autoblocker_response_.value();
+  }
+
  private:
   friend class test::PermissionRequestManagerTestApi;
 
@@ -122,15 +133,23 @@ class PermissionRequestManager
 
   explicit PermissionRequestManager(content::WebContents* web_contents);
 
-  // Posts a task which will allow the bubble to become visible if it is needed.
+  // Posts a task which will allow the bubble to become visible.
   void ScheduleShowBubble();
 
-  // If we aren't already showing a bubble, dequeue and show a pending request.
-  void DequeueRequestsAndShowBubble();
+  // If a request isn't already in progress, deque and schedule showing the
+  // request.
+  void DequeueRequestIfNeeded();
+
+  // Schedule a call to dequeue request. Is needed to ensure requests that can
+  // be grouped together have time to all be added to the queue.
+  void ScheduleDequeueRequestIfNeeded();
+
+  // Will determine if it's possible and necessary to dequeue a new request.
+  bool ShouldDequeueNewRequest();
 
   // Shows the bubble for a request that has just been dequeued, or re-show a
   // bubble after switching tabs away and back.
-  void ShowBubble(bool is_reshow);
+  void ShowBubble();
 
   // Delete the view object
   void DeleteBubble();
@@ -162,6 +181,13 @@ class PermissionRequestManager
   void NotifyBubbleAdded();
   void NotifyBubbleRemoved();
 
+  // Will query crowd deny data and make a decision on whether to show or reject
+  // a request.
+  void QueryAutoBlockerAndShowOrReject();
+
+  // Autoblocker callback.
+  void AutoBlockerDecisionMade(PermissionRequestAutoBlocker::Response response);
+
   void DoAutoResponseForTesting();
 
   // Factory to be used to create views when needed.
@@ -175,6 +201,9 @@ class PermissionRequestManager
   // We only show new prompts when |tab_is_hidden_| is false.
   bool tab_is_hidden_;
 
+  // The request (or requests) that the user is currently being prompted for.
+  // When this is non-empty, the |view_| is generally non-null as long as the
+  // tab is visible.
   std::vector<PermissionRequest*> requests_;
   base::circular_deque<PermissionRequest*> queued_requests_;
   // Maps from the first request of a kind to subsequent requests that were
@@ -188,6 +217,19 @@ class PermissionRequestManager
   // Suppress notification permission prompts in this tab, regardless of the
   // origin requesting the permission.
   bool is_notification_prompt_cooldown_active_ = false;
+
+  // The permission request auto blocker to be used for deciding whether to
+  // block the request or not.
+  std::unique_ptr<PermissionRequestAutoBlocker> blocker_;
+
+  // Whether the view for the current |requests_| has been shown to the user at
+  // least once.
+  bool current_request_view_shown_to_user_ = false;
+
+  // The autoblocker response for the current |requests_|, or nullopt if we are
+  // still waiting for the response.
+  base::Optional<PermissionRequestAutoBlocker::Response>
+      current_request_autoblocker_response_;
 
   base::WeakPtrFactory<PermissionRequestManager> weak_factory_{this};
   WEB_CONTENTS_USER_DATA_KEY_DECL();

@@ -463,6 +463,7 @@
 <translation id="4204126831294769023">애저</translation>
 <translation id="4204864733111726379">플로럴 화이트</translation>
 <translation id="4206289001967551965">표 내부</translation>
+<translation id="4207770814752775793">TTS(텍스트 음성 변환) 설정을 기본값으로 재설정합니다.</translation>
 <translation id="4209770650650780359">자동 완성을 사용하려면 위쪽 또는 아래쪽 화살표를 누르세요.</translation>
 <translation id="4215733775853809057">다음 슬라이더</translation>
 <translation id="42164919740161077">카데트 블루</translation>
@@ -766,6 +767,7 @@
 <translation id="6290434000785343030">다음 콤보 상자가 없습니다.</translation>
 <translation id="6305702903308659374">ChromeVox 음성이 나올 때도 보통 볼륨으로 재생합니다.</translation>
 <translation id="6307969636681130414">누름</translation>
+<translation id="6315652249189065725">단축키 메뉴 열기</translation>
 <translation id="6322856989298155004">사운드</translation>
 <translation id="6324551002951139333">문법 오류 발견됨</translation>
 <translation id="6325241889020214828"><ph name="TEXT" /> 복사</translation>
@@ -959,6 +961,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="7668307052366682650">{COUNT,plural, =1{시간}other{시간}}</translation>
 <translation id="7674576868851035240">다음 링크</translation>
 <translation id="7674768236845044097">mark</translation>
+<translation id="7676847077928500578">TTS(텍스트 음성 변환) 설정 재설정</translation>
 <translation id="7684431668231950609">텍스트 수정, URL 항목</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">이전 라디오 버튼</translation>

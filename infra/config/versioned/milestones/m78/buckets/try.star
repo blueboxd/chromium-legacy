@@ -123,6 +123,8 @@ linux_builder(
     },
     tryjob = tryjob(
         disable_reuse = True,
+        # TODO(https://crbug.com/1024637) Make non-experimental
+        experiment_percentage = 100,
     ),
 )
 

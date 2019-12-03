@@ -43,7 +43,7 @@ public final class HeadAsStructure {
     @VisibleForTesting
     final Map<String, TreeNode> mContent = new HashMap<>();
 
-    @GuardedBy("lock")
+    @GuardedBy("mLock")
     private boolean mInitalized;
 
     @VisibleForTesting

@@ -78,7 +78,7 @@ class FakeMediaStreamVideoSink : public MediaStreamVideoSink {
   void ConnectToTrack(const WebMediaStreamTrack& track) {
     MediaStreamVideoSink::ConnectToTrack(
         track,
-        ConvertToBaseCallback(
+        ConvertToBaseRepeatingCallback(
             CrossThreadBindRepeating(&FakeMediaStreamVideoSink::OnVideoFrame,
                                      WTF::CrossThreadUnretained(this))),
         true);

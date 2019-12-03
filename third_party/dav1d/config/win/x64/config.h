@@ -35,6 +35,8 @@
 
 #define UNICODE 1
 
+#define _CRT_DECLARE_NONSTDC_NAMES 1
+
 #define _UNICODE 1
 
 // #define _WIN32_WINNT 0x0601 -- Windows version is controlled by Chromium

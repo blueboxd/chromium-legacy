@@ -132,15 +132,6 @@ InsecureDownloadSecurityStatus GetDownloadBlockingEnum(
   return InsecureDownloadSecurityStatus::kInitiatorInsecureFileInsecure;
 }
 
-// Dump without crashing because of the given |issue|.
-void ReportTrace(const std::string& issue) {
-  LOG(WARNING) << "Unexpected download configuration:" << issue;
-  static auto* initiator_problem_reason = base::debug::AllocateCrashKeyString(
-      "download_initiator_problem_reason", base::debug::CrashKeySize::Size256);
-  base::debug::SetCrashKeyString(initiator_problem_reason, issue);
-  base::debug::DumpWithoutCrashing();
-}
-
 }  // namespace
 
 bool ShouldBlockFileAsMixedContent(const base::FilePath& path,
@@ -183,54 +174,6 @@ bool ShouldBlockFileAsMixedContent(const base::FilePath& path,
   if (!initiator.has_value() && item.GetTabUrl().is_valid()) {
     initiator = url::Origin::Create(item.GetTabUrl());
     is_inferred = true;
-  }
-
-  auto download_source = item.GetDownloadSource();
-  auto transition_type = item.GetTransitionType();
-
-  // Report a trace if we inferred an initiator in an unexpected way. We expect
-  // this to happen with:
-  //  - context-menu-initiated downloads (CONTEXT_MENU),
-  //  - context-menu-inititated page-saves (WEB_CONTENTS_API),
-  //  - extension download API,
-  //  - extension installs,
-  //  - Chrome-initiated top-level navigations (devtools, 'back to safety',
-  //    chrome app installs, session restore, a million more). It's a little
-  //    weird though that these trigger downloads often...
-  //  - reloads (since blocked downloads won't give a chance to reload anyway),
-  //  - anything triggered directly from the address bar.
-  //  - user-initiated downloads of offline pages on Android,
-  //  - requests in e.g., webview/CCT.
-  //
-  // TODO(1029082): We also occasionally find 'regular' navigations without
-  // initiators (NAVIGATION/PAGE_TRANSITION_LINK).  The trace doesn't help in
-  // this case, so ignore them here.
-  if (is_inferred && download_source != DownloadSource::CONTEXT_MENU &&
-      download_source != DownloadSource::WEB_CONTENTS_API &&
-      download_source != DownloadSource::EXTENSION_API &&
-      download_source != DownloadSource::EXTENSION_INSTALLER &&
-      download_source != DownloadSource::OFFLINE_PAGE &&
-      !(transition_type & ui::PAGE_TRANSITION_AUTO_TOPLEVEL) &&
-      !(transition_type & ui::PAGE_TRANSITION_RELOAD) &&
-      !(transition_type & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) &&
-      !(transition_type & ui::PAGE_TRANSITION_FROM_API) &&
-      !(download_source == DownloadSource::NAVIGATION &&
-        PageTransitionTypeIncludingQualifiersIs(transition_type,
-                                                ui::PAGE_TRANSITION_LINK))) {
-    ReportTrace(base::StringPrintf("inferred initiator [%d, %x]",
-                                   download_source, transition_type));
-  }
-
-  // Report a trace if we still don't have an initiator. This mostly happens
-  // with INTERNAL_API calls, which are OK.
-  //
-  // TODO(1029062): INTERNAL_API is also used for background fetch. That
-  // probably isn't the correct behavior, since INTERNAL_API is otherwise used
-  // for Chrome stuff. Background fetch should probably be HTTPS-only.
-  if (!initiator.has_value() &&
-      download_source != DownloadSource::INTERNAL_API) {
-    ReportTrace(base::StringPrintf("no initiator found [%d, %x]",
-                                   download_source, transition_type));
   }
 
   // Then see if that extension is blocked

@@ -15,6 +15,7 @@
 #include "content/browser/web_package/signed_exchange_error.h"
 #include "content/common/content_export.h"
 #include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 
 class GURL;
 
@@ -29,7 +30,6 @@ class X509Certificate;
 
 namespace network {
 struct ResourceRequest;
-struct ResourceResponseHead;
 struct URLLoaderCompletionStatus;
 }  // namespace network
 
@@ -48,7 +48,7 @@ class CONTENT_EXPORT SignedExchangeDevToolsProxy {
   // matching request.
   SignedExchangeDevToolsProxy(
       const GURL& outer_request_url,
-      const network::ResourceResponseHead& outer_response_head,
+      network::mojom::URLResponseHeadPtr outer_response_head,
       int frame_tree_node_id,
       base::Optional<const base::UnguessableToken> devtools_navigation_token,
       bool report_raw_headers);
@@ -62,7 +62,7 @@ class CONTENT_EXPORT SignedExchangeDevToolsProxy {
                               const network::ResourceRequest& request);
   void CertificateResponseReceived(const base::UnguessableToken& request_id,
                                    const GURL& url,
-                                   const network::ResourceResponseHead& head);
+                                   const network::mojom::URLResponseHead& head);
   void CertificateRequestCompleted(
       const base::UnguessableToken& request_id,
       const network::URLLoaderCompletionStatus& status);
@@ -74,7 +74,7 @@ class CONTENT_EXPORT SignedExchangeDevToolsProxy {
 
  private:
   const GURL outer_request_url_;
-  const network::ResourceResponseHead outer_response_;
+  const network::mojom::URLResponseHeadPtr outer_response_;
   const int frame_tree_node_id_;
   const base::Optional<const base::UnguessableToken> devtools_navigation_token_;
   const bool devtools_enabled_;

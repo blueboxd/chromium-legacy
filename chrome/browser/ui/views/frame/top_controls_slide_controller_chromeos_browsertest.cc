@@ -1143,7 +1143,7 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestPermissionBubble) {
   waiter.WaitForRatio(1.f);
   EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 1.f);
   CheckBrowserLayout(browser_view(), TopChromeShownState::kFullyShown);
-  EXPECT_TRUE(permission_manager->IsBubbleVisible());
+  EXPECT_TRUE(permission_manager->IsRequestInProgress());
 
   // It shouldn't be possible to hide top-chrome as long as the bubble is
   // visible.
@@ -1152,7 +1152,7 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestPermissionBubble) {
 
   // Dismiss the bubble.
   permission_manager->Closing();
-  EXPECT_FALSE(permission_manager->IsBubbleVisible());
+  EXPECT_FALSE(permission_manager->IsRequestInProgress());
   content::WaitForResizeComplete(active_contents);
 
   // Now it is possible to hide top-chrome again.

@@ -462,6 +462,7 @@
 <translation id="4204126831294769023">สีฟ้าสด</translation>
 <translation id="4204864733111726379">สีขาวฟลอรัลไวท์</translation>
 <translation id="4206289001967551965">ภายในตาราง</translation>
+<translation id="4207770814752775793">รีเซ็ตการตั้งค่าการอ่านออกเสียงข้อความเป็นค่าเริ่มต้น</translation>
 <translation id="4209770650650780359">กดลูกศรขึ้นหรือลงเพื่อเติมคำอัตโนมัติ</translation>
 <translation id="4215733775853809057">แถบเลื่อนถัดไป</translation>
 <translation id="42164919740161077">สีฟ้าคาเด็ตบลู</translation>
@@ -765,6 +766,7 @@
 <translation id="6290434000785343030">ไม่มีช่องตัวเลือกรวมถัดไป</translation>
 <translation id="6305702903308659374">เล่นที่ระดับเสียงปกติแม้ว่า ChromeVox กำลังพูด</translation>
 <translation id="6307969636681130414">กดแล้ว</translation>
+<translation id="6315652249189065725">เปิดเมนูแป้นพิมพ์ลัด</translation>
 <translation id="6322856989298155004">เสียง</translation>
 <translation id="6324551002951139333">ตรวจพบข้อผิดพลาดทางไวยากรณ์</translation>
 <translation id="6325241889020214828">คัดลอก <ph name="TEXT" /></translation>
@@ -958,6 +960,7 @@
 <translation id="7668307052366682650">{COUNT,plural, =1{ชั่วโมง}other{ชั่วโมง}}</translation>
 <translation id="7674576868851035240">ลิงก์ถัดไป</translation>
 <translation id="7674768236845044097">เครื่องหมาย</translation>
+<translation id="7676847077928500578">รีเซ็ตการตั้งค่าการอ่านออกเสียงข้อความ</translation>
 <translation id="7684431668231950609">แก้ไขข้อความ, รายการ URL</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">ปุ่มตัวเลือกก่อนหน้า</translation>

@@ -158,12 +158,16 @@ crbug.com/907195 [ opengl win passthrough intel intel_lt_25.20.100.6444 ] confor
 # Flaky failure in IDirect3D9Ex::CreateDeviceEx
 # during DXVAVideoDecodeAccelerator::Initialize on 26.20.100.7323 driver
 # When it fails, it's all 3 retires, thus "Failure" expectation
+crbug.com/1026468 [ win intel opengl passthrough ] conformance/extensions/oes-texture-float-with-video.html [ Failure ]
+crbug.com/1026468 [ win intel opengl passthrough ] conformance/extensions/oes-texture-half-float-with-video.html [ Failure ]
 crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/image_bitmap_from_video/* [ Failure ]
 crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/misc/tex-video-using-tex-unit-non-zero.html [ Failure ]
 crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
+crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/misc/texture-upload-size.html [ Failure ]
 crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/video/* [ Failure ]
 crbug.com/1026468 [ win intel opengl passthrough ] conformance2/textures/image_bitmap_from_video/* [ Failure ]
 crbug.com/1026468 [ win intel opengl passthrough ] conformance2/textures/misc/npot-video-sizing.html [ Failure ]
+crbug.com/1026468 [ win intel opengl passthrough ] conformance2/textures/misc/tex-image-with-bad-args-from-dom-elements.html [ Failure ]
 crbug.com/1026468 [ win intel opengl passthrough ] conformance2/textures/video/* [ Failure ]
 
 # Windows only.

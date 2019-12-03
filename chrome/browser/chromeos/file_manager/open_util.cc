@@ -133,7 +133,7 @@ void OpenFile(Profile* profile,
               const platform_util::OpenOperationCallback& callback) {
   extensions::app_file_handler_util::GetMimeTypeForLocalPath(
       profile, path,
-      base::Bind(&OpenFileWithMimeType, profile, path, url, callback));
+      base::BindOnce(&OpenFileWithMimeType, profile, path, url, callback));
 }
 
 void OpenItemWithMetadata(Profile* profile,
@@ -206,8 +206,8 @@ void OpenItem(Profile* profile,
   GetMetadataForPath(
       GetFileSystemContextForExtensionId(profile, kFileManagerAppId), file_path,
       storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY,
-      base::Bind(&OpenItemWithMetadata, profile, file_path, url, expected_type,
-                 callback));
+      base::BindOnce(&OpenItemWithMetadata, profile, file_path, url,
+                     expected_type, callback));
 }
 
 void ShowItemInFolder(Profile* profile,

@@ -63,29 +63,6 @@ DiscardableMemoryBacking GetBackingForFieldTrial() {
 }
 #endif  // defined(OS_ANDROID) || defined(OS_LINUX)
 
-DiscardableMemoryBacking GetPlatformDiscardableMemoryBacking() {
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-  if (DiscardableMemoryBackingFieldTrialIsEnabled()) {
-    return GetBackingForFieldTrial();
-  }
-#endif  // defined(OS_ANDROID) || defined(OS_LINUX)
-
-#if defined(OS_ANDROID)
-  if (ashmem_device_is_supported())
-    return DiscardableMemoryBacking::kSharedMemory;
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_POSIX)
-  if (base::FeatureList::IsEnabled(
-          base::features::kMadvFreeDiscardableMemory) &&
-      base::GetMadvFreeSupport() == base::MadvFreeSupport::kSupported) {
-    return DiscardableMemoryBacking::kMadvFree;
-  }
-#endif  // defined(OS_POSIX)
-
-  return DiscardableMemoryBacking::kSharedMemory;
-}
-
 }  // namespace
 
 #if defined(OS_ANDROID) || defined(OS_LINUX)
@@ -117,9 +94,26 @@ DiscardableMemory::DiscardableMemory() = default;
 DiscardableMemory::~DiscardableMemory() = default;
 
 DiscardableMemoryBacking GetDiscardableMemoryBacking() {
-  static DiscardableMemoryBacking backing =
-      GetPlatformDiscardableMemoryBacking();
-  return backing;
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+  if (DiscardableMemoryBackingFieldTrialIsEnabled()) {
+    return GetBackingForFieldTrial();
+  }
+#endif  // defined(OS_ANDROID) || defined(OS_LINUX)
+
+#if defined(OS_ANDROID)
+  if (ashmem_device_is_supported())
+    return DiscardableMemoryBacking::kSharedMemory;
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_POSIX)
+  if (base::FeatureList::IsEnabled(
+          base::features::kMadvFreeDiscardableMemory) &&
+      base::GetMadvFreeSupport() == base::MadvFreeSupport::kSupported) {
+    return DiscardableMemoryBacking::kMadvFree;
+  }
+#endif  // defined(OS_POSIX)
+
+  return DiscardableMemoryBacking::kSharedMemory;
 }
 
 }  // namespace base

@@ -402,32 +402,16 @@ void BackgroundSyncManager::Register(
   DCHECK(options.min_interval >= 0 ||
          options.min_interval == kMinIntervalForOneShotSync);
 
-  if (GetBackgroundSyncType(options) == BackgroundSyncType::ONE_SHOT) {
-    auto id = op_scheduler_.CreateId();
-    op_scheduler_.ScheduleOperation(
-        id, CacheStorageSchedulerMode::kExclusive,
-        CacheStorageSchedulerOp::kBackgroundSync,
-        CacheStorageSchedulerPriority::kNormal,
-        base::BindOnce(
-            &BackgroundSyncManager::RegisterCheckIfHasMainFrame,
-            weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
-            std::move(options),
-            op_scheduler_.WrapCallbackToRunNext(id, std::move(callback))));
-  } else {
-    // Periodic Background Sync events already have a pre-defined cadence which
-    // the user agent decides. Don't block registration if there's no top level
-    // frame at the time of registration.
-    auto id = op_scheduler_.CreateId();
-    op_scheduler_.ScheduleOperation(
-        id, CacheStorageSchedulerMode::kExclusive,
-        CacheStorageSchedulerOp::kBackgroundSync,
-        CacheStorageSchedulerPriority::kNormal,
-        base::BindOnce(
-            &BackgroundSyncManager::RegisterImpl,
-            weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
-            std::move(options),
-            op_scheduler_.WrapCallbackToRunNext(id, std::move(callback))));
-  }
+  auto id = op_scheduler_.CreateId();
+  op_scheduler_.ScheduleOperation(
+      id, CacheStorageSchedulerMode::kExclusive,
+      CacheStorageSchedulerOp::kBackgroundSync,
+      CacheStorageSchedulerPriority::kNormal,
+      base::BindOnce(
+          &BackgroundSyncManager::RegisterCheckIfHasMainFrame,
+          weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
+          std::move(options),
+          op_scheduler_.WrapCallbackToRunNext(id, std::move(callback))));
 }
 
 void BackgroundSyncManager::UnregisterPeriodicSync(

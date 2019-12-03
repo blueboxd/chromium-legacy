@@ -378,11 +378,9 @@ void PasswordSaveManagerImpl::SavePendingToStore(
         pending_credentials_, form_fetcher_->GetAllRelevantMatches(),
         old_password, GetFormSaverForGeneration());
   } else if (update) {
-    UpdateInternal(pending_credentials_, form_fetcher_->GetAllRelevantMatches(),
-                   old_password);
+    UpdateInternal(form_fetcher_->GetAllRelevantMatches(), old_password);
   } else {
-    SaveInternal(pending_credentials_, form_fetcher_->GetAllRelevantMatches(),
-                 old_password);
+    SaveInternal(form_fetcher_->GetAllRelevantMatches(), old_password);
   }
 }
 
@@ -430,17 +428,15 @@ FormSaver* PasswordSaveManagerImpl::GetFormSaverForGeneration() {
 }
 
 void PasswordSaveManagerImpl::SaveInternal(
-    const PasswordForm& pending,
     const std::vector<const PasswordForm*>& matches,
     const base::string16& old_password) {
-  form_saver_->Save(pending, matches, old_password);
+  form_saver_->Save(pending_credentials_, matches, old_password);
 }
 
 void PasswordSaveManagerImpl::UpdateInternal(
-    const PasswordForm& pending,
     const std::vector<const PasswordForm*>& matches,
     const base::string16& old_password) {
-  form_saver_->Update(pending, matches, old_password);
+  form_saver_->Update(pending_credentials_, matches, old_password);
 }
 
 }  // namespace password_manager

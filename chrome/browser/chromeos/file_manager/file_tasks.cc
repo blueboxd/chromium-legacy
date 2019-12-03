@@ -419,9 +419,9 @@ bool ExecuteFileTask(Profile* profile,
     extensions::app_file_handler_util::MimeTypeCollector* mime_collector =
         new extensions::app_file_handler_util::MimeTypeCollector(profile);
     mime_collector->CollectForURLs(
-        file_urls, base::Bind(&ExecuteByArcAfterMimeTypesCollected, profile,
-                              task, file_urls, base::Passed(std::move(done)),
-                              base::Owned(mime_collector)));
+        file_urls, base::BindOnce(&ExecuteByArcAfterMimeTypesCollected, profile,
+                                  task, file_urls, std::move(done),
+                                  base::Owned(mime_collector)));
     return true;
   }
 

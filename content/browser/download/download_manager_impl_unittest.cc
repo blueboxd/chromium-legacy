@@ -92,9 +92,12 @@ class MockDownloadManagerDelegate : public DownloadManagerDelegate {
                     const DownloadOpenDelayedCallback&));
   MOCK_METHOD3(GetSaveDir,
                void(BrowserContext*, base::FilePath*, base::FilePath*));
-  MOCK_METHOD5(ChooseSavePath, void(
-      WebContents*, const base::FilePath&, const base::FilePath::StringType&,
-      bool, const SavePackagePathPickedCallback&));
+  MOCK_METHOD5(ChooseSavePath,
+               void(WebContents*,
+                    const base::FilePath&,
+                    const base::FilePath::StringType&,
+                    bool,
+                    SavePackagePathPickedCallback));
   MOCK_METHOD0(ApplicationClientIdForFileScanning, std::string());
 };
 

@@ -318,9 +318,9 @@ def run_executable(cmd, env, stdoutfile=None):
     # Symbolization works in-process on Windows even when sandboxed.
     use_symbolization_script = False
   else:
-    # LSan doesn't support sandboxing yet, so we use the in-process symbolizer.
-    # Note that ASan and MSan can work together with LSan.
-    use_symbolization_script = (asan or msan or cfi_diag) and not lsan
+    # If any sanitizer is enabled, we print unsymbolized stack trace
+    # that is required to run through symbolization script.
+    use_symbolization_script = (asan or msan or cfi_diag or lsan or tsan)
 
   if asan or lsan or msan or tsan or cfi_diag:
     extra_env.update(get_sanitizer_env(cmd, asan, lsan, msan, tsan, cfi_diag))

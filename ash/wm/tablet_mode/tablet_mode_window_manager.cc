@@ -45,13 +45,13 @@ namespace {
 // This function is called to check if window[i] is eligible to be carried over
 // to split view mode during clamshell <-> tablet mode transition or multi-user
 // switch transition. Returns true if windows[i] exists, is on |root_window|,
-// and can snap in split view.
+// and can snap in split view on |root_window|.
 bool IsCarryOverCandidateForSplitView(
     const MruWindowTracker::WindowList& windows,
     size_t i,
     aura::Window* root_window) {
   return windows.size() > i && windows[i]->GetRootWindow() == root_window &&
-         CanSnapInSplitview(windows[i]);
+         SplitViewController::Get(root_window)->CanSnapWindow(windows[i]);
 }
 
 // Returns the windows that are going to be carried over to splitview during

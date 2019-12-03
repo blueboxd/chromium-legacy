@@ -541,6 +541,7 @@ if (is_android) {
       "../browser/payments/payment_request_can_make_payment_browsertest.cc",
       "../browser/payments/personal_data_manager_test_util.cc",
       "../browser/payments/personal_data_manager_test_util.h",
+      "../browser/ssl/crlset_browsertest.cc",
       "android/browsertests_apk/android_browsertests_jni_onload.cc",
       "base/android/android_browser_test_browsertest_android.cc",
     ]
@@ -552,6 +553,7 @@ if (is_android) {
       "$root_gen_dir/components/components_resources.pak",
       "$root_out_dir/browser_tests.pak",
       "//components/test/data/payments/",
+      "//chrome/test/data/ssl/",
     ]
   }
 
@@ -560,6 +562,8 @@ if (is_android) {
     testonly = true
 
     sources = [
+      "../browser/ssl/cert_verifier_platform_browser_test.cc",
+      "../browser/ssl/cert_verifier_platform_browser_test.h",
       "base/android/android_browser_test.cc",
       "base/android/android_browser_test.h",
     ]
@@ -924,8 +928,6 @@ if (!is_android) {
       "../browser/infobars/infobar_observer.h",
       "../browser/infobars/infobars_browsertest.cc",
       "../browser/installable/installable_manager_browsertest.cc",
-      "../browser/interstitials/security_interstitial_page_test_utils.cc",
-      "../browser/interstitials/security_interstitial_page_test_utils.h",
       "../browser/invalidation/deprecated_profile_invalidation_provider_factory_browsertest.cc",
       "../browser/invalidation/profile_invalidation_provider_factory_browsertest.cc",
       "../browser/lifetime/browser_close_manager_browsertest.cc",
@@ -1175,11 +1177,10 @@ if (!is_android) {
       "../browser/ssl/chrome_expect_ct_reporter_browsertest.cc",
       "../browser/ssl/chrome_ssl_host_state_delegate_test.cc",
       "../browser/ssl/connection_help_tab_helper_browsertest.cc",
+      "../browser/ssl/crlset_browsertest.cc",
       "../browser/ssl/known_interception_disclosure_infobar_browsertest.cc",
       "../browser/ssl/security_state_tab_helper_browsertest.cc",
       "../browser/ssl/ssl_browsertest.cc",
-      "../browser/ssl/ssl_browsertest_util.cc",
-      "../browser/ssl/ssl_browsertest_util.h",
       "../browser/ssl/ssl_client_certificate_selector_test.cc",
       "../browser/ssl/ssl_client_certificate_selector_test.h",
       "../browser/ssl/typed_navigation_timing_throttle_browsertest.cc",
@@ -2977,6 +2978,7 @@ test("unit_tests") {
     "../browser/complex_tasks/endpoint_fetcher/endpoint_fetcher_unittest.cc",
     "../browser/complex_tasks/task_tab_helper_unittest.cc",
     "../browser/component_updater/chrome_component_updater_configurator_unittest.cc",
+    "../browser/component_updater/crl_set_component_installer_unittest.cc",
     "../browser/component_updater/games_component_installer_unittest.cc",
     "../browser/component_updater/optimization_hints_component_installer_unittest.cc",
     "../browser/component_updater/origin_trials_component_installer_unittest.cc",
@@ -3419,9 +3421,6 @@ test("unit_tests") {
 
   if (!is_android) {
     sources += [
-      # CRLSets are not supported on Android or iOS, but available on all other
-      # platforms.
-      "../browser/component_updater/crl_set_component_installer_unittest.cc",
       "../browser/profiles/profile_avatar_icon_util_unittest.cc",
       "../browser/ui/autofill/payments/autofill_dialog_models_unittest.cc",
       "../browser/ui/bookmarks/bookmark_editor_unittest.cc",
@@ -3434,6 +3433,7 @@ test("unit_tests") {
       "../browser/ui/webui/discards/graph_dump_impl_unittest.cc",
       "../browser/ui/webui/favicon_source_unittest.cc",
       "../browser/ui/webui/ntp/cookie_controls_handler_unittest.cc",
+      "../browser/ui/webui/signin/sync_confirmation_handler_unittest.cc",
       "../browser/webauthn/authenticator_request_scheduler_unittest.cc",
       "../browser/webauthn/chrome_authenticator_request_delegate_unittest.cc",
       "../test/pixel/browser_skia_gold_pixel_diff_unittest.cc",
@@ -4156,6 +4156,7 @@ test("unit_tests") {
       "../browser/ui/app_list/app_list_syncable_service_unittest.cc",
       "../browser/ui/app_list/app_list_test_util.cc",
       "../browser/ui/app_list/app_list_test_util.h",
+      "../browser/ui/app_list/app_service/app_service_app_model_builder_unittest.cc",
       "../browser/ui/app_list/arc/arc_app_test.cc",
       "../browser/ui/app_list/arc/arc_app_test.h",
       "../browser/ui/app_list/arc/arc_app_unittest.cc",
@@ -4163,9 +4164,6 @@ test("unit_tests") {
       "../browser/ui/app_list/arc/arc_vpn_provider_unittest.cc",
       "../browser/ui/app_list/arc/mock_arc_app_list_prefs_observer.cc",
       "../browser/ui/app_list/arc/mock_arc_app_list_prefs_observer.h",
-      "../browser/ui/app_list/crostini/crostini_app_model_builder_unittest.cc",
-      "../browser/ui/app_list/extension_app_model_builder_unittest.cc",
-      "../browser/ui/app_list/internal_app/internal_app_model_builder_unittest.cc",
       "../browser/ui/app_list/md_icon_normalizer_unittest.cc",
       "../browser/ui/app_list/search/answer_card/answer_card_result_unittest.cc",
       "../browser/ui/app_list/search/answer_card/answer_card_search_provider_unittest.cc",
@@ -4263,13 +4261,17 @@ test("unit_tests") {
       "../browser/spellchecker/spell_check_host_chrome_impl_mac_unittest.cc",
       "../browser/spellchecker/spellcheck_custom_dictionary_unittest.cc",
       "../browser/spellchecker/spellcheck_service_unittest.cc",
-      "../browser/spellchecker/spelling_service_client_unittest.cc",
       "../tools/convert_dict/convert_dict_unittest.cc",
     ]
 
     if (use_renderer_spellchecker) {
       sources +=
           [ "../browser/spellchecker/spell_check_host_chrome_impl_unittest.cc" ]
+    }
+
+    if (enable_spelling_service) {
+      sources +=
+          [ "../browser/spellchecker/spelling_service_client_unittest.cc" ]
     }
   }
 
@@ -5047,7 +5049,6 @@ test("unit_tests") {
       "../browser/ui/views/sharing/sharing_dialog_view_unittest.cc",
       "../browser/ui/webui/signin/signin_create_profile_handler_unittest.cc",
       "../browser/ui/webui/signin/signin_error_handler_unittest.cc",
-      "../browser/ui/webui/signin/sync_confirmation_handler_unittest.cc",
       "../browser/upgrade_detector/upgrade_detector_impl_unittest.cc",
     ]
   }

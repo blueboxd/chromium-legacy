@@ -5,15 +5,6 @@
 // @ts-check
 'use strict';
 
-let _innerWorker = null;
-const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get('load_url').endsWith('.size')) {
-  console.log('Using WebAssembly web worker');
-  _innerWorker = new Worker('tree-worker-wasm.js');
-} else {
-  _innerWorker = new Worker('tree-worker.js');
-}
-
 /**
  * We use a worker to keep large tree creation logic off the UI thread.
  * This class is used to interact with the worker.
@@ -96,7 +87,26 @@ class TreeWorker {
   }
 }
 
-const worker = new TreeWorker(_innerWorker);
+let _innerWorker = null;
+let worker = null;
+
+// .size files and .ndjson files require different web workers.
+// Switch between the two dynamically.
+function startWorkerForFileName(fileName) {
+  if (fileName &&
+      (fileName.endsWith('.size') || fileName.endsWith('.sizediff'))) {
+    console.log('Using WebAssembly web worker');
+    _innerWorker = new Worker('tree-worker-wasm.js');
+  } else {
+    console.log('Using JavaScript web worker');
+    _innerWorker = new Worker('tree-worker.js');
+  }
+  worker = new TreeWorker(_innerWorker);
+}
+
+const urlParams = new URLSearchParams(window.location.search);
+startWorkerForFileName(urlParams.get('load_url'));
+
 // Kick off the worker ASAP so it can start parsing data faster.
 // Subsequent calls will just use a worker locally.
 const treeReady = worker.loadTree('from-url://');

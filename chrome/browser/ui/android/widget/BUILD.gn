@@ -132,7 +132,10 @@ android_resources("ui_widget_java_test_resources") {
   ]
 }
 
-junit_binary("ui_widget_junit_tests") {
+java_library("ui_widget_junit_tests") {
+  # Skip platform checks since Robolectric depends on requires_android targets.
+  bypass_platform_checks = true
+  testonly = true
   java_files = [ "java/src/org/chromium/chrome/browser/ui/widget/CompositeTouchDelegateUnitTest.java" ]
   deps = [
     ":java",

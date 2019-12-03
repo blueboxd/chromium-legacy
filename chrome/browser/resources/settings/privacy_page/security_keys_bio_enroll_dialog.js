@@ -101,14 +101,8 @@ Polymer({
         'security-keys-bio-enroll-status', this.onEnrolling_.bind(this));
     this.browserProxy_ = settings.SecurityKeysBioEnrollProxyImpl.getInstance();
     this.browserProxy_.startBioEnroll().then(() => {
-      this.collectPIN_();
+      this.dialogPage_ = BioEnrollDialogPage.PIN_PROMPT;
     });
-  },
-
-  /** @private */
-  collectPIN_: function() {
-    this.dialogPage_ = BioEnrollDialogPage.PIN_PROMPT;
-    this.$.pin.focus();
   },
 
   /**
@@ -122,18 +116,21 @@ Polymer({
 
   /** @private */
   submitPIN_: function() {
-    if (!this.$.pin.validate()) {
-      this.confirmButtonDisabled_ = false;
-      return;
-    }
-    this.browserProxy_.providePIN(this.$.pin.value).then(retries => {
-      this.confirmButtonDisabled_ = false;
-      if (retries != null) {
-        this.$.pin.showIncorrectPINError(retries);
-        return;
-      }
-      this.showEnrollmentsPage_();
-    });
+    // Disable the confirm button to prevent concurrent submissions.
+    this.confirmButtonDisabled_ = true;
+
+    this.$.pin.trySubmit(pin => this.browserProxy_.providePIN(pin))
+        .then(
+            () => {
+              // Leave confirm button disabled while enumerating fingerprints.
+              // It will be re-enabled by dialogPageChanged_() where
+              // appropriate.
+              this.showEnrollmentsPage_();
+            },
+            () => {
+              // Wrong PIN.
+              this.confirmButtonDisabled_ = false;
+            });
   },
 
   /**
@@ -161,6 +158,7 @@ Polymer({
         this.confirmButtonVisible_ = true;
         this.confirmButtonDisabled_ = false;
         this.doneButtonVisible_ = false;
+        this.$.pin.focus();
         break;
       case BioEnrollDialogPage.ENROLLMENTS:
         this.cancelButtonVisible_ = false;
@@ -255,9 +253,6 @@ Polymer({
 
   /** @private */
   confirmButtonClick_: function() {
-    // Disable |confirmButton| while PIN verification or template enumeration is
-    // pending. Resetting |dialogPage_| will re-enable it.
-    this.confirmButtonDisabled_ = true;
     switch (this.dialogPage_) {
       case BioEnrollDialogPage.PIN_PROMPT:
         this.submitPIN_();
@@ -267,16 +262,24 @@ Polymer({
         this.dialogPage_ = BioEnrollDialogPage.CHOOSE_NAME;
         break;
       case BioEnrollDialogPage.CHOOSE_NAME:
-        this.browserProxy_
-            .renameEnrollment(
-                this.recentEnrollmentId_, this.recentEnrollmentName_)
-            .then(enrollments => {
-              this.onEnrollments_(enrollments);
-            });
+        this.renameNewEnrollment_();
         break;
       default:
         assertNotReached();
     }
+  },
+
+  /** @private */
+  renameNewEnrollment_: function() {
+    assert(this.dialogPage_ == BioEnrollDialogPage.CHOOSE_NAME);
+    // Disable the confirm button to prevent concurrent submissions. It will be
+    // re-enabled by dialogPageChanged_() where appropriate.
+    this.confirmButtonDisabled_ = true;
+    this.browserProxy_
+        .renameEnrollment(this.recentEnrollmentId_, this.recentEnrollmentName_)
+        .then(enrollments => {
+          this.onEnrollments_(enrollments);
+        });
   },
 
   /** @private */

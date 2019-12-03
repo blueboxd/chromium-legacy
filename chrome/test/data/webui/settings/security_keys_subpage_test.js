@@ -618,7 +618,7 @@ suite('SecurityKeysCredentialManagement', function() {
     startCredentialManagementResolver.resolve();
     await uiReady;
     assertShown(allDivs, dialog, 'pinPrompt');
-    dialog.$.pin.value = '0000';
+    dialog.$.pin.shadowRoot.querySelector('cr-input').value = '0000';
     dialog.$.confirmButton.click();
     const pin = await browserProxy.whenCalled('providePIN');
     assertEquals(pin, '0000');
@@ -740,7 +740,7 @@ suite('SecurityKeysBioEnrollment', function() {
     startResolver.resolve();
     await uiReady;
     assertShown(allDivs, dialog, 'pinPrompt');
-    dialog.$.pin.value = '0000';
+    dialog.$.pin.shadowRoot.querySelector('cr-input').value = '0000';
     dialog.$.confirmButton.click();
     const pin = await browserProxy.whenCalled('providePIN');
     assertEquals(pin, '0000');
@@ -804,7 +804,7 @@ suite('SecurityKeysBioEnrollment', function() {
     startResolver.resolve();
     await uiReady;
     assertShown(allDivs, dialog, 'pinPrompt');
-    dialog.$.pin.value = '0000';
+    dialog.$.pin.shadowRoot.querySelector('cr-input').value = '0000';
     dialog.$.confirmButton.click();
     const pin = await browserProxy.whenCalled('providePIN');
     assertEquals(pin, '0000');
@@ -885,7 +885,7 @@ suite('SecurityKeysBioEnrollment', function() {
   test('EnrollCancel', async function() {
     // Simulate starting an enrollment and then cancelling it.
     browserProxy.setResponseFor('enumerateEnrollments', Promise.resolve([]));
-    let enrollResolver = new PromiseResolver;
+    const enrollResolver = new PromiseResolver;
     browserProxy.setResponseFor('startEnrolling', enrollResolver.promise);
 
     document.body.appendChild(dialog);

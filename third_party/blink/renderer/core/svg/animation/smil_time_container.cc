@@ -169,7 +169,7 @@ void SMILTimeContainer::ResetDocumentTime() {
   SynchronizeToDocumentTimeline();
 }
 
-SMILTime SMILTimeContainer::CurrentDocumentTime() const {
+SMILTime SMILTimeContainer::LatestUpdatePresentationTime() const {
   return latest_update_time_;
 }
 

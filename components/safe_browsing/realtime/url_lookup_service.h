@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/proto/realtimeapi.pb.h"
@@ -77,8 +78,11 @@ class RealTimeUrlLookupService {
   void ExitBackoff();
 
   // Called when the response from the real-time lookup remote endpoint is
-  // received.
+  // received. |url_loader| is the unowned loader that was used to send the
+  // request. |request_start_time| is the time when the request was sent.
+  // |response_body| is the response received.
   void OnURLLoaderComplete(network::SimpleURLLoader* url_loader,
+                           base::TimeTicks request_start_time,
                            std::unique_ptr<std::string> response_body);
 
   std::unique_ptr<RTLookupRequest> FillRequestProto(const GURL& url);

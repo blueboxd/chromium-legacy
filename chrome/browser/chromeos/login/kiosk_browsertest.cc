@@ -1170,7 +1170,13 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableCancel) {
             GetConsumerKioskModeStatus());
 }
 
-IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableConfirmed) {
+// crbug.com/1029965
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_KioskEnableConfirmed DISABLED_KioskEnableConfirmed
+#else
+#define MAYBE_KioskEnableConfirmed KioskEnableConfirmed
+#endif
+IN_PROC_BROWSER_TEST_F(KioskTest, MAYBE_KioskEnableConfirmed) {
   // Start UI, find menu entry for this app and launch it.
   chromeos::WizardController::SkipPostLoginScreensForTesting();
   chromeos::WizardController* wizard_controller =

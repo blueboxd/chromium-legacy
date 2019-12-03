@@ -10,4 +10,8 @@ const base::FilePath GetGamesCatalogPath(const base::FilePath& dir) {
   return dir.Append(kGamesCatalogFileName);
 }
 
+const base::FilePath GetHighlightedGamesPath(const base::FilePath& dir) {
+  return dir.Append(kHighlightedGamesFileName);
+}
+
 }  // namespace games

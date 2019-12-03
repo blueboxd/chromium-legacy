@@ -8,6 +8,7 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1dəq}other{#dəq}}</translation>
 <translation id="1181037720776840403">Silin</translation>
 <translation id="1201402288615127009">Növbəti</translation>
+<translation id="1218444235442067213"><ph name="APP_NAME" />, Play Market Tətbiqi</translation>
 <translation id="1243314992276662751">Yükləyin</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> paylaşmaq mümkün olmnadı</translation>
 <translation id="1269641567813814718">Win</translation>
@@ -18,6 +19,7 @@
 <translation id="1368832886055348810">Soldan sağa</translation>
 <translation id="1383876407941801731">Axtar</translation>
 <translation id="1398853756734560583">Artırın</translation>
+<translation id="1414271762428216854"><ph name="APP_NAME" />, Quraşdırılmış Tətbiq</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> paylaşmaq mümkün deyil</translation>
 <translation id="1498028757988366001">Bunu əvvəl axtarmısınız. Tarixçədən "<ph name="QUERY" />" sorğusunun silinməsi onu bütün cihazlardakı hesabınızdan həmişəlik siləcək.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 dəqiqə və }other{# dəqiqə və }}</translation>
@@ -30,6 +32,7 @@
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 ay}other{# ay}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 saat və }other{# saat və }}</translation>
+<translation id="1830308660060964064"><ph name="ITEM_TITLE" /> çıxarıldı</translation>
 <translation id="1842960171412779397">seçin</translation>
 <translation id="1859234291848436338">Yazı istiqaməti</translation>
 <translation id="1860796786778352021">Bildiriş qapatma</translation>
@@ -66,10 +69,12 @@
 <translation id="2666092431469916601">Yuxarı</translation>
 <translation id="2701330563083355633"><ph name="DEVICE_NAME" /> adlı cihazdan paylaşıldı</translation>
 <translation id="2743387203779672305">Buferə kopyalayın</translation>
+<translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Qovluğu açın</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 il əvvəl}other{# il əvvəl}}</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1 gündə}other{# gündə}}</translation>
 <translation id="2931838996092594335">klik</translation>
+<translation id="2981684127883932071">Təkliflərin göstərilməsi</translation>
 <translation id="3036649622769666520">Faylları Açın</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3068711042108640621">Rəf soldadır</translation>
@@ -84,6 +89,7 @@
 <translation id="3389286852084373014">Mətn çox böyükdür</translation>
 <translation id="3479552764303398839">İndi yox</translation>
 <translation id="348799646910989694">Rəf avtomatik olaraq gizlədilib</translation>
+<translation id="3554637740840164787"><ph name="ITEM_TITLE" /> bərkidildi</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 gün qaldı}other{# gün qaldı}}</translation>
 <translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" /> Fayl</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
@@ -105,8 +111,11 @@
 <translation id="4250229828105606438">Ani görüntü</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 ay əvvəl}other{# ay əvvəl}}</translation>
 <translation id="4289300219472526559">Danışmağa başlayın</translation>
+<translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> <ph name="FOLDER_NAME" /> qovluğuna köçürülüb.</translation>
 <translation id="4316910396681052118">BÜTÜN TƏTBİQLƏR</translation>
 <translation id="4588090240171750605">Sağa Sürüşdürün</translation>
+<translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, Ulduz reytinqi <ph name="RATING_SCORE" /></translation>
+<translation id="4648249871170053485"><ph name="APP_NAME" />, Tətbiq tövsiyəsi</translation>
 <translation id="4690510401873698237">Rəf aşağıdadır</translation>
 <translation id="4724120544754982507">Bildiriş Mərkəzi <ph name="UNREAD_NOTIFICATION_COUNT" /> oxunmamış bildiriş</translation>
 <translation id="4730374152663651037">TEZ-TEZ İSTİFADƏ EDİLƏN</translation>
@@ -116,6 +125,7 @@
 <translation id="4971687151119236543">Əvvəlki Media Trek</translation>
 <translation id="5046499563572181734">Buraya klikləyin</translation>
 <translation id="5076340679995252485">&amp;Yerləşdirin</translation>
+<translation id="5198715732953550718">Yeni qovluq yaratmaq üçün <ph name="MOVED_APP_NAME" /> <ph name="IN_PLACE_APP" /> ilə birləşdirilib.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Açılma vidceti</translation>
 <translation id="5278860589123563674">Göndərilmədi</translation>
@@ -129,6 +139,7 @@
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> sistemi</translation>
 <translation id="5583640892426849032">Geri silmə</translation>
 <translation id="5613020302032141669">Sol Ox</translation>
+<translation id="5675363643668471212">Rəf elementi</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 dəq}other{# dəq}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Bu gün aktivdir}=1{1 gün əvvəl aktiv olub}other{# gün əvvəl aktiv olub}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 gün və }other{# gün }}</translation>
@@ -208,6 +219,7 @@
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Aşağı Səhifə</translation>
 <translation id="8245914219290430011">Tab</translation>
+<translation id="8247998213073982446"><ph name="APP_NAME" />, Tətbiq</translation>
 <translation id="8259556432390118667">Onaltılıq rəngin dəyəri</translation>
 <translation id="8328145009876646418">Sol Künc</translation>
 <translation id="8331626408530291785">Yuxarı Sürüşdürün</translation>
@@ -237,6 +249,8 @@
 <translation id="9150735707954472829">Tab</translation>
 <translation id="9161053988251441839">MƏSLƏHƏTLİ TƏTBİQLƏR</translation>
 <translation id="9170848237812810038">Ləğv edin</translation>
+<translation id="9178475906033259337"><ph name="QUERY" /> üzrə 1 nəticə göstərilir</translation>
 <translation id="932327136139879170">Ev</translation>
 <translation id="944069440740578670">Oxunmamış Bildirişlər</translation>
+<translation id="974545358917229949"><ph name="QUERY" /> üzrə <ph name="RESULT_COUNT" /> nəticə göstərilir</translation>
 </translationbundle>

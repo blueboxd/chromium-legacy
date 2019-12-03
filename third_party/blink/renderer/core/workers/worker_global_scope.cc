@@ -466,7 +466,6 @@ WorkerGlobalScope::WorkerGlobalScope(
       script_type_(creation_params->script_type),
       user_agent_(creation_params->user_agent),
       thread_(thread),
-      timers_(GetTaskRunner(TaskType::kJavascriptTimer)),
       time_origin_(time_origin),
       font_selector_(MakeGarbageCollected<OffscreenFontSelector>(this)),
       script_eval_state_(ScriptEvalState::kPauseAfterFetch) {
@@ -556,7 +555,6 @@ TrustedTypePolicyFactory* WorkerGlobalScope::GetTrustedTypes() const {
 void WorkerGlobalScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(location_);
   visitor->Trace(navigator_);
-  visitor->Trace(timers_);
   visitor->Trace(pending_error_events_);
   visitor->Trace(font_selector_);
   visitor->Trace(trusted_types_);

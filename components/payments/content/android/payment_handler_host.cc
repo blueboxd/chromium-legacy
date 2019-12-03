@@ -34,8 +34,9 @@ PaymentHandlerHost::PaymentHandlerHost(
 
 PaymentHandlerHost::~PaymentHandlerHost() {}
 
-jboolean PaymentHandlerHost::IsChanging(JNIEnv* env) const {
-  return payment_handler_host_.is_changing();
+jboolean PaymentHandlerHost::IsWaitingForPaymentDetailsUpdate(
+    JNIEnv* env) const {
+  return payment_handler_host_.is_waiting_for_payment_details_update();
 }
 
 jlong PaymentHandlerHost::GetNativePaymentHandlerHost(JNIEnv* env) {
@@ -57,8 +58,8 @@ void PaymentHandlerHost::UpdateWith(
   payment_handler_host_.UpdateWith(std::move(response));
 }
 
-void PaymentHandlerHost::NoUpdatedPaymentDetails(JNIEnv* env) {
-  payment_handler_host_.NoUpdatedPaymentDetails();
+void PaymentHandlerHost::OnPaymentDetailsNotUpdated(JNIEnv* env) {
+  payment_handler_host_.OnPaymentDetailsNotUpdated();
 }
 
 bool PaymentHandlerHost::ChangePaymentMethod(

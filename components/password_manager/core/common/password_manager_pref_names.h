@@ -67,6 +67,14 @@ extern const char kNumberSignInPasswordPromoShown[];
 // Safe to remove for M82.
 extern const char kSignInPasswordPromoRevive[];
 
+// Dictionary of accounts that have opted in to use the Google account storage
+// for passwords (map from hash of Gaia ID to bool).
+extern const char kAccountStorageOptedInAccounts[];
+
+// Boolean that is true when the default password store is the Google account
+// store, and false when the profile store is the default store.
+extern const char kIsAccountStoreDefault[];
+
 // String that represents the sync password hash.
 extern const char kSyncPasswordHash[];
 

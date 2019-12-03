@@ -177,6 +177,9 @@ void PasswordManager::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kWasOnboardingFeatureCheckedBefore,
                                 false);
 
+  registry->RegisterDictionaryPref(prefs::kAccountStorageOptedInAccounts);
+
+  registry->RegisterBooleanPref(prefs::kIsAccountStoreDefault, true);
 #if defined(OS_MACOSX)
   registry->RegisterIntegerPref(prefs::kKeychainMigrationStatus,
                                 4 /* MIGRATED_DELETED */);

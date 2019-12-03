@@ -160,7 +160,7 @@ suite(model_test.suiteName, function() {
     assertFalse(model.settings.headerFooter.value);
 
     // Sets to true, but doesn't mark as controlled by a policy.
-    model.setPolicySettings(true, false);
+    model.setPolicySettings({headerFooter: {defaultMode: true}});
     model.setStickySettings(JSON.stringify({
       version: 2,
       headerFooter: false,
@@ -170,7 +170,7 @@ suite(model_test.suiteName, function() {
     model.setSetting('headerFooter', false);
     assertFalse(model.settings.headerFooter.value);
 
-    model.setPolicySettings(true, true);
+    model.setPolicySettings({headerFooter: {allowedMode: true}});
     model.applyStickySettings();
     assertTrue(model.settings.headerFooter.value);
 

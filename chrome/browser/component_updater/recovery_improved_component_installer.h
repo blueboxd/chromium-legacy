@@ -17,7 +17,6 @@ namespace base {
 class FilePath;
 }  // namespace base
 
-class PrefRegistrySimple;
 class PrefService;
 
 namespace component_updater {
@@ -60,11 +59,6 @@ class RecoveryImprovedInstallerPolicy : public ComponentInstallerPolicy {
 
 void RegisterRecoveryImprovedComponent(ComponentUpdateService* cus,
                                        PrefService* prefs);
-
-// Registers user preferences related to the recovery component.
-// TODO(sorin): consider removing the function. crbug.com/1027159
-inline void RegisterPrefsForRecoveryImprovedComponent(
-    PrefRegistrySimple* registry) {}
 
 }  // namespace component_updater
 

@@ -67,6 +67,7 @@ enum TouchEventType {
 };
 
 struct TouchEvent {
+  TouchEvent();
   TouchEvent(TouchEventType type,
              int x,
              int y);

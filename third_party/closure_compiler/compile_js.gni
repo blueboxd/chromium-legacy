@@ -161,10 +161,11 @@ template("js_binary") {
                              "deps",
                              "externs_list",
                              "extra_deps",
-                             "outputs",
                              "is_polymer3",
+                             "outputs",
                              "sources",
                              "testonly",
+                             "uses_js_modules",
                            ])
     args = [
       "--compiler",
@@ -224,6 +225,8 @@ template("js_binary") {
     }
     if (is_polymer3) {
       closure_flags += polymer3_args
+    } else if (defined(uses_js_modules) && uses_js_modules) {
+      closure_flags += js_modules_args
     }
 
     args += [ "--flags" ] + closure_flags
@@ -270,6 +273,7 @@ template("js_type_check") {
                                "deps",
                                "is_polymer3",
                                "testonly",
+                               "uses_js_modules",
                              ])
     }
   } else {

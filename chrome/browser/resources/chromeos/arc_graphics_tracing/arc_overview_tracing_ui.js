@@ -69,6 +69,44 @@ function calculateFPS(events, duration) {
 }
 
 /**
+ * Helper that calculates render quality and commit deviation. This follows the
+ * calculation in |ArcAppPerformanceTracingSession|.
+ *
+ * @param {Object} model model to process.
+ */
+function calculateAppRenderQualityAndCommitDeviation(model) {
+  var deltas = createDeltaEvents(getAppCommitEvents(model));
+
+  var vsyncErrorDeviationAccumulator = 0.0;
+  // Frame delta in microseconds.
+  var targetFrameTime = 16666;
+  for (var i = 0; i < deltas.events.length; i++) {
+    var displayFramesPassed = Math.round(deltas.events[i][2] / targetFrameTime);
+    var vsyncError =
+        deltas.events[i][2] - displayFramesPassed * targetFrameTime;
+    vsyncErrorDeviationAccumulator += (vsyncError * vsyncError);
+  }
+  var commitDeviation =
+      Math.sqrt(vsyncErrorDeviationAccumulator / deltas.events.length);
+
+  // Sort by time delta.
+  deltas.events.sort(function(a, b) {
+    return a[2] - b[2];
+  });
+
+  // Get 10% and 90% indices.
+  var lowerPosition = Math.round(deltas.events.length / 10);
+  var upperPosition = deltas.events.length - 1 - lowerPosition;
+  var renderQuality =
+      deltas.events[lowerPosition][2] / deltas.events[upperPosition][2];
+
+  return [
+    renderQuality * 100.0 /* convert to % */,
+    commitDeviation * 0.001 /* mcs to ms */
+  ];
+}
+
+/**
  * Gets model title as an traced app name. If no information is available it
  * returns default name for app.
  *
@@ -112,6 +150,12 @@ function addModelHeader(model) {
   header.getElementsByClassName('arc-tracing-chrome-fps')[0].textContent =
       calculateFPS(getChromeSwapEvents(model), model.information.duration)
           .toFixed(2);
+  var renderQualityAndCommitDeviation =
+      calculateAppRenderQualityAndCommitDeviation(model);
+  header.getElementsByClassName('arc-tracing-app-render-quality')[0]
+      .textContent = renderQualityAndCommitDeviation[0].toFixed(1) + '%';
+  header.getElementsByClassName('arc-tracing-app-commit-deviation')[0]
+      .textContent = renderQualityAndCommitDeviation[1].toFixed(2) + 'ms';
 
   var cpuPower = getAveragePower(model, 10 /* kCpuPower */);
   var gpuPower = getAveragePower(model, 11 /* kGpuPower */);

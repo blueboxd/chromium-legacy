@@ -236,22 +236,9 @@ bool ChromeUpdateClientConfig::IsPerUserInstall() const {
   return component_updater::IsPerUserInstall();
 }
 
-std::vector<uint8_t> ChromeUpdateClientConfig::GetRunActionKeyHash() const {
-  return impl_.GetRunActionKeyHash();
-}
-
-std::string ChromeUpdateClientConfig::GetAppGuid() const {
-  return impl_.GetAppGuid();
-}
-
 std::unique_ptr<update_client::ProtocolHandlerFactory>
 ChromeUpdateClientConfig::GetProtocolHandlerFactory() const {
   return impl_.GetProtocolHandlerFactory();
-}
-
-update_client::RecoveryCRXElevator
-ChromeUpdateClientConfig::GetRecoveryCRXElevator() const {
-  return impl_.GetRecoveryCRXElevator();
 }
 
 ChromeUpdateClientConfig::~ChromeUpdateClientConfig() {}

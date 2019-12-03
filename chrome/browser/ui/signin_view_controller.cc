@@ -7,30 +7,35 @@
 #include <utility>
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/signin_view_controller_delegate.h"
+#include "components/signin/public/base/signin_buildflags.h"
+#include "content/public/browser/web_contents.h"
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/dice_tab_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
-#include "chrome/browser/ui/signin_view_controller_delegate.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
-#include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/google_api_keys.h"
 #include "url/url_constants.h"
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 namespace {
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 // Returns the sign-in reason for |mode|.
 signin_metrics::Reason GetSigninReasonFromMode(profiles::BubbleViewMode mode) {
   DCHECK(SigninViewController::ShouldShowSigninForMode(mode));
@@ -91,6 +96,7 @@ signin_metrics::PromoAction GetPromoActionForNewAccount(
              : signin_metrics::PromoAction::
                    PROMO_ACTION_NEW_ACCOUNT_NO_EXISTING_ACCOUNT;
 }
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 }  // namespace
 
@@ -108,6 +114,7 @@ bool SigninViewController::ShouldShowSigninForMode(
          mode == profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH;
 }
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 void SigninViewController::ShowSignin(profiles::BubbleViewMode mode,
                                       Browser* browser,
                                       signin_metrics::AccessPoint access_point,
@@ -127,6 +134,7 @@ void SigninViewController::ShowSignin(profiles::BubbleViewMode mode,
   ShowDiceSigninTab(browser, signin_reason, access_point, promo_action, email,
                     redirect_url);
 }
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 void SigninViewController::ShowModalSyncConfirmationDialog(Browser* browser) {
   CloseModalSignin();
@@ -167,6 +175,7 @@ void SigninViewController::ResetModalSigninDelegate() {
   delegate_ = nullptr;
 }
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 void SigninViewController::ShowDiceSigninTab(
     Browser* browser,
     signin_metrics::Reason signin_reason,
@@ -279,6 +288,7 @@ void SigninViewController::ShowDiceAddAccountTab(
       access_point, signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO,
       email_hint);
 }
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 content::WebContents*
 SigninViewController::GetModalDialogWebContentsForTesting() {

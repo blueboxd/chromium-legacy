@@ -25,6 +25,8 @@
 #include "content/public/browser/web_contents.h"
 
 #if !defined(OS_ANDROID)
+#include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -117,6 +119,7 @@ class TabDataAccess {
   // Set the |TabData::used_in_bg| bit based on the data provided by |reader|.
   static void SetUsedInBgFromSiteCharacteristicsDataReader(
       TabData* tab_data,
+      content::WebContents* contents,
       std::unique_ptr<SiteCharacteristicsDataReader> reader);
 
   // Callback that is invoked when the SiteCharacteristicsDataReader associated
@@ -157,7 +160,11 @@ void TabDataAccess::SetUsedInBgFromSiteCharacteristicsDB(
       url::Origin::Create(contents->GetLastCommittedURL()));
 
   if (reader->DataLoaded()) {
-    SetUsedInBgFromSiteCharacteristicsDataReader(tab_data, std::move(reader));
+    SetUsedInBgFromSiteCharacteristicsDataReader(tab_data, contents,
+                                                 std::move(reader));
+    DCHECK(tab_data->used_in_bg.has_value());
+    if (tab_data->used_in_bg)
+      ++policy->tabs_used_in_bg_;
   } else {
     auto* reader_raw = reader.get();
     tab_data->used_in_bg_setter_cancel_closure.Reset(
@@ -170,6 +177,7 @@ void TabDataAccess::SetUsedInBgFromSiteCharacteristicsDB(
 
 void TabDataAccess::SetUsedInBgFromSiteCharacteristicsDataReader(
     TabData* tab_data,
+    content::WebContents* contents,
     std::unique_ptr<SiteCharacteristicsDataReader> reader) {
   static const performance_manager::SiteFeatureUsage kInUse =
       performance_manager::SiteFeatureUsage::kSiteFeatureInUse;
@@ -187,8 +195,14 @@ void TabDataAccess::SetUsedInBgFromSiteCharacteristicsDataReader(
   // TODO(sebmarchand): Consider that the tabs that are still under observation
   // could be used in background.
 
-  // TODO(sebmarchand): Instead of checking if the tab has used notifications in
-  // the past check if it has the permission to use this feature.
+  auto notif_permission =
+      PermissionManager::Get(
+          Profile::FromBrowserContext(contents->GetBrowserContext()))
+          ->GetPermissionStatus(ContentSettingsType::NOTIFICATIONS,
+                                contents->GetLastCommittedURL(),
+                                contents->GetLastCommittedURL());
+  if (notif_permission.content_setting == CONTENT_SETTING_ALLOW)
+    used_in_bg = true;
 
   // Persist this data and detach from the reader. We need to detach from the
   // reader in a separate task because this callback is actually being invoked
@@ -211,7 +225,8 @@ void TabDataAccess::OnSiteDataLoaded(
   DCHECK(it != policy->tab_data_.end());
   auto* tab_data = it->second.get();
 
-  SetUsedInBgFromSiteCharacteristicsDataReader(tab_data, std::move(reader));
+  SetUsedInBgFromSiteCharacteristicsDataReader(tab_data, contents,
+                                               std::move(reader));
 
   // Score the tab and notify observers if the score has changed.
   if (policy->RescoreTabAfterDataLoaded(contents, tab_data))

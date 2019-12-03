@@ -581,7 +581,7 @@ void VideoTrackRecorder::InitializeEncoder(
     encoder_->SetPaused(should_pause_encoder_on_initialization_);
 
   // StartFrameEncode() will be called on Render IO thread.
-  ConnectToTrack(ConvertToBaseCallback(CrossThreadBindRepeating(
+  ConnectToTrack(ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
       &VideoTrackRecorder::Encoder::StartFrameEncode, encoder_)));
 }
 

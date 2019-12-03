@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.feed.library.feedstore.internal;
 
 import org.chromium.chrome.browser.feed.library.api.host.storage.CommitResult;
-import org.chromium.chrome.browser.feed.library.api.host.storage.JournalMutation.Builder;
+import org.chromium.chrome.browser.feed.library.api.host.storage.JournalMutation;
 import org.chromium.chrome.browser.feed.library.api.host.storage.JournalStorageDirect;
 import org.chromium.chrome.browser.feed.library.common.time.TimingUtils;
 import org.chromium.chrome.browser.feed.library.common.time.TimingUtils.ElapsedTimeTracker;
@@ -48,7 +48,7 @@ public final class LocalActionGc {
             }
         }
 
-        Builder mutationBuilder = new Builder(mJournalName);
+        JournalMutation.Builder mutationBuilder = new JournalMutation.Builder(mJournalName);
         mutationBuilder.delete();
 
         for (StreamLocalAction action : validActions) {

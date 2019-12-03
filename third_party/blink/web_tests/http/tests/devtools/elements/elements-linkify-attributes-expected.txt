@@ -49,3 +49,9 @@ Link at offset: 46: data:​,def
 Rendered text: <a id=​"linkify-14" href=​"http:​/​/​www.google.com">​a link​</a>​
 Link at offset: 27: http:​/​/​www.google.com
 
+Rendered text: <image id=​"linkify-15" xlink:href=​"./​kitten-small.png" height=​"200" width=​"200">​</image>​
+Link at offset: 37: ./​kitten-small.png
+
+Rendered text: <image id=​"linkify-16" href=​"./​kitten-small.png" height=​"200" width=​"200">​</image>​
+Link at offset: 31: ./​kitten-small.png
+

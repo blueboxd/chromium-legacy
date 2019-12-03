@@ -6,15 +6,18 @@ suite('history-list supervised-user', function() {
   let app;
   let historyList;
   let toolbar;
-  let TEST_HISTORY_RESULTS;
-
-  suiteSetup(function() {
-    TEST_HISTORY_RESULTS =
-        [createHistoryEntry('2016-03-15', 'https://www.google.com')];
-  });
+  let testService;
+  const TEST_HISTORY_RESULTS =
+      [createHistoryEntry('2016-03-15', 'https://www.google.com')];
 
   setup(function() {
-    app = replaceApp();
+    PolymerTest.clearBody();
+    testService = new TestBrowserService();
+    history.BrowserService.instance_ = testService;
+
+    app = document.createElement('history-app');
+    document.body.appendChild(app);
+
     historyList = app.$.history;
     toolbar = app.$.toolbar;
     app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
@@ -32,12 +35,9 @@ suite('history-list supervised-user', function() {
 
   test('deletion disabled for supervised user', function() {
     // Make sure that removeVisits is not being called.
-    registerMessageCallback('removeVisits', this, function(toBeRemoved) {
-      assertNotReached();
-    });
-
     historyList.historyData_[0].selected = true;
     toolbar.deleteSelectedItems();
+    assertEquals(0, testService.getCallCount('deleteItems'));
   });
 
   test('remove history menu button disabled', function() {

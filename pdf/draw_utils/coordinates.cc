@@ -5,6 +5,7 @@
 #include "pdf/draw_utils/coordinates.h"
 
 #include <math.h>
+#include <algorithm>
 
 #include "base/logging.h"
 #include "ppapi/cpp/point.h"

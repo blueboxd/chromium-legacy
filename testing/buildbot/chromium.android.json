@@ -4958,6 +4958,27 @@
         },
         "test": "wtf_unittests"
       }
+    ],
+    "isolated_scripts": [
+      {
+        "isolate_name": "monochrome_apk_checker",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "monochrome_apk_checker",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_os_type": "userdebug",
+              "device_type": "hammerhead",
+              "os": "Android"
+            }
+          ]
+        }
+      }
     ]
   },
   "KitKat Tablet Tester": {

@@ -12,7 +12,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <queue>
 #include <vector>
 
 #include <linux/videodev2.h>
@@ -379,121 +378,6 @@ class MEDIA_GPU_EXPORT V4L2Queue
   DISALLOW_COPY_AND_ASSIGN(V4L2Queue);
 };
 
-class V4L2Request;
-
-// Base class for all request related classes.
-//
-// This class is used to manage requests and not intended to be used
-// directly.
-class MEDIA_GPU_EXPORT V4L2RequestRefBase {
- public:
-  bool IsValid() const { return request_ != nullptr; }
-
- protected:
-  V4L2RequestRefBase(V4L2RequestRefBase&& req_base);
-  V4L2RequestRefBase(V4L2Request* request);
-  ~V4L2RequestRefBase();
-
-  V4L2Request* request_;
-
-  SEQUENCE_CHECKER(sequence_checker_);
-  DISALLOW_COPY_AND_ASSIGN(V4L2RequestRefBase);
-};
-
-class V4L2SubmittedRequestRef;
-
-// Interface representing a request reference.
-//
-// The request reference allows the client to set the controls and buffer to
-// the request. It also allows to submit the request to the driver.
-// Once the request as been submitted, the request reference cannot be used
-// any longer.
-// Instead, when a request is submitted, an object denoting a submitted request
-// is returned.
-class MEDIA_GPU_EXPORT V4L2RequestRef : public V4L2RequestRefBase {
- public:
-  V4L2RequestRef(V4L2RequestRef&& req_ref) :
-    V4L2RequestRefBase(std::move(req_ref)) {}
-  // Apply controls to the request.
-  bool SetCtrls(struct v4l2_ext_controls* ctrls) const;
-  // Apply buffer to the request.
-  bool SetQueueBuffer(struct v4l2_buffer* buffer) const;
-  // Submits the request to the driver.
-  V4L2SubmittedRequestRef Submit() &&;
-
- private:
-  friend class V4L2RequestsQueue;
-  V4L2RequestRef(V4L2Request* request) : V4L2RequestRefBase(request) {}
-
-  DISALLOW_COPY_AND_ASSIGN(V4L2RequestRef);
-};
-
-// Interface representing a submitted request.
-//
-// After a request is submitted, a request reference cannot be used anymore.
-// Instead, an object representing a submitted request is returned.
-// Through this object, it is possible to check whether the request
-// completed or not.
-class MEDIA_GPU_EXPORT V4L2SubmittedRequestRef : public V4L2RequestRefBase {
- public:
-  V4L2SubmittedRequestRef(V4L2SubmittedRequestRef&& req_ref) :
-    V4L2RequestRefBase(std::move(req_ref)) {}
-  // Indicates if the request has completed.
-  bool IsCompleted();
-
- private:
-  friend class V4L2RequestRef;
-  V4L2SubmittedRequestRef(V4L2Request* request) : V4L2RequestRefBase(request) {}
-
-  DISALLOW_COPY_AND_ASSIGN(V4L2SubmittedRequestRef);
-};
-
-// Interface representing a queue of requests. The requests queue manages and
-// recycles requests.
-//
-// Requests undergo the following cycle:
-// 1) Allocated requests are put into a free request pool, indicating that they
-//    are not used by the client and free to be used.
-// 2) The client obtains a unique request reference to one of the free
-//    requests in order to set its controls and buffer.
-// 3) The client then submit the request obtained in 2), which invalidates its
-//    reference and returns a reference to a submitted request.
-// 4) Once client releases the submitted request reference, the request goes
-//    back to the free request pool described in 1).
-class MEDIA_GPU_EXPORT V4L2RequestsQueue {
- public:
-  // Allocates |nb_requests|. Returns true if all requests
-  // could be created.
-  bool AllocateRequests(size_t nb_requests);
-  // Gets a free request. If no request is available, a non-valid request
-  // reference will be returned.
-  V4L2RequestRef GetFreeRequest();
-
- private:
-  // File descriptor of the media device (/dev/mediaX) from which requests
-  // are created.
-  base::ScopedFD media_fd_;
-
-  // Stores all available requests.
-  std::vector<std::unique_ptr<V4L2Request>> requests_;
-  std::queue<V4L2Request*> free_requests_;
-
-  // Returns a new request file descriptor.
-  base::Optional<base::ScopedFD> CreateRequestFD();
-
-  friend class V4L2Request;
-  // Returns a request to the queue after being used.
-  void ReturnRequest(V4L2Request* request);
-
-  friend class V4L2Device;
-  friend std::unique_ptr<V4L2RequestsQueue>::deleter_type;
-  V4L2RequestsQueue(base::ScopedFD&& media_fd);
-  ~V4L2RequestsQueue();
-
-  SEQUENCE_CHECKER(sequence_checker_);
-  DISALLOW_COPY_AND_ASSIGN(V4L2RequestsQueue);
-};
-
 class MEDIA_GPU_EXPORT V4L2Device
     : public base::RefCountedThreadSafe<V4L2Device> {
  public:
@@ -683,10 +567,6 @@ class MEDIA_GPU_EXPORT V4L2Device
   // to be called from V4L2Queue, clients should not need to call it directly.
   void SchedulePoll();
 
-  // Returns requests queue to get free requests. A null pointer is returned if
-  // the queue creation failed or if requests are not supported.
-  V4L2RequestsQueue* GetRequestsQueue();
-
  protected:
   friend class base::RefCountedThreadSafe<V4L2Device>;
   V4L2Device();
@@ -714,12 +594,6 @@ class MEDIA_GPU_EXPORT V4L2Device
   // Used if EnablePolling() is called to signal the user that an event
   // happened or a buffer is ready to be dequeued.
   std::unique_ptr<V4L2DevicePoller> device_poller_;
-
-  // Indicates whether the request queue creation has been tried once.
-  bool requests_queue_creation_called_ = false;
-
-  // The request queue stores all requests allocated to be used.
-  std::unique_ptr<V4L2RequestsQueue> requests_queue_;
 
   SEQUENCE_CHECKER(client_sequence_checker_);
 };

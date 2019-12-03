@@ -827,15 +827,17 @@ SMILTime SVGSMILElement::ComputeNextIntervalTime(
 
 void SVGSMILElement::InstanceListChanged() {
   DCHECK(instance_lists_have_changed_);
-  // Update the interval to the time just before the current presentation
-  // time. This means that the next animation update will take of updating the
-  // active state and send events as needed.
-  SMILTime previous_presentation_time =
-      time_container_ ? time_container_->CurrentDocumentTime() : SMILTime();
-  previous_presentation_time = previous_presentation_time - SMILTime::Epsilon();
-  DCHECK(!previous_presentation_time.IsUnresolved());
+  SMILTime current_presentation_time =
+      time_container_ ? time_container_->LatestUpdatePresentationTime()
+                      : SMILTime();
+  DCHECK(!current_presentation_time.IsUnresolved());
   const bool was_active = GetActiveState() == kActive;
-  UpdateInterval(previous_presentation_time);
+  UpdateInterval(current_presentation_time);
+  // Check active state and reschedule using the time just before the current
+  // presentation time. This means that the next animation update will take
+  // care of updating the active state and send events as needed.
+  SMILTime previous_presentation_time =
+      current_presentation_time - SMILTime::Epsilon();
   if (was_active && interval_.BeginsAfter(previous_presentation_time)) {
     active_state_ = DetermineActiveState(previous_presentation_time);
     if (GetActiveState() != kActive)
@@ -920,12 +922,14 @@ void SVGSMILElement::UpdateInterval(SMILTime presentation_time) {
 
 void SVGSMILElement::AddedToTimeContainer() {
   DCHECK(time_container_);
-  // Update the interval to the time just before the current presentation
-  // time. This means that the next animation update will take of updating the
-  // active state and send events as needed.
+  SMILTime current_presentation_time =
+      time_container_->LatestUpdatePresentationTime();
+  UpdateInterval(current_presentation_time);
+  // Check active state and reschedule using the time just before the current
+  // presentation time. This means that the next animation update will take
+  // care of updating the active state and send events as needed.
   SMILTime previous_presentation_time =
-      time_container_->CurrentDocumentTime() - SMILTime::Epsilon();
-  UpdateInterval(previous_presentation_time);
+      current_presentation_time - SMILTime::Epsilon();
   active_state_ = DetermineActiveState(previous_presentation_time);
   time_container_->Reschedule(
       this, ComputeNextIntervalTime(previous_presentation_time));
@@ -1005,7 +1009,7 @@ SMILTime SVGSMILElement::NextProgressTime(SMILTime presentation_time) const {
     // If duration is indefinite the value does not actually change over time.
     // Same is true for <set>.
     SMILTime simple_duration = SimpleDuration();
-    if (simple_duration.IsIndefinite() || IsSVGSetElement(*this)) {
+    if (simple_duration.IsIndefinite() || IsA<SVGSetElement>(*this)) {
       SMILTime repeating_duration_end = interval_.begin + RepeatingDuration();
       // We are supposed to do freeze semantics when repeating ends, even if the
       // element is still active.

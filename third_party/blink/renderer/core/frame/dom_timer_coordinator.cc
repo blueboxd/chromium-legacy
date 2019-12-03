@@ -11,12 +11,6 @@
 
 namespace blink {
 
-DOMTimerCoordinator::DOMTimerCoordinator(
-    scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner)
-    : circular_sequential_id_(0),
-      timer_nesting_level_(0),
-      timer_task_runner_(std::move(timer_task_runner)) {}
-
 int DOMTimerCoordinator::InstallNewTimeout(ExecutionContext* context,
                                            ScheduledAction* action,
                                            base::TimeDelta timeout,

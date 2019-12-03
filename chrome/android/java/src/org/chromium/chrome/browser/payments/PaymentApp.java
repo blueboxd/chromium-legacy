@@ -46,7 +46,7 @@ public interface PaymentApp {
     public interface PaymentRequestUpdateEventCallback {
         /**
          * Called to notify merchant of payment method change. The payment app should block user
-         * interaction until updateWith() or noUpdatedPaymentDetails().
+         * interaction until updateWith() or onPaymentDetailsNotUpdated().
          * https://w3c.github.io/payment-request/#paymentmethodchangeevent-interface
          *
          * @param methodName         Method name. For example, "https://google.com/pay". Should not
@@ -59,7 +59,7 @@ public interface PaymentApp {
 
         /**
          * Called to notify merchant of shipping option change. The payment app should block user
-         * interaction until updateWith() or noUpdatedPaymentDetails().
+         * interaction until updateWith() or onPaymentDetailsNotUpdated().
          * https://w3c.github.io/payment-request/#dom-paymentrequestupdateevent
          *
          * @param shippingOptionId  Selected shipping option Identifier, Should not be null or
@@ -70,7 +70,7 @@ public interface PaymentApp {
 
         /**
          * Called to notify merchant of shipping address change. The payment app should block user
-         * interaction until updateWith() or noUpdatedPaymentDetails().
+         * interaction until updateWith() or onPaymentDetailsNotUpdated().
          * https://w3c.github.io/payment-request/#dom-paymentrequestupdateevent
          *
          * @param shippingAddress  Selected shipping address. Should not be null.

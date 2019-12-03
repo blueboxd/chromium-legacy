@@ -30,7 +30,7 @@ import org.chromium.chrome.browser.firstrun.FirstRunActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunActivity.FirstRunActivityObserver;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
-import org.chromium.chrome.browser.settings.Preferences;
+import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.sync.AccountManagementFragment;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
@@ -151,7 +151,8 @@ public class FirstRunTest {
     @FlakyTest(message = "https://crbug.com/616456")
     public void testSignInWithOpenSettings() {
         final Account testAccount = SigninTestUtil.addTestAccount();
-        final Preferences prefActivity = processFirstRun(testAccount.name, true /* ShowSettings */);
+        final SettingsActivity settingsActivity =
+                processFirstRun(testAccount.name, true /* ShowSettings */);
 
         // User should be signed in and the sync backend should initialize, but sync should not
         // become fully active until the settings page is closed.
@@ -161,9 +162,9 @@ public class FirstRunTest {
 
         // Close the settings fragment.
         AccountManagementFragment fragment =
-                (AccountManagementFragment) prefActivity.getMainFragment();
+                (AccountManagementFragment) settingsActivity.getMainFragment();
         Assert.assertNotNull(fragment);
-        prefActivity.getSupportFragmentManager().beginTransaction().remove(fragment).commit();
+        settingsActivity.getSupportFragmentManager().beginTransaction().remove(fragment).commit();
 
         // Sync should immediately become active.
         Assert.assertTrue(SyncTestUtil.isSyncActive());
@@ -187,23 +188,23 @@ public class FirstRunTest {
      *
      * @param account The account name to sign in, or null.
      * @param showSettings Whether to show the settings page.
-     * @return The Preferences activity if showSettings was YES; null otherwise.
+     * @return The Settings activity if showSettings was YES; null otherwise.
      */
-    private Preferences processFirstRun(String account, boolean showSettings) {
+    private SettingsActivity processFirstRun(String account, boolean showSettings) {
         FirstRunSignInProcessor.setFirstRunFlowSignInComplete(false);
         FirstRunSignInProcessor.finalizeFirstRunFlowState(account, showSettings);
 
-        Preferences prefActivity = null;
+        SettingsActivity settingsActivity = null;
         if (showSettings) {
-            prefActivity =
+            settingsActivity =
                     ActivityUtils.waitForActivity(InstrumentationRegistry.getInstrumentation(),
-                            Preferences.class, new Runnable() {
+                            SettingsActivity.class, new Runnable() {
                                 @Override
                                 public void run() {
                                     processFirstRunOnUiThread();
                                 }
                             });
-            Assert.assertNotNull("Could not find the preferences activity", prefActivity);
+            Assert.assertNotNull("Could not find the settings activity", settingsActivity);
         } else {
             processFirstRunOnUiThread();
         }
@@ -214,7 +215,7 @@ public class FirstRunTest {
                 return FirstRunSignInProcessor.getFirstRunFlowSignInComplete();
             }
         });
-        return prefActivity;
+        return settingsActivity;
     }
 
     private void processFirstRunOnUiThread() {

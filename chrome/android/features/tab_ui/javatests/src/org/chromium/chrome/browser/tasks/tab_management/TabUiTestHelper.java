@@ -135,7 +135,18 @@ public class TabUiTestHelper {
         assertTrue(cta.getLayoutManager().overviewVisible());
         onView(allOf(withParent(withId(org.chromium.chrome.R.id.compositor_view_holder)),
                        withId(R.id.tab_list_view)))
-                .check(CardCountAssertion.havingTabCount(count));
+                .check(ChildrenCountAssertion.havingTabCount(count));
+    }
+
+    /**
+     * Verify there are correct number of favicons in tab strip.
+     * @param cta       The current running activity.
+     * @param count     The correct number of favicons in tab strip.
+     */
+    static void verifyTabStripFaviconCount(ChromeTabbedActivity cta, int count) {
+        assertFalse(cta.getLayoutManager().overviewVisible());
+        onView(allOf(withParent(withId(R.id.toolbar_container_view)), withId(R.id.tab_list_view)))
+                .check(ChildrenCountAssertion.havingTabCount(count));
     }
 
     /**
@@ -364,14 +375,14 @@ public class TabUiTestHelper {
      * Implementation of {@link ViewAssertion} to verify the {@link RecyclerView} has correct number
      * of children, and children are showing correctly.
      */
-    public static class CardCountAssertion implements ViewAssertion {
+    public static class ChildrenCountAssertion implements ViewAssertion {
         private int mExpectedCount;
 
-        public static CardCountAssertion havingTabCount(int tabCount) {
-            return new CardCountAssertion(tabCount);
+        public static ChildrenCountAssertion havingTabCount(int tabCount) {
+            return new ChildrenCountAssertion(tabCount);
         }
 
-        public CardCountAssertion(int expectedCount) {
+        public ChildrenCountAssertion(int expectedCount) {
             mExpectedCount = expectedCount;
         }
 

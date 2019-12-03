@@ -91,30 +91,33 @@ cr.define('history.history_routing_test_with_query_param', function() {
       let app;
       let toolbar;
       let expectedQuery;
+      let testService;
 
       suiteSetup(function() {
+        testService = new TestBrowserService();
+        history.BrowserService.instance_ = testService;
         app = $('history-app');
         toolbar = app.$['toolbar'];
         expectedQuery = 'query';
       });
 
-      test('search initiated on load', function(done) {
+      test('search initiated on load', function() {
         const verifyFunction = function(info) {
           assertEquals(expectedQuery, info[0]);
-          test_util.flushTasks().then(function() {
+          return test_util.flushTasks().then(function() {
             assertEquals(
                 expectedQuery,
                 toolbar.$['main-toolbar'].getSearchField().getValue());
-            done();
           });
         };
 
         if (window.historyQueryInfo) {
-          verifyFunction(window.historyQueryInfo);
-          return;
+          return verifyFunction(window.historyQueryInfo);
+        } else {
+          return testService.whenCalled('queryHistory').then(query => {
+            return verifyFunction([query]);
+          });
         }
-
-        registerMessageCallback('queryHistory', this, verifyFunction);
       });
     });
   }

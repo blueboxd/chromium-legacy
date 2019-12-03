@@ -612,7 +612,7 @@ void Internals::advanceImageAnimation(Element* image,
   ImageResourceContent* resource = nullptr;
   if (auto* html_image = ToHTMLImageElementOrNull(*image)) {
     resource = html_image->CachedImage();
-  } else if (auto* svg_image = ToSVGImageElementOrNull(*image)) {
+  } else if (auto* svg_image = DynamicTo<SVGImageElement>(*image)) {
     resource = svg_image->CachedImage();
   } else {
     exception_state.ThrowDOMException(

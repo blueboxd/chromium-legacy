@@ -50,6 +50,8 @@ const char kQueryTransformRemoveParamsKey[] = "removeParams";
 const char kQueryTransformAddReplaceParamsKey[] = "addOrReplaceParams";
 const char kQueryKeyKey[] = "key";
 const char kQueryValueKey[] = "value";
+const char kRegexSubstitutionKey[] = "regexSubstitution";
+const char kRegexSubstitutionPath[] = "action.redirect.regexSubstitution";
 
 }  // namespace declarative_net_request
 }  // namespace extensions

@@ -37,7 +37,7 @@ LayoutSVGResourceRadialGradient::~LayoutSVGResourceRadialGradient() = default;
 bool LayoutSVGResourceRadialGradient::CollectGradientAttributes() {
   DCHECK(GetElement());
   attributes_wrapper_->Set(RadialGradientAttributes());
-  return ToSVGRadialGradientElement(GetElement())
+  return To<SVGRadialGradientElement>(GetElement())
       ->CollectGradientAttributes(MutableAttributes());
 }
 

@@ -137,6 +137,7 @@ std::unique_ptr<base::DictionaryValue> TestRuleRedirect::ToValue() const {
   SetValue(dict.get(), kExtensionPathKey, extension_path);
   SetValue(dict.get(), kTransformKey, transform);
   SetValue(dict.get(), kRedirectUrlKey, url);
+  SetValue(dict.get(), kRegexSubstitutionKey, regex_substitution);
   return dict;
 }
 

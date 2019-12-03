@@ -69,8 +69,7 @@ void SVGImagePainter::PaintForeground(const PaintInfo& paint_info) {
   FloatRect dest_rect = layout_svg_image_.ObjectBoundingBox();
   FloatRect src_rect(0, 0, image->width(), image->height());
 
-  SVGImageElement* image_element =
-      ToSVGImageElement(layout_svg_image_.GetElement());
+  auto* image_element = To<SVGImageElement>(layout_svg_image_.GetElement());
   image_element->preserveAspectRatio()->CurrentValue()->TransformRect(dest_rect,
                                                                       src_rect);
   ScopedInterpolationQuality interpolation_quality_scope(
@@ -99,7 +98,7 @@ void SVGImagePainter::PaintForeground(const PaintInfo& paint_info) {
 FloatSize SVGImagePainter::ComputeImageViewportSize() const {
   DCHECK(layout_svg_image_.ImageResource()->HasImage());
 
-  if (ToSVGImageElement(layout_svg_image_.GetElement())
+  if (To<SVGImageElement>(layout_svg_image_.GetElement())
           ->preserveAspectRatio()
           ->CurrentValue()
           ->Align() != SVGPreserveAspectRatio::kSvgPreserveaspectratioNone)

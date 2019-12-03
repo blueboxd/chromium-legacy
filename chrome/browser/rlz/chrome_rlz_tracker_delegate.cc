@@ -172,21 +172,21 @@ bool ChromeRLZTrackerDelegate::ClearReferral() {
 }
 
 void ChromeRLZTrackerDelegate::SetOmniboxSearchCallback(
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   DCHECK(!callback.is_null());
   omnibox_url_opened_subscription_ =
       OmniboxEventGlobalTracker::GetInstance()->RegisterCallback(
           base::Bind(&ChromeRLZTrackerDelegate::OnURLOpenedFromOmnibox,
                      base::Unretained(this)));
-  on_omnibox_search_callback_ = callback;
+  on_omnibox_search_callback_ = std::move(callback);
 }
 
 void ChromeRLZTrackerDelegate::SetHomepageSearchCallback(
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   DCHECK(!callback.is_null());
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                  content::NotificationService::AllSources());
-  on_homepage_search_callback_ = callback;
+  on_homepage_search_callback_ = std::move(callback);
 }
 
 bool ChromeRLZTrackerDelegate::ShouldUpdateExistingAccessPointRlz() {
@@ -198,7 +198,7 @@ void ChromeRLZTrackerDelegate::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   using std::swap;
-  base::Closure callback_to_run;
+  base::OnceClosure callback_to_run;
   switch (type) {
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
       // Firstly check if it is a Google search.
@@ -235,7 +235,7 @@ void ChromeRLZTrackerDelegate::Observe(
               ui::PAGE_TRANSITION_HOME_PAGE) != 0)) {
           registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                             content::NotificationService::AllSources());
-          swap(callback_to_run, on_homepage_search_callback_);
+          callback_to_run = std::move(on_homepage_search_callback_);
         }
       }
       break;
@@ -247,7 +247,7 @@ void ChromeRLZTrackerDelegate::Observe(
   }
 
   if (!callback_to_run.is_null())
-    callback_to_run.Run();
+    std::move(callback_to_run).Run();
 }
 
 void ChromeRLZTrackerDelegate::OnURLOpenedFromOmnibox(OmniboxLog* log) {
@@ -261,7 +261,5 @@ void ChromeRLZTrackerDelegate::OnURLOpenedFromOmnibox(OmniboxLog* log) {
     return;
 
   omnibox_url_opened_subscription_.reset();
-  base::Closure omnibox_callback;
-  swap(omnibox_callback, on_omnibox_search_callback_);
-  omnibox_callback.Run();
+  std::move(on_omnibox_search_callback_).Run();
 }

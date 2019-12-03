@@ -22,10 +22,10 @@
 #include "components/download/public/common/simple_download_manager.h"
 #include "components/download/public/common/url_download_handler.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/gurl.h"
 
 namespace network {
-struct ResourceResponse;
 class SharedURLLoaderFactory;
 }  // namespace network
 
@@ -118,7 +118,7 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
       const GURL& tab_referrer_url,
       std::vector<GURL> url_chain,
       net::CertStatus cert_status,
-      scoped_refptr<network::ResourceResponse> response_head,
+      network::mojom::URLResponseHeadPtr response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>

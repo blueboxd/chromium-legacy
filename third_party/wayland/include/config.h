@@ -7,12 +7,6 @@
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #define HAVE_DLFCN_H 1
 
-/* Define to 1 if you have the <execinfo.h> header file. */
-#define HAVE_EXECINFO_H 1
-
-/* Define to 1 if you have the <expat.h> header file. */
-/* #undef HAVE_EXPAT_H */
-
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
 
@@ -28,6 +22,9 @@
 /* Define to 1 if you have the `posix_fallocate' function. */
 #define HAVE_POSIX_FALLOCATE 1
 
+/* Define to 1 if you have the `prctl' function. */
+#define HAVE_PRCTL 1
+
 /* Define to 1 if you have the <stdint.h> header file. */
 #define HAVE_STDINT_H 1
 
@@ -39,6 +36,9 @@
 
 /* Define to 1 if you have the <string.h> header file. */
 #define HAVE_STRING_H 1
+
+/* Define to 1 if you have the <sys/prctl.h> header file. */
+#define HAVE_SYS_PRCTL_H 1
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #define HAVE_SYS_STAT_H 1
@@ -56,25 +56,25 @@
 #define PACKAGE "wayland"
 
 /* Define to the address where bug reports for this package should be sent. */
-#define PACKAGE_BUGREPORT "https://bugs.freedesktop.org/enter_bug.cgi?product=Wayland&component=wayland&version=1.13.0"
+#define PACKAGE_BUGREPORT "https://gitlab.freedesktop.org/wayland/wayland/issues/"
 
 /* Define to the full name of this package. */
 #define PACKAGE_NAME "wayland"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "wayland 1.13.0"
+#define PACKAGE_STRING "wayland 1.17.0"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "wayland"
 
 /* Define to the home page for this package. */
-#define PACKAGE_URL "http://wayland.freedesktop.org/"
+#define PACKAGE_URL "https://wayland.freedesktop.org/"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "1.13.0"
+#define PACKAGE_VERSION "1.17.0"
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION "1.13.0"
+#define VERSION "1.17.0"

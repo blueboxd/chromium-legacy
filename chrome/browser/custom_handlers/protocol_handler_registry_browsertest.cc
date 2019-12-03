@@ -158,6 +158,9 @@ IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerExtensionBrowserTest, Basic) {
       browser()->tab_strip_model()->GetActiveWebContents(),
       "navigator.registerProtocolHandler('geo', 'test.html?%s', 'test');"));
 
+  // Wait until the prompt is "displayed" and "accepted".
+  base::RunLoop().RunUntilIdle();
+
   // Test the handler.
   ui_test_utils::NavigateToURL(browser(), GURL("geo:test"));
   ASSERT_EQ(GURL(handler_url + "?geo%3Atest"),

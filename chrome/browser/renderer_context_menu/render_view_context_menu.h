@@ -174,7 +174,6 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void AppendEditableItems();
   void AppendLanguageSettings();
   void AppendSpellingSuggestionItems();
-  void AppendSharedClipboardItems();
   // Returns true if the items were appended. This might not happen in all
   // cases, e.g. these are only appended if a screen reader is enabled.
   bool AppendAccessibilityLabelsItems();
@@ -188,7 +187,9 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void AppendProtocolHandlerSubMenu();
   void AppendPasswordItems();
   void AppendPictureInPictureItem();
-  void MaybeAppendClickToCallItem();
+  void AppendSharingItems();
+  void AppendClickToCallItem();
+  void AppendSharedClipboardItem();
 
   // Command enabled query functions.
   bool IsReloadEnabled() const;

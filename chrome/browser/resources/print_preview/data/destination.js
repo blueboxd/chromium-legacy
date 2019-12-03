@@ -9,7 +9,7 @@ import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 // <if expr="chromeos">
-import {BackgroundGraphicsModeRestriction, ColorModeRestriction, DuplexModeRestriction, PinModeRestriction, Policies} from './destination_policies.js';
+import {BackgroundGraphicsModeRestriction, ColorModeRestriction, DestinationPolicies, DuplexModeRestriction, PinModeRestriction} from './destination_policies.js';
 // </if>
 
 /**
@@ -276,7 +276,7 @@ export class Destination {
    *          description: (string|undefined),
    *          certificateStatus:
    *              (DestinationCertificateStatus|undefined),
-   *          policies: (Policies|undefined),
+   *          policies: (DestinationPolicies|undefined),
    *         }=} opt_params Optional
    *     parameters for the destination.
    */
@@ -319,7 +319,7 @@ export class Destination {
 
     /**
      * Policies affecting the destination.
-     * @private {?Policies}
+     * @private {?DestinationPolicies}
      */
     this.policies_ = (opt_params && opt_params.policies) || null;
 
@@ -566,15 +566,14 @@ export class Destination {
 
   // <if expr="chromeos">
   /**
-   * @return {?Policies} Print policies affecting the
-   *     destination.
+   * @return {?DestinationPolicies} Print policies affecting the destination.
    */
   get policies() {
     return this.policies_;
   }
 
   /**
-   * @param {?Policies} policies Print policies affecting the
+   * @param {?DestinationPolicies} policies Print policies affecting the
    *     destination.
    */
   set policies(policies) {

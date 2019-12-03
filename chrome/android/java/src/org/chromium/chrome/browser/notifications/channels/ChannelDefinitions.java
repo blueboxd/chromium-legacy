@@ -179,16 +179,6 @@ public class ChannelDefinitions {
                             NotificationManager.IMPORTANCE_LOW, ChannelGroupId.GENERAL,
                             true /* showNotificationBadges */));
 
-            map.put(ChannelId.PERMISSION_REQUESTS,
-                    new PredefinedChannel(ChannelId.PERMISSION_REQUESTS,
-                            R.string.notification_category_permission_requests,
-                            NotificationManager.IMPORTANCE_LOW, ChannelGroupId.GENERAL));
-
-            map.put(ChannelId.PERMISSION_REQUESTS_HIGH,
-                    new PredefinedChannel(ChannelId.PERMISSION_REQUESTS_HIGH,
-                            R.string.notification_category_permission_requests,
-                            NotificationManager.IMPORTANCE_HIGH, ChannelGroupId.GENERAL));
-
             MAP = Collections.unmodifiableMap(map);
             STARTUP = Collections.unmodifiableSet(startup);
         }
@@ -200,7 +190,9 @@ public class ChannelDefinitions {
      * channel ids so they aren't accidentally reused.
      */
     private static final String[] LEGACY_CHANNEL_IDS = {
-            ChannelDefinitions.ChannelId.SITES
+            ChannelDefinitions.ChannelId.SITES,
+            ChannelDefinitions.ChannelId.PERMISSION_REQUESTS,
+            ChannelDefinitions.ChannelId.PERMISSION_REQUESTS_HIGH,
     };
 
     // Map defined in static inner class so it's only initialized lazily.

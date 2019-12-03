@@ -83,7 +83,7 @@ ExtensionUrlPatternIndexMatcher::ExtensionUrlPatternIndexMatcher(
     api::declarative_net_request::SourceType source_type,
     const ExtensionUrlPatternIndexMatcher::UrlPatternIndexList* index_list,
     const ExtensionMetadataList* metadata_list)
-    : RulesetMatcherInterface(extension_id, source_type),
+    : RulesetMatcherBase(extension_id, source_type),
       metadata_list_(metadata_list),
       matchers_(GetMatchers(index_list)),
       is_extra_headers_matcher_(IsExtraHeadersMatcherInternal(index_list)) {}
@@ -119,7 +119,8 @@ ExtensionUrlPatternIndexMatcher::GetRedirectAction(
   if (!redirect_rule)
     return base::nullopt;
 
-  return CreateRedirectAction(params, *redirect_rule, *metadata_list_);
+  return CreateRedirectActionFromMetadata(params, *redirect_rule,
+                                          *metadata_list_);
 }
 
 base::Optional<RequestAction> ExtensionUrlPatternIndexMatcher::GetUpgradeAction(
@@ -137,16 +138,16 @@ base::Optional<RequestAction> ExtensionUrlPatternIndexMatcher::GetUpgradeAction(
 
 uint8_t ExtensionUrlPatternIndexMatcher::GetRemoveHeadersMask(
     const RequestParams& params,
-    uint8_t ignored_mask,
+    uint8_t excluded_remove_headers_mask,
     std::vector<RequestAction>* remove_headers_actions) const {
   // The same flat_rule::UrlRule may be split across different action indices.
   // To ensure we return one RequestAction for one ID/rule, maintain a map from
   // the rule to the mask of rules removed for that rule.
   base::flat_map<const flat_rule::UrlRule*, uint8_t> rule_to_mask_map;
-  auto handle_remove_header_bit = [this, &params, ignored_mask,
+  auto handle_remove_header_bit = [this, &params, excluded_remove_headers_mask,
                                    &rule_to_mask_map](uint8_t bit,
                                                       flat::ActionIndex index) {
-    if (ignored_mask & bit)
+    if (excluded_remove_headers_mask & bit)
       return;
 
     const flat_rule::UrlRule* rule = GetMatchingRule(params, index);
@@ -188,7 +189,7 @@ uint8_t ExtensionUrlPatternIndexMatcher::GetRemoveHeadersMask(
         GetRemoveHeadersActionForMask(*it.first, mask_for_rule));
   }
 
-  DCHECK(!(mask & ignored_mask));
+  DCHECK(!(mask & excluded_remove_headers_mask));
   return mask;
 }
 

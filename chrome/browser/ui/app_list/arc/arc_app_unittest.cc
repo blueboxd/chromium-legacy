@@ -2140,7 +2140,8 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderWithBadIcon) {
   EXPECT_EQ(delegate.update_image_count(), 1U);
 }
 
-TEST_P(ArcAppModelBuilderTest, IconLoader) {
+// https://crbug.com/1030009
+TEST_P(ArcAppModelBuilderTest, DISABLED_IconLoader) {
   const arc::mojom::AppInfo& app = fake_apps()[0];
   const std::string app_id = ArcAppTest::GetAppId(app);
 

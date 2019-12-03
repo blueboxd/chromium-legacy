@@ -102,6 +102,7 @@ struct TestRuleRedirect : public DictionarySource {
   base::Optional<std::string> extension_path;
   base::Optional<TestRuleTransform> transform;
   base::Optional<std::string> url;
+  base::Optional<std::string> regex_substitution;
 
   std::unique_ptr<base::DictionaryValue> ToValue() const override;
 };

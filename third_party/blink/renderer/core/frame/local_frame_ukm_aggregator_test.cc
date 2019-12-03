@@ -53,6 +53,12 @@ class LocalFrameUkmAggregatorTest : public testing::Test {
     aggregator().FramesToNextEventForTest(delta);
   }
 
+  unsigned FramesToNextEvent() { return aggregator().frames_to_next_event_; }
+  unsigned SamplesSoFar() { return aggregator().samples_so_far_; }
+  unsigned SampleFramesToNextEvent() {
+    return aggregator().SampleFramesToNextEvent();
+  }
+
   base::TimeTicks Now() { return test_task_runner_->NowTicks(); }
 
  protected:
@@ -367,6 +373,22 @@ TEST_F(LocalFrameUkmAggregatorTest, LatencyDataIsPopulated) {
             millisecond_for_step);
   // Do not check the value in metrics_data.update_layers because it
   // is not set by the aggregator.
+}
+
+TEST_F(LocalFrameUkmAggregatorTest, SampleFramesGoesToMaxUnsigned) {
+  // This will time out if the exponential decay in sample rate does not
+  // happen. It should not take too many iterations to reach maximum time
+  // between samples.
+  unsigned initial_sample_count = SamplesSoFar();
+  unsigned last_sample_count = initial_sample_count;
+  unsigned frames_to_next_event = FramesToNextEvent();
+  while (frames_to_next_event < UINT_MAX) {
+    frames_to_next_event = SampleFramesToNextEvent();
+    EXPECT_GT(frames_to_next_event, 0u);
+    EXPECT_EQ(last_sample_count + 1, SamplesSoFar());
+    last_sample_count++;
+  }
+  EXPECT_NE(initial_sample_count, last_sample_count);
 }
 
 }  // namespace blink

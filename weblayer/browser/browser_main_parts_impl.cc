@@ -26,6 +26,8 @@
 #include "weblayer/public/main.h"
 
 #if defined(OS_ANDROID)
+#include "components/crash/content/browser/child_exit_observer_android.h"
+#include "components/crash/content/browser/child_process_crash_observer_android.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/network_change_notifier.h"
 #include "weblayer/browser/android/metrics/uma_utils.h"
@@ -63,6 +65,17 @@ BrowserMainPartsImpl::BrowserMainPartsImpl(
 
 BrowserMainPartsImpl::~BrowserMainPartsImpl() = default;
 
+int BrowserMainPartsImpl::PreCreateThreads() {
+#if defined(OS_ANDROID)
+  // The ChildExitObserver needs to be created before any child process is
+  // created because it needs to be notified during process creation.
+  crash_reporter::ChildExitObserver::Create();
+  crash_reporter::ChildExitObserver::GetInstance()->RegisterClient(
+      std::make_unique<crash_reporter::ChildProcessCrashObserver>());
+#endif
+
+  return service_manager::RESULT_CODE_NORMAL_EXIT;
+}
 void BrowserMainPartsImpl::PreMainMessageLoopStart() {
 #if defined(USE_AURA) && defined(USE_X11)
   ui::TouchFactory::SetTouchDeviceListFromCommandLine();

@@ -1865,9 +1865,6 @@ extern const char kAggregatedMlAppRankingDescription[];
 extern const char kAggregatedMlSearchRankingName[];
 extern const char kAggregatedMlSearchRankingDescription[];
 
-extern const char kAllowAmbientEQName[];
-extern const char kAllowAmbientEQDescription[];
-
 extern const char kAllowDisableMouseAccelerationName[];
 extern const char kAllowDisableMouseAccelerationDescription[];
 
@@ -2152,6 +2149,9 @@ extern const char kHideArcMediaNotificationsDescription[];
 
 extern const char kImeInputLogicFstName[];
 extern const char kImeInputLogicFstDescription[];
+
+extern const char kImeInputLogicHmmName[];
+extern const char kImeInputLogicHmmDescription[];
 
 extern const char kImeNativeDecoderName[];
 extern const char kImeNativeDecoderDescription[];

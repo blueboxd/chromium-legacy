@@ -13,10 +13,10 @@
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom.h"
 
 namespace network {
-struct ResourceResponseHead;
 struct ResourceRequest;
 }  // namespace network
 
@@ -95,8 +95,8 @@ class WorkerScriptFetcher : public network::mojom::URLLoaderClient {
   base::Optional<SubresourceLoaderParams> subresource_loader_params_;
 
   std::vector<net::RedirectInfo> redirect_infos_;
-  std::vector<network::ResourceResponseHead> redirect_response_heads_;
-  network::ResourceResponseHead response_head_;
+  std::vector<network::mojom::URLResponseHeadPtr> redirect_response_heads_;
+  network::mojom::URLResponseHeadPtr response_head_;
 };
 
 }  // namespace content

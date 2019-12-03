@@ -7,12 +7,13 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "base/command_line.h"
 #include "build/build_config.h"
+#include "chromeos/constants/chromeos_switches.h"
 
 namespace ash {
 namespace features {
 
 const base::Feature kAllowAmbientEQ{"AllowAmbientEQ",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAutoNightLight{"AutoNightLight",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -104,7 +105,7 @@ const base::Feature kSwipingFromLeftEdgeToGoBack{
     "SwipingFromLeftEdgeToGoBack", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDragFromShelfToHomeOrOverview{
-    "DragFromShelfToHomeOrOverview", base::FEATURE_ENABLED_BY_DEFAULT};
+    "DragFromShelfToHomeOrOverview", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAllowAmbientEQEnabled() {
   return base::FeatureList::IsEnabled(kAllowAmbientEQ);
@@ -202,7 +203,11 @@ bool IsSwipingFromLeftEdgeToGoBackEnabled() {
 }
 
 bool IsDragFromShelfToHomeOrOverviewEnabled() {
-  return base::FeatureList::IsEnabled(kDragFromShelfToHomeOrOverview);
+  // The kDragFromShelfToHomeOrOverview feature is only enabled on the devices
+  // that have hotseat enabled (i.e., on Krane and on Dogfood devices) in M80.
+  // See crbug.com/1029991 for details.
+  return base::FeatureList::IsEnabled(kDragFromShelfToHomeOrOverview) ||
+         chromeos::switches::ShouldShowShelfHotseat();
 }
 
 bool IsReduceDisplayNotificationsEnabled() {

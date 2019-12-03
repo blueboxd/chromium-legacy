@@ -32,6 +32,7 @@
 <translation id="1294929383540927798">Құлып экранындағы хабарландыру параметрлерін өзгертіңіз</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Bluetooth параметрлерін көрсету. <ph name="STATE_TEXT" /></translation>
+<translation id="1312604459020188865">Сигнал күші: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">Сөрені әрқашан көрсету</translation>
 <translation id="1341651618736211726">Қосымша мәзір</translation>
 <translation id="1346748346194534595">Оңға</translation>
@@ -62,6 +63,7 @@
 <translation id="1747827819627189109">Экрандық пернетақта қосылды</translation>
 <translation id="1761222317188459878">Желі байланысын қосу/өшіру. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Оңға айналдыру</translation>
+<translation id="181103072419391116">Сигнал күші – <ph name="SIGNAL_STRENGTH" />, Әкімші басқарады</translation>
 <translation id="1812997170047690955">Экранда не бар?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (жүктелуде...)</translation>
@@ -118,6 +120,7 @@
 <translation id="2484513351006226581">Пернетақтаны ауыстыру үшін <ph name="KEYBOARD_SHORTCUT" /> пернелерін басыңыз.</translation>
 <translation id="2501920221385095727">Жабысқақ пернелер</translation>
 <translation id="2509468283778169019">CAPS LOCK қосулы</translation>
+<translation id="2517825809102302935">Түнде өшіріп қою</translation>
 <translation id="2542089167727451762">Профиль суретіңізді түртіңіз.</translation>
 <translation id="255671100581129685">Google Assistant жалпыға қолжетімді сеанста жұмыс істемейді.</translation>
 <translation id="256712445991462162">бекітілген ұлғайтқыш</translation>
@@ -164,6 +167,7 @@
 <translation id="3153444934357957346">Бірнеше есептік жазбаға кіру мүмкіндігінде <ph name="MULTI_PROFILE_USER_LIMIT" /> есептік жазбаға ғана рұқсат етілген.</translation>
 <translation id="3154351730702813399">Құрылғы әкімшісі интернетті шолуыңызға қатысты ақпаратты көре алады.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Құрылғыға жалғанған}other{# құрылғыға жалғанған}}</translation>
+<translation id="3217205077783620295">Дыбыс деңгейі қосылып тұр. Түймені қайта бассаңыз, дауыс өшеді.</translation>
 <translation id="3226991577105957773">Тағы <ph name="COUNT" /></translation>
 <translation id="3236488194889173876">Ешқандай мобильдік желі қолжетімді емес</translation>
 <translation id="3249513730522716925"><ph name="WINDOW_TITLE" /> терезесі <ph name="ACTIVE_DESK" /> үстелінен <ph name="TARGET_DESK" /> үстеліне көшірілді.</translation>
@@ -184,7 +188,9 @@
 <translation id="3445925074670675829">USB-C құрылғысы</translation>
 <translation id="3454224730401036106">Байланысыңыз әлдеқайда қауіпсіз желіге ауысты</translation>
 <translation id="3465223694362104965">Есептік жазбаға соңғы рет кіргеннен бері осы құрылғыға басқа пернетақта жалғанды. Оны пайдаланбас бұрын, бұл пернетақтаның сенімді екеніне көз жеткізіңіз.</translation>
+<translation id="3465356146291925647">Әкімшіңіз басқарады</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
+<translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, сигнал күші: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="3510164367642747937">Тінтуір курсорын бөлектеу</translation>
 <translation id="3513798432020909783"><ph name="MANAGER_EMAIL" /> басқаратын есептік жазба</translation>
 <translation id="3573179567135747900">Қайта "<ph name="FROM_LOCALE" />" етіп өзгерту (қайта іске қосуды қажет етеді)</translation>
@@ -289,6 +295,7 @@
 <translation id="4924411785043111640">Қайта қосу және бастапқы күйге қайтару</translation>
 <translation id="495046168593986294">Жоғарыға айналдыру</translation>
 <translation id="4961318399572185831">Экран трансляциясы</translation>
+<translation id="5018302031617932556">Night Light режимін қосып қойсаңыз, айнала күңгірттеніп тұрғанда, экран жарығы көзіңізді ауыртпайды. Оны өзгерту үшін түртіңіз.</translation>
 <translation id="5030687792513154421">Уақыт бітті</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> жаңа телефонға жалғанды</translation>
 <translation id="5083553833479578423">Басқа да Assistant мүмкіндіктерін ашыңыз.</translation>
@@ -328,6 +335,7 @@
 <translation id="573413375004481890">Бұл құрылғы барлық дисплейлерді бірдей қолдамайтындықтан, бір дисплей ажыратылды.</translation>
 <translation id="574392208103952083">Орташа</translation>
 <translation id="5744083938413354016">Түртіп сүйреу</translation>
+<translation id="5745612484876805746">Күн батқанда, Night Light режимі автоматты түрде іске қосылады</translation>
 <translation id="5750765938512549687">Bluetooth өшірулі</translation>
 <translation id="576453121877257266">"Түнгі жарық" функциясы қосулы.</translation>
 <translation id="5777841717266010279">Экран бөлісуді тоқтату қажет пе?</translation>
@@ -349,6 +357,7 @@
 <translation id="5992218262414051481">Жоғары контраст режимі қосылды. Оны өшіру үшін қайтадан Ctrl+Search+H пернелерін басыңыз.</translation>
 <translation id="6018164090099858612">Айна режимінен шығуда</translation>
 <translation id="602001110135236999">Солға айналдыру</translation>
+<translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, сигнал күші: <ph name="SIGNAL_STRENGTH" />, әкімші басқарады</translation>
 <translation id="6040143037577758943">Жабу</translation>
 <translation id="6043212731627905357">Бұл монитор <ph name="DEVICE_TYPE" /> құрылғысымен үйлеспейді (мониторға қолдау көрсетілмейді).</translation>
 <translation id="6043994281159824495">Қазір шығу</translation>
@@ -372,6 +381,7 @@
 <translation id="6376931439017688372">Bluetooth қосулы</translation>
 <translation id="639644700271529076">CAPS LOCK өшірулі</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, сигнал күші: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Барлық хабарларды өшіріңіз</translation>
 <translation id="643147933154517414">Дайын</translation>
 <translation id="6445835306623867477"><ph name="RECEIVER_NAME" /> қабылдағышындағы <ph name="ROUTE_TITLE" /></translation>
@@ -385,9 +395,11 @@
 <translation id="6521655319214113338">Қолмен жазып енгізу</translation>
 <translation id="6528179044667508675">Мазаламау</translation>
 <translation id="6537270692134705506">Экранды түсіріп алу</translation>
+<translation id="6537924328260219877">Сигнал деңгейі: <ph name="SIGNAL_STRENGTH" />, телефон батареясы: <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> құрылғысына трансляциялануда</translation>
 <translation id="6559976592393364813">Әкімшіден сұраңыз.</translation>
 <translation id="6585808820553845416">Сеанс <ph name="SESSION_TIME_REMAINING" /> уақыттан кейін аяқталады.</translation>
+<translation id="661203523074512333"><ph name="SECURITY_STATUS" />, сигнал деңгейі: <ph name="SIGNAL_STRENGTH" />, әкімші басқарады</translation>
 <translation id="6627638273713273709">Іздеу+Shift+K</translation>
 <translation id="6637729079642709226">Уақытты өзгерту</translation>
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" Bluetooth құрылғысы жұптасуға рұқсат сұрайды. Айтылған құрылғыда осы негізгі кілтті енгізіңіз: <ph name="PASSKEY" /></translation>
@@ -419,6 +431,7 @@
 <translation id="7015766095477679451">Сағат <ph name="COME_BACK_TIME" /> болғанда, қайта қолданып көріңіз.</translation>
 <translation id="7025533177575372252"><ph name="DEVICE_NAME" /> құрылғысын телефонға жалғаңыз</translation>
 <translation id="7029814467594812963">Сеанстан шығу</translation>
+<translation id="703425375924687388"><ph name="QUERY_NAME" />, Google Assistant</translation>
 <translation id="7042322267639375032">Күй аумағын жию</translation>
 <translation id="7066646422045619941">Бұл желіні әкімшіңіз өшірген.</translation>
 <translation id="7067196344162293536">Автоматты бұру</translation>
@@ -501,6 +514,7 @@
 <translation id="8192202700944119416">Хабарландырулар жасырулы.</translation>
 <translation id="8203795194971602413">Тінтуірдің оң жақ түймесін басу</translation>
 <translation id="8236042855478648955">Үзіліс жасайтын кез келді</translation>
+<translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, сигнал деңгейі: <ph name="SIGNAL_STRENGTH" />, телефонның батарея заряды: <ph name="BATTERY_STATUS" /></translation>
 <translation id="826107067893790409">Enter пернесін басып, <ph name="USER_EMAIL_ADDRESS" /> үшін құрылғының құлпын ашыңыз.</translation>
 <translation id="8261506727792406068">Жою</translation>
 <translation id="8297006494302853456">Әлсіз</translation>
@@ -525,10 +539,12 @@
 <translation id="8513108775083588393">Автоматты бұру</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> іске қосылғанда зарядталмауы мүмкін.</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> құрылғысына жалғанған</translation>
+<translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, сигнал деңгейі: <ph name="SIGNAL_STRENGTH" />, әкімші басқарады</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> қалды</translation>
 <translation id="8649101189709089199">Select-to-Speak</translation>
 <translation id="8652175077544655965">Параметрлерді жабу</translation>
 <translation id="8653151467777939995">Хабарландыру параметрлерін көрсету. Хабарландырулар қосулы</translation>
+<translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, сигнал күші: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Желі тізімін көрсету. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Төмен қуат зарядтағышы қосылды</translation>
@@ -537,6 +553,7 @@
 <translation id="8734991477317290293">Ол басылған пернелерді "ұрлап алу" әрекетін жасауы мүмкін.</translation>
 <translation id="8735953464173050365">Пернетақта параметрлерін көрсету. <ph name="KEYBOARD_NAME" /> таңдалды</translation>
 <translation id="875593634123171288">VPN параметрлерін көрсету</translation>
+<translation id="8785070478575117577"><ph name="NETWORK_NAME" /> хостына қосылу</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8843682306134542540">Бұру құлпын ашу/жабу. <ph name="STATE_TEXT" /></translation>
@@ -557,6 +574,7 @@
 <translation id="899350903320462459">Хабарландыруда ұсынылған әрекетті орындау үшін <ph name="LOGIN_ID" /> арқылы құрылғының құлпын ашыңыз</translation>
 <translation id="9017320285115481645">Family Link ата-ананың рұқсат кодын енгізіңіз.</translation>
 <translation id="9029474291399787231">Adobe Flash Player қолданбасының жаңартылған нұсқасы қолжетімді</translation>
+<translation id="9047624247355796468"><ph name="NETWORK_NAME" /> желісіне арналған параметрлерді ашу</translation>
 <translation id="9056839673611986238">Құрылғы алдыңғы нұсқаға қайтарылды</translation>
 <translation id="9070640332319875144">Assistant параметрлері</translation>
 <translation id="9072519059834302790"><ph name="TIME_LEFT" /> өткен соң, батареяңыздың қуаты таусылады.</translation>
@@ -571,6 +589,7 @@
 <translation id="9183456764293710005">Толық экран ұлғайтқышы</translation>
 <translation id="9193626018745640770">Белгісіз қабылдағышта трансляциялауда</translation>
 <translation id="9194617393863864469">Басқа пайдаланушыны кіргізу…</translation>
+<translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />, әкімші басқарады</translation>
 <translation id="9205817095063786319">Құрылғыны <ph name="DOMAIN" /> басқарады</translation>
 <translation id="9210037371811586452">Бірыңғай жұмыс үстелі режимінен шығуда</translation>
 <translation id="9211681782751733685"><ph name="TIME_REMAINING" /> өткен соң, батарея толық зарядталады.</translation>

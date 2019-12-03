@@ -3159,10 +3159,6 @@ const char kAggregatedMlSearchRankingDescription[] =
     "Use the aggregated ML model to rank the non-app search results for "
     "non-empty queries.";
 
-const char kAllowAmbientEQName[] = "Show Ambient EQ UI";
-const char kAllowAmbientEQDescription[] =
-    "Shows the UI to enable Ambient EQ on devices that support it.";
-
 const char kAllowDisableMouseAccelerationName[] =
     "Allow disabling mouse acceleration";
 const char kAllowDisableMouseAccelerationDescription[] =
@@ -3617,6 +3613,10 @@ const char kHideArcMediaNotificationsDescription[] =
 const char kImeInputLogicFstName[] = "Enable FST Input Logic on IME";
 const char kImeInputLogicFstDescription[] =
     "Enable FST Input Logic to replace the IME legacy input logic on NaCl";
+
+const char kImeInputLogicHmmName[] = "Enable HMM Input Logic on IME";
+const char kImeInputLogicHmmDescription[] =
+    "Enable HMM Input Logic to replace the IME legacy input logic on NaCl";
 
 const char kImeNativeDecoderName[] = "Enable native decoders in IME Service";
 const char kImeNativeDecoderDescription[] =

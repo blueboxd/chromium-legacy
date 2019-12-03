@@ -77,11 +77,11 @@ class ExtensionGlobalError : public GlobalErrorWithStandardBubble {
     return l10n_util::GetStringUTF16(IDS_EXTENSION_ALERT_ITEM_OK);
   }
 
-  base::string16 GetBubbleViewCancelButtonLabel() override {
+  base::string16 GetBubbleViewCancelButtonLabel() override { return {}; }
+
+  base::string16 GetBubbleViewDetailsButtonLabel() override {
     return l10n_util::GetStringUTF16(IDS_EXTENSION_ALERT_ITEM_DETAILS);
   }
-
-  bool ShouldUseExtraView() const override { return true; }
 
   void OnBubbleViewDidClose(Browser* browser) override {
     delegate_->OnAlertClosed();
@@ -92,6 +92,10 @@ class ExtensionGlobalError : public GlobalErrorWithStandardBubble {
   }
 
   void BubbleViewCancelButtonPressed(Browser* browser) override {
+    NOTREACHED();
+  }
+
+  void BubbleViewDetailsButtonPressed(Browser* browser) override {
     delegate_->OnAlertDetails();
   }
 

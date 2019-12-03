@@ -109,7 +109,7 @@ constexpr net::NetworkTrafficAnnotationTag
 bool RequestIsSafeToServe(const net::HttpServerRequestInfo& info) {
   // For browser-originating requests, serve only those that are coming from
   // pages loaded off localhost or fixed IPs.
-  std::string header = info.headers["host"];
+  std::string header = info.GetHeaderValue("host");
   if (header.empty())
     return true;
   GURL url = GURL("http://" + header);
@@ -574,7 +574,7 @@ void DevToolsHttpHandler::OnJsonRequest(
     version.SetString("User-Agent",
                       GetContentClient()->browser()->GetUserAgent());
     version.SetString("V8-Version", V8_VERSION_STRING);
-    std::string host = info.headers["host"];
+    std::string host = info.GetHeaderValue("host");
     version.SetString(
         kTargetWebSocketDebuggerUrlField,
         base::StringPrintf("ws://%s%s", host.c_str(), browser_guid_.c_str()));
@@ -597,7 +597,8 @@ void DevToolsHttpHandler::OnJsonRequest(
     DevToolsAgentHost::List list =
         manager->delegate() ? manager->delegate()->RemoteDebuggingTargets()
                             : DevToolsAgentHost::GetOrCreateAll();
-    RespondToJsonList(connection_id, info.headers["host"], std::move(list));
+    RespondToJsonList(connection_id, info.GetHeaderValue("host"),
+                      std::move(list));
     return;
   }
 
@@ -612,7 +613,7 @@ void DevToolsHttpHandler::OnJsonRequest(
                "Could not create new page");
       return;
     }
-    std::string host = info.headers["host"];
+    std::string host = info.GetHeaderValue("host");
     std::unique_ptr<base::DictionaryValue> dictionary(
         SerializeDescriptor(agent_host, host));
     SendJson(connection_id, net::HTTP_OK, dictionary.get(), std::string());

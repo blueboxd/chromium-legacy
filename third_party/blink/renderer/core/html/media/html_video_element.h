@@ -47,9 +47,11 @@ class MediaRemotingInterstitial;
 class PictureInPictureInterstitial;
 class VideoWakeLock;
 
-class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
-                                           public CanvasImageSource,
-                                           public ImageBitmapSource {
+class CORE_EXPORT HTMLVideoElement final
+    : public HTMLMediaElement,
+      public CanvasImageSource,
+      public ImageBitmapSource,
+      public Supplementable<HTMLVideoElement> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -177,6 +179,10 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   // WebMediaPlayerClient implementation.
   void OnBecamePersistentVideo(bool) final;
   void ActivateViewportIntersectionMonitoring(bool) final;
+  void OnRequestAnimationFrame(base::TimeTicks presentation_time,
+                               base::TimeTicks expected_presentation_time,
+                               uint32_t presented_frames_counter,
+                               const media::VideoFrame& presented_frame) final;
 
   bool IsPersistent() const;
 
@@ -209,6 +215,8 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   // EventTarget overrides.
   void AddedEventListener(const AtomicString& event_type,
                           RegisteredEventListener&) override;
+
+  void OnWebMediaPlayerCreated() final;
 
  private:
   friend class MediaCustomControlsFullscreenDetectorTest;

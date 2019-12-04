@@ -4,6 +4,10 @@
 
 #include "content/browser/web_package/web_bundle_handle.h"
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
@@ -108,8 +112,7 @@ class PrimaryURLRedirectLoader final : public network::mojom::URLLoader {
             base::StringPrintf("HTTP/1.1 %d %s\r\n", 303, "See Other")));
 
     net::RedirectInfo redirect_info = net::RedirectInfo::ComputeRedirectInfo(
-        "GET", resource_request.url, resource_request.request_initiator,
-        resource_request.site_for_cookies,
+        "GET", resource_request.url, resource_request.site_for_cookies,
         resource_request.update_first_party_url_on_redirect
             ? net::URLRequest::FirstPartyURLPolicy::
                   UPDATE_FIRST_PARTY_URL_ON_REDIRECT
@@ -194,7 +197,7 @@ class InterceptorForFile final : public NavigationLoaderInterceptor {
       bool* skip_other_interceptors,
       bool* will_return_unsafe_redirect) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    DCHECK(web_bundle_utils::IsSupprtedFileScheme(request.url));
+    DCHECK(web_bundle_utils::IsSupportedFileScheme(request.url));
     if ((*response_head)->mime_type !=
         web_bundle_utils::kWebBundleFileMimeTypeWithoutParameters) {
       return false;

@@ -57,8 +57,7 @@
 namespace gpu {
 
 namespace {
-bool CollectGraphicsInfo(GPUInfo* gpu_info,
-                         const GpuPreferences& gpu_preferences) {
+bool CollectGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
   TRACE_EVENT0("gpu,startup", "Collect Graphics Info");
   base::TimeTicks before_collect_context_graphics_info = base::TimeTicks::Now();
@@ -332,7 +331,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // We need to collect GL strings (VENDOR, RENDERER) for blacklisting purposes.
   if (!gl_disabled) {
     if (!use_swiftshader) {
-      if (!CollectGraphicsInfo(&gpu_info_, gpu_preferences_))
+      if (!CollectGraphicsInfo(&gpu_info_))
         return false;
       gpu::SetKeysForCrashLogging(gpu_info_);
       gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(
@@ -363,7 +362,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
           // Collect GPU info, so we can use blacklist to disable vulkan if it
           // is needed.
           gpu::GPUInfo gpu_info;
-          if (!CollectGraphicsInfo(&gpu_info, gpu_preferences_))
+          if (!CollectGraphicsInfo(&gpu_info))
             return false;
           auto gpu_feature_info = gpu::ComputeGpuFeatureInfo(
               gpu_info, gpu_preferences_, command_line, nullptr);
@@ -416,7 +415,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // information on Linux platform. Try to collect graphics information
   // based on core profile context after disabling platform extensions.
   if (!gl_disabled && !use_swiftshader) {
-    if (!CollectGraphicsInfo(&gpu_info_, gpu_preferences_))
+    if (!CollectGraphicsInfo(&gpu_info_))
       return false;
     gpu::SetKeysForCrashLogging(gpu_info_);
     gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(gpu_info_, gpu_preferences_,

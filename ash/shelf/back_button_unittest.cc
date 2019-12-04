@@ -94,7 +94,7 @@ TEST_P(BackButtonTest, Visibility) {
 // Verify that the back button is visible in tablet mode, if the initial shelf
 // alignment is on the left or right.
 TEST_P(BackButtonTest, VisibilityWithVerticalShelf) {
-  test_api()->shelf_view()->shelf()->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  test_api()->shelf_view()->shelf()->SetAlignment(ShelfAlignment::kLeft);
   ASSERT_TRUE(back_button()->layer());
   EXPECT_EQ(0.f, back_button()->layer()->opacity());
 

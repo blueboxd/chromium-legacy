@@ -3380,10 +3380,19 @@ error::Error GLES2DecoderPassthroughImpl::DoTexStorage2DImageCHROMIUM(
 error::Error GLES2DecoderPassthroughImpl::DoGenQueriesEXT(
     GLsizei n,
     volatile GLuint* queries) {
-  return GenHelper(n, queries, &query_id_map_,
-                   [this](GLsizei n, GLuint* queries) {
-                     api()->glGenQueriesFn(n, queries);
-                   });
+  return GenHelper(
+      n, queries, &query_id_map_, [this](GLsizei n, GLuint* queries) {
+        if (feature_info_->feature_flags().occlusion_query_boolean) {
+          // glGenQueries is not loaded unless GL_EXT_occlusion_query_boolean is
+          // present. All queries must be emulated so they don't need to be
+          // generated.
+          api()->glGenQueriesFn(n, queries);
+        } else {
+          for (GLsizei i = 0; i < n; i++) {
+            queries[i] = 0;
+          }
+        }
+      });
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoDeleteQueriesEXT(
@@ -3419,10 +3428,16 @@ error::Error GLES2DecoderPassthroughImpl::DoDeleteQueriesEXT(
 
     RemovePendingQuery(query_service_id);
   }
-  return DeleteHelper(queries_copy.size(), queries_copy.data(), &query_id_map_,
-                      [this](GLsizei n, GLuint* queries) {
-                        api()->glDeleteQueriesFn(n, queries);
-                      });
+  return DeleteHelper(
+      queries_copy.size(), queries_copy.data(), &query_id_map_,
+      [this](GLsizei n, GLuint* queries) {
+        if (feature_info_->feature_flags().occlusion_query_boolean) {
+          // glDeleteQueries is not loaded unless GL_EXT_occlusion_query_boolean
+          // is present. All queries must be emulated so they don't need to be
+          // deleted.
+          api()->glDeleteQueriesFn(n, queries);
+        }
+      });
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoQueryCounterEXT(
@@ -3441,14 +3456,25 @@ error::Error GLES2DecoderPassthroughImpl::DoQueryCounterEXT(
 
   GLuint service_id = GetQueryServiceID(id, &query_id_map_);
 
-  // Flush all previous errors
-  CheckErrorCallbackState();
+  if (IsEmulatedQueryTarget(target)) {
+    DCHECK_EQ(target,
+              static_cast<GLenum>(GL_COMMANDS_ISSUED_TIMESTAMP_CHROMIUM));
+  } else {
+    // glQueryCounter is not loaded unless GL_EXT_disjoint_timer_query is present
+    if (!feature_info_->feature_flags().ext_disjoint_timer_query) {
+      InsertError(GL_INVALID_ENUM, "Invalid query target.");
+      return error::kNoError;
+    }
 
-  api()->glQueryCounterFn(service_id, target);
+    // Flush all previous errors
+    CheckErrorCallbackState();
 
-  // Check if a new error was generated
-  if (CheckErrorCallbackState()) {
-    return error::kNoError;
+    api()->glQueryCounterFn(service_id, target);
+
+    // Check if a new error was generated
+    if (CheckErrorCallbackState()) {
+      return error::kNoError;
+    }
   }
 
   QueryInfo* query_info = &query_info_map_[service_id];
@@ -3507,6 +3533,13 @@ error::Error GLES2DecoderPassthroughImpl::DoBeginQueryEXT(
       return error::kNoError;
     }
   } else {
+    // glBeginQuery is not loaded unless GL_EXT_occlusion_query_boolean is
+    // present
+    if (!feature_info_->feature_flags().occlusion_query_boolean) {
+      InsertError(GL_INVALID_ENUM, "Invalid query target.");
+      return error::kNoError;
+    }
+
     // Flush all previous errors
     CheckErrorCallbackState();
 
@@ -3556,6 +3589,12 @@ error::Error GLES2DecoderPassthroughImpl::DoEndQueryEXT(GLenum target,
           query_service_id);
     }
   } else {
+    // glEndQuery is not loaded unless GL_EXT_occlusion_query_boolean is present
+    if (!feature_info_->feature_flags().occlusion_query_boolean) {
+      InsertError(GL_INVALID_ENUM, "Invalid query target.");
+      return error::kNoError;
+    }
+
     // Flush all previous errors
     CheckErrorCallbackState();
 

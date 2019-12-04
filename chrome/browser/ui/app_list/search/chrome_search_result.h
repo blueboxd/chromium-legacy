@@ -19,10 +19,10 @@ namespace app_list {
 class AppContextMenu;
 }  // namespace app_list
 
-namespace ash {
+namespace string_matching {
 class TokenizedString;
 class TokenizedStringMatch;
-}  // namespace ash
+}  // namespace string_matching
 
 // ChromeSearchResult consists of an icon, title text and details text. Title
 // and details text can have tagged ranges that are displayed differently from
@@ -131,8 +131,8 @@ class ChromeSearchResult {
 
   // Updates the result's relevance score, and sets its title and title tags,
   // based on a string match result.
-  void UpdateFromMatch(const ash::TokenizedString& title,
-                       const ash::TokenizedStringMatch& match);
+  void UpdateFromMatch(const string_matching::TokenizedString& title,
+                       const string_matching::TokenizedStringMatch& match);
 
   // Returns the context menu model for this item, or NULL if there is currently
   // no menu for the item (e.g. during install). |callback| takes the ownership

@@ -73,6 +73,11 @@ VIEWS_EXPORT std::unique_ptr<Border> CreateSolidBorder(int thickness,
 VIEWS_EXPORT std::unique_ptr<Border> CreateRoundedRectBorder(int thickness,
                                                              int corner_radius,
                                                              SkColor color);
+VIEWS_EXPORT std::unique_ptr<Border> CreateRoundedRectBorder(
+    int thickness,
+    int corner_radius,
+    const gfx::Insets& paint_insets,
+    SkColor color);
 
 // Creates a border for reserving space. The returned border does not paint
 // anything.

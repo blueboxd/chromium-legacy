@@ -387,8 +387,12 @@ void TranslateManager::NotifyTranslateInit(std::string page_language_code,
 void TranslateManager::PageTranslated(const std::string& source_lang,
                                       const std::string& target_lang,
                                       TranslateErrors::Type error_type) {
-  if (error_type == TranslateErrors::NONE)
+  if (error_type == TranslateErrors::NONE) {
+    // The user could have updated the source language before translating, so
+    // update the language state with both original and current.
+    language_state_.SetOriginalLanguage(source_lang);
     language_state_.SetCurrentLanguage(target_lang);
+  }
 
   language_state_.set_translation_pending(false);
   language_state_.set_translation_error(error_type != TranslateErrors::NONE);

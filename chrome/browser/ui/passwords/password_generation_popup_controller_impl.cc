@@ -37,10 +37,6 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/text_utils.h"
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/android/preferences/preferences_launcher.h"
-#endif
-
 // Handles registration for key events with RenderFrameHost.
 class PasswordGenerationPopupControllerImpl::KeyPressRegistrator {
  public:

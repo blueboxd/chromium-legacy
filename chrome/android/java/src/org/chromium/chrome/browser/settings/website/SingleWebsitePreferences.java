@@ -33,7 +33,7 @@ import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.settings.ChromeImageViewPreference;
 import org.chromium.chrome.browser.settings.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.ManagedPreferencesUtils;
-import org.chromium.chrome.browser.settings.PreferenceUtils;
+import org.chromium.chrome.browser.settings.SettingsUtils;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -293,7 +293,7 @@ public class SingleWebsitePreferences extends PreferenceFragmentCompat
      * Must only be called once mSite is set.
      */
     private void displaySitePermissions() {
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.single_website_preferences);
+        SettingsUtils.addPreferencesFromResource(this, R.xml.single_website_preferences);
 
         Set<String> permissionPreferenceKeys =
                 new HashSet<>(Arrays.asList(PERMISSION_PREFERENCE_KEYS));
@@ -737,7 +737,7 @@ public class SingleWebsitePreferences extends PreferenceFragmentCompat
             preference.setIcon(category.getDisabledInAndroidIcon(getActivity()));
             preference.setEnabled(false);
         } else {
-            preference.setIcon(PreferenceUtils.getTintedIcon(
+            preference.setIcon(SettingsUtils.getTintedIcon(
                     getActivity(), ContentSettingsResources.getIcon(contentType)));
         }
     }

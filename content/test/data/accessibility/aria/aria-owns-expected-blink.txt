@@ -3,11 +3,15 @@ rootWebArea
 ++++list
 ++++++listItem
 ++++++++listMarker name='• '
+++++++++++staticText name='• '
+++++++++++++inlineTextBox name='• '
 ++++++++genericContainer
 ++++++++++staticText name='One'
 ++++++++++++inlineTextBox name='One'
 ++++++listItem
 ++++++++listMarker name='• '
+++++++++++staticText name='• '
+++++++++++++inlineTextBox name='•'
 ++++++++genericContainer
 ++++++++++staticText name='Two'
 ++++++++++++inlineTextBox name='Two'
@@ -15,6 +19,8 @@ rootWebArea
 ++++genericContainer ignored
 ++++++listItem
 ++++++++listMarker name='• '
+++++++++++staticText name='• '
+++++++++++++inlineTextBox name='•'
 ++++++++genericContainer
 ++++++++++staticText name='Three'
 ++++++++++++inlineTextBox name='Three'

@@ -29,7 +29,6 @@ class SiteDataReader {
   performance_manager::SiteFeatureUsage UpdatesFaviconInBackground() const;
   performance_manager::SiteFeatureUsage UpdatesTitleInBackground() const;
   performance_manager::SiteFeatureUsage UsesAudioInBackground() const;
-  performance_manager::SiteFeatureUsage UsesNotificationsInBackground() const;
 
   // Returns true if this reader is fully initialized and serving the most
   // authoritative data. This can initially return false as the backing store is

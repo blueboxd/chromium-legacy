@@ -184,6 +184,9 @@
 // Returns the current WebState's VisibleURL.
 + (NSString*)webStateVisibleURL;
 
+// Returns the current WebState's last committed URL.
++ (NSString*)webStateLastCommittedURL;
+
 // Purges cached web view pages in the current web state, so the next time back
 // navigation will not use a cached page. Browsers don't have to use a fresh
 // version for back/forward navigation for HTTP pages and may serve a version

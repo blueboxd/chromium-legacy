@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.toolbar.bottom;
 
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import androidx.annotation.ColorInt;
@@ -106,6 +107,14 @@ class BrowsingModeBottomToolbarMediator implements ThemeColorObserver {
                 finalScrimColor, DUET_IPH_BUBBLE_SHOW_DURATION_MS, completeRunnable);
 
         anchor.postDelayed(() -> tracker.dismissed(feature), DUET_IPH_BUBBLE_SHOW_DURATION_MS);
+    }
+
+    /**
+     * Dismiss the IPH bubble for Chrome Duet.
+     * @param activity An activity to attach the IPH to.
+     */
+    void dismissIPH(AppCompatActivity activity) {
+        FeatureHighlightProvider.getInstance().dismiss(activity);
     }
 
     /**

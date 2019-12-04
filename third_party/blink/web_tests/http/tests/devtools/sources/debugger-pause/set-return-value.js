@@ -18,7 +18,7 @@
   let sidebarUpdated = TestRunner.addSnifferPromise(
         Sources.ScopeChainSidebarPane.prototype, '_sidebarPaneUpdatedForTest');
   await Promise.all([SourcesTestRunner.runTestFunctionAndWaitUntilPausedPromise(), sidebarUpdated]);
-  let localScope = SourcesTestRunner.scopeChainSections()[0].objectTreeElement();
+  let localScope = SourcesTestRunner.scopeChainSections()[0];
 
   TestRunner.addResult('Dump current');
   await new Promise(resolve => SourcesTestRunner.expandProperties([localScope, ['Return value']], resolve));

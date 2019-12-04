@@ -70,6 +70,7 @@ class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
   virtual int MarginWidth() const = 0;
   virtual int MarginHeight() const = 0;
   virtual bool AllowFullscreen() const = 0;
+  virtual bool DisallowDocumentAccess() const = 0;
   virtual bool AllowPaymentRequest() const = 0;
   virtual bool IsDisplayNone() const = 0;
   virtual AtomicString RequiredCsp() const = 0;
@@ -146,6 +147,7 @@ class CORE_EXPORT DummyFrameOwner final
   int MarginWidth() const override { return -1; }
   int MarginHeight() const override { return -1; }
   bool AllowFullscreen() const override { return false; }
+  bool DisallowDocumentAccess() const override { return false; }
   bool AllowPaymentRequest() const override { return false; }
   bool IsDisplayNone() const override { return false; }
   AtomicString RequiredCsp() const override { return g_null_atom; }

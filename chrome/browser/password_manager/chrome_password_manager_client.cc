@@ -100,7 +100,6 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/preferences/preferences_launcher.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -111,6 +110,7 @@
 #include "chrome/browser/password_manager/password_accessory_controller.h"
 #include "chrome/browser/password_manager/password_accessory_controller_impl.h"
 #include "chrome/browser/password_manager/password_generation_controller.h"
+#include "chrome/browser/password_manager/password_manager_launcher_android.h"
 #include "chrome/browser/password_manager/save_password_infobar_delegate_android.h"
 #include "chrome/browser/password_manager/touch_to_fill_controller.h"
 #include "chrome/browser/password_manager/update_password_infobar_delegate_android.h"
@@ -1096,8 +1096,7 @@ void ChromePasswordManagerClient::UpdateFormManagers() {
 void ChromePasswordManagerClient::NavigateToManagePasswordsPage(
     password_manager::ManagePasswordsReferrer referrer) {
 #if defined(OS_ANDROID)
-  chrome::android::PreferencesLauncher::ShowPasswordSettings(web_contents(),
-                                                             referrer);
+  password_manager_launcher::ShowPasswordSettings(web_contents(), referrer);
 #else
   ::NavigateToManagePasswordsPage(
       chrome::FindBrowserWithWebContents(web_contents()), referrer);

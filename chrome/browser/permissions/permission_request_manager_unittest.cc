@@ -613,10 +613,10 @@ TEST_F(PermissionRequestManagerTest, UMAForTabSwitching) {
 TEST_F(PermissionRequestManagerTest,
        NotificationsUnderClientSideEmbargoAfterSeveralDenies) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {features::kQuietNotificationPrompts,
-       features::kBlockRepeatedNotificationPermissionPrompts},
-      {});
+  feature_list.InitWithFeaturesAndParameters(
+      {{features::kQuietNotificationPrompts,
+        {{QuietNotificationsPromptConfig::kEnableAdaptiveActivation, "true"}}}},
+      {features::kBlockRepeatedNotificationPermissionPrompts});
 
   auto* permission_ui_selector =
       AdaptiveNotificationPermissionUiSelector::GetForProfile(profile());

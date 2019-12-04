@@ -999,6 +999,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
 
   sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(profile());
+  ASSERT_GT(service->entries().size(), 0U);
   service->RestoreMostRecentEntry(nullptr);
 
   content::WebContents* restored_web_contents =

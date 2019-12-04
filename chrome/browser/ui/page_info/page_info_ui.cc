@@ -468,6 +468,9 @@ base::string16 PageInfoUI::PermissionDecisionReasonToUIString(
       case PermissionStatusSource::MULTIPLE_DISMISSALS:
         message_id = IDS_PAGE_INFO_PERMISSION_AUTOMATICALLY_BLOCKED;
         break;
+      case PermissionStatusSource::MULTIPLE_IGNORES:
+        message_id = IDS_PAGE_INFO_PERMISSION_AUTOMATICALLY_BLOCKED;
+        break;
       default:
         break;
     }

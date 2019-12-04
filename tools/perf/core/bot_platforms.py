@@ -193,7 +193,8 @@ _ANDROID_PIXEL2_WEBVIEW_BENCHMARK_CONFIGS = (
     _OFFICIAL_EXCEPT_DISPLAY_LOCKING_JETSTREAM2)
 _ANDROID_PIXEL2_WEBLAYER_BENCHMARK_CONFIGS = frozenset([
     _GetBenchmarkConfig('system_health.common_mobile', True),
-    _GetBenchmarkConfig('system_health.memory_mobile', True)])
+    _GetBenchmarkConfig('system_health.memory_mobile', True),
+    _GetBenchmarkConfig('startup.mobile')])
 _ANDROID_NEXUS5X_FYI_BENCHMARK_CONFIGS = frozenset([
      # Running a sample benchmark to help testing out the work on
      # trace_processor_shell: crbug.com/1028612

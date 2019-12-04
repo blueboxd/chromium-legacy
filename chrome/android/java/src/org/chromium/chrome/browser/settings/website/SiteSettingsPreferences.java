@@ -13,7 +13,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.settings.LocationSettings;
-import org.chromium.chrome.browser.settings.PreferenceUtils;
+import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.chrome.browser.settings.website.SiteSettingsCategory.Type;
 import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.common.ContentSwitches;
@@ -34,7 +34,7 @@ public class SiteSettingsPreferences
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.site_settings_preferences);
+        SettingsUtils.addPreferencesFromResource(this, R.xml.site_settings_preferences);
         getActivity().setTitle(R.string.prefs_site_settings);
 
         configurePreferences();
@@ -142,7 +142,7 @@ public class SiteSettingsPreferences
             }
 
             if (p.isEnabled()) {
-                p.setIcon(PreferenceUtils.getTintedIcon(
+                p.setIcon(SettingsUtils.getTintedIcon(
                         getActivity(), ContentSettingsResources.getIcon(contentType)));
             } else {
                 p.setIcon(ContentSettingsResources.getDisabledIcon(contentType, getResources()));

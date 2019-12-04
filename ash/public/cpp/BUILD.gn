@@ -38,14 +38,6 @@ component("cpp") {
     "app_list/app_list_types.cc",
     "app_list/app_list_types.h",
     "app_list/internal_app_id_constants.h",
-    "app_list/term_break_iterator.cc",
-    "app_list/term_break_iterator.h",
-    "app_list/tokenized_string.cc",
-    "app_list/tokenized_string.h",
-    "app_list/tokenized_string_char_iterator.cc",
-    "app_list/tokenized_string_char_iterator.h",
-    "app_list/tokenized_string_match.cc",
-    "app_list/tokenized_string_match.h",
     "app_menu_constants.h",
     "app_types.h",
     "arc_app_id_provider.cc",
@@ -287,23 +279,6 @@ source_set("manifest") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//services/viz/public/mojom",
-  ]
-}
-
-source_set("manifest_for_tests") {
-  testonly = true
-
-  sources = [
-    "test_manifest.cc",
-    "test_manifest.h",
-  ]
-
-  deps = [
-    ":manifest",
-    "//ash/public/mojom:test_interfaces",
-    "//base",
-    "//services/service_manager/public/cpp",
-    "//services/service_manager/public/mojom",
   ]
 }
 

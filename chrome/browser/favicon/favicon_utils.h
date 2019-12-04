@@ -25,6 +25,10 @@ namespace favicon {
 void CreateContentFaviconDriverForWebContents(
     content::WebContents* web_contents);
 
+// Generates a monogram in a colored circle. The color is based on the hash
+// of the url and the monogram is the first letter of the URL domain.
+SkBitmap GenerateMonogramFavicon(GURL url, int icon_size, int circle_size);
+
 // Returns whether the favicon should be displayed. If this returns false, no
 // space is provided for the favicon, and the favicon is never displayed.
 bool ShouldDisplayFavicon(content::WebContents* web_contents);

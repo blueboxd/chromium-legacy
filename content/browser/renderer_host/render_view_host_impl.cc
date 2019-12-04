@@ -347,8 +347,9 @@ bool RenderViewHostImpl::CreateRenderView(
   if (main_rfh) {
     params->main_frame_interface_bundle =
         mojom::DocumentScopedInterfaceBundle::New();
-    main_rfh->BindInterfaceProviderReceiver(mojo::MakeRequest(
-        &params->main_frame_interface_bundle->interface_provider));
+    main_rfh->BindInterfaceProviderReceiver(
+        params->main_frame_interface_bundle->interface_provider
+            .InitWithNewPipeAndPassReceiver());
     main_rfh->BindBrowserInterfaceBrokerReceiver(
         params->main_frame_interface_bundle->browser_interface_broker
             .InitWithNewPipeAndPassReceiver());

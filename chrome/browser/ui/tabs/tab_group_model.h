@@ -17,7 +17,7 @@
 class TabGroup;
 class TabGroupId;
 class TabGroupVisualData;
-class TabStripModel;
+class TabGroupController;
 
 // A model for all tab groups with at least one tab in the tabstrip. Keeps a map
 // of TabGroupIds and TabGroups and provides an API for maintaining it. It is
@@ -27,7 +27,7 @@ class TabStripModel;
 // in the view.
 class TabGroupModel {
  public:
-  explicit TabGroupModel(TabStripModel* model);
+  explicit TabGroupModel(TabGroupController* controller);
   ~TabGroupModel();
 
   // Registers a tab group and returns the newly registered group. It will
@@ -39,14 +39,11 @@ class TabGroupModel {
   // Returns whether a tab group with the given |id| exists.
   bool ContainsTabGroup(TabGroupId id) const;
 
-  // Returns the tab group with the given |id| if it exists. Does not create
-  // a registration if the |id| is not found, and instead returns a nullptr.
+  // Returns the tab group with the given |id|. The group must exist.
   TabGroup* GetTabGroup(TabGroupId id) const;
 
   // Removes the tab group with the given |id| from the registry. Should be
   // called whenever the group becomes empty.
-  // TODO(connily): Handle this in TabGroup along with the rest of the refactor
-  // that handles notifications through to TabStrip.
   void RemoveTabGroup(TabGroupId id);
 
   std::vector<TabGroupId> ListTabGroups() const;
@@ -54,7 +51,7 @@ class TabGroupModel {
  private:
   std::map<TabGroupId, std::unique_ptr<TabGroup>> groups_;
 
-  TabStripModel* model_;
+  TabGroupController* controller_;
 };
 
 #endif  // CHROME_BROWSER_UI_TABS_TAB_GROUP_MODEL_H_

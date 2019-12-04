@@ -6,10 +6,10 @@
 
 #include <map>
 
-#include "ash/public/cpp/app_list/tokenized_string.h"
-#include "ash/public/cpp/app_list/tokenized_string_match.h"
 #include "base/containers/adapters.h"
 #include "chrome/browser/ui/app_list/app_context_menu.h"
+#include "chrome/common/string_matching/tokenized_string.h"
+#include "chrome/common/string_matching/tokenized_string_match.h"
 
 ChromeSearchResult::ChromeSearchResult()
     : metadata_(std::make_unique<ash::SearchResultMetadata>()) {}
@@ -160,9 +160,9 @@ void ChromeSearchResult::OnVisibilityChanged(bool visibility) {
 }
 
 void ChromeSearchResult::UpdateFromMatch(
-    const ash::TokenizedString& title,
-    const ash::TokenizedStringMatch& match) {
-  const ash::TokenizedStringMatch::Hits& hits = match.hits();
+    const string_matching::TokenizedString& title,
+    const string_matching::TokenizedStringMatch& match) {
+  const string_matching::TokenizedStringMatch::Hits& hits = match.hits();
 
   Tags tags;
   tags.reserve(hits.size());

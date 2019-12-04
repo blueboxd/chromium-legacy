@@ -4307,8 +4307,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AutoResizeMessages) {
 
   // Helper function as this test requires inspecting a number of content::
   // internal objects.
-  EXPECT_TRUE(content::TestChildOrGuestAutoresize(
-      false,
+  EXPECT_TRUE(content::TestGuestAutoresize(
       embedder->GetRenderWidgetHostView()->GetRenderWidgetHost()->GetProcess(),
       guest->GetRenderWidgetHostView()->GetRenderWidgetHost()));
 }

@@ -74,7 +74,8 @@ void MessagePipeReader::GetRemoteInterface(
   if (!sender_.is_bound())
     return;
   sender_->GetAssociatedInterface(
-      name, mojom::GenericInterfaceAssociatedRequest(std::move(handle)));
+      name, mojo::PendingAssociatedReceiver<mojom::GenericInterface>(
+                std::move(handle)));
 }
 
 void MessagePipeReader::SetPeerPid(int32_t peer_pid) {
@@ -109,10 +110,10 @@ void MessagePipeReader::Receive(MessageView message_view) {
 
 void MessagePipeReader::GetAssociatedInterface(
     const std::string& name,
-    mojom::GenericInterfaceAssociatedRequest request) {
+    mojo::PendingAssociatedReceiver<mojom::GenericInterface> receiver) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (delegate_)
-    delegate_->OnAssociatedInterfaceRequest(name, request.PassHandle());
+    delegate_->OnAssociatedInterfaceRequest(name, receiver.PassHandle());
 }
 
 void MessagePipeReader::OnPipeError(MojoResult error) {

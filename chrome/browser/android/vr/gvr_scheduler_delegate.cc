@@ -930,11 +930,11 @@ void GvrSchedulerDelegate::SendVSync(device::mojom::VRPosePtr pose,
   // Process all events. Check for ones we wish to react to.
   gvr::Event last_event;
   while (gvr_api_->PollEvent(&last_event)) {
-    pose->pose_reset |= last_event.type == GVR_EVENT_RECENTER;
+    frame_data->mojo_space_reset |= last_event.type == GVR_EVENT_RECENTER;
   }
 
   TRACE_EVENT0("gpu", "GvrSchedulerDelegate::XRInput");
-  pose->input_state = std::move(input_states_);
+  frame_data->input_state = std::move(input_states_);
 
   frame_data->pose = std::move(pose);
 

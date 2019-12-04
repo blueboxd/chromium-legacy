@@ -343,6 +343,9 @@ class CORE_EXPORT HTMLMediaElement
   void SetCcLayerForTesting(cc::Layer* layer) { SetCcLayer(layer); }
 
  protected:
+  // Assert the correct order of the children in shadow dom when DCHECK is on.
+  static void AssertShadowRootChildren(ShadowRoot&);
+
   HTMLMediaElement(const QualifiedName&, Document&);
   ~HTMLMediaElement() override;
   void Dispose();
@@ -370,8 +373,8 @@ class CORE_EXPORT HTMLMediaElement
   DisplayMode GetDisplayMode() const { return display_mode_; }
   virtual void SetDisplayMode(DisplayMode mode) { display_mode_ = mode; }
 
-  // Assert the correct order of the children in shadow dom when DCHECK is on.
-  static void AssertShadowRootChildren(ShadowRoot&);
+  // Called after the creation of |web_media_player_|.
+  virtual void OnWebMediaPlayerCreated() {}
 
  private:
   // Friend class for testing.

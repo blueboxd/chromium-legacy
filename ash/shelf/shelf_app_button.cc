@@ -589,7 +589,7 @@ void ShelfAppButton::Layout() {
 
   // If on the left or top 'invert' the inset so the constant gap is on
   // the interior (towards the center of display) edge of the shelf.
-  if (SHELF_ALIGNMENT_LEFT == shelf->alignment())
+  if (ShelfAlignment::kLeft == shelf->alignment())
     x_offset = button_bounds.width() - (icon_size + icon_padding);
 
   // Center icon with respect to the secondary axis.
@@ -627,17 +627,17 @@ void ShelfAppButton::Layout() {
   DCHECK_LE(icon_height, icon_size);
 
   switch (shelf->alignment()) {
-    case SHELF_ALIGNMENT_BOTTOM:
-    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+    case ShelfAlignment::kBottom:
+    case ShelfAlignment::kBottomLocked:
       indicator_midpoint.set_y(button_bounds.bottom() -
                                kStatusIndicatorRadiusDip -
                                status_indicator_offet_from_shelf_edge);
       break;
-    case SHELF_ALIGNMENT_LEFT:
+    case ShelfAlignment::kLeft:
       indicator_midpoint.set_x(button_bounds.x() + kStatusIndicatorRadiusDip +
                                status_indicator_offet_from_shelf_edge);
       break;
-    case SHELF_ALIGNMENT_RIGHT:
+    case ShelfAlignment::kRight:
       indicator_midpoint.set_x(button_bounds.right() -
                                kStatusIndicatorRadiusDip -
                                status_indicator_offet_from_shelf_edge);

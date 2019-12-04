@@ -22,6 +22,7 @@ struct MEDIA_EXPORT AudioType {
   static AudioType FromDecoderConfig(const AudioDecoderConfig& config);
 
   AudioCodec codec;
+  bool spatialRendering;
 };
 
 struct MEDIA_EXPORT VideoType {

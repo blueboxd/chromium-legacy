@@ -428,8 +428,14 @@ bool Tab::OnKeyPressed(const ui::KeyEvent& event) {
     return true;
   }
 
-  if (event.type() == ui::ET_KEY_PRESSED &&
-      (event.flags() & ui::EF_CONTROL_DOWN)) {
+  constexpr int kModifiedFlag =
+#if defined(OS_MACOSX)
+      ui::EF_COMMAND_DOWN;
+#else
+      ui::EF_CONTROL_DOWN;
+#endif
+
+  if (event.type() == ui::ET_KEY_PRESSED && (event.flags() & kModifiedFlag)) {
     if (event.flags() & ui::EF_SHIFT_DOWN) {
       if (event.key_code() == ui::VKEY_RIGHT) {
         controller()->MoveTabLast(this);

@@ -4,9 +4,9 @@
 
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper.h"
 
-#include "ios/chrome/browser/infobars/infobar.h"
 #include "ios/chrome/browser/infobars/infobar_badge_model.h"
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper_delegate.h"
+#include "ios/chrome/browser/infobars/infobar_ios.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/infobar_ui_delegate.h"

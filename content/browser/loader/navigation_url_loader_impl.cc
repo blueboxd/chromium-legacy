@@ -58,7 +58,6 @@
 #include "content/public/browser/download_utils.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_ui_data.h"
-#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
@@ -94,6 +93,10 @@
 
 #if defined(OS_ANDROID)
 #include "content/browser/android/content_url_loader_factory.h"
+#endif
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "content/public/browser/plugin_service.h"
 #endif
 
 namespace content {

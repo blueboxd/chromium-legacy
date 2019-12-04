@@ -39,7 +39,7 @@ static inline base::trace_event::TraceEventHandle AddTraceEvent(
   }
   TraceEventDataSource::OnAddTraceEvent(&maybe_event.value(),
                                         /* thread_will_flush = */ false,
-                                        &handle, std::move(argument_func));
+                                        nullptr, std::move(argument_func));
   return handle;
 }
 }  // namespace internal

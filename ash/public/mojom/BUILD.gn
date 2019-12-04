@@ -41,17 +41,3 @@ mojom("mojom") {
   export_define = "ASH_PUBLIC_IMPLEMENTATION=1"
   export_header = "ash/public/cpp/ash_public_export.h"
 }
-
-mojom("test_interfaces") {
-  testonly = true
-  disable_variants = true
-  sources = [
-    "status_area_widget_test_api.test-mojom",
-  ]
-  deps = [
-    ":mojom",
-    "//components/account_id/mojom",
-    "//mojo/public/mojom/base",
-    "//ui/gfx/geometry/mojom",
-  ]
-}

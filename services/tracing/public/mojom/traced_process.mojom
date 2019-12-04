@@ -9,7 +9,7 @@ import "services/tracing/public/mojom/perfetto_service.mojom";
 
 struct ConnectToTracingRequest {
 [EnableIf=is_perfetto_supported_os]
-  PerfettoService perfetto_service;
+  pending_remote<PerfettoService> perfetto_service;
 };
 
 // The tracing service will bind this interface on every other service,

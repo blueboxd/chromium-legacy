@@ -17,7 +17,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/dom_distiller/content/browser/web_contents_main_frame_observer.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -135,8 +134,6 @@ IN_PROC_BROWSER_TEST_F(DomDistillerJsTest, MAYBE_RunJsTests) {
 
   // Load the test file in content shell and wait until it has fully loaded.
   content::WebContents* web_contents = shell()->web_contents();
-  dom_distiller::WebContentsMainFrameObserver::CreateForWebContents(
-      web_contents);
   base::RunLoop url_loaded_runner;
   WebContentsMainFrameHelper main_frame_loaded(web_contents,
                                                url_loaded_runner.QuitClosure());

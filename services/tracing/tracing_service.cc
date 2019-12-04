@@ -45,13 +45,13 @@ void TracingService::AddClient(mojom::ClientInfoPtr client) {
 
   mojo::Remote<mojom::TracedProcess> process(std::move(client->process));
   auto new_connection_request = mojom::ConnectToTracingRequest::New();
-  auto service_request =
-      mojo::MakeRequest(&new_connection_request->perfetto_service);
+  auto service_receiver =
+      new_connection_request->perfetto_service.InitWithNewPipeAndPassReceiver();
   mojom::TracedProcess* raw_process = process.get();
   raw_process->ConnectToTracingService(
       std::move(new_connection_request),
       base::BindOnce(&OnProcessConnected, std::move(process), client->pid,
-                     std::move(service_request)));
+                     std::move(service_receiver)));
 }
 
 #if !defined(OS_NACL) && !defined(OS_IOS)

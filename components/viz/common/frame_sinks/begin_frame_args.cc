@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "base/trace_event/traced_value.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_compositor_scheduler_state.pbzero.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/source_location.pbzero.h"
 
 namespace viz {
 
@@ -22,6 +24,23 @@ const char* BeginFrameArgs::TypeToString(BeginFrameArgsType type) {
   NOTREACHED();
   return "???";
 }
+
+namespace {
+perfetto::protos::pbzero::BeginFrameArgs::BeginFrameArgsType
+TypeToProtozeroEnum(BeginFrameArgs::BeginFrameArgsType type) {
+  using pbzeroType = perfetto::protos::pbzero::BeginFrameArgs;
+  switch (type) {
+    case BeginFrameArgs::INVALID:
+      return pbzeroType::BEGIN_FRAME_ARGS_TYPE_INVALID;
+    case BeginFrameArgs::NORMAL:
+      return pbzeroType::BEGIN_FRAME_ARGS_TYPE_NORMAL;
+    case BeginFrameArgs::MISSED:
+      return pbzeroType::BEGIN_FRAME_ARGS_TYPE_MISSED;
+  }
+  NOTREACHED();
+  return pbzeroType::BEGIN_FRAME_ARGS_TYPE_UNSPECIFIED;
+}
+}  // namespace
 
 constexpr uint64_t BeginFrameArgs::kInvalidFrameNumber;
 constexpr uint64_t BeginFrameArgs::kStartingFrameNumber;
@@ -96,6 +115,30 @@ void BeginFrameArgs::AsValueInto(base::trace_event::TracedValue* state) const {
 #endif
   state->SetBoolean("on_critical_path", on_critical_path);
   state->SetBoolean("animate_only", animate_only);
+}
+
+void BeginFrameArgs::AsProtozeroInto(
+    perfetto::protos::pbzero::BeginFrameArgs* state) const {
+  state->set_type(TypeToProtozeroEnum(type));
+  state->set_source_id(source_id);
+  state->set_sequence_number(sequence_number);
+  state->set_frame_time_us(frame_time.since_origin().InMicroseconds());
+  state->set_deadline_us(deadline.since_origin().InMicroseconds());
+  state->set_interval_delta_us(interval.InMicroseconds());
+  state->set_on_critical_path(on_critical_path);
+  state->set_animate_only(animate_only);
+#ifndef NDEBUG
+  auto* src_loc = state->set_source_location();
+  if (created_from.file_name()) {
+    src_loc->set_file_name(created_from.file_name());
+  }
+  if (created_from.function_name()) {
+    src_loc->set_function_name(created_from.function_name());
+  }
+  if (created_from.line_number() != -1) {
+    src_loc->set_line_number(created_from.line_number());
+  }
+#endif
 }
 
 BeginFrameAck::BeginFrameAck()

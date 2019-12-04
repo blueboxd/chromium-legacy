@@ -339,8 +339,8 @@ class NavigationOrSwapObserver : public WebContentsObserver,
         tab_strip_model_(tab_strip_model),
         did_start_loading_(false),
         number_of_loads_(1) {
-    CHECK_NE(TabStripModel::kNoTab,
-             tab_strip_model->GetIndexOfWebContents(web_contents));
+    EXPECT_NE(TabStripModel::kNoTab,
+              tab_strip_model->GetIndexOfWebContents(web_contents));
     tab_strip_model_->AddObserver(this);
   }
 
@@ -353,8 +353,8 @@ class NavigationOrSwapObserver : public WebContentsObserver,
         tab_strip_model_(tab_strip_model),
         did_start_loading_(false),
         number_of_loads_(number_of_loads) {
-    CHECK_NE(TabStripModel::kNoTab,
-             tab_strip_model->GetIndexOfWebContents(web_contents));
+    EXPECT_NE(TabStripModel::kNoTab,
+              tab_strip_model->GetIndexOfWebContents(web_contents));
     tab_strip_model_->AddObserver(this);
   }
 

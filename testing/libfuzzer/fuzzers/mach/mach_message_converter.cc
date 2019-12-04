@@ -18,18 +18,28 @@ namespace mach_fuzzer {
 namespace {
 
 SendablePort ConvertPort(const MachPortType& port_proto) {
-  constexpr struct {
+  struct {
     bool insert_send_right;
     bool deallocate_receive_right;
     mach_msg_type_name_t disposition;
-  } kPortRecipes[] = {
-      [RECEIVE] = {true, false, MACH_MSG_TYPE_MOVE_RECEIVE},
-      [SEND] = {false, false, MACH_MSG_TYPE_MAKE_SEND},
-      [SEND_ONCE] = {false, false, MACH_MSG_TYPE_MAKE_SEND_ONCE},
-      [DEAD_NAME] = {true, true, MACH_MSG_TYPE_COPY_SEND},
-      [RECEIVE_NO_SENDERS] = {false, false, MACH_MSG_TYPE_MOVE_RECEIVE},
-  };
-  const auto* recipe = &kPortRecipes[port_proto];
+  } recipe;
+  switch (port_proto) {
+    case RECEIVE:
+      recipe = {true, false, MACH_MSG_TYPE_MOVE_RECEIVE};
+      break;
+    case SEND:
+      recipe = {false, false, MACH_MSG_TYPE_MAKE_SEND};
+      break;
+    case SEND_ONCE:
+      recipe = {false, false, MACH_MSG_TYPE_MAKE_SEND_ONCE};
+      break;
+    case DEAD_NAME:
+      recipe = {true, true, MACH_MSG_TYPE_COPY_SEND};
+      break;
+    case RECEIVE_NO_SENDERS:
+      recipe = {false, false, MACH_MSG_TYPE_MOVE_RECEIVE};
+      break;
+  }
 
   SendablePort port;
   kern_return_t kr = mach_port_allocate(
@@ -38,17 +48,17 @@ SendablePort ConvertPort(const MachPortType& port_proto) {
   MACH_CHECK(kr == KERN_SUCCESS, kr) << "mach_port_allocate";
 
   port.name = port.receive_right.get();
-  port.disposition = recipe->disposition;
+  port.disposition = recipe.disposition;
   port.proto_type = port_proto;
 
-  if (recipe->insert_send_right) {
+  if (recipe.insert_send_right) {
     kr = mach_port_insert_right(mach_task_self(), port.name, port.name,
                                 MACH_MSG_TYPE_MAKE_SEND);
     MACH_CHECK(kr == KERN_SUCCESS, kr) << "mach_port_insert_right";
     port.send_right.reset(port.name);
   }
 
-  if (recipe->deallocate_receive_right) {
+  if (recipe.deallocate_receive_right) {
     port.receive_right.reset();
   }
 

@@ -396,6 +396,7 @@ bool IsAudioConfigurationSupported(
     const String& codec) {
   media::AudioCodec audio_codec = media::kUnknownAudioCodec;
   bool is_audio_codec_ambiguous = true;
+  bool is_spatial_rendering = false;
 
   // Must succeed as IsAudioCodecValid() should have been called before.
   bool parsed =
@@ -403,7 +404,10 @@ bool IsAudioConfigurationSupported(
                                    &is_audio_codec_ambiguous, &audio_codec);
   DCHECK(parsed && !is_audio_codec_ambiguous);
 
-  return media::IsSupportedAudioType({audio_codec});
+  if (audio_config->hasSpatialRendering())
+    is_spatial_rendering = audio_config->spatialRendering();
+
+  return media::IsSupportedAudioType({audio_codec, is_spatial_rendering});
 }
 
 // Returns whether the VideoConfiguration is supported.

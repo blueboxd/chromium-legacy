@@ -149,7 +149,6 @@ group("gn_all") {
       "//ui/accessibility:accessibility_unittests",
       "//ui/accessibility/extensions:extension_tests",
       "//ui/accessibility/extensions:extensions",
-      "//ui/color:color_unittests",
     ]
   }
 
@@ -812,7 +811,10 @@ group("gn_all") {
   }
 
   if (use_color_pipeline) {
-    deps += [ "//chrome/browser/ui/color:dump_colors" ]
+    deps += [
+      "//chrome/browser/ui/color:dump_colors",
+      "//ui/color:color_unittests",
+    ]
   }
 
   # PFFFT.

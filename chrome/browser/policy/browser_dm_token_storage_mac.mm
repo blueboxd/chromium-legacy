@@ -172,7 +172,9 @@ BrowserDMTokenStorage* BrowserDMTokenStorage::Get() {
   return storage.get();
 }
 
-BrowserDMTokenStorageMac::BrowserDMTokenStorageMac() : weak_factory_(this) {}
+BrowserDMTokenStorageMac::BrowserDMTokenStorageMac()
+    : task_runner_(
+          base::CreateTaskRunner({base::ThreadPool(), base::MayBlock()})) {}
 
 BrowserDMTokenStorageMac::~BrowserDMTokenStorageMac() {}
 
@@ -231,13 +233,15 @@ bool BrowserDMTokenStorageMac::InitEnrollmentErrorOption() {
   return IsEnrollmentMandatoryByFile().value_or(false);
 }
 
-void BrowserDMTokenStorageMac::SaveDMToken(const std::string& token) {
-  std::string client_id = RetrieveClientId();
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-      base::BindOnce(&StoreDMTokenInDirAppDataDir, token, client_id),
-      base::BindOnce(&BrowserDMTokenStorage::OnDMTokenStored,
-                     weak_factory_.GetWeakPtr()));
+BrowserDMTokenStorage::StoreTask BrowserDMTokenStorageMac::SaveDMTokenTask(
+    const std::string& token,
+    const std::string& client_id) {
+  return base::BindOnce(&StoreDMTokenInDirAppDataDir, token, client_id);
+}
+
+scoped_refptr<base::TaskRunner>
+BrowserDMTokenStorageMac::SaveDMTokenTaskRunner() {
+  return task_runner_;
 }
 
 }  // namespace policy

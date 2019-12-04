@@ -1559,6 +1559,15 @@
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTERS" desc="In CUPS printing settings subpage, title for the nearby printers list.">
       Add printers to your profile
     </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTERS_COUNT_MANY" desc="In CUPS printing settings subpage, this message will be read aloud to the user to inform them on the number of printers showing on the screen that are available to save.">
+      There are <ph name="PRINTER_COUNT">$1<ex>3</ex></ph> printers available to save.
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTER_COUNT_ONE" desc="In CUPS printing settings subpage, this message will be read aloud to the user to inform them there is only 1 printer available to save.">
+      There is 1 printer available to save.
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTER_COUNT_NONE" desc="In CUPS printing settings subpage, this message will be read aloud to the user to inform them there are no printers available to save.">
+      There are no printers available to save.
+    </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_EDIT" desc="Text for the drop down menu which allows the user to edit the printer details.">
       Edit
     </message>
@@ -1582,6 +1591,15 @@
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_SAVED_PRINTERS_TITLE" desc="Text for the title of the user's saved printers list.">
       Your saved printers
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_SAVED_PRINTERS_COUNT_MANY" desc="In CUPS printing settings subpage, this message will be read aloud to the user to inform them on the number of printers previously saved by the user.">
+      You have <ph name="PRINTER_COUNT">$1<ex>3</ex></ph> saved printers.
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_SAVED_PRINTERS_COUNT_ONE" desc="In CUPS printing settings subpage, this message will be read aloud to the user to inform them there is only 1 printer previously saved.">
+      You have 1 saved printer.
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_SAVED_PRINTERS_COUNT_NONE" desc="In CUPS printing settings subpage, this message will be read aloud to the user to inform them they have no printers previously saved.">
+      You have no saved printers.
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_SHOW_MORE" desc="Text for the button to show more printers when there are more printers than currently displayed to the user.">
       Show more
@@ -2723,7 +2741,7 @@
       Weak
     </message>
     <message name="IDS_ONC_TETHER_SIGNAL_STRENGTH_OKAY" desc="Settings > Internet > Label used to describe the signal strength of a device's cellular connection when the signal is okay. The strength value is 2 on a scale from 1 (min) to 5 (max).">
-      Weak
+      Okay
     </message>
     <message name="IDS_ONC_TETHER_SIGNAL_STRENGTH_GOOD" desc="Settings > Internet > Label used to describe the signal strength of a device's cellular connection when the signal is good. The strength value is 3 on a scale from 1 (min) to 5 (max).">
       Fine

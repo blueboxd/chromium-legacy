@@ -653,7 +653,6 @@ void TabActivityWatcher::OnTabStripModelChanged(
       break;
     }
     case TabStripModelChange::kMoved:
-    case TabStripModelChange::kGroupChanged:
     case TabStripModelChange::kSelectionOnly:
       break;
   }

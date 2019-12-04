@@ -219,17 +219,22 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
                               ResourceId resource_id);
     ~ScopedReadLockSharedImage();
 
-    ScopedReadLockSharedImage(const ScopedReadLockSharedImage&) = delete;
-    ScopedReadLockSharedImage& operator=(const ScopedReadLockSharedImage&) =
-        delete;
+    ScopedReadLockSharedImage(ScopedReadLockSharedImage&& other);
+    ScopedReadLockSharedImage& operator=(ScopedReadLockSharedImage&& other);
 
-    gpu::Mailbox mailbox() const;
-    gpu::SyncToken sync_token() const;
+    const gpu::Mailbox& mailbox() const {
+      DCHECK(resource_);
+      return resource_->transferable.mailbox_holder.mailbox;
+    }
+    const gpu::SyncToken& sync_token() const {
+      DCHECK(resource_);
+      return resource_->sync_token();
+    }
 
    private:
-    DisplayResourceProvider* const resource_provider_;
-    const ResourceId resource_id_;
-    ChildResource* const resource_;
+    DisplayResourceProvider* resource_provider_;
+    ResourceId resource_id_;
+    ChildResource* resource_;
   };
 
   // Maintains set of resources locked for external use by SkiaRenderer.
@@ -405,6 +410,11 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     // synchronized for use.
     bool ShouldWaitSyncToken() const {
       return synchronization_state_ == NEEDS_WAIT;
+    }
+
+    bool InUse() const {
+      return lock_for_read_count > 0 || locked_for_external_use ||
+             lock_for_overlay_count > 0;
     }
 
     void SetLocallyUsed();

@@ -8,9 +8,8 @@
 #include "ash/accessibility/accessibility_focus_ring_controller_impl.h"
 #include "ash/accessibility/accessibility_focus_ring_layer.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/system_tray_test_api.h"
 #include "ash/public/mojom/constants.mojom.h"
-#include "ash/public/mojom/status_area_widget_test_api.test-mojom-test-utils.h"
-#include "ash/public/mojom/status_area_widget_test_api.test-mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
@@ -62,10 +61,7 @@ class SelectToSpeakTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     ASSERT_FALSE(AccessibilityManager::Get()->IsSelectToSpeakEnabled());
 
-    // Connect to the ash test interface for the StatusAreaWidget.
-    content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
-                                                 &status_area_widget_test_api_);
-
+    tray_test_api_ = ash::SystemTrayTestApi::Create();
     content::WindowedNotificationObserver extension_load_waiter(
         extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD,
         content::NotificationService::AllSources());
@@ -113,10 +109,8 @@ class SelectToSpeakTest : public InProcessBrowserTest {
   }
 
   void TapSelectToSpeakTray() {
-    ash::mojom::StatusAreaWidgetTestApiAsyncWaiter status_area(
-        status_area_widget_test_api_.get());
     PrepareToWaitForSelectToSpeakStatusChanged();
-    status_area.TapSelectToSpeakTray();
+    tray_test_api_->TapSelectToSpeakTray();
     WaitForSelectToSpeakStatusChanged();
   }
 
@@ -151,7 +145,7 @@ class SelectToSpeakTest : public InProcessBrowserTest {
   }
 
  private:
-  ash::mojom::StatusAreaWidgetTestApiPtr status_area_widget_test_api_;
+  std::unique_ptr<ash::SystemTrayTestApi> tray_test_api_;
   scoped_refptr<content::MessageLoopRunner> loop_runner_;
   scoped_refptr<content::MessageLoopRunner> tray_loop_runner_;
   base::WeakPtrFactory<SelectToSpeakTest> weak_ptr_factory_{this};

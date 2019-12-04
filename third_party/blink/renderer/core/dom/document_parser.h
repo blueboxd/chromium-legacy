@@ -107,10 +107,6 @@ class CORE_EXPORT DocumentParser : public GarbageCollected<DocumentParser>,
     return document_was_loaded_as_part_of_navigation_;
   }
 
-  // FIXME: The names are not very accurate :(
-  virtual void PauseScheduledTasks();
-  virtual void UnpauseScheduledTasks();
-
   void AddClient(DocumentParserClient*);
   void RemoveClient(DocumentParserClient*);
 

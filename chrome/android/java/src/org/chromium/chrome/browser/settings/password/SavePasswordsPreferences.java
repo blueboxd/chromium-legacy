@@ -28,6 +28,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
+import org.chromium.chrome.browser.password_manager.PasswordManagerLauncher;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -442,7 +443,7 @@ public class SavePasswordsPreferences
     }
 
     private void displayManageAccountLink() {
-        if (!PreferencesLauncher.isSyncingPasswordsWithoutCustomPassphrase()) {
+        if (!PasswordManagerLauncher.isSyncingPasswordsWithoutCustomPassphrase()) {
             return;
         }
         if (mSearchQuery != null && !mNoPasswords) {

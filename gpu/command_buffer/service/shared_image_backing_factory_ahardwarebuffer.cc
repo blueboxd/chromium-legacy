@@ -291,8 +291,8 @@ class SharedImageRepresentationSkiaVkAHB
         /*gpu_compositing=*/true, format());
     auto surface = SkSurface::MakeFromBackendTextureAsRenderTarget(
         context_state_->gr_context(), promise_texture_->backendTexture(),
-        kTopLeft_GrSurfaceOrigin, final_msaa_count, sk_color_type, nullptr,
-        &surface_props);
+        kTopLeft_GrSurfaceOrigin, final_msaa_count, sk_color_type,
+        color_space().ToSkColorSpace(), &surface_props);
     DCHECK(surface);
     surface_ = surface.get();
     return surface;

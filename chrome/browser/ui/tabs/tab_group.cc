@@ -9,19 +9,20 @@
 #include <utility>
 #include <vector>
 
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/tab_ui_helper.h"
+#include "chrome/browser/ui/tabs/tab_group_controller.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_group_visual_data.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/text_elider.h"
 
-TabGroup::TabGroup(TabStripModel* model,
+TabGroup::TabGroup(TabGroupController* controller,
                    TabGroupId id,
                    TabGroupVisualData visual_data)
-    : model_(model), id_(id) {
+    : controller_(controller), id_(id) {
   visual_data_ = std::make_unique<TabGroupVisualData>(visual_data);
 }
 
@@ -29,8 +30,7 @@ TabGroup::~TabGroup() {}
 
 void TabGroup::SetVisualData(TabGroupVisualData visual_data) {
   visual_data_ = std::make_unique<TabGroupVisualData>(visual_data);
-
-  model_->NotifyGroupVisualsChange(id_, visual_data_.get());
+  controller_->ChangeTabGroupVisuals(id_, visual_data_.get());
 }
 
 base::string16 TabGroup::GetDisplayedTitle() const {
@@ -39,7 +39,7 @@ base::string16 TabGroup::GetDisplayedTitle() const {
     // Generate a descriptive placeholder title for the group.
     std::vector<int> tabs_in_group = ListTabs();
     TabUIHelper* const tab_ui_helper = TabUIHelper::FromWebContents(
-        model_->GetWebContentsAt(tabs_in_group.front()));
+        controller_->GetWebContentsAt(tabs_in_group.front()));
     constexpr size_t kContextMenuTabTitleMaxLength = 30;
     base::string16 format_string = l10n_util::GetPluralStringFUTF16(
         IDS_TAB_CXMENU_PLACEHOLDER_GROUP_TITLE, tabs_in_group.size() - 1);
@@ -53,12 +53,21 @@ base::string16 TabGroup::GetDisplayedTitle() const {
 }
 
 void TabGroup::AddTab() {
+  if (tab_count_ == 0) {
+    controller_->CreateTabGroup(id_);
+    controller_->ChangeTabGroupVisuals(id_, visual_data_.get());
+  }
+  controller_->ChangeTabGroupContents(id_);
   ++tab_count_;
 }
 
 void TabGroup::RemoveTab() {
   DCHECK_GT(tab_count_, 0);
   --tab_count_;
+  if (tab_count_ == 0)
+    controller_->CloseTabGroup(id_);
+  else
+    controller_->ChangeTabGroupContents(id_);
 }
 
 bool TabGroup::IsEmpty() const {
@@ -67,8 +76,8 @@ bool TabGroup::IsEmpty() const {
 
 std::vector<int> TabGroup::ListTabs() const {
   std::vector<int> result;
-  for (int i = 0; i < model_->count(); ++i) {
-    if (model_->GetTabGroupForTab(i) == id_)
+  for (int i = 0; i < controller_->GetTabCount(); ++i) {
+    if (controller_->GetTabGroupForTab(i) == id_)
       result.push_back(i);
   }
   return result;

@@ -2930,7 +2930,7 @@ TEST_F(DisplayManagerTest, UnifiedDesktopGridLayout2x2) {
 
   // Default shelf alignment is bottom.
   Shelf* shelf = Shell::GetPrimaryRootWindowController()->shelf();
-  EXPECT_EQ(shelf->alignment(), SHELF_ALIGNMENT_BOTTOM);
+  EXPECT_EQ(shelf->alignment(), ShelfAlignment::kBottom);
 
   // Display in bottom-left cell is considered the primary mirroring display.
   EXPECT_EQ(list[2], Shell::Get()
@@ -2953,7 +2953,7 @@ TEST_F(DisplayManagerTest, UnifiedDesktopGridLayout2x2) {
 
   // Change the shelf alignment to left, and expect that the primary mirroring
   // display in the top-left display in the matrix.
-  shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  shelf->SetAlignment(ShelfAlignment::kLeft);
   EXPECT_EQ(list[0], Shell::Get()
                          ->display_configuration_controller()
                          ->GetPrimaryMirroringDisplayForUnifiedDesktop()
@@ -2961,7 +2961,7 @@ TEST_F(DisplayManagerTest, UnifiedDesktopGridLayout2x2) {
 
   // Change the shelf alignment to right, and expect that the primary mirroring
   // display in the top-right display in the matrix.
-  shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
+  shelf->SetAlignment(ShelfAlignment::kRight);
   EXPECT_EQ(list[1], Shell::Get()
                          ->display_configuration_controller()
                          ->GetPrimaryMirroringDisplayForUnifiedDesktop()
@@ -2995,7 +2995,7 @@ TEST_F(DisplayManagerTest, UnifiedDesktopGridLayout3x2) {
 
   // Default shelf alignment is bottom.
   Shelf* shelf = Shell::GetPrimaryRootWindowController()->shelf();
-  EXPECT_EQ(shelf->alignment(), SHELF_ALIGNMENT_BOTTOM);
+  EXPECT_EQ(shelf->alignment(), ShelfAlignment::kBottom);
 
   // Display in bottom-left cell is considered the primary mirroring display.
   EXPECT_EQ(list[4], Shell::Get()
@@ -3023,7 +3023,7 @@ TEST_F(DisplayManagerTest, UnifiedDesktopGridLayout3x2) {
 
   // Change the shelf alignment to left, and expect that the primary mirroring
   // display in the top-left display in the matrix.
-  shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  shelf->SetAlignment(ShelfAlignment::kLeft);
   EXPECT_EQ(list[0], Shell::Get()
                          ->display_configuration_controller()
                          ->GetPrimaryMirroringDisplayForUnifiedDesktop()
@@ -3031,7 +3031,7 @@ TEST_F(DisplayManagerTest, UnifiedDesktopGridLayout3x2) {
 
   // Change the shelf alignment to right, and expect that the primary mirroring
   // display in the top-right display in the matrix.
-  shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
+  shelf->SetAlignment(ShelfAlignment::kRight);
   EXPECT_EQ(list[1], Shell::Get()
                          ->display_configuration_controller()
                          ->GetPrimaryMirroringDisplayForUnifiedDesktop()

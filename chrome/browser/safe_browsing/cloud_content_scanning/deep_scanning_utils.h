@@ -15,7 +15,8 @@ class Profile;
 
 namespace safe_browsing {
 // Helper function to examine a DeepScanningClientResponse and report the
-// appropriate events to the enterprise admin.
+// appropriate events to the enterprise admin. |download_digest_sha256| must be
+// encoded using base::HexEncode.
 void MaybeReportDeepScanningVerdict(Profile* profile,
                                     const GURL& url,
                                     const std::string& file_name,

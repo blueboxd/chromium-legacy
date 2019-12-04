@@ -1224,12 +1224,12 @@ class AutofillMetrics {
       AutofillSyncSigninState sync_state);
 
   // This should be called each time a page containing forms is loaded.
-  static void LogIsProfileAutofillEnabledAtPageLoad(
+  static void LogIsAutofillProfileEnabledAtPageLoad(
       bool enabled,
       AutofillSyncSigninState sync_state);
 
   // This should be called each time a page containing forms is loaded.
-  static void LogIsCreditCardAutofillEnabledAtPageLoad(
+  static void LogIsAutofillCreditCardEnabledAtPageLoad(
       bool enabled,
       AutofillSyncSigninState sync_state);
 
@@ -1237,10 +1237,10 @@ class AutofillMetrics {
   static void LogIsAutofillEnabledAtStartup(bool enabled);
 
   // This should be called each time a new chrome profile is launched.
-  static void LogIsProfileAutofillEnabledAtStartup(bool enabled);
+  static void LogIsAutofillProfileEnabledAtStartup(bool enabled);
 
   // This should be called each time a new chrome profile is launched.
-  static void LogIsCreditCardAutofillEnabledAtStartup(bool enabled);
+  static void LogIsAutofillCreditCardEnabledAtStartup(bool enabled);
 
   // Records the number of stored address profiles. This is be called each time
   // a new chrome profile is launched.

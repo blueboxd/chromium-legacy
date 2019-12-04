@@ -1841,7 +1841,7 @@ void MediaStreamManager::UseFakeUIFactoryForTests(
 // static
 void MediaStreamManager::RegisterNativeLogCallback(
     int renderer_host_id,
-    const base::Callback<void(const std::string&)>& callback) {
+    base::RepeatingCallback<void(const std::string&)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   MediaStreamManager* msm = g_media_stream_manager_tls_ptr.Pointer()->Get();
   if (!msm) {
@@ -1849,7 +1849,7 @@ void MediaStreamManager::RegisterNativeLogCallback(
     return;
   }
 
-  msm->DoNativeLogCallbackRegistration(renderer_host_id, callback);
+  msm->DoNativeLogCallbackRegistration(renderer_host_id, std::move(callback));
 }
 
 // static
@@ -2147,10 +2147,10 @@ void MediaStreamManager::OnMediaStreamUIWindowId(
 
 void MediaStreamManager::DoNativeLogCallbackRegistration(
     int renderer_host_id,
-    const base::Callback<void(const std::string&)>& callback) {
+    base::RepeatingCallback<void(const std::string&)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Re-registering (overwriting) is allowed and happens in some tests.
-  log_callbacks_[renderer_host_id] = callback;
+  log_callbacks_[renderer_host_id] = std::move(callback);
 }
 
 void MediaStreamManager::DoNativeLogCallbackUnregistration(

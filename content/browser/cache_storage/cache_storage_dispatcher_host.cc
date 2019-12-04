@@ -107,8 +107,9 @@ blink::mojom::MatchResultPtr EagerlyReadResponseBody(
 }  // namespace
 
 // Implements the mojom interface CacheStorageCache. It's owned by
-// CacheStorageDispatcherHost and it's destroyed when client drops the mojo ptr
-// which in turn removes from StrongBindingSet in CacheStorageDispatcherHost.
+// CacheStorageDispatcherHost and it's destroyed when client drops the mojo
+// remote which in turn removes from UniqueAssociatedReceiverSet in
+// CacheStorageDispatcherHost.
 class CacheStorageDispatcherHost::CacheImpl
     : public blink::mojom::CacheStorageCache {
  public:
@@ -400,7 +401,7 @@ class CacheStorageDispatcherHost::CacheImpl
 
 // Implements the mojom interface CacheStorage. It's owned by the
 // CacheStorageDispatcherHost.  The CacheStorageImpl is destroyed when the
-// client drops its mojo ptr which in turn removes from StrongBindingSet in
+// client drops its mojo remote which in turn removes from UniqueReceiverSet in
 // CacheStorageDispatcherHost.
 class CacheStorageDispatcherHost::CacheStorageImpl final
     : public blink::mojom::CacheStorage {

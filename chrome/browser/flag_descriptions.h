@@ -484,9 +484,6 @@ extern const char kDisableKeepaliveFetchDescription[];
 extern const char kVizDisplayCompositorName[];
 extern const char kVizDisplayCompositorDescription[];
 
-extern const char kVizHitTestName[];
-extern const char kVizHitTestDescription[];
-
 extern const char kMemlogName[];
 extern const char kMemlogDescription[];
 extern const char kMemlogModeMinimal[];
@@ -1114,6 +1111,9 @@ extern const char kSharingUseDeviceInfoDescription[];
 extern const char kSharingDeriveVapidKeyName[];
 extern const char kSharingDeriveVapidKeyDescription[];
 
+extern const char kSharingDeviceExpirationName[];
+extern const char kSharingDeviceExpirationDescription[];
+
 extern const char kShelfHotseatName[];
 extern const char kShelfHotseatDescription[];
 
@@ -1342,6 +1342,9 @@ extern const char kWebrtcSrtpAesGcmDescription[];
 
 extern const char kWebrtcStunOriginName[];
 extern const char kWebrtcStunOriginDescription[];
+
+extern const char kWebrtcUseMinMaxVEADimensionsName[];
+extern const char kWebrtcUseMinMaxVEADimensionsDescription[];
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 extern const char kWebUITabStripName[];

@@ -797,9 +797,6 @@ class CONTENT_EXPORT RenderFrameImpl
                                            const blink::WebNode& end_node,
                                            int end_offset) override;
   void HandleAccessibilityFindInPageTermination() override;
-  void SuddenTerminationDisablerChanged(
-      bool present,
-      blink::SuddenTerminationDisablerType disabler_type) override;
   void CheckIfAudioSinkExistsAndIsAuthorized(
       const blink::WebString& sink_id,
       blink::WebSetSinkIdCompleteCallback callback) override;

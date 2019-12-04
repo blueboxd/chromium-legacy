@@ -301,6 +301,7 @@ void LocalFrameView::Trace(blink::Visitor* visitor) {
   visitor->Trace(scrollbars_);
   visitor->Trace(viewport_scrollable_area_);
   visitor->Trace(anchoring_adjustment_queue_);
+  visitor->Trace(scroll_event_queue_);
   visitor->Trace(print_context_);
   visitor->Trace(paint_timing_detector_);
   visitor->Trace(lifecycle_observers_);
@@ -1108,7 +1109,7 @@ void LocalFrameView::AddPartToUpdate(LayoutEmbeddedObject& object) {
   // Tell the DOM element that it needs a Plugin update.
   Node* node = object.GetNode();
   DCHECK(node);
-  if (IsHTMLObjectElement(*node) || IsHTMLEmbedElement(*node))
+  if (IsA<HTMLObjectElement>(*node) || IsHTMLEmbedElement(*node))
     ToHTMLPlugInElement(node)->SetNeedsPluginUpdate(true);
 
   part_update_set_.insert(&object);
@@ -2395,6 +2396,8 @@ bool LocalFrameView::RunStyleAndLayoutLifecyclePhases(
     frame_view.PerformScrollAnchoringAdjustments();
   });
 
+  EnqueueScrollEvents();
+
   frame_->GetPage()->GetValidationMessageClient().LayoutOverlay();
 
   if (target_state == DocumentLifecycle::kPaintClean) {
@@ -2579,6 +2582,12 @@ void LocalFrameView::DequeueScrollAnchoringAdjustment(
   anchoring_adjustment_queue_.erase(scrollable_area);
 }
 
+void LocalFrameView::SetNeedsEnqueueScrollEvent(
+    PaintLayerScrollableArea* scrollable_area) {
+  scroll_event_queue_.insert(scrollable_area);
+  GetPage()->Animator().ScheduleVisualUpdate(frame_.Get());
+}
+
 void LocalFrameView::PerformScrollAnchoringAdjustments() {
   // Adjust() will cause a scroll which could end up causing a layout and
   // reentering this method. Copy and clear the queue so we don't modify it
@@ -2592,6 +2601,17 @@ void LocalFrameView::PerformScrollAnchoringAdjustments() {
       scroller->GetScrollAnchor()->Adjust();
     }
   }
+}
+
+void LocalFrameView::EnqueueScrollEvents() {
+  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
+    for (WeakMember<PaintLayerScrollableArea>& scroller :
+         frame_view.scroll_event_queue_) {
+      if (scroller)
+        scroller->EnqueueScrollEventIfNeeded();
+    }
+    frame_view.scroll_event_queue_.clear();
+  });
 }
 
 template <typename MainLayerFunction, typename ContentsLayerFunction>

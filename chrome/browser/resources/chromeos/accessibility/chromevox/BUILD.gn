@@ -101,6 +101,7 @@ chromevox_modules = [
   "background/panel/panel_menu.js",
   "background/panel/panel_menu_item.js",
   "background/phonetic_data.js",
+  "background/range_automation_handler.js",
   "background/recovery_strategy.js",
   "background/logging/tree_dumper.js",
   "background/tree_walker.js",

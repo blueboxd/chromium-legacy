@@ -56,7 +56,8 @@ import java.util.List;
  */
 public class PickerCategoryView extends RelativeLayout
         implements FileEnumWorkerTask.FilesEnumeratedCallback, RecyclerView.RecyclerListener,
-                   DecoderServiceHost.ServiceReadyCallback, View.OnClickListener {
+                   DecoderServiceHost.ServiceReadyCallback, View.OnClickListener,
+                   SelectionDelegate.SelectionObserver<PickerBitmap> {
     // These values are written to logs.  New enum values can be added, but existing
     // enums must never be renumbered or deleted and reused.
     private static final int ACTION_CANCEL = 0;
@@ -189,6 +190,9 @@ public class PickerCategoryView extends RelativeLayout
     // The media controls to show with the video (play/pause, etc).
     private MediaController mMediaController;
 
+    // The Zoom (floating action) button.
+    private ImageView mZoom;
+
     /**
      * @param context The context to use.
      * @param multiSelectionAllowed Whether to allow the user to select more than one image.
@@ -204,6 +208,9 @@ public class PickerCategoryView extends RelativeLayout
         mDecoderServiceHost.bind(context);
 
         mSelectionDelegate = new SelectionDelegate<PickerBitmap>();
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.PHOTO_PICKER_ZOOM)) {
+            mSelectionDelegate.addObserver(this);
+        }
         if (!multiSelectionAllowed) mSelectionDelegate.setSingleSelectionMode();
 
         View root = LayoutInflater.from(context).inflate(R.layout.photo_picker_dialog, this);
@@ -222,12 +229,7 @@ public class PickerCategoryView extends RelativeLayout
         Button doneButton = (Button) toolbar.findViewById(R.id.done);
         doneButton.setOnClickListener(this);
         mVideoView = findViewById(R.id.video_player);
-
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.PHOTO_PICKER_ZOOM)) {
-            ImageView zoom = findViewById(R.id.zoom);
-            zoom.setVisibility(View.VISIBLE);
-            zoom.setOnClickListener(this);
-        }
+        mZoom = findViewById(R.id.zoom);
 
         calculateGridMetrics();
 
@@ -387,6 +389,20 @@ public class PickerCategoryView extends RelativeLayout
         }
     }
 
+    // SelectionDelegate.SelectionObserver:
+
+    @Override
+    public void onSelectionStateChange(List<PickerBitmap> selectedItems) {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.PHOTO_PICKER_ZOOM)) {
+            return;
+        }
+
+        if (mZoom.getVisibility() != View.VISIBLE) {
+            mZoom.setVisibility(View.VISIBLE);
+            mZoom.setOnClickListener(this);
+        }
+    }
+
     // OnClickListener:
 
     @Override
@@ -395,7 +411,9 @@ public class PickerCategoryView extends RelativeLayout
         if (id == R.id.done) {
             notifyPhotosSelected();
         } else if (id == R.id.zoom) {
-            flipZoomMode();
+            if (!mZoomSwitchingInEffect) {
+                flipZoomMode();
+            }
         } else if (id == R.id.close) {
             stopVideo();
         } else {
@@ -424,14 +442,17 @@ public class PickerCategoryView extends RelativeLayout
 
         mMagnifyingMode = !mMagnifyingMode;
 
-        ImageView zoom = findViewById(R.id.zoom);
         if (mMagnifyingMode) {
-            zoom.setImageResource(R.drawable.zoom_out);
+            mZoom.setImageResource(R.drawable.zoom_out);
         } else {
-            zoom.setImageResource(R.drawable.zoom_in);
+            mZoom.setImageResource(R.drawable.zoom_in);
         }
 
         calculateGridMetrics();
+
+        if (!mMagnifyingMode) {
+            getFullScreenBitmaps().evictAll();
+        }
 
         mZoomSwitchingInEffect = true;
 

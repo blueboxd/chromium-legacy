@@ -13,13 +13,14 @@ namespace device {
 // all OpenXR helper macros here so they can be kept track of. This file
 // should not be included outside of device/vr/openxr.
 
-// The caller must have a variable of type XrResult named xr_result defined in
-// their scope. This macro sets xr_result to |xrcode|.
-#define RETURN_IF_XR_FAILED(xrcode) \
-  do {                              \
-    xr_result = (xrcode);           \
-    if (XR_FAILED(xr_result))       \
-      return xr_result;             \
+#define RETURN_IF_XR_FAILED(xrcode)                                     \
+  do {                                                                  \
+    XrResult return_if_xr_failed_xr_result = (xrcode);                  \
+    if (XR_FAILED(return_if_xr_failed_xr_result)) {                     \
+      DLOG(ERROR) << __func__                                           \
+                  << " Failed with: " << return_if_xr_failed_xr_result; \
+      return return_if_xr_failed_xr_result;                             \
+    }                                                                   \
   } while (false)
 
 #define RETURN_IF_FALSE(condition, error_code, msg) \

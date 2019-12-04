@@ -77,6 +77,12 @@ public class AssistantCollectUserDataCoordinator {
         AssistantAdditionalSectionContainer prependedSections =
                 new AssistantAdditionalSectionContainer(mActivity, paymentRequestExpanderAccordion);
 
+        LinearLayout genericUserInterfaceContainer = new LinearLayout(activity);
+        genericUserInterfaceContainer.setOrientation(LinearLayout.VERTICAL);
+        paymentRequestExpanderAccordion.addView(genericUserInterfaceContainer,
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
         AssistantLoginSection loginSection =
                 new AssistantLoginSection(mActivity, paymentRequestExpanderAccordion);
         createSeparator(paymentRequestExpanderAccordion);
@@ -127,7 +133,8 @@ public class AssistantCollectUserDataCoordinator {
                 paymentRequestExpanderAccordion, sectionToSectionPadding, loginSection,
                 contactDetailsSection, dateRangeStartSection, dateRangeEndSection,
                 paymentMethodSection, shippingAddressSection, termsSection, termsAsCheckboxSection,
-                prependedSections, appendedSections, DIVIDER_TAG, activity);
+                prependedSections, appendedSections, genericUserInterfaceContainer, DIVIDER_TAG,
+                activity);
         AssistantCollectUserDataBinder binder = new AssistantCollectUserDataBinder();
         PropertyModelChangeProcessor.create(model, mViewHolder, binder);
 

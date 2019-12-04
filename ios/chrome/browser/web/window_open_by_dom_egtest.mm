@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
-
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -11,27 +9,21 @@
 #import "base/test/ios/wait_util.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/net/url_test_util.h"
-#import "ios/web/public/test/earl_grey/web_view_actions.h"
-#import "ios/web/public/test/earl_grey/web_view_matchers.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #include "ios/web/public/test/element_selector.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
-#import "ios/web/public/web_state.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-using chrome_test_util::GetCurrentWebState;
 using chrome_test_util::OmniboxText;
-using chrome_test_util::WebViewMatcher;
 
 using web::test::HttpServer;
 
@@ -55,8 +47,21 @@ id<GREYMatcher> PopupBlocker() {
 
 @implementation WindowOpenByDOMTestCase
 
+#if defined(CHROME_EARL_GREY_2)
++ (void)setUpForTestCase {
+  [super setUpForTestCase];
+  [self setUpHelper];
+}
+#elif defined(CHROME_EARL_GREY_1)
 + (void)setUp {
   [super setUp];
+  [self setUpHelper];
+}
+#else
+#error Not an EarlGrey Test
+#endif
+
++ (void)setUpHelper {
   [ChromeEarlGrey setContentSettings:CONTENT_SETTING_ALLOW];
   web::test::SetUpFileBasedHttpServer();
 }
@@ -86,11 +91,8 @@ id<GREYMatcher> PopupBlocker() {
 // target="_blank" links.
 - (void)testLinkWithBlankTargetSessionStorage {
   [ChromeEarlGrey executeJavaScript:@"sessionStorage.setItem('key', 'value');"];
-  const char ID[] = "webScenarioWindowOpenSameURLWithBlankTarget";
-  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
-      performAction:web::WebViewTapElement(
-                        GetCurrentWebState(),
-                        [ElementSelector selectorWithElementID:ID])];
+  [ChromeEarlGrey
+      tapWebStateElementWithID:@"webScenarioWindowOpenSameURLWithBlankTarget"];
 
   [ChromeEarlGrey waitForMainTabCount:2];
   [ChromeEarlGrey waitForWebStateContainingText:"Expected result"];
@@ -102,21 +104,14 @@ id<GREYMatcher> PopupBlocker() {
 
 // Tests tapping a link with target="_blank".
 - (void)testLinkWithBlankTarget {
-  const char ID[] = "webScenarioWindowOpenRegularLink";
-  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
-      performAction:web::WebViewTapElement(
-                        GetCurrentWebState(),
-                        [ElementSelector selectorWithElementID:ID])];
+  [ChromeEarlGrey tapWebStateElementWithID:@"webScenarioWindowOpenRegularLink"];
   [ChromeEarlGrey waitForMainTabCount:2];
 }
 
 // Tests opening a window with URL that ends with /..;
 - (void)testWindowOpenWithSpecialURL {
-  const char ID[] = "webScenarioWindowOpenWithSpecialURL";
-  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
-      performAction:web::WebViewTapElement(
-                        GetCurrentWebState(),
-                        [ElementSelector selectorWithElementID:ID])];
+  [ChromeEarlGrey
+      tapWebStateElementWithID:@"webScenarioWindowOpenWithSpecialURL"];
   if (@available(iOS 13, *)) {
     // Starting from iOS 13 WebKit does not rewrite URL that ends with /..;
     [ChromeEarlGrey waitForMainTabCount:2];
@@ -141,19 +136,14 @@ id<GREYMatcher> PopupBlocker() {
 
 // Tests a link with target="_blank" multiple times.
 - (void)testLinkWithBlankTargetMultipleTimes {
-  const char ID[] = "webScenarioWindowOpenRegularLinkMultipleTimes";
-  web::WebState* test_page_web_state = GetCurrentWebState();
-  id<GREYMatcher> test_page_matcher = WebViewMatcher();
-  id<GREYAction> link_tap = web::WebViewTapElement(
-      test_page_web_state, [ElementSelector selectorWithElementID:ID]);
-  [[EarlGrey selectElementWithMatcher:test_page_matcher]
-      performAction:link_tap];
+  [ChromeEarlGrey tapWebStateElementWithID:
+                      @"webScenarioWindowOpenRegularLinkMultipleTimes"];
   [ChromeEarlGrey waitForMainTabCount:2];
   [ChromeEarlGrey openNewTab];
   [ChromeEarlGrey waitForMainTabCount:3];
   [ChromeEarlGrey selectTabAtIndex:0];
-  [[EarlGrey selectElementWithMatcher:test_page_matcher]
-      performAction:link_tap];
+  [ChromeEarlGrey tapWebStateElementWithID:
+                      @"webScenarioWindowOpenRegularLinkMultipleTimes"];
   [ChromeEarlGrey waitForMainTabCount:4];
 }
 
@@ -207,11 +197,8 @@ id<GREYMatcher> PopupBlocker() {
 // Tests that opening a window with target=_blank which closes itself after 1
 // second delay.
 - (void)testLinkWithBlankTargetWithDelayedClose {
-  const char ID[] = "webScenarioWindowOpenWithDelayedClose";
-  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
-      performAction:web::WebViewTapElement(
-                        GetCurrentWebState(),
-                        [ElementSelector selectorWithElementID:ID])];
+  [ChromeEarlGrey
+      tapWebStateElementWithID:@"webScenarioWindowOpenWithDelayedClose"];
   [ChromeEarlGrey waitForMainTabCount:2];
   base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(1));
   [ChromeEarlGrey waitForMainTabCount:1];
@@ -245,7 +232,7 @@ id<GREYMatcher> PopupBlocker() {
   // Since about scheme URLs are also trimmed to about:blank, check the url
   // directly instead.
   DCHECK_EQ(GURL("about:blank%23hash"),
-            chrome_test_util::GetCurrentWebState()->GetLastCommittedURL());
+            [ChromeEarlGrey webStateLastCommittedURL]);
   // And confirm the location bar only shows about:blank.
   [[EarlGrey selectElementWithMatcher:OmniboxText("about:blank")]
       assertWithMatcher:grey_notNil()];

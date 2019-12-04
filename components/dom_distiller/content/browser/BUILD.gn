@@ -18,8 +18,6 @@ static_library("browser") {
     "distiller_page_web_contents.h",
     "dom_distiller_viewer_source.cc",
     "dom_distiller_viewer_source.h",
-    "web_contents_main_frame_observer.cc",
-    "web_contents_main_frame_observer.h",
   ]
 
   public_deps = [
@@ -54,7 +52,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "dom_distiller_viewer_source_unittest.cc",
-    "web_contents_main_frame_observer_unittest.cc",
   ]
   deps = [
     ":browser",

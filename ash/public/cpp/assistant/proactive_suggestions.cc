@@ -15,10 +15,12 @@ namespace {
 size_t GetHash(int category,
                const std::string& description,
                const std::string& search_query,
-               const std::string& html) {
+               const std::string& html,
+               const std::string& rich_entry_point_html) {
   size_t hash = base::HashInts(category, base::FastHash(description));
   hash = base::HashInts(hash, base::FastHash(search_query));
-  return base::HashInts(hash, base::FastHash(html));
+  hash = base::HashInts(hash, base::FastHash(html));
+  return base::HashInts(hash, base::FastHash(rich_entry_point_html));
 }
 
 }  // namespace
@@ -28,12 +30,18 @@ size_t GetHash(int category,
 ProactiveSuggestions::ProactiveSuggestions(int category,
                                            std::string&& description,
                                            std::string&& search_query,
-                                           std::string&& html)
-    : hash_(GetHash(category, description, search_query, html)),
+                                           std::string&& html,
+                                           std::string&& rich_entry_point_html)
+    : hash_(GetHash(category,
+                    description,
+                    search_query,
+                    html,
+                    rich_entry_point_html)),
       category_(category),
       description_(std::move(description)),
       search_query_(std::move(search_query)),
-      html_(std::move(html)) {}
+      html_(std::move(html)),
+      rich_entry_point_html_(std::move(rich_entry_point_html)) {}
 
 ProactiveSuggestions::~ProactiveSuggestions() = default;
 

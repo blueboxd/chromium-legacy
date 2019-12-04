@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Tue, 19 Nov 2019 15:05:43 -0800
-Subject: [PATCH 4/8] Remove reachable NEVER in fts3
+Subject: [PATCH 04/11] Remove reachable NEVER in fts3
 
 Backports https://www.sqlite.org/src/info/8bd75bf636f72f32
 
@@ -24,5 +24,5 @@ index c28358c17479..11ac562a17f8 100644
      nSpace += sqlite3Fts3VarintLen(nSuffix) + nSuffix;
  
 -- 
-2.24.0.432.g9d3f5f5b63-goog
+2.24.0.393.g34dc348eaf-goog
 

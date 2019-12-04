@@ -818,12 +818,12 @@ void Browser::OnWindowClosing() {
   sessions::TabRestoreService* tab_restore_service =
       TabRestoreServiceFactory::GetForProfile(profile());
 
-#if defined(USE_AURA)
-  if (tab_restore_service && is_type_app())
-    tab_restore_service->BrowserClosing(live_tab_context());
+  bool notify_restore_service = is_type_normal() && tab_strip_model_->count();
+#if defined(USE_AURA) || defined(OS_MACOSX)
+  notify_restore_service |= is_type_app();
 #endif
 
-  if (tab_restore_service && is_type_normal() && tab_strip_model_->count())
+  if (tab_restore_service && notify_restore_service)
     tab_restore_service->BrowserClosing(live_tab_context());
 
   BrowserList::NotifyBrowserCloseStarted(this);
@@ -1056,12 +1056,6 @@ void Browser::OnTabStripModelChanged(TabStripModel* tab_strip_model,
                       replace->index);
       break;
     }
-    case TabStripModelChange::kGroupChanged: {
-      auto* group_change = change.GetGroupChange();
-      OnTabGroupChanged(group_change->index, group_change->old_group,
-                        group_change->new_group);
-      break;
-    }
     case TabStripModelChange::kSelectionOnly:
       break;
   }
@@ -1079,10 +1073,8 @@ void Browser::OnTabStripModelChanged(TabStripModel* tab_strip_model,
                      selection.new_model.active(), selection.reason);
 }
 
-void Browser::OnTabGroupVisualDataChanged(
-    TabStripModel* tab_strip_model,
-    TabGroupId group,
-    const TabGroupVisualData* visual_data) {
+void Browser::OnTabGroupVisualsChanged(TabGroupId group,
+                                       const TabGroupVisualData* visual_data) {
   SessionService* const session_service =
       SessionServiceFactory::GetForProfile(profile_);
   if (session_service) {
@@ -1103,6 +1095,23 @@ void Browser::TabPinnedStateChanged(TabStripModel* tab_strip_model,
     session_service->SetPinnedState(session_id(),
                                     session_tab_helper->session_id(),
                                     tab_strip_model_->IsTabPinned(index));
+  }
+}
+
+void Browser::TabGroupedStateChanged(base::Optional<TabGroupId> group,
+                                     int index) {
+  SessionService* const session_service =
+      SessionServiceFactory::GetForProfile(profile_);
+  if (session_service) {
+    content::WebContents* const web_contents =
+        tab_strip_model_->GetWebContentsAt(index);
+    SessionTabHelper* const session_tab_helper =
+        SessionTabHelper::FromWebContents(web_contents);
+    const base::Optional<base::Token> raw_id =
+        group.has_value() ? base::make_optional(group.value().token())
+                          : base::nullopt;
+    session_service->SetTabGroup(session_id(), session_tab_helper->session_id(),
+                                 raw_id);
   }
 }
 
@@ -2304,24 +2313,6 @@ void Browser::OnTabReplacedAt(WebContents* old_contents,
     // the session service to update itself.
     session_service->TabRestored(new_contents,
                                  tab_strip_model_->IsTabPinned(index));
-  }
-}
-
-void Browser::OnTabGroupChanged(int index,
-                                base::Optional<TabGroupId> old_group,
-                                base::Optional<TabGroupId> new_group) {
-  content::WebContents* const web_contents =
-      tab_strip_model_->GetWebContentsAt(index);
-  SessionService* const session_service =
-      SessionServiceFactory::GetForProfile(profile_);
-  if (session_service) {
-    SessionTabHelper* const session_tab_helper =
-        SessionTabHelper::FromWebContents(web_contents);
-    const base::Optional<base::Token> raw_id =
-        new_group.has_value() ? base::make_optional(new_group.value().token())
-                              : base::nullopt;
-    session_service->SetTabGroup(session_id(), session_tab_helper->session_id(),
-                                 raw_id);
   }
 }
 

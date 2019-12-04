@@ -802,6 +802,7 @@ void WorkerThread::PauseOrFreezeOnWorkerThread(
          state == mojom::FrameLifecycleState::kPaused);
   pause_or_freeze_count_++;
   GlobalScope()->SetLifecycleState(state);
+  GlobalScope()->SetDefersLoadingForResourceFetchers(true);
 
   // If already paused return early.
   if (pause_or_freeze_count_ > 1)
@@ -820,6 +821,7 @@ void WorkerThread::PauseOrFreezeOnWorkerThread(
         &nested_runner_, nested_runner.get());
     nested_runner->Run();
   }
+  GlobalScope()->SetDefersLoadingForResourceFetchers(false);
   GlobalScope()->SetLifecycleState(mojom::FrameLifecycleState::kRunning);
 }
 

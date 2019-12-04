@@ -184,8 +184,6 @@ TEST(DecisionDetailsTest, TabManagerLifecycleStateChangeUkm) {
   EXPECT_FALSE(details.AddReason(DecisionFailureReason::HEURISTIC_FAVICON));
   EXPECT_FALSE(details.AddReason(
       DecisionFailureReason::HEURISTIC_INSUFFICIENT_OBSERVATION));
-  EXPECT_FALSE(
-      details.AddReason(DecisionFailureReason::HEURISTIC_NOTIFICATIONS));
   EXPECT_FALSE(details.AddReason(DecisionFailureReason::HEURISTIC_TITLE));
   EXPECT_FALSE(details.AddReason(DecisionFailureReason::LIVE_STATE_CAPTURING));
   // Skipping LIVE_STATE_EXTENSION_DISALLOWED here.
@@ -231,8 +229,6 @@ TEST(DecisionDetailsTest, TabManagerLifecycleStateChangeUkm) {
                                  ukm_builder.kFailureHeuristicFaviconName, 1);
   ukm_recorder.ExpectEntryMetric(
       entry, ukm_builder.kFailureHeuristicInsufficientObservationName, 1);
-  ukm_recorder.ExpectEntryMetric(
-      entry, ukm_builder.kFailureHeuristicNotificationsName, 1);
   ukm_recorder.ExpectEntryMetric(entry, ukm_builder.kFailureHeuristicTitleName,
                                  1);
   ukm_recorder.ExpectEntryMetric(entry,

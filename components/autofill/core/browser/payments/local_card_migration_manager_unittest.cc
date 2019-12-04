@@ -886,33 +886,6 @@ TEST_F(LocalCardMigrationManagerTest,
       AutofillMetrics::SaveTypeMetric::SERVER, 1);
 }
 
-// When local card migration is attempted and some cards aren't selected,
-// 3 strikes should be added.
-TEST_F(LocalCardMigrationManagerTest,
-       MigrateCreditCard_StrikesAddedWhenSomeCardsNotSelected) {
-  LocalCardMigrationStrikeDatabase local_card_migration_strike_database =
-      LocalCardMigrationStrikeDatabase(strike_database_);
-  // LocalCardMigrationStrikeDatabase should initially have no strikes.
-  EXPECT_EQ(local_card_migration_strike_database.GetStrikes(), 0);
-
-  AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
-                     test::NextYear().c_str(), "1", "guid1");
-  AddLocalCreditCard(personal_data_, "Flo Master", "5454545454545454", "11",
-                     test::NextYear().c_str(), "1", "guid2");
-  // Set the billing_customer_number to designate existence of a Payments
-  // account.
-  personal_data_.SetPaymentsCustomerData(
-      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
-  local_card_migration_manager_->GetMigratableCreditCards();
-
-  // Only select one of the two cards.
-  autofill_client_.set_migration_card_selections(
-      std::vector<std::string>{"guid1"});
-  local_card_migration_manager_->AttemptToOfferLocalCardMigration(true);
-
-  EXPECT_EQ(local_card_migration_strike_database.GetStrikes(), 3);
-}
-
 // When local card migration is accepted, UMA metrics for LocalCardMigration
 // strike count is logged.
 TEST_F(LocalCardMigrationManagerTest, MigrateCreditCard_StrikeCountUMALogged) {

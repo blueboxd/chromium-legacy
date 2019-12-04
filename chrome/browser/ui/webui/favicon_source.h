@@ -23,6 +23,7 @@ class RefCountedMemory;
 
 namespace chrome {
 enum class FaviconUrlFormat;
+struct ParsedFaviconPath;
 }
 
 namespace ui {
@@ -76,12 +77,15 @@ class FaviconSource : public content::URLDataSource {
   // will send appropriate default icon for |size_in_dip| and |scale_factor|.
   void OnFaviconDataAvailable(
       content::URLDataSource::GotDataCallback callback,
-      int size_in_dip,
-      float scale_factor,
+      const chrome::ParsedFaviconPath& parsed,
       const favicon_base::FaviconRawBitmapResult& bitmap_result);
 
   // Sends the 16x16 DIP 1x default favicon.
   void SendDefaultResponse(content::URLDataSource::GotDataCallback callback);
+
+  // Sends back default favicon or fallback monogram.
+  void SendDefaultResponse(content::URLDataSource::GotDataCallback callback,
+                           const chrome::ParsedFaviconPath& parsed);
 
   // Sends the default favicon.
   void SendDefaultResponse(content::URLDataSource::GotDataCallback callback,

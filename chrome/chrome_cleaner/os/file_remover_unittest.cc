@@ -30,6 +30,7 @@
 #include "chrome/chrome_cleaner/os/pre_fetched_paths.h"
 #include "chrome/chrome_cleaner/os/system_util.h"
 #include "chrome/chrome_cleaner/os/whitelisted_directory.h"
+#include "chrome/chrome_cleaner/test/child_process_logger.h"
 #include "chrome/chrome_cleaner/test/file_remover_test_util.h"
 #include "chrome/chrome_cleaner/test/reboot_deletion_helper.h"
 #include "chrome/chrome_cleaner/test/resources/grit/test_resources.h"
@@ -398,20 +399,47 @@ constexpr wchar_t kTestExpectArchiveName[] =
     L"temp_file.exe_"
     L"A591A6D40BF420404A011733CFB7B190D62C65BF0BCDA32B57B277D9AD9F146E.zip";
 
+class LoggedZipArchiverSandboxSetupHooks : public ZipArchiverSandboxSetupHooks {
+ public:
+  explicit LoggedZipArchiverSandboxSetupHooks(
+      scoped_refptr<MojoTaskRunner> mojo_task_runner,
+      base::OnceClosure connection_error_handler,
+      chrome_cleaner::ChildProcessLogger* child_process_logger)
+      : ZipArchiverSandboxSetupHooks(std::move(mojo_task_runner),
+                                     std::move(connection_error_handler)),
+        child_process_logger_(child_process_logger) {}
+
+  ResultCode UpdateSandboxPolicy(sandbox::TargetPolicy* policy,
+                                 base::CommandLine* command_line) override {
+    child_process_logger_->UpdateSandboxPolicy(policy);
+    return ZipArchiverSandboxSetupHooks::UpdateSandboxPolicy(policy,
+                                                             command_line);
+  }
+
+ private:
+  chrome_cleaner::ChildProcessLogger* child_process_logger_;
+};
+
 class FileRemoverQuarantineTest : public base::MultiProcessTest,
                                   public ::testing::WithParamInterface<bool> {
  public:
   void SetUp() override {
     use_reboot_removal_ = GetParam();
 
+    ASSERT_TRUE(child_process_logger_.Initialize());
+
     scoped_refptr<MojoTaskRunner> mojo_task_runner = MojoTaskRunner::Create();
-    ZipArchiverSandboxSetupHooks setup_hooks(
+    LoggedZipArchiverSandboxSetupHooks setup_hooks(
         mojo_task_runner.get(), base::BindOnce([] {
           FAIL() << "ZipArchiver sandbox connection error";
-        }));
-    ASSERT_EQ(RESULT_CODE_SUCCESS,
-              StartSandboxTarget(MakeCmdLine("FileRemoverQuarantineTargetMain"),
-                                 &setup_hooks, SandboxType::kTest));
+        }),
+        &child_process_logger_);
+    ResultCode result_code =
+        StartSandboxTarget(MakeCmdLine("FileRemoverQuarantineTargetMain"),
+                           &setup_hooks, SandboxType::kTest);
+    if (result_code != RESULT_CODE_SUCCESS)
+      child_process_logger_.DumpLogs();
+    ASSERT_EQ(RESULT_CODE_SUCCESS, result_code);
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
@@ -447,6 +475,7 @@ class FileRemoverQuarantineTest : public base::MultiProcessTest,
   base::test::SingleThreadTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<FileRemover> file_remover_;
+  chrome_cleaner::ChildProcessLogger child_process_logger_;
 };
 
 }  // namespace

@@ -57,6 +57,16 @@ _EXAMPLE_INTERPRETER_OUTPUT = [
      ('viz::GLRenderer::SetUseProgram(viz::ProgramKey const&, '
       'gfx::ColorSpace const&, gfx::ColorSpace const&)'))]
 
+_EXAMPLE_INTERPRETER_OUTPUT_WITH_FILE_NAME_LINE = [
+    ('83a4db8',
+     ('mojo::core::ports::(anonymous namespace)::UpdateTLS('
+      'mojo::core::ports::PortLocker*, mojo::core::ports::PortLocker*)'
+      ' | ../../mojo/core/ports/port_locker.cc:26:3')),
+    ('83db114',
+     ('viz::GLRenderer::SetUseProgram(viz::ProgramKey const&, '
+      'gfx::ColorSpace const&, gfx::ColorSpace const&)'
+      ' | ../../components/viz/service/display/gl_renderer.cc:3267:14'))]
+
 _MOCK_ORIGINAL_REPORT = [
     '"442": {"l": 28, "f": "libwebviewchromium.so[+3db7d84]"},',
     '"443": {"l": 28, "f": "libwebviewchromium.so[+3db7a5c]"},']
@@ -88,7 +98,8 @@ class _RunSimpleperfTest(unittest.TestCase):
   def setUp(self):
     self.tmp_dir = '/tmp' # the actual directory won't be used in this test.
     self.args = mock.Mock(
-        report_path=os.path.join(self.tmp_dir, 'report.html'))
+        report_path=os.path.join(self.tmp_dir, 'report.html'),
+        show_file_line=False)
     self.device = mock.Mock()
 
     self.stack_address_interpreter = StackAddressInterpreter(self.args,
@@ -105,6 +116,16 @@ class _RunSimpleperfTest(unittest.TestCase):
                           _ADDRESSES, _WEBVIEW_LIB_PATH))
     self._AssertFileLines(mock_open, _EXAMPLE_STACK_SCRIPT_INPUT)
 
+  @mock.patch('run_simpleperf.open', new_callable=mock.mock_open)
+  def testStackAddressInterpreterWithFileNameLine(self, mock_open):
+    self.args.show_file_line = True
+    StackAddressInterpreter.RunStackScript = mock.Mock(
+        return_value=_EXAMPLE_STACK_SCRIPT_OUTPUT)
+    self.assertEquals(_EXAMPLE_INTERPRETER_OUTPUT_WITH_FILE_NAME_LINE,
+                      self.stack_address_interpreter.Interpret(
+                          _ADDRESSES, _WEBVIEW_LIB_PATH))
+    self._AssertFileLines(mock_open, _EXAMPLE_STACK_SCRIPT_INPUT)
+
   def testSimplePerfRunner_CollectAddresses(self):
     addresses = self.simple_perf_runner.CollectAddresses(
         _MOCK_ORIGINAL_REPORT, 'libwebviewchromium.so')
@@ -112,7 +133,7 @@ class _RunSimpleperfTest(unittest.TestCase):
 
   def testSimplePerfRunner_ReplaceAddresses(self):
     postprocessed_report = (
-        self.simple_perf_runner.ReplaceAddressesWithFunctionNames(
+        self.simple_perf_runner.ReplaceAddressesWithFunctionInfos(
             _MOCK_ORIGINAL_REPORT, _MOCK_ADDRESS_FUNCTION_NAME_PAIRS,
             'libwebviewchromium.so'))
     self.assertEquals(_MOCK_FINAL_REPORT, postprocessed_report)

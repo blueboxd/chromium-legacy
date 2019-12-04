@@ -249,8 +249,7 @@ bool MediaRecorderHandler::Start(int timeslice) {
   }
 
   webm_muxer_.reset(
-      new media::WebmMuxer(CodecIdToMediaVideoCodec(video_codec_id_),
-                           CodecIdToMediaAudioCodec(audio_codec_id_),
+      new media::WebmMuxer(CodecIdToMediaAudioCodec(audio_codec_id_),
                            use_video_tracks, use_audio_tracks,
                            WTF::BindRepeating(&MediaRecorderHandler::WriteData,
                                               WrapWeakPersistent(this))));
@@ -470,7 +469,9 @@ void MediaRecorderHandler::OnEncodedVideo(
   }
   if (!webm_muxer_)
     return;
-  if (!webm_muxer_->OnEncodedVideo(params, std::move(encoded_data),
+  media::WebmMuxer::VideoParameters params_with_codec = params;
+  params_with_codec.codec = CodecIdToMediaVideoCodec(video_codec_id_);
+  if (!webm_muxer_->OnEncodedVideo(params_with_codec, std::move(encoded_data),
                                    std::move(encoded_alpha), timestamp,
                                    is_key_frame)) {
     DLOG(ERROR) << "Error muxing video data";

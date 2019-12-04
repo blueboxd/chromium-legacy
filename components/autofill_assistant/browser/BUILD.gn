@@ -11,6 +11,7 @@ if (is_android) {
 
 proto_library("proto") {
   sources = [
+    "generic_ui.proto",
     "service.proto",
   ]
 }
@@ -236,6 +237,7 @@ if (is_android) {
   proto_java_library("proto_java") {
     proto_path = "//components/autofill_assistant/browser/"
     sources = [
+      "$proto_path/generic_ui.proto",
       "$proto_path/service.proto",
     ]
   }

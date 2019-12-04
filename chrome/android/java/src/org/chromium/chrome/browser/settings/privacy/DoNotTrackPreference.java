@@ -11,7 +11,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
-import org.chromium.chrome.browser.settings.PreferenceUtils;
+import org.chromium.chrome.browser.settings.SettingsUtils;
 
 /**
  * Fragment to manage 'Do Not Track' preference and to explain to the user what it does.
@@ -22,7 +22,7 @@ public class DoNotTrackPreference extends PreferenceFragmentCompat {
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.do_not_track_preferences);
+        SettingsUtils.addPreferencesFromResource(this, R.xml.do_not_track_preferences);
         getActivity().setTitle(R.string.do_not_track_title);
 
         ChromeSwitchPreference doNotTrackSwitch =

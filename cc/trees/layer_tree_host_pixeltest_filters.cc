@@ -249,11 +249,6 @@ TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterBlurRounded) {
 }
 
 TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterBlurOutsets) {
-  if (renderer_type() == RENDERER_SKIA_GL ||
-      renderer_type() == RENDERER_SKIA_VK) {
-    // TODO(973696): Implement bounds clipping in skia_renderer.
-    return;
-  }
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
       gfx::Rect(200, 200), SK_ColorWHITE);
 

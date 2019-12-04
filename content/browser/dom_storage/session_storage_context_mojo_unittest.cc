@@ -19,9 +19,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
+#include "components/services/storage/dom_storage/legacy_dom_storage_database.h"
 #include "components/services/storage/dom_storage/storage_area_test_util.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/dom_storage/dom_storage_types.h"
 #include "content/browser/dom_storage/session_storage_database.h"
 #include "content/public/browser/session_storage_usage_info.h"
 #include "content/public/test/browser_task_environment.h"
@@ -213,7 +213,7 @@ TEST_F(SessionStorageContextMojoTest, MigrationV0ToV1) {
     scoped_refptr<SessionStorageDatabase> db =
         base::MakeRefCounted<SessionStorageDatabase>(
             old_db_path, base::ThreadTaskRunnerHandle::Get().get());
-    DOMStorageValuesMap data;
+    storage::LegacyDomStorageValuesMap data;
     data[key] = base::NullableString16(value, false);
     data[key2] = base::NullableString16(value, false);
     EXPECT_TRUE(db->CommitAreaChanges(namespace_id1, origin1, false, data));

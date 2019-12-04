@@ -23,6 +23,7 @@
 #include "components/viz/service/display/dc_layer_overlay.h"
 #include "components/viz/service/display/gl_renderer_copier.h"
 #include "components/viz/service/display/output_surface_frame.h"
+#include "components/viz/service/display/overlay_candidate.h"
 #include "components/viz/service/display/texture_deleter.h"
 #include "components/viz/service/display_embedder/direct_context_provider.h"
 #include "components/viz/service/display_embedder/image_context_impl.h"
@@ -898,8 +899,7 @@ void SkiaOutputSurfaceImplOnGpu::ScheduleOutputSurfaceAsOverlay(
 
 void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
     OutputSurfaceFrame frame,
-    base::OnceCallback<bool()> deferred_framebuffer_draw_closure,
-    uint64_t sync_fence_release) {
+    base::OnceCallback<bool()> deferred_framebuffer_draw_closure) {
   TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::SwapBuffers");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -949,10 +949,6 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
     output_device_->SwapBuffers(buffer_presented_callback_,
                                 std::move(frame.latency_info));
   }
-
-  if (sync_fence_release)
-    ReleaseFenceSyncAndPushTextureUpdates(sync_fence_release);
-
   destroy_after_swap_.clear();
 }
 
@@ -1336,16 +1332,23 @@ void SkiaOutputSurfaceImplOnGpu::ReleaseImageContexts(
   // |image_contexts| goes out of scope here.
 }
 
+void SkiaOutputSurfaceImplOnGpu::ScheduleOverlays(
+    SkiaOutputSurface::OverlayList overlays) {
+#if defined(OS_ANDROID)
+  if (!output_device_->capabilities().supports_surfaceless) {
+    DCHECK_EQ(overlays.size(), 1u);
+    RenderToOverlay(overlays.front());
+    return;
+  }
+#endif
+  output_device_->ScheduleOverlays(std::move(overlays));
+}
+
 #if defined(OS_WIN)
 void SkiaOutputSurfaceImplOnGpu::SetEnableDCLayers(bool enable) {
   if (!MakeCurrent(false /* need_fbo0 */))
     return;
   output_device_->SetEnableDCLayers(enable);
-}
-
-void SkiaOutputSurfaceImplOnGpu::ScheduleDCLayers(
-    std::vector<DCLayerOverlay> dc_layers) {
-  output_device_->ScheduleDCLayers(std::move(dc_layers));
 }
 #endif
 
@@ -1634,13 +1637,11 @@ void SkiaOutputSurfaceImplOnGpu::SendOverlayPromotionNotification(
 #endif
 }
 
-void SkiaOutputSurfaceImplOnGpu::RenderToOverlay(
-    gpu::Mailbox overlay_candidate_mailbox,
-    const gfx::Rect& bounds) {
 #if defined(OS_ANDROID)
+void SkiaOutputSurfaceImplOnGpu::RenderToOverlay(
+    const OverlayCandidate& overlay) {
   auto shared_image_overlay =
-      shared_image_representation_factory_->ProduceOverlay(
-          overlay_candidate_mailbox);
+      shared_image_representation_factory_->ProduceOverlay(overlay.mailbox);
   // When display is re-opened, the first few frames might not have video
   // resource ready. Possible investigation crbug.com/1023971.
   if (!shared_image_overlay)
@@ -1652,11 +1653,12 @@ void SkiaOutputSurfaceImplOnGpu::RenderToOverlay(
   // media code. Since we are not actually passing an overlay plane to the
   // display controller here, we are able to call EndReadAccess directly after
   // BeginReadAccess.
-  shared_image_overlay->NotifyOverlayPromotion(true, bounds);
+  shared_image_overlay->NotifyOverlayPromotion(
+      true, ToNearestRect(overlay.display_rect));
   shared_image_overlay->BeginReadAccess();
   shared_image_overlay->EndReadAccess();
-#endif
 }
+#endif
 
 void SkiaOutputSurfaceImplOnGpu::MarkContextLost() {
   context_state_->MarkContextLost();

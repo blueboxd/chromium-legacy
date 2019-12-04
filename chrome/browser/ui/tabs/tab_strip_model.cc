@@ -313,6 +313,8 @@ struct TabStripModel::DetachNotifications {
 ///////////////////////////////////////////////////////////////////////////////
 // TabStripModel, public:
 
+constexpr int TabStripModel::kNoTab;
+
 TabStripModel::TabStripModel(TabStripModelDelegate* delegate, Profile* profile)
     : delegate_(delegate), profile_(profile) {
   DCHECK(delegate_);
@@ -459,7 +461,7 @@ std::unique_ptr<content::WebContents> TabStripModel::DetachWebContentsImpl(
   base::Optional<int> next_selected_index =
       order_controller_->DetermineNewSelectedIndex(index);
 
-  NotifyGroupChange(index, UngroupTab(index), base::nullopt);
+  UngroupTab(index);
 
   std::unique_ptr<WebContentsData> old_data = std::move(contents_data_[index]);
   contents_data_.erase(contents_data_.begin() + index);
@@ -1036,30 +1038,14 @@ void TabStripModel::UpdateGroupForDragRevert(
     base::Optional<TabGroupId> group_id,
     base::Optional<TabGroupVisualData> group_data) {
   ReentrancyCheck reentrancy_check(&reentrancy_guard_);
-
-  // Ungroup tab before moving, so that if this is the last tab in the group
-  // observers can delete that group.
-  base::Optional<TabGroupId> old_group = UngroupTab(index);
-
   if (group_id.has_value()) {
-    auto add_to_group_and_notify = [&]() {
-      contents_data_[index]->set_group(group_id.value());
-      group_model_->GetTabGroup(group_id.value())->AddTab();
-      NotifyGroupChange(index, old_group, group_id);
-    };
-
     const bool group_exists = group_model_->ContainsTabGroup(group_id.value());
-    if (group_exists) {
-      add_to_group_and_notify();
-    } else {
-      TabGroup* tab_group =
-          group_model_->AddTabGroup(group_id.value(), group_data);
-      add_to_group_and_notify();
-      NotifyGroupVisualsChange(group_id.value(), tab_group->visual_data());
-    }
+    if (!group_exists)
+      group_model_->AddTabGroup(group_id.value(), group_data);
+    GroupTab(index, group_id.value());
+  } else {
+    UngroupTab(index);
   }
-
-  NotifyGroupChange(index, old_group, group_id);
 }
 
 void TabStripModel::RemoveFromGroup(const std::vector<int>& indices) {
@@ -1476,9 +1462,6 @@ int TabStripModel::InsertWebContentsAtImpl(
     }
     data->set_opener(active_contents);
   }
-  data->set_group(group);
-  if (group.has_value())
-    group_model_->GetTabGroup(group.value())->AddTab();
 
   // TODO(gbillock): Ask the modal dialog manager whether the WebContents should
   // be blocked, or just let the modal dialog manager make the blocking call
@@ -1508,7 +1491,7 @@ int TabStripModel::InsertWebContentsAtImpl(
   for (auto& observer : observers_)
     observer.OnTabStripModelChanged(this, change, selection);
   if (group.has_value())
-    NotifyGroupChange(index, base::nullopt, group);
+    GroupTab(index, group.value());
 
   return index;
 }
@@ -1748,9 +1731,7 @@ void TabStripModel::AddToNewGroupImpl(const std::vector<int>& indices,
       contents_data_.cbegin(), contents_data_.cend(),
       [new_group](const auto& datum) { return datum->group() == new_group; }));
 
-  // Create initial visual data and save the reference so we can notify observer
-  // later.
-  TabGroup* tab_group = group_model_->AddTabGroup(new_group, base::nullopt);
+  group_model_->AddTabGroup(new_group, base::nullopt);
 
   // Find a destination for the first tab that's not inside another group. We
   // will stack the rest of the tabs up to its right.
@@ -1771,8 +1752,6 @@ void TabStripModel::AddToNewGroupImpl(const std::vector<int>& indices,
   new_indices = SetTabsPinned(new_indices, false);
 
   MoveTabsIntoGroupImpl(new_indices, destination_index, new_group);
-
-  NotifyGroupVisualsChange(new_group, tab_group->visual_data());
 }
 
 void TabStripModel::AddToExistingGroupImpl(const std::vector<int>& indices,
@@ -1828,38 +1807,13 @@ void TabStripModel::MoveAndSetGroup(int index,
                                     base::Optional<TabGroupId> new_group) {
   DCHECK(!IsTabPinned(index));
 
-  // Ungroup tab before moving, so that if this is the last tab in the group
-  // observers can delete that group.
-  base::Optional<TabGroupId> old_group = UngroupTab(index);
-  contents_data_[index]->set_group(new_group);
   if (new_group.has_value())
-    group_model_->GetTabGroup(new_group.value())->AddTab();
-  NotifyGroupChange(index, old_group, new_group);
+    GroupTab(index, new_group.value());
+  else
+    UngroupTab(index);
 
   if (index != new_index)
     MoveWebContentsAtImpl(index, new_index, false);
-}
-
-void TabStripModel::NotifyGroupChange(int index,
-                                      base::Optional<TabGroupId> old_group,
-                                      base::Optional<TabGroupId> new_group) {
-  if (old_group == new_group)
-    return;
-  TabStripModelChange::GroupChange group_change;
-  group_change.contents = GetWebContentsAt(index);
-  group_change.index = index;
-  group_change.old_group = old_group;
-  group_change.new_group = new_group;
-  TabStripModelChange change(group_change);
-  TabStripSelectionChange selection(GetActiveWebContents(), selection_model_);
-  for (auto& observer : observers_)
-    observer.OnTabStripModelChanged(this, change, selection);
-}
-
-void TabStripModel::NotifyGroupVisualsChange(TabGroupId group,
-                                             TabGroupVisualData* visual_data) {
-  for (auto& observer : observers_)
-    observer.OnTabGroupVisualDataChanged(this, group, visual_data);
 }
 
 base::Optional<TabGroupId> TabStripModel::UngroupTab(int index) {
@@ -1867,15 +1821,59 @@ base::Optional<TabGroupId> TabStripModel::UngroupTab(int index) {
   if (!group.has_value())
     return base::nullopt;
 
-  contents_data_[index]->set_group(base::nullopt);
-
-  DCHECK(group_model_->ContainsTabGroup(group.value()));
   TabGroup* tab_group = group_model_->GetTabGroup(group.value());
+
+  contents_data_[index]->set_group(base::nullopt);
+  for (auto& observer : observers_)
+    observer.TabGroupedStateChanged(base::nullopt, index);
 
   tab_group->RemoveTab();
   if (tab_group->IsEmpty())
     group_model_->RemoveTabGroup(group.value());
+
   return group;
+}
+
+void TabStripModel::GroupTab(int index, TabGroupId group) {
+  // Check for an old group first, so that any groups that are changed can be
+  // notified appropriately.
+  base::Optional<TabGroupId> old_group = GetTabGroupForTab(index);
+  if (old_group.has_value()) {
+    if (old_group.value() == group)
+      return;
+    else
+      UngroupTab(index);
+  }
+  contents_data_[index]->set_group(group);
+  for (auto& observer : observers_)
+    observer.TabGroupedStateChanged(group, index);
+
+  group_model_->GetTabGroup(group)->AddTab();
+}
+
+void TabStripModel::CreateTabGroup(TabGroupId group) {
+  for (auto& observer : observers_)
+    observer.OnTabGroupCreated(group);
+}
+
+void TabStripModel::ChangeTabGroupContents(TabGroupId group) {
+  for (auto& observer : observers_)
+    observer.OnTabGroupContentsChanged(group);
+}
+
+void TabStripModel::ChangeTabGroupVisuals(TabGroupId group,
+                                          TabGroupVisualData* visual_data) {
+  for (auto& observer : observers_)
+    observer.OnTabGroupVisualsChanged(group, visual_data);
+}
+
+void TabStripModel::CloseTabGroup(TabGroupId group) {
+  for (auto& observer : observers_)
+    observer.OnTabGroupClosed(group);
+}
+
+int TabStripModel::GetTabCount() const {
+  return static_cast<int>(contents_data_.size());
 }
 
 void TabStripModel::SetTabPinnedImpl(int index, bool pinned) {
@@ -1883,11 +1881,9 @@ void TabStripModel::SetTabPinnedImpl(int index, bool pinned) {
   if (contents_data_[index]->pinned() == pinned)
     return;
 
-  if (pinned) {
-    // Upgroup tabs if pinning -- the states should be mutually exclusive.
-    base::Optional<TabGroupId> old_group = UngroupTab(index);
-    NotifyGroupChange(index, old_group, base::nullopt);
-  }
+  // Upgroup tabs if pinning -- the states should be mutually exclusive.
+  if (pinned)
+    UngroupTab(index);
 
   // The tab's position may have to change as the pinned tab state is changing.
   int non_pinned_tab_index = IndexOfFirstNonPinnedTab();
@@ -1976,16 +1972,13 @@ void TabStripModel::EnsureGroupContiguity(int index) {
   if (old_group != new_left_group && old_group != new_right_group) {
     if (new_left_group == new_right_group && new_left_group.has_value()) {
       // The tab is in the middle of an existing group, so add it to that group.
-      UngroupTab(index);
-      contents_data_[index]->set_group(new_left_group);
-      group_model_->GetTabGroup(new_left_group.value())->AddTab();
-      NotifyGroupChange(index, old_group, new_left_group);
+      GroupTab(index, new_left_group.value());
     } else if (old_group.has_value() &&
-               group_model_->GetTabGroup(old_group.value())->tab_count() > 1) {
+               group_model_->GetTabGroup(old_group.value())->ListTabs().size() >
+                   1) {
       // The tab is between groups and its group is non-contiguous, so clear
       // this tab's group.
       UngroupTab(index);
-      NotifyGroupChange(index, old_group, base::nullopt);
     }
   }
 }

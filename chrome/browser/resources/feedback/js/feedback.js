@@ -99,7 +99,6 @@ let sysInfoPageOnSysInfoReadyCallback = null;
  * @param {Event} fileSelectedEvent The onChanged event for the file input box.
  */
 function onFileSelected(fileSelectedEvent) {
-  $('attach-error').hidden = true;
   const file = fileSelectedEvent.target.files[0];
   if (!file) {
     // User canceled file selection.
@@ -117,6 +116,14 @@ function onFileSelected(fileSelectedEvent) {
   }
 
   attachedFileBlob = file.slice();
+}
+
+/**
+ * Called when user opens the file dialog. Hide $('attach-error') before file
+ * dialog is open to prevent a11y bug https://crbug.com/1020047
+ */
+function onOpenFileDialog() {
+  $('attach-error').hidden = true;
 }
 
 /**
@@ -577,6 +584,7 @@ function initialize() {
 
     // Setup our event handlers.
     $('attach-file').addEventListener('change', onFileSelected);
+    $('attach-file').addEventListener('click', onOpenFileDialog);
     $('send-report-button').onclick = sendReport;
     $('cancel-button').onclick = cancel;
     $('remove-attached-file').onclick = clearAttachedFile;

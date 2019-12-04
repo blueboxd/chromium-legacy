@@ -330,6 +330,8 @@ std::string EmbeddedTestServer::GetCertificateName() const {
       return "ok_cert_by_intermediate.pem";
     case CERT_BAD_VALIDITY:
       return "bad_validity.pem";
+    case CERT_TEST_NAMES:
+      return "test_names.pem";
   }
 
   return "ok_cert.pem";

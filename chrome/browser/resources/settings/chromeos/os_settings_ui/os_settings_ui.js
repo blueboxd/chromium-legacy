@@ -102,6 +102,13 @@ Polymer({
     'refresh-pref': 'onRefreshPref_',
   },
 
+  /**
+   * The route of the selected element in os-settings-menu. Stored here to defer
+   * navigation until drawer animation completes.
+   * @private {settings.Route}
+   */
+  activeRoute_: null,
+
   /** @override */
   created: function() {
     settings.initializeRouteFromUrl();
@@ -277,15 +284,42 @@ Polymer({
 
   /**
    * Called when a section is selected.
+   * @param {!Event} e
    * @private
    */
-  onIronActivate_: function() {
-    this.$.drawer.close();
+  onIronActivate_: function(e) {
+    const section = e.detail.selected;
+    const path = new URL(section).pathname;
+    const route = settings.getRouteForPath(path);
+    assert(route, 'os-settings-menu has an entry with an invalid route.');
+    this.activeRoute_ = route;
+
+    if (this.isNarrow) {
+      // If the onIronActivate event came from the drawer, close the drawer and
+      // wait for the menu to close before navigating to |activeRoute_|.
+      this.$.drawer.close();
+      return;
+    }
+    this.navigateToActiveRoute_();
   },
 
   /** @private */
   onMenuButtonTap_: function() {
     this.$.drawer.toggle();
+  },
+
+
+  /**
+   * Navigates to |activeRoute_| if set. Used to delay navigation until after
+   * animations complete to ensure focus ends up in the right place.
+   * @private
+   */
+  navigateToActiveRoute_: function() {
+    if (this.activeRoute_) {
+      settings.navigateTo(
+          this.activeRoute_, /* dynamicParams */ null, /* removeSearch */ true);
+      this.activeRoute_ = null;
+    }
   },
 
   /**
@@ -299,7 +333,8 @@ Polymer({
   onMenuClose_: function() {
     if (!this.$.drawer.wasCanceled()) {
       // If a navigation happened, MainPageBehavior#currentRouteChanged handles
-      // focusing the corresponding section.
+      // focusing the corresponding section when we call settings.NavigateTo().
+      this.navigateToActiveRoute_();
       return;
     }
 

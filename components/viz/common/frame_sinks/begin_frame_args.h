@@ -14,6 +14,14 @@
 #include "base/values.h"
 #include "components/viz/common/viz_common_export.h"
 
+namespace perfetto {
+namespace protos {
+namespace pbzero {
+class BeginFrameArgs;
+}
+}  // namespace protos
+}  // namespace perfetto
+
 namespace base {
 namespace trace_event {
 class ConvertableToTraceFormat;
@@ -108,8 +116,11 @@ struct VIZ_COMMON_EXPORT BeginFrameArgs {
 
   bool IsValid() const { return interval >= base::TimeDelta(); }
 
+  // TODO(nuskos): Once we have a protozero -> String utility function remove
+  // these base::trace_event json dictionary functions.
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
   void AsValueInto(base::trace_event::TracedValue* dict) const;
+  void AsProtozeroInto(perfetto::protos::pbzero::BeginFrameArgs* args) const;
 
   // The time at which the frame started. Used, for example, by animations to
   // decide to slow down or skip ahead.

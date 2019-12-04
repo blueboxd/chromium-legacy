@@ -39,8 +39,6 @@ class HeadlessDevToolsSession : public FrontendChannel {
       const std::string& message,
       content::DevToolsManagerDelegate::NotHandledCallback callback);
 
-  UberDispatcher* dispatcher() { return dispatcher_.get(); }
-
  private:
   void AddHandler(std::unique_ptr<DomainHandler> handler);
 
@@ -56,8 +54,8 @@ class HeadlessDevToolsSession : public FrontendChannel {
   base::WeakPtr<HeadlessBrowserImpl> browser_;
   content::DevToolsAgentHost* const agent_host_;
   content::DevToolsAgentHostClient* const client_;
-  std::unique_ptr<UberDispatcher> dispatcher_;
-  base::flat_map<std::string, std::unique_ptr<DomainHandler>> handlers_;
+  UberDispatcher dispatcher_;
+  std::vector<std::unique_ptr<DomainHandler>> handlers_;
   base::flat_map<int, content::DevToolsManagerDelegate::NotHandledCallback>
       pending_commands_;
 

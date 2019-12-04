@@ -20,8 +20,10 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
+#include "chromeos/system/fake_statistics_provider.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -192,6 +194,8 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, WelcomeScreenElements) {
       {"connect", "welcomeScreen", "languageSelectionButton"});
   test::OobeJS().ExpectVisiblePath(
       {"connect", "welcomeScreen", "accessibilitySettingsButton"});
+  test::OobeJS().ExpectHiddenPath(
+      {"connect", "welcomeScreen", "timezoneSettingsButton"});
   test::OobeJS().ExpectVisiblePath(
       {"connect", "welcomeScreen", "enableDebuggingLink"});
 }
@@ -442,6 +446,54 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenSystemDevModeBrowserTest,
   test::OobeJS().ExpectVisiblePath({"debugging-cancel-button"});
   test::OobeJS().ExpectVisiblePath({"enable-debugging-help-link"});
   test::OobeJS().ClickOnPath({"debugging-cancel-button"});
+}
+
+class WelcomeScreenTimezone : public WelcomeScreenBrowserTest {
+ public:
+  WelcomeScreenTimezone() {
+    fake_statistics_provider_.SetMachineFlag(system::kOemKeyboardDrivenOobeKey,
+                                             true);
+  }
+
+  WelcomeScreenTimezone(const WelcomeScreenTimezone&) = delete;
+  WelcomeScreenTimezone& operator=(const WelcomeScreenTimezone&) = delete;
+
+ protected:
+  void CheckTimezone(const std::string& timezone) {
+    std::string system_timezone;
+    CrosSettings::Get()->GetString(kSystemTimezone, &system_timezone);
+    EXPECT_EQ(timezone, system_timezone);
+
+    const std::string signin_screen_timezone =
+        g_browser_process->local_state()->GetString(
+            prefs::kSigninScreenTimezone);
+    EXPECT_EQ(timezone, signin_screen_timezone);
+  }
+
+ private:
+  system::ScopedFakeStatisticsProvider fake_statistics_provider_;
+};
+
+IN_PROC_BROWSER_TEST_F(WelcomeScreenTimezone, ChangeTimezoneFlow) {
+  welcome_screen_->Show();
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
+  test::OobeJS().TapOnPath(
+      {"connect", "welcomeScreen", "timezoneSettingsButton"});
+
+  std::string system_timezone;
+  CrosSettings::Get()->GetString(kSystemTimezone, &system_timezone);
+  const char kTestTimezone[] = "Asia/Novosibirsk";
+  ASSERT_NE(kTestTimezone, system_timezone);
+
+  test::OobeJS().SelectElementInPath(kTestTimezone,
+                                     {"connect", "timezoneSelect", "select"});
+  CheckTimezone(kTestTimezone);
+  test::OobeJS().TapOnPath({"connect", "ok-button-timezone"});
+  test::OobeJS().TapOnPath({"connect", "welcomeScreen", "welcomeNextButton"});
+  WaitForScreenExit();
+
+  // Must not change.
+  CheckTimezone(kTestTimezone);
 }
 
 }  // namespace chromeos

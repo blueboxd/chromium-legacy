@@ -1838,10 +1838,14 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
                             "text</span> and text after.",
                             {L"a ", L"and ", L"text ", L"after."});
 
+  AssertMoveByUnitForMarkup(
+      TextUnit_Word, "<ol><li>item one</li><li>item two</li></ol>",
+      {L"1. ", L"item ", L"one", L"2. ", L"item ", L"two"});
+
   // The following test should be enabled when crbug.com/1015100 is fixed.
   // AssertMoveByUnitForMarkup(
   //     TextUnit_Word, "<ul><li>item one</li><li>item two</li></ul>",
-  //     {L"* ", L"item ", L"one\n", L"* ", L"item ", L"two"});
+  //     {L"• ", L"item ", L"one", L"• ", L"item ", L"two"});
 }
 
 IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
@@ -1970,9 +1974,9 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
   EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(rectangles.Get(), expected_values);
 
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Character,
-                  /*count*/ 17,
+                  /*count*/ 19,
                   /*expected_text*/ L"e",
-                  /*expected_count*/ 17);
+                  /*expected_count*/ 19);
   text_range_provider->ExpandToEnclosingUnit(TextUnit_Word);
   EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"item");
 

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/android/rules.gni")
+import("//build/config/locales.gni")
 import("//chrome/common/features.gni")
 
 android_library("java") {
@@ -44,50 +45,9 @@ android_resources("java_resources") {
 java_strings_grd("java_strings_grd") {
   defines = chrome_grit_defines
   grd_file = "java/strings/android_touch_to_fill_strings.grd"
-  outputs = [
-    "values-am/android_touch_to_fill_strings.xml",
-    "values-ar/android_touch_to_fill_strings.xml",
-    "values-bg/android_touch_to_fill_strings.xml",
-    "values-ca/android_touch_to_fill_strings.xml",
-    "values-cs/android_touch_to_fill_strings.xml",
-    "values-da/android_touch_to_fill_strings.xml",
-    "values-de/android_touch_to_fill_strings.xml",
-    "values-el/android_touch_to_fill_strings.xml",
-    "values/android_touch_to_fill_strings.xml",
-    "values-en-rGB/android_touch_to_fill_strings.xml",
-    "values-es/android_touch_to_fill_strings.xml",
-    "values-es-rUS/android_touch_to_fill_strings.xml",
-    "values-fa/android_touch_to_fill_strings.xml",
-    "values-fi/android_touch_to_fill_strings.xml",
-    "values-tl/android_touch_to_fill_strings.xml",
-    "values-fr/android_touch_to_fill_strings.xml",
-    "values-hi/android_touch_to_fill_strings.xml",
-    "values-hr/android_touch_to_fill_strings.xml",
-    "values-hu/android_touch_to_fill_strings.xml",
-    "values-in/android_touch_to_fill_strings.xml",
-    "values-it/android_touch_to_fill_strings.xml",
-    "values-iw/android_touch_to_fill_strings.xml",
-    "values-ja/android_touch_to_fill_strings.xml",
-    "values-ko/android_touch_to_fill_strings.xml",
-    "values-lt/android_touch_to_fill_strings.xml",
-    "values-lv/android_touch_to_fill_strings.xml",
-    "values-nl/android_touch_to_fill_strings.xml",
-    "values-nb/android_touch_to_fill_strings.xml",
-    "values-pl/android_touch_to_fill_strings.xml",
-    "values-pt-rBR/android_touch_to_fill_strings.xml",
-    "values-pt-rPT/android_touch_to_fill_strings.xml",
-    "values-ro/android_touch_to_fill_strings.xml",
-    "values-ru/android_touch_to_fill_strings.xml",
-    "values-sk/android_touch_to_fill_strings.xml",
-    "values-sl/android_touch_to_fill_strings.xml",
-    "values-sr/android_touch_to_fill_strings.xml",
-    "values-sv/android_touch_to_fill_strings.xml",
-    "values-sw/android_touch_to_fill_strings.xml",
-    "values-th/android_touch_to_fill_strings.xml",
-    "values-tr/android_touch_to_fill_strings.xml",
-    "values-uk/android_touch_to_fill_strings.xml",
-    "values-vi/android_touch_to_fill_strings.xml",
-    "values-zh-rCN/android_touch_to_fill_strings.xml",
-    "values-zh-rTW/android_touch_to_fill_strings.xml",
-  ]
+  outputs =
+      [ "values/android_touch_to_fill_strings.xml" ] +
+      process_file_template(
+          android_bundle_locales_as_resources,
+          [ "values-{{source_name_part}}/android_touch_to_fill_strings.xml" ])
 }

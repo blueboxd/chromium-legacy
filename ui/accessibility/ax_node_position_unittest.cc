@@ -1167,6 +1167,124 @@ TEST_F(AXPositionTest, AtStartOfParagraphWithTextPosition) {
   EXPECT_FALSE(text_position->AtStartOfParagraph());
 }
 
+TEST_F(AXPositionTest, AtStartOfParagraphOnAListMarkerDescendant) {
+  // This test updates the tree structure to test a specific edge case -
+  // AtStartOfParagraph should return false on the next sibling of a list marker
+  // text descendant.
+  // ++1 kRootWebArea
+  // ++++2 kList
+  // ++++++3 kListItem
+  // ++++++++4 kListMarker
+  // ++++++++++5 kStaticText
+  // ++++++++++++6 kInlineTextBox "1. "
+  // ++++++++7 kStaticText
+  // ++++++++++8 kInlineTextBox "content"
+  // ++++++9 kListItem
+  // ++++++++10 kListMarker
+  // +++++++++++11 kStaticText
+  // ++++++++++++++12 kInlineTextBox "2. "
+  // ++++13 kStaticText
+  // +++++++14 kInlineTextBox "after"
+  AXNodePosition::SetTree(nullptr);
+
+  AXNodeData root;
+  AXNodeData list;
+  AXNodeData list_item1;
+  AXNodeData list_item2;
+  AXNodeData list_marker1;
+  AXNodeData list_marker2;
+  AXNodeData inline_box1;
+  AXNodeData inline_box2;
+  AXNodeData inline_box3;
+  AXNodeData inline_box4;
+  AXNodeData static_text1;
+  AXNodeData static_text2;
+  AXNodeData static_text3;
+  AXNodeData static_text4;
+
+  root.id = 1;
+  list.id = 2;
+  list_item1.id = 3;
+  list_marker1.id = 4;
+  static_text1.id = 5;
+  inline_box1.id = 6;
+  static_text2.id = 7;
+  inline_box2.id = 8;
+  list_item2.id = 9;
+  list_marker2.id = 10;
+  static_text3.id = 11;
+  inline_box3.id = 12;
+  static_text4.id = 13;
+  inline_box4.id = 14;
+
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.child_ids = {list.id, static_text4.id};
+
+  list.role = ax::mojom::Role::kList;
+  list.child_ids = {list_item1.id, list_item2.id};
+
+  list_item1.role = ax::mojom::Role::kListItem;
+  list_item1.child_ids = {list_marker1.id, static_text2.id};
+  list_item1.AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
+                              true);
+
+  list_marker1.role = ax::mojom::Role::kListMarker;
+  list_marker1.child_ids = {static_text1.id};
+
+  static_text1.role = ax::mojom::Role::kStaticText;
+  static_text1.child_ids = {inline_box1.id};
+
+  inline_box1.role = ax::mojom::Role::kInlineTextBox;
+  inline_box1.SetName("1. ");
+
+  static_text2.role = ax::mojom::Role::kStaticText;
+  static_text2.child_ids = {inline_box2.id};
+
+  inline_box2.role = ax::mojom::Role::kInlineTextBox;
+  inline_box2.SetName("content");
+  inline_box2.AddIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId,
+                              inline_box1.id);
+
+  list_item2.role = ax::mojom::Role::kListItem;
+  list_item2.child_ids = {list_marker2.id};
+  list_item2.AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
+                              true);
+
+  list_marker2.role = ax::mojom::Role::kListMarker;
+  list_marker2.child_ids = {static_text3.id};
+
+  static_text3.role = ax::mojom::Role::kStaticText;
+  static_text3.child_ids = {inline_box3.id};
+
+  inline_box3.role = ax::mojom::Role::kInlineTextBox;
+  inline_box3.SetName("2. ");
+
+  static_text4.role = ax::mojom::Role::kStaticText;
+  static_text4.child_ids = {inline_box4.id};
+
+  inline_box4.role = ax::mojom::Role::kInlineTextBox;
+  inline_box4.SetName("after");
+
+  std::unique_ptr<AXTree> new_tree = CreateAXTree(
+      {root, list, list_item1, list_marker1, static_text1, inline_box1,
+       static_text2, inline_box2, list_item2, list_marker2, static_text3,
+       inline_box3, static_text4, inline_box4});
+
+  TestPositionType text_position = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, inline_box2.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  ASSERT_FALSE(text_position->AtStartOfParagraph());
+
+  text_position = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, inline_box4.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  ASSERT_TRUE(text_position->AtStartOfParagraph());
+}
+
 TEST_F(AXPositionTest, AtEndOfParagraphWithTextPosition) {
   // End of |inline_box1_| is not the end of paragraph since it's
   // followed by a whitespace-only line breaking object
@@ -1210,6 +1328,111 @@ TEST_F(AXPositionTest, AtEndOfParagraphWithTextPosition) {
   ASSERT_NE(nullptr, text_position);
   ASSERT_TRUE(text_position->IsTextPosition());
   EXPECT_TRUE(text_position->AtEndOfParagraph());
+}
+
+TEST_F(AXPositionTest, AtEndOfParagraphOnAListMarkerDescendant) {
+  // This test updates the tree structure to test a specific edge case -
+  // AtEndOfParagraph should return false on a child of a list marker if the
+  // list item has content. When the list marker is the only child of a list
+  // item, it should return true.
+  // ++1 kRootWebArea
+  // ++++2 kList
+  // ++++++3 kListItem
+  // ++++++++4 kListMarker
+  // ++++++++++5 kStaticText
+  // ++++++++++++6 kInlineTextBox "1. "
+  // ++++++++7 kStaticText
+  // ++++++++++8 kInlineTextBox "content"
+  // ++++++9 kListItem
+  // ++++++++10 kListMarker
+  // +++++++++++11 kStaticText
+  // ++++++++++++++12 kInlineTextBox "2. "
+  AXNodePosition::SetTree(nullptr);
+
+  AXNodeData root;
+  AXNodeData list;
+  AXNodeData list_item1;
+  AXNodeData list_item2;
+  AXNodeData list_marker1;
+  AXNodeData list_marker2;
+  AXNodeData inline_box1;
+  AXNodeData inline_box2;
+  AXNodeData inline_box3;
+  AXNodeData static_text1;
+  AXNodeData static_text2;
+  AXNodeData static_text3;
+
+  root.id = 1;
+  list.id = 2;
+  list_item1.id = 3;
+  list_marker1.id = 4;
+  static_text1.id = 5;
+  inline_box1.id = 6;
+  static_text2.id = 7;
+  inline_box2.id = 8;
+  list_item2.id = 9;
+  list_marker2.id = 10;
+  static_text3.id = 11;
+  inline_box3.id = 12;
+
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.child_ids = {list.id};
+
+  list.role = ax::mojom::Role::kList;
+  list.child_ids = {list_item1.id, list_item2.id};
+
+  list_item1.role = ax::mojom::Role::kListItem;
+  list_item1.child_ids = {list_marker1.id, static_text2.id};
+  list_item1.AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
+                              true);
+
+  list_marker1.role = ax::mojom::Role::kListMarker;
+  list_marker1.child_ids = {static_text1.id};
+
+  static_text1.role = ax::mojom::Role::kStaticText;
+  static_text1.child_ids = {inline_box1.id};
+
+  inline_box1.role = ax::mojom::Role::kInlineTextBox;
+  inline_box1.SetName("1. ");
+
+  static_text2.role = ax::mojom::Role::kStaticText;
+  static_text2.child_ids = {inline_box2.id};
+
+  inline_box2.role = ax::mojom::Role::kInlineTextBox;
+  inline_box2.SetName("content");
+
+  list_item2.role = ax::mojom::Role::kListItem;
+  list_item2.child_ids = {list_marker2.id};
+  list_item2.AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
+                              true);
+
+  list_marker2.role = ax::mojom::Role::kListMarker;
+  list_marker2.child_ids = {static_text3.id};
+
+  static_text3.role = ax::mojom::Role::kStaticText;
+  static_text3.child_ids = {inline_box3.id};
+
+  inline_box3.role = ax::mojom::Role::kInlineTextBox;
+  inline_box3.SetName("2. ");
+
+  std::unique_ptr<AXTree> new_tree =
+      CreateAXTree({root, list, list_item1, list_marker1, static_text1,
+                    inline_box1, static_text2, inline_box2, list_item2,
+                    list_marker2, static_text3, inline_box3});
+
+  TestPositionType text_position = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, inline_box1.id, 3 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  ASSERT_FALSE(text_position->AtEndOfParagraph());
+
+  text_position = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, inline_box3.id, 3 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  ASSERT_TRUE(text_position->AtEndOfParagraph());
 }
 
 TEST_F(AXPositionTest, ParagraphEdgesWithPreservedNewLine) {
@@ -4965,6 +5188,352 @@ TEST_F(AXPositionTest, CreateLinePositionsMultipleAnchorsInSingleLine) {
   EXPECT_TRUE(previous_line_end_position->IsTextPosition());
   EXPECT_EQ(inline_box1.id, previous_line_end_position->anchor_id());
   EXPECT_EQ(0, previous_line_end_position->text_offset());
+}
+
+TEST_F(AXPositionTest, CreateNextWordPositionInList) {
+  // This test updates the tree structure to test a specific edge case -
+  // next word navigation inside a list with AXListMarkers nodes.
+  // ++1 kRootWebArea
+  // ++++2 kList
+  // ++++++3 kListItem
+  // ++++++++4 kListMarker
+  // ++++++++++5 kStaticText
+  // ++++++++++++6 kInlineTextBox "1. "
+  // ++++++++7 kStaticText
+  // ++++++++++8 kInlineTextBox "first item"
+  // ++++++9 kListItem
+  // ++++++++10 kListMarker
+  // +++++++++++11 kStaticText
+  // ++++++++++++++12 kInlineTextBox "2. "
+  // ++++++++13 kStaticText
+  // ++++++++++14 kInlineTextBox "second item"
+  AXNodePosition::SetTree(nullptr);
+
+  AXNodeData root;
+  AXNodeData list;
+  AXNodeData list_item1;
+  AXNodeData list_item2;
+  AXNodeData list_marker1;
+  AXNodeData list_marker2;
+  AXNodeData inline_box1;
+  AXNodeData inline_box2;
+  AXNodeData inline_box3;
+  AXNodeData inline_box4;
+  AXNodeData static_text1;
+  AXNodeData static_text2;
+  AXNodeData static_text3;
+  AXNodeData static_text4;
+
+  root.id = 1;
+  list.id = 2;
+  list_item1.id = 3;
+  list_marker1.id = 4;
+  static_text1.id = 5;
+  inline_box1.id = 6;
+  static_text2.id = 7;
+  inline_box2.id = 8;
+  list_item2.id = 9;
+  list_marker2.id = 10;
+  static_text3.id = 11;
+  inline_box3.id = 12;
+  static_text4.id = 13;
+  inline_box4.id = 14;
+
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.child_ids = {list.id};
+
+  list.role = ax::mojom::Role::kList;
+  list.child_ids = {list_item1.id, list_item2.id};
+
+  list_item1.role = ax::mojom::Role::kListItem;
+  list_item1.child_ids = {list_marker1.id, static_text2.id};
+  list_item1.AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
+                              true);
+
+  list_marker1.role = ax::mojom::Role::kListMarker;
+  list_marker1.child_ids = {static_text1.id};
+
+  static_text1.role = ax::mojom::Role::kStaticText;
+  static_text1.SetName("1. ");
+  static_text1.child_ids = {inline_box1.id};
+
+  inline_box1.role = ax::mojom::Role::kInlineTextBox;
+  inline_box1.SetName("1. ");
+  inline_box1.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
+                                  std::vector<int32_t>{0});
+  inline_box1.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
+                                  std::vector<int32_t>{3});
+
+  static_text2.role = ax::mojom::Role::kStaticText;
+  static_text2.SetName("first item");
+  static_text2.child_ids = {inline_box2.id};
+
+  inline_box2.role = ax::mojom::Role::kInlineTextBox;
+  inline_box2.SetName("first item");
+  inline_box2.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
+                                  std::vector<int32_t>{0, 6});
+  inline_box2.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
+                                  std::vector<int32_t>{5});
+
+  list_item2.role = ax::mojom::Role::kListItem;
+  list_item2.child_ids = {list_marker2.id, static_text4.id};
+  list_item2.AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
+                              true);
+
+  list_marker2.role = ax::mojom::Role::kListMarker;
+  list_marker2.child_ids = {static_text3.id};
+
+  static_text3.role = ax::mojom::Role::kStaticText;
+  static_text3.SetName("2. ");
+  static_text3.child_ids = {inline_box3.id};
+
+  inline_box3.role = ax::mojom::Role::kInlineTextBox;
+  inline_box3.SetName("2. ");
+  inline_box3.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
+                                  std::vector<int32_t>{0});
+  inline_box3.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
+                                  std::vector<int32_t>{3});
+
+  static_text4.role = ax::mojom::Role::kStaticText;
+  static_text4.SetName("second item");
+  static_text4.child_ids = {inline_box4.id};
+
+  inline_box4.role = ax::mojom::Role::kInlineTextBox;
+  inline_box4.SetName("second item");
+  inline_box4.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
+                                  std::vector<int32_t>{0, 7});
+  inline_box4.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
+                                  std::vector<int32_t>{6});
+
+  std::unique_ptr<AXTree> new_tree = CreateAXTree(
+      {root, list, list_item1, list_marker1, static_text1, inline_box1,
+       static_text2, inline_box2, list_item2, list_marker2, static_text3,
+       inline_box3, static_text4, inline_box4});
+
+  TestPositionType text_position = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, inline_box1.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  ASSERT_EQ(inline_box1.id, text_position->anchor_id());
+  ASSERT_EQ(0, text_position->text_offset());
+
+  // "1. <f>irst item\n2. second item"
+  text_position = text_position->CreateNextWordStartPosition(
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  ASSERT_EQ(inline_box2.id, text_position->anchor_id());
+  ASSERT_EQ(0, text_position->text_offset());
+
+  // "1. first <i>tem\n2. second item"
+  text_position = text_position->CreateNextWordStartPosition(
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  ASSERT_EQ(inline_box2.id, text_position->anchor_id());
+  ASSERT_EQ(6, text_position->text_offset());
+
+  // "1. first item\n<2>. second item"
+  text_position = text_position->CreateNextWordStartPosition(
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  ASSERT_EQ(inline_box3.id, text_position->anchor_id());
+  ASSERT_EQ(0, text_position->text_offset());
+
+  // "1. first item\n2. <s>econd item"
+  text_position = text_position->CreateNextWordStartPosition(
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  ASSERT_EQ(inline_box4.id, text_position->anchor_id());
+  ASSERT_EQ(0, text_position->text_offset());
+
+  // "1. first item\n2. second <i>tem"
+  text_position = text_position->CreateNextWordStartPosition(
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  ASSERT_EQ(inline_box4.id, text_position->anchor_id());
+  ASSERT_EQ(7, text_position->text_offset());
+}
+
+TEST_F(AXPositionTest, CreatePreviousWordPositionInList) {
+  // This test updates the tree structure to test a specific edge case -
+  // previous word navigation inside a list with AXListMarkers nodes.
+  // ++1 kRootWebArea
+  // ++++2 kList
+  // ++++++3 kListItem
+  // ++++++++4 kListMarker
+  // ++++++++++5 kStaticText
+  // ++++++++++++6 kInlineTextBox "1. "
+  // ++++++++7 kStaticText
+  // ++++++++++8 kInlineTextBox "first item"
+  // ++++++9 kListItem
+  // ++++++++10 kListMarker
+  // +++++++++++11 kStaticText
+  // ++++++++++++++12 kInlineTextBox "2. "
+  // ++++++++13 kStaticText
+  // ++++++++++14 kInlineTextBox "second item"
+  AXNodePosition::SetTree(nullptr);
+
+  AXNodeData root;
+  AXNodeData list;
+  AXNodeData list_item1;
+  AXNodeData list_item2;
+  AXNodeData list_marker1;
+  AXNodeData list_marker2;
+  AXNodeData inline_box1;
+  AXNodeData inline_box2;
+  AXNodeData inline_box3;
+  AXNodeData inline_box4;
+  AXNodeData static_text1;
+  AXNodeData static_text2;
+  AXNodeData static_text3;
+  AXNodeData static_text4;
+
+  root.id = 1;
+  list.id = 2;
+  list_item1.id = 3;
+  list_marker1.id = 4;
+  static_text1.id = 5;
+  inline_box1.id = 6;
+  static_text2.id = 7;
+  inline_box2.id = 8;
+  list_item2.id = 9;
+  list_marker2.id = 10;
+  static_text3.id = 11;
+  inline_box3.id = 12;
+  static_text4.id = 13;
+  inline_box4.id = 14;
+
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.child_ids = {list.id};
+
+  list.role = ax::mojom::Role::kList;
+  list.child_ids = {list_item1.id, list_item2.id};
+
+  list_item1.role = ax::mojom::Role::kListItem;
+  list_item1.child_ids = {list_marker1.id, static_text2.id};
+  list_item1.AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
+                              true);
+
+  list_marker1.role = ax::mojom::Role::kListMarker;
+  list_marker1.child_ids = {static_text1.id};
+
+  static_text1.role = ax::mojom::Role::kStaticText;
+  static_text1.SetName("1. ");
+  static_text1.child_ids = {inline_box1.id};
+
+  inline_box1.role = ax::mojom::Role::kInlineTextBox;
+  inline_box1.SetName("1. ");
+  inline_box1.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
+                                  std::vector<int32_t>{0});
+  inline_box1.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
+                                  std::vector<int32_t>{3});
+
+  static_text2.role = ax::mojom::Role::kStaticText;
+  static_text2.SetName("first item");
+  static_text2.child_ids = {inline_box2.id};
+
+  inline_box2.role = ax::mojom::Role::kInlineTextBox;
+  inline_box2.SetName("first item");
+  inline_box2.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
+                                  std::vector<int32_t>{0, 6});
+  inline_box2.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
+                                  std::vector<int32_t>{5});
+
+  list_item2.role = ax::mojom::Role::kListItem;
+  list_item2.child_ids = {list_marker2.id, static_text4.id};
+  list_item2.AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
+                              true);
+
+  list_marker2.role = ax::mojom::Role::kListMarker;
+  list_marker2.child_ids = {static_text3.id};
+
+  static_text3.role = ax::mojom::Role::kStaticText;
+  static_text3.SetName("2. ");
+  static_text3.child_ids = {inline_box3.id};
+
+  inline_box3.role = ax::mojom::Role::kInlineTextBox;
+  inline_box3.SetName("2. ");
+  inline_box3.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
+                                  std::vector<int32_t>{0});
+  inline_box3.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
+                                  std::vector<int32_t>{3});
+
+  static_text4.role = ax::mojom::Role::kStaticText;
+  static_text4.SetName("second item");
+  static_text4.child_ids = {inline_box4.id};
+
+  inline_box4.role = ax::mojom::Role::kInlineTextBox;
+  inline_box4.SetName("second item");
+  inline_box4.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
+                                  std::vector<int32_t>{0, 7});
+  inline_box4.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
+                                  std::vector<int32_t>{6});
+
+  std::unique_ptr<AXTree> new_tree = CreateAXTree(
+      {root, list, list_item1, list_marker1, static_text1, inline_box1,
+       static_text2, inline_box2, list_item2, list_marker2, static_text3,
+       inline_box3, static_text4, inline_box4});
+
+  TestPositionType text_position = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, inline_box4.id, 11 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  ASSERT_EQ(inline_box4.id, text_position->anchor_id());
+  ASSERT_EQ(11, text_position->text_offset());
+
+  // "1. first item\n2. second <i>tem"
+  text_position = text_position->CreatePreviousWordStartPosition(
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  ASSERT_EQ(inline_box4.id, text_position->anchor_id());
+  ASSERT_EQ(7, text_position->text_offset());
+
+  // "1. first item\n2. <s>econd item"
+  text_position = text_position->CreatePreviousWordStartPosition(
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  ASSERT_EQ(inline_box4.id, text_position->anchor_id());
+  ASSERT_EQ(0, text_position->text_offset());
+
+  // "1. first item\n<2>. second item"
+  text_position = text_position->CreatePreviousWordStartPosition(
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  ASSERT_EQ(inline_box3.id, text_position->anchor_id());
+  ASSERT_EQ(0, text_position->text_offset());
+
+  // "1. first <i>tem\n2. <s>econd item"
+  text_position = text_position->CreatePreviousWordStartPosition(
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  ASSERT_EQ(inline_box2.id, text_position->anchor_id());
+  ASSERT_EQ(6, text_position->text_offset());
+
+  // "1. <f>irst item\n2. second item"
+  text_position = text_position->CreatePreviousWordStartPosition(
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  ASSERT_EQ(inline_box2.id, text_position->anchor_id());
+  ASSERT_EQ(0, text_position->text_offset());
+
+  // "<1>. first item\n2. second item"
+  text_position = text_position->CreatePreviousWordStartPosition(
+      AXBoundaryBehavior::StopAtLastAnchorBoundary);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  ASSERT_EQ(inline_box1.id, text_position->anchor_id());
+  ASSERT_EQ(0, text_position->text_offset());
 }
 
 //

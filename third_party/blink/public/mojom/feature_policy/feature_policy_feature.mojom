@@ -129,9 +129,6 @@ enum FeaturePolicyFeature {
   kClientHintViewportWidth = 63,
   kClientHintWidth = 64,
 
-  // Whether all cross document access to this window object is treated as cross origin.
-  kDocumentAccess = 65,
-
   // Controls use of WebXR API.
   kWebXr = 66,
 

@@ -63,4 +63,10 @@ public class FeatureHighlightProvider {
             @TextAlignment int bodyAlignment, @StyleRes int bodyStyle, @ColorInt int pulseColor,
             @ColorInt int outerColor, @ColorInt int scrimColor, long timeoutMs,
             Runnable completeRunnable) {}
+
+    /**
+     * Dismiss the feature highlight bubble for a particular view.
+     * @param activity An activity to attach the IPH to.
+     */
+    public void dismiss(AppCompatActivity activity) {}
 }

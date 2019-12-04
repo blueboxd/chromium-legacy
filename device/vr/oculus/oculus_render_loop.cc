@@ -62,13 +62,10 @@ mojom::XRFrameDataPtr OculusRenderLoop::GetNextFrameData() {
   sensor_time_ = ovr_GetTimeInSeconds();
   frame_data->time_delta = base::TimeDelta::FromSecondsD(predicted_time);
 
-  mojom::VRPosePtr pose =
-      mojo::ConvertTo<mojom::VRPosePtr>(state.HeadPose.ThePose);
+  frame_data->pose = mojo::ConvertTo<mojom::VRPosePtr>(state.HeadPose.ThePose);
   last_render_pose_ = state.HeadPose.ThePose;
 
-  DCHECK(pose);
-  pose->input_state = GetInputState(state);
-  frame_data->pose = std::move(pose);
+  frame_data->input_state = GetInputState(state);
   return frame_data;
 }
 

@@ -44,8 +44,7 @@ std::vector<SiteDataFeatureProto*> GetAllFeaturesFromProto(
   std::vector<SiteDataFeatureProto*> ret(
       {proto->mutable_updates_favicon_in_background(),
        proto->mutable_updates_title_in_background(),
-       proto->mutable_uses_audio_in_background(),
-       proto->mutable_uses_notifications_in_background()});
+       proto->mutable_uses_audio_in_background()});
 
   return ret;
 }
@@ -62,9 +61,6 @@ const char* FeatureTypeToFeatureName(
     case LocalSiteCharacteristicsDataImpl::TrackedBackgroundFeatures::
         kAudioUsage:
       return "AudioUsageInBackground";
-    case LocalSiteCharacteristicsDataImpl::TrackedBackgroundFeatures::
-        kNotificationUsageUsage:
-      return "NotificationsUsageInBackground";
   }
 }
 
@@ -132,12 +128,6 @@ LocalSiteCharacteristicsDataImpl::UsesAudioInBackground() const {
   return GetFeatureUsage(site_characteristics_.uses_audio_in_background());
 }
 
-performance_manager::SiteFeatureUsage
-LocalSiteCharacteristicsDataImpl::UsesNotificationsInBackground() const {
-  return GetFeatureUsage(
-      site_characteristics_.uses_notifications_in_background());
-}
-
 bool LocalSiteCharacteristicsDataImpl::DataLoaded() const {
   return fully_initialized_;
 }
@@ -166,12 +156,6 @@ void LocalSiteCharacteristicsDataImpl::NotifyUpdatesTitleInBackground() {
 void LocalSiteCharacteristicsDataImpl::NotifyUsesAudioInBackground() {
   NotifyFeatureUsage(site_characteristics_.mutable_uses_audio_in_background(),
                      TrackedBackgroundFeatures::kAudioUsage);
-}
-
-void LocalSiteCharacteristicsDataImpl::NotifyUsesNotificationsInBackground() {
-  NotifyFeatureUsage(
-      site_characteristics_.mutable_uses_notifications_in_background(),
-      TrackedBackgroundFeatures::kNotificationUsageUsage);
 }
 
 void LocalSiteCharacteristicsDataImpl::NotifyLoadTimePerformanceMeasurement(

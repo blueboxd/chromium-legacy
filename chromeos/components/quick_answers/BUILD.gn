@@ -1,0 +1,24 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("quick_answers") {
+  sources = [
+    "quick_answers_client.cc",
+    "quick_answers_client.h",
+    "quick_answers_model.h",
+    "search_result_loader.cc",
+    "search_result_loader.h",
+    "search_result_parsers/result_parser.cc",
+    "search_result_parsers/result_parser.h",
+    "search_result_parsers/search_response_parser.cc",
+    "search_result_parsers/search_response_parser.h",
+    "search_result_parsers/unit_conversion_result_parser.cc",
+    "search_result_parsers/unit_conversion_result_parser.h",
+  ]
+  deps = [
+    "//base",
+    "//services/data_decoder/public/cpp",
+    "//third_party/re2",
+  ]
+}

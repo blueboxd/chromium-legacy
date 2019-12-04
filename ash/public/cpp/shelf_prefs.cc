@@ -119,22 +119,22 @@ void SetPerDisplayPref(PrefService* prefs,
 
 ShelfAlignment AlignmentFromPref(const std::string& value) {
   if (value == kShelfAlignmentLeft)
-    return SHELF_ALIGNMENT_LEFT;
+    return ShelfAlignment::kLeft;
   if (value == kShelfAlignmentRight)
-    return SHELF_ALIGNMENT_RIGHT;
+    return ShelfAlignment::kRight;
   // Default to bottom.
-  return SHELF_ALIGNMENT_BOTTOM;
+  return ShelfAlignment::kBottom;
 }
 
 const char* AlignmentToPref(ShelfAlignment alignment) {
   switch (alignment) {
-    case SHELF_ALIGNMENT_BOTTOM:
+    case ShelfAlignment::kBottom:
       return kShelfAlignmentBottom;
-    case SHELF_ALIGNMENT_LEFT:
+    case ShelfAlignment::kLeft:
       return kShelfAlignmentLeft;
-    case SHELF_ALIGNMENT_RIGHT:
+    case ShelfAlignment::kRight:
       return kShelfAlignmentRight;
-    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+    case ShelfAlignment::kBottomLocked:
       // This should not be a valid preference option for now. We only want to
       // lock the shelf during login or when adding a user.
       return nullptr;

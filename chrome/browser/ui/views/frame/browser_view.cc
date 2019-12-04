@@ -2663,7 +2663,8 @@ void BrowserView::InitViews() {
 
 void BrowserView::MaybeInitializeWebUITabStrip() {
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
-  if (WebUITabStripContainerView::UseTouchableTabStrip()) {
+  if (browser_->SupportsWindowFeature(Browser::FEATURE_TABSTRIP) &&
+      WebUITabStripContainerView::UseTouchableTabStrip()) {
     if (!webui_tab_strip_) {
       // We use |contents_container_| here so that enabling or disabling
       // devtools won't affect the tab sizes. We still use only

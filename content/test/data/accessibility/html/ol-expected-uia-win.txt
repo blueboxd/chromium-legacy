@@ -1,21 +1,27 @@
 document
 ++list
 ++++listitem
-++++++description Name='1. '
+++++++group
+++++++++description Name='1. ' IsControlElement=false
 ++++++description Name='Chrome' IsControlElement=false
 ++++listitem
-++++++description Name='2. '
+++++++group
+++++++++description Name='2. ' IsControlElement=false
 ++++++description Name='Safari' IsControlElement=false
 ++++listitem
-++++++description Name='3. '
+++++++group
+++++++++description Name='3. ' IsControlElement=false
 ++++++description Name='IE' IsControlElement=false
 ++list
 ++++listitem
-++++++description Name='10. '
+++++++group
+++++++++description Name='10. ' IsControlElement=false
 ++++++description Name='Android' IsControlElement=false
 ++++listitem
-++++++description Name='11. '
+++++++group
+++++++++description Name='11. ' IsControlElement=false
 ++++++description Name='Mac' IsControlElement=false
 ++++listitem
-++++++description Name='12. '
+++++++group
+++++++++description Name='12. ' IsControlElement=false
 ++++++description Name='Windows' IsControlElement=false

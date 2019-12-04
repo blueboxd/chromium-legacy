@@ -38,6 +38,7 @@
 #include "ash/test_screenshot_delegate.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/test_session_state_animator.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
@@ -233,6 +234,18 @@ class AcceleratorControllerTest : public AshTestBase {
   void CancelConfirmationDialog() {
     DCHECK(test_api_->GetConfirmationDialog());
     test_api_->GetConfirmationDialog()->CancelDialog();
+  }
+
+  void TriggerRotateScreenShortcut() {
+    ui::test::EventGenerator* generator = GetEventGenerator();
+    generator->PressKey(ui::VKEY_BROWSER_REFRESH,
+                        ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+    generator->ReleaseKey(ui::VKEY_BROWSER_REFRESH,
+                          ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+    if (IsConfirmationDialogOpen()) {
+      AcceptConfirmationDialog();
+      base::RunLoop().RunUntilIdle();
+    }
   }
 
   void RemoveAllNotifications() const {
@@ -592,6 +605,126 @@ TEST_F(AcceleratorControllerTest, RotateScreen) {
       GetActiveDisplayRotation(display.id());
   // |new_rotation| is determined by the AcceleratorController.
   EXPECT_NE(initial_rotation, rotation_after_accept);
+}
+
+// Tests that using the keyboard shortcut to rotate the display while the device
+// is in physical tablet state behaves like a request to lock the user
+// orientation to the next rotation of the internal display, and disables auto-
+// rotation.
+TEST_F(AcceleratorControllerTest, RotateScreenInPhysicalTabletState) {
+  display::test::DisplayManagerTestApi(display_manager())
+      .SetFirstDisplayAsInternalDisplay();
+  ash::ShellTestApi().SetTabletModeEnabledForTest(true);
+  auto* tablet_mode_controller = Shell::Get()->tablet_mode_controller();
+  auto* screen_orientation_controller =
+      Shell::Get()->screen_orientation_controller();
+  EXPECT_TRUE(tablet_mode_controller->is_in_tablet_physical_state());
+  EXPECT_FALSE(screen_orientation_controller->user_rotation_locked());
+  EXPECT_FALSE(screen_orientation_controller->rotation_locked());
+  EXPECT_EQ(OrientationLockType::kLandscapePrimary,
+            screen_orientation_controller->GetCurrentOrientation());
+
+  TriggerRotateScreenShortcut();
+
+  EXPECT_TRUE(screen_orientation_controller->user_rotation_locked());
+  EXPECT_TRUE(screen_orientation_controller->rotation_locked());
+  EXPECT_EQ(OrientationLockType::kPortraitSecondary,
+            screen_orientation_controller->GetCurrentOrientation());
+
+  // When the device is no longer used as a tablet, the original rotation will
+  // be restored.
+  ash::ShellTestApi().SetTabletModeEnabledForTest(false);
+  EXPECT_FALSE(tablet_mode_controller->is_in_tablet_physical_state());
+  EXPECT_EQ(OrientationLockType::kLandscapePrimary,
+            screen_orientation_controller->GetCurrentOrientation());
+  // User rotation lock remains in place to be restored again when the device
+  // goes to physical tablet state again.
+  EXPECT_TRUE(screen_orientation_controller->user_rotation_locked());
+  EXPECT_FALSE(screen_orientation_controller->rotation_locked());
+}
+
+// Tests the behavior of the shortcut when the active window requests to lock
+// the rotation to a particular orientation.
+TEST_F(AcceleratorControllerTest, RotateScreenWithWindowLockingOrientation) {
+  display::test::DisplayManagerTestApi(display_manager())
+      .SetFirstDisplayAsInternalDisplay();
+  ash::ShellTestApi().SetTabletModeEnabledForTest(true);
+  auto* tablet_mode_controller = Shell::Get()->tablet_mode_controller();
+  auto* screen_orientation_controller =
+      Shell::Get()->screen_orientation_controller();
+  EXPECT_TRUE(tablet_mode_controller->is_in_tablet_physical_state());
+  EXPECT_FALSE(screen_orientation_controller->user_rotation_locked());
+  auto win0 = CreateAppWindow(gfx::Rect{100, 300});
+  auto win1 = CreateAppWindow(gfx::Rect{200, 200});
+  screen_orientation_controller->LockOrientationForWindow(
+      win0.get(), OrientationLockType::kPortraitPrimary);
+  screen_orientation_controller->LockOrientationForWindow(
+      win1.get(), OrientationLockType::kLandscape);
+
+  // `win0` requests to lock the orientation to only portrait-primary. The
+  // shortcut therefore won't be able to change the current rotation at all.
+  wm::ActivateWindow(win0.get());
+  EXPECT_TRUE(screen_orientation_controller->rotation_locked());
+  EXPECT_FALSE(screen_orientation_controller->user_rotation_locked());
+  EXPECT_EQ(OrientationLockType::kPortraitPrimary,
+            screen_orientation_controller->GetCurrentOrientation());
+
+  TriggerRotateScreenShortcut();
+  // Nothing happens; user rotation is still not locked, but the rotation is
+  // app-locked.
+  EXPECT_TRUE(screen_orientation_controller->rotation_locked());
+  EXPECT_FALSE(screen_orientation_controller->user_rotation_locked());
+  EXPECT_EQ(OrientationLockType::kPortraitPrimary,
+            screen_orientation_controller->GetCurrentOrientation());
+
+  // Activate `win1` which allows any landscape orientations (either primary or
+  // secondary). The shortcut will switch between the two allowed orientations
+  // only.
+  wm::ActivateWindow(win1.get());
+  EXPECT_TRUE(screen_orientation_controller->rotation_locked());
+  EXPECT_FALSE(screen_orientation_controller->user_rotation_locked());
+  EXPECT_EQ(OrientationLockType::kLandscapePrimary,
+            screen_orientation_controller->GetCurrentOrientation());
+
+  TriggerRotateScreenShortcut();
+  // User rotation will now be locked.
+  EXPECT_TRUE(screen_orientation_controller->rotation_locked());
+  EXPECT_TRUE(screen_orientation_controller->user_rotation_locked());
+  EXPECT_EQ(OrientationLockType::kLandscapeSecondary,
+            screen_orientation_controller->GetCurrentOrientation());
+  TriggerRotateScreenShortcut();
+  EXPECT_TRUE(screen_orientation_controller->rotation_locked());
+  EXPECT_TRUE(screen_orientation_controller->user_rotation_locked());
+  EXPECT_EQ(OrientationLockType::kLandscapePrimary,
+            screen_orientation_controller->GetCurrentOrientation());
+
+  // Hook a mouse device, exiting tablet mode to clamshell mode (but remaining
+  // in a tablet physical state). Expect that the shortcut changes the user
+  // rotation lock in all directions regardless of which window is active, even
+  // those that requested window rotation locks.
+  TabletModeControllerTestApi().AttachExternalMouse();
+  EXPECT_TRUE(tablet_mode_controller->is_in_tablet_physical_state());
+  EXPECT_FALSE(tablet_mode_controller->InTabletMode());
+
+  wm::ActivateWindow(win0.get());
+  EXPECT_TRUE(screen_orientation_controller->rotation_locked());
+  EXPECT_TRUE(screen_orientation_controller->user_rotation_locked());
+  EXPECT_EQ(OrientationLockType::kLandscapePrimary,
+            screen_orientation_controller->GetCurrentOrientation());
+  TriggerRotateScreenShortcut();
+  EXPECT_EQ(OrientationLockType::kPortraitSecondary,
+            screen_orientation_controller->GetCurrentOrientation());
+  TriggerRotateScreenShortcut();
+  EXPECT_EQ(OrientationLockType::kLandscapeSecondary,
+            screen_orientation_controller->GetCurrentOrientation());
+
+  wm::ActivateWindow(win1.get());
+  TriggerRotateScreenShortcut();
+  EXPECT_EQ(OrientationLockType::kPortraitPrimary,
+            screen_orientation_controller->GetCurrentOrientation());
+  TriggerRotateScreenShortcut();
+  EXPECT_EQ(OrientationLockType::kLandscapePrimary,
+            screen_orientation_controller->GetCurrentOrientation());
 }
 
 TEST_F(AcceleratorControllerTest, AutoRepeat) {

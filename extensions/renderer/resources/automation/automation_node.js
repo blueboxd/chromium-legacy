@@ -501,6 +501,20 @@ var GetWordStartOffsets = natives.GetWordStartOffsets;
  */
 var GetWordEndOffsets = natives.GetWordEndOffsets;
 
+/**
+ * @param {string} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @param {string} eventType
+ */
+var EventListenerAdded = natives.EventListenerAdded;
+
+/**
+ * @param {string} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @param {string} eventType
+ */
+var EventListenerRemoved = natives.EventListenerRemoved;
+
 var logging = requireNative('logging');
 var utils = require('utils');
 
@@ -924,6 +938,7 @@ AutomationNodeImpl.prototype = {
       callback: callback,
       capture: !!capture,
     });
+    EventListenerAdded(this.treeID, this.id, eventType);
   },
 
   // TODO(dtseng/aboxhall): Check this impl against spec.
@@ -933,6 +948,10 @@ AutomationNodeImpl.prototype = {
       for (var i = 0; i < listeners.length; i++) {
         if (callback === listeners[i].callback)
           $Array.splice(listeners, i, 1);
+      }
+
+      if (listeners.length == 0) {
+        EventListenerRemoved(this.treeID, this.id, eventType);
       }
     }
   },

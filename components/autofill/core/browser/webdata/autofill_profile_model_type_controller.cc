@@ -37,7 +37,7 @@ syncer::DataTypeController::PreconditionState
 AutofillProfileModelTypeController::GetPreconditionState() const {
   DCHECK(CalledOnValidThread());
   // Require the user-visible pref to be enabled to sync Autofill Profile data.
-  return autofill::prefs::IsProfileAutofillEnabled(pref_service_)
+  return autofill::prefs::IsAutofillProfileEnabled(pref_service_)
              ? PreconditionState::kPreconditionsMet
              : PreconditionState::kMustStopAndClearData;
 }

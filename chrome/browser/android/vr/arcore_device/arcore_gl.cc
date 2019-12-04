@@ -786,14 +786,14 @@ void ArCoreGl::ProcessFrame(
     mojom::XRInputSourceStatePtr input_state = GetInputSourceState();
     if (input_state) {
       input_states_.push_back(std::move(input_state));
-      frame_data->pose->input_state = std::move(input_states_);
+      frame_data->input_state = std::move(input_states_);
     }
 
     // Get results for hit test subscriptions.
     frame_data->hit_test_subscription_results =
         arcore_->GetHitTestSubscriptionResults(
             mojo::ConvertTo<gfx::Transform>(frame_data->pose),
-            frame_data->pose->input_state);
+            frame_data->input_state);
   }
 
   // Get anchors data, including anchors created this frame.

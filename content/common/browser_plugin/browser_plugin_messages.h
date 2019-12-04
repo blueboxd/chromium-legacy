@@ -128,11 +128,6 @@ IPC_MESSAGE_CONTROL3(BrowserPluginHostMsg_SetFocus,
                      bool /* enable */,
                      blink::WebFocusType /* focus_type */)
 
-// Sends an input event to the guest.
-IPC_MESSAGE_CONTROL2(BrowserPluginHostMsg_HandleInputEvent,
-                     int /* browser_plugin_instance_id */,
-                     IPC::WebInputEventPointer /* event */)
-
 // Tells the guest it has been shown or hidden.
 IPC_MESSAGE_CONTROL2(BrowserPluginHostMsg_SetVisibility,
                      int /* browser_plugin_instance_id */,

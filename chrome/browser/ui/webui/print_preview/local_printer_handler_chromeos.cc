@@ -51,6 +51,8 @@ PrinterBasicInfo ToBasicInfo(const chromeos::Printer& printer) {
   basic_info.options[kCUPSEnterprisePrinter] =
       (printer.source() == chromeos::Printer::SRC_POLICY) ? kValueTrue
                                                           : kValueFalse;
+  // TODO(1023589): Get the printer's EULA url from the printer object.
+  basic_info.options[kPrinterEulaURL] = "";
   basic_info.printer_name = printer.id();
   basic_info.display_name = printer.display_name();
   basic_info.printer_description = printer.description();

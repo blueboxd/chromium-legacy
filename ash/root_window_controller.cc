@@ -56,6 +56,8 @@
 #include "ash/wm/lock_action_handler_layout_manager.h"
 #include "ash/wm/lock_layout_manager.h"
 #include "ash/wm/overlay_layout_manager.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_session.h"
 #include "ash/wm/root_window_layout_manager.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
@@ -617,6 +619,10 @@ void RootWindowController::CloseChildWindows() {
   // Notify the keyboard controller before closing child windows and shutting
   // down associated layout managers.
   Shell::Get()->keyboard_controller()->OnRootWindowClosing(root);
+
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  if (overview_controller && overview_controller->InOverviewSession())
+    overview_controller->overview_session()->OnRootWindowClosing(root);
 
   shelf_->ShutdownShelfWidget();
 

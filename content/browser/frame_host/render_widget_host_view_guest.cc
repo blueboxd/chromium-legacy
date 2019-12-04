@@ -121,18 +121,6 @@ RenderWidgetHostViewGuest::RenderWidgetHostViewGuest(
 
 RenderWidgetHostViewGuest::~RenderWidgetHostViewGuest() {}
 
-bool RenderWidgetHostViewGuest::OnMessageReceivedFromEmbedder(
-    const IPC::Message& message,
-    RenderWidgetHostImpl* embedder) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(RenderWidgetHostViewGuest, message, embedder)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_HandleInputEvent,
-                        OnHandleInputEvent)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
 void RenderWidgetHostViewGuest::Show() {
   // If the WebContents associated with us showed an interstitial page in the
   // beginning, the teardown path might call WasShown() while |host_| is in
@@ -678,83 +666,6 @@ RenderWidgetHostViewGuest::DidUpdateVisualProperties(
 
 bool RenderWidgetHostViewGuest::IsRenderWidgetHostViewGuest() {
   return true;
-}
-
-void RenderWidgetHostViewGuest::OnHandleInputEvent(
-    RenderWidgetHostImpl* embedder,
-    int browser_plugin_instance_id,
-    const blink::WebInputEvent* event) {
-  // WebMouseWheelEvents go into a queue, and may not be forwarded to the
-  // renderer until after this method goes out of scope. Therefore we need to
-  // explicitly remove the additional device scale factor from the coordinates
-  // before allowing the event to be queued.
-  if (IsUseZoomForDSFEnabled() &&
-      event->GetType() == blink::WebInputEvent::kMouseWheel) {
-    blink::WebMouseWheelEvent rescaled_event =
-        *static_cast<const blink::WebMouseWheelEvent*>(event);
-    rescaled_event.SetPositionInWidget(
-        rescaled_event.PositionInWidget().x / current_device_scale_factor(),
-        rescaled_event.PositionInWidget().y / current_device_scale_factor());
-    rescaled_event.delta_x /= current_device_scale_factor();
-    rescaled_event.delta_y /= current_device_scale_factor();
-    rescaled_event.wheel_ticks_x /= current_device_scale_factor();
-    rescaled_event.wheel_ticks_y /= current_device_scale_factor();
-    ui::LatencyInfo latency_info(ui::SourceEventType::WHEEL);
-    host()->ForwardWheelEventWithLatencyInfo(rescaled_event, latency_info);
-    return;
-  }
-
-  ScopedInputScaleDisabler disable(host(), current_device_scale_factor());
-  if (blink::WebInputEvent::IsMouseEventType(event->GetType())) {
-    host()->ForwardMouseEvent(*static_cast<const blink::WebMouseEvent*>(event));
-    return;
-  }
-
-  if (event->GetType() == blink::WebInputEvent::kMouseWheel) {
-    ui::LatencyInfo latency_info(ui::SourceEventType::WHEEL);
-    host()->ForwardWheelEventWithLatencyInfo(
-        *static_cast<const blink::WebMouseWheelEvent*>(event), latency_info);
-    return;
-  }
-
-  if (blink::WebInputEvent::IsKeyboardEventType(event->GetType())) {
-    NativeWebKeyboardEvent keyboard_event(
-        *static_cast<const blink::WebKeyboardEvent*>(event), GetNativeView());
-    host()->ForwardKeyboardEvent(keyboard_event);
-    return;
-  }
-
-  if (blink::WebInputEvent::IsTouchEventType(event->GetType())) {
-    if (event->GetType() == blink::WebInputEvent::kTouchStart &&
-        !embedder->GetView()->HasFocus()) {
-      embedder->GetView()->Focus();
-    }
-    ui::LatencyInfo latency_info(ui::SourceEventType::TOUCH);
-    host()->ForwardTouchEventWithLatencyInfo(
-        *static_cast<const blink::WebTouchEvent*>(event), latency_info);
-    return;
-  }
-
-  if (blink::WebInputEvent::IsGestureEventType(event->GetType())) {
-    const blink::WebGestureEvent& gesture_event =
-        *static_cast<const blink::WebGestureEvent*>(event);
-
-    // We don't forward inertial GestureScrollUpdates to the guest anymore
-    // since it now receives GestureFlingStart and will have its own fling
-    // curve generating GestureScrollUpdate events for it.
-    // TODO(wjmaclean): Should we try to avoid creating a fling curve in the
-    // embedder renderer in this case? BrowserPlugin can return 'true' for
-    // handleInputEvent() on a GestureFlingStart, and we could use this as
-    // a signal to let the guest handle the fling, though we'd need to be
-    // sure other plugins would behave appropriately (i.e. return 'false').
-    if (gesture_event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
-        gesture_event.data.scroll_update.inertial_phase ==
-            blink::WebGestureEvent::InertialPhaseState::kMomentum) {
-      return;
-    }
-    host()->ForwardGestureEvent(gesture_event);
-    return;
-  }
 }
 
 }  // namespace content

@@ -143,8 +143,6 @@ source_set("common") {
     "input/input_event_mojom_traits.h",
     "input/input_event_stream_validator.cc",
     "input/input_event_stream_validator.h",
-    "input/input_param_traits.cc",
-    "input/input_param_traits.h",
     "input/sync_compositor_messages.cc",
     "input/sync_compositor_messages.h",
     "input/synthetic_gesture_params.cc",

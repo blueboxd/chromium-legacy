@@ -46,6 +46,7 @@
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -143,6 +144,29 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
                     "<html><head><title>PASS</title></head><body>Data posted"
                     "</body></html>",
                     params->client.get());
+                return true;
+              }
+
+              if (path == path_prefix + "accept_ch.html") {
+                std::string header =
+                    "HTTP/1.1 200 OK\nContent-type: text/html\nAccept-CH: "
+                    "device-memory\n\n";
+
+                if (params->url_request.url.query().find("lifetime") !=
+                    std::string::npos)
+                  header += "Accept-CH-Lifetime: 10000\n";
+                header += "\n";
+
+                // Make title consistent with other tests
+                std::string title = "<html><head><title>";
+                if (params->url_request.headers.HasHeader("device-memory"))
+                  title += "PASS";
+                else
+                  title += "STORING";
+
+                title += "</title></head><body>Data posted</body></html>";
+                content::URLLoaderInterceptor::WriteResponse(
+                    header, title, params->client.get());
                 return true;
               }
               return false;
@@ -307,9 +331,11 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
     return fake_server_address_;
   }
 
-  std::string test_path() {
-    return test_path_;
+  void SetSecureFakeServerAddress() {
+    fake_server_address_ = "https://www.test.com/";
   }
+
+  std::string test_path() { return test_path_; }
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
   void EnableBackgroundMode() {
@@ -325,9 +351,10 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
   }
 #endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
 
+  std::string fake_server_address_;
+
  private:
   std::string last_upload_bytes_;
-  const std::string fake_server_address_;
   std::vector<std::string> test_files_;
   const std::string test_path_;
   const base::string16 title_pass_;
@@ -848,6 +875,59 @@ IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, SessionCookiesBrowserClose) {
     NavigateAndCheckStoredData(new_browser, "session_cookies.html");
   else
     StoreDataWithPage(new_browser, "session_cookies.html");
+}
+
+// These tests ensure that the Better Session Restore features are not triggered
+// when they shouldn't be.
+class NoClientHintRestoreTest : public NoSessionRestoreTest {
+ public:
+  NoClientHintRestoreTest() {
+    scoped_feature_list_.InitWithFeatureList(EnabledFeatures());
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // TODO(aarontag): tie FeaturePolicyForClientHints runtime feature and blink
+    // feature together
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "FeaturePolicyForClientHints");
+  }
+
+  std::unique_ptr<base::FeatureList> EnabledFeatures() {
+    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    feature_list->InitializeFromCommandLine("FeaturePolicyForClientHints", "");
+    return feature_list;
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(NoClientHintRestoreTest);
+};
+
+IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest,
+                       PersistClientHintsCloseAllBrowsers) {
+  SetSecureFakeServerAddress();
+  // Without the feature, the lifetime is needed to persist opt-in preferences.
+  StoreDataWithPage("accept_ch.html?lifetime");
+  NavigateAndCheckStoredData("accept_ch.html?lifetime");
+  EnableBackgroundMode();
+  Browser* new_browser = QuitBrowserAndRestore(browser(), true);
+  NavigateAndCheckStoredData(new_browser, "accept_ch.html?lifetime");
+  DisableBackgroundMode();
+  new_browser = QuitBrowserAndRestore(new_browser, true);
+  NavigateAndCheckStoredData(new_browser, "accept_ch.html?lifetime");
+}
+
+IN_PROC_BROWSER_TEST_F(NoClientHintRestoreTest,
+                       ClearClientHintsCloseAllBrowsers) {
+  SetSecureFakeServerAddress();
+  StoreDataWithPage("accept_ch.html");
+  NavigateAndCheckStoredData("accept_ch.html");
+  EnableBackgroundMode();
+  Browser* new_browser = QuitBrowserAndRestore(browser(), true);
+  StoreDataWithPage(new_browser, "accept_ch.html");
+  DisableBackgroundMode();
+  new_browser = QuitBrowserAndRestore(new_browser, true);
+  StoreDataWithPage(new_browser, "accept_ch.html");
 }
 
 #endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)

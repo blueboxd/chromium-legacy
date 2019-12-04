@@ -19,9 +19,9 @@ namespace ash {
 namespace {
 
 gfx::Insets GetInsetsForAlignment(int distance, ShelfAlignment alignment) {
-  if (alignment == SHELF_ALIGNMENT_LEFT)
+  if (alignment == ShelfAlignment::kLeft)
     return gfx::Insets(0, 0, 0, distance);
-  if (alignment == SHELF_ALIGNMENT_RIGHT)
+  if (alignment == ShelfAlignment::kRight)
     return gfx::Insets(0, distance, 0, 0);
   return gfx::Insets(distance, 0, 0, 0);
 }

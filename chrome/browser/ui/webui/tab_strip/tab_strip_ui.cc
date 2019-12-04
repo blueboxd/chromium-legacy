@@ -12,7 +12,9 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -281,10 +283,6 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
                               replace->new_contents)));
         break;
       }
-      case TabStripModelChange::kGroupChanged: {
-        // Not yet implmented.
-        break;
-      }
       case TabStripModelChange::kSelectionOnly:
         // Multi-selection is not supported for touch.
         break;
@@ -345,6 +343,10 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
     web_ui()->RegisterMessageCallback(
         "getLayout", base::Bind(&TabStripUIHandler::HandleGetLayout,
                                 base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "reportTabActivationDuration",
+        base::Bind(&TabStripUIHandler::HandleReportTabActivationDuration,
+                   base::Unretained(this)));
   }
 
  private:
@@ -535,6 +537,13 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
       thumbnail_tracker_.AddTab(tab);
     else
       thumbnail_tracker_.RemoveTab(tab);
+  }
+
+  void HandleReportTabActivationDuration(const base::ListValue* args) {
+    int duration_ms = 0;
+    args->GetInteger(0, &duration_ms);
+    UMA_HISTOGRAM_TIMES("WebUITabStrip.TabActivation",
+                        base::TimeDelta::FromMilliseconds(duration_ms));
   }
 
   // Callback passed to |thumbnail_tracker_|. Called when a tab's thumbnail

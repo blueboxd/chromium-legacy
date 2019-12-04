@@ -14,8 +14,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
-import org.chromium.chrome.browser.settings.PreferenceUtils;
 import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.SettingsUtils;
 
 /**
  * Settings fragment that displays information about Chrome languages, which allow users to
@@ -32,7 +32,7 @@ public class LanguagesPreferences
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         getActivity().setTitle(R.string.prefs_languages);
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.languages_preferences);
+        SettingsUtils.addPreferencesFromResource(this, R.xml.languages_preferences);
 
         LanguageListPreference mLanguageListPref =
                 (LanguageListPreference) findPreference(PREFERRED_LANGUAGES_KEY);

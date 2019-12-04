@@ -50,7 +50,7 @@ void CreateDedicatedWorkerHostFactory(
 
 // A host for a single dedicated worker. Its lifetime is managed by the
 // DedicatedWorkerGlobalScope of the corresponding worker in the renderer via a
-// StrongBinding. This lives on the UI thread.
+// SelfOwnedReceiver. This lives on the UI thread.
 class DedicatedWorkerHost final
     : public service_manager::mojom::InterfaceProvider,
       public blink::mojom::DedicatedWorkerHost {

@@ -27,7 +27,7 @@ import android.widget.Spinner;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.settings.MainPreferences;
-import org.chromium.chrome.browser.settings.PreferenceUtils;
+import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.chrome.browser.ui.widget.FadingEdgeScrollView;
 import org.chromium.chrome.browser.widget.prefeditor.EditorDialog;
 
@@ -73,7 +73,7 @@ public abstract class AutofillEditorBase
         scrollView.setEdgeVisibility(
                 FadingEdgeScrollView.EdgeType.NONE, FadingEdgeScrollView.EdgeType.FADING);
         scrollView.getViewTreeObserver().addOnScrollChangedListener(
-                PreferenceUtils.getShowShadowOnScrollListener(
+                SettingsUtils.getShowShadowOnScrollListener(
                         scrollView, baseView.findViewById(R.id.shadow)));
         // Inflate the editor and buttons into the "content" LinearLayout.
         LinearLayout contentLayout = (LinearLayout) scrollView.findViewById(R.id.content);

@@ -23,14 +23,6 @@
  * DAMAGE.
  */
 
-// https://w3c.github.io/gamepad/extensions.html#gamepadhand-enum
-[
-    RuntimeEnabled=WebVR
-] enum GamepadHand {
-  "left",
-  "right"
-};
-
 // https://www.w3.org/TR/gamepad/#gamepadmappingtype-enum
 enum GamepadMappingType {
   "",

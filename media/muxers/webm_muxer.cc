@@ -78,17 +78,17 @@ WebmMuxer::VideoParameters::VideoParameters(
   frame_rate = 0.0;
   ignore_result(frame->metadata()->GetDouble(VideoFrameMetadata::FRAME_RATE,
                                              &frame_rate));
+  codec = kUnknownVideoCodec;
 }
 
 WebmMuxer::VideoParameters::~VideoParameters() = default;
 
-WebmMuxer::WebmMuxer(VideoCodec video_codec,
-                     AudioCodec audio_codec,
+WebmMuxer::WebmMuxer(AudioCodec audio_codec,
                      bool has_video,
                      bool has_audio,
                      const WriteDataCB& write_data_callback)
-    : video_codec_(video_codec),
-      audio_codec_(audio_codec),
+    : audio_codec_(audio_codec),
+      video_codec_(kUnknownVideoCodec),
       video_track_index_(0),
       audio_track_index_(0),
       has_video_(has_video),
@@ -98,9 +98,6 @@ WebmMuxer::WebmMuxer(VideoCodec video_codec,
       force_one_libwebm_error_(false) {
   DCHECK(has_video_ || has_audio_);
   DCHECK(!write_data_callback_.is_null());
-  DCHECK(video_codec == kCodecVP8 || video_codec == kCodecVP9 ||
-         video_codec == kCodecH264)
-      << " Unsupported video codec: " << GetCodecName(video_codec);
   DCHECK(audio_codec == kCodecOpus || audio_codec == kCodecPCM)
       << " Unsupported audio codec: " << GetCodecName(audio_codec);
 
@@ -130,6 +127,11 @@ bool WebmMuxer::OnEncodedVideo(const VideoParameters& params,
                                bool is_key_frame) {
   DVLOG(1) << __func__ << " - " << encoded_data.size() << "B";
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(params.codec == kCodecVP8 || params.codec == kCodecVP9 ||
+         params.codec == kCodecH264)
+      << " Unsupported video codec: " << GetCodecName(params.codec);
+  DCHECK(video_codec_ == kUnknownVideoCodec || video_codec_ == params.codec)
+      << "Unsupported: codec switched, to: " << GetCodecName(params.codec);
 
   if (encoded_data.size() == 0u) {
     DLOG(WARNING) << __func__ << ": zero size encoded frame, skipping";
@@ -140,6 +142,7 @@ bool WebmMuxer::OnEncodedVideo(const VideoParameters& params,
   if (!video_track_index_) {
     // |track_index_|, cannot be zero (!), initialize WebmMuxer in that case.
     // http://www.matroska.org/technical/specs/index.html#Tracks
+    video_codec_ = params.codec;
     AddVideoTrack(params.visible_rect_size, GetFrameRate(params));
     if (first_frame_timestamp_video_.is_null())
       first_frame_timestamp_video_ = timestamp;

@@ -32,16 +32,14 @@ class CONTENT_EXPORT IndexedDBBlobInfo {
 
   IndexedDBBlobInfo();
   // These two are used for Blobs.
-  // blob_handle and blob_remote must either both or neither be true.
-  IndexedDBBlobInfo(std::unique_ptr<storage::BlobDataHandle> blob_handle,
-                    mojo::PendingRemote<blink::mojom::Blob> blob_remote,
+  IndexedDBBlobInfo(mojo::PendingRemote<blink::mojom::Blob> blob_remote,
+                    const std::string& uuid,
                     const base::string16& type,
                     int64_t size);
   IndexedDBBlobInfo(const base::string16& type, int64_t size, int64_t key);
   // These two are used for Files.
-  // blob_handle and blob_remote must either both or neither be true.
-  IndexedDBBlobInfo(std::unique_ptr<storage::BlobDataHandle> blob_handle,
-                    mojo::PendingRemote<blink::mojom::Blob> blob_remote,
+  IndexedDBBlobInfo(mojo::PendingRemote<blink::mojom::Blob> blob_remote,
+                    const std::string& uuid,
                     const base::FilePath& file_path,
                     const base::string16& file_name,
                     const base::string16& type);
@@ -54,11 +52,13 @@ class CONTENT_EXPORT IndexedDBBlobInfo {
   IndexedDBBlobInfo& operator=(const IndexedDBBlobInfo& other);
 
   bool is_file() const { return is_file_; }
-  const storage::BlobDataHandle* blob_handle() const {
-    return blob_handle_.has_value() ? &blob_handle_.value() : nullptr;
-  }
   bool is_remote_valid() const { return blob_remote_.is_bound(); }
+  const std::string& uuid() const {
+    DCHECK(is_remote_valid());
+    return uuid_;
+  }
   void Clone(mojo::PendingReceiver<blink::mojom::Blob> receiver) const;
+  mojo::SharedRemote<blink::mojom::Blob> remote() const { return blob_remote_; }
   const base::string16& type() const { return type_; }
   int64_t size() const { return size_; }
   const base::string16& file_name() const { return file_name_; }
@@ -83,9 +83,9 @@ class CONTENT_EXPORT IndexedDBBlobInfo {
   bool is_file_;
 
   // Always for Blob; sometimes for File.
-  // TODO(enne): blob_handle is transitory, transition to blob_remote only.
-  base::Optional<storage::BlobDataHandle> blob_handle_;
   mojo::SharedRemote<blink::mojom::Blob> blob_remote_;
+  // If blob_remote_ is true, this is the blob's uuid.
+  std::string uuid_;
   // Mime type.
   base::string16 type_;
   // -1 if unknown for File.

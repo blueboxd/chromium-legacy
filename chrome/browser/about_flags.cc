@@ -1310,36 +1310,20 @@ const FeatureEntry::FeatureVariation
          nullptr}};
 #endif  // OS_ANDROID
 
-#if defined(OS_ANDROID)
-const FeatureEntry::FeatureParam kQuietNotificationPromptsForceMiniInfobars[] =
-    {
-        {kQuietNotificationPromptsActivationParameterName,
-         kQuietNotificationPromptsActivationAlways},
-};
-
-// The default "Enabled" option has the semantics of showing "mini-infobars"
-// adaptively after 3 consecutive denies (or when enabled in settings). In
-// addition to that, expose an option to force-enable "mini-infobars".
-const FeatureEntry::FeatureVariation kQuietNotificationPromptsVariations[] = {
-    {"(forced)", kQuietNotificationPromptsForceMiniInfobars,
-     base::size(kQuietNotificationPromptsForceMiniInfobars), nullptr},
-};
-#else   // OS_ANDROID
 const FeatureEntry::FeatureParam
-    kQuietNotificationPromptsForceAnimatedIconNotificationsPrompt[] = {
-        {kQuietNotificationPromptsActivationParameterName,
-         kQuietNotificationPromptsActivationAlways},
-};
+    kQuietNotificationPromptsWithAdaptiveActivation[] = {
+        {QuietNotificationsPromptConfig::kEnableAdaptiveActivation, "true"}};
 
-// The default "Enabled" option has the semantics of showing "animated icon"
-// adaptively after 3 consecutive denies (or when enabled in settings). In
-// addition to that, expose an option to force-enable "animated icons".
+// The default "Enabled" option has the semantics of showing the quiet UI
+// (animated location bar indicator on Desktop, and mini-infobars on Android),
+// but only when the user directly turns it on in Settings. In addition to that,
+// expose an option to also enable adaptively turning on the quiet UI after
+// three consecutive denies.
 const FeatureEntry::FeatureVariation kQuietNotificationPromptsVariations[] = {
-    {"(forced)", kQuietNotificationPromptsForceAnimatedIconNotificationsPrompt,
-     base::size(kQuietNotificationPromptsForceAnimatedIconNotificationsPrompt),
-     nullptr},
+    {"(with adaptive activation)",
+     kQuietNotificationPromptsWithAdaptiveActivation,
+     base::size(kQuietNotificationPromptsWithAdaptiveActivation), nullptr},
 };
-#endif  // !OS_ANDROID
 
 // TODO(crbug.com/991082,1015377): Remove after proper support for back-forward
 // cache is implemented.
@@ -1350,6 +1334,33 @@ const FeatureEntry::FeatureParam kBackForwardCache_ForceCaching[] = {
 const FeatureEntry::FeatureVariation kBackForwardCacheVariations[] = {
     {"force caching all pages", kBackForwardCache_ForceCaching,
      base::size(kBackForwardCache_ForceCaching), nullptr},
+};
+
+const FeatureEntry::FeatureParam kSharingDeviceExpirationHours_0[] = {
+    {"SharingDeviceExpirationHours", "0"}};
+const FeatureEntry::FeatureParam kSharingDeviceExpirationHours_12[] = {
+    {"SharingDeviceExpirationHours", "12"}};
+const FeatureEntry::FeatureParam kSharingDeviceExpirationHours_24[] = {
+    {"SharingDeviceExpirationHours", "24"}};
+const FeatureEntry::FeatureParam kSharingDeviceExpirationHours_48[] = {
+    {"SharingDeviceExpirationHours", "48"}};
+const FeatureEntry::FeatureParam kSharingDeviceExpirationHours_96[] = {
+    {"SharingDeviceExpirationHours", "96"}};
+const FeatureEntry::FeatureParam kSharingDeviceExpirationHours_240[] = {
+    {"SharingDeviceExpirationHours", "240"}};
+const FeatureEntry::FeatureVariation kSharingDeviceExpirationVariations[] = {
+    {"0 hours", kSharingDeviceExpirationHours_0,
+     base::size(kSharingDeviceExpirationHours_0), nullptr},
+    {"12 hours", kSharingDeviceExpirationHours_12,
+     base::size(kSharingDeviceExpirationHours_12), nullptr},
+    {"1 day", kSharingDeviceExpirationHours_24,
+     base::size(kSharingDeviceExpirationHours_24), nullptr},
+    {"2 days", kSharingDeviceExpirationHours_48,
+     base::size(kSharingDeviceExpirationHours_48), nullptr},
+    {"4 days", kSharingDeviceExpirationHours_96,
+     base::size(kSharingDeviceExpirationHours_96), nullptr},
+    {"10 days", kSharingDeviceExpirationHours_240,
+     base::size(kSharingDeviceExpirationHours_240), nullptr},
 };
 
 #if defined(OS_CHROMEOS)
@@ -1452,6 +1463,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebrtcHideLocalIpsWithMdnsName,
      flag_descriptions::kWebrtcHideLocalIpsWithMdnsDecription, kOsDesktop,
      FEATURE_VALUE_TYPE(blink::features::kWebRtcHideLocalIpsWithMdns)},
+    {"enable-webrtc-use-min-max-vea-dimensions",
+     flag_descriptions::kWebrtcUseMinMaxVEADimensionsName,
+     flag_descriptions::kWebrtcUseMinMaxVEADimensionsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kWebRtcUseMinMaxVEADimensions)},
 #if defined(OS_ANDROID)
     {"clear-old-browsing-data", flag_descriptions::kClearOldBrowsingDataName,
      flag_descriptions::kClearOldBrowsingDataDescription, kOsAndroid,
@@ -3233,10 +3248,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kQueryInOmniboxDescription, kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kQueryInOmnibox)},
 
-    {"enable-viz-hit-test-surface-layer", flag_descriptions::kVizHitTestName,
-     flag_descriptions::kVizHitTestDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kEnableVizHitTestSurfaceLayer)},
-
 #if BUILDFLAG(ENABLE_PDF)
 #if defined(OS_CHROMEOS)
     {"pdf-annotations", flag_descriptions::kPdfAnnotations,
@@ -3808,6 +3819,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"sharing-rename-devices", flag_descriptions::kSharingRenameDevicesName,
      flag_descriptions::kSharingRenameDevicesDescription, kOsAll,
      FEATURE_VALUE_TYPE(send_tab_to_self::kSharingRenameDevices)},
+
+    {"sharing-device-expiration",
+     flag_descriptions::kSharingDeviceExpirationName,
+     flag_descriptions::kSharingDeviceExpirationDescription, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kSharingDeviceExpiration,
+                                    kSharingDeviceExpirationVariations,
+                                    "SharingDeviceExpiration")},
 
 #if defined(OS_CHROMEOS)
     {"discover-app", flag_descriptions::kEnableDiscoverAppName,

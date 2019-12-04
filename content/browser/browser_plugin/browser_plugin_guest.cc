@@ -246,16 +246,6 @@ WebContentsImpl* BrowserPluginGuest::CreateNewGuestWindow(
 
 bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     const IPC::Message& message) {
-  RenderWidgetHostViewGuest* rwhv = static_cast<RenderWidgetHostViewGuest*>(
-      web_contents()->GetRenderWidgetHostView());
-
-  // Until the guest is attached, it should not be handling input events.
-  if (attached() && rwhv &&
-      rwhv->OnMessageReceivedFromEmbedder(message,
-                                          GetOwnerRenderWidgetHost())) {
-    return true;
-  }
-
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginGuest, message)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Detach, OnDetach)

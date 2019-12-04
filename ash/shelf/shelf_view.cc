@@ -2052,14 +2052,14 @@ gfx::Rect ShelfView::GetMenuAnchorRect(const views::View& source,
           : GetBoundsInScreen();
   gfx::Point origin;
   switch (shelf_->alignment()) {
-    case SHELF_ALIGNMENT_BOTTOM:
-    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+    case ShelfAlignment::kBottom:
+    case ShelfAlignment::kBottomLocked:
       origin = gfx::Point(location.x(), shelf_bounds_in_screen.y());
       break;
-    case SHELF_ALIGNMENT_LEFT:
+    case ShelfAlignment::kLeft:
       origin = gfx::Point(shelf_bounds_in_screen.right(), location.y());
       break;
-    case SHELF_ALIGNMENT_RIGHT:
+    case ShelfAlignment::kRight:
       origin = gfx::Point(shelf_bounds_in_screen.x(), location.y());
       break;
   }
@@ -2069,14 +2069,14 @@ gfx::Rect ShelfView::GetMenuAnchorRect(const views::View& source,
 void ShelfView::AnnounceShelfAlignment() {
   base::string16 announcement;
   switch (shelf_->alignment()) {
-    case SHELF_ALIGNMENT_BOTTOM:
-    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+    case ShelfAlignment::kBottom:
+    case ShelfAlignment::kBottomLocked:
       announcement = l10n_util::GetStringUTF16(IDS_SHELF_ALIGNMENT_BOTTOM);
       break;
-    case SHELF_ALIGNMENT_LEFT:
+    case ShelfAlignment::kLeft:
       announcement = l10n_util::GetStringUTF16(IDS_SHELF_ALIGNMENT_LEFT);
       break;
-    case SHELF_ALIGNMENT_RIGHT:
+    case ShelfAlignment::kRight:
       announcement = l10n_util::GetStringUTF16(IDS_SHELF_ALIGNMENT_RIGHT);
       break;
   }

@@ -573,9 +573,11 @@ TEST_F(AccessibilitySelectionTest, SetSelectionAroundListBullet) {
       "++++++<List>\n"
       "++++++++<ListItem>\n"
       "++++++++++<ListMarker: \xE2\x80\xA2 >\n"
-      "^++++++++++<StaticText: Item 1.>\n"
+      "^++++++++++++<StaticText: ^\xE2\x80\xA2 >\n"
+      "++++++++++<StaticText: Item 1.>\n"
       "++++++++<ListItem>\n"
       "++++++++++<ListMarker: \xE2\x80\xA2 >\n"
+      "++++++++++++<StaticText: \xE2\x80\xA2 >\n"
       "++++++++++<StaticText: Item 2.|>\n",
       GetSelectionText(ax_selection));
 }
@@ -1698,7 +1700,7 @@ TEST_F(AccessibilitySelectionTest, InvalidSelectionOnAShadowRoot) {
   GetPage().GetSettings().SetScriptEnabled(true);
   SetBodyInnerHTML(R"HTML(
 		<div id="container">
-		</div>	
+		</div>
 	)HTML");
   Element* const script_element =
       GetDocument().CreateRawElement(html_names::kScriptTag);

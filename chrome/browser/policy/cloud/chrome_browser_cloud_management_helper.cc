@@ -115,7 +115,10 @@ MachineLevelUserCloudPolicyFetcher::MachineLevelUserCloudPolicyFetcher(
 }
 
 MachineLevelUserCloudPolicyFetcher::~MachineLevelUserCloudPolicyFetcher() {
-  policy_manager_->core()->service()->RemoveObserver(this);
+  // The pointers need to be checked since they might be invalidated from a
+  // |Disconnect| call.
+  if (policy_manager_->core() && policy_manager_->core()->service())
+    policy_manager_->core()->service()->RemoveObserver(this);
 }
 
 void MachineLevelUserCloudPolicyFetcher::SetupRegistrationAndFetchPolicy(
@@ -140,6 +143,14 @@ void MachineLevelUserCloudPolicyFetcher::RemoveClientObserver(
     CloudPolicyClient::Observer* observer) {
   if (policy_manager_)
     policy_manager_->RemoveClientObserver(observer);
+}
+
+void MachineLevelUserCloudPolicyFetcher::Disconnect() {
+  if (policy_manager_) {
+    if (policy_manager_->core() && policy_manager_->core()->service())
+      policy_manager_->core()->service()->RemoveObserver(this);
+    policy_manager_->DisconnectAndRemovePolicy();
+  }
 }
 
 void MachineLevelUserCloudPolicyFetcher::

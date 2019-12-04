@@ -54,6 +54,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   ~SkiaRenderer() override;
 
   void SwapBuffers(SwapFrameData swap_frame_data) override;
+  void SwapBuffersComplete() override;
 
   void SetDisablePictureQuadImageFiltering(bool disable) {
     disable_picture_quad_image_filtering_ = disable;
@@ -211,10 +212,8 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
                            const DrawRPDQParams* rpdq_params,
                            DrawQuadParams* params);
 
-#if defined(OS_WIN)
   // Schedule overlay candidates for presentation at next SwapBuffers().
-  void ScheduleDCLayers();
-#endif
+  void ScheduleOverlays();
 
   // skia_renderer can draw most single-quad passes directly, regardless of
   // blend mode or image filtering.
@@ -311,11 +310,14 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   base::Optional<DisplayResourceProvider::LockSetForExternalUse>
       lock_set_for_external_use_;
 
-  bool has_locked_overlay_resources_ = false;
-
+  // Locks for overlays are pending for swapbuffers.
   base::circular_deque<
-      std::unique_ptr<DisplayResourceProvider::ScopedReadLockSharedImage>>
-      overlay_resource_locks_;
+      std::vector<DisplayResourceProvider::ScopedReadLockSharedImage>>
+      pending_overlay_locks_;
+  // Locks for overlays have been committed. |pending_overlay_locks_| will
+  // be moved to |committed_overlay_locks_| after SwapBuffers() completed.
+  std::vector<DisplayResourceProvider::ScopedReadLockSharedImage>
+      committed_overlay_locks_;
 
   // Specific for SkPRecord.
   std::unique_ptr<SkPictureRecorder> root_recorder_;

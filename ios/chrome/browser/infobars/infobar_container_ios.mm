@@ -5,7 +5,7 @@
 #include "ios/chrome/browser/infobars/infobar_container_ios.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "ios/chrome/browser/infobars/infobar.h"
+#include "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container_consumer.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/infobar_ui_delegate.h"

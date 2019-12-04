@@ -44,9 +44,9 @@ To update the order files:
     Note the Process ID of the browser process.
 
     Check in `\src\tmp\` for instrumentation output from the process, for
-    example `cygprofile_14652.txt`.txt`. The files are
-    only written once a certain number of function calls have been made, so
-    sometimes you need to browse a bit for the file to be produced.
+    example `cygprofile_14652.txt`. The files are only written once a certain
+    number of function calls have been made, so sometimes you need to browse a
+    bit for the file to be produced.
 
 1.  If the file appears to have sensible contents (a long list of function names
     that eventually seem related to what the browser should

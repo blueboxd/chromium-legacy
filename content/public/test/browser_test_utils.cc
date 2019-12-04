@@ -36,7 +36,6 @@
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
-#include "content/browser/browser_plugin/browser_plugin_message_filter.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/file_system/file_system_manager_impl.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
@@ -55,7 +54,6 @@
 #include "content/browser/service_manager/service_manager_context.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
-#include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_visual_properties.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
@@ -140,7 +138,6 @@
 
 #if defined(USE_AURA)
 #include "content/browser/renderer_host/delegated_frame_host.h"
-#include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "ui/aura/test/window_event_dispatcher_test_api.h"
 #include "ui/aura/window.h"
@@ -3106,60 +3103,6 @@ void PwnMessageHelper::LockMouse(RenderProcessHost* process,
 
 #if defined(USE_AURA)
 namespace {
-class MockOverscrollControllerImpl : public OverscrollController,
-                                     public MockOverscrollController {
- public:
-  MockOverscrollControllerImpl() : content_scrolling_(false) {}
-  ~MockOverscrollControllerImpl() override {}
-
-  // OverscrollController:
-  void ReceivedEventACK(const blink::WebInputEvent& event,
-                        bool processed) override {
-    // Since we're only mocking this one method of OverscrollController and its
-    // other methods are non-virtual, we'll delegate to it so that it doesn't
-    // get into an inconsistent state.
-    OverscrollController::ReceivedEventACK(event, processed);
-
-    if (event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
-        processed) {
-      content_scrolling_ = true;
-      if (quit_closure_)
-        std::move(quit_closure_).Run();
-    }
-  }
-
-  // MockOverscrollController:
-  void WaitForConsumedScroll() override {
-    if (!content_scrolling_) {
-      base::RunLoop run_loop;
-      quit_closure_ = run_loop.QuitClosure();
-      run_loop.Run();
-    }
-  }
-
- private:
-  bool content_scrolling_;
-  base::OnceClosure quit_closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockOverscrollControllerImpl);
-};
-}  // namespace
-
-// static
-MockOverscrollController* MockOverscrollController::Create(
-    RenderWidgetHostView* rwhv) {
-  std::unique_ptr<MockOverscrollControllerImpl> mock =
-      std::make_unique<MockOverscrollControllerImpl>();
-  MockOverscrollController* raw_mock = mock.get();
-
-  RenderWidgetHostViewAura* rwhva =
-      static_cast<RenderWidgetHostViewAura*>(rwhv);
-  rwhva->SetOverscrollControllerForTesting(std::move(mock));
-
-  return raw_mock;
-}
-
-namespace {
 
 // This class interacts with the internals of the DelegatedFrameHost without
 // exposing them in the header.
@@ -3346,9 +3289,8 @@ bool HasValidProcessForProcessGroup(const std::string& process_group_name) {
       process_group_name);
 }
 
-bool TestChildOrGuestAutoresize(bool is_guest,
-                                RenderProcessHost* embedder_rph,
-                                RenderWidgetHost* guest_rwh) {
+bool TestGuestAutoresize(RenderProcessHost* embedder_rph,
+                         RenderWidgetHost* guest_rwh) {
   RenderProcessHostImpl* embedder_rph_impl =
       static_cast<RenderProcessHostImpl*>(embedder_rph);
   RenderWidgetHostImpl* guest_rwh_impl =
@@ -3357,15 +3299,7 @@ bool TestChildOrGuestAutoresize(bool is_guest,
   auto filter =
       base::MakeRefCounted<SynchronizeVisualPropertiesMessageFilter>();
 
-  // Register the message filter for the guest or child. For guest, we must use
-  // a special hook, as there are already message filters installed which will
-  // supercede us.
-  if (is_guest) {
-    embedder_rph_impl->SetBrowserPluginMessageFilterSubFilterForTesting(
-        filter.get());
-  } else {
-    embedder_rph_impl->AddFilter(filter.get());
-  }
+  embedder_rph_impl->AddFilter(filter.get());
 
   viz::LocalSurfaceId current_id = guest_rwh_impl->GetView()
                                        ->GetLocalSurfaceIdAllocation()
@@ -3406,14 +3340,9 @@ bool TestChildOrGuestAutoresize(bool is_guest,
                              current_id.embed_token());
 }
 
-const uint32_t
-    SynchronizeVisualPropertiesMessageFilter::kMessageClassesToFilter[2] = {
-        FrameMsgStart, BrowserPluginMsgStart};
-
 SynchronizeVisualPropertiesMessageFilter::
     SynchronizeVisualPropertiesMessageFilter()
-    : content::BrowserMessageFilter(kMessageClassesToFilter,
-                                    base::size(kMessageClassesToFilter)),
+    : content::BrowserMessageFilter(FrameMsgStart),
       screen_space_rect_run_loop_(std::make_unique<base::RunLoop>()),
       screen_space_rect_received_(false),
       pinch_gesture_active_set_(false),
@@ -3451,13 +3380,6 @@ void SynchronizeVisualPropertiesMessageFilter::
         const viz::FrameSinkId& frame_sink_id,
         const FrameVisualProperties& visual_properties) {
   OnSynchronizeVisualProperties(frame_sink_id, visual_properties);
-}
-
-void SynchronizeVisualPropertiesMessageFilter::
-    OnSynchronizeBrowserPluginVisualProperties(
-        int browser_plugin_guest_instance_id,
-        FrameVisualProperties visual_properties) {
-  OnSynchronizeVisualProperties(viz::FrameSinkId(), visual_properties);
 }
 
 void SynchronizeVisualPropertiesMessageFilter::OnSynchronizeVisualProperties(
@@ -3549,8 +3471,6 @@ bool SynchronizeVisualPropertiesMessageFilter::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(SynchronizeVisualPropertiesMessageFilter, message)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SynchronizeVisualProperties,
                         OnSynchronizeFrameHostVisualProperties)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SynchronizeVisualProperties,
-                        OnSynchronizeBrowserPluginVisualProperties)
   IPC_END_MESSAGE_MAP()
 
   // We do not consume the message, so that we can verify the effects of it

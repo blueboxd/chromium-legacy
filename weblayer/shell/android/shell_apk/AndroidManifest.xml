@@ -13,7 +13,7 @@
         <activity android:name="WebLayerShellActivity"
                   android:launchMode="singleTask"
                   android:theme="@android:style/Theme.Holo.Light.NoActionBar"
-                  android:windowSoftInputMode="adjustPan|stateUnspecified"
+                  android:windowSoftInputMode="adjustResize"
                   android:configChanges="orientation|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

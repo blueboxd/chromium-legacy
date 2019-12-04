@@ -43,7 +43,6 @@
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
-#include "third_party/blink/public/common/sudden_termination_disabler_type.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-shared.h"
 #include "third_party/blink/public/platform/blame_context.h"
@@ -733,15 +732,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Provides accessibility information about the termination of a find
   // in page operation.
   virtual void HandleAccessibilityFindInPageTermination() {}
-
-  // Sudden termination --------------------------------------------------
-
-  // Called when elements preventing the sudden termination of the frame
-  // become present or stop being present. |type| is the type of element
-  // (BeforeUnload handler, Unload handler).
-  virtual void SuddenTerminationDisablerChanged(bool present,
-                                                SuddenTerminationDisablerType) {
-  }
 
   // Audio Output Devices API --------------------------------------------
 

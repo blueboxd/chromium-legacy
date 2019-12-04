@@ -259,8 +259,7 @@ void ContentHashWaiter::CreatedCallback(scoped_refptr<ContentHash> content_hash,
 void ContentHashWaiter::CreateContentHash(
     ContentHash::FetchKey key,
     ContentVerifierDelegate::VerifierSourceType source_type) {
-  ContentHash::Create(std::move(key), source_type,
-                      ContentHash::IsCancelledCallback(),
+  ContentHash::Create(std::move(key), source_type, IsCancelledCallback(),
                       base::BindOnce(&ContentHashWaiter::CreatedCallback,
                                      base::Unretained(this)));
 }

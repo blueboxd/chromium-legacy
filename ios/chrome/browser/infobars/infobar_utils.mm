@@ -9,7 +9,7 @@
 
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "ios/chrome/browser/infobars/confirm_infobar_controller.h"
-#include "ios/chrome/browser/infobars/infobar.h"
+#include "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_confirm_coordinator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"

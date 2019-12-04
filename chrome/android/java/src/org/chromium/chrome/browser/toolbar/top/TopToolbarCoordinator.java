@@ -606,6 +606,9 @@ public class TopToolbarCoordinator implements Toolbar {
      */
     public void onBottomToolbarVisibilityChanged(boolean isVisible) {
         mToolbarLayout.onBottomToolbarVisibilityChanged(isVisible);
+        if (mTabSwitcherModeCoordinatorPhone != null) {
+            mTabSwitcherModeCoordinatorPhone.onBottomToolbarVisibilityChanged(isVisible);
+        }
     }
 
     /**

@@ -10,7 +10,6 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
-#include "components/viz/common/features.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
@@ -289,28 +288,13 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, DetachPortal) {
 
 // This is for testing how portals interact with input hit testing. It is
 // parameterized on the kind of viz hit testing used.
-class PortalHitTestBrowserTest : public PortalBrowserTest,
-                                 public ::testing::WithParamInterface<bool> {
+class PortalHitTestBrowserTest : public PortalBrowserTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PortalBrowserTest::SetUpCommandLine(command_line);
     IsolateAllSitesForTesting(command_line);
-    const bool use_viz_hit_test_surface_layer = GetParam();
-    if (use_viz_hit_test_surface_layer) {
-      feature_list_.InitAndEnableFeature(
-          features::kEnableVizHitTestSurfaceLayer);
-    } else {
-      feature_list_.InitAndDisableFeature(
-          features::kEnableVizHitTestSurfaceLayer);
-    }
   }
-
-  base::test::ScopedFeatureList feature_list_;
 };
-
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
-                         PortalHitTestBrowserTest,
-                         ::testing::Bool());
 
 namespace {
 
@@ -339,7 +323,7 @@ class FailOnInputEvent : public RenderWidgetHost::InputEventObserver {
 
 // Tests that input events targeting the portal are only received by the parent
 // renderer.
-IN_PROC_BROWSER_TEST_P(PortalHitTestBrowserTest, DispatchInputEvent) {
+IN_PROC_BROWSER_TEST_F(PortalHitTestBrowserTest, DispatchInputEvent) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
   WebContentsImpl* web_contents_impl =
@@ -385,7 +369,7 @@ IN_PROC_BROWSER_TEST_P(PortalHitTestBrowserTest, DispatchInputEvent) {
 
 // Tests that input events performed over on OOPIF inside a portal are targeted
 // to the portal's parent.
-IN_PROC_BROWSER_TEST_P(PortalHitTestBrowserTest, NoInputToOOPIFInPortal) {
+IN_PROC_BROWSER_TEST_F(PortalHitTestBrowserTest, NoInputToOOPIFInPortal) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
   WebContentsImpl* web_contents_impl =

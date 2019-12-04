@@ -104,6 +104,64 @@ def try_builder(
 # after the last dot in the mastername and YYY is the OS
 
 
+def android_builder(*, name, **kwargs):
+  return try_builder(
+      name = name,
+      goma_backend = goma.backend.RBE_PROD,
+      mastername = 'tryserver.chromium.android',
+      **kwargs
+  )
+
+android_builder(
+    name = 'android-kitkat-arm-rel',
+    goma_jobs = goma.jobs.J150,
+    tryjob = tryjob(
+        # TODO(https://crbug.com/1024641) Make non-experimental
+        experiment_percentage = 1,
+    ),
+)
+
+android_builder(
+    name = 'android-marshmallow-arm64-rel',
+    cores = 16,
+    goma_jobs = goma.jobs.J300,
+    ssd = True,
+    use_java_coverage = True,
+    tryjob = tryjob(
+        # TODO(https://crbug.com/1024641) Make non-experimental
+        experiment_percentage = 1,
+    ),
+)
+
+
+def chromiumos_builder(*, name, **kwargs):
+  return try_builder(
+      name = name,
+      mastername = 'tryserver.chromium.chromiumos',
+      goma_backend = goma.backend.RBE_PROD,
+      **kwargs
+  )
+
+chromiumos_builder(
+    name = 'chromeos-amd64-generic-rel',
+    goma_enable_ats = True,
+    tryjob = tryjob(
+        # TODO(https://crbug.com/1024641) Make non-experimental
+        experiment_percentage = 1,
+    ),
+)
+
+chromiumos_builder(
+    name = 'linux-chromeos-rel',
+    goma_jobs = goma.jobs.J150,
+    tryjob = tryjob(
+        # TODO(https://crbug.com/1024641) Make non-experimental
+        experiment_percentage = 1,
+    ),
+    use_clang_coverage = True,
+)
+
+
 def linux_builder(*, name, **kwargs):
   return try_builder(
       name = name,
@@ -132,7 +190,80 @@ linux_builder(
     name = 'linux-rel',
     goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
-    # TODO(https://crbug.com/1024637) Make non-experimental
-    tryjob = tryjob(experiment_percentage = 100),
+    tryjob = tryjob(
+        # TODO(https://crbug.com/1024637) Make non-experimental
+        experiment_percentage = 1,
+    ),
     use_clang_coverage = True,
+)
+
+
+def mac_builder(
+    *,
+    name,
+    cores=None,
+    goma_backend = goma.backend.RBE_PROD,
+    os=os.MAC_ANY,
+    **kwargs):
+  return try_builder(
+      name = name,
+      cores = cores,
+      goma_backend = goma_backend,
+      mastername = 'tryserver.chromium.mac',
+      os = os,
+      **kwargs
+  )
+
+mac_builder(
+    name = 'mac-rel',
+    goma_jobs = goma.jobs.J150,
+    tryjob = tryjob(
+        # TODO(https://crbug.com/1024641) Make non-experimental
+        experiment_percentage = 1,
+    ),
+)
+
+def mac_ios_builder(*, name, executable=luci.recipe(name = 'ios/try'), **kwargs):
+  return try_builder(
+      name = name,
+      caches = [
+          swarming.cache(
+              name = 'xcode_ios_11a1027',
+              path = 'xcode_ios_11a1027.app',
+          ),
+      ],
+      cores = None,
+      executable = executable,
+      mastername = 'tryserver.chromium.mac',
+      os = os.MAC_ANY,
+      **kwargs
+  )
+
+mac_ios_builder(
+    name = 'ios-simulator',
+    tryjob = tryjob(
+        # TODO(https://crbug.com/1024641) Make non-experimental
+        experiment_percentage = 1,
+    ),
+)
+
+
+def win_builder(*, name, builderless=True, os=os.WINDOWS_DEFAULT, **kwargs):
+  return try_builder(
+      name = name,
+      builderless = builderless,
+      mastername = 'tryserver.chromium.win',
+      os = os,
+      **kwargs
+  )
+
+win_builder(
+    name = 'win10_chromium_x64_rel_ng',
+    goma_jobs = goma.jobs.J150,
+    os = os.WINDOWS_10,
+    ssd = True,
+    tryjob = tryjob(
+        # TODO(https://crbug.com/1024641) Make non-experimental
+        experiment_percentage = 1,
+    ),
 )

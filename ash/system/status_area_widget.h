@@ -120,10 +120,11 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   }
 
   CollapseState collapse_state() const { return collapse_state_; }
+  void set_collapse_state_for_test(CollapseState state) {
+    collapse_state_ = state;
+  }
 
  private:
-  friend class StatusAreaWidgetTestApi;
-
   // views::Widget:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;

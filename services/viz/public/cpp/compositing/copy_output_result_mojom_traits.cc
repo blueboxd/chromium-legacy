@@ -15,7 +15,7 @@ namespace {
 // impl object will be sent over mojo instead of the release_callback_ (which is
 // not serializable). Once the client calls Release, the release_callback_ will
 // be called. An object of this class will remain alive until the MessagePipe
-// attached to it goes away (i.e. StrongBinding is used).
+// attached to it goes away (i.e. SelfOwnedReceiver is used).
 class TextureReleaserImpl : public viz::mojom::TextureReleaser {
  public:
   explicit TextureReleaserImpl(

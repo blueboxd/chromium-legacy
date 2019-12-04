@@ -14,7 +14,6 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/base/histograms.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
-#include "components/viz/client/hit_test_data_provider.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
@@ -82,7 +81,6 @@ AsyncLayerTreeFrameSink::AsyncLayerTreeFrameSink(
                          std::move(worker_context_provider),
                          std::move(params->compositor_task_runner),
                          params->gpu_memory_buffer_manager),
-      hit_test_data_provider_(std::move(params->hit_test_data_provider)),
       synthetic_begin_frame_source_(
           std::move(params->synthetic_begin_frame_source)),
       pipes_(std::move(params->pipes)),
@@ -93,10 +91,6 @@ AsyncLayerTreeFrameSink::AsyncLayerTreeFrameSink(
       submit_begin_frame_histogram_(GetHistogramNamed(
           "GraphicsPipeline.%s.SubmitCompositorFrameAfterBeginFrame",
           params->client_name)) {
-  // We should not create hit test data provider if we want to use cc layer tree
-  // to generated data.
-  if (features::IsVizHitTestingSurfaceLayerEnabled())
-    DCHECK(!hit_test_data_provider_);
   DETACH_FROM_THREAD(thread_checker_);
 }
 
@@ -186,11 +180,8 @@ void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
               frame.size_in_pixels().width());
   }
 
-  base::Optional<viz::HitTestRegionList> hit_test_region_list;
-  if (hit_test_data_provider_)
-    hit_test_region_list = hit_test_data_provider_->GetHitTestData(frame);
-  else
-    hit_test_region_list = client_->BuildHitTestData();
+  base::Optional<viz::HitTestRegionList> hit_test_region_list =
+      client_->BuildHitTestData();
 
   if (show_hit_test_borders && hit_test_region_list)
     hit_test_region_list->flags |= viz::HitTestRegionFlags::kHitTestDebug;

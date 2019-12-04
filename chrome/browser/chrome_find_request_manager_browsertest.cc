@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/pdf/pdf_extension_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -80,9 +81,14 @@ class ChromeFindRequestManagerTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ChromeFindRequestManagerTest);
 };
 
-
 // Tests searching in a full-page PDF.
-IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest, FindInPDF) {
+// Flaky on Windows ASAN: crbug.com/1030368.
+#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
+#define MAYBE_FindInPDF DISABLED_FindInPDF
+#else
+#define MAYBE_FindInPDF FindInPDF
+#endif
+IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest, MAYBE_FindInPDF) {
   LoadAndWait("/find_in_pdf_page.pdf");
   ASSERT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(contents()));
 

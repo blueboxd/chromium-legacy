@@ -12,3 +12,9 @@ const base::Feature kSharingQRCodeGenerator{"SharingQRCodeGenerator",
 
 const base::Feature kSharingDeriveVapidKey{"SharingDeriveVapidKey",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSharingDeviceExpiration{"SharingDeviceExpiration",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::FeatureParam<int> kSharingDeviceExpirationHours = {
+    &kSharingDeviceExpiration, "SharingDeviceExpirationHours", 48};

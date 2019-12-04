@@ -510,6 +510,11 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
       base::SysNSStringToUTF8([ChromeEarlGreyAppInterface webStateVisibleURL]));
 }
 
+- (GURL)webStateLastCommittedURL {
+  return GURL(base::SysNSStringToUTF8(
+      [ChromeEarlGreyAppInterface webStateLastCommittedURL]));
+}
+
 - (void)purgeCachedWebViewPages {
   [ChromeEarlGreyAppInterface purgeCachedWebViewPages];
   [self waitForRestoreSessionToFinish];

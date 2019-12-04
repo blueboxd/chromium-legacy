@@ -271,6 +271,11 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
                             bool waiting_for_debugger,
                             bool flatten_protocol) {
     std::string id = base::UnguessableToken::Create().ToString();
+    // We don't support or allow the non-flattened protocol when in binary mode.
+    // So, we coerce the setting to true, as the non-flattened mode is
+    // deprecated anyway.
+    if (handler->root_session_->client()->UsesBinaryProtocol())
+      flatten_protocol = true;
     Session* session = new Session(handler, agent_host, id, flatten_protocol);
     handler->attached_sessions_[id].reset(session);
     DevToolsAgentHostImpl* agent_host_impl =
@@ -320,14 +325,19 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
   }
 
   void SendMessageToAgentHost(const std::string& message) {
+    // This method is only used in the non-flat mode, it's the implementation
+    // for Target.SendMessageToTarget. And since the binary mode implies
+    // flatten_protocol_ (we force the flag to true), we can assume in this
+    // method that |message| is JSON.
+    DCHECK(!flatten_protocol_);
+
     if (throttle_) {
-      auto* client = handler_->root_session_->client();
-      std::unique_ptr<protocol::DictionaryValue> value =
-          protocol::DictionaryValue::cast(protocol::StringUtil::parseMessage(
-              message, client->UsesBinaryProtocol()));
-      std::string method;
-      if (value->getString(kMethod, &method) && method == kResumeMethod)
-        ResumeIfThrottled();
+      base::Optional<base::Value> value = base::JSONReader::Read(message);
+      const std::string* method;
+      if (value.has_value() && (method = value->FindStringKey(kMethod)) &&
+          *method == kResumeMethod) {
+        throttle_->Clear();
+      }
     }
 
     agent_host_->DispatchProtocolMessage(this, message);
@@ -338,10 +348,8 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
   }
 
   bool UsesBinaryProtocol() override {
-    if (flatten_protocol_)
-      return true;
-    auto* client = handler_->root_session_->client();
-    return client->UsesBinaryProtocol();
+    return flatten_protocol_ ||
+           handler_->root_session_->client()->UsesBinaryProtocol();
   }
 
  private:

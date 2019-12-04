@@ -1175,6 +1175,18 @@ void TabDragController::Attach(TabDragContext* attached_context,
     // user moves the tab immediately after attaching it.
     last_move_screen_loc_ = point_in_screen.x();
 
+    // Register a new group if necessary, so that the insertion index in the
+    // tab strip can be calculated based on the group membership of tabs.
+    if (header_drag_) {
+      // Rather than keep the old group ID, generate a new one. This helps with
+      // restore, and allowing broken-up groups to be restored across windows
+      // as separate group IDs.
+      group_ = TabGroupId::GenerateNew();
+      attached_context_->GetTabStripModel()->group_model()->AddTabGroup(
+          group_.value(),
+          source_view_drag_data()->tab_group_data.value().group_visual_data);
+    }
+
     // Figure out where to insert the tab based on the bounds of the dragged
     // representation and the ideal bounds of the other Tabs already in the
     // strip. ("ideal bounds" are stable even if the Tabs' actual bounds are
@@ -1193,15 +1205,6 @@ void TabDragController::Attach(TabDragContext* attached_context,
     attach_x_ = tab_strip_point.x();
 
     base::AutoReset<bool> setter(&is_mutating_, true);
-    if (header_drag_) {
-      // Rather than keep the old group ID, generate a new one. This helps with
-      // restore, and allowing broken-up groups to be restored across windows
-      // as separate group IDs.
-      group_ = TabGroupId::GenerateNew();
-      attached_context_->GetTabStripModel()->group_model()->AddTabGroup(
-          group_.value(),
-          source_view_drag_data()->tab_group_data.value().group_visual_data);
-    }
     for (size_t i = first_tab_index(); i < drag_data_.size(); ++i) {
       int add_types = TabStripModel::ADD_NONE;
       if (attached_context_->GetActiveTouchIndex()) {

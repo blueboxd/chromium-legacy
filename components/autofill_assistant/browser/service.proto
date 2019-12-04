@@ -10,6 +10,8 @@ option java_multiple_files = true;
 
 package autofill_assistant;
 
+import "generic_ui.proto";
+
 // A field trial containing the name of the trial and the name of the
 // randomly selected trial group.
 message FieldTrialProto {
@@ -89,17 +91,6 @@ message SupportsScriptResponseProto {
   optional ScriptTimeoutError script_timeout_error = 2;
 
   optional ClientSettingsProto client_settings = 3;
-}
-
-// Represents a dimension, e.g., width or height.
-message ClientDimensionProto {
-  oneof size {
-    int32 dpi = 1;
-    // Factor to multiply with the client's total width.
-    float width_factor = 2;
-    // Factor to multiply with the client's total height.
-    float height_factor = 3;
-  }
 }
 
 // Overlay image to be drawn on top of full overlays.
@@ -1399,6 +1390,8 @@ message CollectUserDataProto {
   repeated UserFormSectionProto additional_prepended_sections = 18;
   // An optional list of additional sections, which is below all other sections.
   repeated UserFormSectionProto additional_appended_sections = 19;
+  // Backend-configured user interface to show.
+  optional GenericUserInterfaceProto generic_user_interface = 22;
 }
 
 // Resets Autofill Assistant: clears any state and server payload.

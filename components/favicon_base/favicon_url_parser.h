@@ -15,6 +15,7 @@ namespace chrome {
 
 struct ParsedFaviconPath {
   ParsedFaviconPath();
+  ParsedFaviconPath(const ParsedFaviconPath& other);
 
   // URL pointing to the page whose favicon we want.
   std::string page_url;
@@ -37,6 +38,9 @@ struct ParsedFaviconPath {
 
   // Whether we should allow making a request to the favicon server as fallback.
   bool allow_favicon_server_fallback = false;
+
+  // Whether we should show a fallback monogram in place of the default favicon.
+  bool show_fallback_monogram = false;
 };
 
 // Enum describing the two possible url formats: the legacy chrome://favicon

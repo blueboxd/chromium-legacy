@@ -483,8 +483,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       compositor->frame_sink_id(), GetHostFrameSinkManager(),
       GetFrameSinkManager(), data->display.get(), data->display_client.get(),
       context_provider, shared_worker_context_provider(),
-      compositor->task_runner(), GetGpuMemoryBufferManager(),
-      features::IsVizHitTestingSurfaceLayerEnabled());
+      compositor->task_runner(), GetGpuMemoryBufferManager());
   data->display->Resize(compositor->size());
   data->display->SetOutputIsSecure(data->output_is_secure);
   data->display->SetDisplayTransformHint(compositor->display_transform());

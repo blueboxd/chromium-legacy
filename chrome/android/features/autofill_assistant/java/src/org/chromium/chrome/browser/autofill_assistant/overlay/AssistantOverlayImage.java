@@ -3,12 +3,11 @@
 // found in the LICENSE file.
 
 package org.chromium.chrome.browser.autofill_assistant.overlay;
+
 import android.graphics.Bitmap;
+import android.support.annotation.Nullable;
 
 import androidx.annotation.ColorInt;
-import androidx.annotation.Nullable;
-
-import org.chromium.chrome.browser.autofill_assistant.AssistantDimension;
 
 /** Java equivalent to {@code OverlayImageProto}. */
 public class AssistantOverlayImage {
@@ -17,28 +16,27 @@ public class AssistantOverlayImage {
     /** The image to display, after {@code mImageUrl} has been resolved. */
     public @Nullable Bitmap mImageBitmap;
     /** The size of the image to display. */
-    public final @Nullable AssistantDimension mImageSize;
+    public final int mImageSizeInPixels;
     /** The margin between the top of the page (anchor) and the image. */
-    public final @Nullable AssistantDimension mImageTopMargin;
+    public final int mImageTopMarginInPixels;
     /** The margin between image and text. */
-    public final @Nullable AssistantDimension mImageBottomMargin;
+    public final int mImageBottomMarginInPixels;
     /** The text to display beneath the image. */
     public final String mText;
     /** The color of the text to draw */
-    public final @ColorInt int mTextColor;
+    public final @Nullable @ColorInt Integer mTextColor;
     /** The size of the text to display. */
-    public final @Nullable AssistantDimension mTextSize;
+    public final int mTextSizeInPixels;
 
-    public AssistantOverlayImage(String imageUrl, @Nullable AssistantDimension imageSize,
-            @Nullable AssistantDimension imageTopMargin,
-            @Nullable AssistantDimension imageBottomMargin, String text, @ColorInt int textColor,
-            @Nullable AssistantDimension textSize) {
+    public AssistantOverlayImage(String imageUrl, int imageSizeInPixels, int imageTopMarginInPixels,
+            int imageBottomMarginInPixels, String text, @Nullable @ColorInt Integer textColor,
+            int textSizeInPixels) {
         mImageUrl = imageUrl;
-        mImageSize = imageSize;
-        mImageTopMargin = imageTopMargin;
-        mImageBottomMargin = imageBottomMargin;
+        mImageSizeInPixels = imageSizeInPixels;
+        mImageTopMarginInPixels = imageTopMarginInPixels;
+        mImageBottomMarginInPixels = imageBottomMarginInPixels;
         mText = text;
         mTextColor = textColor;
-        mTextSize = textSize;
+        mTextSizeInPixels = textSizeInPixels;
     }
 }

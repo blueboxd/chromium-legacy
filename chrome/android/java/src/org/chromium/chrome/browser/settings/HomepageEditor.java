@@ -36,7 +36,7 @@ public class HomepageEditor extends Fragment implements TextWatcher {
         View v = inflater.inflate(R.layout.homepage_editor, container, false);
         View scrollView = v.findViewById(R.id.scroll_view);
         scrollView.getViewTreeObserver().addOnScrollChangedListener(
-                PreferenceUtils.getShowShadowOnScrollListener(v, v.findViewById(R.id.shadow)));
+                SettingsUtils.getShowShadowOnScrollListener(v, v.findViewById(R.id.shadow)));
         mHomepageUrlEdit = (EditText) v.findViewById(R.id.homepage_url_edit);
         mHomepageUrlEdit.setText(HomepageManager.getHomepageUri());
         mHomepageUrlEdit.addTextChangedListener(this);

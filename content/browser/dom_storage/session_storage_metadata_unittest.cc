@@ -17,7 +17,7 @@
 #include "base/test/task_environment.h"
 #include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
-#include "content/browser/dom_storage/dom_storage_types.h"
+#include "components/services/storage/dom_storage/legacy_dom_storage_database.h"
 #include "content/browser/dom_storage/session_storage_database.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -483,7 +483,7 @@ TEST_F(SessionStorageMetadataMigrationTest, MigrateV0ToV1) {
   base::string16 key2 = base::ASCIIToUTF16("key2");
   key2.push_back(0xd83d);
   key2.push_back(0xde00);
-  DOMStorageValuesMap data;
+  storage::LegacyDomStorageValuesMap data;
   data[key] = base::NullableString16(value, false);
   data[key2] = base::NullableString16(value, false);
   EXPECT_TRUE(old_ss_database_->CommitAreaChanges(test_namespace1_id_,

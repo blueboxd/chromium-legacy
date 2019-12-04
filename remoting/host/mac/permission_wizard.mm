@@ -154,7 +154,10 @@ void PermissionWizard::Impl::OnPermissionCheckResult(bool result) {
 @implementation PermissionWizardController {
   NSTextField* _instructionText;
   NSButton* _cancelButton;
+  NSButton* _launchA11yButton;
+  NSButton* _launchScreenRecordingButton;
   NSButton* _nextButton;
+  NSButton* _okButton;
 
   // The page of the wizard being shown.
   WizardPage _page;
@@ -227,12 +230,40 @@ void PermissionWizard::Impl::OnPermissionCheckResult(bool result) {
   _cancelButton.action = @selector(onCancel:);
   _cancelButton.target = self;
 
+  _launchA11yButton = [[[NSButton alloc] init] autorelease];
+  _launchA11yButton.translatesAutoresizingMaskIntoConstraints = NO;
+  _launchA11yButton.buttonType = NSButtonTypeMomentaryPushIn;
+  _launchA11yButton.bezelStyle = NSBezelStyleRegularSquare;
+  _launchA11yButton.title =
+      l10n_util::GetNSString(IDS_ACCESSIBILITY_PERMISSION_DIALOG_OPEN_BUTTON);
+  _launchA11yButton.action = @selector(onLaunchA11y:);
+  _launchA11yButton.target = self;
+
+  _launchScreenRecordingButton = [[[NSButton alloc] init] autorelease];
+  _launchScreenRecordingButton.translatesAutoresizingMaskIntoConstraints = NO;
+  _launchScreenRecordingButton.buttonType = NSButtonTypeMomentaryPushIn;
+  _launchScreenRecordingButton.bezelStyle = NSBezelStyleRegularSquare;
+  _launchScreenRecordingButton.title = l10n_util::GetNSString(
+      IDS_SCREEN_RECORDING_PERMISSION_DIALOG_OPEN_BUTTON);
+  _launchScreenRecordingButton.action = @selector(onLaunchScreenRecording:);
+  _launchScreenRecordingButton.target = self;
+
   _nextButton = [[[NSButton alloc] init] autorelease];
   _nextButton.translatesAutoresizingMaskIntoConstraints = NO;
   _nextButton.buttonType = NSButtonTypeMomentaryPushIn;
   _nextButton.bezelStyle = NSBezelStyleRegularSquare;
+  _nextButton.title =
+      l10n_util::GetNSString(IDS_MAC_PERMISSION_WIZARD_NEXT_BUTTON);
   _nextButton.action = @selector(onNext:);
   _nextButton.target = self;
+
+  _okButton = [[[NSButton alloc] init] autorelease];
+  _okButton.translatesAutoresizingMaskIntoConstraints = NO;
+  _okButton.buttonType = NSButtonTypeMomentaryPushIn;
+  _okButton.bezelStyle = NSBezelStyleRegularSquare;
+  _okButton.title = l10n_util::GetNSString(IDS_MAC_PERMISSION_WIZARD_OK_BUTTON);
+  _okButton.action = @selector(onOk:);
+  _okButton.target = self;
 
   NSStackView* iconAndTextStack = [[[NSStackView alloc] init] autorelease];
   iconAndTextStack.translatesAutoresizingMaskIntoConstraints = NO;
@@ -246,7 +277,11 @@ void PermissionWizard::Impl::OnPermissionCheckResult(bool result) {
   buttonsStack.translatesAutoresizingMaskIntoConstraints = NO;
   buttonsStack.orientation = NSUserInterfaceLayoutOrientationHorizontal;
   [buttonsStack addView:_cancelButton inGravity:NSStackViewGravityTrailing];
+  [buttonsStack addView:_launchA11yButton inGravity:NSStackViewGravityTrailing];
+  [buttonsStack addView:_launchScreenRecordingButton
+              inGravity:NSStackViewGravityTrailing];
   [buttonsStack addView:_nextButton inGravity:NSStackViewGravityTrailing];
+  [buttonsStack addView:_okButton inGravity:NSStackViewGravityTrailing];
 
   NSStackView* mainStack = [[[NSStackView alloc] init] autorelease];
   mainStack.translatesAutoresizingMaskIntoConstraints = NO;
@@ -254,6 +289,10 @@ void PermissionWizard::Impl::OnPermissionCheckResult(bool result) {
   mainStack.spacing = 20;
   [mainStack addView:iconAndTextStack inGravity:NSStackViewGravityTop];
   [mainStack addView:buttonsStack inGravity:NSStackViewGravityBottom];
+
+  // Update button visibility, instructional text etc before window is
+  // presented, to ensure correct layout.
+  [self updateUI];
 
   [self.window.contentView addSubview:mainStack];
 
@@ -298,18 +337,29 @@ void PermissionWizard::Impl::OnPermissionCheckResult(bool result) {
   [self hide];
 }
 
+- (void)onLaunchA11y:(id)sender {
+  // Launch the Security and Preferences pane with Accessibility selected.
+  [[NSWorkspace sharedWorkspace]
+      openURL:[NSURL
+                  URLWithString:@"x-apple.systempreferences:com.apple."
+                                @"preference.security?Privacy_Accessibility"]];
+}
+
+- (void)onLaunchScreenRecording:(id)sender {
+  [[NSWorkspace sharedWorkspace]
+      openURL:[NSURL
+                  URLWithString:@"x-apple.systempreferences:com.apple."
+                                @"preference.security?Privacy_ScreenCapture"]];
+}
+
 - (void)onNext:(id)sender {
-  if (_page == WizardPage::ALL_SET) {
-    // OK button closes the window.
-    _impl->NotifyCompletion(true);
-    [self hide];
-    return;
-  }
-  if (_hasPermission) {
-    [self advanceToNextPage];
-  } else {
-    [self launchSystemPreferences];
-  }
+  [self advanceToNextPage];
+}
+
+- (void)onOk:(id)sender {
+  // OK button closes the window.
+  _impl->NotifyCompletion(true);
+  [self hide];
 }
 
 // Updates the dialog controls according to the object's state.
@@ -340,36 +390,21 @@ void PermissionWizard::Impl::OnPermissionCheckResult(bool result) {
       NOTREACHED();
   }
   _cancelButton.hidden = (_page == WizardPage::ALL_SET);
-  [self updateNextButton];
+  [self updateButtons];
 }
 
-// Updates |_nextButton| according to the object's state.
-- (void)updateNextButton {
-  if (_page == WizardPage::ALL_SET) {
-    _nextButton.title =
-        l10n_util::GetNSString(IDS_MAC_PERMISSION_WIZARD_OK_BUTTON);
-    return;
-  }
+// Updates the buttons according to the object's state.
+- (void)updateButtons {
+  // Launch buttons are always visible on their associated pages.
+  _launchA11yButton.hidden = (_page != WizardPage::ACCESSIBILITY);
+  _launchScreenRecordingButton.hidden = (_page != WizardPage::SCREEN_RECORDING);
 
-  if (_hasPermission) {
-    _nextButton.title =
-        l10n_util::GetNSString(IDS_MAC_PERMISSION_WIZARD_NEXT_BUTTON);
-    return;
-  }
+  // OK/Next visibility are mutually exclusive.
+  _nextButton.hidden = (_page == WizardPage::ALL_SET);
+  _okButton.hidden = (_page != WizardPage::ALL_SET);
 
-  // Permission is not granted, so show the appropriate launch text.
-  switch (_page) {
-    case WizardPage::ACCESSIBILITY:
-      _nextButton.title = l10n_util::GetNSString(
-          IDS_ACCESSIBILITY_PERMISSION_DIALOG_OPEN_BUTTON);
-      break;
-    case WizardPage::SCREEN_RECORDING:
-      _nextButton.title = l10n_util::GetNSString(
-          IDS_SCREEN_RECORDING_PERMISSION_DIALOG_OPEN_BUTTON);
-      break;
-    default:
-      NOTREACHED();
-  }
+  // User can only advance if permission is granted.
+  _nextButton.enabled = _hasPermission;
 }
 
 - (void)advanceToNextPage {
@@ -392,10 +427,11 @@ void PermissionWizard::Impl::OnPermissionCheckResult(bool result) {
       NOTREACHED();
   }
 
-  // Kick off a permission check for the new page. The UI will be updated only
-  // after the result comes back.
+  // Kick off a permission check for the new page. Update the UI now, so the
+  // Next button is disabled and can't be accidentally double-pressed.
   _hasPermission = NO;
   _autoAdvance = YES;
+  [self updateUI];
   [self requestPermissionCheck:base::TimeDelta()];
 }
 
@@ -407,28 +443,6 @@ void PermissionWizard::Impl::OnPermissionCheckResult(bool result) {
       break;
     case WizardPage::SCREEN_RECORDING:
       _impl->CheckScreenRecordingPermission(delay);
-      return;
-    default:
-      NOTREACHED();
-  }
-}
-
-- (void)launchSystemPreferences {
-  switch (_page) {
-    case WizardPage::ACCESSIBILITY:
-      // Launch the Security and Preferences pane with Accessibility selected.
-      [[NSWorkspace sharedWorkspace]
-          openURL:[NSURL URLWithString:
-                             @"x-apple.systempreferences:com.apple."
-                             @"preference.security?Privacy_Accessibility"]];
-      break;
-    case WizardPage::SCREEN_RECORDING:
-      // Launch the Security and Preferences pane with Screen Recording
-      // selected.
-      [[NSWorkspace sharedWorkspace]
-          openURL:[NSURL URLWithString:
-                             @"x-apple.systempreferences:com.apple."
-                             @"preference.security?Privacy_ScreenCapture"]];
       return;
     default:
       NOTREACHED();

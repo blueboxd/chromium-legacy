@@ -40,14 +40,14 @@ display::DisplayPositionInUnifiedMatrix GetUnifiedModeShelfCellPosition() {
   const ShelfAlignment alignment =
       Shell::GetPrimaryRootWindowController()->shelf()->alignment();
   switch (alignment) {
-    case SHELF_ALIGNMENT_BOTTOM:
-    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+    case ShelfAlignment::kBottom:
+    case ShelfAlignment::kBottomLocked:
       return display::DisplayPositionInUnifiedMatrix::kBottomLeft;
 
-    case SHELF_ALIGNMENT_LEFT:
+    case ShelfAlignment::kLeft:
       return display::DisplayPositionInUnifiedMatrix::kTopLeft;
 
-    case SHELF_ALIGNMENT_RIGHT:
+    case ShelfAlignment::kRight:
       return display::DisplayPositionInUnifiedMatrix::kTopRight;
   }
 

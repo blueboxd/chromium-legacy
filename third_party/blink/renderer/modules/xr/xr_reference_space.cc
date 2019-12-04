@@ -164,21 +164,27 @@ std::unique_ptr<TransformationMatrix> XRReferenceSpace::MojoFromSpace() {
 
   // Calculate the offset space's pose (including originOffset) in mojo
   // space.
+  // Note that although this calls SpaceFromViewer, because we're passing in
+  // identity, "viewer" is actually mojo.
   TransformationMatrix identity;
-  std::unique_ptr<TransformationMatrix> mojo_from_offsetspace =
+  std::unique_ptr<TransformationMatrix> base_space_from_mojo =
       SpaceFromViewer(identity);
 
-  if (!mojo_from_offsetspace) {
+  if (!base_space_from_mojo) {
     // Transform wasn't possible.
     return nullptr;
   }
 
+  // Rigid transforms should always be invertible.
+  DCHECK(base_space_from_mojo->IsInvertible());
+  TransformationMatrix mojo_from_base_space = base_space_from_mojo->Inverse();
+
   // Must account for position and orientation defined by origin offset.
-  // Result is mojo_from_offset = mojo_from_ref * ref_from_offset,
-  // where ref_from_offset is originOffset's transform matrix.
+  // Result is mojo_from_offset = mojo_from_base_space * base_space_from_offset,
+  // where base_space_from_offset is originOffset's transform matrix.
   // TODO(https://crbug.com/1008466): move originOffset to separate class?
-  mojo_from_offsetspace->Multiply(origin_offset_->TransformMatrix());
-  return mojo_from_offsetspace;
+  return std::make_unique<TransformationMatrix>(
+      mojo_from_base_space.Multiply(origin_offset_->TransformMatrix()));
 }
 
 TransformationMatrix XRReferenceSpace::OriginOffsetMatrix() {

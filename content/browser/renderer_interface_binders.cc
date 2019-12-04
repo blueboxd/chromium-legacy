@@ -81,8 +81,6 @@ class RendererInterfaceBinders {
 // interface requests from frames, binders registered on the frame itself
 // override binders registered here.
 void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
-  parameterized_binder_registry_.AddInterface(
-      base::BindRepeating(&QuotaDispatcherHost::CreateForWorker));
 }
 
 RendererInterfaceBinders& GetRendererInterfaceBinders() {

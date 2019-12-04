@@ -33,7 +33,7 @@ TEST_F(HTMLEmbedElementTest, FallbackState) {
 
   auto* object_element = GetElementById("fco");
   ASSERT_TRUE(object_element);
-  HTMLObjectElement* object = ToHTMLObjectElement(object_element);
+  auto* object = To<HTMLObjectElement>(object_element);
 
   // At this moment updatePlugin() function is not called, so
   // useFallbackContent() will return false.

@@ -127,11 +127,11 @@ TEST_F(ShelfContextMenuModelTest, Invocation) {
   // Left, Bottom, Right. Bottom should be checked.
   ui::MenuModel* submenu = menu2.GetSubmenuModelAt(1);
   EXPECT_TRUE(submenu->IsItemCheckedAt(1));
-  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
+  EXPECT_EQ(ShelfAlignment::kBottom, shelf->alignment());
 
   // Activate the left shelf alignment option.
   submenu->ActivatedAt(0);
-  EXPECT_EQ(SHELF_ALIGNMENT_LEFT, shelf->alignment());
+  EXPECT_EQ(ShelfAlignment::kLeft, shelf->alignment());
 
   // Recreate the menu, it should show left alignment checked.
   ShelfContextMenuModel menu3(nullptr, primary_id);

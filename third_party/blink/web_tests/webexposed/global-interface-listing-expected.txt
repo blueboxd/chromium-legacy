@@ -3338,6 +3338,7 @@ interface HTMLIFrameElement : HTMLElement
     getter contentDocument
     getter contentWindow
     getter csp
+    getter disallowDocumentAccess
     getter featurePolicy
     getter frameBorder
     getter height
@@ -3359,6 +3360,7 @@ interface HTMLIFrameElement : HTMLElement
     setter allowFullscreen
     setter allowPaymentRequest
     setter csp
+    setter disallowDocumentAccess
     setter frameBorder
     setter height
     setter loading
@@ -4226,8 +4228,10 @@ interface HTMLVideoElement : HTMLMediaElement
     getter webkitDroppedFrameCount
     getter webkitSupportsFullscreen
     getter width
+    method cancelAnimationFrame
     method constructor
     method getVideoPlaybackQuality
+    method requestAnimationFrame
     method requestPictureInPicture
     method webkitEnterFullScreen
     method webkitEnterFullscreen

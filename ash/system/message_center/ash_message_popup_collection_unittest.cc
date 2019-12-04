@@ -102,14 +102,14 @@ TEST_F(AshMessagePopupCollectionTest, ShelfAlignment) {
   EXPECT_FALSE(popup_collection()->IsTopDown());
   EXPECT_FALSE(popup_collection()->IsFromLeft());
 
-  GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_RIGHT);
+  GetPrimaryShelf()->SetAlignment(ShelfAlignment::kRight);
   toast_point.set_x(popup_collection()->GetToastOriginX(toast_size));
   toast_point.set_y(popup_collection()->GetBaseline());
   EXPECT_EQ(BOTTOM_RIGHT, GetPositionInDisplay(toast_point));
   EXPECT_FALSE(popup_collection()->IsTopDown());
   EXPECT_FALSE(popup_collection()->IsFromLeft());
 
-  GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  GetPrimaryShelf()->SetAlignment(ShelfAlignment::kLeft);
   toast_point.set_x(popup_collection()->GetToastOriginX(toast_size));
   toast_point.set_y(popup_collection()->GetBaseline());
   EXPECT_EQ(BOTTOM_LEFT, GetPositionInDisplay(toast_point));
@@ -120,7 +120,7 @@ TEST_F(AshMessagePopupCollectionTest, ShelfAlignment) {
 TEST_F(AshMessagePopupCollectionTest, LockScreen) {
   const gfx::Rect toast_size(0, 0, 10, 10);
 
-  GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  GetPrimaryShelf()->SetAlignment(ShelfAlignment::kLeft);
   gfx::Point toast_point;
   toast_point.set_x(popup_collection()->GetToastOriginX(toast_size));
   toast_point.set_y(popup_collection()->GetBaseline());

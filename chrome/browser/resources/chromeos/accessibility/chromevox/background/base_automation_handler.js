@@ -15,12 +15,12 @@ var AutomationNode = chrome.automation.AutomationNode;
 var EventType = chrome.automation.EventType;
 
 /**
- * @param {!AutomationNode} node
+ * @param {AutomationNode|undefined} node
  * @constructor
  */
 BaseAutomationHandler = function(node) {
   /**
-   * @type {!AutomationNode}
+   * @type {AutomationNode|undefined}
    */
   this.node_ = node;
 
@@ -53,6 +53,8 @@ BaseAutomationHandler.prototype = {
       this.node_.removeEventListener(
           eventType, this.listeners_[eventType], true);
     }
+
+    this.listeners_ = {};
   },
 
   /**

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.autofill_assistant.user_data;
 
 import android.app.Activity;
 import android.view.View;
+import android.view.ViewGroup;
 
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeVersionInfo;
@@ -55,6 +56,7 @@ class AssistantCollectUserDataBinder
         private final AssistantTermsSection mTermsAsCheckboxSection;
         private final AssistantAdditionalSectionContainer mPrependedSections;
         private final AssistantAdditionalSectionContainer mAppendedSections;
+        private final ViewGroup mGenericUserInterfaceContainer;
         private final Object mDividerTag;
         private final Activity mActivity;
 
@@ -67,8 +69,8 @@ class AssistantCollectUserDataBinder
                 AssistantShippingAddressSection shippingAddressSection,
                 AssistantTermsSection termsSection, AssistantTermsSection termsAsCheckboxSection,
                 AssistantAdditionalSectionContainer prependedSections,
-                AssistantAdditionalSectionContainer appendedSections, Object dividerTag,
-                Activity activity) {
+                AssistantAdditionalSectionContainer appendedSections,
+                ViewGroup genericUserInterfaceContainer, Object dividerTag, Activity activity) {
             mRootView = rootView;
             mPaymentRequestExpanderAccordion = accordion;
             mSectionToSectionPadding = sectionPadding;
@@ -82,6 +84,7 @@ class AssistantCollectUserDataBinder
             mTermsAsCheckboxSection = termsAsCheckboxSection;
             mPrependedSections = prependedSections;
             mAppendedSections = appendedSections;
+            mGenericUserInterfaceContainer = genericUserInterfaceContainer;
             mDividerTag = dividerTag;
             mActivity = activity;
         }
@@ -285,6 +288,13 @@ class AssistantCollectUserDataBinder
                     model.get(AssistantCollectUserDataModel.THIRDPARTY_PRIVACY_NOTICE_TEXT));
             view.mTermsAsCheckboxSection.setThirdPartyPrivacyNoticeText(
                     model.get(AssistantCollectUserDataModel.THIRDPARTY_PRIVACY_NOTICE_TEXT));
+            return true;
+        } else if (propertyKey == AssistantCollectUserDataModel.GENERIC_USER_INTERFACE) {
+            view.mGenericUserInterfaceContainer.removeAllViews();
+            if (model.get(AssistantCollectUserDataModel.GENERIC_USER_INTERFACE) != null) {
+                view.mGenericUserInterfaceContainer.addView(
+                        model.get(AssistantCollectUserDataModel.GENERIC_USER_INTERFACE));
+            }
             return true;
         }
 

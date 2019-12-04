@@ -166,13 +166,13 @@ class BlobDataHandleTest : public testing::Test {
         Vector<uint8_t> received_bytes;
         mojo::Remote<mojom::blink::BytesProvider> actual_data(
             std::move(actual->get_bytes()->data));
-        actual_data->RequestAsReply(base::BindOnce(
-            [](base::Closure quit_closure, Vector<uint8_t>* bytes_out,
+        actual_data->RequestAsReply(WTF::Bind(
+            [](base::RepeatingClosure quit_closure, Vector<uint8_t>* bytes_out,
                const Vector<uint8_t>& bytes) {
               *bytes_out = bytes;
               quit_closure.Run();
             },
-            loop.QuitClosure(), &received_bytes));
+            loop.QuitClosure(), WTF::Unretained(&received_bytes)));
         loop.Run();
         if (expected->get_bytes()->embedded_data)
           EXPECT_EQ(expected->get_bytes()->embedded_data, received_bytes);

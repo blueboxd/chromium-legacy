@@ -279,8 +279,7 @@ public class FeatureUtilities {
      */
     public static boolean isAdaptiveToolbarEnabled() {
         return isFlagEnabled(ChromePreferenceKeys.ADAPTIVE_TOOLBAR_ENABLED_KEY, true)
-                && isBottomToolbarEnabled()
-                && (isDuetTabStripIntegrationAndroidEnabled() || !isGridTabSwitcherEnabled());
+                && isBottomToolbarEnabled();
     }
 
     /**

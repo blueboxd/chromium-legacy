@@ -33,7 +33,7 @@
   }
 
   function onSidebarRendered() {
-    var localScope = SourcesTestRunner.scopeChainSections()[0].objectTreeElement();
+    var localScope = SourcesTestRunner.scopeChainSections()[0];
     var properties = [
       localScope, ['o', '__proto__', '__proto__'], localScope,
       ['d', '__proto__', '__proto__', '__proto__', '__proto__', '__proto__']

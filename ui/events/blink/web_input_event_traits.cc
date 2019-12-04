@@ -129,14 +129,6 @@ struct WebInputEventToString {
   }
 };
 
-struct WebInputEventSize {
-  template <class EventType>
-  bool Execute(WebInputEvent::Type /* type */, size_t* type_size) const {
-    *type_size = sizeof(EventType);
-    return true;
-  }
-};
-
 struct WebInputEventClone {
   template <class EventType>
   bool Execute(const WebInputEvent& event,
@@ -183,12 +175,6 @@ std::string WebInputEventTraits::ToString(const WebInputEvent& event) {
   std::string result;
   Apply(WebInputEventToString(), event.GetType(), event, &result);
   return result;
-}
-
-size_t WebInputEventTraits::GetSize(WebInputEvent::Type type) {
-  size_t size = 0;
-  Apply(WebInputEventSize(), type, type, &size);
-  return size;
 }
 
 WebScopedInputEvent WebInputEventTraits::Clone(const WebInputEvent& event) {

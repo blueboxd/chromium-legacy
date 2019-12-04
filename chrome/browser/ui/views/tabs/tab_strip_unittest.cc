@@ -219,15 +219,15 @@ class TabStripTest : public ChromeViewsTestBase,
 
   std::vector<TabGroupHeader*> ListGroupHeaders() const {
     std::vector<TabGroupHeader*> result;
-    for (auto const& header_pair : tab_strip_->group_headers_)
-      result.push_back(header_pair.second.get());
+    for (auto const& group_view_pair : tab_strip_->group_views_)
+      result.push_back(group_view_pair.second->header());
     return result;
   }
 
   std::vector<TabGroupUnderline*> ListGroupUnderlines() const {
     std::vector<TabGroupUnderline*> result;
-    for (auto const& underline_pair : tab_strip_->group_underlines_)
-      result.push_back(underline_pair.second.get());
+    for (auto const& group_view_pair : tab_strip_->group_views_)
+      result.push_back(group_view_pair.second->underline());
     return result;
   }
 
@@ -1123,6 +1123,7 @@ TEST_P(TabStripTest, GroupHeaderMovesOnRegrouping) {
   // Change groups in a way so that the header should swap with the tab, without
   // an explicit MoveTab call.
   controller_->MoveTabIntoGroup(1, group0);
+  CompleteAnimationAndLayout();
 
   // Header is now right of tab 1.
   EXPECT_LT(tab_strip_->tab_at(1)->x(), header1->x());

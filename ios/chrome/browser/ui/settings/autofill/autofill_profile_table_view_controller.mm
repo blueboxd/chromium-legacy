@@ -355,11 +355,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - Getters and Setter
 
 - (BOOL)isAutofillProfileEnabled {
-  return autofill::prefs::IsProfileAutofillEnabled(_browserState->GetPrefs());
+  return autofill::prefs::IsAutofillProfileEnabled(_browserState->GetPrefs());
 }
 
 - (void)setAutofillProfileEnabled:(BOOL)isEnabled {
-  return autofill::prefs::SetProfileAutofillEnabled(_browserState->GetPrefs(),
+  return autofill::prefs::SetAutofillProfileEnabled(_browserState->GetPrefs(),
                                                     isEnabled);
 }
 

@@ -49,65 +49,16 @@ if (is_android) {
       "-w",
       whitelist,
     ]
-    outputs = [
-      "grit/components_strings.h",
-      "java/res/values-am/components_strings.xml",
-      "java/res/values-ar/components_strings.xml",
-      "java/res/values-bg/components_strings.xml",
-      "java/res/values-bn/components_strings.xml",
-      "java/res/values-ca/components_strings.xml",
-      "java/res/values-cs/components_strings.xml",
-      "java/res/values-da/components_strings.xml",
-      "java/res/values-de/components_strings.xml",
-      "java/res/values-el/components_strings.xml",
-      "java/res/values-en-rGB/components_strings.xml",
-      "java/res/values-es/components_strings.xml",
-      "java/res/values-es-rUS/components_strings.xml",
-      "java/res/values-et/components_strings.xml",
-      "java/res/values-fa/components_strings.xml",
-      "java/res/values-fi/components_strings.xml",
-      "java/res/values-fr/components_strings.xml",
-      "java/res/values-gu/components_strings.xml",
-      "java/res/values-hi/components_strings.xml",
-      "java/res/values-hr/components_strings.xml",
-      "java/res/values-hu/components_strings.xml",
-      "java/res/values-in/components_strings.xml",
-      "java/res/values-it/components_strings.xml",
-      "java/res/values-iw/components_strings.xml",
-      "java/res/values-ja/components_strings.xml",
-      "java/res/values-kn/components_strings.xml",
-      "java/res/values-ko/components_strings.xml",
-      "java/res/values-lt/components_strings.xml",
-      "java/res/values-lv/components_strings.xml",
-      "java/res/values-ml/components_strings.xml",
-      "java/res/values-mr/components_strings.xml",
-      "java/res/values-ms/components_strings.xml",
-      "java/res/values-nb/components_strings.xml",
-      "java/res/values-nl/components_strings.xml",
-      "java/res/values-pl/components_strings.xml",
-      "java/res/values-pt-rBR/components_strings.xml",
-      "java/res/values-pt-rPT/components_strings.xml",
-      "java/res/values-ro/components_strings.xml",
-      "java/res/values-ru/components_strings.xml",
-      "java/res/values-sk/components_strings.xml",
-      "java/res/values-sl/components_strings.xml",
-      "java/res/values-sr/components_strings.xml",
-      "java/res/values-sv/components_strings.xml",
-      "java/res/values-sw/components_strings.xml",
-      "java/res/values-ta/components_strings.xml",
-      "java/res/values-te/components_strings.xml",
-      "java/res/values-th/components_strings.xml",
-      "java/res/values-tl/components_strings.xml",
-      "java/res/values-tr/components_strings.xml",
-      "java/res/values-uk/components_strings.xml",
-      "java/res/values-vi/components_strings.xml",
-      "java/res/values-zh-rCN/components_strings.xml",
-      "java/res/values-zh-rTW/components_strings.xml",
-      "java/res/values/components_strings.xml",
-    ]
-    foreach(_locale, locales_with_fake_bidi) {
-      outputs += [ "components_strings_${_locale}.pak" ]
-    }
+    outputs =
+        [
+          "grit/components_strings.h",
+          "java/res/values/components_strings.xml",
+        ] +
+        process_file_template(
+            android_bundle_locales_as_resources,
+            [ "java/res/values-{{source_name_part}}/components_strings.xml" ]) +
+        process_file_template(locales_with_fake_bidi,
+                              [ "components_strings_{{source_name_part}}.pak" ])
   }
 
   repack("weblayer_locales") {

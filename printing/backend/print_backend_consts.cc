@@ -13,5 +13,6 @@ const char kCUPSPrintServerURL[] = "print_server_url";
 const char kDriverInfoTagName[] = "system_driverinfo";
 const char kDriverNameTagName[] = "printer-make-and-model";  // Match CUPS.
 const char kLocationTagName[] = "printer-location";          // Match CUPS.
+const char kPrinterEulaURL[] = "printerEulaUrl";
 const char kValueFalse[] = "false";
 const char kValueTrue[] = "true";

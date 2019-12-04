@@ -133,11 +133,12 @@ bool TranslateService::IsTranslatableURL(const GURL& url) {
   // - empty (can happen for popups created with window.open(""))
   // - an internal URL (chrome:// and others)
   // - the devtools (which is considered UI)
+  // - about:blank
   // - Chrome OS file manager extension
   // - an FTP page (as FTP pages tend to have long lists of filenames that may
   //   confuse the CLD)
   return !url.is_empty() && !url.SchemeIs(content::kChromeUIScheme) &&
-         !url.SchemeIs(content::kChromeDevToolsScheme) &&
+         !url.SchemeIs(content::kChromeDevToolsScheme) && !url.IsAboutBlank() &&
 #if defined(OS_CHROMEOS)
          !(url.SchemeIs(extensions::kExtensionScheme) &&
            url.DomainIs(file_manager::kFileManagerAppId)) &&

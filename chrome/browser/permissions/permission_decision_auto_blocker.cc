@@ -317,8 +317,10 @@ void PermissionDecisionAutoBlocker::RemoveEmbargoByUrl(
 
   // Don't proceed if |permission| was not under embargo for |url|.
   PermissionResult result = GetEmbargoResult(url, permission);
-  if (result.source != PermissionStatusSource::MULTIPLE_DISMISSALS)
+  if (result.source != PermissionStatusSource::MULTIPLE_DISMISSALS &&
+      result.source != PermissionStatusSource::MULTIPLE_IGNORES) {
     return;
+  }
 
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
@@ -327,9 +329,16 @@ void PermissionDecisionAutoBlocker::RemoveEmbargoByUrl(
   base::Value* permission_dict = GetOrCreatePermissionDict(
       dict.get(), PermissionUtil::GetPermissionString(permission));
 
-  const bool dismissal_key_deleted =
-      permission_dict->RemoveKey(kPermissionDismissalEmbargoKey);
-  DCHECK(dismissal_key_deleted);
+  if (result.source == PermissionStatusSource::MULTIPLE_DISMISSALS) {
+    const bool dismissal_key_deleted =
+        permission_dict->RemoveKey(kPermissionDismissalEmbargoKey);
+    DCHECK(dismissal_key_deleted);
+  } else {
+    DCHECK_EQ(result.source, PermissionStatusSource::MULTIPLE_IGNORES);
+    const bool ignores_key_deleted =
+        permission_dict->RemoveKey(kPermissionIgnoreEmbargoKey);
+    DCHECK(ignores_key_deleted);
+  }
 
   map->SetWebsiteSettingDefaultScope(
       url, GURL(), ContentSettingsType::PERMISSION_AUTOBLOCKER_DATA,

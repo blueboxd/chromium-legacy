@@ -19,10 +19,12 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/numerics/checked_math.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "net/base/cache_type.h"
+#include "net/base/interval.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -989,17 +991,27 @@ void DiskCacheLPMFuzzer::RunCommands(
                uint32_t offset, uint32_t len, int rv) {
               std::move(callback).Run(rv);
 
-              if (rv < 0)
+              if (rv <= 0)
                 return;
 
               int64_t* start_tmp = &start->data;
-              CHECK_LE(offset, *start_tmp);
-              CHECK_LE(*start_tmp, offset + len);
-              CHECK_LE(*start_tmp + rv, offset + len);
-              // Offsets are capped by kMaxEntrySize
-              CHECK_LE(*start_tmp, kMaxEntrySize);
-              // And size are also capped by kMaxEntrySize
-              CHECK_LE(*start_tmp + rv, kMaxEntrySize * 2);
+
+              // Make sure that the result is contained in what was
+              // requested. It doesn't have to be the same even if there was
+              // an exact corresponding write, since representation of ranges
+              // may be imprecise, and here we don't know that there was.
+
+              // No overflow thanks to % kMaxEntrySize.
+              net::Interval<uint32_t> requested(offset, offset + len);
+
+              uint32_t range_start, range_end;
+              base::CheckedNumeric<uint64_t> range_start64(*start_tmp);
+              CHECK(range_start64.AssignIfValid(&range_start));
+              base::CheckedNumeric<uint64_t> range_end64 = range_start + rv;
+              CHECK(range_end64.AssignIfValid(&range_end));
+              net::Interval<uint32_t> gotten(range_start, range_end);
+
+              CHECK(requested.Contains(gotten));
             },
             GetIOCallback(IOType::GetAvailableRange), start, offset, len);
 

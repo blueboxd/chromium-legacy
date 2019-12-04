@@ -23,6 +23,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/message_filter.h"
 #include "ipc/message_filter_router.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 
 namespace IPC {
 
@@ -607,7 +608,8 @@ void ChannelProxy::GetGenericRemoteAssociatedInterface(
     mojo::ScopedInterfaceEndpointHandle handle) {
   DCHECK(did_init_);
   context()->thread_safe_channel().GetAssociatedInterface(
-      name, mojom::GenericInterfaceAssociatedRequest(std::move(handle)));
+      name, mojo::PendingAssociatedReceiver<mojom::GenericInterface>(
+                std::move(handle)));
 }
 
 void ChannelProxy::ClearIPCTaskRunner() {

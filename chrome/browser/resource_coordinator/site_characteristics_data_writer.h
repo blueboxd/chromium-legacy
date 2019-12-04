@@ -28,7 +28,6 @@ class SiteCharacteristicsDataWriter {
   virtual void NotifyUpdatesFaviconInBackground() = 0;
   virtual void NotifyUpdatesTitleInBackground() = 0;
   virtual void NotifyUsesAudioInBackground() = 0;
-  virtual void NotifyUsesNotificationsInBackground() = 0;
 
   // Records performance measurements.
   virtual void NotifyLoadTimePerformanceMeasurement(

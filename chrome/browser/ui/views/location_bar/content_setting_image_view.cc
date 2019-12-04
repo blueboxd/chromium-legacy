@@ -223,7 +223,7 @@ ContentSettingImageModel::ImageType ContentSettingImageView::GetTypeForTesting()
 
 void ContentSettingImageView::OnWidgetDestroying(views::Widget* widget) {
   if (indicator_promo_ && indicator_promo_->GetWidget() == widget) {
-    this->SetHighlighted(false);
+    GetInkDrop()->SetFocused(false);
     observer_.Remove(widget);
     indicator_promo_ = nullptr;
     // The highlighted icon needs to be recolored.
@@ -260,7 +260,7 @@ void ContentSettingImageView::AnimationEnded(const gfx::Animation* animation) {
         base::nullopt,
         std::make_unique<FeaturePromoBubbleTimeout>(base::TimeDelta(),
                                                     base::TimeDelta()));
-    this->SetHighlighted(true);
+    GetInkDrop()->SetFocused(true);
     observer_.Add(indicator_promo_->GetWidget());
     SchedulePaint();
     content_setting_image_model_->SetPromoWasShown(web_contents);

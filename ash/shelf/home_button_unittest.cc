@@ -91,7 +91,7 @@ INSTANTIATE_TEST_SUITE_P(All, HomeButtonTest, testing::Bool());
 
 TEST_P(HomeButtonTest, SwipeUpToOpenFullscreenAppList) {
   Shelf* shelf = GetPrimaryShelf();
-  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
+  EXPECT_EQ(ShelfAlignment::kBottom, shelf->alignment());
 
   // Start the drags from the center of the shelf.
   const ShelfView* shelf_view = shelf->GetShelfViewForTesting();
@@ -126,7 +126,7 @@ TEST_P(HomeButtonTest, SwipeUpToOpenFullscreenAppList) {
 
 TEST_P(HomeButtonTest, ClickToOpenAppList) {
   Shelf* shelf = GetPrimaryShelf();
-  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
+  EXPECT_EQ(ShelfAlignment::kBottom, shelf->alignment());
 
   gfx::Point center = home_button()->GetCenterPoint();
   views::View::ConvertPointToScreen(home_button(), &center);

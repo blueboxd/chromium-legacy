@@ -18,11 +18,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
+#include "components/services/storage/dom_storage/local_storage_database.pb.h"
 #include "components/services/storage/public/cpp/constants.h"
 #include "content/browser/code_cache/generated_code_cache.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
 #include "content/browser/dom_storage/local_storage_context_mojo.h"
-#include "content/browser/dom_storage/local_storage_database.pb.h"
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -254,7 +254,7 @@ class RemoveLocalStorageTester {
   }
 
   static void PopulateDatabase(const storage::DomStorageDatabase& db) {
-    LocalStorageOriginMetaData data;
+    storage::LocalStorageOriginMetaData data;
     std::map<std::vector<uint8_t>, std::vector<uint8_t>> entries;
 
     base::Time now = base::Time::Now();

@@ -29,6 +29,8 @@
 #include "chrome/browser/chromeos/virtual_machines/virtual_machines_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_icon.h"
+#include "chrome/browser/ui/ash/launcher/app_service_app_window_crostini_tracker.h"
+#include "chrome/browser/ui/ash/launcher/app_service_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/crostini_app_window_shelf_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
@@ -162,10 +164,19 @@ void LaunchApplication(
   ChromeLauncherController* chrome_launcher_controller =
       ChromeLauncherController::instance();
   DCHECK(chrome_launcher_controller);
-  CrostiniAppWindowShelfController* shelf_controller =
-      chrome_launcher_controller->crostini_app_window_shelf_controller();
-  DCHECK(shelf_controller);
-  shelf_controller->OnAppLaunchRequested(app_id, display_id);
+
+  if (base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry)) {
+    AppServiceAppWindowLauncherController* app_service_controller =
+        chrome_launcher_controller->app_service_app_window_controller();
+    DCHECK(app_service_controller);
+    app_service_controller->app_service_crostini_tracker()
+        ->OnAppLaunchRequested(app_id, display_id);
+  } else {
+    CrostiniAppWindowShelfController* shelf_controller =
+        chrome_launcher_controller->crostini_app_window_shelf_controller();
+    DCHECK(shelf_controller);
+    shelf_controller->OnAppLaunchRequested(app_id, display_id);
+  }
 
   // Share any paths not in crostini.  The user will see the spinner while this
   // is happening.

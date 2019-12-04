@@ -637,10 +637,10 @@ TEST_F(TabLifecycleUnitSourceTest, CannotFreezeOriginTrialOptOut) {
 
 namespace {
 
-void NotifyUsesNotificationsInBackground(content::WebContents* web_contents) {
+void NotifyUsesAudioInBackground(content::WebContents* web_contents) {
   auto* observer = ResourceCoordinatorTabHelper::FromWebContents(web_contents)
                        ->local_site_characteristics_wc_observer();
-  observer->GetWriterForTesting()->NotifyUsesNotificationsInBackground();
+  observer->GetWriterForTesting()->NotifyUsesAudioInBackground();
 }
 
 }  // namespace
@@ -660,17 +660,17 @@ TEST_F(TabLifecycleUnitSourceTest, CanFreezeOriginTrialOptIn) {
       foreground_contents, TabLoadTracker::LoadingState::LOADED);
 
   // Prevent freezing of the background tab by pretending that it uses
-  // notifications in background.
-  NotifyUsesNotificationsInBackground(background_contents);
+  // audio in background.
+  NotifyUsesAudioInBackground(background_contents);
   DecisionDetails decision_details;
   EXPECT_FALSE(background_lifecycle_unit->CanFreeze(&decision_details));
   EXPECT_FALSE(decision_details.IsPositive());
-  EXPECT_EQ(DecisionFailureReason::HEURISTIC_NOTIFICATIONS,
+  EXPECT_EQ(DecisionFailureReason::HEURISTIC_AUDIO,
             decision_details.FailureReason());
   decision_details.Clear();
 
   // The background tab can be frozen if it opted-in via origin trial, even if
-  // it uses notifications in background.
+  // it uses audio in background.
   TabLifecycleUnitSource::OnOriginTrialFreezePolicyChanged(
       background_contents,
       performance_manager::mojom::InterventionPolicy::kOptIn);

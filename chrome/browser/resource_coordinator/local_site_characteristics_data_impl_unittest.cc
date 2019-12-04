@@ -192,18 +192,18 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, BasicTestEndToEnd) {
                     .uses_audio_in_background()),
             base::TimeDelta());
 
-  // Advance the clock and make sure that notifications feature gets
-  // reported as unused.
+  // Advance the clock and make sure that title update feature gets reported as
+  // unused.
   test_clock_.Advance(kObservationWindowLength);
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureNotInUse,
-            local_site_data->UsesNotificationsInBackground());
+            local_site_data->UpdatesTitleInBackground());
 
-  // Observating that a feature has been used after its observation window has
+  // Observing that a feature has been used after its observation window has
   // expired should still be recorded, the feature should then be reported as
   // used.
-  local_site_data->NotifyUsesNotificationsInBackground();
+  local_site_data->NotifyUpdatesTitleInBackground();
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
-            local_site_data->UsesNotificationsInBackground());
+            local_site_data->UpdatesTitleInBackground());
 
   local_site_data->NotifySiteUnloaded(
       performance_manager::TabVisibility::kBackground);
@@ -255,12 +255,12 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, GetFeatureUsageForUnloadedSite) {
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
             local_site_data->UsesAudioInBackground());
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
-            local_site_data->UsesNotificationsInBackground());
+            local_site_data->UpdatesTitleInBackground());
 
   const base::TimeDelta observation_duration_before_unload =
       local_site_data->FeatureObservationDuration(
           local_site_data->site_characteristics_for_testing()
-              .uses_notifications_in_background());
+              .updates_title_in_background());
 
   local_site_data->NotifySiteUnloaded(
       performance_manager::TabVisibility::kBackground);
@@ -269,7 +269,7 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, GetFeatureUsageForUnloadedSite) {
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
             local_site_data->UsesAudioInBackground());
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
-            local_site_data->UsesNotificationsInBackground());
+            local_site_data->UpdatesTitleInBackground());
 
   // Advancing the clock shouldn't affect the observation duration for this
   // feature.
@@ -277,9 +277,9 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, GetFeatureUsageForUnloadedSite) {
   EXPECT_EQ(observation_duration_before_unload,
             local_site_data->FeatureObservationDuration(
                 local_site_data->site_characteristics_for_testing()
-                    .uses_notifications_in_background()));
+                    .updates_title_in_background()));
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
-            local_site_data->UsesNotificationsInBackground());
+            local_site_data->UpdatesTitleInBackground());
 
   local_site_data->NotifySiteLoaded();
   local_site_data->NotifyLoadedSiteBackgrounded();
@@ -289,7 +289,7 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, GetFeatureUsageForUnloadedSite) {
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
             local_site_data->UsesAudioInBackground());
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureNotInUse,
-            local_site_data->UsesNotificationsInBackground());
+            local_site_data->UpdatesTitleInBackground());
 
   local_site_data->NotifySiteUnloaded(
       performance_manager::TabVisibility::kBackground);
@@ -342,8 +342,6 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, AllDurationGetSavedOnUnload) {
       unused_feature_proto);
   expected_proto.mutable_updates_title_in_background()->CopyFrom(
       unused_feature_proto);
-  expected_proto.mutable_uses_notifications_in_background()->CopyFrom(
-      unused_feature_proto);
 
   // The audio feature has been used, so its observation duration value should
   // be equal to zero, and its observation timestamp should be equal to the last
@@ -395,8 +393,6 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
             local_site_data->UsesAudioInBackground());
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
-            local_site_data->UsesNotificationsInBackground());
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             local_site_data->UpdatesFaviconInBackground());
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             local_site_data->UpdatesTitleInBackground());
@@ -436,12 +432,6 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
                   .uses_audio_in_background()
                   .has_use_timestamp());
   EXPECT_FALSE(local_site_data->site_characteristics_for_testing()
-                   .uses_notifications_in_background()
-                   .has_use_timestamp());
-  EXPECT_TRUE(local_site_data->site_characteristics_for_testing()
-                  .uses_notifications_in_background()
-                  .has_observation_duration());
-  EXPECT_FALSE(local_site_data->site_characteristics_for_testing()
                    .has_load_time_estimates());
 
   // Initialize a fake protobuf that indicates that this site updates its title
@@ -454,8 +444,6 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
   test_proto->mutable_updates_favicon_in_background()->CopyFrom(
       unused_feature_proto);
   test_proto->mutable_uses_audio_in_background()->CopyFrom(
-      unused_feature_proto);
-  test_proto->mutable_uses_notifications_in_background()->CopyFrom(
       unused_feature_proto);
   test_proto->set_last_loaded(42);
 
@@ -474,8 +462,6 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
             local_site_data->UpdatesTitleInBackground());
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             local_site_data->UpdatesFaviconInBackground());
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
-            local_site_data->UsesNotificationsInBackground());
   EXPECT_EQ(last_loaded, local_site_data->last_loaded_time_for_testing());
 
   // Make sure the local performance samples have been updated with the previous
@@ -607,7 +593,7 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, BackgroundedCountTests) {
   auto observed_observation_duration =
       local_site_data->FeatureObservationDuration(
           local_site_data->site_characteristics_for_testing()
-              .uses_notifications_in_background());
+              .updates_title_in_background());
 
   EXPECT_EQ(expected_observation_duration, observed_observation_duration);
 

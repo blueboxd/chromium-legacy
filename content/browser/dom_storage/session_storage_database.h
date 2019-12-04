@@ -22,7 +22,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
-#include "content/browser/dom_storage/dom_storage_types.h"
+#include "components/services/storage/dom_storage/legacy_dom_storage_database.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
 namespace url {
@@ -68,7 +68,7 @@ class SessionStorageDatabase
       const std::string& namespace_id,
       const std::vector<std::string>& original_permanent_namespace_ids,
       const url::Origin& origin,
-      DOMStorageValuesMap* result);
+      storage::LegacyDomStorageValuesMap* result);
 
   // Updates the data for |namespace_id| and |origin|. Will remove all keys
   // before updating the database if |clear_all_first| is set. Then all entries
@@ -79,7 +79,7 @@ class SessionStorageDatabase
   bool CommitAreaChanges(const std::string& namespace_id,
                          const url::Origin& origin,
                          bool clear_all_first,
-                         const DOMStorageValuesMap& changes);
+                         const storage::LegacyDomStorageValuesMap& changes);
 
   // Creates shallow copies of the areas for |namespace_id| and associates them
   // with |new_namespace_id|.
@@ -186,11 +186,11 @@ class SessionStorageDatabase
   // be empty.
   bool ReadMap(const std::string& map_id,
                const leveldb::ReadOptions& options,
-               DOMStorageValuesMap* result,
+               storage::LegacyDomStorageValuesMap* result,
                bool only_keys);
   // Writes |values| into the map |map_id|.
   void WriteValuesToMap(const std::string& map_id,
-                        const DOMStorageValuesMap& values,
+                        const storage::LegacyDomStorageValuesMap& values,
                         leveldb::WriteBatch* batch);
 
   bool GetMapRefCount(const std::string& map_id, int64_t* ref_count);

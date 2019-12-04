@@ -102,6 +102,8 @@ bool ParseFaviconPathWithFavicon2Format(const std::string& path,
       if (!(val == "0" || val == "1"))
         return false;
       parsed->allow_favicon_server_fallback = val == "1";
+    } else if (key == "show_fallback_monogram") {
+      parsed->show_fallback_monogram = true;
     } else if (key == "icon_url") {
       parsed->icon_url = it.GetUnescapedValue();
     } else if (key == "page_url") {
@@ -132,6 +134,8 @@ bool ParseFaviconPathWithFavicon2Format(const std::string& path,
 }  // namespace
 
 ParsedFaviconPath::ParsedFaviconPath() = default;
+
+ParsedFaviconPath::ParsedFaviconPath(const ParsedFaviconPath& other) = default;
 
 bool ParseFaviconPath(const std::string& path,
                       FaviconUrlFormat format,

@@ -328,16 +328,6 @@ sandbox::ResultCode AddGenericPolicy(sandbox::TargetPolicy* policy) {
   if (result != sandbox::SBOX_ALL_OK)
     return result;
 
-  // Add the policy for the server side of nacl pipe. It is just a file
-  // in the \pipe\ namespace. We restrict it to pipes that start with
-  // "chrome.nacl" so the sandboxed process cannot connect to
-  // system services.
-  result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
-                           sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
-                           L"\\\\.\\pipe\\chrome.nacl.*");
-  if (result != sandbox::SBOX_ALL_OK)
-    return result;
-
   // Allow the server side of sync sockets, which are pipes that have
   // the "chrome.sync" namespace and a randomly generated suffix.
   result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,

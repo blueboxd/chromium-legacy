@@ -56,7 +56,6 @@ struct SiteCharacteristicsDatabaseValue {
   SiteCharacteristicsFeature updates_favicon_in_background;
   SiteCharacteristicsFeature updates_title_in_background;
   SiteCharacteristicsFeature uses_audio_in_background;
-  SiteCharacteristicsFeature uses_notifications_in_background;
 
   // Load time performance measurement estimates. This maintains a decaying
   // average of the resource usage of a page until shortly after it becomes

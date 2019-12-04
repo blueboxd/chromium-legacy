@@ -79,7 +79,7 @@ typedef std::vector<std::pair<BlobEntryKey, std::string>>
 // This is a blob that is going to to be written to a file.
 class CONTENT_EXPORT WriteDescriptor {
  public:
-  WriteDescriptor(const storage::BlobDataHandle* blob,
+  WriteDescriptor(mojo::SharedRemote<blink::mojom::Blob> blob,
                   int64_t key,
                   int64_t size,
                   base::Time last_modified);
@@ -92,9 +92,9 @@ class CONTENT_EXPORT WriteDescriptor {
   WriteDescriptor& operator=(const WriteDescriptor& other);
 
   bool is_file() const { return is_file_; }
-  const storage::BlobDataHandle* blob() const {
+  mojo::SharedRemote<blink::mojom::Blob> blob() const {
     DCHECK(!is_file_);
-    return &blob_.value();
+    return blob_;
   }
   const base::FilePath& file_path() const {
     DCHECK(is_file_);
@@ -106,7 +106,7 @@ class CONTENT_EXPORT WriteDescriptor {
 
  private:
   bool is_file_;
-  base::Optional<storage::BlobDataHandle> blob_;
+  mojo::SharedRemote<blink::mojom::Blob> blob_;
   base::FilePath file_path_;
   int64_t key_;
   int64_t size_;

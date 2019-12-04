@@ -227,7 +227,8 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   ActiveState GetActiveState() const {
     return static_cast<ActiveState>(active_state_);
   }
-  ActiveState DetermineActiveState(SMILTime elapsed) const;
+  ActiveState DetermineActiveState(const SMILInterval& interval,
+                                   SMILTime elapsed) const;
 
   ProgressState CalculateProgressState(SMILTime presentation_time) const;
 

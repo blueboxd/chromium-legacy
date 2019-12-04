@@ -58,8 +58,6 @@ void InitializeSiteDataProto(SiteDataProto* site_data) {
   site_data->mutable_updates_title_in_background()->CopyFrom(
       used_feature_proto);
   site_data->mutable_uses_audio_in_background()->CopyFrom(used_feature_proto);
-  site_data->mutable_uses_notifications_in_background()->CopyFrom(
-      used_feature_proto);
 
   DCHECK(site_data->IsInitialized());
 }
@@ -117,8 +115,6 @@ TEST_F(SiteDataReaderTest, TestAccessors) {
             reader_->UpdatesTitleInBackground());
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader_->UsesAudioInBackground());
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
-            reader_->UsesNotificationsInBackground());
 
   // Simulates a title update event, make sure it gets reported directly.
   test_impl_->NotifyUpdatesTitleInBackground();
@@ -136,8 +132,6 @@ TEST_F(SiteDataReaderTest, TestAccessors) {
             reader_->UpdatesTitleInBackground());
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureNotInUse,
             reader_->UsesAudioInBackground());
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureNotInUse,
-            reader_->UsesNotificationsInBackground());
 }
 
 TEST_F(SiteDataReaderTest, FreeingReaderDoesntCauseWriteOperation) {

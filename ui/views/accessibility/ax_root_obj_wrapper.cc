@@ -77,5 +77,5 @@ int32_t AXRootObjWrapper::GetUniqueId() const {
 
 void AXRootObjWrapper::OnDisplayMetricsChanged(const display::Display& display,
                                                uint32_t changed_metrics) {
-  delegate_->OnEvent(this, ax::mojom::Event::kLocationChanged);
+  delegate_->OnEvent(this, ax::mojom::Event::kLoadComplete);
 }

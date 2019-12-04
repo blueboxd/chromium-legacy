@@ -178,6 +178,14 @@ void BrowserDMTokenStorage::InitIfNeeded() {
   should_display_error_message_on_failure_ = InitEnrollmentErrorOption();
 }
 
+void BrowserDMTokenStorage::SaveDMToken(const std::string& token) {
+  auto task = SaveDMTokenTask(token, RetrieveClientId());
+  auto reply = base::BindOnce(&BrowserDMTokenStorage::OnDMTokenStored,
+                              weak_factory_.GetWeakPtr());
+  base::PostTaskAndReplyWithResult(SaveDMTokenTaskRunner().get(), FROM_HERE,
+                                   std::move(task), std::move(reply));
+}
+
 std::string BrowserDMTokenStorage::InitSerialNumber() {
   // GetHardwareInfo is asynchronous, but we need this synchronously. This call
   // will only happens once, as we cache the value. This will eventually be

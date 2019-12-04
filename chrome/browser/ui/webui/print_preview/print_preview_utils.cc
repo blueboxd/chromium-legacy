@@ -56,10 +56,16 @@ void PrintersToValues(const PrinterList& printer_list,
     for (const auto opt_it : printer.options)
       options->SetString(opt_it.first, opt_it.second);
 
+#if defined(OS_CHROMEOS)
     printer_info->SetBoolean(
         kCUPSEnterprisePrinter,
         base::Contains(printer.options, kCUPSEnterprisePrinter) &&
             printer.options.at(kCUPSEnterprisePrinter) == kValueTrue);
+
+    auto it = printer.options.find(kPrinterEulaURL);
+    options->SetString(kPrinterEulaURL,
+                       it != printer.options.end() ? it->second : "");
+#endif  // defined(OS_CHROMEOS)
 
     printer_info->Set(kSettingPrinterOptions, std::move(options));
 

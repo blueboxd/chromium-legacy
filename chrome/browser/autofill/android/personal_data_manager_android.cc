@@ -872,13 +872,13 @@ static jboolean JNI_PersonalDataManager_IsAutofillManaged(JNIEnv* env) {
 
 // Returns whether the Autofill feature for profiles is managed.
 static jboolean JNI_PersonalDataManager_IsAutofillProfileManaged(JNIEnv* env) {
-  return prefs::IsProfileAutofillManaged(GetPrefs());
+  return prefs::IsAutofillProfileManaged(GetPrefs());
 }
 
 // Returns whether the Autofill feature for credit cards is managed.
 static jboolean JNI_PersonalDataManager_IsAutofillCreditCardManaged(
     JNIEnv* env) {
-  return prefs::IsCreditCardAutofillManaged(GetPrefs());
+  return prefs::IsAutofillCreditCardManaged(GetPrefs());
 }
 
 // Returns whether the Payments integration feature is enabled.

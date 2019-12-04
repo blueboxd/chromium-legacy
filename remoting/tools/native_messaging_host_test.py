@@ -21,9 +21,25 @@ def PrintMenuAndGetBuilder(messages):
     choice = raw_input('Enter choice: ')
     if choice.lower() == 'q':
       return None
-    choice = int(choice)
+    try:
+      choice = int(choice)
+    except ValueError:
+      continue
     if choice >= 1 and choice <= len(messages):
       return messages[choice - 1][1]
+
+
+def ReadMessage(in_stream):
+  reply_length_bytes = in_stream.read(4)
+  if len(reply_length_bytes) < 4:
+    print 'Invalid message length'
+    return None
+  reply_length = struct.unpack('i', reply_length_bytes)[0]
+  reply = in_stream.read(reply_length).decode('utf-8')
+  if len(reply) != reply_length:
+    print 'Invalid reply length'
+    return None
+  return json.loads(reply)
 
 
 # Message builder methods.
@@ -99,6 +115,10 @@ def BuildGetDaemonState():
   return {'type': 'getDaemonState'}
 
 
+def BuildIt2MePermissionCheck():
+  return {'type': 'it2mePermissionCheck'}
+
+
 def main():
   if len(sys.argv) != 2:
     print 'Usage: ' + sys.argv[0] + ' <path to native messaging host>'
@@ -124,7 +144,8 @@ def main():
       ('Get usage stats consent', BuildGetUsageStatsConsent),
       ('Start daemon', BuildStartDaemon),
       ('Stop daemon', BuildStopDaemon),
-      ('Get daemon state', BuildGetDaemonState)
+      ('Get daemon state', BuildGetDaemonState),
+      ('It2Me permission check', BuildIt2MePermissionCheck),
     ]
     builder = PrintMenuAndGetBuilder(messages)
     if not builder:
@@ -138,15 +159,15 @@ def main():
     child.stdin.write(message)
     child.stdin.flush()
 
-    reply_length_bytes = child.stdout.read(4)
-    if len(reply_length_bytes) < 4:
-      print 'Invalid message length'
-      break
-    reply_length = struct.unpack('i', reply_length_bytes)[0]
-    reply = child.stdout.read(reply_length).decode('utf-8')
-    print 'Reply: ' + reply
-    if len(reply) != reply_length:
-      print 'Invalid reply length'
+    while True:
+      reply_dict = ReadMessage(child.stdout)
+      if reply_dict is None:
+        break
+      reply_pretty = json.dumps(reply_dict)
+      if reply_dict['type'] == '_debug_log':
+        print 'Log: ' + reply_pretty
+        continue
+      print 'Reply: ' + reply_pretty
       break
 
 if __name__ == '__main__':

@@ -29,9 +29,6 @@ std::ostream& operator<<(std::ostream& stream, const ScreenlockState& state) {
     case ScreenlockState::PHONE_NOT_LOCKABLE:
       stream << "[phone not lockable]";
       break;
-    case ScreenlockState::PHONE_UNSUPPORTED:
-      stream << "[phone unsupported]";
-      break;
     case ScreenlockState::RSSI_TOO_LOW:
       stream << "[rssi too low]";
       break;

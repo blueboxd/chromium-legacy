@@ -23,9 +23,6 @@ class BrowserPluginMessageFilter : public BrowserMessageFilter {
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnDestruct() const override;
 
-  // Test-only functions:
-  void SetSubFilterForTesting(scoped_refptr<BrowserMessageFilter> sub_filter);
-
  private:
   friend class BrowserThread;
   friend class base::DeleteHelper<BrowserPluginMessageFilter>;
@@ -35,8 +32,6 @@ class BrowserPluginMessageFilter : public BrowserMessageFilter {
   void ForwardMessageToGuest(const IPC::Message& message);
 
   const int render_process_id_;
-
-  scoped_refptr<BrowserMessageFilter> sub_filter_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginMessageFilter);
 };

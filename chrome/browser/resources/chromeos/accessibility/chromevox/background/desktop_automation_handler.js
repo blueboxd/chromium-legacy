@@ -48,12 +48,6 @@ DesktopAutomationHandler = function(node) {
   /** @private {AutomationNode} */
   this.lastValueTarget_ = null;
 
-  /** @private {AutomationNode} */
-  this.lastAttributeTarget_;
-
-  /** @private {Output} */
-  this.lastAttributeOutput_;
-
   /** @private {string} */
   this.lastRootUrl_ = '';
 
@@ -63,28 +57,16 @@ DesktopAutomationHandler = function(node) {
   /** @private {number?} */
   this.delayedAttributeOutputId_;
 
-  this.addListener_(
-      EventType.ACTIVEDESCENDANTCHANGED, this.onActiveDescendantChanged);
   this.addListener_(EventType.ALERT, this.onAlert);
-  this.addListener_(
-      EventType.ARIA_ATTRIBUTE_CHANGED, this.onAriaAttributeChanged);
-  this.addListener_(EventType.AUTOCORRECTION_OCCURED, this.onEventIfInRange);
   this.addListener_(EventType.BLUR, this.onBlur);
   this.addListener_(
-      EventType.CHECKED_STATE_CHANGED, this.onCheckedStateChanged);
-  this.addListener_(
       EventType.DOCUMENT_SELECTION_CHANGED, this.onDocumentSelectionChanged);
-  this.addListener_(EventType.EXPANDED_CHANGED, this.onEventIfInRange);
   this.addListener_(EventType.FOCUS, this.onFocus);
   this.addListener_(EventType.HOVER, this.onHover);
-  this.addListener_(EventType.INVALID_STATUS_CHANGED, this.onEventIfInRange);
   this.addListener_(EventType.LOAD_COMPLETE, this.onLoadComplete);
-  this.addListener_(EventType.LOCATION_CHANGED, this.onLocationChanged);
   this.addListener_(EventType.MENU_END, this.onMenuEnd);
   this.addListener_(EventType.MENU_LIST_ITEM_SELECTED, this.onEventIfSelected);
   this.addListener_(EventType.MENU_START, this.onMenuStart);
-  this.addListener_(EventType.ROW_COLLAPSED, this.onEventIfInRange);
-  this.addListener_(EventType.ROW_EXPANDED, this.onEventIfInRange);
   this.addListener_(
       EventType.SCROLL_POSITION_CHANGED, this.onScrollPositionChanged);
   this.addListener_(EventType.SELECTION, this.onSelection);
@@ -166,59 +148,6 @@ DesktopAutomationHandler.prototype = {
     output.withRichSpeechAndBraille(
         ChromeVoxState.instance.currentRange, prevRange, evt.type);
     output.go();
-
-    // Update some state here to ensure attribute changes don't duplicate
-    // output.
-    this.lastAttributeTarget_ = evt.target;
-    this.lastAttributeOutput_ = output;
-  },
-
-  /**
-   * @param {!AutomationEvent} evt
-   */
-  onEventIfInRange: function(evt) {
-    if (!DesktopAutomationHandler.announceActions &&
-        evt.eventFrom == 'action') {
-      return;
-    }
-
-    var prev = ChromeVoxState.instance.currentRange;
-    if (!prev) {
-      return;
-    }
-
-    if (prev.contentEquals(cursors.Range.fromNode(evt.target)) ||
-        evt.target.state.focused) {
-      var prevTarget = this.lastAttributeTarget_;
-
-      // Re-target to active descendant if it exists.
-      var prevOutput = this.lastAttributeOutput_;
-      this.lastAttributeTarget_ = evt.target.activeDescendant || evt.target;
-      this.lastAttributeOutput_ = new Output().withRichSpeechAndBraille(
-          cursors.Range.fromNode(this.lastAttributeTarget_), prev,
-          Output.EventType.NAVIGATE);
-      if (this.lastAttributeTarget_ == prevTarget && prevOutput &&
-          prevOutput.equals(this.lastAttributeOutput_)) {
-        return;
-      }
-
-      // If the target or an ancestor is controlled by another control, we may
-      // want to delay the output.
-      var maybeControlledBy = evt.target;
-      while (maybeControlledBy) {
-        if (maybeControlledBy.controlledBy.length &&
-            maybeControlledBy.controlledBy.find((n) => !!n.autoComplete)) {
-          clearTimeout(this.delayedAttributeOutputId_);
-          this.delayedAttributeOutputId_ = setTimeout(() => {
-            this.lastAttributeOutput_.go();
-          }, DesktopAutomationHandler.ATTRIBUTE_DELAY_MS);
-          return;
-        }
-        maybeControlledBy = maybeControlledBy.parent;
-      }
-
-      this.lastAttributeOutput_.go();
-    }
   },
 
   /**
@@ -228,26 +157,6 @@ DesktopAutomationHandler.prototype = {
     if (evt.target.selected) {
       this.onEventDefault(evt);
     }
-  },
-
-  /**
-   * @param {!AutomationEvent} evt
-   */
-  onAriaAttributeChanged: function(evt) {
-    // Don't report changes on editable nodes since they interfere with text
-    // selection changes. Users can query via Search+k for the current state of
-    // the text field (which would also report the entire value).
-    if (evt.target.state[StateType.EDITABLE]) {
-      return;
-    }
-
-    // Only report attribute changes on some *Option roles if it is selected.
-    if ((evt.target.role == RoleType.MENU_LIST_OPTION ||
-         evt.target.role == RoleType.LIST_BOX_OPTION) &&
-        !evt.target.selected)
-      return;
-
-    this.onEventIfInRange(evt);
   },
 
   /**
@@ -332,21 +241,6 @@ DesktopAutomationHandler.prototype = {
   },
 
   /**
-   * Handles active descendant changes.
-   * @param {!AutomationEvent} evt
-   */
-  onActiveDescendantChanged: function(evt) {
-    if (!evt.target.activeDescendant || !evt.target.state.focused) {
-      return;
-    }
-
-    // Various events might come before a key press (which forces flushed
-    // speech) and this handler. Force output to be at least category flushed.
-    Output.forceModeForNextSpeechUtterance(QueueMode.CATEGORY_FLUSH);
-    this.onEventIfInRange(evt);
-  },
-
-  /**
    * Makes an announcement without changing focus.
    * @param {!AutomationEvent} evt
    */
@@ -367,20 +261,6 @@ DesktopAutomationHandler.prototype = {
         ChromeVoxState.instance.setCurrentRange(null);
       }
     });
-  },
-
-  /**
-   * Provides all feedback once a checked state changed event fires.
-   * @param {!AutomationEvent} evt
-   */
-  onCheckedStateChanged: function(evt) {
-    if (!AutomationPredicate.checkable(evt.target)) {
-      return;
-    }
-
-    var event = new CustomAutomationEvent(
-        EventType.CHECKED_STATE_CHANGED, evt.target, evt.eventFrom);
-    this.onEventIfInRange(event);
   },
 
   /**
@@ -463,6 +343,15 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onLoadComplete: function(evt) {
+    // A load complete gets fired on the desktop node when display metrics
+    // change.
+    if (evt.target.role == RoleType.DESKTOP) {
+      var msg = evt.target.state[StateType.HORIZONTAL] ? 'device_landscape' :
+                                                         'device_portrait';
+      new Output().format('@' + msg).go();
+      return;
+    }
+
     // We are only interested in load completes on valid top level roots.
     var top = AutomationUtil.getTopLevelRoot(evt.target);
     if (!top || top != evt.target.root || !top.docUrl) {
@@ -506,59 +395,11 @@ DesktopAutomationHandler.prototype = {
   },
 
   /**
-   * Updates the focus ring if the location of the current range, or
-   * an ancestor of the current range, changes.
-   * @param {!AutomationEvent} evt
-   */
-  onLocationChanged: function(evt) {
-    if (evt.target.role == RoleType.DESKTOP) {
-      var msg = evt.target.state[StateType.HORIZONTAL] ? 'device_landscape' :
-                                                         'device_portrait';
-      new Output().format('@' + msg).go();
-      return;
-    }
-
-    var cur = ChromeVoxState.instance.currentRange;
-    if (!cur || !cur.isValid()) {
-      if (ChromeVoxState.instance.getFocusBounds().length) {
-        ChromeVoxState.instance.setFocusBounds([]);
-      }
-      return;
-    }
-
-    // Rather than trying to figure out if the current range falls somewhere in
-    // |evt.target|, just update it if our cached bounds don't match.
-    var oldFocusBounds = ChromeVoxState.instance.getFocusBounds();
-    var startRect = cur.start.node.location;
-    var endRect = cur.end.node.location;
-
-    var found =
-        oldFocusBounds.some((rect) => this.areRectsEqual(rect, startRect)) &&
-        oldFocusBounds.some((rect) => this.areRectsEqual(rect, endRect));
-    if (found) {
-      return;
-    }
-
-    new Output().withLocation(cur, null, evt.type).go();
-  },
-
-  /**
    * Sets whether document selections from actions should be ignored.
    * @param {boolean} val
    */
   ignoreDocumentSelectionFromAction: function(val) {
     this.shouldIgnoreDocumentSelectionFromAction_ = val;
-  },
-
-  /**
-   * Update the state for the last attribute change that occurred in ChromeVox
-   * output.
-   * @param {!AutomationNode} node
-   * @param {!Output} output
-   */
-  updateLastAttributeState: function(node, output) {
-    this.lastAttributeTarget_ = node;
-    this.lastAttributeOutput_ = output;
   },
 
   /**
@@ -812,17 +653,6 @@ DesktopAutomationHandler.prototype = {
     o.withRichSpeechAndBraille(
          ChromeVoxState.instance.currentRange, null, evt.type)
         .go();
-  },
-
-  /**
-   * @param {!chrome.accessibilityPrivate.ScreenRect} rectA
-   * @param {!chrome.accessibilityPrivate.ScreenRect} rectB
-   * @return {boolean} Whether the rects are the same.
-   * @private
-   */
-  areRectsEqual: function(rectA, rectB) {
-    return rectA.left == rectB.left && rectA.top == rectB.top &&
-        rectA.width == rectB.width && rectA.height == rectB.height;
   }
 };
 

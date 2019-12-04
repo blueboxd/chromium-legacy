@@ -110,11 +110,14 @@ ExtensionViewHost::~ExtensionViewHost() {
 }
 
 void ExtensionViewHost::CreateView(Browser* browser) {
-  // TODO(devlin): Add the following sanity check:
-  // if (browser) {
-  //   DCHECK_EQ(Profile::FromBrowserContext(browser_context()),
-  //             browser->profile());
-  // }
+  if (browser) {
+    // The browser should always be associated with the same original profile as
+    // this view host. The profiles may not be identical (i.e., one may be the
+    // off-the-record version of the other) in the case of a spanning-mode
+    // extension creating a popup in an incognito window.
+    DCHECK(Profile::FromBrowserContext(browser_context())
+               ->IsSameProfile(browser->profile()));
+  }
   browser_ = browser;
   view_ = CreateExtensionView(this, browser ? browser->profile() : nullptr);
 }

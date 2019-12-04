@@ -173,30 +173,24 @@ void OpenVRRenderLoop::OnSessionStart() {
   LogViewerType(type);
 }
 
-mojom::VRPosePtr OpenVRRenderLoop::GetPose() {
-  vr::TrackedDevicePose_t rendering_poses[vr::k_unMaxTrackedDeviceCount];
-
-  TRACE_EVENT0("gpu", "WaitGetPoses");
-  openvr_->GetCompositor()->WaitGetPoses(
-      rendering_poses, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
-
-  mojom::VRPosePtr pose = mojo::ConvertTo<mojom::VRPosePtr>(
-      rendering_poses[vr::k_unTrackedDeviceIndex_Hmd]);
-
-  // Update WebXR input sources.
-  DCHECK(pose);
-  pose->input_state =
-      GetInputState(rendering_poses, vr::k_unMaxTrackedDeviceCount);
-
-  return pose;
-}
-
 mojom::XRFrameDataPtr OpenVRRenderLoop::GetNextFrameData() {
   mojom::XRFrameDataPtr frame_data = mojom::XRFrameData::New();
   frame_data->frame_id = next_frame_id_;
 
   if (openvr_) {
-    frame_data->pose = GetPose();
+    vr::TrackedDevicePose_t rendering_poses[vr::k_unMaxTrackedDeviceCount];
+
+    TRACE_EVENT0("gpu", "WaitGetPoses");
+    openvr_->GetCompositor()->WaitGetPoses(
+        rendering_poses, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
+
+    frame_data->pose = mojo::ConvertTo<mojom::VRPosePtr>(
+        rendering_poses[vr::k_unTrackedDeviceIndex_Hmd]);
+
+    // Update WebXR input sources.
+    frame_data->input_state =
+        GetInputState(rendering_poses, vr::k_unMaxTrackedDeviceCount);
+
     vr::Compositor_FrameTiming timing;
     timing.m_nSize = sizeof(vr::Compositor_FrameTiming);
     bool valid_time = openvr_->GetCompositor()->GetFrameTiming(&timing);

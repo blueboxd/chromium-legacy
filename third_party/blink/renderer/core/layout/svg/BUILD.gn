@@ -69,6 +69,7 @@ blink_core_sources("svg_layout") {
     "svg_layout_support.h",
     "svg_layout_tree_as_text.cc",
     "svg_layout_tree_as_text.h",
+    "svg_marker_data.cc",
     "svg_marker_data.h",
     "svg_resources.cc",
     "svg_resources.h",

@@ -50,8 +50,8 @@ import org.chromium.chrome.browser.settings.ChromeBasePreference;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
 import org.chromium.chrome.browser.settings.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.ManagedPreferencesUtils;
-import org.chromium.chrome.browser.settings.PreferenceUtils;
 import org.chromium.chrome.browser.settings.SettingsActivity;
+import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.chrome.browser.settings.password.PasswordUIView;
 import org.chromium.chrome.browser.settings.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
@@ -182,7 +182,7 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
             RecordUserAction.record("Signin_Signin_ShowAdvancedSyncSettings");
         }
 
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.sync_and_services_preferences);
+        SettingsUtils.addPreferencesFromResource(this, R.xml.sync_and_services_preferences);
 
         mSigninPreference = (SignInPreference) findPreference(PREF_SIGNIN);
         mSigninPreference.setPersonalizedPromoEnabled(false);

@@ -1136,7 +1136,13 @@ void SAMLEnrollmentTest::StartSamlAndWaitForIdpPageLoad(
   OobeBaseTest::WaitForGaiaPageEvent("authFlowChange");
 }
 
-IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, WithoutCredentialsPassingAPI) {
+// Flakily times out in debug builds. crbug.com/1030393
+#if !defined(NDEBUG)
+#define MAYBE_WithoutCredentialsPassingAPI DISABLED_WithoutCredentialsPassingAPI
+#else
+#define MAYBE_WithoutCredentialsPassingAPI WithoutCredentialsPassingAPI
+#endif
+IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, MAYBE_WithoutCredentialsPassingAPI) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 

@@ -963,7 +963,7 @@ void NativeExtensionBindingsSystem::UpdateContentCapabilities(
     GURL url = context->url();
     // We allow about:blank pages to take on the privileges of their parents if
     // they aren't sandboxed.
-    if (web_frame && !web_frame->GetSecurityOrigin().IsUnique())
+    if (web_frame && !web_frame->GetSecurityOrigin().IsOpaque())
       url = ScriptContext::GetEffectiveDocumentURL(web_frame, url, true);
     const ContentCapabilitiesInfo& info =
         ContentCapabilitiesInfo::Get(extension.get());

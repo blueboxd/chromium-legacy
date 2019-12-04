@@ -90,7 +90,8 @@ making the regression more likely to reproduce. From the Pinpoint Job page,
 clicking the `+` button in the bottom-right corner to test a patch with the
 current configuration.
 
-You can also run locally:
+You can also run locally (note that running this successfully on Android
+requires the device to be rooted):
 ```
 src$ tools/perf/run_benchmark benchmark_name --story-filter story_name
 ```

@@ -201,14 +201,14 @@ cr.define('settings', function() {
       // shared between chrome://settings and chrome://os-settings.
       const lazyLoadPathPrefix =
           window.origin === 'chrome://settings' ? '' : '/chromeos';
-      Polymer.importHref(`${lazyLoadPathPrefix}/lazy_load.html`, () => {
-        this.ensureSectionForRoute_(route).then(section => {
-          section.classList.add('expanded');
-          // Fire event used by a11y tests only.
-          this.fire('settings-section-expanded');
+      Polymer.importHref(`${lazyLoadPathPrefix}/lazy_load.html`, () => {});
 
-          this.fire('show-container');
-        });
+      this.ensureSectionForRoute_(route).then(section => {
+        section.classList.add('expanded');
+        // Fire event used by a11y tests only.
+        this.fire('settings-section-expanded');
+
+        this.fire('show-container');
       });
     },
 

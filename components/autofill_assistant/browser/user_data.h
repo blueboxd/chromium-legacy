@@ -141,6 +141,7 @@ struct CollectUserDataOptions {
   DateTimeRangeProto date_time_range;
   std::vector<UserFormSectionProto> additional_prepended_sections;
   std::vector<UserFormSectionProto> additional_appended_sections;
+  base::Optional<GenericUserInterfaceProto> generic_user_interface;
 
   base::OnceCallback<void(std::unique_ptr<UserData>)> confirm_callback;
   base::OnceCallback<void(int)> additional_actions_callback;

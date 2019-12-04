@@ -17,10 +17,10 @@
 #include "content/public/browser/render_process_host.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
@@ -216,8 +216,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   const scoped_refptr<ServiceWorkerVersion> running_hosted_version_;
 
   // For service worker execution contexts.
-  mojo::Binding<service_manager::mojom::InterfaceProvider>
-      interface_provider_binding_;
+  mojo::Receiver<service_manager::mojom::InterfaceProvider>
+      interface_provider_receiver_{this};
   BrowserInterfaceBrokerImpl<ServiceWorkerProviderHost,
                              const ServiceWorkerVersionInfo&>
       broker_{this};

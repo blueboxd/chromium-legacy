@@ -757,18 +757,6 @@ void WebGLRenderingContextBase::commit() {
   MarkLayerComposited();
 }
 
-scoped_refptr<StaticBitmapImage>
-WebGLRenderingContextBase::GetStaticBitmapImage(
-    std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback) {
-  if (!GetDrawingBuffer())
-    return nullptr;
-
-  if (CreationAttributes().preserve_drawing_buffer)
-    return GetImage();
-
-  return GetDrawingBuffer()->TransferToStaticBitmapImage(out_release_callback);
-}
-
 scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
     AccelerationHint hint) {
   if (!GetDrawingBuffer())
@@ -777,9 +765,9 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
   ScopedFramebufferRestorer fbo_restorer(this);
   GetDrawingBuffer()->ResolveAndBindForReadAndDraw();
   // Use the drawing buffer size here instead of the canvas size to ensure that
-  // sizing is consistent for the GetStaticBitmapImage() result. The forced
-  // downsizing logic in Reshape() can lead to the drawing buffer being smaller
-  // than the canvas size. See https:://crbug.com/845742.
+  // sizing is consistent. The forced downsizing logic in Reshape() can lead to
+  // the drawing buffer being smaller than the canvas size.
+  // See https://crbug.com/845742.
   IntSize size = GetDrawingBuffer()->Size();
   // Since we are grabbing a snapshot that is not for compositing, we use a
   // custom resource provider. This avoids consuming compositing-specific
@@ -1500,11 +1488,6 @@ WebGLRenderingContextBase::ClearIfComposited(GLbitfield mask) {
   GetDrawingBuffer()->SetBuffersToAutoClear(0);
 
   return combined_clear ? kCombinedClear : kJustClear;
-}
-
-void WebGLRenderingContextBase::MarkCompositedAndClearBackbufferIfNeeded() {
-  MarkLayerComposited();
-  ClearIfComposited();
 }
 
 void WebGLRenderingContextBase::RestoreScissorEnabled() {

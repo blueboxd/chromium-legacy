@@ -1415,11 +1415,15 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   }
 
   ui::PageTransition transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
+  NSString* HTTPMethod = @"GET";
   if (WKResponse.forMainFrame) {
     web::NavigationContextImpl* context =
         [self contextForPendingMainFrameNavigationWithURL:responseURL];
     context->SetIsDownload(true);
     context->ReleaseItem();
+    if (context->IsPost()) {
+      HTTPMethod = @"POST";
+    }
     // Navigation callbacks can only be called for the main frame.
     self.webStateImpl->OnNavigationFinished(context);
     transition = context->GetPageTransition();
@@ -1436,8 +1440,8 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   web::DownloadController::FromBrowserState(
       self.webStateImpl->GetBrowserState())
       ->CreateDownloadTask(self.webStateImpl, [NSUUID UUID].UUIDString,
-                           responseURL, contentDisposition, contentLength,
-                           MIMEType, transition);
+                           responseURL, HTTPMethod, contentDisposition,
+                           contentLength, MIMEType, transition);
 }
 
 // Updates URL for navigation context and navigation item.

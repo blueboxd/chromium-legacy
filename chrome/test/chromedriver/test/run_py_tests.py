@@ -962,6 +962,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
               {type: event.type});
         });
         ''')
+    time.sleep(0.1)
 
     actions = ({"actions": [{
       "type":"pointer",
@@ -979,10 +980,10 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
       "id": "pointer2"}]})
     self._driver.PerformActions(actions)
     time.sleep(1)
-    for _ in range(5):
+    events = []
+    deadline = time.time() + 5  # Timeout
+    while len(events) < 4 and time.time() < deadline:
       events = self._driver.ExecuteScript('return window.events')
-      if len(events) == 4:
-        break
       # Wait 100 more ms for the event handler to be executed.
       time.sleep(0.1)
 

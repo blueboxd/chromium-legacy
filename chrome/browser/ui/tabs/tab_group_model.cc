@@ -11,19 +11,21 @@
 
 #include "base/optional.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
+#include "chrome/browser/ui/tabs/tab_group_controller.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_group_visual_data.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 
-TabGroupModel::TabGroupModel(TabStripModel* model) : model_(model) {}
+TabGroupModel::TabGroupModel(TabGroupController* controller)
+    : controller_(controller) {}
 TabGroupModel::~TabGroupModel() {}
 
 TabGroup* TabGroupModel::AddTabGroup(
     TabGroupId id,
     base::Optional<TabGroupVisualData> visual_data) {
   auto tab_group = std::make_unique<TabGroup>(
-      model_, id, visual_data.value_or(TabGroupVisualData()));
+      controller_, id, visual_data.value_or(TabGroupVisualData()));
   groups_[id] = std::move(tab_group);
+
   return groups_[id].get();
 }
 
@@ -31,10 +33,9 @@ bool TabGroupModel::ContainsTabGroup(TabGroupId id) const {
   return base::Contains(groups_, id);
 }
 
-// TODO(connily): This should DCHECK(ContainsTabGroup(id)) instead of returning
-// nullptr. Other places should be checking for ContainsTabGroup().
 TabGroup* TabGroupModel::GetTabGroup(TabGroupId id) const {
-  return ContainsTabGroup(id) ? groups_.find(id)->second.get() : nullptr;
+  DCHECK(ContainsTabGroup(id));
+  return groups_.find(id)->second.get();
 }
 
 void TabGroupModel::RemoveTabGroup(TabGroupId id) {

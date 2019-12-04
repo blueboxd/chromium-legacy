@@ -653,16 +653,17 @@ bool Performance::CanAddResourceTimingEntry() {
 void Performance::AddLongTaskTiming(base::TimeTicks start_time,
                                     base::TimeTicks end_time,
                                     const AtomicString& name,
-                                    const String& frame_src,
-                                    const String& frame_id,
-                                    const String& frame_name) {
+                                    const AtomicString& container_type,
+                                    const String& container_src,
+                                    const String& container_id,
+                                    const String& container_name) {
   if (!HasObserverFor(PerformanceEntry::kLongTask))
     return;
 
   auto* entry = MakeGarbageCollected<PerformanceLongTaskTiming>(
       MonotonicTimeToDOMHighResTimeStamp(start_time),
-      MonotonicTimeToDOMHighResTimeStamp(end_time), name, frame_src, frame_id,
-      frame_name);
+      MonotonicTimeToDOMHighResTimeStamp(end_time), name, container_type,
+      container_src, container_id, container_name);
   NotifyObserversOfEntry(*entry);
 }
 

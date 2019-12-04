@@ -202,7 +202,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
       syncer::SyncService::DISABLE_REASON_USER_CHOICE));
 
 #if defined(OS_CHROMEOS)
-  // On ChromeOS, Sync should start up again in standalone transport mode.
+  // On ChromeOS, the primary account should remain, and Sync should start up
+  // again in standalone transport mode.
+  EXPECT_TRUE(GetSyncService(0)->IsAuthenticatedAccountPrimary());
   EXPECT_FALSE(GetSyncService(0)->HasDisableReason(
       syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN));
   EXPECT_NE(syncer::SyncService::TransportState::DISABLED,
@@ -213,13 +215,14 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
             GetSyncService(0)->GetTransportState());
   EXPECT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
 #else
-  // On non-ChromeOS platforms, the "Reset Sync" operation also signs the user
-  // out, so Sync should now be fully disabled. Note that this behavior may
-  // change in the future, see crbug.com/246839.
-  EXPECT_TRUE(GetSyncService(0)->HasDisableReason(
-      syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN));
-  EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
-            GetSyncService(0)->GetTransportState());
+  // On non-ChromeOS platforms, the "Reset Sync" operation should also remove
+  // the primary account. Note that this behavior may change in the future, see
+  // crbug.com/246839.
+  EXPECT_FALSE(GetSyncService(0)->IsAuthenticatedAccountPrimary());
+  // Note: In real life, the account would remain as an *unconsented* primary
+  // account, and so Sync would start up again in standalone transport mode.
+  // However, since we haven't set up cookies in this test, the account is *not*
+  // considered primary anymore (not even "unconsented").
 #endif  // defined(OS_CHROMEOS)
 }
 

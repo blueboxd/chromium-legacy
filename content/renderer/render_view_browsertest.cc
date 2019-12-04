@@ -1073,7 +1073,7 @@ TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
   child_frame2->SwapOut(kProxyRoutingId + 1, true, replication_state);
   EXPECT_TRUE(web_frame->FirstChild()->NextSibling()->IsWebRemoteFrame());
   EXPECT_TRUE(
-      web_frame->FirstChild()->NextSibling()->GetSecurityOrigin().IsUnique());
+      web_frame->FirstChild()->NextSibling()->GetSecurityOrigin().IsOpaque());
 }
 
 // When we enable --use-zoom-for-dsf, visiting the first web page after opening

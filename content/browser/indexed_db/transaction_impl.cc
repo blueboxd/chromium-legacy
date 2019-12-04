@@ -25,7 +25,6 @@
 
 namespace content {
 namespace {
-const char kInvalidBlobUuid[] = "Blob does not exist";
 const char kInvalidBlobFilePath[] = "Blob file path is invalid";
 
 IndexedDBDatabaseError CreateBackendAbortError() {
@@ -35,49 +34,12 @@ IndexedDBDatabaseError CreateBackendAbortError() {
 
 }  // namespace
 
-// Expect to be created on IDB sequence and called/destroyed on IO thread.
-class TransactionImpl::IOHelper {
- public:
-  enum class LoadResultCode {
-    kNoop,
-    kAbort,
-    kInvalidBlobPath,
-    kSuccess,
-  };
-
-  struct LoadResult {
-    LoadResultCode code;
-    blink::mojom::IDBValuePtr value;
-    std::vector<IndexedDBBlobInfo> blob_info;
-  };
-
-  IOHelper(base::SequencedTaskRunner* idb_runner,
-           scoped_refptr<ChromeBlobStorageContext> blob_storage_context,
-           int64_t ipc_process_id);
-  ~IOHelper();
-
-  void LoadBlobsOnIOThread(blink::mojom::IDBValuePtr value,
-                           base::WaitableEvent* signal_when_finished,
-                           LoadResult* result);
-
- private:
-  // Friends to enable OnDestruct() delegation.
-  friend class BrowserThread;
-  friend class base::DeleteHelper<TransactionImpl::IOHelper>;
-  scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
-  int64_t ipc_process_id_;
-  SEQUENCE_CHECKER(sequence_checker_);
-};
-
 TransactionImpl::TransactionImpl(
     base::WeakPtr<IndexedDBTransaction> transaction,
     const url::Origin& origin,
     base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
     scoped_refptr<base::SequencedTaskRunner> idb_runner)
-    : io_helper_(new IOHelper(idb_runner.get(),
-                              dispatcher_host->blob_storage_context(),
-                              dispatcher_host->ipc_process_id())),
-      dispatcher_host_(dispatcher_host),
+    : dispatcher_host_(dispatcher_host),
       indexed_db_context_(dispatcher_host->context()),
       transaction_(std::move(transaction)),
       origin_(origin),
@@ -141,7 +103,7 @@ void TransactionImpl::DeleteObjectStore(int64_t object_store_id) {
 
 void TransactionImpl::Put(
     int64_t object_store_id,
-    blink::mojom::IDBValuePtr value_ptr,
+    blink::mojom::IDBValuePtr input_value,
     const blink::IndexedDBKey& key,
     blink::mojom::IDBPutMode mode,
     const std::vector<blink::IndexedDBIndexKeys>& index_keys,
@@ -149,55 +111,11 @@ void TransactionImpl::Put(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(dispatcher_host_);
 
-  IOHelper::LoadResult result;
-  if (value_ptr->blob_or_file_info.empty()) {
-    // If there are no blobs to process, we don't need to hop to the IO thread
-    // to load blobs.
-    result.code = IOHelper::LoadResultCode::kSuccess;
-    result.value = std::move(value_ptr);
-    result.blob_info = std::vector<IndexedDBBlobInfo>();
-  } else {
-    // TODO(crbug.com/932869): Remove IO thread hop entirely.
-    base::WaitableEvent signal_when_finished(
-        base::WaitableEvent::ResetPolicy::AUTOMATIC,
-        base::WaitableEvent::InitialState::NOT_SIGNALED);
-    // |io_helper_| is owned by |this| and this call is synchronized with a
-    // WaitableEvent, so |io_helper_| is guaranteed to remain alive throughout
-    // the duration of the LoadBlobsOnIOThread() invocation.
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&TransactionImpl::IOHelper::LoadBlobsOnIOThread,
-                       base::Unretained(io_helper_.get()), std::move(value_ptr),
-                       &signal_when_finished, &result));
-    signal_when_finished.Wait();
-  }
-
-  switch (result.code) {
-    case IOHelper::LoadResultCode::kNoop: {
-      IndexedDBDatabaseError error = CreateBackendAbortError();
-      std::move(callback).Run(
-          blink::mojom::IDBTransactionPutResult::NewErrorResult(
-              blink::mojom::IDBError::New(error.code(), error.message())));
-      return;
-    }
-    case IOHelper::LoadResultCode::kAbort: {
-      IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
-                                   kInvalidBlobUuid);
-      std::move(callback).Run(
-          blink::mojom::IDBTransactionPutResult::NewErrorResult(
-              blink::mojom::IDBError::New(error.code(), error.message())));
-
-      if (!transaction_)
-        return;
-
-      IndexedDBConnection* connection = transaction_->connection();
-      if (!connection->IsConnected())
-        return;
-
-      connection->AbortTransactionAndTearDownOnError(transaction_.get(), error);
-      return;
-    }
-    case IOHelper::LoadResultCode::kInvalidBlobPath: {
+  std::vector<IndexedDBBlobInfo> blob_infos;
+  if (!input_value->blob_or_file_info.empty()) {
+    bool security_policy_failure = false;
+    CreateBlobInfos(input_value, &blob_infos, &security_policy_failure);
+    if (security_policy_failure) {
       IndexedDBDatabaseError error = CreateBackendAbortError();
       std::move(callback).Run(
           blink::mojom::IDBTransactionPutResult::NewErrorResult(
@@ -205,139 +123,100 @@ void TransactionImpl::Put(
       mojo::ReportBadMessage(kInvalidBlobFilePath);
       return;
     }
-    case IOHelper::LoadResultCode::kSuccess: {
-      if (!transaction_) {
-        IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
-                                     "Unknown transaction.");
-        std::move(callback).Run(
-            blink::mojom::IDBTransactionPutResult::NewErrorResult(
-                blink::mojom::IDBError::New(error.code(), error.message())));
-        return;
-      }
-
-      IndexedDBConnection* connection = transaction_->connection();
-      if (!connection->IsConnected()) {
-        IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
-                                     "Not connected.");
-        std::move(callback).Run(
-            blink::mojom::IDBTransactionPutResult::NewErrorResult(
-                blink::mojom::IDBError::New(error.code(), error.message())));
-        return;
-      }
-
-      uint64_t commit_size = result.value->bits.size() + key.size_estimate();
-      IndexedDBValue value;
-      // TODO(crbug.com/902498): Use mojom traits to map directly to
-      // std::string.
-      value.bits =
-          std::string(result.value->bits.begin(), result.value->bits.end());
-      // Release result.value->bits std::vector.
-      result.value->bits.clear();
-      swap(value.blob_info, result.blob_info);
-
-      blink::mojom::IDBTransaction::PutCallback aborting_callback =
-          CreateCallbackAbortOnDestruct<
-              blink::mojom::IDBTransaction::PutCallback,
-              blink::mojom::IDBTransactionPutResultPtr>(
-              std::move(callback), transaction_->AsWeakPtr());
-
-      std::unique_ptr<IndexedDBDatabase::PutOperationParams> params(
-          std::make_unique<IndexedDBDatabase::PutOperationParams>());
-      params->object_store_id = object_store_id;
-      params->value.swap(value);
-      params->key = std::make_unique<blink::IndexedDBKey>(key);
-      params->put_mode = mode;
-      params->callback = std::move(aborting_callback);
-      params->index_keys = index_keys;
-      transaction_->ScheduleTask(BindWeakOperation(
-          &IndexedDBDatabase::PutOperation, connection->database()->AsWeakPtr(),
-          std::move(params)));
-
-      // Size can't be big enough to overflow because it represents the
-      // actual bytes passed through IPC.
-      transaction_->set_size(transaction_->size() + commit_size);
-      return;
-    }
   }
-}
 
-TransactionImpl::IOHelper::IOHelper(
-    base::SequencedTaskRunner* idb_runner,
-    scoped_refptr<ChromeBlobStorageContext> blob_storage_context,
-    int64_t ipc_process_id)
-    : blob_storage_context_(blob_storage_context),
-      ipc_process_id_(ipc_process_id) {
-  DCHECK(idb_runner->RunsTasksInCurrentSequence());
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-}
-
-TransactionImpl::IOHelper::~IOHelper() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
-
-void TransactionImpl::IOHelper::LoadBlobsOnIOThread(
-    blink::mojom::IDBValuePtr value,
-    base::WaitableEvent* signal_when_finished,
-    LoadResult* result) {
-  // TODO(enne): once blob data handle is removed from IndexedDBBlobInfo
-  // then this will not have to be done on the IO thread any more.
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::ScopedClosureRunner signal_runner(
-      base::BindOnce([](base::WaitableEvent* signal) { signal->Signal(); },
-                     signal_when_finished));
-
-  if (!blob_storage_context_) {
-    result->code = IOHelper::LoadResultCode::kNoop;
+  if (!transaction_) {
+    IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
+                                 "Unknown transaction.");
+    std::move(callback).Run(
+        blink::mojom::IDBTransactionPutResult::NewErrorResult(
+            blink::mojom::IDBError::New(error.code(), error.message())));
     return;
   }
+
+  IndexedDBConnection* connection = transaction_->connection();
+  if (!connection->IsConnected()) {
+    IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
+                                 "Not connected.");
+    std::move(callback).Run(
+        blink::mojom::IDBTransactionPutResult::NewErrorResult(
+            blink::mojom::IDBError::New(error.code(), error.message())));
+    return;
+  }
+
+  uint64_t commit_size = input_value->bits.size() + key.size_estimate();
+  std::unique_ptr<IndexedDBDatabase::PutOperationParams> params(
+      std::make_unique<IndexedDBDatabase::PutOperationParams>());
+  IndexedDBValue& output_value = params->value;
+
+  // TODO(crbug.com/902498): Use mojom traits to map directly to
+  // std::string.
+  output_value.bits =
+      std::string(input_value->bits.begin(), input_value->bits.end());
+  // Release value->bits std::vector.
+  input_value->bits.clear();
+  swap(output_value.blob_info, blob_infos);
+
+  blink::mojom::IDBTransaction::PutCallback aborting_callback =
+      CreateCallbackAbortOnDestruct<blink::mojom::IDBTransaction::PutCallback,
+                                    blink::mojom::IDBTransactionPutResultPtr>(
+          std::move(callback), transaction_->AsWeakPtr());
+
+  params->object_store_id = object_store_id;
+  params->key = std::make_unique<blink::IndexedDBKey>(key);
+  params->put_mode = mode;
+  params->callback = std::move(aborting_callback);
+  params->index_keys = index_keys;
+  transaction_->ScheduleTask(BindWeakOperation(
+      &IndexedDBDatabase::PutOperation, connection->database()->AsWeakPtr(),
+      std::move(params)));
+
+  // Size can't be big enough to overflow because it represents the
+  // actual bytes passed through IPC.
+  transaction_->set_size(transaction_->size() + commit_size);
+}
+
+void TransactionImpl::CreateBlobInfos(
+    blink::mojom::IDBValuePtr& value,
+    std::vector<IndexedDBBlobInfo>* blob_infos,
+    bool* security_policy_failure) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  *security_policy_failure = false;
 
   // Should only be called if there are blobs to process.
   CHECK(!value->blob_or_file_info.empty());
 
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
+  int64_t ipc_process_id = dispatcher_host_->ipc_process_id();
 
   base::CheckedNumeric<uint64_t> total_blob_size = 0;
-  std::vector<IndexedDBBlobInfo> blob_info(value->blob_or_file_info.size());
+  blob_infos->resize(value->blob_or_file_info.size());
   for (size_t i = 0; i < value->blob_or_file_info.size(); ++i) {
     blink::mojom::IDBBlobInfoPtr& info = value->blob_or_file_info[i];
-
-    std::unique_ptr<storage::BlobDataHandle> handle =
-        blob_storage_context_->context()->GetBlobDataFromUUID(info->uuid);
-
-    // Due to known issue crbug.com/351753, blobs can die while being passed to
-    // a different process. So this case must be handled gracefully.
-    // TODO(dmurph): Revert back to using mojo::ReportBadMessage once fixed.
-    if (!handle) {
-      result->code = LoadResultCode::kAbort;
-      return;
-    }
     uint64_t size = info->size;
     total_blob_size += size;
 
     if (info->file) {
       if (!info->file->path.empty() &&
-          !policy->CanReadFile(ipc_process_id_, info->file->path)) {
-        result->code = LoadResultCode::kInvalidBlobPath;
+          !policy->CanReadFile(ipc_process_id, info->file->path)) {
+        blob_infos->clear();
+        *security_policy_failure = true;
         return;
       }
-      blob_info[i] = IndexedDBBlobInfo(std::move(handle), std::move(info->blob),
-                                       info->file->path, info->file->name,
-                                       info->mime_type);
+      (*blob_infos)[i] =
+          IndexedDBBlobInfo(std::move(info->blob), info->uuid, info->file->path,
+                            info->file->name, info->mime_type);
       if (info->size != -1) {
-        blob_info[i].set_last_modified(info->file->last_modified);
-        blob_info[i].set_size(info->size);
+        (*blob_infos)[i].set_last_modified(info->file->last_modified);
+        (*blob_infos)[i].set_size(info->size);
       }
     } else {
-      blob_info[i] = IndexedDBBlobInfo(std::move(handle), std::move(info->blob),
-                                       info->mime_type, info->size);
+      (*blob_infos)[i] = IndexedDBBlobInfo(std::move(info->blob), info->uuid,
+                                           info->mime_type, info->size);
     }
   }
-  result->code = LoadResultCode::kSuccess;
-  result->value = std::move(value);
-  result->blob_info = std::move(blob_info);
 }
 
 void TransactionImpl::Commit(int64_t num_errors_handled) {

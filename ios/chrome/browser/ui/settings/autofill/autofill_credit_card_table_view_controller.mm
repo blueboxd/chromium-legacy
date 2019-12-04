@@ -463,12 +463,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - Getters and Setter
 
 - (BOOL)isAutofillCreditCardEnabled {
-  return autofill::prefs::IsCreditCardAutofillEnabled(
+  return autofill::prefs::IsAutofillCreditCardEnabled(
       _browserState->GetPrefs());
 }
 
 - (void)setAutofillCreditCardEnabled:(BOOL)isEnabled {
-  return autofill::prefs::SetCreditCardAutofillEnabled(
+  return autofill::prefs::SetAutofillCreditCardEnabled(
       _browserState->GetPrefs(), isEnabled);
 }
 

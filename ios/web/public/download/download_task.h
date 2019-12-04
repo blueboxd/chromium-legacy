@@ -66,6 +66,10 @@ class DownloadTask {
   // differ from the final download URL if there were redirects.
   virtual const GURL& GetOriginalUrl() const = 0;
 
+  // HTTP method for this download task (only @"GET" and @"POST" are currently
+  // supported).
+  virtual NSString* GetHttpMethod() const = 0;
+
   // Returns true if the download is in a terminal state. This includes
   // completed downloads, cancelled downloads, and interrupted downloads that
   // can't be resumed.

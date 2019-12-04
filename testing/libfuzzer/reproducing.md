@@ -21,7 +21,7 @@ That means there is a testcase that can be used to reliably reproduce the crash.
 
    For the rest of this walkthrough, we call the path of this
    file: `$TESTCASE_PATH` and the fuzz target you want to reproduce a
-   crash on: `$FUZZER_NAME` (provided as "Fuzz target binary" in the bug
+   crash on: `$FUZZER_NAME` (provided as "Fuzz Target" in the bug
    description).
 
 2. Generate gn build configuration:

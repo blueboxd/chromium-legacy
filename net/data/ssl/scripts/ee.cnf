@@ -105,6 +105,9 @@ subjectAltName = @spdy_pooling
 [req_wildcard]
 subjectAltName = @wildcard
 
+[req_test_names]
+subjectAltName = @test_names
+
 [more_san_sanity]
 CN=127.0.0.3
 
@@ -121,6 +124,16 @@ DNS.3 = blahblahblahblah.com
 
 [wildcard]
 DNS.1 = *.example.org
+
+[test_names]
+DNS.1 = a.test
+DNS.2 = *.a.test
+DNS.3 = b.test
+DNS.4 = *.b.test
+DNS.5 = c.test
+DNS.6 = *.c.test
+DNS.7 = d.test
+DNS.8 = *.d.test
 
 [subj_rsa_no_extension]
 CN = RSA-2048 no keyUsage extension

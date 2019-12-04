@@ -117,11 +117,13 @@ static constexpr base::TimeDelta kUnusedPreloadTimeout =
 static void UpdateSuddenTerminationStatus(
     LocalDOMWindow* dom_window,
     bool added_listener,
-    SuddenTerminationDisablerType disabler_type) {
+    blink::mojom::SuddenTerminationDisablerType disabler_type) {
   Platform::Current()->SuddenTerminationChanged(!added_listener);
-  if (dom_window->GetFrame() && dom_window->GetFrame()->Client())
-    dom_window->GetFrame()->Client()->SuddenTerminationDisablerChanged(
-        added_listener, disabler_type);
+  if (dom_window->GetFrame()) {
+    dom_window->GetFrame()
+        ->GetLocalFrameHostRemote()
+        .SuddenTerminationDisablerChanged(added_listener, disabler_type);
+  }
 }
 
 using DOMWindowSet = HeapHashCountedSet<WeakMember<LocalDOMWindow>>;
@@ -144,7 +146,9 @@ static void TrackUnloadEventListener(LocalDOMWindow* dom_window) {
   DOMWindowSet& set = WindowsWithUnloadEventListeners();
   if (set.insert(dom_window).is_new_entry) {
     // The first unload handler was added.
-    UpdateSuddenTerminationStatus(dom_window, true, kUnloadHandler);
+    UpdateSuddenTerminationStatus(
+        dom_window, true,
+        blink::mojom::SuddenTerminationDisablerType::kUnloadHandler);
   }
 }
 
@@ -155,7 +159,9 @@ static void UntrackUnloadEventListener(LocalDOMWindow* dom_window) {
     return;
   if (set.erase(it)) {
     // The last unload handler was removed.
-    UpdateSuddenTerminationStatus(dom_window, false, kUnloadHandler);
+    UpdateSuddenTerminationStatus(
+        dom_window, false,
+        blink::mojom::SuddenTerminationDisablerType::kUnloadHandler);
   }
 }
 
@@ -165,14 +171,18 @@ static void UntrackAllUnloadEventListeners(LocalDOMWindow* dom_window) {
   if (it == set.end())
     return;
   set.RemoveAll(it);
-  UpdateSuddenTerminationStatus(dom_window, false, kUnloadHandler);
+  UpdateSuddenTerminationStatus(
+      dom_window, false,
+      blink::mojom::SuddenTerminationDisablerType::kUnloadHandler);
 }
 
 static void TrackBeforeUnloadEventListener(LocalDOMWindow* dom_window) {
   DOMWindowSet& set = WindowsWithBeforeUnloadEventListeners();
   if (set.insert(dom_window).is_new_entry) {
     // The first beforeunload handler was added.
-    UpdateSuddenTerminationStatus(dom_window, true, kBeforeUnloadHandler);
+    UpdateSuddenTerminationStatus(
+        dom_window, true,
+        blink::mojom::SuddenTerminationDisablerType::kBeforeUnloadHandler);
   }
 }
 
@@ -183,7 +193,9 @@ static void UntrackBeforeUnloadEventListener(LocalDOMWindow* dom_window) {
     return;
   if (set.erase(it)) {
     // The last beforeunload handler was removed.
-    UpdateSuddenTerminationStatus(dom_window, false, kBeforeUnloadHandler);
+    UpdateSuddenTerminationStatus(
+        dom_window, false,
+        blink::mojom::SuddenTerminationDisablerType::kBeforeUnloadHandler);
   }
 }
 
@@ -193,7 +205,9 @@ static void UntrackAllBeforeUnloadEventListeners(LocalDOMWindow* dom_window) {
   if (it == set.end())
     return;
   set.RemoveAll(it);
-  UpdateSuddenTerminationStatus(dom_window, false, kBeforeUnloadHandler);
+  UpdateSuddenTerminationStatus(
+      dom_window, false,
+      blink::mojom::SuddenTerminationDisablerType::kBeforeUnloadHandler);
 }
 
 LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
@@ -1539,12 +1553,9 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   // ensure the proper referrer is set now.
   // TODO(domfarolino): Stop setting ResourceRequest's HTTP Referrer and store
   // this is a separate member. See https://crbug.com/850813.
-  const SecurityOrigin* origin =
-      active_document ? active_document->GetSecurityOrigin()
-                      : SecurityOrigin::Create(completed_url).get();
   frame_request.GetResourceRequest().SetHttpReferrer(
       SecurityPolicy::GenerateReferrer(
-          active_document->GetReferrerPolicy(), origin, completed_url,
+          active_document->GetReferrerPolicy(), completed_url,
           window_features.noreferrer ? Referrer::NoReferrer()
                                      : active_document->OutgoingReferrer()));
 

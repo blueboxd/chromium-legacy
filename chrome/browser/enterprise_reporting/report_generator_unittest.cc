@@ -13,6 +13,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
+#include "chrome/browser/enterprise_reporting/report_request_definition.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -29,7 +30,6 @@ namespace em = enterprise_management;
 namespace enterprise_reporting {
 namespace {
 
-#if !defined(OS_CHROMEOS)
 constexpr char kProfile[] = "Profile";
 
 const char kPluginName[] = "plugin";
@@ -37,6 +37,7 @@ const char kPluginVersion[] = "1.0";
 const char kPluginDescription[] = "This is a plugin.";
 const char kPluginFileName[] = "file_name";
 
+#if !defined(OS_CHROMEOS)
 // We only upload serial number on Windows.
 void VerifySerialNumber(const std::string& serial_number) {
 #if defined(OS_WIN)
@@ -45,6 +46,7 @@ void VerifySerialNumber(const std::string& serial_number) {
   EXPECT_EQ(std::string(), serial_number);
 #endif
 }
+#endif
 
 // Controls the way of Profile creation which affects report.
 enum ProfileStatus {
@@ -76,12 +78,12 @@ void AddExtensionToProfile(TestingProfile* profile) {
                                      .Build());
 }
 
-#endif
 }  // namespace
 
-#if !defined(OS_CHROMEOS)
 class ReportGeneratorTest : public ::testing::Test {
  public:
+  using ReportRequest = definition::ReportRequest;
+
   ReportGeneratorTest()
       : profile_manager_(TestingBrowserProcess::GetGlobal()) {}
   ~ReportGeneratorTest() override = default;
@@ -141,11 +143,10 @@ class ReportGeneratorTest : public ::testing::Test {
     plugin_service->RefreshPlugins();
   }
 
-  std::vector<std::unique_ptr<em::ChromeDesktopReportRequest>>
-  GenerateRequests() {
+  std::vector<std::unique_ptr<ReportRequest>> GenerateRequests() {
     histogram_tester_ = std::make_unique<base::HistogramTester>();
     base::RunLoop run_loop;
-    std::vector<std::unique_ptr<em::ChromeDesktopReportRequest>> rets;
+    std::vector<std::unique_ptr<ReportRequest>> rets;
     generator_.Generate(base::BindLambdaForTesting(
         [&run_loop, &rets](ReportGenerator::ReportRequests requests) {
           while (!requests.empty()) {
@@ -193,8 +194,7 @@ class ReportGeneratorTest : public ::testing::Test {
     }
   }
 
-  void VerifyMetrics(
-      std::vector<std::unique_ptr<em::ChromeDesktopReportRequest>>& rets) {
+  void VerifyMetrics(std::vector<std::unique_ptr<ReportRequest>>& rets) {
     histogram_tester_->ExpectUniqueSample(
         "Enterprise.CloudReportingRequestCount", rets.size(), 1);
     histogram_tester_->ExpectUniqueSample(
@@ -224,6 +224,10 @@ TEST_F(ReportGeneratorTest, GenerateBasicReport) {
   EXPECT_EQ(1u, requests.size());
 
   auto* basic_request = requests[0].get();
+
+  // In the ChromeOsUserReportRequest for Chrome OS, these fields are not
+  // existing. Therefore, they are skipped according to current environment.
+#if !defined(OS_CHROMEOS)
   EXPECT_NE(std::string(), basic_request->computer_name());
   EXPECT_NE(std::string(), basic_request->os_user_name());
   VerifySerialNumber(basic_request->serial_number());
@@ -233,6 +237,7 @@ TEST_F(ReportGeneratorTest, GenerateBasicReport) {
   EXPECT_NE(std::string(), os_report.name());
   EXPECT_NE(std::string(), os_report.arch());
   EXPECT_NE(std::string(), os_report.version());
+#endif
 
   EXPECT_TRUE(basic_request->has_browser_report());
   auto& browser_report = basic_request->browser_report();
@@ -250,7 +255,5 @@ TEST_F(ReportGeneratorTest, GenerateBasicReport) {
   VerifyProfileReport(/*active_profile_names*/ std::set<std::string>(),
                       profile_names, browser_report);
 }
-
-#endif
 
 }  // namespace enterprise_reporting

@@ -175,6 +175,13 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
                        int end,
                        int width,
                        int height));
+  void RouteNodeIDPlusEventFunction(
+      const std::string& name,
+      void (*callback)(v8::Isolate* isolate,
+                       v8::ReturnValue<v8::Value> result,
+                       AutomationAXTreeWrapper* tree_wrapper,
+                       ui::AXNode* node,
+                       ax::mojom::Event event_type));
 
   //
   // Access the cached accessibility trees and properties of their nodes.

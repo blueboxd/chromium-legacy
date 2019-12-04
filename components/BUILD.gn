@@ -8,6 +8,7 @@ import("//build/config/ui.gni")
 import("//components/nacl/features.gni")
 import("//components/safe_browsing/buildflags.gni")
 import("//components/ui_devtools/devtools.gni")
+import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//printing/buildflags/buildflags.gni")
@@ -180,8 +181,11 @@ test("components_unittests") {
     deps += [
       "//components/media_message_center:unit_tests",
       "//components/ui_devtools:unit_tests",
-      "//components/ui_devtools/views:unit_tests",
     ]
+  }
+
+  if (toolkit_views && enable_extensions) {
+    deps += [ "//components/ui_devtools/views:unit_tests" ]
   }
 
   if (use_viz_devtools) {

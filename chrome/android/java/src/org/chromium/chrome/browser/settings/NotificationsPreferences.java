@@ -42,7 +42,7 @@ public class NotificationsPreferences extends PreferenceFragmentCompat {
         assert Build.VERSION.SDK_INT < Build.VERSION_CODES.O
             : "NotificationsPreferences should only be used pre-O.";
 
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.notifications_preferences);
+        SettingsUtils.addPreferencesFromResource(this, R.xml.notifications_preferences);
         getActivity().setTitle(R.string.prefs_notifications);
 
         mSuggestionsPref = (ChromeSwitchPreference) findPreference(PREF_SUGGESTIONS);

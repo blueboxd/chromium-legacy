@@ -38,9 +38,10 @@ mojom::XRFrameDataPtr OpenXrRenderLoop::GetNextFrameData() {
   frame_data->time_delta =
       base::TimeDelta::FromNanoseconds(openxr_->GetPredictedDisplayTime());
 
-  frame_data->pose = mojom::VRPose::New();
-  frame_data->pose->input_state =
+  frame_data->input_state =
       input_helper_->GetInputState(openxr_->GetPredictedDisplayTime());
+
+  frame_data->pose = mojom::VRPose::New();
 
   base::Optional<gfx::Quaternion> orientation;
   base::Optional<gfx::Point3F> position;

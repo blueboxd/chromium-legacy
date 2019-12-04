@@ -120,6 +120,9 @@ TEST_F(LocalPrinterHandlerChromeosTest, GetPrinters) {
   std::unique_ptr<base::ListValue> printers;
   bool is_done = false;
 
+  // TODO(1023589): Add the eulaUrl field to the test printers and test that
+  // the field is properly set. This is done after the Printer object has
+  // the EULA field.
   Printer saved_printer =
       CreateTestPrinter("printer1", "saved", "description1");
   Printer enterprise_printer =
@@ -147,7 +150,8 @@ TEST_F(LocalPrinterHandlerChromeosTest, GetPrinters) {
         "printerDescription": "description1",
         "printerName": "saved",
         "printerOptions": {
-          "cupsEnterprisePrinter": "false"
+          "cupsEnterprisePrinter": "false",
+          "printerEulaUrl": ""
         }
       },
       {
@@ -156,7 +160,8 @@ TEST_F(LocalPrinterHandlerChromeosTest, GetPrinters) {
         "printerDescription": "description2",
         "printerName": "enterprise",
         "printerOptions": {
-          "cupsEnterprisePrinter": "true"
+          "cupsEnterprisePrinter": "true",
+          "printerEulaUrl": ""
         }
       },
       {
@@ -165,7 +170,8 @@ TEST_F(LocalPrinterHandlerChromeosTest, GetPrinters) {
         "printerDescription": "description3",
         "printerName": "automatic",
         "printerOptions": {
-          "cupsEnterprisePrinter": "false"
+          "cupsEnterprisePrinter": "false",
+          "printerEulaUrl": ""
         }
       }
     ]

@@ -12,18 +12,14 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/process/launch.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
-#include "base/strings/string_split.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #include "base/win/win_util.h"
 #include "chrome/chrome_cleaner/ipc/sandbox.h"
-#include "chrome/chrome_cleaner/logging/scoped_logging.h"
 #include "sandbox/win/src/sandbox_factory.h"
 
 namespace chrome_cleaner {
@@ -31,8 +27,6 @@ namespace chrome_cleaner {
 namespace {
 
 constexpr char kMojoPipeTokenSwitch[] = "mojo-pipe-token";
-
-constexpr wchar_t kIPCTestUtilLogSuffix[] = L"ipc-test-util";
 
 class MojoSandboxSetupHooks : public SandboxSetupHooks {
  public:
@@ -49,6 +43,7 @@ class MojoSandboxSetupHooks : public SandboxSetupHooks {
     parent_process_->CreateMojoPipe(command_line, &handles_to_inherit);
     for (HANDLE handle : handles_to_inherit)
       policy->AddHandleToShare(handle);
+    parent_process_->child_process_logger().UpdateSandboxPolicy(policy);
     return RESULT_CODE_SUCCESS;
   }
 
@@ -61,61 +56,10 @@ class MojoSandboxSetupHooks : public SandboxSetupHooks {
 
  private:
   SandboxedParentProcess* parent_process_;
+  base::win::ScopedHandle child_stdout_write_handle_;
 };
 
 }  // namespace
-
-namespace internal {
-
-base::FilePath::StringPieceType GetLogPathSuffix() {
-  return kIPCTestUtilLogSuffix;
-}
-
-base::FilePath GetLogPath() {
-  return ScopedLogging::GetLogFilePath(kIPCTestUtilLogSuffix);
-}
-
-bool DeleteChildProcessLogs() {
-  // Delete the child process log file if existing.
-  const base::FilePath log_path = GetLogPath();
-  if (!base::DeleteFile(log_path, false)) {
-    LOG(ERROR) << "Can't delete log file from previous run: "
-               << log_path.value();
-    return false;
-  }
-  return true;
-}
-
-void PrintChildProcessLogs() {
-  const base::FilePath log_path = GetLogPath();
-  if (log_path.empty()) {
-    LOG(ERROR) << "Child process log path is empty";
-    return;
-  }
-
-  if (!base::PathExists(log_path)) {
-    LOG(ERROR) << "Child process log file doesn't exist";
-    return;
-  }
-
-  // Collect the child process log file, and dump the contents, to help
-  // debugging failures.
-  std::string log_file_contents;
-  if (!base::ReadFileToString(log_path, &log_file_contents)) {
-    LOG(ERROR) << "Failed to read child process log file";
-    return;
-  }
-
-  std::vector<base::StringPiece> lines =
-      base::SplitStringPiece(log_file_contents, "\n", base::TRIM_WHITESPACE,
-                             base::SPLIT_WANT_NONEMPTY);
-  LOG(ERROR) << "Dumping child process logs";
-  for (const auto& line : lines) {
-    LOG(ERROR) << "Child process: " << line;
-  }
-}
-
-}  // namespace internal
 
 ParentProcess::ParentProcess(scoped_refptr<MojoTaskRunner> mojo_task_runner)
     : command_line_(base::GetMultiProcessTestChildBaseCommandLine()),
@@ -174,11 +118,12 @@ bool ParentProcess::LaunchConnectedChildProcess(
     const std::string& child_main_function,
     base::TimeDelta timeout,
     int32_t* exit_code) {
-  if (!internal::DeleteChildProcessLogs())
+  if (!child_process_logger_.Initialize())
     return false;
-
-  if (!PrepareAndLaunchTestChildProcess(child_main_function))
+  if (!PrepareAndLaunchTestChildProcess(child_main_function)) {
+    child_process_logger_.DumpLogs();
     return false;
+  }
 
   CreateImplOnIPCThread(std::move(mojo_pipe_));
   const bool success = base::WaitForMultiprocessTestChildExit(
@@ -189,8 +134,9 @@ bool ParentProcess::LaunchConnectedChildProcess(
   }
   DestroyImplOnIPCThread();
 
-  if (!success || *exit_code != 0)
-    internal::PrintChildProcessLogs();
+  if (!success || *exit_code != 0) {
+    child_process_logger_.DumpLogs();
+  }
 
   return success;
 }
@@ -199,6 +145,7 @@ bool ParentProcess::PrepareAndLaunchTestChildProcess(
     const std::string& child_main_function) {
   base::LaunchOptions launch_options;
   launch_options.handles_to_inherit = extra_handles_to_inherit_;
+  child_process_logger_.UpdateLaunchOptions(&launch_options);
   CreateMojoPipe(&command_line_, &launch_options.handles_to_inherit);
 
   base::Process child_process = base::SpawnMultiProcessTestChild(
@@ -258,8 +205,7 @@ bool SandboxedParentProcess::PrepareAndLaunchTestChildProcess(
 
 ChildProcess::ChildProcess(scoped_refptr<MojoTaskRunner> mojo_task_runner)
     : mojo_task_runner_(mojo_task_runner),
-      command_line_(base::CommandLine::ForCurrentProcess()),
-      scopped_logging_(new ScopedLogging(kIPCTestUtilLogSuffix)) {
+      command_line_(base::CommandLine::ForCurrentProcess()) {
   sandbox::TargetServices* target_services =
       sandbox::SandboxFactory::GetTargetServices();
   if (!target_services)

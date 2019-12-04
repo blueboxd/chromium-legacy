@@ -937,14 +937,6 @@ unsigned LocalFrameClientImpl::BackForwardLength() {
          webview->Client()->HistoryForwardListCount();
 }
 
-void LocalFrameClientImpl::SuddenTerminationDisablerChanged(
-    bool present,
-    SuddenTerminationDisablerType type) {
-  if (web_frame_->Client()) {
-    web_frame_->Client()->SuddenTerminationDisablerChanged(present, type);
-  }
-}
-
 BlameContext* LocalFrameClientImpl::GetFrameBlameContext() {
   if (WebLocalFrameClient* client = web_frame_->Client())
     return client->GetFrameBlameContext();

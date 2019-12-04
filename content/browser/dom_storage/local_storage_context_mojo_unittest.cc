@@ -16,10 +16,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
+#include "components/services/storage/dom_storage/legacy_dom_storage_database.h"
 #include "components/services/storage/dom_storage/storage_area_test_util.h"
 #include "components/services/storage/public/cpp/constants.h"
-#include "content/browser/dom_storage/dom_storage_database.h"
-#include "content/browser/dom_storage/dom_storage_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_usage_info.h"
 #include "content/public/test/browser_task_environment.h"
@@ -705,8 +704,8 @@ TEST_F(LocalStorageContextMojoTest, Migration) {
   const base::FilePath old_db_path = local_storage_path.Append(
       LocalStorageContextMojo::LegacyDatabaseFileNameFromOrigin(origin1));
   {
-    DOMStorageDatabase db(old_db_path);
-    DOMStorageValuesMap data;
+    storage::LegacyDomStorageDatabase db(old_db_path);
+    storage::LegacyDomStorageValuesMap data;
     data[key] = base::NullableString16(value, false);
     data[key2] = base::NullableString16(value, false);
     db.CommitChanges(false, data);

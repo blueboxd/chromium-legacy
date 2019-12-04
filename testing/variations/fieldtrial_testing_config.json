@@ -1360,6 +1360,28 @@
             ]
         }
     ],
+    "BlinkSchedulerVeryHighPriorityForCompositingExperiments": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "VeryHighPriorityForCompositingAfterDelay100",
+                    "params": {
+                        "CompositingDelayLength": "100"
+                    },
+                    "enable_features": [
+                        "BlinkSchedulerVeryHighPriorityForCompositingAfterDelay"
+                    ]
+                }
+            ]
+        }
+    ],
     "BlockPromptsIfIgnoredOften": [
         {
             "platforms": [
@@ -1566,6 +1588,26 @@
                     "name": "Enabled_Launch",
                     "enable_features": [
                         "ChromeSmartSelection"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ChromeStart": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "start_surface_variation": "tasksonly",
+                        "tab_switcher_on_return_time_ms": "3600000"
+                    },
+                    "enable_features": [
+                        "StartSurfaceAndroid",
+                        "TabSwitcherOnReturn"
                     ]
                 }
             ]
@@ -2900,7 +2942,7 @@
             ]
         }
     ],
-    "HTTPReallyBadFinal": [
+    "HTTPDangerWarning": [
         {
             "platforms": [
                 "android",
@@ -2914,7 +2956,7 @@
                 {
                     "name": "enabled",
                     "params": {
-                        "treatment": "dangerous"
+                        "treatment": "danger-warning"
                     },
                     "enable_features": [
                         "MarkHttpAs"

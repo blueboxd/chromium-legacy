@@ -52,19 +52,19 @@
 #pragma mark - Autofill
 
 - (void)setProfileAutofillEnabled:(BOOL)enabled {
-  autofill::prefs::SetProfileAutofillEnabled(_prefService, enabled);
+  autofill::prefs::SetAutofillProfileEnabled(_prefService, enabled);
 }
 
 - (BOOL)isProfileAutofillEnabled {
-  return autofill::prefs::IsProfileAutofillEnabled(_prefService);
+  return autofill::prefs::IsAutofillProfileEnabled(_prefService);
 }
 
 - (void)setCreditCardAutofillEnabled:(BOOL)enabled {
-  autofill::prefs::SetCreditCardAutofillEnabled(_prefService, enabled);
+  autofill::prefs::SetAutofillCreditCardEnabled(_prefService, enabled);
 }
 
 - (BOOL)isCreditCardAutofillEnabled {
-  return autofill::prefs::IsCreditCardAutofillEnabled(_prefService);
+  return autofill::prefs::IsAutofillCreditCardEnabled(_prefService);
 }
 
 - (void)setPasswordAutofillEnabled:(BOOL)enabled {

@@ -577,13 +577,6 @@ TEST_F(TabLifecycleUnitTest, CannotProactivelyDiscardTabWithFaviconHeuristic) {
       &SiteCharacteristicsDataWriter::NotifyUpdatesFaviconInBackground);
 }
 
-TEST_F(TabLifecycleUnitTest,
-       CannotProactivelyDiscardTabWithNotificationsHeuristic) {
-  TestCannotDiscardBasedOnHeuristicUsage(
-      DecisionFailureReason::HEURISTIC_NOTIFICATIONS,
-      &SiteCharacteristicsDataWriter::NotifyUsesNotificationsInBackground);
-}
-
 TEST_F(TabLifecycleUnitTest, CannotProactivelyDiscardTabWithTitleHeuristic) {
   TestCannotDiscardBasedOnHeuristicUsage(
       DecisionFailureReason::HEURISTIC_TITLE,

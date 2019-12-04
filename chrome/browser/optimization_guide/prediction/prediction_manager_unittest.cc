@@ -14,6 +14,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
+#include "chrome/browser/optimization_guide/optimization_guide_util.h"
 #include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
 #include "chrome/browser/optimization_guide/prediction/prediction_model.h"
 #include "chrome/browser/optimization_guide/prediction/prediction_model_fetcher.h"
@@ -473,6 +474,7 @@ TEST_F(PredictionManagerTest,
 }
 
 TEST_F(PredictionManagerTest, OptimizationTargetNotRegisteredForNavigation) {
+  base::HistogramTester histogram_tester;
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           GURL("https://foo.com"));
@@ -505,10 +507,21 @@ TEST_F(PredictionManagerTest, OptimizationTargetNotRegisteredForNavigation) {
                    ->GetModelPredictionScoreForOptimizationTarget(
                        optimization_guide::proto::OPTIMIZATION_TARGET_UNKNOWN)
                    .has_value());
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionModelEvaluationLatency." +
+          GetStringNameForOptimizationTarget(
+              optimization_guide::proto::OPTIMIZATION_TARGET_UNKNOWN),
+      0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionModelEvaluationLatency." +
+          GetStringNameForOptimizationTarget(
+              optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
+      0);
 }
 
 TEST_F(PredictionManagerTest,
        NoPredictionModelForRegisteredOptimizationTarget) {
+  base::HistogramTester histogram_tester;
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           GURL("https://foo.com"));
@@ -533,9 +546,16 @@ TEST_F(PredictionManagerTest,
           ->GetModelPredictionScoreForOptimizationTarget(
               optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD)
           .has_value());
+
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionModelEvaluationLatency." +
+          GetStringNameForOptimizationTarget(
+              optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
+      0);
 }
 
 TEST_F(PredictionManagerTest, EvaluatePredictionModel) {
+  base::HistogramTester histogram_tester;
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           GURL("https://foo.com"));
@@ -563,6 +583,12 @@ TEST_F(PredictionManagerTest, EvaluatePredictionModel) {
               proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
   EXPECT_TRUE(test_prediction_model);
   EXPECT_TRUE(test_prediction_model->WasModelEvaluated());
+
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionModelEvaluationLatency." +
+          GetStringNameForOptimizationTarget(
+              optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
+      1);
 }
 
 TEST_F(PredictionManagerTest, UpdateModelWithSameVersion) {

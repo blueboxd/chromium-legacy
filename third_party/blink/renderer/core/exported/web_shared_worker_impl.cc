@@ -223,7 +223,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
       nullptr /* origin_trial_tokens */, devtools_worker_token,
       std::move(worker_settings), kV8CacheOptionsDefault,
       nullptr /* worklet_module_response_map */,
-      service_manager::mojom::blink::InterfaceProviderPtrInfo(
+      mojo::PendingRemote<service_manager::mojom::blink::InterfaceProvider>(
           std::move(interface_provider), 0u),
       mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>(
           std::move(browser_interface_broker),

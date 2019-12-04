@@ -24,8 +24,8 @@
 
 using ShowVirtualKeyboard =
     password_manager::PasswordManagerDriver::ShowVirtualKeyboard;
-using password_manager::CredentialPair;
 using password_manager::PasswordManagerDriver;
+using password_manager::UiCredential;
 
 namespace {
 
@@ -52,7 +52,7 @@ TouchToFillController::TouchToFillController(
 
 TouchToFillController::~TouchToFillController() = default;
 
-void TouchToFillController::Show(base::span<const CredentialPair> credentials,
+void TouchToFillController::Show(base::span<const UiCredential> credentials,
                                  base::WeakPtr<PasswordManagerDriver> driver) {
   DCHECK(!driver_ || driver_.get() == driver.get());
   driver_ = std::move(driver);
@@ -68,15 +68,15 @@ void TouchToFillController::Show(base::span<const CredentialPair> credentials,
 }
 
 void TouchToFillController::OnCredentialSelected(
-    const CredentialPair& credential) {
+    const UiCredential& credential) {
   if (!driver_)
     return;
 
   password_manager::metrics_util::LogFilledCredentialIsFromAndroidApp(
-      password_manager::IsValidAndroidFacetURI(credential.origin_url.spec()));
+      password_manager::IsValidAndroidFacetURI(credential.origin_url().spec()));
   driver_->TouchToFillClosed(ShowVirtualKeyboard(false));
   std::exchange(driver_, nullptr)
-      ->FillSuggestion(credential.username, credential.password);
+      ->FillSuggestion(credential.username(), credential.password());
 
   ukm::builders::TouchToFill_Shown(source_id_)
       .SetUserAction(static_cast<int64_t>(UserAction::kSelectedCredential))

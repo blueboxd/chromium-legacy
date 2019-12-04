@@ -415,7 +415,6 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, StatesWithLockedIcon) {
   std::vector<ScreenlockState> states;
   states.push_back(ScreenlockState::NO_BLUETOOTH);
   states.push_back(ScreenlockState::NO_PHONE);
-  states.push_back(ScreenlockState::PHONE_UNSUPPORTED);
   states.push_back(ScreenlockState::PHONE_NOT_LOCKABLE);
   states.push_back(ScreenlockState::PHONE_NOT_AUTHENTICATED);
   states.push_back(ScreenlockState::PHONE_LOCKED);
@@ -686,12 +685,10 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, NoOverrideOnlineSignin) {
   std::vector<ScreenlockState> states;
   states.push_back(ScreenlockState::NO_BLUETOOTH);
   states.push_back(ScreenlockState::NO_PHONE);
-  states.push_back(ScreenlockState::PHONE_UNSUPPORTED);
   states.push_back(ScreenlockState::PHONE_NOT_LOCKABLE);
   states.push_back(ScreenlockState::PHONE_NOT_AUTHENTICATED);
   states.push_back(ScreenlockState::PHONE_LOCKED);
   states.push_back(ScreenlockState::PHONE_NOT_LOCKABLE);
-  states.push_back(ScreenlockState::PHONE_UNSUPPORTED);
   states.push_back(ScreenlockState::RSSI_TOO_LOW);
   states.push_back(ScreenlockState::PHONE_LOCKED_AND_RSSI_TOO_LOW);
   states.push_back(ScreenlockState::AUTHENTICATED);

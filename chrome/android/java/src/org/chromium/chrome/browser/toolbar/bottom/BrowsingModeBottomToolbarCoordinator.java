@@ -157,6 +157,17 @@ public class BrowsingModeBottomToolbarCoordinator {
     }
 
     /**
+     * @param isVisible Whether the bottom toolbar is visible.
+     */
+    void onVisibilityChanged(boolean isVisible) {
+        if (isVisible) return;
+        TabImpl tabImpl = (TabImpl) mTabProvider.get();
+        if (tabImpl != null) {
+            mMediator.dismissIPH(tabImpl.getActivity());
+        }
+    }
+
+    /**
      * Initialize the bottom toolbar with the components that had native initialization
      * dependencies.
      * <p>

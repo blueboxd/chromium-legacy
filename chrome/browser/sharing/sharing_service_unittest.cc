@@ -286,8 +286,9 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_Expired) {
           });
 
   // Forward time until device expires.
-  task_environment_.FastForwardBy(kDeviceExpiration +
-                                  base::TimeDelta::FromMilliseconds(1));
+  task_environment_.FastForwardBy(
+      base::TimeDelta::FromHours(kSharingDeviceExpirationHours.Get()) +
+      base::TimeDelta::FromMilliseconds(1));
 
   std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
       GetSharingService()->GetDeviceCandidates(

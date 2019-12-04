@@ -2,10 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import collections
 import optparse
 
 from telemetry import benchmark as b_module
 from telemetry.internal.browser import browser_options
+
+
+StoryInfo = collections.namedtuple('StoryInfo', ['name', 'description', 'tags'])
 
 
 def GetBenchmarkStorySet(benchmark):
@@ -26,6 +30,17 @@ def GetBenchmarkStorySet(benchmark):
   return benchmark.CreateStorySet(options)
 
 
+def GetBenchmarkStoryInfo(benchmark):
+  """Return a list with StoryInfo objects for each story in a benchmark."""
+  stories = [
+      StoryInfo(name=story.name, description=DescribeStory(story),
+                tags=list(story.tags))
+      for story in GetBenchmarkStorySet(benchmark)
+  ]
+  stories.sort(key=lambda s: s.name)
+  return stories
+
+
 def GetBenchmarkStoryNames(benchmark):
   """Return the list of all stories names in the benchmark.
   This guarantees the order of the stories in the list is exactly the same
@@ -37,8 +52,10 @@ def GetBenchmarkStoryNames(benchmark):
   return story_list
 
 
-def GetStoryTags(benchmark):
-  tags = set()
-  for story in GetBenchmarkStorySet(benchmark):
-    tags.update(story.tags)
-  return sorted(list(tags))
+def DescribeStory(story):
+  """Get the docstring title out of a given story."""
+  description = story.__doc__
+  if description:
+    return description.strip().splitlines()[0]
+  else:
+    return ''

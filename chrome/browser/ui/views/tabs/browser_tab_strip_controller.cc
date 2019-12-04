@@ -432,28 +432,20 @@ void BrowserTabStripController::OnKeyboardFocusedTabChanged(
       index);
 }
 
-// TODO(connily): The tab group methods below should not need to handle the
-// nullptr case. Other places should be checking for ContainsTabGroup(), which
-// may need to be added as a method here.
-
 const TabGroupVisualData* BrowserTabStripController::GetVisualDataForGroup(
     TabGroupId group) const {
-  TabGroup* tab_group = model_->group_model()->GetTabGroup(group);
-  return tab_group ? tab_group->visual_data() : nullptr;
+  return model_->group_model()->GetTabGroup(group)->visual_data();
 }
 
 void BrowserTabStripController::SetVisualDataForGroup(
     TabGroupId group,
     TabGroupVisualData visual_data) {
-  TabGroup* tab_group = model_->group_model()->GetTabGroup(group);
-  DCHECK(tab_group);
-  tab_group->SetVisualData(visual_data);
+  model_->group_model()->GetTabGroup(group)->SetVisualData(visual_data);
 }
 
 std::vector<int> BrowserTabStripController::ListTabsInGroup(
     TabGroupId group) const {
-  TabGroup* tab_group = model_->group_model()->GetTabGroup(group);
-  return tab_group ? tab_group->ListTabs() : std::vector<int>();
+  return model_->group_model()->GetTabGroup(group)->ListTabs();
 }
 
 bool BrowserTabStripController::IsFrameCondensed() const {
@@ -545,12 +537,6 @@ void BrowserTabStripController::OnTabStripModelChanged(
       SetTabDataAt(replace->new_contents, replace->index);
       break;
     }
-    case TabStripModelChange::kGroupChanged: {
-      auto* group_change = change.GetGroupChange();
-      tabstrip_->ChangeTabGroup(group_change->index, group_change->old_group,
-                                group_change->new_group);
-      break;
-    }
     case TabStripModelChange::kSelectionOnly:
       break;
   }
@@ -574,11 +560,22 @@ void BrowserTabStripController::OnTabStripModelChanged(
     tabstrip_->SetSelection(selection.new_model);
 }
 
-void BrowserTabStripController::OnTabGroupVisualDataChanged(
-    TabStripModel* tab_strip_model,
+void BrowserTabStripController::OnTabGroupCreated(TabGroupId group) {
+  tabstrip_->OnGroupCreated(group);
+}
+
+void BrowserTabStripController::OnTabGroupContentsChanged(TabGroupId group) {
+  tabstrip_->OnGroupContentsChanged(group);
+}
+
+void BrowserTabStripController::OnTabGroupVisualsChanged(
     TabGroupId group,
     const TabGroupVisualData* visual_data) {
-  tabstrip_->GroupVisualsChanged(group);
+  tabstrip_->OnGroupVisualsChanged(group);
+}
+
+void BrowserTabStripController::OnTabGroupClosed(TabGroupId group) {
+  tabstrip_->OnGroupDeleted(group);
 }
 
 void BrowserTabStripController::TabChangedAt(WebContents* contents,
@@ -597,6 +594,12 @@ void BrowserTabStripController::TabPinnedStateChanged(
 void BrowserTabStripController::TabBlockedStateChanged(WebContents* contents,
                                                        int model_index) {
   SetTabDataAt(contents, model_index);
+}
+
+void BrowserTabStripController::TabGroupedStateChanged(
+    base::Optional<TabGroupId> group,
+    int index) {
+  tabstrip_->AddTabToGroup(group, index);
 }
 
 void BrowserTabStripController::SetTabNeedsAttentionAt(int index,

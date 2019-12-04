@@ -555,6 +555,10 @@
       status: "experimental",
     },
     {
+      name: "DisallowDocumentAccess",
+      status: "experimental",
+    },
+    {
       name: "DiscardInputToMovingIframes",
       status: "stable",
     },
@@ -943,6 +947,10 @@
     {
       name: "MediaCapabilitiesEncryptedMedia",
       status: "stable",
+    },
+    {
+      name: "MediaCapabilitiesSpatialAudio",
+      status: "test",
     },
     {
       name: "MediaCapture",
@@ -1693,6 +1701,11 @@
     },
     {
       name: "VideoFullscreenOrientationLock",
+    },
+    {
+      // See https://crbug.com/1012063
+      name: "VideoRequestAnimationFrame",
+      status: "experimental",
     },
     {
       name: "VideoRotateToFullscreen",

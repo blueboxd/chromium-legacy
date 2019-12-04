@@ -336,10 +336,9 @@ void ReportPrintSettingsStats(const base::Value& print_settings,
     ReportPrintSettingHistogram(duplex_mode_opt.value() ? DUPLEX : SIMPLEX);
 
   base::Optional<int> color_mode_opt = print_settings.FindIntKey(kSettingColor);
-  if (color_mode_opt.has_value()) {
-    base::Optional<bool> is_color =
-        IsColorModelSelected(color_mode_opt.value());
-    ReportPrintSettingHistogram(is_color.value() ? COLOR : BLACK_AND_WHITE);
+  if (color_mode_opt) {
+    ReportPrintSettingHistogram(
+        IsColorModelSelected(color_mode_opt.value()) ? COLOR : BLACK_AND_WHITE);
   }
 
   if (preview_settings.FindIntKey(kSettingMarginsType).value_or(0) != 0)

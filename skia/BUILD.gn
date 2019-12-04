@@ -10,6 +10,7 @@ import("//build/config/sanitizers/sanitizers.gni")
 import("//gpu/vulkan/features.gni")
 import("//printing/buildflags/buildflags.gni")
 import("//testing/test.gni")
+import("//third_party/libgifcodec/libgifcodec.gni")
 import("//third_party/skia/gn/shared_sources.gni")
 import("//third_party/skia/third_party/skcms/skcms.gni")
 import("features.gni")
@@ -26,7 +27,7 @@ skia_support_pdf = !is_ios && enable_basic_printing
 skia_support_skottie = true
 
 declare_args() {
-  enable_skia_wuffs_gif = true
+  enable_skia_wuffs_gif = false
   skia_whitelist_serialized_typefaces = false
 }
 
@@ -43,6 +44,8 @@ config("skia_config") {
   if (!is_ios) {
     if (enable_skia_wuffs_gif) {
       include_dirs += [ "//third_party/wuffs/src/release/c" ]
+    } else {
+      include_dirs += [ "//third_party/libgifcodec" ]
     }
   }
   if (enable_vulkan) {
@@ -67,6 +70,8 @@ config("skia_config") {
     defines += [ "SK_HAS_JPEG_LIBRARY" ]
     if (enable_skia_wuffs_gif) {
       defines += [ "SK_HAS_WUFFS_LIBRARY" ]
+    } else {
+      defines += [ "SK_USE_LIBGIFCODEC" ]
     }
   }
   if (enable_vulkan) {
@@ -358,10 +363,9 @@ component("skia") {
       deps += [ "//third_party/wuffs" ]
       sources += [ "//third_party/skia/src/codec/SkWuffsCodec.cpp" ]
     } else {
-      sources += [
-        "//third_party/skia/src/codec/SkGifCodec.cpp",
-        "//third_party/skia/third_party/gif/SkGifImageReader.cpp",
-      ]
+      sources += rebase_path(libgifcodec_sources + libgifcodec_public,
+                             ".",
+                             "//third_party/libgifcodec")
     }
   }
 

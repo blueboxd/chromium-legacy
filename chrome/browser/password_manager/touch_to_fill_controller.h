@@ -26,7 +26,7 @@ class FaviconService;
 
 namespace password_manager {
 class PasswordManagerDriver;
-struct CredentialPair;
+class UiCredential;
 }  // namespace password_manager
 
 class ChromePasswordManagerClient;
@@ -57,13 +57,13 @@ class TouchToFillController {
   ~TouchToFillController();
 
   // Instructs the controller to show the provided |credentials| to the user.
-  void Show(base::span<const password_manager::CredentialPair> credentials,
+  void Show(base::span<const password_manager::UiCredential> credentials,
             base::WeakPtr<password_manager::PasswordManagerDriver> driver);
 
   // Informs the controller that the user has made a selection. Invokes both
   // FillSuggestion() and TouchToFillDismissed() on |driver_|. No-op if invoked
   // repeatedly.
-  void OnCredentialSelected(const password_manager::CredentialPair& credential);
+  void OnCredentialSelected(const password_manager::UiCredential& credential);
 
   // Informs the controller that the user has tapped the "Manage Passwords"
   // button. This will open the password preferences.

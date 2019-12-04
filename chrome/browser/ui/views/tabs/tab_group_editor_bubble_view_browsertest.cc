@@ -21,7 +21,7 @@ class TabGroupEditorBubbleViewDialogBrowserTest : public DialogBrowserTest {
 
     BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
     TabGroupHeader* header =
-        browser_view->tabstrip()->group_headers_[group].get();
+        browser_view->tabstrip()->group_views_[group]->header();
     ASSERT_NE(nullptr, header);
 
     ui::MouseEvent pressed_event(ui::ET_MOUSE_PRESSED, gfx::PointF(),

@@ -19,7 +19,7 @@ namespace ui {
 class Layer;
 class LocatedEvent;
 struct PointerDetails;
-}
+}  // namespace ui
 
 namespace ash {
 
@@ -46,9 +46,8 @@ class ASH_EXPORT PartialMagnificationController : public ui::EventHandler,
 
  private:
   friend class PartialMagnificationControllerTestApi;
-
+  class BorderMask;
   class BorderRenderer;
-  class ContentMask;
 
   // ui::EventHandler:
   void OnTouchEvent(ui::TouchEvent* event) override;
@@ -89,11 +88,9 @@ class ASH_EXPORT PartialMagnificationController : public ui::EventHandler,
   // |border_layer_| so that it gets destroyed after |border_layer_|, otherwise
   // |border_layer_| will have a pointer to a deleted delegate.
   std::unique_ptr<BorderRenderer> border_renderer_;
-  // Masks the content of |zoom_layer_| so that only a circle is magnified.
-  std::unique_ptr<ContentMask> zoom_mask_;
   // Masks the content of |border_layer_| so that only a circle outline is
   // drawn.
-  std::unique_ptr<ContentMask> border_mask_;
+  std::unique_ptr<BorderMask> border_mask_;
 
   DISALLOW_COPY_AND_ASSIGN(PartialMagnificationController);
 };

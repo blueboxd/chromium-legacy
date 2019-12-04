@@ -3223,7 +3223,7 @@ bool Node::IsEffectiveRootScroller() const {
 }
 
 WebPluginContainerImpl* Node::GetWebPluginContainer() const {
-  if (!IsHTMLObjectElement(this) && !IsHTMLEmbedElement(this)) {
+  if (!IsA<HTMLObjectElement>(this) && !IsHTMLEmbedElement(this)) {
     return nullptr;
   }
 

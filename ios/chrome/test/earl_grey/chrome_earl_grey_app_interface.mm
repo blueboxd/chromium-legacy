@@ -331,6 +331,11 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
       chrome_test_util::GetCurrentWebState()->GetVisibleURL().spec());
 }
 
++ (NSString*)webStateLastCommittedURL {
+  return base::SysUTF8ToNSString(
+      chrome_test_util::GetCurrentWebState()->GetLastCommittedURL().spec());
+}
+
 + (void)purgeCachedWebViewPages {
   web::WebState* web_state = chrome_test_util::GetCurrentWebState();
   web_state->SetWebUsageEnabled(false);

@@ -331,9 +331,10 @@ void DedicatedWorker::OnWorkerHostCreated(
     mojo::ScopedMessagePipeHandle interface_provider,
     mojo::ScopedMessagePipeHandle browser_interface_broker) {
   DCHECK(!interface_provider_);
-  interface_provider_ = service_manager::mojom::blink::InterfaceProviderPtrInfo(
-      std::move(interface_provider),
-      service_manager::mojom::blink::InterfaceProvider::Version_);
+  interface_provider_ =
+      mojo::PendingRemote<service_manager::mojom::blink::InterfaceProvider>(
+          std::move(interface_provider),
+          service_manager::mojom::blink::InterfaceProvider::Version_);
 
   DCHECK(!browser_interface_broker_);
   browser_interface_broker_ =

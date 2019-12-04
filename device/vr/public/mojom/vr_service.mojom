@@ -188,8 +188,9 @@ struct VRFieldOfView {
   float right_degrees;
 };
 
-// A display's position, orientation, velocity, and acceleration state at the
-// given timestamp.
+// An entity's pose. Used by entities for which either position or orientation
+// may sometimes not be known. Also supports those poses where the position may
+// be emulated and this is worth telling consumers.
 struct VRPose {
   gfx.mojom.Quaternion? orientation;
   gfx.mojom.Point3F? position;
@@ -197,15 +198,6 @@ struct VRPose {
   // True when position is estimated by something like a neck or arm model.
   // False when position is based on sensors tracking a 6DoF pose.
   bool emulated_position;
-
-  // For WebXR sessions only, reports the state of all active input devices
-  // synced with the head pose.
-  array<XRInputSourceState>? input_state;
-
-  // Indicates that a reset pose event was triggered, either by device specific
-  // UI or by some other method, and handled on the browser side, and the
-  // renderer should now bubble up an event to the WebXR Device API.
-  bool pose_reset;
 };
 
 // An entity's pose. Used by entities for which both position and orientation is
@@ -426,6 +418,16 @@ struct XRFrameData {
   // for rendering.
   gpu.mojom.MailboxHolder? buffer_holder;
 
+  // Indicates that there has been a significant discontinuity in the mojo space
+  // coordinate system, and that poses from this point forward with the same
+  // coordinates as those received previously may not actually be in the same
+  // position. This could have been triggered either via device specific UI or
+  // due to a major change in tracking locatibility, but should not typically
+  // be used when recovering from tracking loss.
+  // This event should be bubbled up as a reference space reset event:
+  // https://immersive-web.github.io/webxr/#eventdef-xrreferencespace-reset
+  bool mojo_space_reset;
+
   // Exclusive session values
 
   // The frame_id maps frame data to a frame arriving from the compositor. IDs
@@ -444,6 +446,13 @@ struct XRFrameData {
   // rendering.
   VREyeParameters? left_eye;
   VREyeParameters? right_eye;
+
+  // For immersive sessions only, reports the state of all active input devices
+  // at the time of this frame. If a session has indicated that it
+  // |uses_input_eventing|, then these input states should not fire select,
+  // squeeze, or similar events, but all controller state, including current
+  // button states, should still be updated.
+  array<XRInputSourceState>? input_state;
 
   // Stage parameters may be provided per-frame, or only re-computed
   // periodically.  However, setting the stage parameters to null is perfectly

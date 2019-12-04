@@ -320,7 +320,7 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
       data.media_flags |= WebContextMenuData::kMediaCanToggleControls;
     if (media_element->ShouldShowControls())
       data.media_flags |= WebContextMenuData::kMediaControls;
-  } else if (IsHTMLObjectElement(*result.InnerNode()) ||
+  } else if (IsA<HTMLObjectElement>(*result.InnerNode()) ||
              IsHTMLEmbedElement(*result.InnerNode())) {
     LayoutObject* object = result.InnerNode()->GetLayoutObject();
     if (object && object->IsLayoutEmbeddedContent()) {

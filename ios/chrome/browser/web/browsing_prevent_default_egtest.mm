@@ -2,28 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
-#import <UIKit/UIKit.h>
-#import <XCTest/XCTest.h>
-
 #include "base/strings/sys_string_conversions.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/chrome/test/earl_grey/scoped_block_popups_pref.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
-#import "ios/web/public/web_state.h"
 #include "url/url_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-using chrome_test_util::GetOriginalBrowserState;
 
 namespace {
 
@@ -67,8 +58,7 @@ GURL GetTestUrl() {
 
   // Check that no navigation occurred and no new tabs were opened.
   [ChromeEarlGrey waitForMainTabCount:1];
-  const GURL& currentURL =
-      chrome_test_util::GetCurrentWebState()->GetVisibleURL();
+  const GURL& currentURL = [ChromeEarlGrey webStateVisibleURL];
   GREYAssert(currentURL == testURL, @"Page navigated unexpectedly %s",
              currentURL.spec().c_str());
 }
@@ -101,13 +91,15 @@ GURL GetTestUrl() {
   [ChromeEarlGrey tapWebStateElementWithID:@"overrides-window-open"];
 
   // Check that the tab navigated to about:blank and no new tabs were opened.
-  [[GREYCondition
-      conditionWithName:@"Wait for navigation to about:blank"
-                  block:^BOOL {
-                    const GURL& currentURL =
-                        chrome_test_util::GetCurrentWebState()->GetVisibleURL();
-                    return currentURL == url::kAboutBlankURL;
-                  }] waitWithTimeout:kConditionTimeout];
+  GREYCondition* condition =
+      [GREYCondition conditionWithName:@"Wait for navigation to about:blank"
+                                 block:^BOOL {
+                                   const GURL& currentURL =
+                                       [ChromeEarlGrey webStateVisibleURL];
+                                   return currentURL == url::kAboutBlankURL;
+                                 }];
+  GREYAssert([condition waitWithTimeout:kConditionTimeout],
+             @"about:blank not loaded.");
   [ChromeEarlGrey waitForMainTabCount:1];
 }
 

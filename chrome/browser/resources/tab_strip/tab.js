@@ -104,6 +104,9 @@ export class TabElement extends CustomElement {
 
     /** @private @const {!TabSwiper} */
     this.tabSwiper_ = new TabSwiper(this);
+
+    /** @private {!Function} */
+    this.onTabActivating_ = (tabId) => {};
   }
 
   /** @return {!TabData} */
@@ -169,6 +172,11 @@ export class TabElement extends CustomElement {
     this.tab_ = Object.freeze(tab);
   }
 
+  /** @param {!Function} callback */
+  set onTabActivating(callback) {
+    this.onTabActivating_ = callback;
+  }
+
   focus() {
     this.tabEl_.focus();
   }
@@ -191,7 +199,9 @@ export class TabElement extends CustomElement {
       return;
     }
 
-    this.tabsApi_.activateTab(this.tab_.id);
+    const tabId = this.tab_.id;
+    this.onTabActivating_(tabId);
+    this.tabsApi_.activateTab(tabId);
 
     if (tabStripOptions.autoCloseEnabled) {
       this.embedderApi_.closeContainer();

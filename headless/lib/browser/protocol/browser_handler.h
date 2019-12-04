@@ -5,19 +5,22 @@
 #ifndef HEADLESS_LIB_BROWSER_PROTOCOL_BROWSER_HANDLER_H_
 #define HEADLESS_LIB_BROWSER_PROTOCOL_BROWSER_HANDLER_H_
 
+#include "base/memory/weak_ptr.h"
 #include "headless/lib/browser/protocol/domain_handler.h"
 #include "headless/lib/browser/protocol/dp_browser.h"
 
 namespace headless {
+class HeadlessBrowserImpl;
 namespace protocol {
 
 class BrowserHandler : public DomainHandler, public Browser::Backend {
  public:
-  BrowserHandler(base::WeakPtr<HeadlessBrowserImpl> browser,
-                 const std::string& target_id);
+  BrowserHandler(HeadlessBrowserImpl* browser, const std::string& target_id);
   ~BrowserHandler() override;
 
+  // DomainHandler implementation
   void Wire(UberDispatcher* dispatcher) override;
+  Response Disable() override;
 
   // Browser::Backend implementation
   Response GetWindowForTarget(
@@ -34,6 +37,7 @@ class BrowserHandler : public DomainHandler, public Browser::Backend {
   Response SetDockTile(Maybe<std::string> label, Maybe<Binary> image) override;
 
  private:
+  HeadlessBrowserImpl* browser_;
   std::string target_id_;
   DISALLOW_COPY_AND_ASSIGN(BrowserHandler);
 };

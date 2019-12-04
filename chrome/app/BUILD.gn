@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/locales.gni")
 import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
 import("//components/gwp_asan/buildflags/buildflags.gni")
@@ -62,61 +63,11 @@ source_set("chrome_dll_resources") {
 
 if (is_android) {
   import("//build/config/android/rules.gni")
-  android_generated_java_resources = [
-    "java/res/values-am/generated_resources.xml",
-    "java/res/values-ar/generated_resources.xml",
-    "java/res/values-bg/generated_resources.xml",
-    "java/res/values-bn/generated_resources.xml",
-    "java/res/values-ca/generated_resources.xml",
-    "java/res/values-cs/generated_resources.xml",
-    "java/res/values-da/generated_resources.xml",
-    "java/res/values-de/generated_resources.xml",
-    "java/res/values-el/generated_resources.xml",
-    "java/res/values-en-rGB/generated_resources.xml",
-    "java/res/values-es/generated_resources.xml",
-    "java/res/values-es-rUS/generated_resources.xml",
-    "java/res/values-et/generated_resources.xml",
-    "java/res/values-fa/generated_resources.xml",
-    "java/res/values-fi/generated_resources.xml",
-    "java/res/values-fr/generated_resources.xml",
-    "java/res/values-gu/generated_resources.xml",
-    "java/res/values-hi/generated_resources.xml",
-    "java/res/values-hr/generated_resources.xml",
-    "java/res/values-hu/generated_resources.xml",
-    "java/res/values-in/generated_resources.xml",
-    "java/res/values-it/generated_resources.xml",
-    "java/res/values-iw/generated_resources.xml",
-    "java/res/values-ja/generated_resources.xml",
-    "java/res/values-kn/generated_resources.xml",
-    "java/res/values-ko/generated_resources.xml",
-    "java/res/values-lt/generated_resources.xml",
-    "java/res/values-lv/generated_resources.xml",
-    "java/res/values-ml/generated_resources.xml",
-    "java/res/values-mr/generated_resources.xml",
-    "java/res/values-ms/generated_resources.xml",
-    "java/res/values-nb/generated_resources.xml",
-    "java/res/values-nl/generated_resources.xml",
-    "java/res/values-pl/generated_resources.xml",
-    "java/res/values-pt-rBR/generated_resources.xml",
-    "java/res/values-pt-rPT/generated_resources.xml",
-    "java/res/values-ro/generated_resources.xml",
-    "java/res/values-ru/generated_resources.xml",
-    "java/res/values-sk/generated_resources.xml",
-    "java/res/values-sl/generated_resources.xml",
-    "java/res/values-sr/generated_resources.xml",
-    "java/res/values-sv/generated_resources.xml",
-    "java/res/values-sw/generated_resources.xml",
-    "java/res/values-ta/generated_resources.xml",
-    "java/res/values-te/generated_resources.xml",
-    "java/res/values-th/generated_resources.xml",
-    "java/res/values-tl/generated_resources.xml",
-    "java/res/values-tr/generated_resources.xml",
-    "java/res/values-uk/generated_resources.xml",
-    "java/res/values-vi/generated_resources.xml",
-    "java/res/values-zh-rCN/generated_resources.xml",
-    "java/res/values-zh-rTW/generated_resources.xml",
-    "java/res/values/generated_resources.xml",
-  ]
+  android_generated_java_resources =
+      [ "java/res/values/generated_resources.xml" ] +
+      process_file_template(
+          android_bundle_locales_as_resources,
+          [ "java/res/values-{{source_name_part}}/generated_resources.xml" ])
 }
 
 grit("generated_resources") {

@@ -13,7 +13,7 @@
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/fake_autocomplete_provider_client.h"
-#include "components/omnibox/browser/on_device_head_serving.h"
+#include "components/omnibox/browser/on_device_head_model.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,7 +47,7 @@ class OnDeviceHeadProviderTest : public testing::Test,
   void SetTestOnDeviceHeadModel() {
     base::FilePath file_path;
     base::PathService::Get(base::DIR_SOURCE_ROOT, &file_path);
-    // The same test model also used in ./on_device_head_serving_unittest.cc.
+    // The same test model also used in ./on_device_head_model_unittest.cc.
     file_path = file_path.AppendASCII("components/test/data/omnibox");
     ASSERT_TRUE(base::PathExists(file_path));
     auto* update_listener = OnDeviceModelUpdateListener::GetInstance();

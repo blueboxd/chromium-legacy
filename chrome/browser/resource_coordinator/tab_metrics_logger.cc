@@ -32,7 +32,7 @@
 #include "content/public/common/page_importance_signals.h"
 #include "net/base/mime_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
-#include "third_party/blink/public/common/sudden_termination_disabler_type.h"
+#include "third_party/blink/public/mojom/frame/sudden_termination_disabler_type.mojom.h"
 #include "url/gurl.h"
 
 using metrics::TabMetricsEvent;
@@ -90,7 +90,7 @@ void PopulateTabFeaturesFromWebContents(content::WebContents* web_contents,
                                         tab_ranker::TabFeatures* tab_features) {
   tab_features->has_before_unload_handler =
       web_contents->GetMainFrame()->GetSuddenTerminationDisablerState(
-          blink::kBeforeUnloadHandler);
+          blink::mojom::SuddenTerminationDisablerType::kBeforeUnloadHandler);
   tab_features->has_form_entry =
       web_contents->GetPageImportanceSignals().had_form_interaction;
   tab_features->host = web_contents->GetLastCommittedURL().host();

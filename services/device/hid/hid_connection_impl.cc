@@ -44,8 +44,9 @@ HidConnectionImpl::~HidConnectionImpl() {
   DCHECK(hid_connection_);
   hid_connection_->SetClient(nullptr);
 
-  // Close |hid_connection_| on destruction because this class is owned by a
-  // mojo::StrongBinding and will be destroyed when the pipe is closed.
+  // Close |hid_connection_| on destruction. HidConnectionImpl is owned by
+  // its mojom::HidConnection receiver and mojom::HidConnectionWatcher remote
+  // and will self-destruct when either pipe is closed.
   hid_connection_->Close();
 }
 

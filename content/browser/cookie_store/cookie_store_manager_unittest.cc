@@ -1650,7 +1650,7 @@ TEST_P(CookieStoreManagerTest, GetSubscriptionsFromWrongOrigin) {
 
 INSTANTIATE_TEST_SUITE_P(All,
                          CookieStoreManagerTest,
-                         testing::Bool() /* reset_storage_during_test */);
+                         testing::Bool() /* reset_context_during_test */);
 
 }  // namespace
 

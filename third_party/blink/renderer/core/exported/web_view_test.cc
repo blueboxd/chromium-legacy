@@ -5161,8 +5161,8 @@ TEST_F(WebViewTest, SetZoomLevelWhilePluginFocused) {
       base_url);
   // Verify the plugin is loaded.
   LocalFrame* main_frame = web_view->MainFrameImpl()->GetFrame();
-  HTMLObjectElement* plugin_element =
-      ToHTMLObjectElement(main_frame->GetDocument()->body()->firstChild());
+  auto* plugin_element =
+      To<HTMLObjectElement>(main_frame->GetDocument()->body()->firstChild());
   EXPECT_TRUE(plugin_element->OwnedPlugin());
   // Focus the plugin element, and then change the zoom level on the WebView.
   plugin_element->focus();
@@ -5225,8 +5225,8 @@ TEST_F(WebViewTest, DetachPluginInLayout) {
       base_url);
   // Verify the plugin is loaded.
   LocalFrame* main_frame = web_view->MainFrameImpl()->GetFrame();
-  HTMLObjectElement* plugin_element =
-      ToHTMLObjectElement(main_frame->GetDocument()->body()->firstChild());
+  auto* plugin_element =
+      To<HTMLObjectElement>(main_frame->GetDocument()->body()->firstChild());
   EXPECT_TRUE(plugin_element->OwnedPlugin());
 
   plugin_element->style()->setCSSText(main_frame->GetDocument(),

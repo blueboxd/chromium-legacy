@@ -49,7 +49,7 @@ struct ServiceWorkerProviderInfoForStartWorker {
   CacheStorage? cache_storage;
 
   // TODO(crbug.com/990845): remove when no longer used.
-  service_manager.mojom.InterfaceProvider interface_provider;
+  pending_remote<service_manager.mojom.InterfaceProvider> interface_provider;
 
   // Used for accessing services from the worker.
   // Should replace the |interface_provider| above.

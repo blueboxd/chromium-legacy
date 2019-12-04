@@ -153,6 +153,8 @@ generated_modules_callback_function_files = [
   "$bindings_modules_v8_output_dir/v8_storage_quota_callback.h",
   "$bindings_modules_v8_output_dir/v8_storage_usage_callback.cc",
   "$bindings_modules_v8_output_dir/v8_storage_usage_callback.h",
+  "$bindings_modules_v8_output_dir/v8_video_frame_request_callback.cc",
+  "$bindings_modules_v8_output_dir/v8_video_frame_request_callback.h",
   "$bindings_modules_v8_output_dir/v8_xr_frame_request_callback.cc",
   "$bindings_modules_v8_output_dir/v8_xr_frame_request_callback.h",
 ]

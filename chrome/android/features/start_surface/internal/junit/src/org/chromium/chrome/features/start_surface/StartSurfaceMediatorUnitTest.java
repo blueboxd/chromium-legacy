@@ -320,6 +320,7 @@ public class StartSurfaceMediatorUnitTest {
         assertThat(mPropertyModel.get(IS_SECONDARY_SURFACE_VISIBLE), equalTo(true));
         assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE),
                 equalTo(false));
+        assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_INCOGNITO), equalTo(false));
 
         mediator.onBackPressed();
         assertThat(mediator.getOverviewState(), equalTo(OverviewModeState.SHOWN_HOMEPAGE));
@@ -359,6 +360,7 @@ public class StartSurfaceMediatorUnitTest {
         assertThat(mPropertyModel.get(IS_SECONDARY_SURFACE_VISIBLE), equalTo(true));
         assertThat(
                 mSecondaryTasksSurfacePropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE), equalTo(true));
+        assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_INCOGNITO), equalTo(true));
 
         mediator.setOverviewState(OverviewModeState.SHOWN_TABSWITCHER);
         assertThat(mediator.getOverviewState(), equalTo(OverviewModeState.SHOWN_TABSWITCHER));
@@ -370,6 +372,7 @@ public class StartSurfaceMediatorUnitTest {
         assertThat(mPropertyModel.get(IS_SECONDARY_SURFACE_VISIBLE), equalTo(true));
         assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE),
                 equalTo(false));
+        assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_INCOGNITO), equalTo(true));
 
         mediator.setOverviewState(OverviewModeState.SHOWN_HOMEPAGE);
         assertThat(mediator.getOverviewState(), equalTo(OverviewModeState.SHOWN_HOMEPAGE));
@@ -381,6 +384,7 @@ public class StartSurfaceMediatorUnitTest {
         assertThat(mPropertyModel.get(IS_SECONDARY_SURFACE_VISIBLE), equalTo(true));
         assertThat(
                 mSecondaryTasksSurfacePropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE), equalTo(true));
+        assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_INCOGNITO), equalTo(true));
 
         mediator.hideOverview(false);
         mediator.finishedHiding();
@@ -446,6 +450,7 @@ public class StartSurfaceMediatorUnitTest {
         assertThat(mPropertyModel.get(IS_SECONDARY_SURFACE_VISIBLE), equalTo(true));
         assertThat(
                 mSecondaryTasksSurfacePropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE), equalTo(true));
+        assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_INCOGNITO), equalTo(true));
 
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
         mTabModelSelector.selectModel(false);
@@ -510,6 +515,40 @@ public class StartSurfaceMediatorUnitTest {
         assertThat(mPropertyModel.get(MV_TILES_VISIBLE), equalTo(true));
         assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE), equalTo(false));
         assertThat(mPropertyModel.get(IS_SECONDARY_SURFACE_VISIBLE), equalTo(false));
+    }
+
+    @Test
+    public void overviewModeIncognitoTabswitcher() {
+        doReturn(false).when(mTabModelSelector).isIncognitoSelected();
+        doReturn(mLocationBarVoiceRecognitionHandler)
+                .when(mFakeBoxDelegate)
+                .getLocationBarVoiceRecognitionHandler();
+        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+
+        StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
+        mediator.setSecondaryTasksSurfacePropertyModel(mSecondaryTasksSurfacePropertyModel);
+
+        assertThat(mediator.getOverviewState(), equalTo(OverviewModeState.NOT_SHOWN));
+
+        doReturn(2).when(mNormalTabModel).getCount();
+        mediator.showOverview(false);
+        verify(mTabModelSelector).addObserver(mTabModelSelectorObserverCaptor.capture());
+        assertThat(mediator.getOverviewState(), equalTo(OverviewModeState.SHOWN_HOMEPAGE));
+
+        mediator.setOverviewState(OverviewModeState.SHOWN_TABSWITCHER);
+        assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_INCOGNITO), equalTo(false));
+
+        doReturn(true).when(mTabModelSelector).isIncognitoSelected();
+        mTabModelSelector.selectModel(true);
+        mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(
+                mIncognitoTabModel, mNormalTabModel);
+        assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_INCOGNITO), equalTo(true));
+
+        mediator.setOverviewState(OverviewModeState.SHOWN_HOMEPAGE);
+        assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_INCOGNITO), equalTo(true));
+        assertThat(
+                mSecondaryTasksSurfacePropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE), equalTo(true));
+        assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_INCOGNITO), equalTo(true));
     }
 
     private StartSurfaceMediator createStartSurfaceMediator(@SurfaceMode int mode) {

@@ -7,6 +7,9 @@
 
 const cacheName = '{{cache_hash}}';
 const filesToCache = [
+  'caspian_web.wasm.map',
+  'caspian_web.js',
+  'caspian_web.wasm',
   'favicon.ico',
   'viewer.html',
   'infocard-ui.js',
@@ -19,6 +22,7 @@ const filesToCache = [
   'state.js',
   'tree-ui.js',
   'tree-worker.js',
+  'tree-worker-wasm.js',
 ];
 
 // On install, cache the items in the `filesToCache` list

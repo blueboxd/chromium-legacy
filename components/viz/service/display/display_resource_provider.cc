@@ -399,7 +399,7 @@ DisplayResourceProvider::GetChildToParentMap(int child) const {
 
 bool DisplayResourceProvider::InUse(ResourceId id) {
   ChildResource* resource = GetResource(id);
-  return resource->lock_for_read_count > 0 || resource->locked_for_external_use;
+  return resource->InUse();
 }
 
 DisplayResourceProvider::ChildResource* DisplayResourceProvider::InsertResource(
@@ -559,8 +559,7 @@ void DisplayResourceProvider::UnlockForRead(ResourceId id) {
 
 void DisplayResourceProvider::TryReleaseResource(ResourceId id,
                                                  ChildResource* resource) {
-  if (resource->marked_for_deletion && !resource->lock_for_read_count &&
-      !resource->locked_for_external_use && !resource->lock_for_overlay_count) {
+  if (resource->marked_for_deletion && !resource->InUse()) {
     auto child_it = children_.find(resource->child_id);
     DeleteAndReturnUnusedResourcesToChild(child_it, NORMAL, {id});
   }
@@ -660,7 +659,7 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
     DCHECK(child_info->child_to_parent_map.count(child_id));
 
     bool is_lost = (resource.is_gpu_resource_type() && lost_context_provider_);
-    if (resource.lock_for_read_count > 0 || resource.locked_for_external_use) {
+    if (resource.InUse()) {
       if (style != FOR_SHUTDOWN) {
         // Defer this resource deletion.
         resource.marked_for_deletion = true;
@@ -908,26 +907,37 @@ DisplayResourceProvider::ScopedReadLockSharedImage::ScopedReadLockSharedImage(
       resource_(resource_provider_->GetResource(resource_id_)) {
   DCHECK(resource_);
   DCHECK(resource_->is_gpu_resource_type());
+  // Remove this #if defined(OS_WIN), when shared image is used on Windows.
+#if !defined(OS_WIN)
   DCHECK(resource_->transferable.mailbox_holder.mailbox.IsSharedImage());
-
+#endif
   resource_->lock_for_overlay_count++;
 }
 
-gpu::Mailbox DisplayResourceProvider::ScopedReadLockSharedImage::mailbox()
-    const {
-  return resource_->transferable.mailbox_holder.mailbox;
-}
-
-gpu::SyncToken DisplayResourceProvider::ScopedReadLockSharedImage::sync_token()
-    const {
-  return resource_->transferable.mailbox_holder.sync_token;
+DisplayResourceProvider::ScopedReadLockSharedImage::ScopedReadLockSharedImage(
+    ScopedReadLockSharedImage&& other) {
+  *this = std::move(other);
 }
 
 DisplayResourceProvider::ScopedReadLockSharedImage::
     ~ScopedReadLockSharedImage() {
+  if (!resource_provider_)
+    return;
   DCHECK(resource_->lock_for_overlay_count);
   resource_->lock_for_overlay_count--;
   resource_provider_->TryReleaseResource(resource_id_, resource_);
+}
+
+DisplayResourceProvider::ScopedReadLockSharedImage&
+DisplayResourceProvider::ScopedReadLockSharedImage::operator=(
+    ScopedReadLockSharedImage&& other) {
+  resource_provider_ = other.resource_provider_;
+  resource_id_ = other.resource_id_;
+  resource_ = other.resource_;
+  other.resource_provider_ = nullptr;
+  other.resource_id_ = kInvalidResourceId;
+  other.resource_ = nullptr;
+  return *this;
 }
 
 DisplayResourceProvider::LockSetForExternalUse::LockSetForExternalUse(

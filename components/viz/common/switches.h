@@ -24,7 +24,6 @@ VIZ_COMMON_EXPORT extern const char kEnableVizHitTestDebug[];
 VIZ_COMMON_EXPORT extern const char kRunAllCompositorStagesBeforeDraw[];
 VIZ_COMMON_EXPORT extern const char kShowAggregatedDamage[];
 VIZ_COMMON_EXPORT extern const char kShowDCLayerDebugBorders[];
-VIZ_COMMON_EXPORT extern const char kUseVizHitTestSurfaceLayer[];
 
 VIZ_COMMON_EXPORT base::Optional<uint32_t> GetDeadlineToSynchronizeSurfaces();
 

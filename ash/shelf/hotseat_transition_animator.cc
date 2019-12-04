@@ -8,7 +8,6 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "base/metrics/histogram_macros.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -17,37 +16,8 @@
 
 namespace ash {
 
-class HotseatTransitionAnimator::TransitionAnimationMetricsReporter
-    : public ui::AnimationMetricsReporter {
- public:
-  TransitionAnimationMetricsReporter() {}
-  ~TransitionAnimationMetricsReporter() override = default;
-  void animating_to_shown_hotseat(bool animating_to_shown_hotseat) {
-    animating_to_shown_hotseat_ = animating_to_shown_hotseat;
-  }
-  // ui::AnimationMetricsReporter:
-  void Report(int value) override {
-    if (animating_to_shown_hotseat_) {
-      UMA_HISTOGRAM_PERCENTAGE(
-          "Ash.HotseatTransition.AnimationSmoothness.TransitionToShownHotseat",
-          value);
-    } else {
-      UMA_HISTOGRAM_PERCENTAGE(
-          "Ash.HotseatTransition.AnimationSmoothness."
-          "TransitionFromShownHotseat",
-          value);
-    }
-  }
-
- private:
-  // Whether the animation reported is transitioning state into a shown hotseat.
-  bool animating_to_shown_hotseat_ = false;
-};
-
 HotseatTransitionAnimator::HotseatTransitionAnimator(ShelfWidget* shelf_widget)
-    : shelf_widget_(shelf_widget),
-      animation_metrics_reporter_(
-          std::make_unique<TransitionAnimationMetricsReporter>()) {
+    : shelf_widget_(shelf_widget) {
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }
 
@@ -55,10 +25,6 @@ HotseatTransitionAnimator::~HotseatTransitionAnimator() {
   StopObservingImplicitAnimations();
   if (Shell::Get()->tablet_mode_controller())
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
-  // Reset the pointer for |animation_metrics_reporter| to delete the reference
-  // to the TransitionAnimationMetricsReporter object that might cause a
-  // use-of-uninitialized-value. (See crbug.com/1028255)
-  animation_metrics_reporter_.reset();
 }
 
 void HotseatTransitionAnimator::OnHotseatStateChanged(HotseatState old_state,
@@ -124,8 +90,6 @@ void HotseatTransitionAnimator::DoAnimation(HotseatState old_state,
   const int y_offset = starting_y - target_bounds.y();
   transform.Translate(0, y_offset);
   shelf_widget_->GetAnimatingBackground()->SetTransform(transform);
-  animation_metrics_reporter_->animating_to_shown_hotseat(
-      animating_to_shown_hotseat);
 
   {
     ui::ScopedLayerAnimationSettings shelf_bg_animation_setter(
@@ -135,8 +99,6 @@ void HotseatTransitionAnimator::DoAnimation(HotseatState old_state,
     shelf_bg_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
     shelf_bg_animation_setter.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    shelf_bg_animation_setter.SetAnimationMetricsReporter(
-        animation_metrics_reporter_.get());
     animation_complete_callback_ = base::BindOnce(
         &HotseatTransitionAnimator::NotifyHotseatTransitionAnimationEnded,
         weak_ptr_factory_.GetWeakPtr(), old_state, new_state);

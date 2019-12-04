@@ -32,11 +32,6 @@ performance_manager::SiteFeatureUsage SiteDataReader::UsesAudioInBackground()
   return impl_->UsesAudioInBackground();
 }
 
-performance_manager::SiteFeatureUsage
-SiteDataReader::UsesNotificationsInBackground() const {
-  return impl_->UsesNotificationsInBackground();
-}
-
 bool SiteDataReader::DataLoaded() const {
   return impl_->DataLoaded();
 }

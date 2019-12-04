@@ -1537,16 +1537,10 @@ config("default_warnings") {
           "-Wno-deprecated-copy",
         ]
 
-        if (is_fuchsia || is_mac) {
+        if (is_fuchsia) {
           cflags += [
             # TODO(https://crbug.com/999871): Clean up, enable.
             "-Wno-c99-designator",
-          ]
-        }
-        if (is_chromeos) {
-          cflags += [
-            # TODO(https://crbug.com/1024203): Clean up, enable.
-            "-Wno-tautological-bitwise-compare",
           ]
         }
         if (is_win) {

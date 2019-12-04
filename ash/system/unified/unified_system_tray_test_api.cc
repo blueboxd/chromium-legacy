@@ -6,6 +6,7 @@
 
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/system/accessibility/select_to_speak_tray.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/time/time_tray_item_view.h"
 #include "ash/system/time/time_view.h"
@@ -82,6 +83,18 @@ bool UnifiedSystemTrayTestApi::Is24HourClock() {
   base::HourClockType type =
       tray_->time_view_->time_view()->GetHourTypeForTesting();
   return type == base::k24HourClock;
+}
+
+void UnifiedSystemTrayTestApi::TapSelectToSpeakTray() {
+  // The Select-to-Speak tray doesn't actually use the event, so construct
+  // a bare bones event to perform the action.
+  ui::TouchEvent event(
+      ui::ET_TOUCH_PRESSED, gfx::Point(), base::TimeTicks::Now(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH), 0);
+  StatusAreaWidget* status_area_widget =
+      RootWindowController::ForWindow(tray_->GetWidget()->GetNativeWindow())
+          ->GetStatusAreaWidget();
+  status_area_widget->select_to_speak_tray()->PerformAction(event);
 }
 
 message_center::MessagePopupView*

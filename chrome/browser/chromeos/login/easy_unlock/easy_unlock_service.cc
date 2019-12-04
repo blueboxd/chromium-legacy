@@ -680,8 +680,6 @@ EasyUnlockAuthEvent EasyUnlockService::GetPasswordAuthEvent() const {
         return PASSWORD_ENTRY_PHONE_LOCKED;
       case ScreenlockState::PHONE_NOT_LOCKABLE:
         return PASSWORD_ENTRY_PHONE_NOT_LOCKABLE;
-      case ScreenlockState::PHONE_UNSUPPORTED:
-        return PASSWORD_ENTRY_PHONE_UNSUPPORTED;
       case ScreenlockState::RSSI_TOO_LOW:
         return PASSWORD_ENTRY_RSSI_TOO_LOW;
       case ScreenlockState::PHONE_LOCKED_AND_RSSI_TOO_LOW:

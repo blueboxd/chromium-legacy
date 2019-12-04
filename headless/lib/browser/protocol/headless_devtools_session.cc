@@ -22,31 +22,31 @@ HeadlessDevToolsSession::HeadlessDevToolsSession(
     : browser_(browser),
       agent_host_(agent_host),
       client_(client),
-      dispatcher_(std::make_unique<UberDispatcher>(this)) {
+      dispatcher_(this) {
   if (agent_host->GetWebContents() &&
       agent_host->GetType() == content::DevToolsAgentHost::kTypePage) {
-    AddHandler(std::make_unique<HeadlessHandler>(browser_,
+    AddHandler(std::make_unique<HeadlessHandler>(browser_.get(),
                                                  agent_host->GetWebContents()));
-    AddHandler(std::make_unique<PageHandler>(agent_host, browser_,
+    AddHandler(std::make_unique<PageHandler>(agent_host,
                                              agent_host->GetWebContents()));
   }
-  if (client->MayAttachToBrowser())
-    AddHandler(std::make_unique<BrowserHandler>(browser_, agent_host->GetId()));
-  AddHandler(std::make_unique<TargetHandler>(browser_));
+  if (client->MayAttachToBrowser()) {
+    AddHandler(
+        std::make_unique<BrowserHandler>(browser_.get(), agent_host->GetId()));
+  }
+  AddHandler(std::make_unique<TargetHandler>(browser_.get()));
 }
 
 HeadlessDevToolsSession::~HeadlessDevToolsSession() {
-  dispatcher_.reset();
-  for (auto& pair : handlers_)
-    pair.second->Disable();
-  handlers_.clear();
+  for (auto& handler : handlers_)
+    handler->Disable();
 }
 
 void HeadlessDevToolsSession::HandleCommand(
     const std::string& method,
     const std::string& message,
     content::DevToolsManagerDelegate::NotHandledCallback callback) {
-  if (!browser_ || !dispatcher_->canDispatch(method)) {
+  if (!browser_ || !dispatcher_.canDispatch(method)) {
     std::move(callback).Run(message);
     return;
   }
@@ -55,16 +55,16 @@ void HeadlessDevToolsSession::HandleCommand(
   std::unique_ptr<protocol::DictionaryValue> value =
       protocol::DictionaryValue::cast(
           protocol::StringUtil::parseMessage(message, /*binary=*/true));
-  if (!dispatcher_->parseCommand(value.get(), &call_id, &unused))
+  if (!dispatcher_.parseCommand(value.get(), &call_id, &unused))
     return;
   pending_commands_[call_id] = std::move(callback);
-  dispatcher_->dispatch(call_id, method, std::move(value), message);
+  dispatcher_.dispatch(call_id, method, std::move(value), message);
 }
 
 void HeadlessDevToolsSession::AddHandler(
     std::unique_ptr<protocol::DomainHandler> handler) {
-  handler->Wire(dispatcher_.get());
-  handlers_[handler->name()] = std::move(handler);
+  handler->Wire(&dispatcher_);
+  handlers_.push_back(std::move(handler));
 }
 
 // The following methods handle responses or notifications coming from

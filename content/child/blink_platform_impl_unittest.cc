@@ -113,14 +113,14 @@ TEST(BlinkPlatformTest, CastWebSecurityOrigin) {
   {
     SCOPED_TRACE(testing::Message() << "null");
     blink::WebSecurityOrigin web_origin =
-        blink::WebSecurityOrigin::CreateUnique();
-    EXPECT_TRUE(web_origin.IsUnique());
+        blink::WebSecurityOrigin::CreateUniqueOpaque();
+    EXPECT_TRUE(web_origin.IsOpaque());
 
     url::Origin url_origin = web_origin;
     EXPECT_TRUE(url_origin.opaque());
 
     web_origin = url::Origin::Create(GURL(""));
-    EXPECT_TRUE(web_origin.IsUnique());
+    EXPECT_TRUE(web_origin.IsOpaque());
   }
 }
 

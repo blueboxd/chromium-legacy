@@ -495,6 +495,15 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
                            EditableAnchorTextCanStartSelection);
   FRIEND_TEST_ALL_PREFIXES(EventHandlerTest,
                            ReadOnlyInputDoesNotInheritUserSelect);
+  FRIEND_TEST_ALL_PREFIXES(EventHandlerTest,
+                           CursorForVerticalResizableTextArea);
+  FRIEND_TEST_ALL_PREFIXES(EventHandlerTest,
+                           CursorForHorizontalResizableTextArea);
+  FRIEND_TEST_ALL_PREFIXES(EventHandlerTest, CursorForResizableTextArea);
+  FRIEND_TEST_ALL_PREFIXES(EventHandlerTest, CursorForRtlResizableTextArea);
+  FRIEND_TEST_ALL_PREFIXES(EventHandlerTest,
+                           CursorForInlineVerticalWritingMode);
+  FRIEND_TEST_ALL_PREFIXES(EventHandlerTest, CursorForBlockVerticalWritingMode);
 
   FRIEND_TEST_ALL_PREFIXES(FallbackCursorEventManagerTest,
                            MouseMoveCursorLockOnDiv);

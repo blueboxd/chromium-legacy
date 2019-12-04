@@ -321,11 +321,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Sets whether the overscroll controller should be enabled for this page.
   void SetOverscrollControllerEnabled(bool enabled);
 
-  // TODO(mcnee): Tests needing this are BrowserPlugin specific. Remove after
-  // removing BrowserPlugin (crbug.com/533069).
-  void SetOverscrollControllerForTesting(
-      std::unique_ptr<OverscrollController> controller);
-
   void SnapToPhysicalPixelBoundary();
 
   // Used in tests to set a mock client for touch selection controller. It will

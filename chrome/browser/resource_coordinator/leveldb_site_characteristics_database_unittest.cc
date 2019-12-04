@@ -66,7 +66,6 @@ void InitSiteCharacteristicProto(SiteDataProto* proto,
 
   proto->mutable_updates_favicon_in_background()->CopyFrom(feature_proto);
   proto->mutable_updates_title_in_background()->CopyFrom(feature_proto);
-  proto->mutable_uses_notifications_in_background()->CopyFrom(feature_proto);
   proto->mutable_uses_audio_in_background()->CopyFrom(feature_proto);
 }
 

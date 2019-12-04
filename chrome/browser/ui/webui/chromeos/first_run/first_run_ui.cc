@@ -69,14 +69,14 @@ void SetLocalizedStrings(Profile* profile,
       display::Screen::GetScreen()->GetPrimaryDisplay().id());
   std::string shelf_alignment;
   switch (alignment) {
-    case ash::SHELF_ALIGNMENT_BOTTOM:
-    case ash::SHELF_ALIGNMENT_BOTTOM_LOCKED:
+    case ash::ShelfAlignment::kBottom:
+    case ash::ShelfAlignment::kBottomLocked:
       shelf_alignment = kShelfAlignmentBottom;
       break;
-    case ash::SHELF_ALIGNMENT_LEFT:
+    case ash::ShelfAlignment::kLeft:
       shelf_alignment = kShelfAlignmentLeft;
       break;
-    case ash::SHELF_ALIGNMENT_RIGHT:
+    case ash::ShelfAlignment::kRight:
       shelf_alignment = kShelfAlignmentRight;
       break;
   }

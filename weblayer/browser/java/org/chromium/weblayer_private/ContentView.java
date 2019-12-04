@@ -111,7 +111,16 @@ public class ContentView extends FrameLayout
     }
 
     public void setWebContents(WebContents webContents) {
+        boolean wasFocused = isFocused();
+        boolean wasWindowFocused = hasWindowFocus();
+        boolean wasAttached = isAttachedToWindow();
+        if (wasFocused) onFocusChanged(false, View.FOCUS_FORWARD, null);
+        if (wasWindowFocused) onWindowFocusChanged(false);
+        if (wasAttached) onDetachedFromWindow();
         mWebContents = webContents;
+        if (wasFocused) onFocusChanged(true, View.FOCUS_FORWARD, null);
+        if (wasWindowFocused) onWindowFocusChanged(true);
+        if (wasAttached) onAttachedToWindow();
     }
 
     @Override

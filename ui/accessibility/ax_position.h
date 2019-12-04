@@ -1594,9 +1594,10 @@ class AXPosition {
     if (!text_position->IsIgnored() && !text_position->AtStartOfAnchor()) {
       std::unique_ptr<base::i18n::BreakIterator> grapheme_iterator =
           text_position->GetGraphemeIterator();
-      DCHECK_GE(text_position->text_offset_, 0);
-      DCHECK_LE(text_position->text_offset_,
-                int{text_position->name_.length()});
+      CHECK_GE(text_position->text_offset_, 0) << *this << '\n' << name_;
+      CHECK_LE(text_position->text_offset_, int{text_position->name_.length()})
+          << *this << '\n'
+          << name_;
       while (
           !text_position->AtEndOfAnchor() &&
           (!gfx::IsValidCodePointIndex(text_position->name_,

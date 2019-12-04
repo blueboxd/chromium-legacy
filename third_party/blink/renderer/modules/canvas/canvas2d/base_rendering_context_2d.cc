@@ -609,7 +609,7 @@ bool BaseRenderingContext2D::IsFullCanvasCompositeMode(SkBlendMode op) {
 void BaseRenderingContext2D::DrawPathInternal(
     const Path& path,
     CanvasRenderingContext2DState::PaintType paint_type,
-    SkPath::FillType fill_type) {
+    SkPathFillType fill_type) {
   if (path.IsEmpty())
     return;
 
@@ -633,14 +633,14 @@ void BaseRenderingContext2D::DrawPathInternal(
        bounds, paint_type);
 }
 
-static SkPath::FillType ParseWinding(const String& winding_rule_string) {
+static SkPathFillType ParseWinding(const String& winding_rule_string) {
   if (winding_rule_string == "nonzero")
-    return SkPath::kWinding_FillType;
+    return SkPathFillType::kWinding;
   if (winding_rule_string == "evenodd")
-    return SkPath::kEvenOdd_FillType;
+    return SkPathFillType::kEvenOdd;
 
   NOTREACHED();
-  return SkPath::kEvenOdd_FillType;
+  return SkPathFillType::kEvenOdd;
 }
 
 void BaseRenderingContext2D::fill(const String& winding_rule_string) {

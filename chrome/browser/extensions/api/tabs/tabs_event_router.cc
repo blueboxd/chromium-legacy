@@ -224,9 +224,6 @@ void TabsEventRouter::OnTabStripModelChanged(
                             replace->index);
       break;
     }
-    case TabStripModelChange::kGroupChanged:
-      // TODO(crbug.com/930988): Dispatch Tab Group-related events.
-      break;
     case TabStripModelChange::kSelectionOnly:
       break;
   }

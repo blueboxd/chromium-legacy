@@ -281,7 +281,7 @@ BackForwardCacheCanStoreDocumentResult BackForwardCacheImpl::CanStoreDocument(
 void BackForwardCacheImpl::CanStoreRenderFrameHost(
     BackForwardCacheCanStoreDocumentResult* result,
     RenderFrameHostImpl* rfh) {
-  if (!rfh->dom_content_loaded())
+  if (!rfh->IsDOMContentLoaded())
     result->No(BackForwardCacheMetrics::NotRestoredReason::kLoading);
 
   // If the rfh has ever granted media access, prevent it from entering cache.

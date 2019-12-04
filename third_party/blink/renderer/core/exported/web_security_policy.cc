@@ -117,11 +117,9 @@ void WebSecurityPolicy::AddSchemeToSecureContextSafelist(
 
 WebString WebSecurityPolicy::GenerateReferrerHeader(
     network::mojom::ReferrerPolicy referrer_policy,
-    const WebSecurityOrigin& origin,
     const WebURL& url,
     const WebString& referrer) {
-  return SecurityPolicy::GenerateReferrer(referrer_policy, origin, url,
-                                          referrer)
+  return SecurityPolicy::GenerateReferrer(referrer_policy, url, referrer)
       .referrer;
 }
 

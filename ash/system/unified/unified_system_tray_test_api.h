@@ -44,6 +44,7 @@ class UnifiedSystemTrayTestApi : public SystemTrayTestApi {
   void ClickBubbleView(int view_id) override;
   base::string16 GetBubbleViewTooltip(int view_id) override;
   bool Is24HourClock() override;
+  void TapSelectToSpeakTray() override;
 
   message_center::MessagePopupView* GetPopupViewForNotificationID(
       const std::string& notification_id);

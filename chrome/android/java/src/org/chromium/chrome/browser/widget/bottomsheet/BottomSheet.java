@@ -1030,6 +1030,8 @@ class BottomSheet extends FrameLayout
     private boolean hasCrossedThresholdToNextState(
             @SheetState int prev, @SheetState int next, float sheetHeight, boolean sheetMovesDown) {
         if (next == prev) return false;
+        // Moving from an internal/temporary state always works:
+        if (prev == SheetState.NONE || prev == SheetState.SCROLLING) return true;
         float lowerBound = getSheetHeightForState(prev);
         float distance = getSheetHeightForState(next) - lowerBound;
         return Math.abs((sheetHeight - lowerBound) / distance)

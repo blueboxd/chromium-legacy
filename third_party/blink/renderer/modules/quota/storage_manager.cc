@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/modules/quota/storage_manager.h"
 
 #include "mojo/public/cpp/bindings/callback_helpers.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"

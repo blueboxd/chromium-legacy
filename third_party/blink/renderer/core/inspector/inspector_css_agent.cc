@@ -263,7 +263,7 @@ bool GetColorsFromRect(PhysicalRect rect,
       continue;
 
     if (IsA<HTMLCanvasElement>(element) || IsHTMLEmbedElement(element) ||
-        IsHTMLImageElement(element) || IsHTMLObjectElement(element) ||
+        IsHTMLImageElement(element) || IsA<HTMLObjectElement>(element) ||
         IsA<HTMLPictureElement>(element) || element->IsSVGElement() ||
         IsA<HTMLVideoElement>(element)) {
       colors.clear();

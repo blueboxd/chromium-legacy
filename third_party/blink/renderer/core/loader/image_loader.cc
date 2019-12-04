@@ -490,7 +490,7 @@ void ImageLoader::DoUpdateFromElement(
     if (IsA<HTMLPictureElement>(GetElement()->parentNode()) ||
         !GetElement()->FastGetAttribute(html_names::kSrcsetAttr).IsNull()) {
       resource_request.SetRequestContext(mojom::RequestContextType::IMAGE_SET);
-    } else if (IsHTMLObjectElement(GetElement())) {
+    } else if (IsA<HTMLObjectElement>(GetElement())) {
       resource_request.SetRequestContext(mojom::RequestContextType::OBJECT);
     } else if (IsHTMLEmbedElement(GetElement())) {
       resource_request.SetRequestContext(mojom::RequestContextType::EMBED);
@@ -750,7 +750,7 @@ bool ImageLoader::ShouldLoadImmediately(const KURL& url) const {
     if (resource && !resource->ErrorOccurred())
       return true;
   }
-  return (IsHTMLObjectElement(element_) || IsHTMLEmbedElement(element_));
+  return (IsA<HTMLObjectElement>(*element_) || IsHTMLEmbedElement(element_));
 }
 
 void ImageLoader::ImageChanged(ImageResourceContent* content,

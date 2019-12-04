@@ -88,7 +88,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
                      gpu_feature_info_for_hardware_gpu,
                  const gpu::GpuExtraInfo& gpu_extra_info,
                  gpu::VulkanImplementation* vulkan_implementation,
-                 base::OnceClosure exit_callback);
+                 base::OnceCallback<void(bool /*immediately*/)> exit_callback);
 
   ~GpuServiceImpl() override;
 
@@ -368,7 +368,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   base::WaitableEvent* shutdown_event_ = nullptr;
 
   // Callback that safely exits GPU process.
-  base::OnceClosure exit_callback_;
+  base::OnceCallback<void(bool)> exit_callback_;
   base::AtomicFlag is_exiting_;
 
   // Used for performing hardware decode acceleration of images. This is shared

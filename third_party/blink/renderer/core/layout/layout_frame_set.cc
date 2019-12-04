@@ -49,7 +49,7 @@ static int AdjustSizeToRemainingSize(int current,
 }
 
 LayoutFrameSet::LayoutFrameSet(HTMLFrameSetElement* frame_set)
-    : LayoutBox(frame_set), is_resizing_(false), is_child_resizing_(false) {
+    : LayoutBox(frame_set), is_resizing_(false) {
   SetInline(false);
 }
 
@@ -517,11 +517,6 @@ bool LayoutFrameSet::UserResize(const MouseEvent& evt) {
 
 void LayoutFrameSet::SetIsResizing(bool is_resizing) {
   is_resizing_ = is_resizing;
-  for (LayoutObject* ancestor = Parent(); ancestor;
-       ancestor = ancestor->Parent()) {
-    if (ancestor->IsFrameSet())
-      ToLayoutFrameSet(ancestor)->is_child_resizing_ = is_resizing;
-  }
   if (LocalFrame* frame = GetFrame()) {
     frame->GetEventHandler().SetResizingFrameSet(is_resizing ? FrameSet()
                                                              : nullptr);

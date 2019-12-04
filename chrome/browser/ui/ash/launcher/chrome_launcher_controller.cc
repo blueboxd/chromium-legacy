@@ -270,8 +270,11 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
       browser_status_monitor_ = std::make_unique<BrowserStatusMonitor>(this);
       browser_status_monitor_->Initialize();
     }
-    app_window_controllers_.push_back(
-        std::make_unique<AppServiceAppWindowLauncherController>(this));
+    std::unique_ptr<AppServiceAppWindowLauncherController>
+        app_service_controller =
+            std::make_unique<AppServiceAppWindowLauncherController>(this);
+    app_service_app_window_controller_ = app_service_controller.get();
+    app_window_controllers_.emplace_back(std::move(app_service_controller));
     return;
   }
 

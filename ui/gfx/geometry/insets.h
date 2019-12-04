@@ -30,7 +30,7 @@ class GEOMETRY_EXPORT Insets {
         left_(all),
         bottom_(GetClampedValue(all, all)),
         right_(GetClampedValue(all, all)) {}
-  constexpr Insets(int vertical, int horizontal)
+  constexpr explicit Insets(int vertical, int horizontal)
       : top_(vertical),
         left_(horizontal),
         bottom_(GetClampedValue(vertical, vertical)),

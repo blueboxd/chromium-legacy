@@ -17,6 +17,7 @@
 #include "ash/wm/splitview/split_view_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display.h"
 #include "ui/wm/public/activation_change_observer.h"
@@ -106,6 +107,12 @@ class ASH_EXPORT ScreenOrientationController
   // the user has locked the orientation to landscape or not locked the
   // orientation.
   bool IsUserLockedOrientationPortrait();
+
+  // Returns the OrientationLockType that is applied on based on whether a
+  // rotation lock was requested for an app window, and whether the current
+  // system state allows it to lock the rotation (e.g. being in tablet mode, on
+  // the internal display, and splitview is inactive).
+  OrientationLockType GetCurrentAppRequestedOrientationLock() const;
 
   bool ignore_display_configuration_updates() const {
     return ignore_display_configuration_updates_;
@@ -247,6 +254,10 @@ class ASH_EXPORT ScreenOrientationController
 
   // The orientation of the device locked by the user.
   OrientationLockType user_locked_orientation_ = OrientationLockType::kAny;
+
+  // The currently applied orientation lock that was requested by an app if any.
+  base::Optional<OrientationLockType> current_app_requested_orientation_lock_ =
+      base::nullopt;
 
   // The current rotation set by ScreenOrientationController for the internal
   // display.

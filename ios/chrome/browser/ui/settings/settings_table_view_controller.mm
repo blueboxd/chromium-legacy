@@ -531,7 +531,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 
 - (TableViewItem*)AutoFillCreditCardDetailItem {
   BOOL autofillCreditCardEnabled =
-      autofill::prefs::IsCreditCardAutofillEnabled(_browserState->GetPrefs());
+      autofill::prefs::IsAutofillCreditCardEnabled(_browserState->GetPrefs());
   NSString* detailText = autofillCreditCardEnabled
                              ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                              : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
@@ -546,7 +546,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 
 - (TableViewItem*)autoFillProfileDetailItem {
   BOOL autofillProfileEnabled =
-      autofill::prefs::IsProfileAutofillEnabled(_browserState->GetPrefs());
+      autofill::prefs::IsAutofillProfileEnabled(_browserState->GetPrefs());
   NSString* detailText = autofillProfileEnabled
                              ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                              : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
@@ -1204,7 +1204,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 
   if (preferenceName == autofill::prefs::kAutofillProfileEnabled) {
     BOOL autofillProfileEnabled =
-        autofill::prefs::IsProfileAutofillEnabled(_browserState->GetPrefs());
+        autofill::prefs::IsAutofillProfileEnabled(_browserState->GetPrefs());
     NSString* detailText = autofillProfileEnabled
                                ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                                : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
@@ -1214,7 +1214,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 
   if (preferenceName == autofill::prefs::kAutofillCreditCardEnabled) {
     BOOL autofillCreditCardEnabled =
-        autofill::prefs::IsCreditCardAutofillEnabled(_browserState->GetPrefs());
+        autofill::prefs::IsAutofillCreditCardEnabled(_browserState->GetPrefs());
     NSString* detailText = autofillCreditCardEnabled
                                ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                                : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);

@@ -296,6 +296,12 @@ bool ScreenOrientationController::IsUserLockedOrientationPortrait() {
   }
 }
 
+OrientationLockType
+ScreenOrientationController::GetCurrentAppRequestedOrientationLock() const {
+  return current_app_requested_orientation_lock_.value_or(
+      OrientationLockType::kAny);
+}
+
 void ScreenOrientationController::ToggleUserRotationLock() {
   if (!display::Display::HasInternalDisplay())
     return;
@@ -623,6 +629,22 @@ void ScreenOrientationController::LoadDisplayRotationProperties() {
 }
 
 void ScreenOrientationController::ApplyLockForActiveWindow() {
+  current_app_requested_orientation_lock_ = base::nullopt;
+  if (!display::Display::HasInternalDisplay())
+    return;
+
+  aura::Window* const internal_display_root =
+      Shell::GetRootWindowForDisplayId(display::Display::InternalDisplayId());
+  if (!internal_display_root) {
+    // We might have an internal display, but no root window for it, such as in
+    // the case of Unified Display. Also, some tests may not set an internal
+    // display.
+    // Since rotation lock is applied only on internal displays (see
+    // ScreenOrientationController::SetDisplayRotation()), there's no need to
+    // continue.
+    return;
+  }
+
   bool in_tablet_mode = Shell::Get()->tablet_mode_controller()->InTabletMode();
   if (!in_tablet_mode) {
     if (IsAutoRotationAllowed()) {
@@ -635,7 +657,7 @@ void ScreenOrientationController::ApplyLockForActiveWindow() {
     return;
   }
 
-  if (SplitViewController::Get(Shell::GetPrimaryRootWindow())
+  if (SplitViewController::Get(internal_display_root)
           ->InTabletSplitViewMode()) {
     // While split view is enabled, ignore rotation lock set by windows.
     LockRotationToOrientation(user_locked_orientation_);
@@ -647,6 +669,13 @@ void ScreenOrientationController::ApplyLockForActiveWindow() {
           kActiveDesk));
 
   for (auto* window : mru_windows) {
+    if (window->GetRootWindow() != internal_display_root) {
+      // TODO(afakhry): Window may move to an external display (e.g. via
+      // shortcut) and remain active. In this case, we need to undo any
+      // orientation lock it applied on the internal display.
+      continue;
+    }
+
     if (!window->TargetVisibility())
       continue;
 
@@ -679,6 +708,8 @@ bool ScreenOrientationController::ApplyLockForWindowIfPossible(
           lock_info.orientation_lock = orientation_lock;
         }
       }
+      current_app_requested_orientation_lock_ =
+          base::make_optional<OrientationLockType>(lock_info.orientation_lock);
       return true;
     }
   }

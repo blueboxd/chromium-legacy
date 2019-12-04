@@ -15,7 +15,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.settings.MainPreferences;
-import org.chromium.chrome.browser.settings.PreferenceUtils;
+import org.chromium.chrome.browser.settings.SettingsUtils;
 
 /**
  * Fragment for settings page that allows user to view and edit a single server-provided address.
@@ -29,7 +29,7 @@ public class AutofillServerProfilePreferences
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.autofill_server_profile_preferences);
+        SettingsUtils.addPreferencesFromResource(this, R.xml.autofill_server_profile_preferences);
         getActivity().setTitle(R.string.autofill_edit_profile);
 
         // We know which card to display based on the GUID stuffed in

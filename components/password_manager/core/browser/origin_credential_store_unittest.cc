@@ -18,15 +18,15 @@ namespace {
 using base::ASCIIToUTF16;
 using testing::ElementsAre;
 
-using IsPublicSuffixMatch = CredentialPair::IsPublicSuffixMatch;
+using IsPublicSuffixMatch = UiCredential::IsPublicSuffixMatch;
 
 constexpr char kExampleSite[] = "https://example.com";
 constexpr char kExampleSiteAndroidApp[] = "android://3x4mpl3@com.example.app/";
 
-CredentialPair CreateCredentials(std::string username, std::string password) {
-  return CredentialPair(base::ASCIIToUTF16(std::move(username)),
-                        base::ASCIIToUTF16(std::move(password)),
-                        GURL(kExampleSite), IsPublicSuffixMatch(false));
+UiCredential CreateCredentials(std::string username, std::string password) {
+  return UiCredential(base::ASCIIToUTF16(std::move(username)),
+                      base::ASCIIToUTF16(std::move(password)),
+                      GURL(kExampleSite), IsPublicSuffixMatch(false));
 }
 
 }  // namespace
@@ -54,33 +54,30 @@ TEST_F(OriginCredentialStoreTest, StoresCredentials) {
 
 TEST_F(OriginCredentialStoreTest, StoresOnlyNormalizedOrigins) {
   store()->SaveCredentials(
-      {CredentialPair(base::ASCIIToUTF16("Berta"), base::ASCIIToUTF16("30948"),
-                      GURL(kExampleSite), IsPublicSuffixMatch(false)),
-       CredentialPair(base::ASCIIToUTF16("Adam"), base::ASCIIToUTF16("Pas83B"),
-                      GURL(kExampleSite).Resolve("/agbs"),
-                      IsPublicSuffixMatch(false)),
-       CredentialPair(base::ASCIIToUTF16("Dora"), base::ASCIIToUTF16("PakudC"),
-                      GURL(kExampleSiteAndroidApp),
-                      IsPublicSuffixMatch(false))});
+      {UiCredential(base::ASCIIToUTF16("Berta"), base::ASCIIToUTF16("30948"),
+                    GURL(kExampleSite), IsPublicSuffixMatch(false)),
+       UiCredential(base::ASCIIToUTF16("Adam"), base::ASCIIToUTF16("Pas83B"),
+                    GURL(kExampleSite).Resolve("/agbs"),
+                    IsPublicSuffixMatch(false)),
+       UiCredential(base::ASCIIToUTF16("Dora"), base::ASCIIToUTF16("PakudC"),
+                    GURL(kExampleSiteAndroidApp), IsPublicSuffixMatch(false))});
 
   EXPECT_THAT(
       store()->GetCredentials(),
       ElementsAre(
 
           // The URL that equals an origin stays untouched.
-          CredentialPair(base::ASCIIToUTF16("Berta"),
-                         base::ASCIIToUTF16("30948"), GURL(kExampleSite),
-                         IsPublicSuffixMatch(false)),
+          UiCredential(base::ASCIIToUTF16("Berta"), base::ASCIIToUTF16("30948"),
+                       GURL(kExampleSite), IsPublicSuffixMatch(false)),
 
           // The longer URL is reduced to an origin.
-          CredentialPair(base::ASCIIToUTF16("Adam"),
-                         base::ASCIIToUTF16("Pas83B"), GURL(kExampleSite),
-                         IsPublicSuffixMatch(false)),
+          UiCredential(base::ASCIIToUTF16("Adam"), base::ASCIIToUTF16("Pas83B"),
+                       GURL(kExampleSite), IsPublicSuffixMatch(false)),
 
           // The android origin stays untouched.
-          CredentialPair(
-              base::ASCIIToUTF16("Dora"), base::ASCIIToUTF16("PakudC"),
-              GURL(kExampleSiteAndroidApp), IsPublicSuffixMatch(false))));
+          UiCredential(base::ASCIIToUTF16("Dora"), base::ASCIIToUTF16("PakudC"),
+                       GURL(kExampleSiteAndroidApp),
+                       IsPublicSuffixMatch(false))));
 }
 
 TEST_F(OriginCredentialStoreTest, ReplacesCredentials) {

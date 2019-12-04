@@ -21,7 +21,7 @@ class CONTENT_EXPORT WebRtcLog {
   // process associated with the RenderProcessHost with |render_process_id|.
   static void SetLogMessageCallback(
       int render_process_id,
-      const base::Callback<void(const std::string&)>& callback);
+      base::RepeatingCallback<void(const std::string&)> callback);
   static void ClearLogMessageCallback(int render_process_id);
 
  private:

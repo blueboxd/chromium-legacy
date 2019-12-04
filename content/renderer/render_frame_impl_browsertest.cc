@@ -923,8 +923,8 @@ class RenderFrameRemoteInterfacesTest : public RenderViewTest {
 // Expect that |remote_interfaces_| is bound before the first committed load in
 // a child frame, and then re-bound on the first commit.
 // TODO(crbug.com/718652): when all clients are converted to use
-// BrowserInterfaceBroker, InterfaceProviderRequest-related code will be
-// removed.
+// BrowserInterfaceBroker, PendingReceiver<InterfaceProvider>-related code will
+// be removed.
 TEST_F(RenderFrameRemoteInterfacesTest, ChildFrameAtFirstCommittedLoad) {
   ScopedNewFrameInterfaceProviderExerciser child_frame_exerciser(
       frame_creation_observer());
@@ -962,8 +962,8 @@ TEST_F(RenderFrameRemoteInterfacesTest, ChildFrameAtFirstCommittedLoad) {
 // Expect that |remote_interfaces_| is bound before the first committed load in
 // the main frame of an opened window, and then re-bound on the first commit.
 // TODO(crbug.com/718652): when all clients are converted to use
-// BrowserInterfaceBroker, InterfaceProviderRequest-related code will be
-// removed.
+// BrowserInterfaceBroker, PendingReceiver<InterfaceProvider>-related code will
+// be removed.
 TEST_F(RenderFrameRemoteInterfacesTest,
        MainFrameOfOpenedWindowAtFirstCommittedLoad) {
   const GURL new_window_url("data:text/html,NewWindow");
@@ -1029,8 +1029,8 @@ TEST_F(RenderFrameRemoteInterfacesTest,
 // their own DocumentLoader in blink and model them as a real navigation, we
 // should add a test case here.
 // TODO(crbug.com/718652): when all clients are converted to use
-// BrowserInterfaceBroker, InterfaceProviderRequest-related code will be
-// removed.
+// BrowserInterfaceBroker, PendingReceiver<InterfaceProvider>-related code will
+// be removed.
 TEST_F(RenderFrameRemoteInterfacesTest,
        ChildFrameReusingWindowOfInitialDocument) {
   const GURL main_frame_url(kTestFirstURL);
@@ -1077,8 +1077,8 @@ TEST_F(RenderFrameRemoteInterfacesTest,
 // Expect that |remote_interfaces_| is bound to a new pipe on cross-document
 // navigations.
 // TODO(crbug.com/718652): when all clients are converted to use
-// BrowserInterfaceBroker, InterfaceProviderRequest-related code will be
-// removed.
+// BrowserInterfaceBroker, PendingReceiver<InterfaceProvider>-related code will
+// be removed.
 TEST_F(RenderFrameRemoteInterfacesTest, ReplacedOnNonSameDocumentNavigation) {
   LoadHTMLWithUrlOverride("", kTestFirstURL);
 
@@ -1123,8 +1123,8 @@ TEST_F(RenderFrameRemoteInterfacesTest, ReplacedOnNonSameDocumentNavigation) {
 // navigations, i.e. the existing InterfaceProvider connection is continued to
 // be used.
 // TODO(crbug.com/718652): when all clients are converted to use
-// BrowserInterfaceBroker, InterfaceProviderRequest-related code will be
-// removed.
+// BrowserInterfaceBroker, PendingReceiver<InterfaceProvider>-related code will
+// be removed.
 TEST_F(RenderFrameRemoteInterfacesTest, ReusedOnSameDocumentNavigation) {
   LoadHTMLWithUrlOverride("", kTestFirstURL);
 

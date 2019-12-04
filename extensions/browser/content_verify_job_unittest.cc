@@ -76,7 +76,8 @@ void WriteComputedHashes(
   for (const auto& resource : contents) {
     std::vector<std::string> hashes =
         ComputedHashes::GetHashesForContent(resource.second, block_size);
-    computed_hashes_data.AddHashes(resource.first, block_size, hashes);
+    computed_hashes_data[resource.first] =
+        ComputedHashes::HashInfo(block_size, hashes);
   }
 
   base::CreateDirectory(extension_root.Append(kMetadataFolder));
@@ -364,7 +365,8 @@ void WriteIncorrectComputedHashes(const base::FilePath& extension_path,
   const std::string kFakeContents = "fake contents";
   std::vector<std::string> hashes =
       ComputedHashes::GetHashesForContent(kFakeContents, block_size);
-  incorrect_computed_hashes_data.AddHashes(resource_path, block_size, hashes);
+  incorrect_computed_hashes_data[resource_path] =
+      ComputedHashes::HashInfo(block_size, hashes);
 
   ASSERT_TRUE(
       ComputedHashes(std::move(incorrect_computed_hashes_data))

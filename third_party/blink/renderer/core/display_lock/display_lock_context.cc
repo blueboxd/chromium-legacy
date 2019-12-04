@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html_element_type_helpers.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -640,6 +641,9 @@ bool DisplayLockContext::MarkForLayoutIfNeeded() {
 }
 
 bool DisplayLockContext::MarkAncestorsForPrePaintIfNeeded() {
+  // TODO(vmpstr): We should add a compositing phase for proper bookkeeping.
+  bool compositing_dirtied = MarkForCompositingUpdatesIfNeeded();
+
   if (IsElementDirtyForPrePaint()) {
     auto* layout_object = element_->GetLayoutObject();
     if (auto* parent = layout_object->Parent())
@@ -659,7 +663,7 @@ bool DisplayLockContext::MarkAncestorsForPrePaintIfNeeded() {
     }
     return true;
   }
-  return false;
+  return compositing_dirtied;
 }
 
 bool DisplayLockContext::MarkPaintLayerNeedsRepaint() {
@@ -671,6 +675,32 @@ bool DisplayLockContext::MarkPaintLayerNeedsRepaint() {
       document_->View()->SetForeignLayerListNeedsUpdate();
       needs_graphics_layer_collection_ = false;
     }
+    return true;
+  }
+  return false;
+}
+
+bool DisplayLockContext::MarkForCompositingUpdatesIfNeeded() {
+  if (!ConnectedToView())
+    return false;
+
+  auto* layout_object = element_->GetLayoutObject();
+  if (!layout_object)
+    return false;
+
+  auto* layout_box = DynamicTo<LayoutBoxModelObject>(layout_object);
+  if (layout_box && layout_box->HasSelfPaintingLayer()) {
+    if (layout_box->Layer()->ChildNeedsCompositingInputsUpdate() &&
+        layout_box->Layer()->Parent()) {
+      // Note that if the layer's child needs compositing inputs update, then
+      // that layer itself also needs compositing inputs update. In order to
+      // propagate the dirty bit, we need to mark this layer's _parent_ as a
+      // needing an update.
+      layout_box->Layer()->Parent()->SetNeedsCompositingInputsUpdate();
+    }
+    if (needs_compositing_requirements_update_)
+      layout_box->Layer()->SetNeedsCompositingRequirementsUpdate();
+    needs_compositing_requirements_update_ = false;
     return true;
   }
   return false;
@@ -697,10 +727,14 @@ bool DisplayLockContext::IsElementDirtyForLayout() const {
 
 bool DisplayLockContext::IsElementDirtyForPrePaint() const {
   if (auto* layout_object = element_->GetLayoutObject()) {
+    auto* layout_box = DynamicTo<LayoutBoxModelObject>(layout_object);
     return PrePaintTreeWalk::ObjectRequiresPrePaint(*layout_object) ||
            PrePaintTreeWalk::ObjectRequiresTreeBuilderContext(*layout_object) ||
            needs_prepaint_subtree_walk_ ||
-           needs_effective_allowed_touch_action_update_;
+           needs_effective_allowed_touch_action_update_ ||
+           needs_compositing_requirements_update_ ||
+           (layout_box && layout_box->HasSelfPaintingLayer() &&
+            layout_box->Layer()->ChildNeedsCompositingInputsUpdate());
   }
   return false;
 }
@@ -843,7 +877,7 @@ const char* DisplayLockContext::ShouldForceUnlock() const {
   // We allow replaced elements to be locked. This check is similar to the check
   // in DefinitelyNewFormattingContext() in element.cc, but in this case we
   // allow object element to get locked.
-  if (IsHTMLObjectElement(element_) || IsHTMLImageElement(element_) ||
+  if (IsA<HTMLObjectElement>(*element_) || IsHTMLImageElement(element_) ||
       element_->IsFormControlElement() || element_->IsMediaElement() ||
       element_->IsFrameOwnerElement() || element_->IsSVGElement()) {
     return nullptr;

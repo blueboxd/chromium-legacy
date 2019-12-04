@@ -17,9 +17,6 @@ const constexpr base::TimeDelta kSendMessageTimeout =
 const constexpr base::TimeDelta kAckTimeToLive =
     base::TimeDelta::FromSeconds(8);
 
-const constexpr base::TimeDelta kDeviceExpiration =
-    base::TimeDelta::FromDays(2);
-
 const constexpr base::TimeDelta kRegistrationExpiration =
     base::TimeDelta::FromDays(1);
 

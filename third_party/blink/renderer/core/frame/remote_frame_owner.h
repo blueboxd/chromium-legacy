@@ -51,6 +51,7 @@ class CORE_EXPORT RemoteFrameOwner final
   int MarginWidth() const override { return margin_width_; }
   int MarginHeight() const override { return margin_height_; }
   bool AllowFullscreen() const override { return allow_fullscreen_; }
+  bool DisallowDocumentAccess() const override { return true; }
   bool AllowPaymentRequest() const override { return allow_payment_request_; }
   bool IsDisplayNone() const override { return is_display_none_; }
   AtomicString RequiredCsp() const override { return required_csp_; }

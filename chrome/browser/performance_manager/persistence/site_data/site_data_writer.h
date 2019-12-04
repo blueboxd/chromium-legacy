@@ -31,7 +31,6 @@ class SiteDataWriter {
   virtual void NotifyUpdatesFaviconInBackground();
   virtual void NotifyUpdatesTitleInBackground();
   virtual void NotifyUsesAudioInBackground();
-  virtual void NotifyUsesNotificationsInBackground();
 
   // Records performance measurements.
   virtual void NotifyLoadTimePerformanceMeasurement(

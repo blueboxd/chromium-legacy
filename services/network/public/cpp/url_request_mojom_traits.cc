@@ -265,9 +265,9 @@ StructTraits<network::mojom::URLRequestDataView, network::ResourceRequest>::
   // TODO(crbug.com/912680, crbug.com/1021908): Move this method back inline,
   // and move the debugging logic back to NetworkServiceNetworkDelegate when the
   // current cause of referrer mismatches is found.
-  if (request.referrer != net::URLRequestJob::ComputeReferrerForPolicy(
-                              request.referrer_policy, request.referrer,
-                              request.request_initiator, request.url)) {
+  if (request.referrer !=
+      net::URLRequestJob::ComputeReferrerForPolicy(
+          request.referrer_policy, request.referrer, request.url)) {
     // Record information to help debug issues like http://crbug.com/422871.
     if (request.url.SchemeIsHTTPOrHTTPS()) {
       auto referrer_policy = request.referrer_policy;

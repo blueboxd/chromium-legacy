@@ -897,25 +897,47 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
   EXPECT_EQ(nullptr, personal_data_->GetCreditCardByNumber(kSecondCardNumber));
 }
 
-// Ensures that rejecting the main migration dialog adds 3 strikes.
+// Ensures that accepting the main migration dialog adds strikes.
 IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
-                       ClosingDialogAddsLocalCardMigrationStrikes) {
+                       AcceptingDialogAddsLocalCardMigrationStrikes) {
   base::HistogramTester histogram_tester;
 
   SaveLocalCard(kFirstCardNumber);
   SaveLocalCard(kSecondCardNumber);
   UseCardAndWaitForMigrationOffer(kFirstCardNumber);
   ClickOnOkButton(GetLocalCardMigrationOfferBubbleViews());
-  // Click the [Cancel] button, should add and log 3 strikes.
+  // Click the [Save] button, should add and log strikes.
+  ClickOnSaveButtonAndWaitForMigrationResults();
+
+  // Metrics
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Autofill.StrikeDatabase.NthStrikeAdded.LocalCardMigration"),
+      ElementsAre(Bucket(
+          LocalCardMigrationStrikeDatabase::kStrikesToAddWhenDialogClosed, 1)));
+}
+
+// Ensures that rejecting the main migration dialog adds strikes.
+IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
+                       RejectingDialogAddsLocalCardMigrationStrikes) {
+  base::HistogramTester histogram_tester;
+
+  SaveLocalCard(kFirstCardNumber);
+  SaveLocalCard(kSecondCardNumber);
+  UseCardAndWaitForMigrationOffer(kFirstCardNumber);
+  ClickOnOkButton(GetLocalCardMigrationOfferBubbleViews());
+  // Click the [Cancel] button, should add and log strikes.
   ClickOnCancelButton(GetLocalCardMigrationMainDialogView());
 
   // Metrics
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "Autofill.StrikeDatabase.NthStrikeAdded.LocalCardMigration"),
-              ElementsAre(Bucket(3, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Autofill.StrikeDatabase.NthStrikeAdded.LocalCardMigration"),
+      ElementsAre(Bucket(
+          LocalCardMigrationStrikeDatabase::kStrikesToAddWhenDialogClosed, 1)));
 }
 
-// Ensures that rejecting the migration bubble adds 2 strikes.
+// Ensures that rejecting the migration bubble adds strikes.
 IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
                        ClosingBubbleAddsLocalCardMigrationStrikes) {
   base::HistogramTester histogram_tester;
@@ -929,13 +951,16 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
   // No bubble should be showing.
   EXPECT_EQ(nullptr, GetLocalCardMigrationOfferBubbleViews());
   // Metrics
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "Autofill.StrikeDatabase.NthStrikeAdded.LocalCardMigration"),
-              ElementsAre(Bucket(2, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Autofill.StrikeDatabase.NthStrikeAdded.LocalCardMigration"),
+      ElementsAre(Bucket(
+          LocalCardMigrationStrikeDatabase::kStrikesToAddWhenBubbleClosed, 1)));
 }
 
-// Ensures that rejecting the migration bubble repeatedly adds 2 strikes every
-// time, even for the same tab.
+// Ensures that rejecting the migration bubble repeatedly adds strikes every
+// time, even for the same tab. Currently, it adds 3 strikes (out of 6), so this
+// test can reliably test it being added twice.
 IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
                        ClosingBubbleAgainAddsLocalCardMigrationStrikes) {
   base::HistogramTester histogram_tester;
@@ -952,10 +977,18 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
 
   // No bubble should be showing.
   EXPECT_EQ(nullptr, GetLocalCardMigrationOfferBubbleViews());
-  // Metrics: Added 2 strikes each time, for totals of 2 then 4.
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "Autofill.StrikeDatabase.NthStrikeAdded.LocalCardMigration"),
-              ElementsAre(Bucket(2, 1), Bucket(4, 1)));
+  // Metrics: Added 3 strikes each time, for totals of 3 then 6.
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Autofill.StrikeDatabase.NthStrikeAdded.LocalCardMigration"),
+      ElementsAre(
+          Bucket(
+              LocalCardMigrationStrikeDatabase::kStrikesToAddWhenBubbleClosed,
+              1),
+          Bucket(
+              LocalCardMigrationStrikeDatabase::kStrikesToAddWhenBubbleClosed *
+                  2,
+              1)));
 }
 
 // Ensures that reshowing and closing bubble after previously closing it does

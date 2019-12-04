@@ -829,8 +829,10 @@ TEST_F('ChromeVoxOutputE2ETest', 'BrailleAncestry', function() {
     <ul><li><a href="#">test</a></li></ul>
   `,
       function(root) {
-        var text = root.find({role: 'inlineTextBox'});
         var link = root.find({role: 'link'});
+        // The 'inlineTextBox' found from root would return the inlineTextBox of
+        // the list marker. Here we want the link's inlineTextBox.
+        var text = link.find({role: 'inlineTextBox'});
         var listItem = root.find({role: 'listItem'});
         var list = root.find({role: 'list'});
         var range = cursors.Range.fromNode(text);

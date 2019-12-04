@@ -18,10 +18,8 @@ namespace blink {
 
 class RtcEventLogOutputSink;
 
-PLATFORM_EXPORT std::unique_ptr<webrtc::RtcEventLogOutput>
-CreateRtcEventLogOutputSinkProxy(RtcEventLogOutputSink* sink);
-
-class RtcEventLogOutputSinkProxy final : public webrtc::RtcEventLogOutput {
+class PLATFORM_EXPORT RtcEventLogOutputSinkProxy final
+    : public webrtc::RtcEventLogOutput {
  public:
   RtcEventLogOutputSinkProxy(RtcEventLogOutputSink* sink);
   ~RtcEventLogOutputSinkProxy() override;

@@ -32,7 +32,6 @@ class NaClBrokerListener : public content::SandboxedProcessLauncherDelegate,
   void Listen();
 
   // content::SandboxedProcessLauncherDelegate implementation:
-  bool PreSpawnTarget(sandbox::TargetPolicy* policy) override;
   service_manager::SandboxType GetSandboxType() override;
 
   // IPC::Listener implementation.

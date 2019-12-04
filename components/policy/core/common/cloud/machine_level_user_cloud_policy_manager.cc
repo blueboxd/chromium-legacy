@@ -77,6 +77,23 @@ void MachineLevelUserCloudPolicyManager::RemoveClientObserver(
     client()->RemoveObserver(observer);
 }
 
+void MachineLevelUserCloudPolicyManager::DisconnectAndRemovePolicy() {
+  if (external_data_manager_)
+    external_data_manager_->Disconnect();
+
+  core()->Disconnect();
+
+  // store_->Clear() will publish the updated, empty policy. The component
+  // policy service must be cleared before OnStoreLoaded() is issued, so that
+  // component policies are also empty at CheckAndPublishPolicy().
+  ClearAndDestroyComponentCloudPolicyService();
+
+  // When the |store_| is cleared, it informs the |external_data_manager_| that
+  // all external data references have been removed, causing the
+  // |external_data_manager_| to clear its cache as well.
+  store_->Clear();
+}
+
 void MachineLevelUserCloudPolicyManager::Init(SchemaRegistry* registry) {
   DVLOG(1) << "Machine level cloud policy manager initialized";
   // Call to grand-parent's Init() instead of parent's is intentional.

@@ -3,6 +3,8 @@ rootWebArea
 ++++list
 ++++++listItem
 ++++++++listMarker name='• '
+++++++++++staticText name='• '
+++++++++++++inlineTextBox name='• '
 ++++++++staticText name='First item properly groups itself despite '
 ++++++++++inlineTextBox name='First item properly groups itself despite '
 ++++++++staticText name='bolded'
@@ -11,6 +13,8 @@ rootWebArea
 ++++++++++inlineTextBox name=' text.'
 ++++++listItem
 ++++++++listMarker name='• '
+++++++++++staticText name='• '
+++++++++++++inlineTextBox name='• '
 ++++++++staticText name='This should also be '
 ++++++++++inlineTextBox name='This should also be '
 ++++++++staticText name='seen'
@@ -19,6 +23,8 @@ rootWebArea
 ++++++++++inlineTextBox name=' as a group.'
 ++++++listItem
 ++++++++listMarker name='• '
+++++++++++staticText name='• '
+++++++++++++inlineTextBox name='• '
 ++++++++staticText name='Some '
 ++++++++++inlineTextBox name='Some '
 ++++++++staticText name='more'

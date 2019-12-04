@@ -88,10 +88,10 @@ public class ManagedPreferencesUtils {
         if (delegate == null) return preference.getIcon();
 
         if (delegate.isPreferenceControlledByPolicy(preference)) {
-            return PreferenceUtils.getTintedIcon(
+            return SettingsUtils.getTintedIcon(
                     preference.getContext(), getManagedByEnterpriseIconId());
         } else if (delegate.isPreferenceControlledByCustodian(preference)) {
-            return PreferenceUtils.getTintedIcon(
+            return SettingsUtils.getTintedIcon(
                     preference.getContext(), getManagedByCustodianIconId());
         }
 

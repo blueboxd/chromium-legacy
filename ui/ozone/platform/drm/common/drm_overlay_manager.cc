@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/ozone/platform/drm/common/drm_overlay_candidates.h"
@@ -84,6 +85,7 @@ void DrmOverlayManager::CheckOverlaySupport(
     iter = cache.Put(result_candidates, std::move(value));
   }
 
+  bool cache_hit = false;
   OverlayValidationCacheValue& value = iter->second;
   if (value.request_num < kThrottleRequestSize) {
     value.request_num++;
@@ -91,11 +93,8 @@ void DrmOverlayManager::CheckOverlaySupport(
     value.request_num++;
     if (value.status.back() == OVERLAY_STATUS_PENDING)
       SendOverlayValidationRequest(result_candidates, widget);
-  } else {
-    // We haven't received an answer yet.
-    if (value.status.back() == OVERLAY_STATUS_PENDING)
-      return;
-
+  } else if (value.status.back() != OVERLAY_STATUS_PENDING) {
+    cache_hit = true;
     size_t size = candidates->size();
     const std::vector<OverlayStatus>& status = value.status;
     DCHECK_EQ(size, status.size());
@@ -105,6 +104,7 @@ void DrmOverlayManager::CheckOverlaySupport(
       candidates->at(i).overlay_handled = status[i] == OVERLAY_STATUS_ABLE;
     }
   }
+  UMA_HISTOGRAM_BOOLEAN("DrmOverlayManager.CacheHit", cache_hit);
 }
 
 bool DrmOverlayManager::CanHandleCandidate(

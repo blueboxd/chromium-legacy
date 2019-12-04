@@ -1181,9 +1181,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, FocusedFrameUnload) {
   B2->GetProcess()->AddFilter(filter.get());
   B2->SetSubframeUnloadTimeoutForTesting(base::TimeDelta::FromSeconds(30));
 
-  EXPECT_FALSE(B2->GetSuddenTerminationDisablerState(blink::kUnloadHandler));
+  EXPECT_FALSE(B2->GetSuddenTerminationDisablerState(
+      blink::mojom::SuddenTerminationDisablerType::kUnloadHandler));
   EXPECT_TRUE(ExecJs(B2, "window.onunload = ()=>{};"));
-  EXPECT_TRUE(B2->GetSuddenTerminationDisablerState(blink::kUnloadHandler));
+  EXPECT_TRUE(B2->GetSuddenTerminationDisablerState(
+      blink::mojom::SuddenTerminationDisablerType::kUnloadHandler));
 
   EXPECT_TRUE(B2->is_active());
   EXPECT_TRUE(ExecJs(A1, "document.querySelector('iframe').remove()"));

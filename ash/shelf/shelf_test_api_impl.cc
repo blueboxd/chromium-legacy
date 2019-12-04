@@ -37,7 +37,7 @@ bool ShelfTestApiImpl::IsVisible() {
 }
 
 bool ShelfTestApiImpl::IsAlignmentBottomLocked() {
-  return GetShelf()->alignment() == SHELF_ALIGNMENT_BOTTOM_LOCKED;
+  return GetShelf()->alignment() == ShelfAlignment::kBottomLocked;
 }
 
 views::View* ShelfTestApiImpl::GetHomeButton() {

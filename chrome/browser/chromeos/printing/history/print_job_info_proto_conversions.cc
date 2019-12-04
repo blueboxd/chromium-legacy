@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/printing/history/print_job_info_proto_conversions.h"
 
-#include "base/optional.h"
-
 namespace chromeos {
 
 namespace proto = printing::proto;
@@ -13,9 +11,9 @@ namespace proto = printing::proto;
 namespace {
 
 proto::PrintSettings_ColorMode ColorModelToProto(::printing::ColorModel color) {
-  base::Optional<bool> is_color = ::printing::IsColorModelSelected(color);
-  return is_color.value() ? proto::PrintSettings_ColorMode_COLOR
-                          : proto::PrintSettings_ColorMode_BLACK_AND_WHITE;
+  return ::printing::IsColorModelSelected(color)
+             ? proto::PrintSettings_ColorMode_COLOR
+             : proto::PrintSettings_ColorMode_BLACK_AND_WHITE;
 }
 
 proto::PrintSettings_DuplexMode DuplexModeToProto(

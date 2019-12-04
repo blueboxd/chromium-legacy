@@ -131,6 +131,7 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
                                        ParserContentPolicy content_policy,
                                        ParserSynchronizationPolicy sync_policy)
     : ScriptableDocumentParser(document, content_policy),
+      ContextLifecycleStateObserver(&document),
       options_(&document),
       reentry_permit_(HTMLParserReentryPermit::Create()),
       token_(sync_policy == kForceSynchronousParsing
@@ -149,7 +150,6 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
       should_use_threading_(sync_policy == kAllowAsynchronousParsing),
       end_was_delayed_(false),
       have_background_parser_(false),
-      tasks_were_paused_(false),
       pump_session_nesting_level_(0),
       pump_speculations_session_nesting_level_(0),
       is_parsing_at_line_number_(false),
@@ -159,6 +159,8 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
   DCHECK(ShouldUseThreading() || (token_ && tokenizer_));
   // Threading is not allowed in prefetch mode.
   DCHECK(!document.IsPrefetchOnly() || !ShouldUseThreading());
+
+  UpdateStateIfNeeded();
 
   // Don't create preloader for parsing clipboard content.
   if (content_policy == kDisallowScriptingAndPluginContent)
@@ -192,6 +194,7 @@ void HTMLDocumentParser::Trace(Visitor* visitor) {
   visitor->Trace(script_runner_);
   visitor->Trace(preloader_);
   ScriptableDocumentParser::Trace(visitor);
+  ContextLifecycleStateObserver::Trace(visitor);
   HTMLParserScriptRunnerHost::Trace(visitor);
 }
 
@@ -388,7 +391,7 @@ void HTMLDocumentParser::EnqueueTokenizedChunk(
   speculations_.push_back(std::move(chunk));
 
   if (!IsPaused() && !IsScheduledForUnpause()) {
-    if (tasks_were_paused_)
+    if (GetDocument()->IsContextPaused())
       parser_scheduler_->ForceUnpauseAfterYield();
     else
       parser_scheduler_->ScheduleForUnpause();
@@ -1116,18 +1119,14 @@ void HTMLDocumentParser::ParseDocumentFragment(
   parser->Detach();
 }
 
-void HTMLDocumentParser::PauseScheduledTasks() {
-  DCHECK(!tasks_were_paused_);
-  tasks_were_paused_ = true;
-  if (parser_scheduler_)
-    parser_scheduler_->Pause();
-}
-
-void HTMLDocumentParser::UnpauseScheduledTasks() {
-  DCHECK(tasks_were_paused_);
-  tasks_were_paused_ = false;
-  if (parser_scheduler_)
+void HTMLDocumentParser::ContextLifecycleStateChanged(
+    mojom::FrameLifecycleState state) {
+  if (!parser_scheduler_)
+    return;
+  if (state == mojom::FrameLifecycleState::kRunning)
     parser_scheduler_->Unpause();
+  else
+    parser_scheduler_->Pause();
 }
 
 void HTMLDocumentParser::AppendBytes(const char* data, size_t length) {

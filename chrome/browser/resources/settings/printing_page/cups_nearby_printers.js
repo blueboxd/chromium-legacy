@@ -32,6 +32,12 @@ Polymer({
       notify: true,
     },
 
+    printersCount: {
+      type: Number,
+      computed: 'getFilteredPrintersLength_(filteredPrinters_.*)',
+      notify: true,
+    },
+
     /**
      * @type {number}
      * @private
@@ -188,5 +194,13 @@ Polymer({
    */
   showNoSearchResultsMessage_: function() {
     return !!this.searchTerm && !this.filteredPrinters_.length;
-  }
+  },
+
+  /**
+   * @private
+   * @return {number} Length of |filteredPrinters_|.
+   */
+  getFilteredPrintersLength_: function() {
+    return this.filteredPrinters_.length;
+  },
 });

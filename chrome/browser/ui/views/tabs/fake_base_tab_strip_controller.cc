@@ -64,13 +64,28 @@ void FakeBaseTabStripController::RemoveTab(int index) {
 void FakeBaseTabStripController::MoveTabIntoGroup(
     int index,
     base::Optional<TabGroupId> new_group) {
+  bool group_exists = base::Contains(tab_groups_, new_group);
   base::Optional<TabGroupId> old_group;
   if (index >= int{tab_groups_.size()})
     tab_groups_.resize(index + 1);
   else
     old_group = tab_groups_[index];
+
   tab_groups_[index] = new_group;
-  tab_strip_->ChangeTabGroup(index, old_group, new_group);
+
+  if (old_group.has_value()) {
+    tab_strip_->AddTabToGroup(base::nullopt, index);
+    if (!base::Contains(tab_groups_, old_group))
+      tab_strip_->OnGroupDeleted(old_group.value());
+    else
+      tab_strip_->OnGroupContentsChanged(old_group.value());
+  }
+  if (new_group.has_value()) {
+    if (!group_exists)
+      tab_strip_->OnGroupCreated(new_group.value());
+    tab_strip_->AddTabToGroup(new_group.value(), index);
+    tab_strip_->OnGroupContentsChanged(new_group.value());
+  }
 }
 
 const TabGroupVisualData* FakeBaseTabStripController::GetVisualDataForGroup(

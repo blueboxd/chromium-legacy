@@ -85,7 +85,7 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final : public WebEmbeddedWorker {
       std::unique_ptr<ServiceWorkerInstalledScriptsManager>,
       std::unique_ptr<ServiceWorkerContentSettingsProxy>,
       mojo::PendingRemote<mojom::blink::CacheStorage>,
-      service_manager::mojom::blink::InterfaceProviderPtrInfo,
+      mojo::PendingRemote<service_manager::mojom::blink::InterfaceProvider>,
       mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>,
       scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner);
 

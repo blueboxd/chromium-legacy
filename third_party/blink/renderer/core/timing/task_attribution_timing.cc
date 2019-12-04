@@ -11,7 +11,7 @@
 namespace blink {
 
 TaskAttributionTiming::TaskAttributionTiming(const AtomicString& name,
-                                             const String& container_type,
+                                             const AtomicString& container_type,
                                              const String& container_src,
                                              const String& container_id,
                                              const String& container_name)
@@ -31,7 +31,7 @@ PerformanceEntryType TaskAttributionTiming::EntryTypeEnum() const {
   return PerformanceEntry::EntryType::kTaskAttribution;
 }
 
-String TaskAttributionTiming::containerType() const {
+AtomicString TaskAttributionTiming::containerType() const {
   return container_type_;
 }
 

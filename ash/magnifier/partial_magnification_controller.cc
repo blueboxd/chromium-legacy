@@ -22,44 +22,44 @@ namespace ash {
 namespace {
 
 // Ratio of magnifier scale.
-const float kMagnificationScale = 2.f;
+constexpr float kMagnificationScale = 2.f;
 // Radius of the magnifying glass in DIP. This does not include the thickness
 // of the magnifying glass shadow and border.
-const int kMagnifierRadius = 188;
+constexpr int kMagnifierRadius = 188;
 // Size of the border around the magnifying glass in DIP.
-const int kBorderSize = 10;
+constexpr int kBorderSize = 10;
 // Thickness of the outline around magnifying glass border in DIP.
-const int kBorderOutlineThickness = 1;
+constexpr int kBorderOutlineThickness = 1;
 // Thickness of the shadow around the magnifying glass in DIP.
-const int kShadowThickness = 24;
+constexpr int kShadowThickness = 24;
 // Offset of the shadow around the magnifying glass in DIP. One of the shadows
 // is lowered a bit, so we have to include |kShadowOffset| in our calculations
 // to compensate.
-const int kShadowOffset = 24;
+constexpr int kShadowOffset = 24;
 // The color of the border and its outlines. The border has an outline on both
 // sides, producing a black/white/black ring.
-const SkColor kBorderColor = SkColorSetARGB(204, 255, 255, 255);
-const SkColor kBorderOutlineColor = SkColorSetARGB(51, 0, 0, 0);
+constexpr SkColor kBorderColor = SkColorSetARGB(204, 255, 255, 255);
+constexpr SkColor kBorderOutlineColor = SkColorSetARGB(51, 0, 0, 0);
 // The colors of the two shadow around the magnifiying glass.
-const SkColor kTopShadowColor = SkColorSetARGB(26, 0, 0, 0);
-const SkColor kBottomShadowColor = SkColorSetARGB(61, 0, 0, 0);
+constexpr SkColor kTopShadowColor = SkColorSetARGB(26, 0, 0, 0);
+constexpr SkColor kBottomShadowColor = SkColorSetARGB(61, 0, 0, 0);
 // Inset on the zoom filter.
-const int kZoomInset = 0;
+constexpr int kZoomInset = 0;
 // Vertical offset between the center of the magnifier and the tip of the
 // pointer. TODO(jdufault): The vertical offset should only apply to the window
 // location, not the magnified contents. See crbug.com/637617.
-const int kVerticalOffset = 0;
+constexpr int kVerticalOffset = 0;
 
 // Name of the magnifier window.
-const char kPartialMagniferWindowName[] = "PartialMagnifierWindow";
+constexpr char kPartialMagniferWindowName[] = "PartialMagnifierWindow";
 
-gfx::Size GetWindowSize() {
+constexpr gfx::Size GetWindowSize() {
   // The diameter of the window is the diameter of the magnifier, border and
   // shadow combined. We apply |kShadowOffset| on all sides even though the
   // shadow is only thicker on the bottom so as to keep the circle centered in
   // the view and keep calculations (border rendering and content masking)
   // simpler.
-  int window_diameter =
+  constexpr int window_diameter =
       (kMagnifierRadius + kBorderSize + kShadowThickness + kShadowOffset) * 2;
   return gfx::Size(window_diameter, window_diameter);
 }
@@ -83,20 +83,21 @@ aura::Window* GetCurrentRootWindow() {
 
 }  // namespace
 
-// The content mask provides a clipping layer for the magnification window so we
-// can show a circular magnifier.
-class PartialMagnificationController::ContentMask : public ui::LayerDelegate {
+// The border mask provides a clipping layer for the magnification window
+// border so that there is no shadow in the center.
+class PartialMagnificationController::BorderMask : public ui::LayerDelegate {
  public:
-  // If |is_border| is true, the circle will be a stroke. This is useful if we
-  // wish to clip a border.
-  ContentMask(bool is_border, gfx::Size mask_bounds)
-      : layer_(ui::LAYER_TEXTURED), is_border_(is_border) {
+  explicit BorderMask(const gfx::Size& mask_bounds)
+      : layer_(ui::LAYER_TEXTURED) {
     layer_.set_delegate(this);
     layer_.SetFillsBoundsOpaquely(false);
     layer_.SetBounds(gfx::Rect(mask_bounds));
   }
 
-  ~ContentMask() override { layer_.set_delegate(nullptr); }
+  ~BorderMask() override { layer_.set_delegate(nullptr); }
+
+  BorderMask(const BorderMask& other) = delete;
+  BorderMask& operator=(const BorderMask& rhs) = delete;
 
   ui::Layer* layer() { return &layer_; }
 
@@ -111,19 +112,15 @@ class PartialMagnificationController::ContentMask : public ui::LayerDelegate {
     // Stroke is used for clipping the border which consists of the rendered
     // border |kBorderSize| and the magnifier shadow |kShadowThickness| and
     // |kShadowOffset|.
-    flags.setStrokeWidth(kBorderSize + kShadowThickness + kShadowOffset);
-    flags.setStyle(is_border_ ? cc::PaintFlags::kStroke_Style
-                              : cc::PaintFlags::kFill_Style);
+    constexpr int kStrokeWidth = kBorderSize + kShadowThickness + kShadowOffset;
+    flags.setStrokeWidth(kStrokeWidth);
+    flags.setStyle(cc::PaintFlags::kStroke_Style);
 
-    // If we want to clip the magnifier zone use the magnifiers radius.
-    // Otherwise we want to clip the border, shadow and shadow offset so we
-    // start
-    // at the halfway point of the stroke width.
-    gfx::Rect rect(layer()->bounds().size());
-    int clipping_radius = kMagnifierRadius;
-    if (is_border_)
-      clipping_radius += (kShadowThickness + kShadowOffset + kBorderSize) / 2;
-    recorder.canvas()->DrawCircle(rect.CenterPoint(), clipping_radius, flags);
+    // We want to clip everything but the border, shadow and shadow offset, so
+    // set the clipping radius at the halfway point of the stroke width.
+    constexpr int kClippingRadius = kMagnifierRadius + (kStrokeWidth) / 2;
+    const gfx::Rect rect(layer()->bounds().size());
+    recorder.canvas()->DrawCircle(rect.CenterPoint(), kClippingRadius, flags);
   }
 
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
@@ -132,8 +129,6 @@ class PartialMagnificationController::ContentMask : public ui::LayerDelegate {
   }
 
   ui::Layer layer_;
-  bool is_border_;
-  DISALLOW_COPY_AND_ASSIGN(ContentMask);
 };
 
 // The border renderer draws the border as well as outline on both the outer and
@@ -339,23 +334,33 @@ void PartialMagnificationController::CreateMagnifierWindow(
 
   ui::Layer* root_layer = host_widget_->GetNativeView()->layer();
 
-  zoom_layer_.reset(new ui::Layer(ui::LayerType::LAYER_SOLID_COLOR));
-  zoom_layer_->SetBounds(gfx::Rect(GetWindowSize()));
+  constexpr gfx::Size kWindowSize = GetWindowSize();
+  const gfx::Rect window_bounds = gfx::Rect(kWindowSize);
+
+  zoom_layer_ = std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR);
+  zoom_layer_->SetBounds(window_bounds);
   zoom_layer_->SetBackgroundZoom(kMagnificationScale, kZoomInset);
+  zoom_layer_->SetFillsBoundsOpaquely(false);
   root_layer->Add(zoom_layer_.get());
 
-  border_layer_.reset(new ui::Layer(ui::LayerType::LAYER_TEXTURED));
-  border_layer_->SetBounds(gfx::Rect(GetWindowSize()));
-  border_renderer_.reset(new BorderRenderer(gfx::Rect(GetWindowSize())));
+  // Create a rounded rect clip, so that only we see a circle of the zoomed
+  // content. This circle radius should match that of the drawn border.
+  constexpr gfx::RoundedCornersF kRoundedCorners{kMagnifierRadius};
+  zoom_layer_->SetRoundedCornerRadius(kRoundedCorners);
+  gfx::Rect clip_rect = window_bounds;
+  clip_rect.ClampToCenteredSize(
+      gfx::Size(kMagnifierRadius * 2, kMagnifierRadius * 2));
+  zoom_layer_->SetClipRect(clip_rect);
+
+  border_layer_ = std::make_unique<ui::Layer>();
+  border_layer_->SetBounds(window_bounds);
+  border_renderer_ = std::make_unique<BorderRenderer>(window_bounds);
   border_layer_->set_delegate(border_renderer_.get());
   border_layer_->SetFillsBoundsOpaquely(false);
   root_layer->Add(border_layer_.get());
 
-  border_mask_.reset(new ContentMask(true, GetWindowSize()));
+  border_mask_ = std::make_unique<BorderMask>(kWindowSize);
   border_layer_->SetMaskLayer(border_mask_->layer());
-
-  zoom_mask_.reset(new ContentMask(false, GetWindowSize()));
-  zoom_layer_->SetMaskLayer(zoom_mask_->layer());
 
   host_widget_->AddObserver(this);
 }

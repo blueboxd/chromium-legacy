@@ -21,7 +21,7 @@
 #import "ios/chrome/browser/crash_report/breakpad_helper.h"
 #include "ios/chrome/browser/infobars/confirm_infobar_controller.h"
 #include "ios/chrome/browser/infobars/confirm_infobar_metrics_recorder.h"
-#include "ios/chrome/browser/infobars/infobar.h"
+#include "ios/chrome/browser/infobars/infobar_ios.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/browser/infobars/infobar_utils.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"

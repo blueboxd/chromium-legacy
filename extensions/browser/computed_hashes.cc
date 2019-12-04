@@ -5,9 +5,11 @@
 #include "extensions/browser/computed_hashes.h"
 
 #include <memory>
+#include <set>
 #include <utility>
 
 #include "base/base64.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
@@ -34,6 +36,8 @@ const int kVersion = 2;
 
 namespace {
 
+using SortedFilePathSet = std::set<base::FilePath>;
+
 const char kUMAComputedHashesReadResult[] =
     "Extensions.ContentVerification.ComputedHashesReadResult";
 const char kUMAComputedHashesInitTime[] =
@@ -41,16 +45,6 @@ const char kUMAComputedHashesInitTime[] =
 
 }  // namespace
 
-ComputedHashes::Data::Data() = default;
-ComputedHashes::Data::~Data() = default;
-ComputedHashes::Data::Data(Data&&) = default;
-ComputedHashes::Data& ComputedHashes::Data::operator=(Data&&) = default;
-
-void ComputedHashes::Data::AddHashes(const base::FilePath& relative_path,
-                                     int block_size,
-                                     std::vector<std::string> hashes) {
-  data_[relative_path] = HashInfo(block_size, std::move(hashes));
-}
 
 ComputedHashes::ComputedHashes(Data&& data) : data_(std::move(data)) {}
 ComputedHashes::~ComputedHashes() = default;
@@ -122,20 +116,63 @@ base::Optional<ComputedHashes> ComputedHashes::CreateFromFile(
       if (!base::Base64Decode(encoded, decoded))
         return base::nullopt;
     }
-    data.AddHashes(relative_path, *block_size, std::move(hashes));
+    data[relative_path] = HashInfo(*block_size, std::move(hashes));
   }
   uma_recorder.RecordSuccess();
   return ComputedHashes(std::move(data));
+}
+
+// static
+base::Optional<ComputedHashes::Data> ComputedHashes::Compute(
+    const base::FilePath& extension_root,
+    int block_size,
+    const IsCancelledCallback& is_cancelled,
+    const ShouldComputeHashesCallback& should_compute_hashes_for_resource) {
+  base::FileEnumerator enumerator(extension_root, /*recursive=*/true,
+                                  base::FileEnumerator::FILES);
+  // First discover all the file paths and put them in a sorted set.
+  SortedFilePathSet paths;
+  while (true) {
+    if (is_cancelled && is_cancelled.Run())
+      return base::nullopt;
+
+    base::FilePath full_path = enumerator.Next();
+    if (full_path.empty())
+      break;
+    paths.insert(full_path);
+  }
+
+  // Now iterate over all the paths in sorted order and compute the block hashes
+  // for each one.
+  std::map<base::FilePath, HashInfo> data;
+  for (const auto& full_path : paths) {
+    if (is_cancelled && is_cancelled.Run())
+      return base::nullopt;
+
+    base::FilePath relative_unix_path;
+    extension_root.AppendRelativePath(full_path, &relative_unix_path);
+    relative_unix_path = relative_unix_path.NormalizePathSeparatorsTo('/');
+
+    if (!should_compute_hashes_for_resource.Run(relative_unix_path))
+      continue;
+
+    base::Optional<std::vector<std::string>> hashes =
+        ComputeAndCheckResourceHash(full_path, relative_unix_path, block_size);
+    if (hashes)
+      data[relative_unix_path] =
+          HashInfo(block_size, std::move(hashes.value()));
+  }
+
+  return data;
 }
 
 bool ComputedHashes::GetHashes(const base::FilePath& relative_path,
                                int* block_size,
                                std::vector<std::string>* hashes) const {
   base::FilePath path = relative_path.NormalizePathSeparatorsTo('/');
-  const std::map<base::FilePath, HashInfo>& data = data_.data_;
   auto find_data = [&](const base::FilePath& normalized_path) {
-    auto i = data.find(normalized_path);
-    if (i == data.end()) {
+    auto i = data_.find(normalized_path);
+    if (i == data_.end()) {
       // If we didn't find the entry using exact match, it's possible the
       // developer is using a path with some letters in the incorrect case,
       // which happens to work on windows/osx. So try doing a linear scan to
@@ -144,7 +181,7 @@ bool ComputedHashes::GetHashes(const base::FilePath& relative_path,
       // not too big here. Also for crbug.com/29941 we plan to start warning
       // developers when they are making this mistake, since their extension
       // will be broken on linux/chromeos.
-      for (i = data.begin(); i != data.end(); ++i) {
+      for (i = data_.begin(); i != data_.end(); ++i) {
         const base::FilePath& entry = i->first;
         if (base::FilePath::CompareEqualIgnoreCase(entry.value(),
                                                    normalized_path.value())) {
@@ -156,7 +193,7 @@ bool ComputedHashes::GetHashes(const base::FilePath& relative_path,
   };
   auto i = find_data(path);
 #if defined(OS_WIN)
-  if (i == data.end()) {
+  if (i == data_.end()) {
     base::FilePath::StringType trimmed_path_value;
     // Also search for path with (.| )+ suffix trimmed as they are ignored in
     // windows. This matches the canonicalization behavior of
@@ -167,7 +204,7 @@ bool ComputedHashes::GetHashes(const base::FilePath& relative_path,
     }
   }
 #endif  // defined(OS_WIN)
-  if (i == data.end())
+  if (i == data_.end())
     return false;
 
   const HashInfo& info = i->second;
@@ -177,8 +214,12 @@ bool ComputedHashes::GetHashes(const base::FilePath& relative_path,
 }
 
 bool ComputedHashes::WriteToFile(const base::FilePath& path) const {
+  // Make sure the directory exists.
+  if (!base::CreateDirectoryAndGetError(path.DirName(), nullptr))
+    return false;
+
   base::Value file_list(base::Value::Type::LIST);
-  for (const auto& resource_info : data_.data_) {
+  for (const auto& resource_info : data_) {
     const base::FilePath& relative_path = resource_info.first;
     int block_size = resource_info.second.first;
     const std::vector<std::string>& hashes = resource_info.second.second;
@@ -247,6 +288,25 @@ std::vector<std::string> ComputedHashes::GetHashesForContent(
   } while (offset < contents.size());
 
   return hashes;
+}
+
+// static
+base::Optional<std::vector<std::string>>
+ComputedHashes::ComputeAndCheckResourceHash(
+    const base::FilePath& full_path,
+    const base::FilePath& relative_unix_path,
+    int block_size) {
+  std::string contents;
+  if (!base::ReadFileToString(full_path, &contents)) {
+    LOG(ERROR) << "Could not read " << full_path.MaybeAsASCII();
+    return base::nullopt;
+  }
+
+  // Iterate through taking the hash of each block of size |block_size| of the
+  // file.
+  std::vector<std::string> hashes = GetHashesForContent(contents, block_size);
+
+  return base::make_optional(std::move(hashes));
 }
 
 }  // namespace extensions

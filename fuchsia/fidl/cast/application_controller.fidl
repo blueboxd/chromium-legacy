@@ -4,6 +4,7 @@
 
 library chromium.cast;
 
+// TODO(crbug.com/1028409): Remove this interface and use ApplicationContext.
 [Discoverable]
 protocol ApplicationControllerReceiver {
   /// Used by the Agent to receive a controller from the Cast Runner.

@@ -2222,11 +2222,6 @@ void RenderWidgetHostViewAura::SetOverscrollControllerEnabled(bool enabled) {
     overscroll_controller_.reset(new OverscrollController());
 }
 
-void RenderWidgetHostViewAura::SetOverscrollControllerForTesting(
-    std::unique_ptr<OverscrollController> controller) {
-  overscroll_controller_ = std::move(controller);
-}
-
 void RenderWidgetHostViewAura::SetSelectionControllerClientForTest(
     std::unique_ptr<TouchSelectionControllerClientAura> client) {
   selection_controller_client_.swap(client);

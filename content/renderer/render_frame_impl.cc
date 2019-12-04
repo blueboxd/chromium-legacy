@@ -449,10 +449,8 @@ void FillNavigationParamsRequest(
   navigation_params->ip_address_space = commit_params.ip_address_space;
 
   if (common_params.referrer->url.is_valid()) {
-    url::Origin origin = common_params.initiator_origin.value_or(
-        url::Origin::Create(common_params.referrer->url));
     WebString referrer = WebSecurityPolicy::GenerateReferrerHeader(
-        common_params.referrer->policy, origin, common_params.url,
+        common_params.referrer->policy, common_params.url,
         WebString::FromUTF8(common_params.referrer->url.spec()));
     navigation_params->referrer = referrer;
     navigation_params->referrer_policy = common_params.referrer->policy;
@@ -503,7 +501,7 @@ void FillNavigationParamsRequest(
       blink::WebURLResponse web_response;
       WebURLLoaderImpl::PopulateURLResponse(
           exchange->inner_url, *exchange->inner_response, &web_response,
-          false /* report_security_info */, -1 /* request_id */);
+          false /* report_security_info*/, -1 /* request_id */);
       navigation_params->prefetched_signed_exchanges.emplace_back(
           std::make_unique<
               blink::WebNavigationParams::PrefetchedSignedExchange>(
@@ -5336,13 +5334,6 @@ void RenderFrameImpl::HandleAccessibilityFindInPageTermination() {
     render_accessibility_->HandleAccessibilityFindInPageTermination();
 }
 
-void RenderFrameImpl::SuddenTerminationDisablerChanged(
-    bool present,
-    blink::SuddenTerminationDisablerType disabler_type) {
-  Send(new FrameHostMsg_SuddenTerminationDisablerChanged(routing_id_, present,
-                                                         disabler_type));
-}
-
 void RenderFrameImpl::DidSerializeDataForFrame(
     const WebVector<char>& data,
     WebFrameSerializerClient::FrameSerializationStatus status) {
@@ -5480,7 +5471,7 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
       frame_->GetInsecureRequestToUpgrade().ReleaseVector();
 
   params->has_potentially_trustworthy_unique_origin =
-      frame_origin.IsUnique() && frame_origin.IsPotentiallyTrustworthy();
+      frame_origin.IsOpaque() && frame_origin.IsPotentiallyTrustworthy();
 
   // Set the URL to be displayed in the browser UI to the user.
   params->url = GetLoadingUrl();

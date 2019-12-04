@@ -1,0 +1,26 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.components.paintpreview.player.frame;
+
+import android.graphics.Rect;
+
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel;
+
+/**
+ * Binds property changes in {@link PropertyModel} to {@link PlayerFrameView}.
+ */
+class PlayerFrameViewBinder {
+    static void bind(PropertyModel model, PlayerFrameView view, PropertyKey key) {
+        if (key.equals(PlayerFrameProperties.BITMAP_MATRIX)) {
+            view.updateBitmapMatrix(model.get(PlayerFrameProperties.BITMAP_MATRIX));
+        } else if (key.equals(PlayerFrameProperties.VIEWPORT)) {
+            Rect viewPort = model.get(PlayerFrameProperties.VIEWPORT);
+            view.updateViewPort(viewPort.left, viewPort.top, viewPort.right, viewPort.bottom);
+        } else if (key.equals(PlayerFrameProperties.SUBFRAME_VIEWS)) {
+            view.updateSubFrames(model.get(PlayerFrameProperties.SUBFRAME_VIEWS));
+        }
+    }
+}

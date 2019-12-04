@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchConfiguration;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
+import org.chromium.chrome.browser.password_manager.PasswordManagerLauncher;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.settings.autofill_assistant.AutofillAssistantPreferences;
 import org.chromium.chrome.browser.settings.datareduction.DataReductionPreferenceFragment;
@@ -127,7 +128,7 @@ public class MainPreferences extends PreferenceFragmentCompat
     }
 
     private void createPreferences() {
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.main_preferences);
+        SettingsUtils.addPreferencesFromResource(this, R.xml.main_preferences);
         cachePreferences();
 
         mSignInPreference.setOnStateChangedCallback(this::onSignInPreferenceStateChanged);
@@ -266,7 +267,7 @@ public class MainPreferences extends PreferenceFragmentCompat
     private void updatePasswordsPreference() {
         Preference passwordsPreference = findPreference(PREF_SAVED_PASSWORDS);
         passwordsPreference.setOnPreferenceClickListener(preference -> {
-            PreferencesLauncher.showPasswordSettings(
+            PasswordManagerLauncher.showPasswordSettings(
                     getActivity(), ManagePasswordsReferrer.CHROME_SETTINGS);
             return true;
         });

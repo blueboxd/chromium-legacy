@@ -50,6 +50,9 @@ class ASH_EXPORT SystemTrayTestApi {
   // Returns true if the clock is using 24 hour time.
   virtual bool Is24HourClock() = 0;
 
+  // Taps on the Select-to-Speak tray.
+  virtual void TapSelectToSpeakTray() = 0;
+
  protected:
   SystemTrayTestApi() {}
 };

@@ -360,6 +360,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Returns the current web state's VisibleURL.
 - (GURL)webStateVisibleURL;
 
+// Returns the current web state's last committed URL.
+- (GURL)webStateLastCommittedURL;
+
 // Purges cached web view pages, so the next time back navigation will not use
 // a cached page. Browsers don't have to use a fresh version for back/forward
 // navigation for HTTP pages and may serve a version from the cache even if the

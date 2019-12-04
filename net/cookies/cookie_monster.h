@@ -504,10 +504,39 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   bool HasCookieableScheme(const GURL& url);
 
-  // Get the cookie's access semantics (LEGACY or NONLEGACY) from the cookie
-  // access delegate, if it is non-null. Otherwise return UNKNOWN.
+  // Get the cookie's access semantics (LEGACY or NONLEGACY), considering any
+  // features providing time-based special conditions. If none are active, this
+  // then checks for a value from the cookie access delegate, if it is non-null.
+  // Otherwise returns UNKNOWN.
   CookieAccessSemantics GetAccessSemanticsForCookie(
       const CanonicalCookie& cookie) const;
+
+  // This is called for setting a cookie with the options specified by
+  // |options|. This is the same as the above, except if the feature
+  // RecentHttpSameSiteAccessGrantsLegacyCookieSemantics is enabled, in which
+  // case it always returns LEGACY for a same-site access that permits HttpOnly
+  // access. For setting a cookie, a same-site access is lax or better (since
+  // CookieOptions for setting a cookie will never be strict).
+  CookieAccessSemantics GetAccessSemanticsForCookieSet(
+      const CanonicalCookie& cookie,
+      const CookieOptions& options) const;
+
+  // Looks up the last time a cookie matching the (name, domain, path) of
+  // |cookie| was accessed in a same-site context permitting HttpOnly
+  // cookie access. If there was none, this returns a null base::Time.
+  // Returns null value if RecentHttpSameSiteAccessGrantsLegacyCookieSemantics
+  // is not enabled.
+  base::TimeTicks LastAccessFromHttpSameSiteContext(
+      const CanonicalCookie& cookie) const;
+
+  // Updates |last_http_same_site_accesses_| with the current time if the
+  // |options| are appropriate (same-site and permits HttpOnly access).
+  // |is_set| is true if the access is setting the cookie, false otherwise (e.g.
+  // if getting the cookie). Does nothing if
+  // RecentHttpSameSiteAccessGrantsLegacyCookieSemantics is not enabled.
+  void MaybeRecordCookieAccessWithOptions(const CanonicalCookie& cookie,
+                                          const CookieOptions& options,
+                                          bool is_set);
 
   // Statistics support
 
@@ -591,6 +620,17 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // create a value that compares earlier than any other time value, which is
   // wanted.  Thus this value is not initialized.
   base::Time earliest_access_time_;
+
+  // Records the last access to a cookie (either getting or setting) from a
+  // context that is both same-site and permits HttpOnly access.
+  // The access is considered same-site if it is at least laxly same-site for
+  // set, or strictly same-site for get.
+  // This information is used to determine if the feature
+  // kRecentSameSiteAccessGrantsLegacyCookieSemantics should grant legacy
+  // access semantics to a cookie for subsequent accesses.
+  // This map is not used if that feature is not enabled.
+  std::map<CanonicalCookie::UniqueCookieKey, base::TimeTicks>
+      last_http_same_site_accesses_;
 
   std::vector<std::string> cookieable_schemes_;
 

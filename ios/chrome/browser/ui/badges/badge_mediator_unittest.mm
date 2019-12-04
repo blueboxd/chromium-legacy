@@ -6,10 +6,10 @@
 
 #include "base/test/task_environment.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/infobars/infobar.h"
 #include "ios/chrome/browser/infobars/infobar_badge_model.h"
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper.h"
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper_delegate.h"
+#include "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/ui/badges/badge_consumer.h"
 #import "ios/chrome/browser/ui/badges/badge_item.h"
 #import "ios/chrome/browser/ui/infobars/test_infobar_delegate.h"

@@ -21,8 +21,8 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.settings.ManagedPreferenceDelegate;
-import org.chromium.chrome.browser.settings.PreferenceUtils;
 import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.chrome.browser.settings.sync.SyncAndServicesPreferences;
 import org.chromium.chrome.browser.usage_stats.UsageStatsConsentDialog;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
@@ -45,7 +45,7 @@ public class PrivacyPreferences
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         PrivacyPreferencesManager privacyPrefManager = PrivacyPreferencesManager.getInstance();
         privacyPrefManager.migrateNetworkPredictionPreferences();
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.privacy_preferences);
+        SettingsUtils.addPreferencesFromResource(this, R.xml.privacy_preferences);
         getActivity().setTitle(R.string.prefs_privacy);
         setHasOptionsMenu(true);
 

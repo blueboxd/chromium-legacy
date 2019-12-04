@@ -788,14 +788,18 @@ void OverviewSession::OnHighlightedItemClosed(OverviewItem* item) {
   item->CloseWindow();
 }
 
-void OverviewSession::OnDisplayAdded(const display::Display& display) {
-  EndOverview();
+void OverviewSession::OnRootWindowClosing(aura::Window* root) {
+  auto iter = std::find_if(grid_list_.begin(), grid_list_.end(),
+                           [root](std::unique_ptr<OverviewGrid>& grid) {
+                             return grid->root_window() == root;
+                           });
+  DCHECK(iter != grid_list_.end());
+  (*iter)->Shutdown();
+  grid_list_.erase(iter);
 }
 
-void OverviewSession::OnDisplayRemoved(const display::Display& display) {
-  // Removing a display causes a window activation which will end overview mode
-  // so that |OnDisplayRemoved| is never called.
-  NOTREACHED();
+void OverviewSession::OnDisplayAdded(const display::Display& display) {
+  EndOverview();
 }
 
 void OverviewSession::OnDisplayMetricsChanged(const display::Display& display,

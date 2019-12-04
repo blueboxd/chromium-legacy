@@ -29,7 +29,7 @@ constexpr int kSignalStrengthImageBgAlpha = 0x4D;
 SkPath CreateArcPath(gfx::RectF oval, float start_angle, float sweep_angle) {
   SkPath path;
   path.setIsVolatile(true);
-  path.setFillType(SkPath::kWinding_FillType);
+  path.setFillType(SkPathFillType::kWinding);
   path.moveTo(oval.CenterPoint().x(), oval.CenterPoint().y());
   path.arcTo(gfx::RectFToSkRect(oval), start_angle, sweep_angle, false);
   path.close();

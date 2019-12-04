@@ -1331,8 +1331,8 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_AutofillDisabledByUser) {
   FormsSeen(forms);
 
   // Disable Autofill.
-  autofill_manager_->SetProfileAutofillEnabled(false);
-  autofill_manager_->SetCreditCardAutofillEnabled(false);
+  autofill_manager_->SetAutofillProfileEnabled(false);
+  autofill_manager_->SetAutofillCreditCardEnabled(false);
 
   const FormFieldData& field = form.fields[0];
   GetAutofillSuggestions(form, field);
@@ -4227,8 +4227,8 @@ TEST_F(AutofillManagerTest, FormSubmittedAutocompleteEnabled) {
   autofill_manager_.reset(
       new TestAutofillManager(autofill_driver_.get(), &client, &personal_data_,
                               autocomplete_history_manager_.get()));
-  autofill_manager_->SetProfileAutofillEnabled(false);
-  autofill_manager_->SetCreditCardAutofillEnabled(false);
+  autofill_manager_->SetAutofillProfileEnabled(false);
+  autofill_manager_->SetAutofillCreditCardEnabled(false);
 
   // Set up our form data.
   FormData form;
@@ -4275,8 +4275,8 @@ TEST_F(AutofillManagerTest, AutocompleteSuggestions_SomeWhenAutofillDisabled) {
   autofill_manager_.reset(
       new TestAutofillManager(autofill_driver_.get(), &client, &personal_data_,
                               autocomplete_history_manager_.get()));
-  autofill_manager_->SetProfileAutofillEnabled(false);
-  autofill_manager_->SetCreditCardAutofillEnabled(false);
+  autofill_manager_->SetAutofillProfileEnabled(false);
+  autofill_manager_->SetAutofillCreditCardEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
   // Set up our form data.
@@ -4301,8 +4301,8 @@ TEST_F(AutofillManagerTest,
   autofill_manager_.reset(
       new TestAutofillManager(autofill_driver_.get(), &client, &personal_data_,
                               autocomplete_history_manager_.get()));
-  autofill_manager_->SetProfileAutofillEnabled(false);
-  autofill_manager_->SetCreditCardAutofillEnabled(false);
+  autofill_manager_->SetAutofillProfileEnabled(false);
+  autofill_manager_->SetAutofillCreditCardEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
   // Set up our form data.
@@ -4371,8 +4371,8 @@ TEST_F(AutofillManagerTest,
   autofill_manager_.reset(
       new TestAutofillManager(autofill_driver_.get(), &client, &personal_data_,
                               autocomplete_history_manager_.get()));
-  autofill_manager_->SetProfileAutofillEnabled(false);
-  autofill_manager_->SetCreditCardAutofillEnabled(false);
+  autofill_manager_->SetAutofillProfileEnabled(false);
+  autofill_manager_->SetAutofillCreditCardEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
   // Set up our form data.
@@ -4399,8 +4399,8 @@ TEST_F(AutofillManagerTest,
   autofill_manager_.reset(
       new TestAutofillManager(autofill_driver_.get(), &client, &personal_data_,
                               autocomplete_history_manager_.get()));
-  autofill_manager_->SetProfileAutofillEnabled(false);
-  autofill_manager_->SetCreditCardAutofillEnabled(false);
+  autofill_manager_->SetAutofillProfileEnabled(false);
+  autofill_manager_->SetAutofillCreditCardEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
   // Set up our form data.
@@ -4449,8 +4449,8 @@ TEST_F(AutofillManagerTest, AutocompleteOffRespectedForAutocomplete) {
   autofill_manager_.reset(
       new TestAutofillManager(autofill_driver_.get(), &client, &personal_data_,
                               autocomplete_history_manager_.get()));
-  autofill_manager_->SetProfileAutofillEnabled(false);
-  autofill_manager_->SetCreditCardAutofillEnabled(false);
+  autofill_manager_->SetAutofillProfileEnabled(false);
+  autofill_manager_->SetAutofillCreditCardEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
   EXPECT_CALL(*(autocomplete_history_manager_.get()),
@@ -6170,7 +6170,7 @@ TEST_F(AutofillManagerTest, FillInUpdatedExpirationDate) {
 }
 
 TEST_F(AutofillManagerTest, ProfileDisabledDoesNotFillFormData) {
-  autofill_manager_->SetProfileAutofillEnabled(false);
+  autofill_manager_->SetAutofillProfileEnabled(false);
 
   // Set up our form data.
   FormData form;
@@ -6188,7 +6188,7 @@ TEST_F(AutofillManagerTest, ProfileDisabledDoesNotFillFormData) {
 }
 
 TEST_F(AutofillManagerTest, ProfileDisabledDoesNotSuggest) {
-  autofill_manager_->SetProfileAutofillEnabled(false);
+  autofill_manager_->SetAutofillProfileEnabled(false);
 
   // Set up our form data.
   FormData form;
@@ -6205,7 +6205,7 @@ TEST_F(AutofillManagerTest, ProfileDisabledDoesNotSuggest) {
 }
 
 TEST_F(AutofillManagerTest, CreditCardDisabledDoesNotFillFormData) {
-  autofill_manager_->SetCreditCardAutofillEnabled(false);
+  autofill_manager_->SetAutofillCreditCardEnabled(false);
 
   // Set up our form data.
   FormData form;
@@ -6223,7 +6223,7 @@ TEST_F(AutofillManagerTest, CreditCardDisabledDoesNotFillFormData) {
 }
 
 TEST_F(AutofillManagerTest, CreditCardDisabledDoesNotSuggest) {
-  autofill_manager_->SetCreditCardAutofillEnabled(false);
+  autofill_manager_->SetAutofillCreditCardEnabled(false);
 
   // Set up our form data.
   FormData form;
@@ -6765,8 +6765,8 @@ TEST_F(AutofillManagerTest, ShouldUploadForm) {
   }
 
   // Autofill disabled.
-  autofill_manager_->SetProfileAutofillEnabled(false);
-  autofill_manager_->SetCreditCardAutofillEnabled(false);
+  autofill_manager_->SetAutofillProfileEnabled(false);
+  autofill_manager_->SetAutofillCreditCardEnabled(false);
   EXPECT_FALSE(autofill_manager_->ShouldUploadForm(FormStructure(form)));
 }
 

@@ -28,8 +28,8 @@ void TrayStep::DoShow() {
   FirstRunActor::StepPosition position;
   position.SetTop(bounds.y());
   ash::ShelfAlignment alignment = first_run_controller()->GetShelfAlignment();
-  if ((!base::i18n::IsRTL() && alignment != ash::SHELF_ALIGNMENT_LEFT) ||
-      alignment == ash::SHELF_ALIGNMENT_RIGHT) {
+  if ((!base::i18n::IsRTL() && alignment != ash::ShelfAlignment::kLeft) ||
+      alignment == ash::ShelfAlignment::kRight) {
     // Compute pixel inset from right side of screen.
     const gfx::Size overlay_size = first_run_controller()->GetOverlaySize();
     position.SetRight(overlay_size.width() - bounds.x());

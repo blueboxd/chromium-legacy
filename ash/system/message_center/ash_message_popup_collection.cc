@@ -101,7 +101,7 @@ bool AshMessagePopupCollection::IsTopDown() const {
 }
 
 bool AshMessagePopupCollection::IsFromLeft() const {
-  return GetAlignment() == SHELF_ALIGNMENT_LEFT;
+  return GetAlignment() == ShelfAlignment::kLeft;
 }
 
 bool AshMessagePopupCollection::RecomputeAlignment(

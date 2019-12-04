@@ -18,6 +18,10 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/webplugininfo.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace {
 
 std::string GetExecutablePath() {
@@ -46,6 +50,13 @@ void BrowserReportGenerator::Generate(ReportCallback callback) {
   for (auto* entry : g_browser_process->profile_manager()
                          ->GetProfileAttributesStorage()
                          .GetAllProfilesAttributes()) {
+#if defined(OS_CHROMEOS)
+    // Skip sign-in and lock screen app profile on Chrome OS.
+    if (!chromeos::ProfileHelper::IsRegularProfilePath(
+            entry->GetPath().BaseName())) {
+      continue;
+    }
+#endif  // defined(OS_CHROMEOS)
     em::ChromeUserProfileInfo* profile =
         report->add_chrome_user_profile_infos();
     profile->set_id(entry->GetPath().AsUTF8Unsafe());

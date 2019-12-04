@@ -216,7 +216,7 @@ void MigrateDeprecatedAutofillPrefs(PrefService* prefs) {
 }
 
 bool IsAutocompleteEnabled(const PrefService* prefs) {
-  return IsProfileAutofillEnabled(prefs);
+  return IsAutofillProfileEnabled(prefs);
 }
 
 bool IsCreditCardFIDOAuthEnabled(PrefService* prefs) {
@@ -227,11 +227,11 @@ void SetCreditCardFIDOAuthEnabled(PrefService* prefs, bool enabled) {
   prefs->SetBoolean(kAutofillCreditCardFidoAuthEnabled, enabled);
 }
 
-bool IsCreditCardAutofillEnabled(const PrefService* prefs) {
+bool IsAutofillCreditCardEnabled(const PrefService* prefs) {
   return prefs->GetBoolean(kAutofillCreditCardEnabled);
 }
 
-void SetCreditCardAutofillEnabled(PrefService* prefs, bool enabled) {
+void SetAutofillCreditCardEnabled(PrefService* prefs, bool enabled) {
   prefs->SetBoolean(kAutofillCreditCardEnabled, enabled);
 }
 
@@ -239,19 +239,19 @@ bool IsAutofillManaged(const PrefService* prefs) {
   return prefs->IsManagedPreference(kAutofillEnabledDeprecated);
 }
 
-bool IsProfileAutofillManaged(const PrefService* prefs) {
+bool IsAutofillProfileManaged(const PrefService* prefs) {
   return prefs->IsManagedPreference(kAutofillProfileEnabled);
 }
 
-bool IsCreditCardAutofillManaged(const PrefService* prefs) {
+bool IsAutofillCreditCardManaged(const PrefService* prefs) {
   return prefs->IsManagedPreference(kAutofillCreditCardEnabled);
 }
 
-bool IsProfileAutofillEnabled(const PrefService* prefs) {
+bool IsAutofillProfileEnabled(const PrefService* prefs) {
   return prefs->GetBoolean(kAutofillProfileEnabled);
 }
 
-void SetProfileAutofillEnabled(PrefService* prefs, bool enabled) {
+void SetAutofillProfileEnabled(PrefService* prefs, bool enabled) {
   prefs->SetBoolean(kAutofillProfileEnabled, enabled);
 }
 

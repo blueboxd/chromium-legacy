@@ -71,15 +71,14 @@ ScriptPromise PeriodicSyncManager::getTags(ScriptState* script_state) {
 
 ScriptPromise PeriodicSyncManager::unregister(ScriptState* script_state,
                                               const String& tag) {
-  if (!registration_->active()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError,
-                          "Unregister failed - no active Service Worker"));
-  }
-
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
+
+  // Silently succeed if there's no active service worker registration.
+  if (!registration_->active()) {
+    resolver->Resolve();
+    return promise;
+  }
 
   GetBackgroundSyncServiceRemote()->Unregister(
       registration_->RegistrationId(), tag,

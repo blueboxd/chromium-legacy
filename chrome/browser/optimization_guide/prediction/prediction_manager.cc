@@ -8,9 +8,11 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
@@ -18,6 +20,7 @@
 #include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
 #include "chrome/browser/optimization_guide/optimization_guide_permissions_util.h"
 #include "chrome/browser/optimization_guide/optimization_guide_session_statistic.h"
+#include "chrome/browser/optimization_guide/optimization_guide_util.h"
 #include "chrome/browser/optimization_guide/prediction/prediction_model.h"
 #include "chrome/browser/optimization_guide/prediction/prediction_model_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
@@ -307,9 +310,16 @@ OptimizationTargetDecision PredictionManager::ShouldTargetNavigation(
   base::flat_map<std::string, float> feature_map =
       BuildFeatureMap(navigation_handle, prediction_model->GetModelFeatures());
 
+  base::TimeTicks model_evaluation_start_time = base::TimeTicks::Now();
   double prediction_score = 0.0;
   optimization_guide::OptimizationTargetDecision target_decision =
       prediction_model->Predict(feature_map, &prediction_score);
+  if (target_decision != OptimizationTargetDecision::kUnknown) {
+    UmaHistogramTimes(
+        "OptimizationGuide.PredictionModelEvaluationLatency." +
+            GetStringNameForOptimizationTarget(optimization_target),
+        base::TimeTicks::Now() - model_evaluation_start_time);
+  }
 
   if (navigation_data) {
     navigation_data->SetModelVersionForOptimizationTarget(

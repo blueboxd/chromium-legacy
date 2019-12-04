@@ -365,10 +365,11 @@ class BBJSONGenerator(object):
                 a[key][idx] = self.dictionary_merge(a[key][idx], b[key][idx],
                                                     path + [str(key), str(idx)],
                                                     update=update)
-              except (IndexError, TypeError): # pragma: no cover
-                raise BBGenErr('Error merging list keys ' + str(key) +
-                               ' and indices ' + str(idx) + ' between ' +
-                               str(a) + ' and ' + str(b)) # pragma: no cover
+              except (IndexError, TypeError):
+                raise BBGenErr('Error merging lists by key "%s" from source %s '
+                               'into target %s at index %s. Verify target list '
+                               'length is equal or greater than source'
+                               % (str(key), str(b), str(a), str(idx)))
         elif update:
           if b[key] is None:
             del a[key]
@@ -774,53 +775,96 @@ class BBJSONGenerator(object):
       'gpu_telemetry_tests': 'isolated_scripts',
     }
 
-  def check_composition_test_suites(self):
+  def check_composition_type_test_suites(self, test_type):
     # Pre-pass to catch errors reliably.
-    for suite, suite_def in self.test_suites.iteritems():
-      if isinstance(suite_def, list):
-        seen_tests = {}
-        for sub_suite in suite_def:
-          if isinstance(self.test_suites[sub_suite], list):
-            raise BBGenErr('Composition test suites may not refer to other '
-                           'composition test suites (error found while '
-                           'processing %s)' % suite)
-          else:
-            # test name -> basic_suite that it came from
-            basic_tests = {k: sub_suite for k in self.test_suites[sub_suite]}
-            for test_name, test_suite in basic_tests.iteritems():
-              if (test_name in seen_tests and
-                  self.test_suites[test_suite][test_name] !=
-                  self.test_suites[seen_tests[test_name]][test_name]):
-                raise BBGenErr('Conflicting test definitions for %s from %s '
-                               'and %s in Composition test suite (error found '
-                               'while processing %s)' % (test_name,
-                               seen_tests[test_name], test_suite, suite))
-            seen_tests.update(basic_tests)
+    target_test_suites = self.test_suites.get(test_type, {})
+    # This check is used by both matrix and composition test suites.
+    # Neither can reference each other nor themselves, so we switch depending
+    # on the type that's being checked.
+    if test_type == 'matrix_compound_suites':
+      other_type = 'compound_suites'
+    else:
+      other_type = 'matrix_compound_suites'
+    other_test_suites = self.test_suites.get(other_type, {})
+    basic_suites = self.test_suites.get('basic_suites', {})
+
+    for suite, suite_def in target_test_suites.iteritems():
+      if suite in basic_suites:
+        raise BBGenErr('%s names may not duplicate basic test suite names '
+                       '(error found while processsing %s)'
+                       % (test_type, suite))
+      seen_tests = {}
+      for sub_suite in suite_def:
+        if sub_suite in other_test_suites or sub_suite in target_test_suites:
+          raise BBGenErr('%s may not refer to other composition type test '
+                         'suites (error found while processing %s)'
+                         % (test_type, suite))
+        elif sub_suite not in basic_suites:
+          raise BBGenErr('Unable to find reference to %s while processing %s'
+                         % (sub_suite, suite))
+        else:
+          # test name -> basic_suite that it came from
+          basic_tests = {k: sub_suite for k in basic_suites[sub_suite]}
+          for test_name, test_suite in basic_tests.iteritems():
+            if (test_name in seen_tests and
+                basic_suites[test_suite][test_name] !=
+                basic_suites[seen_tests[test_name]][test_name]):
+              raise BBGenErr('Conflicting test definitions for %s from %s '
+                             'and %s in %s (error found while processing %s)'
+                             % (test_name, seen_tests[test_name], test_suite,
+                             test_type, suite))
+          seen_tests.update(basic_tests)
 
   def flatten_test_suites(self):
     new_test_suites = {}
-    for name, value in self.test_suites.get('basic_suites', {}).iteritems():
-      new_test_suites[name] = value
-    for name, value in self.test_suites.get('compound_suites', {}).iteritems():
-      if name in new_test_suites:
-        raise BBGenErr('Composition test suite names may not duplicate basic '
-                       'test suite names (error found while processsing %s' % (
-                       name))
-      new_test_suites[name] = value
+    test_types = ['basic_suites', 'compound_suites', 'matrix_compound_suites']
+    for category in test_types:
+      for name, value in self.test_suites.get(category, {}).iteritems():
+        new_test_suites[name] = value
     self.test_suites = new_test_suites
 
   def resolve_composition_test_suites(self):
-    self.flatten_test_suites()
+    self.check_composition_type_test_suites('compound_suites')
 
-    self.check_composition_test_suites()
-    for name, value in self.test_suites.iteritems():
-      if isinstance(value, list):
-        # Resolve this to a dictionary.
-        full_suite = {}
-        for entry in value:
-          suite = self.test_suites[entry]
-          full_suite.update(suite)
-        self.test_suites[name] = full_suite
+    compound_suites = self.test_suites.get('compound_suites', {})
+    # check_composition_type_test_suites() checks that all basic suites
+    # referenced by compound suites exist.
+    basic_suites = self.test_suites.get('basic_suites')
+
+    for name, value in compound_suites.iteritems():
+      # Resolve this to a dictionary.
+      full_suite = {}
+      for entry in value:
+        suite = basic_suites[entry]
+        full_suite.update(suite)
+      compound_suites[name] = full_suite
+
+  def resolve_matrix_compound_test_suites(self):
+    self.check_composition_type_test_suites('matrix_compound_suites')
+
+    matrix_compound_suites = self.test_suites.get('matrix_compound_suites', {})
+    # check_composition_type_test_suites() checks that all basic suites
+    # referenced by matrix suites exist.
+    basic_suites = self.test_suites.get('basic_suites')
+
+    for name, value in matrix_compound_suites.iteritems():
+      # Resolve this to a dictionary.
+      full_suite = {}
+      for test_suite_name, test_suite_config in value.iteritems():
+        swarming_defined = bool(
+          'swarming' in test_suite_config
+          and 'dimension_sets' in test_suite_config['swarming'])
+        test = copy.deepcopy(basic_suites[test_suite_name])
+        for test_config in test.values():
+          if (swarming_defined
+              and 'swarming' in test_config
+              and 'dimension_sets' in test_config['swarming']):
+              self.dictionary_merge(test_config['swarming'],
+            test_suite_config['swarming'])
+          else:
+            test_config.update(test_suite_config)
+        full_suite.update(test)
+      matrix_compound_suites[name] = full_suite
 
   def link_waterfalls_to_test_suites(self):
     for waterfall in self.waterfalls:
@@ -840,6 +884,8 @@ class BBJSONGenerator(object):
 
   def resolve_configuration_files(self):
     self.resolve_composition_test_suites()
+    self.resolve_matrix_compound_test_suites()
+    self.flatten_test_suites()
     self.link_waterfalls_to_test_suites()
 
   def unknown_bot(self, bot_name, waterfall_name):
@@ -1073,8 +1119,9 @@ class BBJSONGenerator(object):
     self.check_input_files_sorting(verbose)
 
     self.load_configuration_files()
+    self.check_composition_type_test_suites('compound_suites')
+    self.check_composition_type_test_suites('matrix_compound_suites')
     self.flatten_test_suites()
-    self.check_composition_test_suites()
 
     # All bots should exist.
     bot_names = self.get_valid_bot_names()
@@ -1096,9 +1143,8 @@ class BBJSONGenerator(object):
             # These waterfalls have their bot configs in a different repo.
             # so we don't know about their bot names.
             continue  # pragma: no cover
-          if waterfall['name'] in [
-              'client.devtools-frontend.integration',
-              'tryserver.devtools-frontend']:
+          if waterfall['name'] in ['client.devtools-frontend.integration',
+                                   'tryserver.devtools-frontend']:
             continue  # pragma: no cover
           raise self.unknown_bot(bot_name, waterfall['name'])
 
@@ -1119,9 +1165,8 @@ class BBJSONGenerator(object):
     resolved_suites = set()
     for suite_name in suites_seen:
       suite = self.test_suites[suite_name]
-      if isinstance(suite, list):
-        for sub_suite in suite:
-          resolved_suites.add(sub_suite)
+      for sub_suite in suite:
+        resolved_suites.add(sub_suite)
       resolved_suites.add(suite_name)
     # At this point, every key in test_suites.pyl should be referenced.
     missing_suites = set(self.test_suites.keys()) - resolved_suites
@@ -1278,14 +1323,16 @@ class BBJSONGenerator(object):
       self.type_assert(value, ast.Dict, filename, verbose)
 
       if filename == 'test_suites.pyl':
-        expected_keys = ['basic_suites', 'compound_suites']
+        expected_keys = ['basic_suites',
+                         'compound_suites',
+                         'matrix_compound_suites']
         actual_keys = [node.s for node in value.keys]
         assert all(key in expected_keys for key in actual_keys), (
                     'Invalid %r file; expected keys %r, got %r' % (
                         filename, expected_keys, actual_keys))
         suite_dicts = [node for node in value.values]
         # Only two keys should mean only 1 or 2 values
-        assert len(suite_dicts) <= 2
+        assert len(suite_dicts) <= 3
         for suite_group in suite_dicts:
           if not self.ensure_ast_dict_keys_sorted(
               suite_group, filename, verbose):

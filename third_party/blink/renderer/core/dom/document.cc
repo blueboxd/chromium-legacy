@@ -630,8 +630,11 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
     // The origin can be opaque based on sandbox flags.
     InitializeOrigin(initializer);
 
+    // The secure context state is based on the origin.
+    InitializeSecureContextState(initializer);
+
     // Initialize origin trials, requires the post sandbox flags
-    // security origin.
+    // security origin and secure context state.
     InitializeOriginTrials(initializer);
 
     // Initialize feature policy, depends on origin trials.
@@ -663,6 +666,9 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
 
   WindowAgentFactory* GetWindowAgentFactory() { return window_agent_factory_; }
   Agent* GetAgent() { return agent_; }
+  SecureContextState GetSecureContextState() {
+    return secure_context_state_.value();
+  }
 
   void CountFeaturePolicyUsage(mojom::WebFeature feature) override {
     feature_count_.insert(feature);
@@ -845,6 +851,12 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
 
     if (initializer.GrantLoadLocalResources())
       security_origin_->GrantLoadLocalResources();
+
+    if (security_origin_->IsOpaque() && initializer.ShouldSetURL()) {
+      KURL url = initializer.Url().IsEmpty() ? BlankURL() : initializer.Url();
+      if (SecurityOrigin::Create(url)->IsPotentiallyTrustworthy())
+        security_origin_->SetOpaqueOriginIsPotentiallyTrustworthy(true);
+    }
   }
 
   void InitializeFeaturePolicy(const DocumentInit& initializer,
@@ -932,7 +944,41 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
     feature_policy_->SetHeaderPolicy(parsed_header_);
   }
 
+  void InitializeSecureContextState(const DocumentInit& initializer) {
+    auto* frame = initializer.GetFrame();
+    if (!security_origin_->IsPotentiallyTrustworthy()) {
+      secure_context_state_ = SecureContextState::kNonSecure;
+    } else if (SchemeRegistry::SchemeShouldBypassSecureContextCheck(
+                   security_origin_->Protocol())) {
+      secure_context_state_ = SecureContextState::kSecure;
+    } else if (frame) {
+      Frame* parent = frame->Tree().Parent();
+      while (parent) {
+        if (!parent->GetSecurityContext()
+                 ->GetSecurityOrigin()
+                 ->IsPotentiallyTrustworthy()) {
+          secure_context_state_ = SecureContextState::kNonSecure;
+          break;
+        }
+        parent = parent->Tree().Parent();
+      }
+      if (!secure_context_state_.has_value())
+        secure_context_state_ = SecureContextState::kSecure;
+    } else {
+      secure_context_state_ = SecureContextState::kNonSecure;
+    }
+    bool is_secure = secure_context_state_ == SecureContextState::kSecure;
+    if (GetSandboxFlags() != WebSandboxFlags::kNone) {
+      feature_count_.insert(
+          is_secure ? WebFeature::kSecureContextCheckForSandboxedOriginPassed
+                    : WebFeature::kSecureContextCheckForSandboxedOriginFailed);
+    }
+    feature_count_.insert(is_secure ? WebFeature::kSecureContextCheckPassed
+                                    : WebFeature::kSecureContextCheckFailed);
+  }
+
   void InitializeOriginTrials(const DocumentInit& initializer) {
+    DCHECK(secure_context_state_.has_value());
     origin_trials_ = MakeGarbageCollected<OriginTrialContext>();
 
     const String& header_value = initializer.OriginTrialsHeader();
@@ -943,7 +989,10 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
         OriginTrialContext::ParseHeaderValue(header_value));
     if (!tokens)
       return;
-    origin_trials_->AddTokens(security_origin_.get(), true, *tokens);
+    origin_trials_->AddTokens(
+        security_origin_.get(),
+        secure_context_state_ == SecureContextState::kSecure /*is_secure*/,
+        *tokens);
   }
 
   void InitializeAgent(const DocumentInit& initializer) {
@@ -970,9 +1019,7 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
     // If we are allowed to share our document with other windows then we need
     // to look at the window agent factory, otherwise we should create our own
     // window agent.
-    if (window_agent_factory_ &&
-        feature_policy_->IsFeatureEnabled(
-            mojom::FeaturePolicyFeature::kDocumentAccess)) {
+    if (window_agent_factory_) {
       bool has_potential_universal_access_privilege = false;
       if (frame) {
         if (Settings* settings = frame->GetSettings()) {
@@ -1015,6 +1062,7 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
   HashSet<mojom::FeaturePolicyFeature> parsed_feature_policies_;
   HashSet<mojom::WebFeature> feature_count_;
   bool bind_csp_immediately_ = false;
+  base::Optional<SecureContextState> secure_context_state_;
 };
 
 ExplicitlySetAttrElementsMap* Document::GetExplicitlySetAttrElementsMap(
@@ -1146,7 +1194,7 @@ Document::Document(const DocumentInit& initializer,
       parser_sync_policy_(kAllowAsynchronousParsing),
       node_count_(0),
       logged_field_edit_(false),
-      secure_context_state_(SecureContextState::kUnknown),
+      secure_context_state_(security_initializer.GetSecureContextState()),
       ukm_source_id_(ukm::UkmRecorder::GetNewSourceID()),
       needs_to_record_ukm_outlive_time_(false),
       viewport_data_(MakeGarbageCollected<ViewportData>(*this)),
@@ -7038,12 +7086,6 @@ void Document::InitSecurityContext(
                     : url_;
 
   SetAddressSpace(initializer.GetIPAddressSpace());
-
-  if (GetSecurityOrigin()->IsOpaque() &&
-      SecurityOrigin::Create(url_)->IsPotentiallyTrustworthy())
-    GetMutableSecurityOrigin()->SetOpaqueOriginIsPotentiallyTrustworthy(true);
-
-  InitSecureContextState();
 }
 
 void Document::SetSecurityOrigin(scoped_refptr<SecurityOrigin> origin) {
@@ -7058,32 +7100,6 @@ void Document::BindContentSecurityPolicy() {
   DCHECK(!GetContentSecurityPolicy()->IsBound());
   GetContentSecurityPolicy()->BindToDelegate(
       GetContentSecurityPolicyDelegate());
-}
-
-void Document::InitSecureContextState() {
-  DCHECK_EQ(secure_context_state_, SecureContextState::kUnknown);
-  if (!GetSecurityOrigin()->IsPotentiallyTrustworthy()) {
-    secure_context_state_ = SecureContextState::kNonSecure;
-  } else if (SchemeRegistry::SchemeShouldBypassSecureContextCheck(
-                 GetSecurityOrigin()->Protocol())) {
-    secure_context_state_ = SecureContextState::kSecure;
-  } else if (frame_) {
-    Frame* parent = frame_->Tree().Parent();
-    while (parent) {
-      if (!parent->GetSecurityContext()
-               ->GetSecurityOrigin()
-               ->IsPotentiallyTrustworthy()) {
-        secure_context_state_ = SecureContextState::kNonSecure;
-        break;
-      }
-      parent = parent->Tree().Parent();
-    }
-    if (secure_context_state_ == SecureContextState::kUnknown)
-      secure_context_state_ = SecureContextState::kSecure;
-  } else {
-    secure_context_state_ = SecureContextState::kNonSecure;
-  }
-  DCHECK_NE(secure_context_state_, SecureContextState::kUnknown);
 }
 
 bool Document::CanExecuteScripts(ReasonForCallingCanExecuteScripts reason) {
@@ -7296,8 +7312,6 @@ void Document::AddConsoleMessageImpl(ConsoleMessage* console_message,
 void Document::TasksWerePaused() {
   GetScriptRunner()->Suspend();
 
-  if (parser_)
-    parser_->PauseScheduledTasks();
   if (scripted_animation_controller_)
     scripted_animation_controller_->Pause();
 }
@@ -7305,8 +7319,6 @@ void Document::TasksWerePaused() {
 void Document::TasksWereUnpaused() {
   GetScriptRunner()->Resume();
 
-  if (parser_)
-    parser_->UnpauseScheduledTasks();
   if (scripted_animation_controller_)
     scripted_animation_controller_->Unpause();
 
@@ -8081,15 +8093,7 @@ bool Document::IsSecureContext(String& error_message) const {
 }
 
 bool Document::IsSecureContext() const {
-  bool is_secure = secure_context_state_ == SecureContextState::kSecure;
-  if (GetSandboxFlags() != WebSandboxFlags::kNone) {
-    CountUse(is_secure
-                 ? WebFeature::kSecureContextCheckForSandboxedOriginPassed
-                 : WebFeature::kSecureContextCheckForSandboxedOriginFailed);
-  }
-  CountUse(is_secure ? WebFeature::kSecureContextCheckPassed
-                     : WebFeature::kSecureContextCheckFailed);
-  return is_secure;
+  return secure_context_state_ == SecureContextState::kSecure;
 }
 
 void Document::DidEnforceInsecureRequestPolicy() {

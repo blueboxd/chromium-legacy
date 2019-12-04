@@ -159,8 +159,6 @@ XrResult OpenXrApiWrapper::InitializeSystem() {
   DCHECK(HasInstance());
   DCHECK(!HasSystem());
 
-  XrResult xr_result;
-
   XrSystemId system;
   RETURN_IF_XR_FAILED(GetSystem(instance_, &system));
 
@@ -187,7 +185,7 @@ XrResult OpenXrApiWrapper::InitializeSystem() {
   system_ = system;
   view_configs_ = std::move(view_configs);
 
-  return xr_result;
+  return XR_SUCCESS;
 }
 
 XrResult OpenXrApiWrapper::PickEnvironmentBlendMode(XrSystemId system) {
@@ -196,7 +194,6 @@ XrResult OpenXrApiWrapper::PickEnvironmentBlendMode(XrSystemId system) {
       XR_ENVIRONMENT_BLEND_MODE_OPAQUE,
   };
   DCHECK(HasInstance());
-  XrResult xr_result;
 
   uint32_t blend_mode_count;
   RETURN_IF_XR_FAILED(xrEnumerateEnvironmentBlendModes(
@@ -216,7 +213,7 @@ XrResult OpenXrApiWrapper::PickEnvironmentBlendMode(XrSystemId system) {
   }
 
   blend_mode_ = *blend_mode_it;
-  return xr_result;
+  return XR_SUCCESS;
 }
 
 // Callers of this function must check the XrResult return value and destroy
@@ -227,8 +224,6 @@ XrResult OpenXrApiWrapper::InitSession(
     std::unique_ptr<OpenXRInputHelper>* input_helper) {
   DCHECK(d3d_device.Get());
   DCHECK(IsInitialized());
-
-  XrResult xr_result;
 
   RETURN_IF_XR_FAILED(CreateSession(d3d_device));
   RETURN_IF_XR_FAILED(CreateSwapchain());
@@ -256,7 +251,7 @@ XrResult OpenXrApiWrapper::InitSession(
   DCHECK(HasSpace(XR_REFERENCE_SPACE_TYPE_VIEW));
   DCHECK(input_helper);
 
-  return xr_result;
+  return XR_SUCCESS;
 }
 
 XrResult OpenXrApiWrapper::CreateSession(
@@ -280,8 +275,6 @@ XrResult OpenXrApiWrapper::CreateSwapchain() {
   DCHECK(IsInitialized());
   DCHECK(HasSession());
   DCHECK(!HasColorSwapChain());
-
-  XrResult xr_result;
 
   gfx::Size view_size = GetViewSize();
 
@@ -318,7 +311,7 @@ XrResult OpenXrApiWrapper::CreateSwapchain() {
 
   color_swapchain_ = color_swapchain;
   color_swapchain_images_ = std::move(color_swapchain_images);
-  return xr_result;
+  return XR_SUCCESS;
 }
 
 XrResult OpenXrApiWrapper::CreateSpace(XrReferenceSpaceType type,
@@ -357,8 +350,6 @@ XrResult OpenXrApiWrapper::BeginFrame(
   DCHECK(HasSession());
   DCHECK(HasColorSwapChain());
 
-  XrResult xr_result;
-
   RETURN_IF_XR_FAILED(ProcessEvents());
 
   XrFrameWaitInfo wait_frame_info = {XR_TYPE_FRAME_WAIT_INFO};
@@ -383,7 +374,7 @@ XrResult OpenXrApiWrapper::BeginFrame(
 
   *texture = color_swapchain_images_[color_swapchain_image_index].texture;
 
-  return xr_result;
+  return XR_SUCCESS;
 }
 
 XrResult OpenXrApiWrapper::EndFrame() {
@@ -392,8 +383,6 @@ XrResult OpenXrApiWrapper::EndFrame() {
   DCHECK(HasColorSwapChain());
   DCHECK(HasSpace(XR_REFERENCE_SPACE_TYPE_LOCAL));
   DCHECK(HasFrameState());
-
-  XrResult xr_result;
 
   XrSwapchainImageReleaseInfo release_info = {
       XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
@@ -417,12 +406,10 @@ XrResult OpenXrApiWrapper::EndFrame() {
 
   RETURN_IF_XR_FAILED(xrEndFrame(session_, &end_frame_info));
 
-  return xr_result;
+  return XR_SUCCESS;
 }
 
 XrResult OpenXrApiWrapper::UpdateProjectionLayers() {
-  XrResult xr_result;
-
   RETURN_IF_XR_FAILED(
       LocateViews(XR_REFERENCE_SPACE_TYPE_LOCAL, &origin_from_eye_views_));
   RETURN_IF_XR_FAILED(
@@ -451,14 +438,12 @@ XrResult OpenXrApiWrapper::UpdateProjectionLayers() {
     layer_projection_view.subImage.imageRect.offset.y = 0;
   }
 
-  return xr_result;
+  return XR_SUCCESS;
 }
 
 XrResult OpenXrApiWrapper::LocateViews(XrReferenceSpaceType type,
                                        std::vector<XrView>* views) const {
   DCHECK(HasSession());
-
-  XrResult xr_result;
 
   XrViewState view_state = {XR_TYPE_VIEW_STATE};
   XrViewLocateInfo view_locate_info = {XR_TYPE_VIEW_LOCATE_INFO};
@@ -494,7 +479,7 @@ XrResult OpenXrApiWrapper::LocateViews(XrReferenceSpaceType type,
     *views = std::move(new_views);
   }
 
-  return xr_result;
+  return XR_SUCCESS;
 }
 
 // Returns the next predicted display time in nanoseconds.
@@ -511,8 +496,6 @@ XrResult OpenXrApiWrapper::GetHeadPose(
     bool* emulated_position) const {
   DCHECK(HasSpace(XR_REFERENCE_SPACE_TYPE_LOCAL));
   DCHECK(HasSpace(XR_REFERENCE_SPACE_TYPE_VIEW));
-
-  XrResult xr_result;
 
   XrSpaceLocation view_from_local = {XR_TYPE_SPACE_LOCATION};
   RETURN_IF_XR_FAILED(xrLocateSpace(view_space_, local_space_,
@@ -548,7 +531,7 @@ XrResult OpenXrApiWrapper::GetHeadPose(
     *emulated_position = false;
   }
 
-  return xr_result;
+  return XR_SUCCESS;
 }
 
 void OpenXrApiWrapper::GetHeadFromEyes(XrView* left, XrView* right) const {
@@ -561,8 +544,6 @@ void OpenXrApiWrapper::GetHeadFromEyes(XrView* left, XrView* right) const {
 XrResult OpenXrApiWrapper::GetLuid(LUID* luid) const {
   DCHECK(IsInitialized());
 
-  XrResult xr_result;
-
   XrGraphicsRequirementsD3D11KHR graphics_requirements = {
       XR_TYPE_GRAPHICS_REQUIREMENTS_D3D11_KHR};
   RETURN_IF_XR_FAILED(xrGetD3D11GraphicsRequirementsKHR(
@@ -571,7 +552,7 @@ XrResult OpenXrApiWrapper::GetLuid(LUID* luid) const {
   luid->LowPart = graphics_requirements.adapterLuid.LowPart;
   luid->HighPart = graphics_requirements.adapterLuid.HighPart;
 
-  return xr_result;
+  return XR_SUCCESS;
 }
 
 XrResult OpenXrApiWrapper::ProcessEvents() {
@@ -668,8 +649,7 @@ uint32_t OpenXrApiWrapper::GetRecommendedSwapchainSampleCount() const {
 // XrEventDataReferenceSpaceChangePending
 XrResult OpenXrApiWrapper::UpdateStageBounds() {
   DCHECK(HasSession());
-  XrResult xr_result;
-  xr_result = xrGetReferenceSpaceBoundsRect(
+  XrResult xr_result = xrGetReferenceSpaceBoundsRect(
       session_, XR_REFERENCE_SPACE_TYPE_STAGE, &stage_bounds_);
   if (XR_FAILED(xr_result)) {
     stage_bounds_.height = 0;

@@ -19,7 +19,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/audio/web_audio_device_source_type.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_renderer.h"
-#include "third_party/blink/public/platform/modules/webrtc/webrtc_source.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
@@ -28,6 +27,7 @@
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/webrtc/webrtc_source.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
 using testing::_;

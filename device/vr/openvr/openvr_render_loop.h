@@ -43,7 +43,6 @@ class OpenVRRenderLoop : public XRCompositorCommon {
   bool SubmitCompositedFrame() override;
 
   // Helpers to implement XRDeviceAbstraction.
-  mojom::VRPosePtr GetPose();
   std::vector<mojom::XRInputSourceStatePtr> GetInputState(
       vr::TrackedDevicePose_t* poses,
       uint32_t count);

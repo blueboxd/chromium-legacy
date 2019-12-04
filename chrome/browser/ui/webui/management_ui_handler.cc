@@ -325,6 +325,8 @@ const char* GetReportingTypeValue(ReportingType reportingType) {
 // TODO(raleksandov) Move to util class or smth similar.
 // static
 std::string ManagementUIHandler::GetAccountDomain(Profile* profile) {
+  if (!IsProfileManaged(profile))
+    return std::string();
   auto username = profile->GetProfileUserName();
   size_t email_separator_pos = username.find('@');
   bool is_email = email_separator_pos != std::string::npos &&

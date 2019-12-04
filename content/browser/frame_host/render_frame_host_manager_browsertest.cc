@@ -217,12 +217,6 @@ class RenderFrameHostManagerTest : public ContentBrowserTest {
     replace_host_.SetHostStr(foo_com_);
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    const char kBlinkPageLifecycleFeature[] = "PageLifecycle";
-    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                    kBlinkPageLifecycleFeature);
-  }
-
   void SetUpOnMainThread() override {
     // Support multiple sites on the test server.
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -5550,11 +5544,13 @@ class RenderFrameHostManagerUnloadBrowserTest
   // Adds an unload handler to |rfh| and verifies that the unload state
   // bookkeeping on |rfh| is updated properly.
   void AddUnloadHandler(RenderFrameHostImpl* rfh, const std::string& script) {
-    EXPECT_FALSE(rfh->GetSuddenTerminationDisablerState(blink::kUnloadHandler));
+    EXPECT_FALSE(rfh->GetSuddenTerminationDisablerState(
+        blink::mojom::SuddenTerminationDisablerType::kUnloadHandler));
     EXPECT_TRUE(ExecuteScript(
         rfh, base::StringPrintf("window.onunload = function(e) { %s }",
                                 script.c_str())));
-    EXPECT_TRUE(rfh->GetSuddenTerminationDisablerState(blink::kUnloadHandler));
+    EXPECT_TRUE(rfh->GetSuddenTerminationDisablerState(
+        blink::mojom::SuddenTerminationDisablerType::kUnloadHandler));
   }
 
   // Extend the timeout for keeping the subframe process alive for unload

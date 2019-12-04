@@ -24,6 +24,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
+#include "components/password_manager/core/browser/password_feature_manager.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -393,8 +394,8 @@ void ManagePasswordsBubbleModel::OnSkipSignInClicked() {
 
 #if defined(PASSWORD_STORE_SELECT_ENABLED)
 void ManagePasswordsBubbleModel::OnToggleAccountStore(bool is_checked) {
-  pending_password_.in_store =
-      is_checked ? Store::kAccountStore : Store::kProfileStore;
+  delegate_->GetPasswordFeatureManager()->SetDefaultPasswordStore(
+      is_checked ? Store::kAccountStore : Store::kProfileStore);
 }
 #endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
 
@@ -486,7 +487,8 @@ bool ManagePasswordsBubbleModel::RevealPasswords() {
 
 #if defined(PASSWORD_STORE_SELECT_ENABLED)
 bool ManagePasswordsBubbleModel::IsUsingAccountStore() {
-  return pending_password_.in_store == Store::kAccountStore;
+  return delegate_->GetPasswordFeatureManager()->GetDefaultPasswordStore() ==
+         Store::kAccountStore;
 }
 #endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
 

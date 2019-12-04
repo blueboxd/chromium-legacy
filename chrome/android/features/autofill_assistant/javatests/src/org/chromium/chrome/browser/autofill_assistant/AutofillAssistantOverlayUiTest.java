@@ -125,10 +125,8 @@ public class AutofillAssistantOverlayUiTest {
         AssistantOverlayModel model = new AssistantOverlayModel();
         AssistantOverlayCoordinator coordinator = createCoordinator(model);
 
-        AssistantOverlayImage image = new AssistantOverlayImage("http://localhost/example.png",
-                AssistantDimension.createFromDpi(24), AssistantDimension.createFromDpi(24),
-                AssistantDimension.createFromDpi(20), "example.com", Color.parseColor("#B3FFFFFF"),
-                AssistantDimension.createFromDpi(14));
+        AssistantOverlayImage image = new AssistantOverlayImage("http://localhost/example.png", 64,
+                64, 40, "example.com", Color.parseColor("#B3FFFFFF"), 40);
         runOnUiThreadBlocking(() -> {
             model.set(AssistantOverlayModel.STATE, AssistantOverlayState.FULL);
             model.set(AssistantOverlayModel.OVERLAY_IMAGE, image);

@@ -20,22 +20,19 @@
 // With:
 //   Value of: actual()      Actual: "ACTION_DRAW"
 //   Expected: expected()  Which is: "ACTION_NONE"
-#define EXPECT_ENUM_EQ(enum_tostring, expected, actual)        \
-  EXPECT_STREQ(SchedulerStateMachine::enum_tostring(expected), \
-               SchedulerStateMachine::enum_tostring(actual))
+#define EXPECT_ENUM_EQ(enum_tostring, expected, actual) \
+  EXPECT_EQ(enum_tostring(expected), enum_tostring(actual))
 
 #define EXPECT_IMPL_FRAME_STATE(expected)               \
   EXPECT_ENUM_EQ(BeginImplFrameStateToString, expected, \
-                 state.begin_impl_frame_state())        \
-      << state.AsValue()->ToString()
+                 state.begin_impl_frame_state())
 
 #define EXPECT_MAIN_FRAME_STATE(expected)               \
   EXPECT_ENUM_EQ(BeginMainFrameStateToString, expected, \
                  state.BeginMainFrameState())
 
-#define EXPECT_ACTION(expected)                                \
-  EXPECT_ENUM_EQ(ActionToString, expected, state.NextAction()) \
-      << state.AsValue()->ToString()
+#define EXPECT_ACTION(expected) \
+  EXPECT_ENUM_EQ(ActionToString, expected, state.NextAction())
 
 #define EXPECT_ACTION_UPDATE_STATE(action)                            \
   EXPECT_ACTION(action);                                              \
@@ -62,6 +59,69 @@
 namespace cc {
 
 namespace {
+
+const char* BeginImplFrameStateToString(
+    SchedulerStateMachine::BeginImplFrameState state) {
+  using BeginImplFrameState = SchedulerStateMachine::BeginImplFrameState;
+  switch (state) {
+    case BeginImplFrameState::IDLE:
+      return "BeginImplFrameState::IDLE";
+    case BeginImplFrameState::INSIDE_BEGIN_FRAME:
+      return "BeginImplFrameState::INSIDE_BEGIN_FRAME";
+    case BeginImplFrameState::INSIDE_DEADLINE:
+      return "BeginImplFrameState::INSIDE_DEADLINE";
+  }
+  NOTREACHED();
+  return "???";
+}
+const char* BeginMainFrameStateToString(
+    SchedulerStateMachine::BeginMainFrameState state) {
+  using BeginMainFrameState = SchedulerStateMachine::BeginMainFrameState;
+  switch (state) {
+    case BeginMainFrameState::IDLE:
+      return "BeginMainFrameState::IDLE";
+    case BeginMainFrameState::SENT:
+      return "BeginMainFrameState::SENT";
+    case BeginMainFrameState::READY_TO_COMMIT:
+      return "BeginMainFrameState::READY_TO_COMMIT";
+  }
+  NOTREACHED();
+  return "???";
+}
+
+const char* ActionToString(SchedulerStateMachine::Action action) {
+  using Action = SchedulerStateMachine::Action;
+  switch (action) {
+    case Action::NONE:
+      return "Action::NONE";
+    case Action::SEND_BEGIN_MAIN_FRAME:
+      return "Action::SEND_BEGIN_MAIN_FRAME";
+    case Action::COMMIT:
+      return "Action::COMMIT";
+    case Action::ACTIVATE_SYNC_TREE:
+      return "Action::ACTIVATE_SYNC_TREE";
+    case Action::DRAW_IF_POSSIBLE:
+      return "Action::DRAW_IF_POSSIBLE";
+    case Action::DRAW_FORCED:
+      return "Action::DRAW_FORCED";
+    case Action::DRAW_ABORT:
+      return "Action::DRAW_ABORT";
+    case Action::BEGIN_LAYER_TREE_FRAME_SINK_CREATION:
+      return "Action::BEGIN_LAYER_TREE_FRAME_SINK_CREATION";
+    case Action::PREPARE_TILES:
+      return "Action::PREPARE_TILES";
+    case Action::INVALIDATE_LAYER_TREE_FRAME_SINK:
+      return "Action::INVALIDATE_LAYER_TREE_FRAME_SINK";
+    case Action::PERFORM_IMPL_SIDE_INVALIDATION:
+      return "Action::PERFORM_IMPL_SIDE_INVALIDATION";
+    case Action::NOTIFY_BEGIN_MAIN_FRAME_NOT_EXPECTED_UNTIL:
+      return "Action::NOTIFY_BEGIN_MAIN_FRAME_NOT_EXPECTED_UNTIL";
+    case Action::NOTIFY_BEGIN_MAIN_FRAME_NOT_EXPECTED_SOON:
+      return "Action::NOTIFY_BEGIN_MAIN_FRAME_NOT_EXPECTED_SOON";
+  }
+  NOTREACHED();
+  return "???";
+}
 
 const bool kAnimateOnly = false;
 
@@ -799,8 +859,7 @@ TEST(SchedulerStateMachineTest, TestNextActionDrawsOnBeginImplFrame) {
       // Case 2: needs_begin_main_frame=true
       state.SetNeedsBeginMainFrame();
       EXPECT_NE(SchedulerStateMachine::Action::DRAW_IF_POSSIBLE,
-                state.NextAction())
-          << state.AsValue()->ToString();
+                state.NextAction());
     }
   }
 
@@ -867,8 +926,7 @@ TEST(SchedulerStateMachineTest, TestNoBeginMainFrameStatesRedrawWhenInvisible) {
       // Case 2: needs_begin_main_frame=true.
       state.SetNeedsBeginMainFrame();
       EXPECT_NE(SchedulerStateMachine::Action::DRAW_IF_POSSIBLE,
-                state.NextAction())
-          << state.AsValue()->ToString();
+                state.NextAction());
     }
   }
 }

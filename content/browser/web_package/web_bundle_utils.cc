@@ -26,7 +26,7 @@ const base::FilePath::CharType kWebBundleFileExtension[] =
 
 }  // namespace
 
-bool IsSupprtedFileScheme(const GURL& url) {
+bool IsSupportedFileScheme(const GURL& url) {
   if (url.SchemeIsFile())
     return true;
 #if defined(OS_ANDROID)
@@ -39,7 +39,7 @@ bool IsSupprtedFileScheme(const GURL& url) {
 bool CanLoadAsTrustableWebBundleFile(const GURL& url) {
   if (!GetContentClient()->browser()->CanAcceptUntrustedExchangesIfNeeded())
     return false;
-  if (!IsSupprtedFileScheme(url))
+  if (!IsSupportedFileScheme(url))
     return false;
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kTrustableWebBundleFileUrl)) {
@@ -52,7 +52,7 @@ bool CanLoadAsTrustableWebBundleFile(const GURL& url) {
 bool CanLoadAsWebBundleFile(const GURL& url) {
   if (!base::FeatureList::IsEnabled(features::kWebBundles))
     return false;
-  return IsSupprtedFileScheme(url);
+  return IsSupportedFileScheme(url);
 }
 
 bool CanLoadAsWebBundle(const GURL& url, const std::string& mime_type) {
@@ -60,7 +60,7 @@ bool CanLoadAsWebBundle(const GURL& url, const std::string& mime_type) {
     return false;
   // Currently loading Web Bundle file from server response is not
   // implemented yet.
-  if (!IsSupprtedFileScheme(url))
+  if (!IsSupportedFileScheme(url))
     return false;
   return mime_type == kWebBundleFileMimeTypeWithoutParameters;
 }

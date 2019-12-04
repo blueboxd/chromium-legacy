@@ -31,10 +31,6 @@ namespace base {
 class HistogramBase;
 }  // namespace base
 
-namespace viz {
-class HitTestDataProvider;
-}  // namespace viz
-
 namespace cc {
 namespace mojo_embedder {
 
@@ -97,7 +93,6 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager = nullptr;
     std::unique_ptr<viz::SyntheticBeginFrameSource>
         synthetic_begin_frame_source;
-    std::unique_ptr<viz::HitTestDataProvider> hit_test_data_provider;
     UnboundMessagePipes pipes;
     bool wants_animate_only_begin_frames = false;
     const char* client_name = nullptr;
@@ -111,10 +106,6 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
   ~AsyncLayerTreeFrameSink() override;
 
   AsyncLayerTreeFrameSink& operator=(const AsyncLayerTreeFrameSink&) = delete;
-
-  const viz::HitTestDataProvider* hit_test_data_provider() const {
-    return hit_test_data_provider_.get();
-  }
 
   const viz::LocalSurfaceId& local_surface_id() const {
     return local_surface_id_;
@@ -155,7 +146,6 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
   bool begin_frames_paused_ = false;
   bool needs_begin_frames_ = false;
   viz::LocalSurfaceId local_surface_id_;
-  std::unique_ptr<viz::HitTestDataProvider> hit_test_data_provider_;
   std::unique_ptr<viz::ExternalBeginFrameSource> begin_frame_source_;
   std::unique_ptr<viz::SyntheticBeginFrameSource> synthetic_begin_frame_source_;
 

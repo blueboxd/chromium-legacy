@@ -16,7 +16,6 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "build/build_config.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/favicon/favicon_utils.h"
@@ -62,11 +61,6 @@ namespace {
 
 const char kIconSourceUmaClientName[] = "NtpIconSource";
 
-// The color of the letter drawn for a fallback icon.  Changing this may require
-// changing the algorithm in ReturnRenderedIconForRequest() that guarantees
-// contrast.
-constexpr SkColor kFallbackIconLetterColor = SK_ColorWHITE;
-
 const char kShowFallbackMonogramParam[] = "show_fallback_monogram";
 
 // The requested size of the icon.
@@ -78,11 +72,11 @@ const char kUrlParam[] = "url";
 // Size of the icon background (gray circle), in dp.
 const int kIconSizeDip = 48;
 
-// Maximum size of the icon, in dp.
-const int kMaxIconSizeDip = 192;
-
 // Size of the favicon fallback (letter + colored circle), in dp.
 const int kFallbackSizeDip = 32;
+
+// Maximum size of the icon, in dp.
+const int kMaxIconSizeDip = 192;
 
 // URL to the server favicon service. "alt=404" means the service will return a
 // 404 if an icon can't be found.
@@ -156,52 +150,6 @@ const ParsedNtpIconPath ParseNtpIconPath(const std::string& path) {
   return parsed;
 }
 
-// Draws a circle of a given |size| and |offset| in the |canvas| and fills it
-// with |background_color|.
-void DrawCircleInCanvas(gfx::Canvas* canvas,
-                        int size,
-                        int offset,
-                        SkColor background_color) {
-  cc::PaintFlags flags;
-  flags.setStyle(cc::PaintFlags::kFill_Style);
-  flags.setAntiAlias(true);
-  flags.setColor(background_color);
-  int corner_radius = static_cast<int>(size * 0.5 + 0.5);
-  canvas->DrawRoundRect(gfx::Rect(offset, offset, size, size), corner_radius,
-                        flags);
-}
-
-// Will paint the appropriate letter in the center of specified |canvas| of
-// given |size|.
-void DrawFallbackIconLetter(const GURL& icon_url,
-                            int size,
-                            gfx::Canvas* canvas) {
-  // Get the appropriate letter to draw, then eventually draw it.
-  base::string16 icon_text = favicon::GetFallbackIconText(icon_url);
-  if (icon_text.empty())
-    return;
-
-  const double kDefaultFontSizeRatio = 0.34;
-  int font_size = static_cast<int>(size * kDefaultFontSizeRatio);
-  if (font_size <= 0)
-    return;
-
-  gfx::Font::Weight font_weight = gfx::Font::Weight::NORMAL;
-
-#if defined(OS_WIN)
-  font_weight = gfx::Font::Weight::SEMIBOLD;
-#endif
-
-  // TODO(crbug.com/853780): Adjust the text color according to the background
-  // color.
-  canvas->DrawStringRectWithFlags(
-      icon_text,
-      gfx::FontList({l10n_util::GetStringUTF8(IDS_NTP_FONT_FAMILY)},
-                    gfx::Font::NORMAL, font_size, font_weight),
-      kFallbackIconLetterColor, gfx::Rect(0, 0, size, size),
-      gfx::Canvas::TEXT_ALIGN_CENTER);
-}
-
 // Will draw |bitmap| in the center of the |canvas| of a given |size|.
 // |bitmap| keeps its size.
 void DrawFavicon(const SkBitmap& bitmap, gfx::Canvas* canvas, int size) {
@@ -209,18 +157,6 @@ void DrawFavicon(const SkBitmap& bitmap, gfx::Canvas* canvas, int size) {
   int y_origin = (size - bitmap.height()) / 2;
   canvas->DrawImageInt(gfx::ImageSkia(gfx::ImageSkiaRep(bitmap, /*scale=*/1.0)),
                        x_origin, y_origin);
-}
-
-// Returns a color that based on the hash of |icon_url|'s origin.
-SkColor GetBackgroundColorForUrl(const GURL& icon_url) {
-  if (!icon_url.is_valid())
-    return SK_ColorGRAY;
-
-  unsigned char hash[20];
-  const std::string origin = icon_url.GetOrigin().spec();
-  base::SHA1HashBytes(reinterpret_cast<const unsigned char*>(origin.c_str()),
-                      origin.size(), hash);
-  return SkColorSetRGB(hash[0], hash[1], hash[2]);
 }
 
 }  // namespace
@@ -448,23 +384,17 @@ void NtpIconSource::ReturnRenderedIconForRequest(NtpIconRequest request,
       std::round(kFallbackSizeDip * request.device_scale_factor * 0.5) * 2.0;
 
   SkBitmap bitmap;
-  bitmap.allocN32Pixels(icon_size, icon_size, false);
-  cc::SkiaPaintCanvas paint_canvas(bitmap);
-  gfx::Canvas canvas(&paint_canvas, 1.f);
-  canvas.DrawColor(SK_ColorTRANSPARENT, SkBlendMode::kSrc);
 
   // If necessary, draw the colored fallback monogram.
-  if (favicon.empty()) {
-    if (request.show_fallback_monogram) {
-      SkColor fallback_color =
-          color_utils::BlendForMinContrast(
-              GetBackgroundColorForUrl(request.path), kFallbackIconLetterColor)
-              .color;
-
-      int offset = (icon_size - fallback_size) / 2;
-      DrawCircleInCanvas(&canvas, fallback_size, offset, fallback_color);
-      DrawFallbackIconLetter(request.path, icon_size, &canvas);
-    } else {
+  if (favicon.empty() && request.show_fallback_monogram) {
+    bitmap = favicon::GenerateMonogramFavicon(request.path, icon_size,
+                                              fallback_size);
+  } else {
+    bitmap.allocN32Pixels(icon_size, icon_size, false);
+    cc::SkiaPaintCanvas paint_canvas(bitmap);
+    gfx::Canvas canvas(&paint_canvas, 1.f);
+    canvas.DrawColor(SK_ColorTRANSPARENT, SkBlendMode::kSrc);
+    if (favicon.empty()) {
       const auto* default_favicon = favicon::GetDefaultFavicon().ToImageSkia();
       const auto& rep =
           default_favicon->GetRepresentation(request.device_scale_factor);
@@ -473,9 +403,9 @@ void NtpIconSource::ReturnRenderedIconForRequest(NtpIconRequest request,
           scaled_image, skia::ImageOperations::RESIZE_BEST,
           gfx::Size(fallback_size, fallback_size));
       DrawFavicon(*resized.bitmap(), &canvas, icon_size);
+    } else {
+      DrawFavicon(favicon, &canvas, icon_size);
     }
-  } else {
-    DrawFavicon(favicon, &canvas, icon_size);
   }
 
   std::vector<unsigned char> bitmap_data;

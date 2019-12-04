@@ -187,8 +187,7 @@ void TabDataAccess::SetUsedInBgFromSiteCharacteristicsDataReader(
   // has no visible tab title, so tab title updates can be ignored in that case.
   // The audio bit is ignored as tab can't play audio until they have been
   // visible at least once.
-  bool used_in_bg = (reader->UpdatesFaviconInBackground() == kInUse) ||
-                    (reader->UsesNotificationsInBackground() == kInUse);
+  bool used_in_bg = reader->UpdatesFaviconInBackground() == kInUse;
   if (!tab_data->is_pinned && (reader->UpdatesTitleInBackground() == kInUse))
     used_in_bg = true;
 

@@ -11,6 +11,12 @@
     overflow: hidden;
   }
 
+  .destination-additional-info,
+  .destination-additional-info div {
+    height: 100%;
+    min-height: 0;
+  }
+
   .destination-status {
     color: var(--cr-secondary-text-color);
     font-size: calc(12/13 * 1em);
@@ -24,12 +30,6 @@
     /* Reduce margin by 2px so that the <select> inside this element will
        be aligned with others after adding margin for the border. */
     margin: 0 calc(var(--print-preview-sidebar-margin) - 2px);
-  }
-
-  #destination-status-wrapper,
-  #destination-status-wrapper div {
-    height: 100%;
-    min-height: 0;
   }
 </style>
 <print-preview-user-manager id="userManager" active-user="{{activeUser_}}"
@@ -58,13 +58,26 @@
     </print-preview-destination-select>
   </div>
 </print-preview-settings-section>
-<print-preview-settings-section id="destination-status-wrapper"
+<print-preview-settings-section class="destination-additional-info"
     hidden$="[[!statusText_]]">
   <div slot="title"></div>
   <div slot="controls">
     <div class="destination-status">[[statusText_]]</div>
   </div>
 </print-preview-settings-section>
+<if expr="chromeos">
+  <print-preview-settings-section class="destination-additional-info"
+      id="destinationEulaWrapper"
+      hidden$="[[!destination.eulaUrl]]">
+    <div slot="title"></div>
+    <div slot="controls">
+      <a class="destination-status" href="[[destination.eulaUrl]]"
+          target="_blank">
+       $i18n{printerEulaURL}
+      </a>
+    </div>
+  </print-preview-settings-section>
+</if>
 <cr-lazy-render id="destinationDialog">
   <template>
     <print-preview-destination-dialog

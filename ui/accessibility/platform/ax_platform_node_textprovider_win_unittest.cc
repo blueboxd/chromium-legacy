@@ -456,6 +456,30 @@ TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderGetSelection) {
   selections.Reset();
   text_edit_range_provider.Reset();
 
+  // Verify selections that span multiple nodes
+  selected_tree_data.sel_focus_object_id = 2;
+  selected_tree_data.sel_focus_offset = 0;
+  selected_tree_data.sel_anchor_object_id = 3;
+  selected_tree_data.sel_anchor_offset = 12;
+
+  root_text_provider->GetSelection(selections.Receive());
+  ASSERT_NE(nullptr, selections.Get());
+
+  EXPECT_HRESULT_SUCCEEDED(SafeArrayGetUBound(selections.Get(), 1, &ubound));
+  EXPECT_EQ(0, ubound);
+  EXPECT_HRESULT_SUCCEEDED(SafeArrayGetLBound(selections.Get(), 1, &lbound));
+  EXPECT_EQ(0, lbound);
+
+  EXPECT_HRESULT_SUCCEEDED(SafeArrayGetElement(
+      selections.Get(), &index, static_cast<void**>(&text_range_provider)));
+
+  EXPECT_HRESULT_SUCCEEDED(
+      text_range_provider->GetText(-1, text_content.Receive()));
+  EXPECT_EQ(0, wcscmp(text_content, L"some texttextbox text"));
+  text_content.Reset();
+  selections.Reset();
+  text_range_provider.Reset();
+
   // Verify that we don't fill the SAFEARRAY when there is no selection and the
   // node is not editable.
   selected_tree_data.sel_focus_object_id = 2;

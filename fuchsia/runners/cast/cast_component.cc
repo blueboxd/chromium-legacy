@@ -39,6 +39,7 @@ CastComponent::CastComponent(CastRunner* runner,
       rewrite_rules_provider_(std::move(params.rewrite_rules_provider)),
       initial_rewrite_rules_(std::move(params.rewrite_rules.value())),
       api_bindings_client_(std::move(params.api_bindings_client)),
+      media_session_id_(params.media_session_id.value()),
       navigation_listener_binding_(this) {
   base::AutoReset<bool> constructor_active_reset(&constructor_active_, true);
 }
@@ -63,6 +64,7 @@ void CastComponent::StartComponent() {
   });
   OnRewriteRulesReceived(std::move(initial_rewrite_rules_));
 
+  frame()->SetMediaSessionId(media_session_id_);
   frame()->SetEnableInput(false);
   frame()->SetNavigationEventListener(
       navigation_listener_binding_.NewBinding());

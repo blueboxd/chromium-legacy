@@ -42,13 +42,24 @@ const int kInvalidLanguageIndex = -1;
 - (void)setModalConsumer:(id<InfobarTranslateModalConsumer>)modalConsumer {
   _modalConsumer = modalConsumer;
 
+  BOOL currentStepBeforeTranslate =
+      self.currentStep ==
+      translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE;
+  BOOL currentStepAfterTranslate =
+      self.currentStep ==
+      translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE;
+
   NSDictionary* prefs = @{
     kSourceLanguagePrefKey : base::SysUTF16ToNSString(
         self.translateInfobarDelegate->original_language_name()),
     kTargetLanguagePrefKey : base::SysUTF16ToNSString(
         self.translateInfobarDelegate->target_language_name()),
+    kEnableTranslateButtonPrefKey : @(currentStepBeforeTranslate),
+    kEnableAndDisplayShowOriginalButtonPrefKey : @(currentStepAfterTranslate),
     kShouldAlwaysTranslatePrefKey :
         @(self.translateInfobarDelegate->ShouldAlwaysTranslate()),
+    kDisplayNeverTranslateLanguagePrefKey : @(currentStepBeforeTranslate),
+    kDisplayNeverTranslateSiteButtonPrefKey : @(currentStepBeforeTranslate),
     kIsTranslatableLanguagePrefKey :
         @(self.translateInfobarDelegate->IsTranslatableLanguageByPrefs()),
     kIsSiteBlacklistedPrefKey :

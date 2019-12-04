@@ -552,6 +552,30 @@ bool IsCookiesWithoutSameSiteMustBeSecureEnabled() {
              features::kCookiesWithoutSameSiteMustBeSecure);
 }
 
+bool IsRecentHttpSameSiteAccessGrantsLegacyCookieSemanticsEnabled() {
+  return IsSameSiteByDefaultCookiesEnabled() &&
+         base::FeatureList::IsEnabled(
+             features::kRecentHttpSameSiteAccessGrantsLegacyCookieSemantics) &&
+         features::
+                 kRecentHttpSameSiteAccessGrantsLegacyCookieSemanticsMilliseconds
+                     .Get() > 0;
+}
+
+bool DoesLastHttpSameSiteAccessGrantLegacySemantics(
+    base::TimeTicks last_http_same_site_access) {
+  if (last_http_same_site_access.is_null())
+    return false;
+  if (!IsRecentHttpSameSiteAccessGrantsLegacyCookieSemanticsEnabled())
+    return false;
+
+  base::TimeDelta recency_threshold = base::TimeDelta::FromMilliseconds(
+      features::kRecentHttpSameSiteAccessGrantsLegacyCookieSemanticsMilliseconds
+          .Get());
+  DCHECK(!recency_threshold.is_zero());
+  return (base::TimeTicks::Now() - last_http_same_site_access) <
+         recency_threshold;
+}
+
 base::OnceCallback<void(net::CanonicalCookie::CookieInclusionStatus)>
 AdaptCookieInclusionStatusToBool(base::OnceCallback<void(bool)> callback) {
   return base::BindOnce(

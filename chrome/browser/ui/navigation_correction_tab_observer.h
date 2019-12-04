@@ -23,6 +23,12 @@ class NavigationCorrectionTabObserver
  public:
   ~NavigationCorrectionTabObserver() override;
 
+  // Sets whether navigation corrections can be enable via
+  // prefs::kAlternateErrorPagesEnabled. Currently, this is false in production,
+  // due to a server issue.
+  static void SetAllowEnableCorrectionsForTesting(
+      bool allow_enable_corrections_for_testing);
+
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:

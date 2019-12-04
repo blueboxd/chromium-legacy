@@ -23,7 +23,7 @@ import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings.ContentLengths;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
-import org.chromium.chrome.browser.settings.PreferenceUtils;
+import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
 
@@ -48,7 +48,7 @@ public class DataReductionPreferenceFragment extends PreferenceFragmentCompat {
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.data_reduction_preferences);
+        SettingsUtils.addPreferencesFromResource(this, R.xml.data_reduction_preferences);
         getActivity().setTitle(R.string.data_reduction_title_lite_mode);
         boolean isEnabled = DataReductionProxySettings.getInstance().isDataReductionProxyEnabled();
         mIsEnabled = !isEnabled;
@@ -136,9 +136,9 @@ public class DataReductionPreferenceFragment extends PreferenceFragmentCompat {
         getPreferenceScreen().removeAll();
         createDataReductionSwitch(isEnabled);
         if (isEnabled) {
-            PreferenceUtils.addPreferencesFromResource(this, R.xml.data_reduction_preferences);
+            SettingsUtils.addPreferencesFromResource(this, R.xml.data_reduction_preferences);
         } else {
-            PreferenceUtils.addPreferencesFromResource(
+            SettingsUtils.addPreferencesFromResource(
                     this, R.xml.data_reduction_preferences_off_lite_mode);
         }
         mIsEnabled = isEnabled;

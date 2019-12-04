@@ -918,7 +918,7 @@ bool DesktopWindowTreeHostWin::HandleMouseEvent(ui::MouseEvent* event) {
   // marked occluded, or getting stuck in the occluded state. Event can cause
   // this object to be deleted so check occlusion state before we do anything
   // with the event.
-  if (window()->occlusion_state() == aura::Window::OcclusionState::OCCLUDED)
+  if (GetNativeWindowOcclusionState() == aura::Window::OcclusionState::OCCLUDED)
     UMA_HISTOGRAM_BOOLEAN("OccludedWindowMouseEvents", true);
 
   SendEventToSink(event);

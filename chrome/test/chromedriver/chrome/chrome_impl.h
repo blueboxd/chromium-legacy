@@ -85,6 +85,7 @@ class ChromeImpl : public Chrome {
                            Window* window);
   Status GetWindowBounds(int window_id, Window* window);
   Status SetWindowBounds(Window* window,
+                         const std::string& target_id,
                          std::unique_ptr<base::DictionaryValue> bounds);
 
   bool quit_;

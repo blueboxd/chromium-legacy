@@ -37,7 +37,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.settings.PreferenceUtils;
+import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.ui.text.SpanApplier;
@@ -127,7 +127,7 @@ public class PasswordEntryViewer
                 Context.CLIPBOARD_SERVICE);
         setRowText(R.id.url_row, url);
         mView.getViewTreeObserver().addOnScrollChangedListener(
-                PreferenceUtils.getShowShadowOnScrollListener(
+                SettingsUtils.getShowShadowOnScrollListener(
                         mView, inflatedView.findViewById(R.id.shadow)));
 
         hookupCopySiteButton(mView.findViewById(R.id.url_row));

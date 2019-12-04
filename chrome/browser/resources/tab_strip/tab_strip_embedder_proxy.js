@@ -50,6 +50,11 @@ export class TabStripEmbedderProxy {
   closeContainer() {
     chrome.send('closeContainer');
   }
+
+  /** @param {number} durationMs Activation duration time in ms. */
+  reportTabActivationDuration(durationMs) {
+    chrome.send('reportTabActivationDuration', [durationMs]);
+  }
 }
 
 addSingletonGetter(TabStripEmbedderProxy);

@@ -23,6 +23,7 @@ namespace apps {
 class InstanceUpdate;
 }  // namespace apps
 
+class AppServiceAppWindowCrostiniTracker;
 class AppWindowBase;
 class ChromeLauncherController;
 
@@ -64,6 +65,10 @@ class AppServiceAppWindowLauncherController
   void OnInstanceRegistryWillBeDestroyed(
       apps::InstanceRegistry* instance_registry) override;
 
+  AppServiceAppWindowCrostiniTracker* app_service_crostini_tracker() {
+    return crostini_tracker_.get();
+  }
+
  private:
   using AuraWindowToAppWindow =
       std::map<aura::Window*, std::unique_ptr<AppWindowBase>>;
@@ -88,12 +93,16 @@ class AppServiceAppWindowLauncherController
   // Return true if the app is opened in a browser tab.
   bool IsOpenedInBrowserTab(const std::string& app_id);
 
+  ash::ShelfID GetShelfId(aura::Window* window) const;
+
   AuraWindowToAppWindow aura_window_to_app_window_;
   ScopedObserver<aura::Window, aura::WindowObserver> observed_windows_{this};
 
   apps::AppServiceProxy* proxy_ = nullptr;
   std::unique_ptr<AppServiceInstanceRegistryHelper>
       app_service_instance_helper_;
+
+  std::unique_ptr<AppServiceAppWindowCrostiniTracker> crostini_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(AppServiceAppWindowLauncherController);
 };

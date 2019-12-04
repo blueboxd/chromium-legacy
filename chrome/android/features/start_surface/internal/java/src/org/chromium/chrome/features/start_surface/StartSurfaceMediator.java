@@ -476,6 +476,7 @@ class StartSurfaceMediator
             }
             mSecondaryTasksSurfacePropertyModel.set(IS_FAKE_SEARCH_BOX_VISIBLE,
                     mIsIncognito && mOverviewModeState == OverviewModeState.SHOWN_HOMEPAGE);
+            mSecondaryTasksSurfacePropertyModel.set(IS_INCOGNITO, mIsIncognito);
             mSecondaryTasksSurfaceController.showOverview(false);
         } else {
             if (mSecondaryTasksSurfaceController == null) return;

@@ -12,11 +12,13 @@
 #include "cc/tiles/tile_priority.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 
-namespace base {
-namespace trace_event {
-class TracedValue;
-}  // namespace trace_event
-}  // namespace base
+namespace perfetto {
+namespace protos {
+namespace pbzero {
+class CompositorTimingHistory;
+}
+}  // namespace protos
+}  // namespace perfetto
 
 namespace viz {
 struct FrameTimingDetails;
@@ -47,7 +49,8 @@ class CC_EXPORT CompositorTimingHistory {
 
   CompositorTimingHistory& operator=(const CompositorTimingHistory&) = delete;
 
-  void AsValueInto(base::trace_event::TracedValue* state) const;
+  void AsProtozeroInto(
+      perfetto::protos::pbzero::CompositorTimingHistory* state) const;
 
   // The main thread responsiveness depends heavily on whether or not the
   // on_critical_path flag is set, so we record response times separately.

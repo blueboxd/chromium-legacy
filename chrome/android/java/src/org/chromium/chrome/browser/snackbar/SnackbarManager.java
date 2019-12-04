@@ -17,8 +17,6 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.infobar.InfoBar;
-import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 
 /**
@@ -31,8 +29,7 @@ import org.chromium.chrome.browser.util.AccessibilityUtil;
  * {@link SnackbarController#onDismissNoAction(Object)}. Note, snackbars of
  * {@link Snackbar#TYPE_PERSISTENT} do not get automatically dismissed after a timeout.
  */
-public class SnackbarManager implements OnClickListener, InfoBarContainer.InfoBarContainerObserver,
-                                        ActivityStateListener {
+public class SnackbarManager implements OnClickListener, ActivityStateListener {
     /**
      * Interface that shows the ability to provide a snackbar manager.
      */
@@ -180,23 +177,17 @@ public class SnackbarManager implements OnClickListener, InfoBarContainer.InfoBa
         updateView();
     }
 
-    // InfoBarContainerObserver implementation.
-    @Override
-    public void onAddInfoBar(InfoBarContainer container, InfoBar infoBar, boolean isFirst) {
+    /**
+     * After an infobar is added, brings snackbar view above it.
+     * TODO(crbug/1028382): Currently SnackbarManager doesn't observe InfobarContainer events.
+     * Restore this functionality, only without references to Infobar classes.
+     */
+    public void onAddInfoBar() {
         // Bring Snackbars to the foreground so that it's not blocked by infobars.
         if (isShowing()) {
             mView.bringToFront();
         }
     }
-
-    @Override
-    public void onRemoveInfoBar(InfoBarContainer container, InfoBar infoBar, boolean isLast) {}
-
-    @Override
-    public void onInfoBarContainerAttachedToWindow(boolean hasInfobars) {}
-
-    @Override
-    public void onInfoBarContainerShownRatioChanged(InfoBarContainer container, float shownRatio) {}
 
     /**
      * Temporarily changes the parent {@link ViewGroup} of the snackbar. If a snackbar is currently

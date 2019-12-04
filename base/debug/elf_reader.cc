@@ -111,7 +111,7 @@ size_t ReadElfBuildId(const void* elf_mapped_base,
       size_t section_size = bits::Align(current_note->n_namesz, 4) +
                             bits::Align(current_note->n_descsz, 4) +
                             sizeof(Nhdr);
-      if (section_size >= static_cast<size_t>(section_end - current_section))
+      if (section_size > static_cast<size_t>(section_end - current_section))
         return 0;
       current_section += section_size;
     }

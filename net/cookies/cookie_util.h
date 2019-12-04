@@ -159,6 +159,14 @@ ComputeSameSiteContextForSubresource(const GURL& url,
 // Returns whether the respective SameSite feature is enabled.
 NET_EXPORT bool IsSameSiteByDefaultCookiesEnabled();
 NET_EXPORT bool IsCookiesWithoutSameSiteMustBeSecureEnabled();
+bool IsRecentHttpSameSiteAccessGrantsLegacyCookieSemanticsEnabled();
+
+// Determines whether the last same-site access to a cookie should grant legacy
+// access semantics to the current attempted cookies access, based on the state
+// of the feature kRecentSameSiteAccessGrantsLegacyCookieSemantics, the value of
+// the feature param, and the time since the last eligible same-site access.
+bool DoesLastHttpSameSiteAccessGrantLegacySemantics(
+    base::TimeTicks last_http_same_site_access);
 
 // Takes a callback accepting a CookieInclusionStatus and returns a callback
 // that accepts a bool, setting the bool to true if the CookieInclusionStatus

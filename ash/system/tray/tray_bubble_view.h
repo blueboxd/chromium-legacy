@@ -83,7 +83,7 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
     AnchorMode anchor_mode = AnchorMode::kView;
     // Only used if anchor_mode == AnchorMode::kRect.
     gfx::Rect anchor_rect;
-    ShelfAlignment shelf_alignment = SHELF_ALIGNMENT_BOTTOM;
+    ShelfAlignment shelf_alignment = ShelfAlignment::kBottom;
     int min_width = 0;
     int max_width = 0;
     int max_height = 0;

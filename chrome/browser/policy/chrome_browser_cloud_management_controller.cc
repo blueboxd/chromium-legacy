@@ -292,6 +292,36 @@ bool ChromeBrowserCloudManagementController::
          cloud_management_register_watcher_->IsDialogShowing();
 }
 
+void ChromeBrowserCloudManagementController::UnenrollBrowser() {
+  // Invalidate DM token in storage.
+  BrowserDMTokenStorage::Get()->InvalidateDMToken(base::BindOnce(
+      &ChromeBrowserCloudManagementController::InvalidateDMTokenCallback,
+      base::Unretained(this)));
+}
+
+void ChromeBrowserCloudManagementController::InvalidatePolicies() {
+  // Reset policies.
+  if (policy_fetcher_) {
+    policy_fetcher_->RemoveClientObserver(this);
+    policy_fetcher_->Disconnect();
+  }
+
+  // This causes the scheduler to stop refreshing itself since the DM token is
+  // no longer valid.
+  if (report_scheduler_)
+    report_scheduler_->OnDMTokenUpdated();
+}
+
+void ChromeBrowserCloudManagementController::InvalidateDMTokenCallback(
+    bool success) {
+  if (success) {
+    DVLOG(1) << "Successfully invalidated the DM token";
+    InvalidatePolicies();
+  } else {
+    DVLOG(1) << "Failed to invalidate the DM token";
+  }
+}
+
 void ChromeBrowserCloudManagementController::OnPolicyFetched(
     CloudPolicyClient* client) {
   // Ignored.
@@ -306,16 +336,8 @@ void ChromeBrowserCloudManagementController::OnClientError(
     CloudPolicyClient* client) {
   // DM_STATUS_SERVICE_DEVICE_NOT_FOUND being the last status implies the
   // browser has been unenrolled.
-  if (client->status() == DM_STATUS_SERVICE_DEVICE_NOT_FOUND) {
-    // Invalidate DM token in storage.
-    BrowserDMTokenStorage::Get()->InvalidateDMToken(
-        base::BindOnce([](bool success) {
-          if (success)
-            DVLOG(1) << "Successfully invalidated the DM token";
-          else
-            DVLOG(1) << "Failed to invalidate the DM token";
-        }));
-  }
+  if (client->status() == DM_STATUS_SERVICE_DEVICE_NOT_FOUND)
+    UnenrollBrowser();
 }
 
 void ChromeBrowserCloudManagementController::NotifyPolicyRegisterFinished(

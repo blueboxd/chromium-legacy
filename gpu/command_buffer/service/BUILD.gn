@@ -326,6 +326,12 @@ target(link_target_type, "gles2_sources") {
     "//ui/gl/init",
   ]
 
+  if (use_ozone) {
+    deps += [
+      "//ui/ozone",
+    ]
+  }
+
   if (enable_vulkan) {
     deps += [
       "//components/viz/common:vulkan_context_provider",
@@ -342,6 +348,13 @@ target(link_target_type, "gles2_sources") {
         "external_vk_image_gl_representation.h",
         "external_vk_image_skia_representation.cc",
         "external_vk_image_skia_representation.h",
+      ]
+    }
+
+    if (use_ozone) {
+      sources += [
+        "shared_image_backing_ozone.cc",
+        "shared_image_backing_ozone.h",
       ]
     }
 

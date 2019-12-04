@@ -34,6 +34,7 @@ using CookieAndLineStatusList = std::vector<CookieAndLineWithStatus>;
 class NET_EXPORT CanonicalCookie {
  public:
   class CookieInclusionStatus;
+  using UniqueCookieKey = std::tuple<std::string, std::string, std::string>;
 
   CanonicalCookie();
   CanonicalCookie(const CanonicalCookie& other);
@@ -143,7 +144,7 @@ class NET_EXPORT CanonicalCookie {
 
   // Returns a key such that two cookies with the same UniqueKey() are
   // guaranteed to be equivalent in the sense of IsEquivalent().
-  std::tuple<std::string, std::string, std::string> UniqueKey() const {
+  UniqueCookieKey UniqueKey() const {
     return std::make_tuple(name_, domain_, path_);
   }
 

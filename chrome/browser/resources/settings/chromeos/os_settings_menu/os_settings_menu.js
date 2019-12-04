@@ -84,12 +84,6 @@ Polymer({
    */
   onSelectorActivate_: function(event) {
     this.setSelectedUrl_(event.detail.selected);
-
-    const path = new URL(event.detail.selected).pathname;
-    const route = settings.getRouteForPath(path);
-    assert(route, 'os-settings-menu has an entry with an invalid route.');
-    settings.navigateTo(
-        route, /* dynamicParams */ null, /* removeSearch */ true);
   },
 
   /**

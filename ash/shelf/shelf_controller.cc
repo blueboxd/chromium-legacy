@@ -163,7 +163,7 @@ void ShelfController::OnTabletModeStarted() {
       // Only animate into tablet mode if the shelf alignment will not change.
       if (shelf->IsHorizontalAlignment())
         shelf->set_is_tablet_mode_animation_running(true);
-      shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+      shelf->SetAlignment(ShelfAlignment::kBottom);
       shelf->shelf_widget()->OnTabletModeChanged();
     }
   }

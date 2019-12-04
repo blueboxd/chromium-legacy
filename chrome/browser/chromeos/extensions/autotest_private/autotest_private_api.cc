@@ -2736,21 +2736,22 @@ AutotestPrivateGetShelfAlignmentFunction::Run() {
       ash::GetShelfAlignmentPref(profile->GetPrefs(), display_id);
   api::autotest_private::ShelfAlignmentType alignment_type;
   switch (alignment) {
-    case ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM:
+    case ash::ShelfAlignment::kBottom:
       alignment_type = api::autotest_private::ShelfAlignmentType::
           SHELF_ALIGNMENT_TYPE_BOTTOM;
       break;
-    case ash::ShelfAlignment::SHELF_ALIGNMENT_LEFT:
+    case ash::ShelfAlignment::kLeft:
       alignment_type =
           api::autotest_private::ShelfAlignmentType::SHELF_ALIGNMENT_TYPE_LEFT;
       break;
-    case ash::ShelfAlignment::SHELF_ALIGNMENT_RIGHT:
+    case ash::ShelfAlignment::kRight:
       alignment_type =
           api::autotest_private::ShelfAlignmentType::SHELF_ALIGNMENT_TYPE_RIGHT;
       break;
-    case ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM_LOCKED:
-      // SHELF_ALIGNMENT_BOTTOM_LOCKED not supported by shelf_prefs.cc
-      return RespondNow(Error("SHELF_ALIGNMENT_BOTTOM_LOCKED not supported"));
+    case ash::ShelfAlignment::kBottomLocked:
+      // ShelfAlignment::kBottomLocked not supported by
+      // shelf_prefs.cc
+      return RespondNow(Error("ShelfAlignment::kBottomLocked not supported"));
   }
   return RespondNow(OneArgument(std::make_unique<base::Value>(
       api::autotest_private::ToString(alignment_type))));
@@ -2777,13 +2778,13 @@ AutotestPrivateSetShelfAlignmentFunction::Run() {
   ash::ShelfAlignment alignment;
   switch (params->alignment) {
     case api::autotest_private::ShelfAlignmentType::SHELF_ALIGNMENT_TYPE_BOTTOM:
-      alignment = ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM;
+      alignment = ash::ShelfAlignment::kBottom;
       break;
     case api::autotest_private::ShelfAlignmentType::SHELF_ALIGNMENT_TYPE_LEFT:
-      alignment = ash::ShelfAlignment::SHELF_ALIGNMENT_LEFT;
+      alignment = ash::ShelfAlignment::kLeft;
       break;
     case api::autotest_private::ShelfAlignmentType::SHELF_ALIGNMENT_TYPE_RIGHT:
-      alignment = ash::ShelfAlignment::SHELF_ALIGNMENT_RIGHT;
+      alignment = ash::ShelfAlignment::kRight;
       break;
     case api::autotest_private::ShelfAlignmentType::SHELF_ALIGNMENT_TYPE_NONE:
       return RespondNow(

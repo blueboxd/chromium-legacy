@@ -316,13 +316,14 @@ public class BluetoothChooserDialogTest {
 
         // Permission was requested.
         Assert.assertArrayEquals(permissionDelegate.mPermissionsRequested,
-                new String[] {Manifest.permission.ACCESS_COARSE_LOCATION});
+                new String[] {Manifest.permission.ACCESS_FINE_LOCATION});
         Assert.assertNotNull(permissionDelegate.mCallback);
         // Grant permission.
-        mLocationUtils.mLocationGranted = true;
+        permissionDelegate.mLocationGranted = true;
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> permissionDelegate.mCallback.onRequestPermissionsResult(
-                                new String[] {Manifest.permission.ACCESS_COARSE_LOCATION},
+                ()
+                        -> permissionDelegate.mCallback.onRequestPermissionsResult(
+                                new String[] {Manifest.permission.ACCESS_FINE_LOCATION},
                                 new int[] {PackageManager.PERMISSION_GRANTED}));
 
         Assert.assertEquals(1, mRestartSearchCount);
@@ -352,7 +353,7 @@ public class BluetoothChooserDialogTest {
         mWindowAndroid.setAndroidPermissionDelegate(permissionDelegate);
 
         // Grant permissions, and turn off location services.
-        mLocationUtils.mLocationGranted = true;
+        permissionDelegate.mLocationGranted = true;
         mLocationUtils.mSystemLocationSettingsEnabled = false;
 
         TestThreadUtils.runOnUiThreadBlocking(
@@ -430,14 +431,16 @@ public class BluetoothChooserDialogTest {
         Dialog mDialog;
         PermissionCallback mCallback;
         String[] mPermissionsRequested;
+        public boolean mLocationGranted;
 
         public TestAndroidPermissionDelegate(Dialog dialog) {
+            mLocationGranted = false;
             mDialog = dialog;
         }
 
         @Override
         public boolean hasPermission(String permission) {
-            return false;
+            return mLocationGranted;
         }
 
         @Override
@@ -456,7 +459,7 @@ public class BluetoothChooserDialogTest {
             mDialog.onWindowFocusChanged(false /* hasFocus */);
             mPermissionsRequested = permissions;
             if (permissions.length == 1
-                    && permissions[0].equals(Manifest.permission.ACCESS_COARSE_LOCATION)) {
+                    && permissions[0].equals(Manifest.permission.ACCESS_FINE_LOCATION)) {
                 mCallback = callback;
             }
         }

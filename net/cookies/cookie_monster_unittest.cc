@@ -57,6 +57,11 @@ namespace net {
 using base::Time;
 using base::TimeDelta;
 using CookieDeletionInfo = net::CookieDeletionInfo;
+using features::kCookiesWithoutSameSiteMustBeSecure;
+using features::kRecentHttpSameSiteAccessGrantsLegacyCookieSemantics;
+using features::
+    kRecentHttpSameSiteAccessGrantsLegacyCookieSemanticsMilliseconds;
+using features::kSameSiteByDefaultCookies;
 
 namespace {
 
@@ -3534,15 +3539,13 @@ TEST_F(CookieMonsterTest, CookiesWithoutSameSiteMustBeSecure) {
     base::test::ScopedFeatureList feature_list;
     if (test.is_cookies_without_samesite_must_be_secure_enabled) {
       feature_list.InitWithFeatures(
-          {features::kSameSiteByDefaultCookies,
-           features::
-               kCookiesWithoutSameSiteMustBeSecure} /* enabled_features */,
+          {kSameSiteByDefaultCookies,
+           kCookiesWithoutSameSiteMustBeSecure} /* enabled_features */,
           {} /* disabled_features */);
     } else {
       feature_list.InitWithFeatures(
-          {features::kSameSiteByDefaultCookies} /* enabled_features */,
-          {features::
-               kCookiesWithoutSameSiteMustBeSecure} /* disabled_features */);
+          {kSameSiteByDefaultCookies} /* enabled_features */,
+          {kCookiesWithoutSameSiteMustBeSecure} /* disabled_features */);
     }
     ASSERT_TRUE(cookie_util::IsSameSiteByDefaultCookiesEnabled());
     ASSERT_EQ(test.is_cookies_without_samesite_must_be_secure_enabled,
@@ -3652,47 +3655,77 @@ class CookieMonsterLegacyCookieAccessTest : public CookieMonsterTest {
   CookieMonsterLegacyCookieAccessTest()
       : cm_(std::make_unique<CookieMonster>(nullptr /* store */,
                                             nullptr /* netlog */)) {
+    // Need to reset first because there cannot be two TaskEnvironments at the
+    // same time.
+    task_environment_.reset();
+    task_environment_ =
+        std::make_unique<base::test::SingleThreadTaskEnvironment>(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME);
+
     std::unique_ptr<TestCookieAccessDelegate> access_delegate =
         std::make_unique<TestCookieAccessDelegate>();
     access_delegate_ = access_delegate.get();
     cm_->SetCookieAccessDelegate(std::move(access_delegate));
+
+    feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
   }
 
   ~CookieMonsterLegacyCookieAccessTest() override {}
 
-  void SetFeatures(bool is_same_site_by_default_cookies_enabled,
-                   bool is_cookies_without_samesite_must_be_secure_enabled) {
+  // The third parameter is nullopt if
+  // kRecentHttpSameSiteAccessGrantsLegacyCookieSemantics is not enabled.
+  // Otherwise it gives the value of the corresponding parameter.
+  void SetFeatures(
+      bool is_same_site_by_default_cookies_enabled,
+      bool is_cookies_without_samesite_must_be_secure_enabled,
+      base::Optional<int>
+          milliseconds_for_http_same_site_access_grants_legacy_semantics) {
     feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
 
-    std::vector<base::Feature> enabled;
+    std::vector<base::test::ScopedFeatureList::FeatureAndParams> enabled;
     std::vector<base::Feature> disabled;
 
     if (is_same_site_by_default_cookies_enabled) {
-      enabled.push_back(features::kSameSiteByDefaultCookies);
+      enabled.push_back({kSameSiteByDefaultCookies, {}});
     } else {
-      disabled.push_back(features::kSameSiteByDefaultCookies);
+      disabled.push_back(kSameSiteByDefaultCookies);
     }
 
     if (is_cookies_without_samesite_must_be_secure_enabled) {
-      enabled.push_back(features::kCookiesWithoutSameSiteMustBeSecure);
+      enabled.push_back({kCookiesWithoutSameSiteMustBeSecure, {}});
     } else {
-      disabled.push_back(features::kCookiesWithoutSameSiteMustBeSecure);
+      disabled.push_back(kCookiesWithoutSameSiteMustBeSecure);
     }
 
-    feature_list_->InitWithFeatures(enabled, disabled);
+    if (milliseconds_for_http_same_site_access_grants_legacy_semantics) {
+      enabled.push_back(
+          {kRecentHttpSameSiteAccessGrantsLegacyCookieSemantics,
+           {{kRecentHttpSameSiteAccessGrantsLegacyCookieSemanticsMilliseconds
+                 .name,
+             base::NumberToString(
+                 milliseconds_for_http_same_site_access_grants_legacy_semantics
+                     .value())}}});
+    } else {
+      disabled.push_back(kRecentHttpSameSiteAccessGrantsLegacyCookieSemantics);
+    }
+
+    feature_list_->InitWithFeaturesAndParameters(enabled, disabled);
   }
 
  protected:
   const std::string kDomain = "example.test";
   const GURL kHttpsUrl = GURL("https://example.test");
   const GURL kHttpUrl = GURL("http://example.test");
+  // The FeatureList must be before the CookieMonster because the CookieMonster
+  // destructor expects the state of the features to be the same as when it's in
+  // use.
+  std::unique_ptr<base::test::ScopedFeatureList> feature_list_;
   std::unique_ptr<CookieMonster> cm_;
   TestCookieAccessDelegate* access_delegate_;
-  std::unique_ptr<base::test::ScopedFeatureList> feature_list_;
 };
 
 TEST_F(CookieMonsterLegacyCookieAccessTest, SetLegacyNoSameSiteCookie) {
-  SetFeatures(true, true);
+  SetFeatures(true, true, base::nullopt);
   // Check that setting unspecified-SameSite cookie from cross-site context
   // fails if not set to Legacy semantics, but succeeds if set to legacy.
   EXPECT_FALSE(CreateAndSetCookie(cm_.get(), kHttpUrl, "cookie=chocolate_chip",
@@ -3714,13 +3747,13 @@ TEST_F(CookieMonsterLegacyCookieAccessTest, SetLegacyNoSameSiteCookie) {
 TEST_F(CookieMonsterLegacyCookieAccessTest, GetLegacyNoSameSiteCookie) {
   // Set an unspecified-SameSite cookie with SameSite features turned off.
   // Getting the cookie will succeed.
-  SetFeatures(false, false);
+  SetFeatures(false, false, base::nullopt);
   ASSERT_TRUE(CreateAndSetCookie(cm_.get(), kHttpUrl, "cookie=chocolate_chip",
                                  CookieOptions()));
   EXPECT_EQ("cookie=chocolate_chip",
             GetCookiesWithOptions(cm_.get(), kHttpUrl, CookieOptions()));
   // Turn on the features. Now getting the cookie fails.
-  SetFeatures(true, true);
+  SetFeatures(true, true, base::nullopt);
   access_delegate_->SetExpectationForCookieDomain(
       kDomain, CookieAccessSemantics::UNKNOWN);
   EXPECT_EQ("", GetCookiesWithOptions(cm_.get(), kHttpUrl, CookieOptions()));
@@ -3736,14 +3769,14 @@ TEST_F(CookieMonsterLegacyCookieAccessTest, GetLegacyNoSameSiteCookie) {
 
 TEST_F(CookieMonsterLegacyCookieAccessTest,
        SetLegacySameSiteNoneInsecureCookie) {
-  SetFeatures(true, true);
+  SetFeatures(true, true, base::nullopt);
   access_delegate_->SetExpectationForCookieDomain(
       kDomain, CookieAccessSemantics::UNKNOWN);
   EXPECT_FALSE(CreateAndSetCookie(cm_.get(), kHttpsUrl,
                                   "cookie=oatmeal_raisin; SameSite=None",
                                   CookieOptions()));
   access_delegate_->SetExpectationForCookieDomain(
-      kDomain, CookieAccessSemantics::UNKNOWN);
+      kDomain, CookieAccessSemantics::NONLEGACY);
   EXPECT_FALSE(CreateAndSetCookie(cm_.get(), kHttpsUrl,
                                   "cookie=oatmeal_raisin; SameSite=None",
                                   CookieOptions()));
@@ -3761,14 +3794,14 @@ TEST_F(CookieMonsterLegacyCookieAccessTest,
        GetLegacySameSiteNoneInsecureCookie) {
   // Set an SameSite=None insecure cookie with SameSite features turned off.
   // Getting the cookie will succeed.
-  SetFeatures(false, false);
+  SetFeatures(false, false, base::nullopt);
   ASSERT_TRUE(CreateAndSetCookie(cm_.get(), kHttpUrl,
                                  "cookie=oatmeal_raisin; SameSite=None",
                                  CookieOptions()));
   EXPECT_EQ("cookie=oatmeal_raisin",
             GetCookiesWithOptions(cm_.get(), kHttpUrl, CookieOptions()));
   // Turn on the features. Now getting the cookie fails.
-  SetFeatures(true, true);
+  SetFeatures(true, true, base::nullopt);
   access_delegate_->SetExpectationForCookieDomain(
       kDomain, CookieAccessSemantics::UNKNOWN);
   EXPECT_EQ("", GetCookiesWithOptions(cm_.get(), kHttpUrl, CookieOptions()));
@@ -3784,7 +3817,7 @@ TEST_F(CookieMonsterLegacyCookieAccessTest,
 
 TEST_F(CookieMonsterLegacyCookieAccessTest, NonlegacyCookie) {
   // Nonlegacy cookie will have default as Lax.
-  SetFeatures(false, false);
+  SetFeatures(false, false, base::nullopt);
   access_delegate_->SetExpectationForCookieDomain(
       kDomain, CookieAccessSemantics::NONLEGACY);
   EXPECT_FALSE(CreateAndSetCookie(cm_.get(), kHttpUrl, "cookie=chocolate_chip",
@@ -3797,6 +3830,99 @@ TEST_F(CookieMonsterLegacyCookieAccessTest, NonlegacyCookie) {
                                  CookieOptions()));
   EXPECT_EQ("cookie=oatmeal_raisin",
             GetCookiesWithOptions(cm_.get(), kHttpUrl, CookieOptions()));
+}
+
+// Test the RecentHttpSameSiteAccessGrantsLegacyCookieSemantics feature.
+TEST_F(CookieMonsterLegacyCookieAccessTest, RecentHttpSameSiteAccess) {
+  SetFeatures(true, true, 100);
+  // This feature overrides the CookieAccessDelegate setting.
+  access_delegate_->SetExpectationForCookieDomain(
+      kDomain, CookieAccessSemantics::NONLEGACY);
+
+  // Set a cookie from a qualifying (HTTP and same-site) context.
+  CookieOptions http_lax_options;
+  http_lax_options.set_include_httponly();
+  http_lax_options.set_same_site_cookie_context(
+      CookieOptions::SameSiteCookieContext::SAME_SITE_LAX);
+  // This one only works because it's treated as Legacy, otherwise it would be
+  // rejected for being SameSite=None without secure.
+  EXPECT_TRUE(CreateAndSetCookie(cm_.get(), kHttpUrl, "cookie=1;SameSite=None",
+                                 http_lax_options));
+  // Subsequently getting the cookie from a cross-site context also works
+  // because we just accessed it in an eligible context.
+  EXPECT_EQ("cookie=1",
+            GetCookiesWithOptions(cm_.get(), kHttpUrl, CookieOptions()));
+  // This one should work regardless.
+  EXPECT_TRUE(
+      CreateAndSetCookie(cm_.get(), kHttpUrl, "cookie=2", http_lax_options));
+  // Subsequently getting the cookie from a cross-site context works even though
+  // it defaults to Lax, because we just accessed it in an eligible context.
+  EXPECT_EQ("cookie=2",
+            GetCookiesWithOptions(cm_.get(), kHttpUrl, CookieOptions()));
+  // After some delay less than the recency threshold, we can still get the
+  // cookie from a cross-site context because the last eligible access was
+  // recent enough.
+  task_environment_->FastForwardBy(TimeDelta::FromMilliseconds(90));
+  EXPECT_EQ("cookie=2",
+            GetCookiesWithOptions(cm_.get(), kHttpUrl, CookieOptions()));
+  // After a further delay that passes the recency threshold, we can no longer
+  // get the cookie from a cross-site context.
+  // Notably, the last access didn't reset the timer because it wasn't a
+  // same-site access.
+  task_environment_->FastForwardBy(TimeDelta::FromMilliseconds(20));
+  EXPECT_EQ("", GetCookiesWithOptions(cm_.get(), kHttpUrl, CookieOptions()));
+
+  // Deleting the cookie clears the last access time.
+  DeleteAll(cm_.get());
+
+  // Set a cookie from a same-site but not Http context. This should work
+  // because it's same-site, but does not activate the feature because it isn't
+  // http.
+  CookieOptions exclude_http_lax_options;
+  exclude_http_lax_options.set_exclude_httponly();
+  exclude_http_lax_options.set_same_site_cookie_context(
+      CookieOptions::SameSiteCookieContext::SAME_SITE_LAX);
+  EXPECT_TRUE(CreateAndSetCookie(cm_.get(), kHttpUrl, "cookie=1",
+                                 exclude_http_lax_options));
+  // There is no recent eligible last access time, because we deleted the
+  // cookie and subsequently re-set it from a non-eligible context.
+  EXPECT_EQ("", GetCookiesWithOptions(cm_.get(), kHttpUrl, CookieOptions()));
+  // Accessing it from a laxly same-site context works (because the cookie
+  // defaults to lax).
+  EXPECT_EQ("cookie=1",
+            GetCookiesWithOptions(cm_.get(), kHttpUrl, http_lax_options));
+  // However that doesn't count as a recent http same-site access because it was
+  // only laxly (not strictly) same-site, so getting the cookie from a
+  // cross-site context does not currently work.
+  EXPECT_EQ("", GetCookiesWithOptions(cm_.get(), kHttpUrl, CookieOptions()));
+  // Attempting to set a cookie (unsuccessfully) from an eligible context does
+  // not count.
+  CookieOptions http_strict_options;
+  http_strict_options.set_include_httponly();
+  http_strict_options.set_same_site_cookie_context(
+      CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+  EXPECT_FALSE(CreateAndSetCookie(cm_.get(), kHttpUrl, "cookie=2;Secure",
+                                  http_strict_options));
+  EXPECT_EQ("", GetCookiesWithOptions(cm_.get(), kHttpUrl, CookieOptions()));
+  // Now get the cookie from an eligible, Http and strictly same-site context.
+  EXPECT_EQ("cookie=1",
+            GetCookiesWithOptions(cm_.get(), kHttpUrl, http_strict_options));
+  // Subsequently getting the cookie from a cross-site context also works
+  // because we just accessed it in an eligible context.
+  EXPECT_EQ("cookie=1",
+            GetCookiesWithOptions(cm_.get(), kHttpUrl, CookieOptions()));
+  // After some delay less than the recency threshold, we can still get the
+  // cookie from a cross-site context because the last eligible access was
+  // recent enough.
+  task_environment_->FastForwardBy(TimeDelta::FromMilliseconds(90));
+  EXPECT_EQ("cookie=1",
+            GetCookiesWithOptions(cm_.get(), kHttpUrl, CookieOptions()));
+  // After a further delay that passes the recency threshold, we can no longer
+  // get the cookie from a cross-site context.
+  // Notably, the last access didn't reset the timer because it wasn't a
+  // same-site access.
+  task_environment_->FastForwardBy(TimeDelta::FromMilliseconds(20));
+  EXPECT_EQ("", GetCookiesWithOptions(cm_.get(), kHttpUrl, CookieOptions()));
 }
 
 }  // namespace net

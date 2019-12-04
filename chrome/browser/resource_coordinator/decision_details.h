@@ -42,9 +42,6 @@ enum class DecisionFailureReason : int32_t {
   // intervention due to a lack of sufficient observation time.
   HEURISTIC_INSUFFICIENT_OBSERVATION,
   // The local heuristic opted the origin out of the intervention due to its use
-  // of notifications while in the background.
-  HEURISTIC_NOTIFICATIONS,
-  // The local heuristic opted the origin out of the intervention due to its use
   // of title updates while in the background.
   HEURISTIC_TITLE,
   // The tab is opted out of the intervention as it is currently capturing user

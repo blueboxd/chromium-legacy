@@ -652,6 +652,133 @@ TEST_F(EventHandlerTest, EditableAnchorTextCanStartSelection) {
             ui::CursorType::kIBeam);  // An I-beam signals editability.
 }
 
+TEST_F(EventHandlerTest, CursorForVerticalResizableTextArea) {
+  SetHtmlInnerHTML("<textarea style='resize:vertical'>vertical</textarea>");
+  Node* const element = GetDocument().body()->firstChild();
+  blink::IntPoint point =
+      element->GetLayoutObject()->AbsoluteBoundingBoxRect().MaxXMaxYCorner();
+  point.Move(-5, -5);
+  HitTestLocation location(point);
+  HitTestResult result =
+      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
+          location);
+  EXPECT_EQ(GetDocument()
+                .GetFrame()
+                ->GetEventHandler()
+                .SelectCursor(location, result)
+                .GetCursor()
+                .GetType(),
+            // A north-south resize signals vertical resizability.
+            ui::CursorType::kNorthSouthResize);
+}
+
+TEST_F(EventHandlerTest, CursorForHorizontalResizableTextArea) {
+  SetHtmlInnerHTML("<textarea style='resize:horizontal'>horizontal</textarea>");
+  Node* const element = GetDocument().body()->firstChild();
+  blink::IntPoint point =
+      element->GetLayoutObject()->AbsoluteBoundingBoxRect().MaxXMaxYCorner();
+  point.Move(-5, -5);
+  HitTestLocation location(point);
+  HitTestResult result =
+      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
+          location);
+  EXPECT_EQ(GetDocument()
+                .GetFrame()
+                ->GetEventHandler()
+                .SelectCursor(location, result)
+                .GetCursor()
+                .GetType(),
+            // An east-west resize signals horizontal resizability.
+            ui::CursorType::kEastWestResize);
+}
+
+TEST_F(EventHandlerTest, CursorForResizableTextArea) {
+  SetHtmlInnerHTML("<textarea style='resize:both'>both</textarea>");
+  Node* const element = GetDocument().body()->firstChild();
+  blink::IntPoint point =
+      element->GetLayoutObject()->AbsoluteBoundingBoxRect().MaxXMaxYCorner();
+  point.Move(-5, -5);
+  HitTestLocation location(point);
+  HitTestResult result =
+      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
+          location);
+  EXPECT_EQ(GetDocument()
+                .GetFrame()
+                ->GetEventHandler()
+                .SelectCursor(location, result)
+                .GetCursor()
+                .GetType(),
+            // An south-east resize signals both horizontal and
+            // vertical resizability.
+            ui::CursorType::kSouthEastResize);
+}
+
+TEST_F(EventHandlerTest, CursorForRtlResizableTextArea) {
+  SetHtmlInnerHTML(
+      "<textarea style='resize:both;direction:rtl'>both</textarea>");
+  Node* const element = GetDocument().body()->firstChild();
+  blink::IntPoint point =
+      element->GetLayoutObject()->AbsoluteBoundingBoxRect().MinXMaxYCorner();
+  point.Move(5, -5);
+  HitTestLocation location(point);
+  HitTestResult result =
+      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
+          location);
+  EXPECT_EQ(GetDocument()
+                .GetFrame()
+                ->GetEventHandler()
+                .SelectCursor(location, result)
+                .GetCursor()
+                .GetType(),
+            // An south-west resize signals both horizontal and
+            // vertical resizability when direction is RTL.
+            ui::CursorType::kSouthWestResize);
+}
+
+TEST_F(EventHandlerTest, CursorForInlineVerticalWritingMode) {
+  SetHtmlInnerHTML(
+      "Test<p style='resize:both;writing-mode:vertical-lr;"
+      "width:30px;height:30px;overflow:hidden;display:inline'>Test "
+      "Test</p>Test");
+  Node* const element = GetDocument().body()->firstChild()->nextSibling();
+  blink::IntPoint point =
+      element->GetLayoutObject()->AbsoluteBoundingBoxRect().MinXMinYCorner();
+  point.Move(25, 25);
+  HitTestLocation location(point);
+  HitTestResult result =
+      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
+          location);
+  EXPECT_EQ(GetDocument()
+                .GetFrame()
+                ->GetEventHandler()
+                .SelectCursor(location, result)
+                .GetCursor()
+                .GetType(),
+            ui::CursorType::kSouthEastResize);
+}
+
+TEST_F(EventHandlerTest, CursorForBlockVerticalWritingMode) {
+  SetHtmlInnerHTML(
+      "Test<p style='resize:both;writing-mode:vertical-lr;"
+      "width:30px;height:30px;overflow:hidden;display:block'>Test "
+      "Test</p>Test");
+  Node* const element = GetDocument().body()->firstChild()->nextSibling();
+  blink::IntPoint point =
+      element->GetLayoutObject()->AbsoluteBoundingBoxRect().MinXMinYCorner();
+  point.Move(25, 25);
+  HitTestLocation location(point);
+  HitTestResult result =
+      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtLocation(
+          location);
+  EXPECT_EQ(GetDocument()
+                .GetFrame()
+                ->GetEventHandler()
+                .SelectCursor(location, result)
+                .GetCursor()
+                .GetType(),
+            ui::CursorType::kSouthEastResize);
+}
+
 TEST_F(EventHandlerTest, implicitSend) {
   SetHtmlInnerHTML("<button>abc</button>");
   GetDocument().GetSettings()->SetSpatialNavigationEnabled(true);

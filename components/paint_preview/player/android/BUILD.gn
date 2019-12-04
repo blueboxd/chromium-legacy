@@ -54,17 +54,29 @@ android_library("java") {
     "java/src/org/chromium/components/paintpreview/player/PlayerCompositorDelegate.java",
     "java/src/org/chromium/components/paintpreview/player/PlayerCompositorDelegateImpl.java",
     "java/src/org/chromium/components/paintpreview/player/PlayerManager.java",
+    "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameBitmapPainter.java",
     "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameCoordinator.java",
+    "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameGestureDetector.java",
+    "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameMediator.java",
+    "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameProperties.java",
+    "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameView.java",
+    "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameViewBinder.java",
+    "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameViewDelegate.java",
   ]
 
   deps = [
     "//base:base_java",
     "//base:jni_java",
+    "//ui/android:ui_java",
   ]
 }
 
 junit_binary("paint_preview_junit_tests") {
-  java_files = [ "junit/src/org/chromium/components/paintpreview/player/PlayerManagerTest.java" ]
+  java_files = [
+    "junit/src/org/chromium/components/paintpreview/player/PlayerManagerTest.java",
+    "junit/src/org/chromium/components/paintpreview/player/frame/PlayerFrameBitmapPainterTest.java",
+    "junit/src/org/chromium/components/paintpreview/player/frame/PlayerFrameMediatorTest.java",
+  ]
   deps = [
     ":java",
     "//base:base_java",

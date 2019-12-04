@@ -876,4 +876,30 @@ bool AXNode::IsIgnored() const {
   return ui::IsIgnored(data());
 }
 
+bool AXNode::IsInListMarker() const {
+  if (data().role == ax::mojom::Role::kListMarker)
+    return true;
+
+  // List marker node's children can only be text elements.
+  if (!IsText())
+    return false;
+
+  // There is no need to iterate over all the ancestors of the current anchor
+  // since a list marker node only has children on 2 levels.
+  // i.e.:
+  // AXLayoutObject role=kListMarker
+  // ++StaticText
+  // ++++InlineTextBox
+  AXNode* parent_node = GetUnignoredParent();
+  if (parent_node && parent_node->data().role == ax::mojom::Role::kListMarker)
+    return true;
+
+  AXNode* grandparent_node = parent_node->GetUnignoredParent();
+  if (grandparent_node &&
+      grandparent_node->data().role == ax::mojom::Role::kListMarker)
+    return true;
+
+  return false;
+}
+
 }  // namespace ui

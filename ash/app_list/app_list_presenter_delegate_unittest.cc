@@ -308,7 +308,7 @@ TEST_F(AppListPresenterDelegateZeroStateTest,
        SideShelfAppListResetsSearchBoxActivationOnClose) {
   // Set the shelf to one side, then show the AppList and activate the
   // searchbox.
-  SetShelfAlignment(ShelfAlignment::SHELF_ALIGNMENT_RIGHT);
+  SetShelfAlignment(ShelfAlignment::kRight);
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   GetEventGenerator()->GestureTapAt(GetPointInsideSearchbox());
   ASSERT_TRUE(GetAppListTestHelper()
@@ -680,7 +680,7 @@ TEST_F(AppListPresenterDelegateTest,
 
 // Tests that the app list is not draggable in side shelf alignment.
 TEST_F(AppListPresenterDelegateTest, SideShelfAlignmentDragDisabled) {
-  SetShelfAlignment(ShelfAlignment::SHELF_ALIGNMENT_RIGHT);
+  SetShelfAlignment(ShelfAlignment::kRight);
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   const AppListView* app_list = GetAppListView();
   EXPECT_TRUE(app_list->is_fullscreen());
@@ -707,7 +707,7 @@ TEST_F(AppListPresenterDelegateTest, SideShelfAlignmentDragDisabled) {
 // and that the state transitions via text input act properly.
 TEST_F(AppListPresenterDelegateTest, SideShelfAlignmentTextStateTransitions) {
   // TODO(newcomer): Investigate mash failures crbug.com/726838
-  SetShelfAlignment(ShelfAlignment::SHELF_ALIGNMENT_LEFT);
+  SetShelfAlignment(ShelfAlignment::kLeft);
 
   // Open the app list with side shelf alignment, then check that it is in
   // fullscreen mode.
@@ -1282,7 +1282,7 @@ TEST_P(AppListPresenterDelegateTest, TapAndClickEnablesSearchBox) {
 // alignment.
 TEST_F(AppListPresenterDelegateTest,
        ShelfBackgroundRespondsToAppListBeingShown) {
-  GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+  GetPrimaryShelf()->SetAlignment(ShelfAlignment::kBottom);
 
   // Show the app list, the shelf background should be transparent.
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
@@ -1294,7 +1294,7 @@ TEST_F(AppListPresenterDelegateTest,
 
   // Set the alignment to the side and show the app list. The background
   // should show.
-  GetPrimaryShelf()->SetAlignment(ShelfAlignment::SHELF_ALIGNMENT_LEFT);
+  GetPrimaryShelf()->SetAlignment(ShelfAlignment::kLeft);
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   EXPECT_FALSE(GetPrimaryShelf()->IsHorizontalAlignment());
   EXPECT_EQ(

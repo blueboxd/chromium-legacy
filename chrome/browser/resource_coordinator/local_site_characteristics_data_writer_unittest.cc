@@ -69,8 +69,6 @@ TEST_F(LocalSiteCharacteristicsDataWriterTest, TestModifiers) {
             test_impl_->UpdatesTitleInBackground());
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             test_impl_->UsesAudioInBackground());
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
-            test_impl_->UsesNotificationsInBackground());
 
   // Test the OnTabLoaded function.
   EXPECT_FALSE(TabIsLoaded());
@@ -86,8 +84,6 @@ TEST_F(LocalSiteCharacteristicsDataWriterTest, TestModifiers) {
             test_impl_->UpdatesTitleInBackground());
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             test_impl_->UsesAudioInBackground());
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
-            test_impl_->UsesNotificationsInBackground());
 
   writer_->NotifyUpdatesTitleInBackground();
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
@@ -96,8 +92,6 @@ TEST_F(LocalSiteCharacteristicsDataWriterTest, TestModifiers) {
             test_impl_->UpdatesTitleInBackground());
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             test_impl_->UsesAudioInBackground());
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
-            test_impl_->UsesNotificationsInBackground());
 
   writer_->NotifyUsesAudioInBackground();
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
@@ -106,18 +100,6 @@ TEST_F(LocalSiteCharacteristicsDataWriterTest, TestModifiers) {
             test_impl_->UpdatesTitleInBackground());
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
             test_impl_->UsesAudioInBackground());
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
-            test_impl_->UsesNotificationsInBackground());
-
-  writer_->NotifyUsesNotificationsInBackground();
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
-            test_impl_->UpdatesFaviconInBackground());
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
-            test_impl_->UpdatesTitleInBackground());
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
-            test_impl_->UsesAudioInBackground());
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
-            test_impl_->UsesNotificationsInBackground());
 
   writer_->NotifyLoadTimePerformanceMeasurement(
       base::TimeDelta::FromMicroseconds(202),

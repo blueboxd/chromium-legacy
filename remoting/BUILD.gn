@@ -9,7 +9,6 @@ group("remoting_all") {
 
   deps = [
     ":remoting_unittests",
-    "//remoting/test:chromoting_test_driver",
   ]
 
   if (is_win) {
@@ -151,7 +150,6 @@ test("remoting_unittests") {
     "//remoting/client/ui:unit_tests",
     "//remoting/protocol:unit_tests",
     "//remoting/signaling:unit_tests",
-    "//remoting/test:unit_tests",
     "//testing/gmock",
     "//testing/gtest",
   ]

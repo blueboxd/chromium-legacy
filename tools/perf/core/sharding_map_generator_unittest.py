@@ -51,35 +51,33 @@ class TestShardingMapGenerator(unittest.TestCase):
     self.assertEqual(results['2']['full_time'], 140)
 
   def testGenerateShardingMapsWithoutStoryTimingData(self):
-    # Two tests benchmarks are to be sharded between 3 machines. The first one
+    # 3 benchmarks are to be sharded between 3 machines. The first one
     # has 4 stories, each repeat 2 times. The second one has 4 stories
     # without repeat. Without any assumption about timing, the best sharding
-    # is to shard the first 2 stories of 'foo_benchmark' on shard 1, the next
-    # two stories of 'foo_benchmark' on shard 2, and 'bar_benchmark' entirely on
-    # shard 3.
+    # is to put each benchmark on its own device. Repeats do not necessarily
+    # imply that a story will take longer than another story that is not
+    # repeated. This is because short stories tend to be repeated, whereas long
+    # stories tend to not be repeated.
     timing_data = []
     benchmarks_data = [
         FakeBenchmarkConfig(
-            'foo_benchmark', ['foo_1', 'foo_2', 'foo_3', 'foo_4'], 2),
+            'a_benchmark', ['a_1', 'a_2', 'a_3', 'a_4'], 2),
         FakeBenchmarkConfig(
-            'bar_benchmark', ['bar_1', 'bar_2', 'bar_3', 'bar_4'], 1),
+            'b_benchmark', ['b_1', 'b_2', 'b_3', 'b_4'], 1),
+        FakeBenchmarkConfig(
+            'c_benchmark', ['c_1', 'c_2', 'c_3', 'c_4'], 1),
     ]
     sharding_map = sharding_map_generator.generate_sharding_map(
         benchmarks_data, timing_data, 3, None)
-
     self.assertEquals(
       sharding_map['0']['benchmarks'],
-      collections.OrderedDict([('bar_benchmark', {'abridged': False})]))
-
+      collections.OrderedDict([('a_benchmark', {'abridged': False})]))
     self.assertEquals(
       sharding_map['1']['benchmarks'],
-      collections.OrderedDict([('foo_benchmark',
-                                {'end': 2, 'abridged': False})]))
-
+      collections.OrderedDict([('b_benchmark', {'abridged': False})]))
     self.assertEquals(
       sharding_map['2']['benchmarks'],
-      collections.OrderedDict([('foo_benchmark',
-                                {'begin': 2, 'abridged': False})]))
+      collections.OrderedDict([('c_benchmark', {'abridged': False})]))
 
   def testGeneratePerfSharding(self):
     test_data_dir = os.path.join(os.path.dirname(__file__), 'test_data')
@@ -104,4 +102,4 @@ class TestShardingMapGenerator(unittest.TestCase):
     shards_timing = []
     for shard in results:
       shards_timing.append(results[shard]['full_time'])
-    self.assertTrue(max(shards_timing) - min(shards_timing) < 300)
+    self.assertTrue(max(shards_timing) - min(shards_timing) < 600)

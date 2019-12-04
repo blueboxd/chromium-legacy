@@ -28,11 +28,6 @@ BrowserPluginMessageFilter::~BrowserPluginMessageFilter() {
 
 bool BrowserPluginMessageFilter::OnMessageReceived(
     const IPC::Message& message) {
-  if (sub_filter_for_testing_ &&
-      sub_filter_for_testing_->OnMessageReceived(message)) {
-    return true;
-  }
-
   // Any message requested by a BrowserPluginGuest should be routed through
   // a BrowserPluginGuestManager.
   if (BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(message)) {
@@ -85,11 +80,6 @@ void BrowserPluginMessageFilter::ForwardMessageToGuest(
   static_cast<WebContentsImpl*>(guest_web_contents)
       ->GetBrowserPluginGuest()
       ->OnMessageReceivedFromEmbedder(message);
-}
-
-void BrowserPluginMessageFilter::SetSubFilterForTesting(
-    scoped_refptr<BrowserMessageFilter> sub_filter) {
-  sub_filter_for_testing_ = sub_filter;
 }
 
 } // namespace content

@@ -82,7 +82,6 @@
 #include "content/browser/portal/portal.h"
 #include "content/browser/presentation/presentation_service_impl.h"
 #include "content/browser/push_messaging/push_messaging_manager.h"
-#include "content/browser/quota_dispatcher_host.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
@@ -174,11 +173,7 @@
 #include "media/mojo/mojom/remoting.mojom.h"
 #include "media/mojo/services/media_interface_provider.h"
 #include "media/mojo/services/video_decode_perf_history.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -920,7 +915,6 @@ RenderFrameHostImpl::RenderFrameHostImpl(
           base::OnTaskRunnerDeleter(base::CreateSequencedTaskRunner(
               {ServiceWorkerContext::GetCoreThreadId()}))),
       active_sandbox_flags_(blink::WebSandboxFlags::kNone),
-      document_scoped_interface_provider_binding_(this),
       keep_alive_timeout_(base::TimeDelta::FromSeconds(30)),
       subframe_unload_timeout_(base::TimeDelta::FromMilliseconds(
           RenderViewHostImpl::kUnloadTimeoutMS)),
@@ -1675,8 +1669,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnAccessibilityChildFrameHitTestResult)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_SnapshotResponse,
                         OnAccessibilitySnapshotResponse)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_SuddenTerminationDisablerChanged,
-                        OnSuddenTerminationDisablerChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishDocumentLoad,
                         OnDidFinishDocumentLoad)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidStopLoading, OnDidStopLoading)
@@ -1850,7 +1842,7 @@ void RenderFrameHostImpl::RenderProcessExited(
   // reset.
   SetRenderFrameCreated(false);
   InvalidateMojoConnection();
-  document_scoped_interface_provider_binding_.Close();
+  document_scoped_interface_provider_receiver_.reset();
   broker_receiver_.reset();
   SetLastCommittedUrl(GURL());
   web_bundle_handle_.reset();
@@ -1884,7 +1876,8 @@ void RenderFrameHostImpl::RenderProcessExited(
 
   // Any termination disablers in content loaded by the new process will
   // be sent again.
-  sudden_termination_disabler_types_enabled_ = 0;
+  has_before_unload_handler_ = false;
+  has_unload_handler_ = false;
 
   if (unload_state_ != UnloadState::NotRun) {
     // If the process has died, we don't need to wait for the ACK. Complete the
@@ -2113,7 +2106,7 @@ void RenderFrameHostImpl::DeleteRenderFrame(FrameDeleteIntention intent) {
       // prevent the process from shutting down immediately in the case where
       // this is the last active frame in the process. See
       // https://crbug.com/852204.
-      if (GetSuddenTerminationDisablerState(blink::kUnloadHandler)) {
+      if (has_unload_handler_) {
         RenderProcessHostImpl* process =
             static_cast<RenderProcessHostImpl*>(GetProcess());
         process->DelayProcessShutdownForUnload(subframe_unload_timeout_);
@@ -2126,9 +2119,8 @@ void RenderFrameHostImpl::DeleteRenderFrame(FrameDeleteIntention intent) {
     }
   }
 
-  unload_state_ = GetSuddenTerminationDisablerState(blink::kUnloadHandler)
-                      ? UnloadState::InProgress
-                      : UnloadState::Completed;
+  unload_state_ =
+      has_unload_handler_ ? UnloadState::InProgress : UnloadState::Completed;
 }
 
 void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
@@ -3997,20 +3989,29 @@ void RenderFrameHostImpl::ExitFullscreen() {
   render_view_host_->GetWidget()->SynchronizeVisualProperties();
 }
 
-void RenderFrameHostImpl::OnSuddenTerminationDisablerChanged(
+void RenderFrameHostImpl::SuddenTerminationDisablerChanged(
     bool present,
-    blink::SuddenTerminationDisablerType disabler_type) {
-  DCHECK_NE(GetSuddenTerminationDisablerState(disabler_type), present);
-  if (present) {
-    sudden_termination_disabler_types_enabled_ |= disabler_type;
-  } else {
-    sudden_termination_disabler_types_enabled_ &= ~disabler_type;
+    blink::mojom::SuddenTerminationDisablerType disabler_type) {
+  switch (disabler_type) {
+    case blink::mojom::SuddenTerminationDisablerType::kBeforeUnloadHandler:
+      DCHECK_NE(has_before_unload_handler_, present);
+      has_before_unload_handler_ = present;
+      break;
+    case blink::mojom::SuddenTerminationDisablerType::kUnloadHandler:
+      DCHECK_NE(has_unload_handler_, present);
+      has_unload_handler_ = present;
+      break;
   }
 }
 
 bool RenderFrameHostImpl::GetSuddenTerminationDisablerState(
-    blink::SuddenTerminationDisablerType disabler_type) {
-  return (sudden_termination_disabler_types_enabled_ & disabler_type) != 0;
+    blink::mojom::SuddenTerminationDisablerType disabler_type) {
+  switch (disabler_type) {
+    case blink::mojom::SuddenTerminationDisablerType::kBeforeUnloadHandler:
+      return has_before_unload_handler_;
+    case blink::mojom::SuddenTerminationDisablerType::kUnloadHandler:
+      return has_unload_handler_;
+  }
 }
 
 void RenderFrameHostImpl::OnDidFinishDocumentLoad() {
@@ -4251,13 +4252,13 @@ void RenderFrameHostImpl::OnRequestOverlayRoutingToken() {
 void RenderFrameHostImpl::BindInterfaceProviderReceiver(
     mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
         interface_provider_receiver) {
-  DCHECK(!document_scoped_interface_provider_binding_.is_bound());
+  DCHECK(!document_scoped_interface_provider_receiver_.is_bound());
   DCHECK(interface_provider_receiver.is_valid());
-  document_scoped_interface_provider_binding_.Bind(
+  document_scoped_interface_provider_receiver_.Bind(
       FilterRendererExposedInterfaces(mojom::kNavigation_FrameSpec,
                                       GetProcess()->GetID(),
                                       std::move(interface_provider_receiver)));
-  document_scoped_interface_provider_binding_.SetFilter(
+  document_scoped_interface_provider_receiver_.SetFilter(
       std::make_unique<ActiveURLMessageFilter>(this));
 }
 
@@ -4653,10 +4654,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       base::BindRepeating(&RenderFrameHostImpl::CreateAudioOutputStreamFactory,
                           base::Unretained(this)));
 
-  // TODO(crbug.com/775792): Move to RendererInterfaceBinders.
-  registry_->AddInterface(base::BindRepeating(
-      &QuotaDispatcherHost::CreateForFrame, GetProcess(), routing_id_));
-
   file_system_manager_.reset(new FileSystemManagerImpl(
       GetProcess()->GetID(),
       GetProcess()->GetStoragePartition()->GetFileSystemContext(),
@@ -4909,8 +4906,7 @@ bool RenderFrameHostImpl::CheckOrDispatchBeforeUnloadForSubtree(
 
     // Only run beforeunload in frames that have registered a beforeunload
     // handler.
-    bool should_run_beforeunload =
-        rfh->GetSuddenTerminationDisablerState(blink::kBeforeUnloadHandler);
+    bool should_run_beforeunload = rfh->has_before_unload_handler_;
     // TODO(alexmos): Many tests, as well as some DevTools cases, currently
     // assume that beforeunload for a navigating/closing frame is always sent
     // to the renderer. For now, keep this assumption by checking |rfh ==
@@ -5016,10 +5012,9 @@ void RenderFrameHostImpl::StartPendingDeletionOnSubtree() {
 
       local_ancestor->DeleteRenderFrame(FrameDeleteIntention::kNotMainFrame);
       if (local_ancestor != child) {
-        child->unload_state_ =
-            child->GetSuddenTerminationDisablerState(blink::kUnloadHandler)
-                ? UnloadState::InProgress
-                : UnloadState::Completed;
+        child->unload_state_ = child->has_unload_handler_
+                                   ? UnloadState::InProgress
+                                   : UnloadState::Completed;
       }
 
       node->frame_tree()->FrameUnloading(node);
@@ -6627,14 +6622,13 @@ void RenderFrameHostImpl::BindRestrictedCookieManager(
 void RenderFrameHostImpl::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  // Requests are serviced on |document_scoped_interface_provider_binding_|. It
+  // Requests are serviced on |document_scoped_interface_provider_receiver_|. It
   // is therefore safe to assume that every incoming interface request is coming
   // from the currently active document in the corresponding RenderFrame.
   if (!registry_ ||
       !registry_->TryBindInterface(interface_name, &interface_pipe)) {
     delegate_->OnInterfaceRequest(this, interface_name, &interface_pipe);
-    if (interface_pipe.is_valid() &&
-        !TryBindFrameInterface(interface_name, &interface_pipe, this)) {
+    if (interface_pipe.is_valid()) {
       GetContentClient()->browser()->BindInterfaceRequestFromFrame(
           this, interface_name, std::move(interface_pipe));
     }
@@ -7476,14 +7470,14 @@ void RenderFrameHostImpl::DidCommitNavigation(
   // - Otherwise, the InterfaceProvider implementation should at this point be
   //   bound to an interface connection servicing interface requests coming from
   //   the document of the previously committed navigation.
-  DCHECK(document_scoped_interface_provider_binding_.is_bound());
+  DCHECK(document_scoped_interface_provider_receiver_.is_bound());
   if (interface_params) {
     // As a general rule, expect the RenderFrame to have supplied the
     // receiver end of a new InterfaceProvider connection that will be used by
     // the new document to issue interface receivers to access RenderFrameHost
     // services.
     auto interface_provider_request_of_previous_document =
-        document_scoped_interface_provider_binding_.Unbind();
+        document_scoped_interface_provider_receiver_.Unbind();
     dropped_interface_request_logger_ =
         std::make_unique<DroppedInterfaceRequestLogger>(
             std::move(interface_provider_request_of_previous_document));
@@ -7497,11 +7491,11 @@ void RenderFrameHostImpl::DidCommitNavigation(
     // not a same-document navigation, then both the active document as well as
     // the global object was replaced in this browsing context. The RenderFrame
     // should have rebound its InterfaceProvider to a new pipe, but failed to do
-    // so. Kill the renderer, and close the old binding to ensure that any
+    // so. Kill the renderer, and reset the old receiver to ensure that any
     // pending interface requests originating from the previous document, hence
     // possibly from a different security origin, will no longer be dispatched.
     if (frame_tree_node_->has_committed_real_load()) {
-      document_scoped_interface_provider_binding_.Close();
+      document_scoped_interface_provider_receiver_.reset();
       broker_receiver_.reset();
       bad_message::ReceivedBadMessage(
           process, bad_message::RFH_INTERFACE_PROVIDER_MISSING);
@@ -7987,6 +7981,10 @@ BackForwardCacheMetrics* RenderFrameHostImpl::GetBackForwardCacheMetrics() {
 
 bool RenderFrameHostImpl::IsBackForwardCacheDisabled() const {
   return back_forward_cache_disabled_reasons_.size();
+}
+
+bool RenderFrameHostImpl::IsDOMContentLoaded() {
+  return dom_content_loaded_;
 }
 
 }  // namespace content

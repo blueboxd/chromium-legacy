@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
+#include <algorithm>
 
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
@@ -43,6 +44,11 @@ void MaybeReportDeepScanningVerdict(Profile* profile,
                                     const int64_t content_size,
                                     BinaryUploadService::Result result,
                                     DeepScanningClientResponse response) {
+  DCHECK(std::all_of(download_digest_sha256.begin(),
+                     download_digest_sha256.end(), [](const char& c) {
+                       return (c >= '0' && c <= '9') ||
+                              (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
+                     }));
   if (result == BinaryUploadService::Result::FILE_TOO_LARGE) {
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
         ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,

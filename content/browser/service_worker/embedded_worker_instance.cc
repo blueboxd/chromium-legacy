@@ -256,7 +256,7 @@ void SetupOnUIThread(
 
   // Create a RendererPreferenceWatcher to observe updates in the preferences.
   mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher_remote;
-  params->preference_watcher_request =
+  params->preference_watcher_receiver =
       watcher_remote.InitWithNewPipeAndPassReceiver();
   GetContentClient()->browser()->RegisterRendererPreferenceWatcher(
       process_manager->browser_context(), std::move(watcher_remote));
@@ -850,14 +850,16 @@ void EmbeddedWorkerInstance::SendStartWorker(
           base::CreateSequencedTaskRunner({BrowserThread::UI}),
           params->script_url,
           scoped_refptr<ServiceWorkerContextWrapper>(context_->wrapper()),
-          mojo::MakeRequest(&params->content_settings_proxy));
+          params->content_settings_proxy.InitWithNewPipeAndPassReceiver());
 
   const bool is_script_streaming = !params->installed_scripts_info.is_null();
   inflight_start_task_->set_start_worker_sent_time(base::TimeTicks::Now());
 
   // The host must be alive as long as |params->provider_info| is alive.
   owner_version_->provider_host()->CompleteStartWorkerPreparation(
-      process_id(), MakeRequest(&params->provider_info->interface_provider),
+      process_id(),
+      params->provider_info->interface_provider
+          .InitWithNewPipeAndPassReceiver(),
       params->provider_info->browser_interface_broker
           .InitWithNewPipeAndPassReceiver());
 

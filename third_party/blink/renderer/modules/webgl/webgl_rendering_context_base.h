@@ -606,15 +606,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   void commit();
 
-  // For use by WebVR which doesn't use the normal compositing path.
-  // This clears the backbuffer if preserveDrawingBuffer is false.
-  void MarkCompositedAndClearBackbufferIfNeeded();
-
-  // For use by WebVR, commits the current canvas content similar
-  // to the "commit" JS API.
-  scoped_refptr<StaticBitmapImage> GetStaticBitmapImage(
-      std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback);
-
   ScriptPromise makeXRCompatible(ScriptState*);
   bool IsXRCompatible();
 

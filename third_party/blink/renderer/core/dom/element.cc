@@ -296,7 +296,7 @@ bool DefinitelyNewFormattingContext(const Node& node,
     // Replaced elements are considered to create a new formatting context, in
     // the sense that they can't possibly have children that participate in the
     // same formatting context as their parent.
-    if (IsHTMLObjectElement(element)) {
+    if (IsA<HTMLObjectElement>(element)) {
       // OBJECT elements are special, though. If they use fallback content, they
       // act as regular elements, and we can't claim that they establish a
       // formatting context, just based on element type, since children may very

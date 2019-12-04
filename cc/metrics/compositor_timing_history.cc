@@ -13,6 +13,7 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/metrics/compositor_frame_reporting_controller.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_compositor_scheduler_state.pbzero.h"
 
 namespace cc {
 
@@ -593,25 +594,21 @@ CompositorTimingHistory::CreateUMAReporter(UMACategory category) {
   return base::WrapUnique<CompositorTimingHistory::UMAReporter>(nullptr);
 }
 
-void CompositorTimingHistory::AsValueInto(
-    base::trace_event::TracedValue* state) const {
-  state->SetDouble(
-      "begin_main_frame_queue_critical_estimate_ms",
-      BeginMainFrameQueueDurationCriticalEstimate().InMillisecondsF());
-  state->SetDouble(
-      "begin_main_frame_queue_not_critical_estimate_ms",
-      BeginMainFrameQueueDurationNotCriticalEstimate().InMillisecondsF());
-  state->SetDouble(
-      "begin_main_frame_start_to_ready_to_commit_estimate_ms",
-      BeginMainFrameStartToReadyToCommitDurationEstimate().InMillisecondsF());
-  state->SetDouble("commit_to_ready_to_activate_estimate_ms",
-                   CommitToReadyToActivateDurationEstimate().InMillisecondsF());
-  state->SetDouble("prepare_tiles_estimate_ms",
-                   PrepareTilesDurationEstimate().InMillisecondsF());
-  state->SetDouble("activate_estimate_ms",
-                   ActivateDurationEstimate().InMillisecondsF());
-  state->SetDouble("draw_estimate_ms",
-                   DrawDurationEstimate().InMillisecondsF());
+void CompositorTimingHistory::AsProtozeroInto(
+    perfetto::protos::pbzero::CompositorTimingHistory* state) const {
+  state->set_begin_main_frame_queue_critical_estimate_delta_us(
+      BeginMainFrameQueueDurationCriticalEstimate().InMicroseconds());
+  state->set_begin_main_frame_queue_not_critical_estimate_delta_us(
+      BeginMainFrameQueueDurationNotCriticalEstimate().InMicroseconds());
+  state->set_begin_main_frame_start_to_ready_to_commit_estimate_delta_us(
+      BeginMainFrameStartToReadyToCommitDurationEstimate().InMicroseconds());
+  state->set_commit_to_ready_to_activate_estimate_delta_us(
+      CommitToReadyToActivateDurationEstimate().InMicroseconds());
+  state->set_prepare_tiles_estimate_delta_us(
+      PrepareTilesDurationEstimate().InMicroseconds());
+  state->set_activate_estimate_delta_us(
+      ActivateDurationEstimate().InMicroseconds());
+  state->set_draw_estimate_delta_us(DrawDurationEstimate().InMicroseconds());
 }
 
 base::TimeTicks CompositorTimingHistory::Now() const {

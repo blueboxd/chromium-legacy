@@ -2359,9 +2359,12 @@ void NavigateToDataURLAndCheckForTerminationDisabler(
   EXPECT_EQ(expect_onunload || expect_onbeforeunload,
             shell->web_contents()->NeedToFireBeforeUnloadOrUnload());
   EXPECT_EQ(expect_onunload,
-            rfh->GetSuddenTerminationDisablerState(blink::kUnloadHandler));
-  EXPECT_EQ(expect_onbeforeunload, rfh->GetSuddenTerminationDisablerState(
-                                       blink::kBeforeUnloadHandler));
+            rfh->GetSuddenTerminationDisablerState(
+                blink::mojom::SuddenTerminationDisablerType::kUnloadHandler));
+  EXPECT_EQ(
+      expect_onbeforeunload,
+      rfh->GetSuddenTerminationDisablerState(
+          blink::mojom::SuddenTerminationDisablerType::kBeforeUnloadHandler));
 }
 }  // namespace
 

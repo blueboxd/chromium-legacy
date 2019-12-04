@@ -59,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientAutofillProfileSyncTest,
   ASSERT_EQ(1uL, pdm->GetProfiles().size());
 
   // Disable autofill (e.g. via chrome://settings).
-  autofill::prefs::SetProfileAutofillEnabled(GetProfile(0)->GetPrefs(), false);
+  autofill::prefs::SetAutofillProfileEnabled(GetProfile(0)->GetPrefs(), false);
 
   // Wait for Sync to get reconfigured.
   AutofillProfileDisabledChecker(GetClient(0)->service()).Wait();

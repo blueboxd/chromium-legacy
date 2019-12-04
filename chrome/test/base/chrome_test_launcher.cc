@@ -46,14 +46,6 @@
 #include "ui/base/test/ui_controls_aura.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "ash/mojo_interface_factory.h"
-#include "ash/mojo_test_interface_factory.h"
-#include "ash/public/cpp/manifest.h"
-#include "ash/public/cpp/test_manifest.h"
-#include "ash/test/ui_controls_factory_ash.h"
-#endif
-
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 #include "chrome/app/chrome_crash_reporter_client.h"
 #endif
@@ -242,14 +234,6 @@ int LaunchChromeTests(size_t parallel_jobs,
         },
         network_service_test_helper.get()));
   }
-
-#if defined(OS_CHROMEOS)
-  // Inject the test interfaces for ash. Use a callback to avoid linking test
-  // interface support into production code.
-  ash::AmendManifestForTesting(ash::GetManifestOverlayForTesting());
-  ash::mojo_interface_factory::SetRegisterInterfacesCallback(
-      base::Bind(&ash::mojo_test_interface_factory::RegisterInterfaces));
-#endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))

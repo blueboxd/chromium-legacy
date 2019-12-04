@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/android/rules.gni")
+import("//build/config/locales.gni")
 
 android_library("application_java") {
   deps = [
@@ -61,61 +62,9 @@ generate_jni("view_jni_headers") {
 
 java_strings_grd("web_contents_delegate_strings_grd") {
   grd_file = "java/strings/web_contents_delegate_android_strings.grd"
-  outputs = [
-    "values/web_contents_delegate_android_strings.xml",
-    "values-am/web_contents_delegate_android_strings.xml",
-    "values-ar/web_contents_delegate_android_strings.xml",
-    "values-bg/web_contents_delegate_android_strings.xml",
-    "values-bn/web_contents_delegate_android_strings.xml",
-    "values-ca/web_contents_delegate_android_strings.xml",
-    "values-cs/web_contents_delegate_android_strings.xml",
-    "values-da/web_contents_delegate_android_strings.xml",
-    "values-de/web_contents_delegate_android_strings.xml",
-    "values-el/web_contents_delegate_android_strings.xml",
-    "values-en-rGB/web_contents_delegate_android_strings.xml",
-    "values-es/web_contents_delegate_android_strings.xml",
-    "values-es-rUS/web_contents_delegate_android_strings.xml",
-    "values-et/web_contents_delegate_android_strings.xml",
-    "values-fa/web_contents_delegate_android_strings.xml",
-    "values-fi/web_contents_delegate_android_strings.xml",
-    "values-fr/web_contents_delegate_android_strings.xml",
-    "values-gu/web_contents_delegate_android_strings.xml",
-    "values-hi/web_contents_delegate_android_strings.xml",
-    "values-hr/web_contents_delegate_android_strings.xml",
-    "values-hu/web_contents_delegate_android_strings.xml",
-    "values-in/web_contents_delegate_android_strings.xml",
-    "values-it/web_contents_delegate_android_strings.xml",
-    "values-iw/web_contents_delegate_android_strings.xml",
-    "values-ja/web_contents_delegate_android_strings.xml",
-    "values-kn/web_contents_delegate_android_strings.xml",
-    "values-ko/web_contents_delegate_android_strings.xml",
-    "values-lt/web_contents_delegate_android_strings.xml",
-    "values-lv/web_contents_delegate_android_strings.xml",
-    "values-ml/web_contents_delegate_android_strings.xml",
-    "values-mr/web_contents_delegate_android_strings.xml",
-    "values-ms/web_contents_delegate_android_strings.xml",
-    "values-nb/web_contents_delegate_android_strings.xml",
-    "values-nl/web_contents_delegate_android_strings.xml",
-    "values-pl/web_contents_delegate_android_strings.xml",
-    "values-pt-rBR/web_contents_delegate_android_strings.xml",
-    "values-pt-rPT/web_contents_delegate_android_strings.xml",
-    "values-ro/web_contents_delegate_android_strings.xml",
-    "values-ru/web_contents_delegate_android_strings.xml",
-    "values-sk/web_contents_delegate_android_strings.xml",
-    "values-sl/web_contents_delegate_android_strings.xml",
-    "values-sr/web_contents_delegate_android_strings.xml",
-    "values-sv/web_contents_delegate_android_strings.xml",
-    "values-sw/web_contents_delegate_android_strings.xml",
-    "values-ta/web_contents_delegate_android_strings.xml",
-    "values-te/web_contents_delegate_android_strings.xml",
-    "values-th/web_contents_delegate_android_strings.xml",
-    "values-tl/web_contents_delegate_android_strings.xml",
-    "values-tr/web_contents_delegate_android_strings.xml",
-    "values-uk/web_contents_delegate_android_strings.xml",
-    "values-vi/web_contents_delegate_android_strings.xml",
-    "values-zh-rCN/web_contents_delegate_android_strings.xml",
-    "values-zh-rTW/web_contents_delegate_android_strings.xml",
-  ]
+  outputs = [ "values/web_contents_delegate_android_strings.xml" ] + process_file_template(
+                android_bundle_locales_as_resources,
+                [ "values-{{source_name_part}}/web_contents_delegate_android_strings.xml" ])
 }
 
 static_library("web_contents_delegate") {

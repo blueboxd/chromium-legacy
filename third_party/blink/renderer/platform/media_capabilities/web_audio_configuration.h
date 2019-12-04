@@ -21,6 +21,7 @@ struct WebAudioConfiguration {
   WebString channels;
   base::Optional<unsigned> bitrate;
   base::Optional<unsigned> samplerate;
+  base::Optional<bool> spatialRendering;
 };
 
 }  // namespace blink

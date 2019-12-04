@@ -267,9 +267,9 @@ std::unique_ptr<base::Value> AsValue(const SkPath& path) {
 
   static const char* gFillStrings[] =
       { "winding", "even-odd", "inverse-winding", "inverse-even-odd" };
-  DCHECK_LT(static_cast<size_t>(path.getFillType()),
-      SK_ARRAY_COUNT(gFillStrings));
-  val->SetString("fill-type", gFillStrings[path.getFillType()]);
+  size_t index = static_cast<size_t>(path.getFillType());
+  DCHECK_LT(index, SK_ARRAY_COUNT(gFillStrings));
+  val->SetString("fill-type", gFillStrings[index]);
 
   static const char* gConvexityStrings[] = { "Unknown", "Convex", "Concave" };
   DCHECK_LT(static_cast<size_t>(path.getConvexityType()),

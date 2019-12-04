@@ -11,7 +11,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchUma;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
-import org.chromium.chrome.browser.settings.PreferenceUtils;
+import org.chromium.chrome.browser.settings.SettingsUtils;
 
 /**
  * Fragment to manage the Contextual Search preference and to explain to the user what it does.
@@ -21,7 +21,7 @@ public class ContextualSearchPreferenceFragment extends PreferenceFragmentCompat
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.contextual_search_preferences);
+        SettingsUtils.addPreferencesFromResource(this, R.xml.contextual_search_preferences);
         getActivity().setTitle(R.string.contextual_search_title);
         setHasOptionsMenu(true);
         initContextualSearchSwitch();

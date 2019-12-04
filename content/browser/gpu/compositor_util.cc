@@ -217,9 +217,6 @@ const GpuFeatureData GetGpuFeatureData(
     {"viz_display_compositor", gpu::kGpuFeatureStatusEnabled,
      !features::IsVizDisplayCompositorEnabled(), DisableInfo::NotProblem(),
      false},
-    {"viz_hit_test_surface_layer", gpu::kGpuFeatureStatusEnabled,
-     !features::IsVizHitTestingSurfaceLayerEnabled(), DisableInfo::NotProblem(),
-     false},
     {"skia_renderer", gpu::kGpuFeatureStatusEnabled,
      !features::IsUsingSkiaRenderer(), DisableInfo::NotProblem(), false},
   };

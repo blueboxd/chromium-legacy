@@ -39,9 +39,7 @@ using ::testing::ValuesIn;
 
 namespace blink {
 
-// Using RunClosure4 instead of RunClosure to avoid symbol collisions in jumbo
-// builds.
-ACTION_P(RunClosure4, closure) {
+ACTION_P(RunClosure, closure) {
   closure.Run();
 }
 
@@ -246,7 +244,6 @@ TEST_P(VideoTrackRecorderTest, VideoEncoding) {
       create_test_frame(storage_type, frame_size2, encode_alpha_channel);
 
   base::RunLoop run_loop;
-  base::RepeatingClosure quit_closure = run_loop.QuitClosure();
 
   base::StringPiece third_frame_encoded_data;
   base::StringPiece third_frame_encoded_alpha;
@@ -254,7 +251,7 @@ TEST_P(VideoTrackRecorderTest, VideoEncoding) {
       .Times(1)
       .WillOnce(DoAll(SaveArg<1>(&third_frame_encoded_data),
                       SaveArg<2>(&third_frame_encoded_alpha),
-                      RunClosure4(std::move(quit_closure))));
+                      RunClosure(run_loop.QuitClosure())));
   Encode(video_frame2, base::TimeTicks::Now());
 
   run_loop.Run();
@@ -307,10 +304,9 @@ TEST_P(VideoTrackRecorderTest, EncodeFrameWithPaddedCodedSize) {
   }
 
   base::RunLoop run_loop;
-  base::RepeatingClosure quit_closure = run_loop.QuitClosure();
   EXPECT_CALL(*this, DoOnEncodedVideo(_, _, _, _, true))
       .Times(1)
-      .WillOnce(RunClosure4(std::move(quit_closure)));
+      .WillOnce(RunClosure(run_loop.QuitClosure()));
   Encode(video_frame, base::TimeTicks::Now());
   run_loop.Run();
 
@@ -342,12 +338,11 @@ TEST_F(VideoTrackRecorderTest, ForceKeyframeOnAlphaSwitch) {
   Encode(alpha_frame, base::TimeTicks::Now());
 
   base::RunLoop run_loop;
-  base::RepeatingClosure quit_closure = run_loop.QuitClosure();
   base::StringPiece third_frame_encoded_alpha;
   EXPECT_CALL(*this, DoOnEncodedVideo(_, _, _, _, false))
       .Times(1)
       .WillOnce(DoAll(SaveArg<2>(&third_frame_encoded_alpha),
-                      RunClosure4(std::move(quit_closure))));
+                      RunClosure(run_loop.QuitClosure())));
   Encode(alpha_frame, base::TimeTicks::Now());
   run_loop.Run();
 
@@ -376,10 +371,9 @@ TEST_F(VideoTrackRecorderTest, HandlesOnError) {
   EXPECT_FALSE(HasEncoderInstance());
 
   base::RunLoop run_loop;
-  base::RepeatingClosure quit_closure = run_loop.QuitClosure();
   EXPECT_CALL(*this, DoOnEncodedVideo(_, _, _, _, true))
       .Times(1)
-      .WillOnce(RunClosure4(std::move(quit_closure)));
+      .WillOnce(RunClosure(run_loop.QuitClosure()));
   Encode(video_frame, base::TimeTicks::Now());
   run_loop.Run();
 
@@ -396,14 +390,13 @@ TEST_F(VideoTrackRecorderTest, ReleasesFrame) {
       VideoFrame::CreateBlackFrame(frame_size);
 
   base::RunLoop run_loop;
-  base::Closure quit_closure = run_loop.QuitWhenIdleClosure();
   bool frame_is_destroyed = false;
   auto set_to_true = [](bool* b) { *b = true; };
   video_frame->AddDestructionObserver(
       base::BindOnce(set_to_true, &frame_is_destroyed));
   EXPECT_CALL(*this, DoOnEncodedVideo(_, _, _, _, true))
       .Times(1)
-      .WillOnce(RunClosure4(std::move(quit_closure)));
+      .WillOnce(RunClosure(run_loop.QuitWhenIdleClosure()));
   Encode(video_frame, base::TimeTicks::Now());
   video_frame = nullptr;
   run_loop.Run();

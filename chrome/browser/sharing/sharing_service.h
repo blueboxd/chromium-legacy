@@ -117,8 +117,7 @@ class SharingService : public KeyedService, syncer::SyncServiceObserver {
   void OnDeviceUnregistered(SharingDeviceRegistrationResult result);
 
   // Returns list of devices that have |required_feature| enabled. Also
-  // filters out devices which have not been online for more than
-  // |SharingConstants::kDeviceExpiration| time.
+  // filters out devices which have not been active for some time.
   SharingDeviceList FilterDeviceCandidates(
       SharingDeviceList devices,
       sync_pb::SharingSpecificFields::EnabledFeatures required_feature) const;

@@ -38,7 +38,7 @@ more data is needed, reproduce a bit more manually by first building the target.
 To build the target, first set .gn args to match those in the clusterfuzz link,
 then build and run the fuzzer.
 
-1. `export FUZZER_NAME=sqlite3_fts3_lpm_fuzzer  # FUZZER_NAME is listed in the crbug as the "Fuzz target binary"`
+1. `export FUZZER_NAME=sqlite3_fts3_lpm_fuzzer  # FUZZER_NAME is listed in the crbug as the "Fuzz Target"`
 2. Download the clusterfuzz minimized testcase.
 3. `export CLUSTERFUZZ_TESTCASE=./clusterfuzz-testcase-minimized-sqlite3_fts3_lpm_fuzzer-5756437473656832  # Set the clusterfuzz testcase path to CLUSTERFUZZ_TESTCASE`
 3. `gn args out/Fuzzer  # Set arguments to matches those in the clusterfuzz "Detailed report"'s "GN CONFIG (ARGS.GN)" section`

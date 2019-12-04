@@ -53,6 +53,10 @@ const GURL& FakeDownloadTask::GetOriginalUrl() const {
   return original_url_;
 }
 
+NSString* FakeDownloadTask::GetHttpMethod() const {
+  return @"GET";
+}
+
 bool FakeDownloadTask::IsDone() const {
   return state_ == State::kComplete;
 }

@@ -233,7 +233,9 @@ void SharingService::OnDeviceUnregistered(
 SharingService::SharingDeviceList SharingService::FilterDeviceCandidates(
     SharingDeviceList devices,
     sync_pb::SharingSpecificFields::EnabledFeatures required_feature) const {
-  const base::Time min_updated_time = base::Time::Now() - kDeviceExpiration;
+  const base::Time min_updated_time =
+      base::Time::Now() -
+      base::TimeDelta::FromHours(kSharingDeviceExpirationHours.Get());
   base::EraseIf(devices,
                 [this, required_feature, min_updated_time](const auto& device) {
                   // Checks if |last_updated_timestamp| is not too old.

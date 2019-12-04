@@ -239,7 +239,7 @@ void PassThroughImageTransportSurface::FinishSwapBuffers(
     auto blocked_time_since_last_swap =
         delegate_->GetGpuBlockedTimeSinceLastSwap();
 
-    if (!blocked_time_since_last_swap.is_min() && !multiple_surfaces_swapped_) {
+    if (!multiple_surfaces_swapped_) {
       static constexpr base::TimeDelta kTimingMetricsHistogramMin =
           base::TimeDelta::FromMicroseconds(5);
       static constexpr base::TimeDelta kTimingMetricsHistogramMax =
@@ -252,10 +252,14 @@ void PassThroughImageTransportSurface::FinishSwapBuffers(
           "GPU.SwapTimeUs", delta, kTimingMetricsHistogramMin,
           kTimingMetricsHistogramMax, kTimingMetricsHistogramBuckets);
 
-      UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-          "GPU.GpuBlockedBetweenSwapsUs", blocked_time_since_last_swap,
-          kTimingMetricsHistogramMin, kTimingMetricsHistogramMax,
-          kTimingMetricsHistogramBuckets);
+      // Report only if collection is enabled and supported on current platform
+      // See gpu::Scheduler::TakeTotalBlockingTime for details.
+      if (!blocked_time_since_last_swap.is_min()) {
+        UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+            "GPU.GpuBlockedBetweenSwapsUs2", blocked_time_since_last_swap,
+            kTimingMetricsHistogramMin, kTimingMetricsHistogramMax,
+            kTimingMetricsHistogramBuckets);
+      }
     }
 
     SwapBuffersCompleteParams params;

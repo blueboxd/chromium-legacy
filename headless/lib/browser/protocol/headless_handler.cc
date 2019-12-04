@@ -70,13 +70,11 @@ void OnBeginFrameFinished(
 
 }  // namespace
 
-HeadlessHandler::HeadlessHandler(base::WeakPtr<HeadlessBrowserImpl> browser,
+HeadlessHandler::HeadlessHandler(HeadlessBrowserImpl* browser,
                                  content::WebContents* web_contents)
-    : DomainHandler(HeadlessExperimental::Metainfo::domainName, browser),
-      web_contents_(web_contents) {}
+    : browser_(browser), web_contents_(web_contents) {}
 
-HeadlessHandler::~HeadlessHandler() {
-}
+HeadlessHandler::~HeadlessHandler() {}
 
 void HeadlessHandler::Wire(UberDispatcher* dispatcher) {
   frontend_.reset(new HeadlessExperimental::Frontend(dispatcher->channel()));
@@ -99,7 +97,7 @@ void HeadlessHandler::BeginFrame(Maybe<double> in_frame_time_ticks,
                                  Maybe<ScreenshotParams> screenshot,
                                  std::unique_ptr<BeginFrameCallback> callback) {
   HeadlessWebContentsImpl* headless_contents =
-      HeadlessWebContentsImpl::From(browser().get(), web_contents_);
+      HeadlessWebContentsImpl::From(browser_, web_contents_);
   if (!headless_contents->begin_frame_control_enabled()) {
     callback->sendFailure(Response::Error(
         "Command is only supported if BeginFrameControl is enabled."));

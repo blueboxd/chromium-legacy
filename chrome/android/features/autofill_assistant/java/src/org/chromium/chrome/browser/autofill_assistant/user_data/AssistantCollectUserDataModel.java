@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.autofill_assistant.user_data;
 
 import android.support.annotation.Nullable;
+import android.view.View;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -157,6 +158,9 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     public static final WritableObjectPropertyKey<String> THIRDPARTY_PRIVACY_NOTICE_TEXT =
             new WritableObjectPropertyKey<>();
 
+    public static final WritableObjectPropertyKey<View> GENERIC_USER_INTERFACE =
+            new WritableObjectPropertyKey<>();
+
     public AssistantCollectUserDataModel() {
         super(DELEGATE, WEB_CONTENTS, VISIBLE, SHIPPING_ADDRESS, PAYMENT_METHOD, CONTACT_DETAILS,
                 LOGIN_SECTION_TITLE, SELECTED_LOGIN, TERMS_STATUS, DEFAULT_EMAIL, REQUEST_NAME,
@@ -167,7 +171,7 @@ public class AssistantCollectUserDataModel extends PropertyModel {
                 REQUIRE_BILLING_POSTAL_CODE, BILLING_POSTAL_CODE_MISSING_TEXT, REQUEST_DATE_RANGE,
                 DATE_RANGE_START, DATE_RANGE_START_LABEL, DATE_RANGE_END, DATE_RANGE_END_LABEL,
                 PREPENDED_SECTIONS, APPENDED_SECTIONS, TERMS_REQUIRE_REVIEW_TEXT,
-                THIRDPARTY_PRIVACY_NOTICE_TEXT);
+                THIRDPARTY_PRIVACY_NOTICE_TEXT, GENERIC_USER_INTERFACE);
 
         /**
          * Set initial state for basic type properties (others are implicitly null).
@@ -425,5 +429,10 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     private void setAutofillPaymentMethods(
             List<AssistantCollectUserDataModel.PaymentTuple> paymentTuples) {
         set(AVAILABLE_AUTOFILL_PAYMENT_METHODS, paymentTuples);
+    }
+
+    @CalledByNative
+    private void setGenericUserInterface(@Nullable View userInterface) {
+        set(GENERIC_USER_INTERFACE, userInterface);
     }
 }

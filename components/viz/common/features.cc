@@ -17,9 +17,6 @@ namespace features {
 const base::Feature kVizDisplayCompositor{"VizDisplayCompositor",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kEnableVizHitTestSurfaceLayer{
-    "VizHitTestSurfaceLayer", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Use Skia's readback API instead of GLRendererCopier.
 const base::Feature kUseSkiaForGLReadback{"UseSkiaForGLReadback",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
@@ -59,13 +56,6 @@ bool IsVizDisplayCompositorEnabled() {
 bool IsVizHitTestingDebugEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableVizHitTestDebug);
-}
-
-// VizHitTestSurfaceLayer is enabled when this feature is explicitly enabled on
-// chrome://flags, or when it is enabled by finch and chrome://flags does not
-// conflict.
-bool IsVizHitTestingSurfaceLayerEnabled() {
-  return base::FeatureList::IsEnabled(kEnableVizHitTestSurfaceLayer);
 }
 
 bool IsUsingSkiaForGLReadback() {

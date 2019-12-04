@@ -26,9 +26,9 @@ class TouchToFillViewImpl : public TouchToFillView {
   void Show(
       const GURL& url,
       IsOriginSecure is_origin_secure,
-      base::span<const password_manager::CredentialPair> credentials) override;
+      base::span<const password_manager::UiCredential> credentials) override;
   void OnCredentialSelected(
-      const password_manager::CredentialPair& credential) override;
+      const password_manager::UiCredential& credential) override;
   void OnDismiss() override;
 
   // Called from Java via JNI:

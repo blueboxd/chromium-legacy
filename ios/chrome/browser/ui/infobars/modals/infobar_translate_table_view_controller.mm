@@ -32,6 +32,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeNeverTranslateSource,
   ItemTypeNeverTranslateSite,
   ItemTypeTranslateButton,
+  ItemTypeShowOriginalButton,
 };
 
 @interface InfobarTranslateTableViewController ()
@@ -45,10 +46,19 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @property(nonatomic, copy) NSString* sourceLanguage;
 // The target language to which to translate.
 @property(nonatomic, copy) NSString* targetLanguage;
+// YES if the pref is set to enable the Translate button.
+@property(nonatomic, assign) BOOL enableTranslateActionButton;
+// YES if the pref is set to enable and display the "Show Original" Button.
+// Otherwise, hide it.
+@property(nonatomic, assign) BOOL enableAndDisplayShowOriginalButton;
 // YES if the pref is set to always translate for the source language.
 @property(nonatomic, assign) BOOL shouldAlwaysTranslate;
+// YES if the pref is set to show the "Never Translate language" button.
+@property(nonatomic, assign) BOOL shouldDisplayNeverTranslateLanguageButton;
 // NO if the current pref is set to never translate the source language.
 @property(nonatomic, assign) BOOL isTranslatableLanguage;
+// YES if the pref is set to show the "Never Translate Site" button.
+@property(nonatomic, assign) BOOL shouldDisplayNeverTranslateSiteButton;
 // YES if the pref is set to never translate the current site.
 @property(nonatomic, assign) BOOL isSiteBlacklisted;
 
@@ -124,12 +134,29 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:targetLanguageItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
-  TableViewTextButtonItem* translateButtonItem =
-      [self textButtonItemForType:ItemTypeTranslateButton
-                       buttonText:self.translateButtonText];
+  TableViewTextButtonItem* translateButtonItem = [self
+      textButtonItemForType:ItemTypeTranslateButton
+                 buttonText:l10n_util::GetNSString(
+                                IDS_IOS_TRANSLATE_INFOBAR_TRANSLATE_ACTION)];
   translateButtonItem.disableButtonIntrinsicWidth = YES;
+  if (!self.enableTranslateActionButton) {
+    translateButtonItem.buttonBackgroundColor =
+        [UIColor colorNamed:kDisabledTintColor];
+  }
   [model addItem:translateButtonItem
       toSectionWithIdentifier:SectionIdentifierContent];
+
+  if (self.enableAndDisplayShowOriginalButton) {
+    TableViewTextButtonItem* showOriginalButtonItem = [self
+        textButtonItemForType:ItemTypeShowOriginalButton
+                   buttonText:
+                       l10n_util::GetNSString(
+                           IDS_IOS_TRANSLATE_INFOBAR_TRANSLATE_UNDO_ACTION)];
+    showOriginalButtonItem.buttonTextColor = [UIColor colorNamed:kBlueColor];
+    showOriginalButtonItem.buttonBackgroundColor = [UIColor clearColor];
+    [model addItem:showOriginalButtonItem
+        toSectionWithIdentifier:SectionIdentifierContent];
+  }
 
   TableViewTextButtonItem* alwaysTranslateSourceItem =
       [self textButtonItemForType:ItemTypeAlwaysTranslateSource
@@ -139,21 +166,25 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:alwaysTranslateSourceItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
-  TableViewTextButtonItem* neverTranslateSourceItem =
-      [self textButtonItemForType:ItemTypeNeverTranslateSource
-                       buttonText:[self shouldNeverTranslateSourceButtonText]];
-  neverTranslateSourceItem.buttonTextColor = [UIColor colorNamed:kBlueColor];
-  neverTranslateSourceItem.buttonBackgroundColor = [UIColor clearColor];
-  [model addItem:neverTranslateSourceItem
-      toSectionWithIdentifier:SectionIdentifierContent];
+  if (self.shouldDisplayNeverTranslateLanguageButton) {
+    TableViewTextButtonItem* neverTranslateSourceItem = [self
+        textButtonItemForType:ItemTypeNeverTranslateSource
+                   buttonText:[self shouldNeverTranslateSourceButtonText]];
+    neverTranslateSourceItem.buttonTextColor = [UIColor colorNamed:kBlueColor];
+    neverTranslateSourceItem.buttonBackgroundColor = [UIColor clearColor];
+    [model addItem:neverTranslateSourceItem
+        toSectionWithIdentifier:SectionIdentifierContent];
+  }
 
-  TableViewTextButtonItem* neverTranslateSiteItem =
-      [self textButtonItemForType:ItemTypeNeverTranslateSite
-                       buttonText:[self shouldNeverTranslateSiteButtonText]];
-  neverTranslateSiteItem.buttonTextColor = [UIColor colorNamed:kBlueColor];
-  neverTranslateSiteItem.buttonBackgroundColor = [UIColor clearColor];
-  [model addItem:neverTranslateSiteItem
-      toSectionWithIdentifier:SectionIdentifierContent];
+  if (self.shouldDisplayNeverTranslateSiteButton) {
+    TableViewTextButtonItem* neverTranslateSiteItem =
+        [self textButtonItemForType:ItemTypeNeverTranslateSite
+                         buttonText:[self shouldNeverTranslateSiteButtonText]];
+    neverTranslateSiteItem.buttonTextColor = [UIColor colorNamed:kBlueColor];
+    neverTranslateSiteItem.buttonBackgroundColor = [UIColor clearColor];
+    [model addItem:neverTranslateSiteItem
+        toSectionWithIdentifier:SectionIdentifierContent];
+  }
 }
 
 #pragma mark - InfobarTranslateModalConsumer
@@ -161,7 +192,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)setupModalViewControllerWithPrefs:(NSDictionary*)prefs {
   self.sourceLanguage = prefs[kSourceLanguagePrefKey];
   self.targetLanguage = prefs[kTargetLanguagePrefKey];
+  self.enableTranslateActionButton =
+      [prefs[kEnableTranslateButtonPrefKey] boolValue];
+  self.enableAndDisplayShowOriginalButton =
+      [prefs[kEnableAndDisplayShowOriginalButtonPrefKey] boolValue];
   self.shouldAlwaysTranslate = [prefs[kShouldAlwaysTranslatePrefKey] boolValue];
+  self.shouldDisplayNeverTranslateLanguageButton =
+      [prefs[kDisplayNeverTranslateLanguagePrefKey] boolValue];
+  self.shouldDisplayNeverTranslateSiteButton =
+      [prefs[kDisplayNeverTranslateSiteButtonPrefKey] boolValue];
   self.isTranslatableLanguage =
       [prefs[kIsTranslatableLanguagePrefKey] boolValue];
   self.isSiteBlacklisted = [prefs[kIsSiteBlacklistedPrefKey] boolValue];
@@ -187,6 +226,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
                  addTarget:self.infobarModalDelegate
                     action:@selector(modalInfobarButtonWasAccepted:)
           forControlEvents:UIControlEventTouchUpInside];
+      tableViewTextButtonCell.button.enabled = self.enableTranslateActionButton;
+      break;
+    }
+    case ItemTypeShowOriginalButton: {
+      TableViewTextButtonCell* tableViewTextButtonCell =
+          base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
+      tableViewTextButtonCell.selectionStyle =
+          UITableViewCellSelectionStyleNone;
+      [tableViewTextButtonCell.button addTarget:self.infobarModalDelegate
+                                         action:@selector(showOriginalLanguage)
+                               forControlEvents:UIControlEventTouchUpInside];
       break;
     }
     case ItemTypeAlwaysTranslateSource: {

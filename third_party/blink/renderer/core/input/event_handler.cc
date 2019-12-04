@@ -509,8 +509,25 @@ EventHandler::OptionalCursor EventHandler::SelectCursor(
   if (!node)
     return SelectAutoCursor(result, node, IBeamCursor());
 
-  if (ShouldShowResizeForNode(node, location))
-    return PointerCursor();
+  if (ShouldShowResizeForNode(node, location)) {
+    const LayoutBox* box =
+        node->GetLayoutObject()->EnclosingLayer()->GetLayoutBox();
+    EResize resize = box->StyleRef().Resize(box->ContainingBlock()->StyleRef());
+    switch (resize) {
+      case EResize::kVertical:
+        return NorthSouthResizeCursor();
+      case EResize::kHorizontal:
+        return EastWestResizeCursor();
+      case EResize::kBoth:
+        if (box->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
+          return SouthWestResizeCursor();
+        } else {
+          return SouthEastResizeCursor();
+        }
+      default:
+        return PointerCursor();
+    }
+  }
 
   LayoutObject* layout_object = node->GetLayoutObject();
   const ComputedStyle* style = layout_object ? layout_object->Style() : nullptr;

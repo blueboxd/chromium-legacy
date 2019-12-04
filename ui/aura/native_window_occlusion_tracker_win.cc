@@ -528,20 +528,14 @@ bool NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
   // computed for all |root_window_hwnds_occlusion_state_|, and if so, skipping
   // further oclcusion calculations. However, we still want to keep computing
   // |current_pids_with_visible_windows_|, so this function always returns true.
-  for (auto& root_window_pair : root_window_hwnds_occlusion_state_) {
-    if (hwnd == root_window_pair.first) {
-      if (root_window_pair.second.occlusion_state ==
-          Window::OcclusionState::HIDDEN) {
-        break;
-      }
-
-      root_window_pair.second.occlusion_state =
-          root_window_pair.second.unoccluded_region.isEmpty()
-              ? Window::OcclusionState::OCCLUDED
-              : Window::OcclusionState::VISIBLE;
-      break;
-    }
+  auto it = root_window_hwnds_occlusion_state_.find(hwnd);
+  if (it != root_window_hwnds_occlusion_state_.end() &&
+      it->second.occlusion_state != Window::OcclusionState::HIDDEN) {
+    it->second.occlusion_state = it->second.unoccluded_region.isEmpty()
+                                     ? Window::OcclusionState::OCCLUDED
+                                     : Window::OcclusionState::VISIBLE;
   }
+
   if (!WindowCanOccludeOtherWindowsOnCurrentVirtualDesktop(hwnd, &window_rect))
     return true;
   // We are interested in this window, but are not currently hooking it with

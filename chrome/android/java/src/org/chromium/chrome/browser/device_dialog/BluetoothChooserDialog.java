@@ -258,7 +258,7 @@ public class BluetoothChooserDialog
         if (mNativeBluetoothChooserDialogPtr == 0) return;
 
         for (int i = 0; i < permissions.length; i++) {
-            if (permissions[i].equals(Manifest.permission.ACCESS_COARSE_LOCATION)) {
+            if (permissions[i].equals(Manifest.permission.ACCESS_FINE_LOCATION)) {
                 if (checkLocationServicesAndPermission()) {
                     mItemChooserDialog.clear();
                     Natives jni = BluetoothChooserDialogJni.get();
@@ -272,13 +272,13 @@ public class BluetoothChooserDialog
 
     // Returns true if Location Services is on and Chrome has permission to see the user's location.
     private boolean checkLocationServicesAndPermission() {
-        final boolean havePermission = LocationUtils.getInstance().hasAndroidLocationPermission();
+        final boolean havePermission =
+                mWindowAndroid.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION);
         final boolean locationServicesOn =
                 LocationUtils.getInstance().isSystemLocationSettingEnabled();
 
         if (!havePermission
-                && !mWindowAndroid.canRequestPermission(
-                           Manifest.permission.ACCESS_COARSE_LOCATION)) {
+                && !mWindowAndroid.canRequestPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
             // Immediately close the dialog because the user has asked Chrome not to request the
             // location permission.
             finishDialog(DialogFinished.DENIED_PERMISSION, "");
@@ -353,7 +353,7 @@ public class BluetoothChooserDialog
             case LinkType.REQUEST_LOCATION_PERMISSION:
                 mItemChooserDialog.setIgnorePendingWindowFocusChangeForClose(true);
                 mWindowAndroid.requestPermissions(
-                        new String[] {Manifest.permission.ACCESS_COARSE_LOCATION},
+                        new String[] {Manifest.permission.ACCESS_FINE_LOCATION},
                         BluetoothChooserDialog.this);
                 break;
             case LinkType.REQUEST_LOCATION_SERVICES:
@@ -379,9 +379,8 @@ public class BluetoothChooserDialog
     @CalledByNative
     private static BluetoothChooserDialog create(WindowAndroid windowAndroid, String origin,
             int securityLevel, long nativeBluetoothChooserDialogPtr) {
-        if (!LocationUtils.getInstance().hasAndroidLocationPermission()
-                && !windowAndroid.canRequestPermission(
-                           Manifest.permission.ACCESS_COARSE_LOCATION)) {
+        if (!windowAndroid.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                && !windowAndroid.canRequestPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
             // If we can't even ask for enough permission to scan for Bluetooth devices, don't open
             // the dialog.
             return null;

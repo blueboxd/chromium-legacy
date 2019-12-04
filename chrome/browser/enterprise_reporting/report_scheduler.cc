@@ -33,22 +33,6 @@ const int kDefaultUploadIntervalHours =
 const int kMaximumRetry = 10;  // Retry 10 times takes about 15 to 19 hours.
 const int kMaximumTrackedProfiles = 21;
 
-// Reads DM token and client id. Returns true if boths are non empty.
-bool GetDMTokenAndDeviceId(std::string* dm_token, std::string* client_id) {
-  DCHECK(dm_token && client_id);
-  policy::DMToken browser_dm_token =
-      policy::BrowserDMTokenStorage::Get()->RetrieveDMToken();
-  *client_id = policy::BrowserDMTokenStorage::Get()->RetrieveClientId();
-
-  if (!browser_dm_token.is_valid() || client_id->empty()) {
-    VLOG(1)
-        << "Enterprise reporting is disabled because device is not enrolled.";
-    return false;
-  }
-  *dm_token = browser_dm_token.value();
-  return true;
-}
-
 // Returns true if cloud reporting is enabled.
 bool IsReportingEnabled() {
   return g_browser_process->local_state()->GetBoolean(
@@ -95,20 +79,47 @@ void ReportScheduler::RegisterPrefObserver() {
 }
 
 void ReportScheduler::OnReportEnabledPrefChanged() {
-  std::string dm_token;
-  std::string client_id;
-  if (!IsReportingEnabled() || !GetDMTokenAndDeviceId(&dm_token, &client_id)) {
-    if (request_timer_)
-      request_timer_->Stop();
+  if (!IsReportingEnabled()) {
+    StopRequestTimer();
     return;
   }
 
-  if (!cloud_policy_client_->is_registered()) {
-    cloud_policy_client_->SetupRegistration(dm_token, client_id,
-                                            std::vector<std::string>());
+  // For Chrome OS, it needn't register the cloud policy client here. The
+  // |dm_token| and |client_id| should have already existed after the client is
+  // initialized, and will keep valid during whole life-cycle.
+#if !defined(OS_CHROMEOS)
+  if (!SetupBrowserPolicyClientRegistration()) {
+    StopRequestTimer();
+    return;
   }
+#endif
 
   Start();
+}
+
+void ReportScheduler::StopRequestTimer() {
+  if (request_timer_)
+    request_timer_->Stop();
+}
+
+bool ReportScheduler::SetupBrowserPolicyClientRegistration() {
+  if (cloud_policy_client_->is_registered())
+    return true;
+
+  policy::DMToken browser_dm_token =
+      policy::BrowserDMTokenStorage::Get()->RetrieveDMToken();
+  std::string client_id =
+      policy::BrowserDMTokenStorage::Get()->RetrieveClientId();
+
+  if (!browser_dm_token.is_valid() || client_id.empty()) {
+    VLOG(1)
+        << "Enterprise reporting is disabled because device is not enrolled.";
+    return false;
+  }
+
+  cloud_policy_client_->SetupRegistration(browser_dm_token.value(), client_id,
+                                          std::vector<std::string>());
+  return true;
 }
 
 void ReportScheduler::Start() {

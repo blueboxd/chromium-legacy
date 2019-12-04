@@ -98,7 +98,7 @@ class MenuScrollButton : public View {
       y_bottom = y + config.scroll_arrow_height;
     }
     SkPath path;
-    path.setFillType(SkPath::kWinding_FillType);
+    path.setFillType(SkPathFillType::kWinding);
     path.moveTo(SkIntToScalar(x), SkIntToScalar(y));
     path.lineTo(SkIntToScalar(x_left), SkIntToScalar(y_bottom));
     path.lineTo(SkIntToScalar(x_right), SkIntToScalar(y_bottom));

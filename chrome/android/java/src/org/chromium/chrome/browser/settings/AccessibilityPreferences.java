@@ -53,7 +53,7 @@ public class AccessibilityPreferences
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         getActivity().setTitle(R.string.prefs_accessibility);
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.accessibility_preferences);
+        SettingsUtils.addPreferencesFromResource(this, R.xml.accessibility_preferences);
 
         mFormat = NumberFormat.getPercentInstance();
         mFontSizePrefs = FontSizePrefs.getInstance();

@@ -9,10 +9,8 @@
 #include "base/metrics/field_trial_params.h"
 #include "chrome/common/chrome_features.h"
 
-const char kQuietNotificationPromptsActivationParameterName[] = "activation";
-const char kQuietNotificationPromptsActivationNever[] = "never";
-const char kQuietNotificationPromptsActivationAdaptive[] = "adaptive";
-const char kQuietNotificationPromptsActivationAlways[] = "always";
+const char QuietNotificationsPromptConfig::kEnableAdaptiveActivation[] =
+    "enable_adaptive_activation";
 
 QuietNotificationsPromptConfig::UIFlavor
 QuietNotificationsPromptConfig::UIFlavorToUse() {
@@ -27,20 +25,11 @@ QuietNotificationsPromptConfig::UIFlavorToUse() {
 }
 
 // static
-QuietNotificationsPromptConfig::Activation
-QuietNotificationsPromptConfig::GetActivation() {
+bool QuietNotificationsPromptConfig::IsAdaptiveActivationEnabled() {
   if (!base::FeatureList::IsEnabled(features::kQuietNotificationPrompts))
-    return Activation::kNever;
+    return false;
 
-  std::string ui_flavor = base::GetFieldTrialParamValueByFeature(
-      features::kQuietNotificationPrompts,
-      kQuietNotificationPromptsActivationParameterName);
-  if (ui_flavor == kQuietNotificationPromptsActivationAlways) {
-    return Activation::kAlways;
-  } else if (ui_flavor == kQuietNotificationPromptsActivationNever) {
-    return Activation::kNever;
-  } else if (ui_flavor == kQuietNotificationPromptsActivationAdaptive) {
-    return Activation::kAdaptive;
-  }
-  return Activation::kAdaptive;
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kQuietNotificationPrompts, kEnableAdaptiveActivation,
+      false /* default */);
 }

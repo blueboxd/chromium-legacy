@@ -1920,15 +1920,15 @@ TEST_F(PersonalDataManagerTest, DefaultCountryCodeIsCached) {
 
   // Disabling Autofill blows away this cache and shouldn't account for Autofill
   // profiles.
-  prefs::SetProfileAutofillEnabled(prefs_.get(), false);
-  prefs::SetCreditCardAutofillEnabled(prefs_.get(), false);
+  prefs::SetAutofillProfileEnabled(prefs_.get(), false);
+  prefs::SetAutofillCreditCardEnabled(prefs_.get(), false);
   WaitForOnPersonalDataChanged();
   EXPECT_EQ(default_country,
             personal_data_->GetDefaultCountryCodeForNewAddress());
 
   // Enabling Autofill blows away the cached value and should reflect the new
   // value (accounting for profiles).
-  prefs::SetProfileAutofillEnabled(prefs_.get(), true);
+  prefs::SetAutofillProfileEnabled(prefs_.get(), true);
   EXPECT_EQ(base::UTF16ToUTF8(moose.GetRawInfo(ADDRESS_HOME_COUNTRY)),
             personal_data_->GetDefaultCountryCodeForNewAddress());
 }
@@ -2501,7 +2501,7 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ProfileAutofillDisabled) {
   SetServerProfiles(server_profiles);
 
   // Disable Profile autofill.
-  prefs::SetProfileAutofillEnabled(personal_data_->pref_service_, false);
+  prefs::SetAutofillProfileEnabled(personal_data_->pref_service_, false);
   WaitForOnPersonalDataChanged();
   ConvertWalletAddressesAndUpdateWalletCards();
 
@@ -2555,7 +2555,7 @@ TEST_F(PersonalDataManagerTest,
   EXPECT_EQ(2U, personal_data_->GetProfilesToSuggest().size());
 
   // Disable Profile autofill.
-  prefs::SetProfileAutofillEnabled(personal_data_->pref_service_, false);
+  prefs::SetAutofillProfileEnabled(personal_data_->pref_service_, false);
   // Reload the database.
   ResetPersonalDataManager(USER_MODE_NORMAL);
 
@@ -2573,7 +2573,7 @@ TEST_F(PersonalDataManagerTest,
 TEST_F(PersonalDataManagerTest,
        GetProfileSuggestions_NoProfilesAddedIfDisabled) {
   // Disable Profile autofill.
-  prefs::SetProfileAutofillEnabled(personal_data_->pref_service_, false);
+  prefs::SetAutofillProfileEnabled(personal_data_->pref_service_, false);
 
   // Add a local profile.
   AutofillProfile local_profile(base::GenerateGUID(), test::kEmptyOrigin);
@@ -3246,7 +3246,7 @@ TEST_F(PersonalDataManagerTest,
   WaitForOnPersonalDataChanged();
 
   // Disable Credit card autofill.
-  prefs::SetCreditCardAutofillEnabled(personal_data_->pref_service_, false);
+  prefs::SetAutofillCreditCardEnabled(personal_data_->pref_service_, false);
   WaitForOnPersonalDataChanged();
 
   // Check that profiles were saved.
@@ -3297,7 +3297,7 @@ TEST_F(PersonalDataManagerTest,
   EXPECT_EQ(5U, personal_data_->GetCreditCards().size());
 
   // Disable Credit card autofill.
-  prefs::SetCreditCardAutofillEnabled(personal_data_->pref_service_, false);
+  prefs::SetAutofillCreditCardEnabled(personal_data_->pref_service_, false);
   // Reload the database.
   ResetPersonalDataManager(USER_MODE_NORMAL);
 
@@ -3319,7 +3319,7 @@ TEST_F(PersonalDataManagerTest,
 TEST_F(PersonalDataManagerTest,
        GetCreditCardSuggestions_NoCreditCardsAddedIfDisabled) {
   // Disable Profile autofill.
-  prefs::SetCreditCardAutofillEnabled(personal_data_->pref_service_, false);
+  prefs::SetAutofillCreditCardEnabled(personal_data_->pref_service_, false);
 
   // Add a local credit card.
   CreditCard credit_card("002149C1-EE28-4213-A3B9-DA243FFF021B",

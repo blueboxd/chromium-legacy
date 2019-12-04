@@ -58,6 +58,7 @@ IN_PROC_BROWSER_TEST_F(ManagedUiTest, GetManagedUiMenuItemLabel) {
 
   TestingProfile::Builder builder_with_domain;
   builder_with_domain.SetProfileName("foobar@example.com");
+  builder_with_domain.OverridePolicyConnectorIsManagedForTesting(true);
   auto profile_with_domain = builder_with_domain.Build();
 
   EXPECT_EQ(base::ASCIIToUTF16("Managed by your organization"),
@@ -72,6 +73,7 @@ IN_PROC_BROWSER_TEST_F(ManagedUiTest, GetManagedUiWebUILabel) {
 
   TestingProfile::Builder builder_with_domain;
   builder_with_domain.SetProfileName("foobar@example.com");
+  builder_with_domain.OverridePolicyConnectorIsManagedForTesting(true);
   auto profile_with_domain = builder_with_domain.Build();
 
   EXPECT_EQ(

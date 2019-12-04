@@ -58,7 +58,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
         kSupportedVideoCodecs[rng() % base::size(kSupportedVideoCodecs)]);
     const auto audio_codec = static_cast<media::AudioCodec>(
         kSupportedAudioCodecs[rng() % base::size(kSupportedAudioCodecs)]);
-    media::WebmMuxer muxer(video_codec, audio_codec, input_type.has_video,
+    media::WebmMuxer muxer(audio_codec, input_type.has_video,
                            input_type.has_audio, base::Bind(&OnWriteCallback));
     base::RunLoop run_loop;
     run_loop.RunUntilIdle();
@@ -72,8 +72,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
             media::VideoFrame::CreateBlackFrame(visible_rect);
         const auto is_key_frame = rng() % 2;
         const auto has_alpha_frame = rng() % 4;
-        muxer.OnEncodedVideo(media::WebmMuxer::VideoParameters(video_frame),
-                             str, has_alpha_frame ? str : std::string(),
+        auto parameters = media::WebmMuxer::VideoParameters(video_frame);
+        parameters.codec = video_codec;
+        muxer.OnEncodedVideo(parameters, str,
+                             has_alpha_frame ? str : std::string(),
                              base::TimeTicks(), is_key_frame);
         base::RunLoop run_loop;
         run_loop.RunUntilIdle();

@@ -131,7 +131,7 @@ public class SearchUtils {
         ImageView clearButton = findSearchClearButton(searchView);
         clearButton.setVisibility(query == null || query.equals("") ? View.GONE : View.VISIBLE);
         if (activity != null) {
-            PreferenceUtils.setOverflowMenuVisibility(
+            SettingsUtils.setOverflowMenuVisibility(
                     activity, query != null ? View.GONE : View.VISIBLE);
         }
     }

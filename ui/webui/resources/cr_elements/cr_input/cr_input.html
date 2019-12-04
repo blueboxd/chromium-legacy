@@ -104,6 +104,14 @@
       #input[type='search']::-webkit-search-cancel-button {
         -webkit-appearance: none;
       }
+
+      :host-context([dir=rtl]) #input[type=url] {
+        text-align: right;  /* csschecker-disable-line left-right */
+      }
+
+      #input[type=url] {
+        direction: ltr;
+      }
     </style>
     <div id="label" class="cr-form-field-label" hidden="[[!label]]"
         aria-hidden="true">

@@ -193,7 +193,7 @@ TEST_F(ToastManagerImplTest, DISABLED_QueueMessage) {
 
 TEST_F(ToastManagerImplTest, PositionWithVisibleBottomShelf) {
   Shelf* shelf = GetPrimaryShelf();
-  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
+  EXPECT_EQ(ShelfAlignment::kBottom, shelf->alignment());
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
   ShowToast("DUMMY", ToastData::kInfiniteDuration);
@@ -220,7 +220,7 @@ TEST_F(ToastManagerImplTest, PositionWithAutoHiddenBottomShelf) {
       CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 3, 4)));
 
   Shelf* shelf = GetPrimaryShelf();
-  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
+  EXPECT_EQ(ShelfAlignment::kBottom, shelf->alignment());
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
@@ -242,7 +242,7 @@ TEST_F(ToastManagerImplTest, PositionWithAutoHiddenBottomShelf) {
 
 TEST_F(ToastManagerImplTest, PositionWithHiddenBottomShelf) {
   Shelf* shelf = GetPrimaryShelf();
-  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
+  EXPECT_EQ(ShelfAlignment::kBottom, shelf->alignment());
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
   EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
 
@@ -263,7 +263,7 @@ TEST_F(ToastManagerImplTest, PositionWithHiddenBottomShelf) {
 TEST_F(ToastManagerImplTest, PositionWithVisibleLeftShelf) {
   Shelf* shelf = GetPrimaryShelf();
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
-  shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  shelf->SetAlignment(ShelfAlignment::kLeft);
 
   ShowToast("DUMMY", ToastData::kInfiniteDuration);
   EXPECT_EQ(1, GetToastSerial());
@@ -290,7 +290,7 @@ TEST_F(ToastManagerImplTest, PositionWithUnifiedDesktop) {
   UpdateDisplay("1000x500,0+600-100x500");
 
   Shelf* shelf = GetPrimaryShelf();
-  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
+  EXPECT_EQ(ShelfAlignment::kBottom, shelf->alignment());
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
   ShowToast("DUMMY", ToastData::kInfiniteDuration);

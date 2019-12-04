@@ -349,7 +349,11 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
         '--patchset',
         parsed_options.review_patch_set,
         '--jobid',
-        parsed_options.buildbucket_build_id
+        parsed_options.buildbucket_build_id,
+        '--crs',
+        'gerrit',
+        '--cis',
+        'buildbucket',
       ]
     return build_id_args
 

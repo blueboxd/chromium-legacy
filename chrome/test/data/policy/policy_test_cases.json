@@ -3353,6 +3353,22 @@
     "policy_pref_mapping_tests": { "auth.globally_scoped_http_auth_cache_enabled": {} }
   },
 
+  "PaymentMethodQueryEnabled" : {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "PaymentMethodQueryEnabled": false
+        },
+        "prefs": {
+          "payments.can_make_payment_enabled": {
+            "value": false
+          }
+        }
+      }
+    ]
+  },
+
   "----- Chrome OS policies ------------------------------------------------": {},
 
   "ChromeOsLockOnIdleSuspend": {

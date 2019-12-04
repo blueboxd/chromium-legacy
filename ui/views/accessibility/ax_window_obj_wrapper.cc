@@ -105,12 +105,8 @@ void AXWindowObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
     out_node_data->role = ax::mojom::Role::kWindow;
   out_node_data->AddStringAttribute(ax::mojom::StringAttribute::kName,
                                     base::UTF16ToUTF8(window_->GetTitle()));
-  if (!window_->IsVisible()) {
+  if (!window_->IsVisible())
     out_node_data->AddState(ax::mojom::State::kInvisible);
-    // TODO(crbug/1020733): Find and address the root cause of the cycle, then
-    // remove the line below.
-    out_node_data->AddState(ax::mojom::State::kIgnored);
-  }
 
   out_node_data->relative_bounds.bounds =
       gfx::RectF(window_->GetBoundsInScreen());

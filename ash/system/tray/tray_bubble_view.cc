@@ -48,13 +48,13 @@ BubbleBorder::Arrow GetArrowAlignment(ash::ShelfAlignment alignment) {
   // The tray bubble is in a corner. In this case, we want the arrow to be
   // flush with one side instead of centered on the bubble.
   switch (alignment) {
-    case ash::SHELF_ALIGNMENT_BOTTOM:
-    case ash::SHELF_ALIGNMENT_BOTTOM_LOCKED:
+    case ash::ShelfAlignment::kBottom:
+    case ash::ShelfAlignment::kBottomLocked:
       return base::i18n::IsRTL() ? BubbleBorder::BOTTOM_LEFT
                                  : BubbleBorder::BOTTOM_RIGHT;
-    case ash::SHELF_ALIGNMENT_LEFT:
+    case ash::ShelfAlignment::kLeft:
       return BubbleBorder::LEFT_BOTTOM;
-    case ash::SHELF_ALIGNMENT_RIGHT:
+    case ash::ShelfAlignment::kRight:
       return BubbleBorder::RIGHT_BOTTOM;
   }
 }

@@ -107,7 +107,7 @@ bool CrossesExtensionExtents(blink::WebLocalFrame* frame,
     blink::WebSecurityOrigin opener_origin =
         opener_document.GetSecurityOrigin();
     bool opener_is_extension_url =
-        !opener_origin.IsUnique() && extension_registry->GetExtensionOrAppByURL(
+        !opener_origin.IsOpaque() && extension_registry->GetExtensionOrAppByURL(
                                          opener_document.Url()) != nullptr;
     const Extension* opener_top_extension =
         extension_registry->GetExtensionOrAppByURL(old_url);

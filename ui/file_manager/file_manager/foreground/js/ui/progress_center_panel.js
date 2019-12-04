@@ -431,6 +431,7 @@ class ProgressCenterPanel {
         }
         if (signal === 'dismiss') {
           this.feedbackHost_.removePanelItem(panelItem);
+          this.dismissErrorItemCallback(item.id);
         }
       };
       panelItem.progress = item.progressRateInPercent.toString();

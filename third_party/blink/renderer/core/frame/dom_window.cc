@@ -168,7 +168,7 @@ bool DOMWindow::IsCurrentlyDisplayedInFrame() const {
 // http://crbug.com/17325
 String DOMWindow::SanitizedCrossDomainAccessErrorMessage(
     const LocalDOMWindow* accessing_window,
-    CrossDocumentAccessFeaturePolicy cross_document_access) const {
+    CrossDocumentAccessPolicy cross_document_access) const {
   if (!accessing_window || !accessing_window->document() || !GetFrame())
     return String();
 
@@ -179,7 +179,7 @@ String DOMWindow::SanitizedCrossDomainAccessErrorMessage(
   const SecurityOrigin* active_origin =
       accessing_window->document()->GetSecurityOrigin();
   String message;
-  if (cross_document_access == CrossDocumentAccessFeaturePolicy::kDisallowed) {
+  if (cross_document_access == CrossDocumentAccessPolicy::kDisallowed) {
     message = "Blocked a restricted frame with origin \"" +
               active_origin->ToString() + "\" from accessing another frame.";
   } else {
@@ -195,7 +195,7 @@ String DOMWindow::SanitizedCrossDomainAccessErrorMessage(
 
 String DOMWindow::CrossDomainAccessErrorMessage(
     const LocalDOMWindow* accessing_window,
-    CrossDocumentAccessFeaturePolicy cross_document_access) const {
+    CrossDocumentAccessPolicy cross_document_access) const {
   if (!accessing_window || !accessing_window->document() || !GetFrame())
     return String();
 
@@ -282,7 +282,7 @@ String DOMWindow::CrossDomainAccessErrorMessage(
            target_origin->Domain() +
            "\", but the frame requesting access did not. Both must set "
            "\"document.domain\" to the same value to allow access.";
-  if (cross_document_access == CrossDocumentAccessFeaturePolicy::kDisallowed)
+  if (cross_document_access == CrossDocumentAccessPolicy::kDisallowed)
     return message + "The document-access policy denied access.";
 
   // Default.

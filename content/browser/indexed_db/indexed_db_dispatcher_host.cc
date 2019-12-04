@@ -465,13 +465,10 @@ void IndexedDBDispatcherHost::CreateAllBlobs(
     auto& blob_info = blob_infos[i];
     auto& output_info = (*output_infos)[i];
 
+    auto receiver = output_info->blob.InitWithNewPipeAndPassReceiver();
     if (blob_info.is_remote_valid()) {
-      // TODO(enne): when blob handle gets removed entirely, there's no
-      // need for uuid to be stored here in IDBBlobInfoPtr.  For now,
-      // this needs to stay, unfortunately.
-      DCHECK(blob_info.blob_handle());
-      output_info->uuid = blob_info.blob_handle()->uuid();
-      blob_info.Clone(output_info->blob.InitWithNewPipeAndPassReceiver());
+      output_info->uuid = blob_info.uuid();
+      blob_info.Clone(std::move(receiver));
       continue;
     }
 
@@ -488,7 +485,6 @@ void IndexedDBDispatcherHost::CreateAllBlobs(
 
     // Write results to output_info.
     output_info->uuid = base::GenerateGUID();
-    auto receiver = output_info->blob.InitWithNewPipeAndPassReceiver();
 
     mojo_blob_storage_context()->RegisterFromDataItem(
         std::move(receiver), output_info->uuid, std::move(element));

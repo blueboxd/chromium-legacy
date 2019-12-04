@@ -60,8 +60,6 @@ class WebSecurityOrigin {
       const WebString&);
   BLINK_PLATFORM_EXPORT static WebSecurityOrigin Create(const WebURL&);
   BLINK_PLATFORM_EXPORT static WebSecurityOrigin CreateUniqueOpaque();
-  // TODO(dcheng): Remove this. https://crbug.com/695622
-  static WebSecurityOrigin CreateUnique() { return CreateUniqueOpaque(); }
 
   BLINK_PLATFORM_EXPORT void Reset();
   BLINK_PLATFORM_EXPORT void Assign(const WebSecurityOrigin&);
@@ -79,8 +77,6 @@ class WebSecurityOrigin {
 
   // A unique WebSecurityOrigin is the least privileged WebSecurityOrigin.
   BLINK_PLATFORM_EXPORT bool IsOpaque() const;
-  // TODO(dcheng): Remove this. https://crbug.com/695622
-  bool IsUnique() const { return IsOpaque(); }
 
   // Returns true if this WebSecurityOrigin can script objects in the given
   // SecurityOrigin. For example, call this function before allowing

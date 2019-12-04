@@ -67,7 +67,7 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice {
   void SetGpuVSyncEnabled(bool enabled) override;
 #if defined(OS_WIN)
   void SetEnableDCLayers(bool enable) override;
-  void ScheduleDCLayers(std::vector<DCLayerOverlay> dc_layers) override;
+  void ScheduleOverlays(SkiaOutputSurface::OverlayList overlays) override;
 #endif
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;

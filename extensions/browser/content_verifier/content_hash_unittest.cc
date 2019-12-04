@@ -59,8 +59,8 @@ class TestExtensionBuilder {
     for (const auto& resource : extension_resources_) {
       std::vector<std::string> hashes =
           ComputedHashes::GetHashesForContent(resource.contents, block_size);
-      computed_hashes_data.AddHashes(resource.relative_path, block_size,
-                                     hashes);
+      computed_hashes_data[resource.relative_path] =
+          ComputedHashes::HashInfo(block_size, hashes);
     }
 
     ASSERT_TRUE(ComputedHashes(std::move(computed_hashes_data))

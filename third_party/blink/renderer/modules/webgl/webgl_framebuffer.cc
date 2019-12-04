@@ -34,6 +34,10 @@ namespace blink {
 
 namespace {
 
+const char kIncompleteOpaque[] =
+    "Cannot render to a XRWebGLLayer framebuffer outside of an XRSession "
+    "animation frame callback.";
+
 class WebGLRenderbufferAttachment final
     : public WebGLFramebuffer::WebGLAttachment {
  public:
@@ -377,7 +381,7 @@ GLenum WebGLFramebuffer::CheckDepthStencilStatus(const char** reason) const {
   if (opaque_) {
     if (opaque_complete_)
       return GL_FRAMEBUFFER_COMPLETE;
-    *reason = "cannot render to a WebVR layer outside of a frame callback";
+    *reason = kIncompleteOpaque;
     return GL_FRAMEBUFFER_UNSUPPORTED;
   }
   if (Context()->IsWebGL2OrHigher() || web_gl1_depth_stencil_consistent_)

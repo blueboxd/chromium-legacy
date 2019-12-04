@@ -25,7 +25,6 @@ using WebScopedInputEvent =
 class WebInputEventTraits {
  public:
   static std::string ToString(const blink::WebInputEvent& event);
-  static size_t GetSize(blink::WebInputEvent::Type type);
   static WebScopedInputEvent Clone(const blink::WebInputEvent& event);
   static bool ShouldBlockEventStream(const blink::WebInputEvent& event);
 

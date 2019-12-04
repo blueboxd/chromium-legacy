@@ -23,10 +23,6 @@
                                (ChromeTableViewControllerStyle)appBarStyle
     NS_UNAVAILABLE;
 
-// The text for the Infobar action button (i.e. translate or show
-// original)
-@property(nonatomic, copy) NSString* translateButtonText;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_INFOBARS_MODALS_INFOBAR_TRANSLATE_TABLE_VIEW_CONTROLLER_H_

@@ -505,7 +505,7 @@ IdentityManager::ComputeUnconsentedPrimaryAccountInfo() const {
   // On ChromeOS and on mobile platforms, we support only the primary account as
   // the unconsented primary account. By this early return, we avoid an extra
   // request to GAIA that lists cookie accounts.
-  return base::nullopt;
+  return CoreAccountInfo();
 #else
   AccountsInCookieJarInfo cookie_info = GetAccountsInCookieJar();
 

@@ -582,6 +582,13 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBoxModelObject, IsBoxModelObject());
 
+template <>
+struct DowncastTraits<LayoutBoxModelObject> {
+  static bool AllowFrom(const LayoutObject& object) {
+    return object.IsBoxModelObject();
+  }
+};
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_BOX_MODEL_OBJECT_H_

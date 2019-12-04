@@ -11,6 +11,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "components/version_info/version_info.h"
 #include "crypto/sha2.h"
 #include "google_apis/google_api_keys.h"
@@ -117,6 +118,10 @@ PlatformType GetCurrentPlatformType() {
 #elif defined(OS_MACOSX)
   return OSX_PLATFORM;
 #else
+  // TODO(crbug.com/1030487): This file is, in fact, intended to be compiled on
+  // Android, the comment below is obsolete. We should be able to return
+  // ANDROID_PLATFORM here.
+  //
   // This should ideally never compile but it is getting compiled on Android.
   // See: https://bugs.chromium.org/p/chromium/issues/detail?id=621647
   // TODO(vakh): Once that bug is fixed, this should be removed. If we leave
@@ -135,7 +140,13 @@ ListIdentifier GetChromeExtMalwareId() {
 }
 
 ListIdentifier GetChromeUrlApiId() {
-  return ListIdentifier(CHROME_PLATFORM, URL, API_ABUSE);
+  // TODO(crbug.com/1030487): This special case for Android will no longer be
+  // needed once GetCurrentPlatformType() returns ANDROID_PLATFORM on Android.
+#if defined(OS_ANDROID)
+  return ListIdentifier(ANDROID_PLATFORM, URL, API_ABUSE);
+#else
+  return ListIdentifier(GetCurrentPlatformType(), URL, API_ABUSE);
+#endif
 }
 
 ListIdentifier GetChromeUrlClientIncidentId() {

@@ -197,12 +197,15 @@ bool BrowserDMTokenStorageWin::InitEnrollmentErrorOption() {
   return InstallUtil::ShouldCloudManagementBlockOnFailure();
 }
 
-void BrowserDMTokenStorageWin::SaveDMToken(const std::string& token) {
-  base::PostTaskAndReplyWithResult(
-      com_sta_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&StoreDMTokenInRegistry, token),
-      base::BindOnce(&BrowserDMTokenStorage::OnDMTokenStored,
-                     weak_factory_.GetWeakPtr()));
+BrowserDMTokenStorage::StoreTask BrowserDMTokenStorageWin::SaveDMTokenTask(
+    const std::string& token,
+    const std::string& client_id) {
+  return base::BindOnce(&StoreDMTokenInRegistry, token);
+}
+
+scoped_refptr<base::TaskRunner>
+BrowserDMTokenStorageWin::SaveDMTokenTaskRunner() {
+  return com_sta_task_runner_;
 }
 
 // static

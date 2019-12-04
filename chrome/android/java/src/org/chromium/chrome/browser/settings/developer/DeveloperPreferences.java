@@ -10,7 +10,7 @@ import android.support.v7.preference.PreferenceFragmentCompat;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeVersionInfo;
-import org.chromium.chrome.browser.settings.PreferenceUtils;
+import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.components.version_info.Channel;
 import org.chromium.components.version_info.VersionConstants;
 
@@ -41,7 +41,7 @@ public class DeveloperPreferences extends PreferenceFragmentCompat {
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String s) {
         getActivity().setTitle(MSG_DEVELOPER_OPTIONS_TITLE);
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.developer_preferences);
+        SettingsUtils.addPreferencesFromResource(this, R.xml.developer_preferences);
 
         if (ChromeVersionInfo.isBetaBuild() || ChromeVersionInfo.isStableBuild()) {
             getPreferenceScreen().removePreference(findPreference(UI_PREF_BETA_STABLE_HINT));

@@ -207,6 +207,7 @@ TEST_F(ManagementUIHandlerTests,
        ManagementContextualSourceUpdateManagedConsumerDomain) {
   TestingProfile::Builder builder;
   builder.SetProfileName("managed@gmail.com");
+  builder.OverridePolicyConnectorIsManagedForTesting(true);
   auto profile = builder.Build();
 
   base::string16 extensions_installed;
@@ -238,6 +239,7 @@ TEST_F(ManagementUIHandlerTests,
        ManagementContextualSourceUpdateUnmanagedKnownDomain) {
   TestingProfile::Builder builder;
   builder.SetProfileName("managed@manager.com");
+  builder.OverridePolicyConnectorIsManagedForTesting(true);
   auto profile = builder.Build();
 
   base::string16 extension_reporting_title;
@@ -305,6 +307,7 @@ TEST_F(ManagementUIHandlerTests,
        ManagementContextualSourceUpdateManagedKnownDomain) {
   TestingProfile::Builder builder;
   builder.SetProfileName("managed@gmail.com.manager.com.gmail.com");
+  builder.OverridePolicyConnectorIsManagedForTesting(true);
   auto profile = builder.Build();
 
   base::string16 extension_reporting_title;
@@ -345,6 +348,7 @@ TEST_F(ManagementUIHandlerTests,
        ManagementContextualSourceUpdateManagedAccountKnownDomain) {
   TestingProfile::Builder builder;
   builder.SetProfileName("managed@manager.com");
+  builder.OverridePolicyConnectorIsManagedForTesting(true);
   auto profile = builder.Build();
   const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
 
@@ -480,6 +484,7 @@ TEST_F(ManagementUIHandlerTests,
        ManagementContextualSourceUpdateManagedDeviceAndAccountMultipleDomains) {
   TestingProfile::Builder builder;
   builder.SetProfileName("managed@manager.com");
+  builder.OverridePolicyConnectorIsManagedForTesting(true);
   auto profile = builder.Build();
   const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
 
@@ -696,9 +701,7 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
   info.GetAsDictionary(&threat_protection_info);
   EXPECT_TRUE(threat_protection_info->FindListKey("info")->GetList().empty());
   EXPECT_EQ(
-      l10n_util::GetStringFUTF16(
-          IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION_BY,
-          base::UTF8ToUTF16("manager.com")),
+      l10n_util::GetStringUTF16(IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION),
       base::UTF8ToUTF16(*threat_protection_info->FindStringKey("description")));
 
   // When policies are set to values that enable the feature, report it.

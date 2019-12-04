@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "content/browser/dom_storage/dom_storage_types.h"
 #include "content/browser/dom_storage/session_storage_data_map.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/leveldatabase/env_chromium.h"

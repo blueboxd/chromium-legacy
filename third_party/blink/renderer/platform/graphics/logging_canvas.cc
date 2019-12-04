@@ -169,15 +169,15 @@ std::unique_ptr<JSONObject> ObjectForSkRRect(const SkRRect& rrect) {
   return rrect_item;
 }
 
-String FillTypeName(SkPath::FillType type) {
+String FillTypeName(SkPathFillType type) {
   switch (type) {
-    case SkPath::kWinding_FillType:
+    case SkPathFillType::kWinding:
       return "Winding";
-    case SkPath::kEvenOdd_FillType:
+    case SkPathFillType::kEvenOdd:
       return "EvenOdd";
-    case SkPath::kInverseWinding_FillType:
+    case SkPathFillType::kInverseWinding:
       return "InverseWinding";
-    case SkPath::kInverseEvenOdd_FillType:
+    case SkPathFillType::kInverseEvenOdd:
       return "InverseEvenOdd";
     default:
       NOTREACHED();

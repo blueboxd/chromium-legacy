@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/parser_content_policy.h"
 #include "third_party/blink/renderer/core/dom/scriptable_document_parser.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/core/html/parser/background_html_input_stream.h"
 #include "third_party/blink/renderer/core/html/parser/html_input_stream.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_options.h"
@@ -65,6 +66,7 @@ class HTMLResourcePreloader;
 class HTMLTreeBuilder;
 
 class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
+                                       public ContextLifecycleStateObserver,
                                        private HTMLParserScriptRunnerHost {
   USING_GARBAGE_COLLECTED_MIXIN(HTMLDocumentParser);
   USING_PRE_FINALIZER(HTMLDocumentParser, Dispose);
@@ -100,8 +102,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   bool IsParsingAtLineNumber() const final;
   OrdinalNumber LineNumber() const final;
 
-  void PauseScheduledTasks() final;
-  void UnpauseScheduledTasks() final;
+  void ContextLifecycleStateChanged(mojom::FrameLifecycleState) final;
 
   HTMLParserReentryPermit* ReentryPermit() { return reentry_permit_.get(); }
 
@@ -257,7 +258,6 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   bool should_use_threading_;
   bool end_was_delayed_;
   bool have_background_parser_;
-  bool tasks_were_paused_;
   unsigned pump_session_nesting_level_;
   unsigned pump_speculations_session_nesting_level_;
   bool is_parsing_at_line_number_;

@@ -935,6 +935,9 @@ void PageInfo::PresentSitePermissions() {
     permission_info.type = kPermissionType[i];
 
     content_settings::SettingInfo info;
+
+    // TODO(crbug.com/1030245) Investigate why the value is queried from the low
+    // level routine GetWebsiteSettings.
     std::unique_ptr<base::Value> value = content_settings_->GetWebsiteSetting(
         site_url_, site_url_, permission_info.type, std::string(), &info);
     DCHECK(value.get());
@@ -973,8 +976,10 @@ void PageInfo::PresentSitePermissions() {
 
       // If under embargo, update |permission_info| to reflect that.
       if (permission_result.content_setting == CONTENT_SETTING_BLOCK &&
-          permission_result.source ==
-              PermissionStatusSource::MULTIPLE_DISMISSALS) {
+          (permission_result.source ==
+               PermissionStatusSource::MULTIPLE_DISMISSALS ||
+           permission_result.source ==
+               PermissionStatusSource::MULTIPLE_IGNORES)) {
         permission_info.setting = permission_result.content_setting;
       }
     }

@@ -50,7 +50,7 @@ import org.chromium.ui.UiUtils;
  * HomepageEditor}) or overrides {@link PreferenceFragmentCompat}'s layout, add the following:
  * 1) preferences_action_bar_shadow.xml to the custom XML hierarchy and
  * 2) an OnScrollChangedListener to the main content's view's view tree observer via
- *    PreferenceUtils.getShowShadowOnScrollListener(...).
+ *    {@link SettingsUtils#getShowShadowOnScrollListener(View, View)}.
  */
 public class SettingsActivity extends ChromeBaseAppCompatActivity
         implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
@@ -171,7 +171,7 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
 
         // Display shadow on scroll.
         recyclerView.getViewTreeObserver().addOnScrollChangedListener(
-                PreferenceUtils.getShowShadowOnScrollListener(
+                SettingsUtils.getShowShadowOnScrollListener(
                         recyclerView, inflatedView.findViewById(R.id.shadow)));
     }
 

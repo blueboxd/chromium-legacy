@@ -56,6 +56,11 @@ class AutomationAXTreeWrapper : public ui::AXTreeObserver {
   // ignored.
   ui::AXNode* GetUnignoredNodeFromId(int32_t id);
 
+  // Updates or gets this wrapper with the latest state of listeners in js.
+  void EventListenerAdded(ax::mojom::Event event_type, ui::AXNode* node);
+  void EventListenerRemoved(ax::mojom::Event event_type, ui::AXNode* node);
+  bool HasEventListener(ax::mojom::Event event_type, ui::AXNode* node);
+
  private:
   // AXTreeObserver overrides.
   void OnNodeDataChanged(ui::AXTree* tree,
@@ -82,6 +87,9 @@ class AutomationAXTreeWrapper : public ui::AXTreeObserver {
   // changes outside of unserialization do not get reflected here. The value is
   // reset after unserialization.
   bool did_send_tree_change_during_unserialization_ = false;
+
+  // Maps a node to a set containing events for which the node has listeners.
+  std::map<int32_t, std::set<ax::mojom::Event>> node_id_to_events_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationAXTreeWrapper);
 };

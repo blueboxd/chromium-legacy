@@ -130,29 +130,11 @@ android_builder(
 )
 
 android_builder(
-    name = 'android-kitkat-arm-rel',
-    goma_jobs = goma.jobs.J150,
-    tryjob = tryjob(),
-)
-
-android_builder(
     name = 'android-marshmallow-arm64-coverage-rel',
     cores = 16,
     goma_jobs = goma.jobs.J300,
     ssd = True,
     use_java_coverage = True,
-    tryjob = tryjob(
-        experiment_percentage = 10,
-    ),
-)
-
-android_builder(
-    name = 'android-marshmallow-arm64-rel',
-    cores = 16,
-    goma_jobs = goma.jobs.J300,
-    ssd = True,
-    use_java_coverage = True,
-    tryjob = tryjob(),
 )
 
 android_builder(
@@ -493,12 +475,6 @@ chromiumos_builder(
 )
 
 chromiumos_builder(
-    name = 'chromeos-amd64-generic-rel',
-    goma_enable_ats = True,
-    tryjob = tryjob(),
-)
-
-chromiumos_builder(
     name = 'chromeos-arm-generic-dbg',
     goma_enable_ats = True,
 )
@@ -537,13 +513,6 @@ chromiumos_builder(
 
 chromiumos_builder(
     name = 'linux-chromeos-dbg',
-)
-
-chromiumos_builder(
-    name = 'linux-chromeos-rel',
-    goma_jobs = goma.jobs.J150,
-    tryjob = tryjob(),
-    use_clang_coverage = True,
 )
 
 
@@ -1300,12 +1269,6 @@ mac_builder(
     ssd = True,
 )
 
-mac_builder(
-    name = 'mac-rel',
-    goma_jobs = goma.jobs.J150,
-    tryjob = tryjob(),
-)
-
 # NOTE: the following 3 trybots aren't sensitive to Mac version on which
 # they are built, hence no additional dimension is specified.
 # The 10.xx version translates to which bots will run isolated tests.
@@ -1400,11 +1363,6 @@ mac_ios_builder(
         # https://crbug.com/739556
         experiment_percentage = 10,
     ),
-)
-
-mac_ios_builder(
-    name = 'ios-simulator',
-    tryjob = tryjob(),
 )
 
 mac_ios_builder(
@@ -1581,14 +1539,6 @@ win_builder(
 win_builder(
     name = 'win10_chromium_x64_dbg_ng',
     os = os.WINDOWS_10,
-)
-
-win_builder(
-    name = 'win10_chromium_x64_rel_ng',
-    goma_jobs = goma.jobs.J150,
-    os = os.WINDOWS_10,
-    ssd = True,
-    tryjob = tryjob(),
 )
 
 win_builder(

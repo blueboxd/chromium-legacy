@@ -126,7 +126,7 @@ void SessionStorageDatabase::ReadAreaValues(
     const std::string& namespace_id,
     const std::vector<std::string>& original_permanent_namespace_ids,
     const url::Origin& origin,
-    DOMStorageValuesMap* result) {
+    storage::LegacyDomStorageValuesMap* result) {
   // We don't create a database if it doesn't exist. In that case, there is
   // nothing to be added to the result.
   if (!LazyOpen(false))
@@ -173,7 +173,7 @@ bool SessionStorageDatabase::CommitAreaChanges(
     const std::string& namespace_id,
     const url::Origin& origin,
     bool clear_all_first,
-    const DOMStorageValuesMap& changes) {
+    const storage::LegacyDomStorageValuesMap& changes) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Even if |changes| is empty, we need to write the appropriate placeholders
   // in the database, so that it can be later shallow-copied successfully.
@@ -690,7 +690,7 @@ bool SessionStorageDatabase::CreateMapForArea(const std::string& namespace_id,
 
 bool SessionStorageDatabase::ReadMap(const std::string& map_id,
                                      const leveldb::ReadOptions& options,
-                                     DOMStorageValuesMap* result,
+                                     storage::LegacyDomStorageValuesMap* result,
                                      bool only_keys) {
   std::unique_ptr<leveldb::Iterator> it(db_->NewIterator(options));
   std::string map_start_key = MapRefCountKey(map_id);
@@ -727,9 +727,10 @@ bool SessionStorageDatabase::ReadMap(const std::string& map_id,
   return true;
 }
 
-void SessionStorageDatabase::WriteValuesToMap(const std::string& map_id,
-                                              const DOMStorageValuesMap& values,
-                                              leveldb::WriteBatch* batch) {
+void SessionStorageDatabase::WriteValuesToMap(
+    const std::string& map_id,
+    const storage::LegacyDomStorageValuesMap& values,
+    leveldb::WriteBatch* batch) {
   for (auto it = values.begin(); it != values.end(); ++it) {
     base::NullableString16 value = it->second;
     std::string key = MapKey(map_id, base::UTF16ToUTF8(it->first));
@@ -789,10 +790,10 @@ bool SessionStorageDatabase::DecreaseMapRefCount(const std::string& map_id,
 
 bool SessionStorageDatabase::ClearMap(const std::string& map_id,
                                       leveldb::WriteBatch* batch) {
-  DOMStorageValuesMap values;
+  storage::LegacyDomStorageValuesMap values;
   if (!ReadMap(map_id, leveldb::ReadOptions(), &values, true))
     return false;
-  for (DOMStorageValuesMap::const_iterator it = values.begin();
+  for (storage::LegacyDomStorageValuesMap::const_iterator it = values.begin();
        it != values.end(); ++it)
     batch->Delete(MapKey(map_id, base::UTF16ToUTF8(it->first)));
   return true;
@@ -823,7 +824,7 @@ bool SessionStorageDatabase::DeepCopyArea(const std::string& namespace_id,
 
   // Read the values from the old map here. If we don't need to copy the data,
   // this can stay empty.
-  DOMStorageValuesMap values;
+  storage::LegacyDomStorageValuesMap values;
   if (copy_data && !ReadMap(*map_id, leveldb::ReadOptions(), &values, false))
     return false;
   if (!DecreaseMapRefCount(*map_id, 1, batch))

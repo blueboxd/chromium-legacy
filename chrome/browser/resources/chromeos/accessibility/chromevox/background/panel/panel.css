@@ -161,6 +161,11 @@ button {
   width: 100%;
 }
 
+#search::placeholder {
+  /* Hint text should match the color of the ChromeVox focus ring. */
+  color: rgb(247, 152, 58);
+}
+
 #menus_background {
   background-color: #eee;
   bottom: 0;

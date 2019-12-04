@@ -139,6 +139,13 @@
             on-tap="onAccessibilityClicked_">
           <div>[[i18nDynamic(locale, 'accessibilityLink')]]</div>
         </oobe-welcome-secondary-button>
+        <oobe-welcome-secondary-button id="timezoneSettingsButton"
+            icon1x="oobe-welcome-32:timezone"
+            icon2x="oobe-welcome-64:timezone"
+            on-tap="onTimezoneClicked_"
+            hidden="[[!timezoneButtonVisible]]">
+          <div>[[i18nDynamic(locale, 'timezoneButtonText')]]</div>
+        </oobe-welcome-secondary-button>
         <div class="flex"></div>
         <oobe-next-button id="welcomeNextButton"
             inverse on-tap="onNextClicked_">

@@ -159,7 +159,6 @@ class LayoutFrameSet final : public LayoutBox {
   GridAxis cols_;
 
   bool is_resizing_;
-  bool is_child_resizing_;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFrameSet, IsFrameSet());

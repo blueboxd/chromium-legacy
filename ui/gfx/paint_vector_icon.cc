@@ -234,7 +234,7 @@ void PaintPath(Canvas* canvas,
     const CommandType command_type = parser.CurrentCommand();
     auto start_new_path = [&paths]() {
       paths.push_back(SkPath());
-      paths.back().setFillType(SkPath::kEvenOdd_FillType);
+      paths.back().setFillType(SkPathFillType::kEvenOdd);
     };
     auto start_new_flags = [&flags_array, &color]() {
       flags_array.push_back(cc::PaintFlags());

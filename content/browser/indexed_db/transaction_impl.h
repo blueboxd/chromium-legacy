@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string16.h"
+#include "content/browser/indexed_db/indexed_db_blob_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
@@ -53,9 +54,12 @@ class TransactionImpl : public blink::mojom::IDBTransaction {
                                    int64_t quota);
 
  private:
-  class IOHelper;
-
-  std::unique_ptr<IOHelper, BrowserThread::DeleteOnIOThread> io_helper_;
+  // Turns an IDBValue into a set of IndexedDBBlobInfo in |blob_infos|.
+  // Also returns whether there was any security failures reading the
+  // filenames passed in |value| via the |security_policy_failure| variable.
+  void CreateBlobInfos(blink::mojom::IDBValuePtr& value,
+                       std::vector<IndexedDBBlobInfo>* blob_infos,
+                       bool* security_policy_failure);
 
   base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host_;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;

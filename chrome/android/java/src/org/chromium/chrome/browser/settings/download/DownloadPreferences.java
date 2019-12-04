@@ -15,7 +15,7 @@ import org.chromium.chrome.browser.download.DownloadPromptStatus;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchConfiguration;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
-import org.chromium.chrome.browser.settings.PreferenceUtils;
+import org.chromium.chrome.browser.settings.SettingsUtils;
 
 /**
  * Fragment to keep track of all downloads related preferences.
@@ -33,7 +33,7 @@ public class DownloadPreferences
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, String s) {
         getActivity().setTitle(R.string.menu_downloads);
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.download_preferences);
+        SettingsUtils.addPreferencesFromResource(this, R.xml.download_preferences);
 
         mLocationPromptEnabledPref =
                 (ChromeSwitchPreference) findPreference(PREF_LOCATION_PROMPT_ENABLED);

@@ -175,6 +175,7 @@ namespace web {
 
 DownloadTaskImpl::DownloadTaskImpl(const WebState* web_state,
                                    const GURL& original_url,
+                                   NSString* http_method,
                                    const std::string& content_disposition,
                                    int64_t total_bytes,
                                    const std::string& mime_type,
@@ -182,6 +183,7 @@ DownloadTaskImpl::DownloadTaskImpl(const WebState* web_state,
                                    NSString* identifier,
                                    Delegate* delegate)
     : original_url_(original_url),
+      http_method_(http_method),
       total_bytes_(total_bytes),
       content_disposition_(content_disposition),
       original_mime_type_(mime_type),
@@ -268,6 +270,11 @@ NSString* DownloadTaskImpl::GetIndentifier() const {
 const GURL& DownloadTaskImpl::GetOriginalUrl() const {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return original_url_;
+}
+
+NSString* DownloadTaskImpl::GetHttpMethod() const {
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  return http_method_;
 }
 
 bool DownloadTaskImpl::IsDone() const {
@@ -448,7 +455,9 @@ void DownloadTaskImpl::StartWithCookies(NSArray<NSHTTPCookie*>* cookies) {
       UIApplicationStateActive;
 
   NSURL* url = net::NSURLWithGURL(GetOriginalUrl());
-  session_task_ = [session_ dataTaskWithURL:url];
+  NSMutableURLRequest* request = [[NSMutableURLRequest alloc] initWithURL:url];
+  request.HTTPMethod = GetHttpMethod();
+  session_task_ = [session_ dataTaskWithRequest:request];
   [session_task_ resume];
   OnDownloadUpdated();
 }

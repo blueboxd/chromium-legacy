@@ -237,7 +237,7 @@ void Shelf::SetAlignment(ShelfAlignment alignment) {
     return;
 
   if (shelf_locking_manager_.is_locked() &&
-      alignment != SHELF_ALIGNMENT_BOTTOM_LOCKED) {
+      alignment != ShelfAlignment::kBottomLocked) {
     shelf_locking_manager_.set_stored_alignment(alignment);
     return;
   }
@@ -252,11 +252,11 @@ void Shelf::SetAlignment(ShelfAlignment alignment) {
 
 bool Shelf::IsHorizontalAlignment() const {
   switch (alignment_) {
-    case SHELF_ALIGNMENT_BOTTOM:
-    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+    case ShelfAlignment::kBottom:
+    case ShelfAlignment::kBottomLocked:
       return true;
-    case SHELF_ALIGNMENT_LEFT:
-    case SHELF_ALIGNMENT_RIGHT:
+    case ShelfAlignment::kLeft:
+    case ShelfAlignment::kRight:
       return false;
   }
   NOTREACHED();
@@ -265,12 +265,12 @@ bool Shelf::IsHorizontalAlignment() const {
 
 int Shelf::SelectValueForShelfAlignment(int bottom, int left, int right) const {
   switch (alignment_) {
-    case SHELF_ALIGNMENT_BOTTOM:
-    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+    case ShelfAlignment::kBottom:
+    case ShelfAlignment::kBottomLocked:
       return bottom;
-    case SHELF_ALIGNMENT_LEFT:
+    case ShelfAlignment::kLeft:
       return left;
-    case SHELF_ALIGNMENT_RIGHT:
+    case ShelfAlignment::kRight:
       return right;
   }
   NOTREACHED();
@@ -387,14 +387,14 @@ TrayBackgroundView* Shelf::GetSystemTrayAnchorView() const {
 gfx::Rect Shelf::GetSystemTrayAnchorRect() const {
   gfx::Rect work_area = GetWorkAreaInsets()->user_work_area_bounds();
   switch (alignment_) {
-    case SHELF_ALIGNMENT_BOTTOM:
-    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+    case ShelfAlignment::kBottom:
+    case ShelfAlignment::kBottomLocked:
       return gfx::Rect(
           base::i18n::IsRTL() ? work_area.x() : work_area.right() - 1,
           work_area.bottom() - 1, 0, 0);
-    case SHELF_ALIGNMENT_LEFT:
+    case ShelfAlignment::kLeft:
       return gfx::Rect(work_area.x(), work_area.bottom() - 1, 0, 0);
-    case SHELF_ALIGNMENT_RIGHT:
+    case ShelfAlignment::kRight:
       return gfx::Rect(work_area.right() - 1, work_area.bottom() - 1, 0, 0);
   }
   NOTREACHED();

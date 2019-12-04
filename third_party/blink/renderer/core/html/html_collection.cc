@@ -241,9 +241,10 @@ static inline bool IsMatchingHTMLElement(const HTMLCollection& html_collection,
           .ElementMatches(element);
     case kMapAreas:
       return element.HasTagName(html_names::kAreaTag);
-    case kDocApplets:
-      return IsHTMLObjectElement(element) &&
-             ToHTMLObjectElement(element).ContainsJavaApplet();
+    case kDocApplets: {
+      auto* html_image_element = DynamicTo<HTMLObjectElement>(element);
+      return html_image_element && html_image_element->ContainsJavaApplet();
+    }
     case kDocEmbeds:
       return element.HasTagName(html_names::kEmbedTag);
     case kDocLinks:
@@ -255,7 +256,7 @@ static inline bool IsMatchingHTMLElement(const HTMLCollection& html_collection,
              element.FastHasAttribute(html_names::kNameAttr);
     case kFormControls:
       DCHECK(IsA<HTMLFieldSetElement>(html_collection.ownerNode()));
-      return IsHTMLObjectElement(element) ||
+      return IsA<HTMLObjectElement>(element) ||
              IsHTMLFormControlElement(element) ||
              element.IsFormAssociatedCustomElement();
     case kClassCollectionType:

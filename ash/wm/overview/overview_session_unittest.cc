@@ -2833,7 +2833,7 @@ TEST_P(OverviewSessionTest, GridBounds) {
   std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(200, 200)));
 
   Shelf* shelf = GetPrimaryShelf();
-  shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+  shelf->SetAlignment(ShelfAlignment::kBottom);
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
 
   // Test that with the bottom shelf, the grid should take up the entire display
@@ -2850,7 +2850,7 @@ TEST_P(OverviewSessionTest, GridBounds) {
 
   // Test that with the right shelf, the grid should take up the entire display
   // minus the shelf area on the right regardless of auto hide behavior.
-  shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
+  shelf->SetAlignment(ShelfAlignment::kRight);
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   ToggleOverview();
   EXPECT_EQ(gfx::Rect(0, 0, 600 - shelf_size, 600), GetGridBounds());
@@ -2881,9 +2881,9 @@ TEST_P(OverviewSessionTest, SelectingWindowWithBackdrop) {
 
 TEST_P(OverviewSessionTest, ShelfAlignmentChangeWhileInOverview) {
   Shelf* shelf = GetPrimaryShelf();
-  shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+  shelf->SetAlignment(ShelfAlignment::kBottom);
   ToggleOverview();
-  shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
+  shelf->SetAlignment(ShelfAlignment::kRight);
   EXPECT_FALSE(InOverviewSession());
 }
 
@@ -5926,6 +5926,58 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kNoDrag,
             indicators_on_root2->current_window_dragging_state());
   EXPECT_EQ(display_with_root2.work_area(), grid_on_root2->bounds());
+}
+
+// Verify that |SplitViewController::CanSnapWindow| checks that the minimum size
+// of the window fits into the left or top, with the default divider position.
+// (If the work area length is odd, then the right or bottom will be one pixel
+// larger.)
+TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
+       SnapWindowWithMinimumSizeTest) {
+  // The divider is 8 thick. For the default divider position, the remaining 792
+  // of the work area on the first root window is divided into 396 on each side,
+  // and the remaining 791 of the work area on the second root window is divided
+  // into 395 on the left and 396 on the right (the left side is what matters).
+  UpdateDisplay("800x600,799x600");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  ASSERT_EQ(2u, root_windows.size());
+  const gfx::Rect bounds_within_root1(0, 0, 400, 400);
+  const gfx::Rect bounds_within_root2(800, 0, 400, 400);
+  // It should make no difference which root window has the window passed to
+  // |SplitViewController::CanSnapWindow|. What should matter is the root window
+  // of the |SplitViewController|. To verify, we test with |bounds_within_root1|
+  // and |bounds_within_root2|, and expect the same results.
+  for (const gfx::Rect& bounds : {bounds_within_root1, bounds_within_root2}) {
+    SCOPED_TRACE(bounds.ToString());
+    aura::test::TestWindowDelegate* delegate =
+        aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate();
+    std::unique_ptr<aura::Window> window(
+        CreateTestWindowInShellWithDelegate(delegate, /*id=*/-1, bounds));
+    // Before setting a minimum size, expect that |window| can be snapped in
+    // split view on either root window.
+    EXPECT_TRUE(
+        SplitViewController::Get(root_windows[0])->CanSnapWindow(window.get()));
+    EXPECT_TRUE(
+        SplitViewController::Get(root_windows[1])->CanSnapWindow(window.get()));
+    // Either root window can accommodate a minimum size 395 wide.
+    delegate->set_minimum_size(gfx::Size(395, 0));
+    EXPECT_TRUE(
+        SplitViewController::Get(root_windows[0])->CanSnapWindow(window.get()));
+    EXPECT_TRUE(
+        SplitViewController::Get(root_windows[1])->CanSnapWindow(window.get()));
+    // Only the first root window can accommodate a minimum size 396 wide.
+    delegate->set_minimum_size(gfx::Size(396, 0));
+    EXPECT_TRUE(
+        SplitViewController::Get(root_windows[0])->CanSnapWindow(window.get()));
+    EXPECT_FALSE(
+        SplitViewController::Get(root_windows[1])->CanSnapWindow(window.get()));
+    // Neither root window can accommodate a minimum size 397 wide.
+    delegate->set_minimum_size(gfx::Size(397, 0));
+    EXPECT_FALSE(
+        SplitViewController::Get(root_windows[0])->CanSnapWindow(window.get()));
+    EXPECT_FALSE(
+        SplitViewController::Get(root_windows[1])->CanSnapWindow(window.get()));
+  }
 }
 
 // Verify that when in overview mode, the selector items unsnappable indicator

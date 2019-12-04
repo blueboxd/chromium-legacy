@@ -1,13 +1,16 @@
 document
 ++list
 ++++listitem
-++++++description Name='• '
+++++++group
+++++++++description Name='• ' IsControlElement=false
 ++++++description Name='tic' IsControlElement=false
 ++++listitem
-++++++description Name='• '
+++++++group
+++++++++description Name='• ' IsControlElement=false
 ++++++description Name='tac' IsControlElement=false
 ++++listitem
-++++++description Name='• '
+++++++group
+++++++++description Name='• ' IsControlElement=false
 ++++++description Name='toe' IsControlElement=false
 ++list
 ++++listitem

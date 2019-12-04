@@ -148,6 +148,8 @@ source_set("test_util") {
   testonly = true
 
   sources = [
+    "child_process_logger.cc",
+    "child_process_logger.h",
     "file_remover_test_util.cc",
     "file_remover_test_util.h",
     "reboot_deletion_helper.cc",
@@ -229,6 +231,7 @@ source_set("integration_test_sources") {
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/pup_data:pup_data_base",
     "//chrome/chrome_cleaner/pup_data:test_uws",
+    "//chrome/chrome_cleaner/test:test_util",
     "//chrome/chrome_cleaner/zip_archiver:common",
     "//components/chrome_cleaner/public/constants",
     "//components/chrome_cleaner/test:test_name_helper",

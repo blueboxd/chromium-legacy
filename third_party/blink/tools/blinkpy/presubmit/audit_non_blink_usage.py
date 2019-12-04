@@ -635,6 +635,9 @@ _CONFIG = [
     {
         'paths': [
             'third_party/blink/renderer/modules/encryptedmedia/',
+            'third_party/blink/renderer/modules/media/',
+            'third_party/blink/renderer/modules/media_capabilities/',
+            'third_party/blink/renderer/modules/video_raf/',
         ],
         'allowed': [
             'media::.+',
@@ -647,22 +650,6 @@ _CONFIG = [
         'allowed': [
             'media::.+',
             'libyuv::.+',
-        ]
-    },
-    {
-        'paths': [
-            'third_party/blink/renderer/modules/media/',
-        ],
-        'allowed': [
-            'media::.+',
-        ]
-    },
-    {
-        'paths': [
-            'third_party/blink/renderer/modules/media_capabilities/',
-        ],
-        'allowed': [
-            'media::.+',
         ]
     },
     {

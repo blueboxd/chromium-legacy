@@ -29,8 +29,7 @@ TEST_F(HTMLObjectElementTest, FallbackRecalcForReattach) {
     <object id='obj' data='dummy'></object>
   )HTML");
 
-  HTMLObjectElement* object =
-      ToHTMLObjectElement(GetDocument().getElementById("obj"));
+  auto* object = To<HTMLObjectElement>(GetDocument().getElementById("obj"));
   ASSERT_TRUE(object);
 
   Node* slot = object->GetShadowRoot()->firstChild();

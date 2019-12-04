@@ -86,11 +86,11 @@ XRAnchorSet* XRFrame::trackedAnchors() const {
   return session_->trackedAnchors();
 }
 
-// Return an XRPose that has a transform mapping to space A from space B, while
+// Return an XRPose that has a transform of basespace_from_space, while
 // accounting for the base pose matrix of this frame. If computing a transform
 // isn't possible, return nullptr.
-XRPose* XRFrame::getPose(XRSpace* space_A,
-                         XRSpace* space_B,
+XRPose* XRFrame::getPose(XRSpace* space,
+                         XRSpace* basespace,
                          ExceptionState& exception_state) {
   if (!is_active_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
@@ -98,20 +98,19 @@ XRPose* XRFrame::getPose(XRSpace* space_A,
     return nullptr;
   }
 
-  if (!space_A || !space_B) {
-    DVLOG(2) << __func__
-             << " : space_A or space_B is null, space_A =" << space_A
-             << ", space_B = " << space_B;
+  if (!space || !basespace) {
+    DVLOG(2) << __func__ << " : space or basespace is null, space =" << space
+             << ", basespace = " << basespace;
     return nullptr;
   }
 
-  if (space_A->session() != session_) {
+  if (space->session() != session_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kSessionMismatch);
     return nullptr;
   }
 
-  if (space_B->session() != session_) {
+  if (basespace->session() != session_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kSessionMismatch);
     return nullptr;
@@ -122,7 +121,7 @@ XRPose* XRFrame::getPose(XRSpace* space_A,
     return nullptr;
   }
 
-  return space_A->getPose(space_B, mojo_from_viewer_.get());
+  return space->getPose(basespace, mojo_from_viewer_.get());
 }
 
 void XRFrame::SetMojoFromViewer(const TransformationMatrix& mojo_from_viewer,

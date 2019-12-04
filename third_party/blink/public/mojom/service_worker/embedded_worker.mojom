@@ -103,10 +103,10 @@ struct EmbeddedWorkerStartParams {
   ServiceWorkerProviderInfoForStartWorker provider_info;
 
   // Interface for the renderer to query the content settings in the browser.
-  WorkerContentSettingsProxy content_settings_proxy;
+  pending_remote<WorkerContentSettingsProxy> content_settings_proxy;
 
   // Interface for keeping track of the renderer preferences.
-  RendererPreferenceWatcher& preference_watcher_request;
+  pending_receiver<RendererPreferenceWatcher> preference_watcher_receiver;
 
   // Used to load subresources in the service worker.  This allows the service
   // worker to load chrome-extension:// URLs which the renderer's default

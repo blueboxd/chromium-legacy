@@ -599,6 +599,8 @@ class CORE_EXPORT LocalFrameView final
   void DequeueScrollAnchoringAdjustment(ScrollableArea*);
   void PerformScrollAnchoringAdjustments();
 
+  void SetNeedsEnqueueScrollEvent(PaintLayerScrollableArea*);
+
   // Only for CompositeAfterPaint.
   std::unique_ptr<JSONObject> CompositedLayersAsJSON(LayerTreeFlags);
 
@@ -693,6 +695,8 @@ class CORE_EXPORT LocalFrameView final
     return lifecycle_updates_throttled_;
   }
   void VisibilityChanged(blink::mojom::FrameVisibility visibility) override;
+
+  void EnqueueScrollEvents();
 
  private:
   LocalFrameView(LocalFrame&, IntRect);
@@ -914,6 +918,8 @@ class CORE_EXPORT LocalFrameView final
   using AnchoringAdjustmentQueue =
       HeapLinkedHashSet<WeakMember<ScrollableArea>>;
   AnchoringAdjustmentQueue anchoring_adjustment_queue_;
+
+  HeapLinkedHashSet<WeakMember<PaintLayerScrollableArea>> scroll_event_queue_;
 
   bool suppress_adjust_view_size_;
 #if DCHECK_IS_ON()

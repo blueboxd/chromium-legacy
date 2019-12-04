@@ -60,7 +60,6 @@
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
-#include "third_party/blink/public/common/sudden_termination_disabler_type.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
@@ -1257,12 +1256,6 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_DidBlockNavigation,
 // Sent as a response to FrameMsg_VisualStateRequest.
 // The message is delivered using RenderWidget::QueueMessage.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_VisualStateResponse, uint64_t /* id */)
-
-// Sent when a new sudden termination disabler condition is either introduced or
-// removed.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_SuddenTerminationDisablerChanged,
-                    bool /* present */,
-                    blink::SuddenTerminationDisablerType /* disabler_type */)
 
 // Requests that the resource timing info be added to the performance entries of
 // a remote parent frame.

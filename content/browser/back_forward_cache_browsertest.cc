@@ -407,7 +407,7 @@ class DOMContentLoadedObserver : public WebContentsObserver {
   }
 
   void Wait() {
-    if (render_frame_host_->dom_content_loaded())
+    if (render_frame_host_->IsDOMContentLoaded())
       run_loop_.Quit();
     run_loop_.Run();
   }

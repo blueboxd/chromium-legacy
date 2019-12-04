@@ -382,7 +382,7 @@ bool HTMLObjectElement::IsExposed() const {
       return false;
   }
   for (HTMLElement& element : Traversal<HTMLElement>::DescendantsOf(*this)) {
-    if (IsHTMLObjectElement(element) || IsHTMLEmbedElement(element))
+    if (IsA<HTMLObjectElement>(element) || IsHTMLEmbedElement(element))
       return false;
   }
   return true;
@@ -399,8 +399,9 @@ bool HTMLObjectElement::ContainsJavaApplet() const {
         MIMETypeRegistry::IsJavaAppletMIMEType(
             child.FastGetAttribute(html_names::kValueAttr).GetString()))
       return true;
-    if (IsHTMLObjectElement(child) &&
-        ToHTMLObjectElement(child).ContainsJavaApplet())
+
+    auto* html_image_element = DynamicTo<HTMLObjectElement>(child);
+    if (html_image_element && html_image_element->ContainsJavaApplet())
       return true;
   }
 

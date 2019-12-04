@@ -31,6 +31,7 @@ goog.require('Output');
 goog.require('Output.EventType');
 goog.require('PanelCommand');
 goog.require('PhoneticData');
+goog.require('RangeAutomationHandler');
 goog.require('constants');
 goog.require('cursors.Cursor');
 goog.require('BrailleKeyCommand');
@@ -316,13 +317,6 @@ Background.prototype = {
 
     if (!skipOutput) {
       o.go();
-
-      if (range.start.node) {
-        // Update the DesktopAutomationHandler's state as well to ensure event
-        // handlers don't repeat this output.
-        DesktopAutomationHandler.instance.updateLastAttributeState(
-            range.start.node, o);
-      }
     }
   },
 

@@ -21,7 +21,6 @@
 #include "base/strings/stringprintf.h"
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_frame_sink.h"
-#include "components/viz/client/hit_test_data_provider_draw_quad.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -1175,14 +1174,6 @@ std::unique_ptr<cc::LayerTreeFrameSink> Window::CreateLayerTreeFrameSink() {
   params.pipes.compositor_frame_sink_remote = std::move(sink_remote);
   params.pipes.client_receiver = std::move(client_receiver);
   params.client_name = kExo;
-  bool root_accepts_events =
-      (event_targeting_policy_ == EventTargetingPolicy::kTargetOnly) ||
-      (event_targeting_policy_ == EventTargetingPolicy::kTargetAndDescendants);
-  if (!features::IsVizHitTestingSurfaceLayerEnabled()) {
-    params.hit_test_data_provider =
-        std::make_unique<viz::HitTestDataProviderDrawQuad>(
-            true /* should_ask_for_child_region */, root_accepts_events);
-  }
   auto frame_sink =
       std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
           nullptr /* context_provider */, nullptr /* worker_context_provider */,

@@ -72,19 +72,19 @@ bool IsCreditCardFIDOAuthEnabled(PrefService* prefs);
 
 void SetCreditCardFIDOAuthEnabled(PrefService* prefs, bool enabled);
 
-bool IsCreditCardAutofillEnabled(const PrefService* prefs);
+bool IsAutofillCreditCardEnabled(const PrefService* prefs);
 
-void SetCreditCardAutofillEnabled(PrefService* prefs, bool enabled);
+void SetAutofillCreditCardEnabled(PrefService* prefs, bool enabled);
 
 bool IsAutofillManaged(const PrefService* prefs);
 
-bool IsProfileAutofillManaged(const PrefService* prefs);
+bool IsAutofillProfileManaged(const PrefService* prefs);
 
-bool IsCreditCardAutofillManaged(const PrefService* prefs);
+bool IsAutofillCreditCardManaged(const PrefService* prefs);
 
-bool IsProfileAutofillEnabled(const PrefService* prefs);
+bool IsAutofillProfileEnabled(const PrefService* prefs);
 
-void SetProfileAutofillEnabled(PrefService* prefs, bool enabled);
+void SetAutofillProfileEnabled(PrefService* prefs, bool enabled);
 
 bool IsPaymentsIntegrationEnabled(const PrefService* prefs);
 

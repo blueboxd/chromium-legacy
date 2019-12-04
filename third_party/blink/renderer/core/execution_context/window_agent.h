@@ -27,8 +27,6 @@ class WindowAgent final : public Agent {
   //
   // This constructor creates a unique agent that won't be shared with any
   // other frames. Use this constructor only if:
-  //   - You want your agent NOT shared with other (possibly same-site) frames
-  //     (i.e. document-access feature policy is disabled), or
   //   - An appropriate instance of WindowAgentFactory is not available
   //     (this should only happen in tests).
   explicit WindowAgent(v8::Isolate* isolate);

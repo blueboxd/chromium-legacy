@@ -26,7 +26,6 @@
 #include "build/build_config.h"
 #include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
-#include "content/browser/dom_storage/dom_storage_types.h"
 #include "content/browser/dom_storage/session_storage_area_impl.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl_mojo.h"
 #include "content/public/browser/session_storage_usage_info.h"

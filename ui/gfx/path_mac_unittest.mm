@@ -97,11 +97,11 @@ TEST(CreateNSBezierPathFromSkPathTest, EmptyPath) {
 // Check that the returned NSBezierPath has the correct winding rule.
 TEST(CreateNSBezierPathFromSkPathTest, FillType) {
   SkPath path;
-  path.setFillType(SkPath::kWinding_FillType);
+  path.setFillType(SkPathFillType::kWinding);
   NSBezierPath* result = CreateNSBezierPathFromSkPath(path);
   EXPECT_EQ(NSNonZeroWindingRule, [result windingRule]);
 
-  path.setFillType(SkPath::kEvenOdd_FillType);
+  path.setFillType(SkPathFillType::kEvenOdd);
   result = CreateNSBezierPathFromSkPath(path);
   EXPECT_EQ(NSEvenOddWindingRule, [result windingRule]);
 }

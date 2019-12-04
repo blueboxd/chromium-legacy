@@ -3124,7 +3124,6 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
 
   settings.initial_debug_state.SetRecordRenderingStats(
       cmd.HasSwitch(cc::switches::kEnableGpuBenchmarking));
-  settings.build_hit_test_data = features::IsVizHitTestingSurfaceLayerEnabled();
 
   if (cmd.HasSwitch(cc::switches::kSlowDownRasterScaleFactor)) {
     const int kMinSlowDownScaleFactor = 0;

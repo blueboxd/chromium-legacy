@@ -337,13 +337,15 @@ class TraceEventDataSourceTest : public testing::Test {
     }
 
     if (category_iid > 0) {
-      EXPECT_EQ(packet->track_event().category_iids_size(), 1);
+      ASSERT_EQ(packet->track_event().category_iids_size(), 1);
       EXPECT_EQ(packet->track_event().category_iids(0), category_iid);
     } else {
       EXPECT_EQ(packet->track_event().category_iids_size(), 0);
     }
 
-    EXPECT_EQ(packet->track_event().name_iid(), name_iid);
+    if (name_iid > 0) {
+      EXPECT_EQ(packet->track_event().name_iid(), name_iid);
+    }
 
     TrackEvent::Type track_event_type;
     switch (phase) {
@@ -1407,11 +1409,9 @@ TEST_F(TraceEventDataSourceTest, TypedArgumentsTracingOnEnd) {
   ExpectThreadDescriptor(td_packet);
 
   auto* e_packet = producer_client()->GetFinalizedPacket(1);
-  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+  ExpectTraceEvent(e_packet, /*category_iid=*/0u, /*name_iid=*/0u,
                    TRACE_EVENT_PHASE_END);
 
-  ExpectEventCategories(e_packet, {{1u, "browser"}});
-  ExpectEventNames(e_packet, {{1u, kTraceEventEndName}});
   ASSERT_TRUE(e_packet->track_event().has_log_message());
   EXPECT_EQ(e_packet->track_event().log_message().body_iid(), 42u);
 }
@@ -1441,10 +1441,9 @@ TEST_F(TraceEventDataSourceTest, TypedArgumentsTracingOnBeginAndEnd) {
   EXPECT_EQ(e_packet->track_event().log_message().body_iid(), 42u);
 
   e_packet = producer_client()->GetFinalizedPacket(2);
-  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/2u,
+  ExpectTraceEvent(e_packet, /*category_iid=*/0u, /*name_iid=*/0u,
                    TRACE_EVENT_PHASE_END);
 
-  ExpectEventNames(e_packet, {{2u, kTraceEventEndName}});
   ASSERT_TRUE(e_packet->track_event().has_log_message());
   EXPECT_EQ(e_packet->track_event().log_message().body_iid(), 84u);
 }
@@ -1497,10 +1496,9 @@ TEST_F(TraceEventDataSourceTest, TypedArgumentsTracingOnScoped) {
   EXPECT_EQ(e_packet->track_event().log_message().body_iid(), 42u);
 
   e_packet = producer_client()->GetFinalizedPacket(2);
-  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/2u,
+  ExpectTraceEvent(e_packet, /*category_iid=*/0u, /*name_iid=*/0u,
                    TRACE_EVENT_PHASE_END);
 
-  ExpectEventNames(e_packet, {{2u, kTraceEventEndName}});
   EXPECT_FALSE(e_packet->track_event().has_log_message());
 }
 
@@ -1530,10 +1528,9 @@ TEST_F(TraceEventDataSourceTest, TypedArgumentsTracingOnScopedCapture) {
   EXPECT_EQ(e_packet->track_event().log_message().body_iid(), 42u);
 
   e_packet = producer_client()->GetFinalizedPacket(2);
-  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/2u,
+  ExpectTraceEvent(e_packet, /*category_iid=*/0u, /*name_iid=*/0u,
                    TRACE_EVENT_PHASE_END);
 
-  ExpectEventNames(e_packet, {{2u, kTraceEventEndName}});
   EXPECT_FALSE(e_packet->track_event().has_log_message());
   EXPECT_TRUE(called);
 }
@@ -1574,15 +1571,14 @@ TEST_F(TraceEventDataSourceTest, TypedArgumentsTracingOnScopedMultipleEvents) {
 
   // The second TRACE_EVENT end.
   e_packet = producer_client()->GetFinalizedPacket(3);
-  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/2u,
+  ExpectTraceEvent(e_packet, /*category_iid=*/0u, /*name_iid=*/0u,
                    TRACE_EVENT_PHASE_END);
 
-  ExpectEventNames(e_packet, {{2u, kTraceEventEndName}});
   EXPECT_FALSE(e_packet->track_event().has_log_message());
 
   // The first TRACE_EVENT end.
   e_packet = producer_client()->GetFinalizedPacket(4);
-  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/2u,
+  ExpectTraceEvent(e_packet, /*category_iid=*/0u, /*name_iid=*/0u,
                    TRACE_EVENT_PHASE_END);
   EXPECT_FALSE(e_packet->track_event().has_log_message());
 }

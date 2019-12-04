@@ -85,10 +85,9 @@ cr.define('login', function() {
   var AUTH_TYPE = {
     OFFLINE_PASSWORD: 0,
     ONLINE_SIGN_IN: 1,
-    NUMERIC_PIN: 2,
-    USER_CLICK: 3,
-    EXPAND_THEN_USER_CLICK: 4,
-    FORCE_OFFLINE_PASSWORD: 5
+    USER_CLICK: 2,
+    EXPAND_THEN_USER_CLICK: 3,
+    FORCE_OFFLINE_PASSWORD: 4
   };
 
   /**
@@ -97,10 +96,9 @@ cr.define('login', function() {
   var AUTH_TYPE_NAMES = {
     0: 'offlinePassword',
     1: 'onlineSignIn',
-    2: 'numericPin',
-    3: 'userClick',
-    4: 'expandThenUserClick',
-    5: 'forceOfflinePassword'
+    2: 'userClick',
+    3: 'expandThenUserClick',
+    4: 'forceOfflinePassword'
   };
 
   /**

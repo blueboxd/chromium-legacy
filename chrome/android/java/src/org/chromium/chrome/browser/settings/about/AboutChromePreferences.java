@@ -14,7 +14,7 @@ import android.text.format.DateUtils;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeVersionInfo;
-import org.chromium.chrome.browser.settings.PreferenceUtils;
+import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.chrome.browser.settings.developer.DeveloperPreferences;
 import org.chromium.ui.widget.Toast;
 
@@ -48,7 +48,7 @@ public class AboutChromePreferences
     @Override
     public void onCreatePreferences(Bundle bundle, String s) {
         getActivity().setTitle(R.string.prefs_about_chrome);
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.about_chrome_preferences);
+        SettingsUtils.addPreferencesFromResource(this, R.xml.about_chrome_preferences);
 
         Preference p = findPreference(PREF_APPLICATION_VERSION);
         p.setSummary(

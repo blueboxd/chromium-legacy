@@ -12,14 +12,14 @@
 
 namespace ash {
 
-enum ShelfAlignment {
-  SHELF_ALIGNMENT_BOTTOM,
-  SHELF_ALIGNMENT_LEFT,
-  SHELF_ALIGNMENT_RIGHT,
+enum class ShelfAlignment {
+  kBottom,
+  kLeft,
+  kRight,
   // Top has never been supported.
 
   // The locked alignment is set temporarily and not saved to preferences.
-  SHELF_ALIGNMENT_BOTTOM_LOCKED,
+  kBottomLocked,
 };
 
 enum class HotseatState {

@@ -10,6 +10,7 @@ import "skia/public/mojom/skcolor.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
 import "third_party/blink/public/mojom/frame/fullscreen.mojom";
 import "third_party/blink/public/mojom/frame/lifecycle.mojom";
+import "third_party/blink/public/mojom/frame/sudden_termination_disabler_type.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
@@ -103,6 +104,11 @@ interface LocalFrameHost {
   // of the individual bits.
   // TODO(altimin): Move into a separate scheduling interface.
   DidChangeActiveSchedulerTrackedFeatures(uint64 features_mask);
+
+  // Sent when a new sudden termination disabler condition is either introduced or
+  // removed.
+  SuddenTerminationDisablerChanged(bool present,
+                                   SuddenTerminationDisablerType disabler_type);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will

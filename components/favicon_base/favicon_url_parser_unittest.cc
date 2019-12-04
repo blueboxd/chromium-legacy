@@ -192,3 +192,20 @@ TEST_F(FaviconUrlParserTest, Favicon2ParsingAllowFallbackParam) {
       chrome::FaviconUrlFormat::kFavicon2, &parsed));
   EXPECT_TRUE(parsed.allow_favicon_server_fallback);
 }
+
+TEST_F(FaviconUrlParserTest, Favicon2ParsingShowFallbackMonogram) {
+  chrome::ParsedFaviconPath parsed;
+
+  parsed.show_fallback_monogram = true;
+  EXPECT_TRUE(chrome::ParseFaviconPath("?page_url=https%3A%2F%2Fg.com",
+                                       chrome::FaviconUrlFormat::kFavicon2,
+                                       &parsed));
+  EXPECT_FALSE(parsed.show_fallback_monogram);
+
+  parsed.show_fallback_monogram = false;
+  EXPECT_TRUE(
+      chrome::ParseFaviconPath("?show_fallback_monogram&page_url=https%3A%"
+                               "2F%2Fg.com",
+                               chrome::FaviconUrlFormat::kFavicon2, &parsed));
+  EXPECT_TRUE(parsed.show_fallback_monogram);
+}

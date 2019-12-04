@@ -7,7 +7,7 @@
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/browser/dom_storage/dom_storage_types.h"
+#include "components/services/storage/dom_storage/dom_storage_constants.h"
 
 namespace content {
 
@@ -108,9 +108,10 @@ storage::StorageAreaImpl::Options SessionStorageDataMap::GetOptions() {
   // To avoid excessive IO we apply limits to the amount of data being
   // written and the frequency of writes.
   storage::StorageAreaImpl::Options options;
-  options.max_size = kPerStorageAreaQuota + kPerStorageAreaOverQuotaAllowance;
+  options.max_size = storage::kPerStorageAreaQuota +
+                     storage::kPerStorageAreaOverQuotaAllowance;
   options.default_commit_delay = kCommitDefaultDelaySecs;
-  options.max_bytes_per_hour = kPerStorageAreaQuota;
+  options.max_bytes_per_hour = storage::kPerStorageAreaQuota;
   options.max_commits_per_hour = 60;
   options.cache_mode =
       storage::StorageAreaImpl::CacheMode::KEYS_ONLY_WHEN_POSSIBLE;

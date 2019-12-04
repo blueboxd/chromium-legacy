@@ -402,20 +402,35 @@ void FlexLayout::InitializeChildData(
     flex_child.internal_padding = Normalize(
         orientation(),
         GetViewProperty(child, layout_defaults_, views::kInternalPaddingKey));
-    flex_child.preferred_size =
-        Normalize(orientation(), child->GetPreferredSize());
+
+    // FlexSpecification defines "preferred size" as the size returned when we
+    // do not bound the inputs (specifically the main axis). This is different
+    // from View::GetPreferredSize() which may not take into account e.g. an
+    // the necessity to alter a view's height in a vertical layout if the width
+    // is bounded. In the common case this will be equivalent to calling
+    // GetPreferredSize().
+    const base::Optional<int> available_cross_size =
+        GetAvailableCrossAxisSize(*data, view_index, bounds);
+
+    // In vertical layouts it's important to consider height-for-width type
+    // calculations when evaluating the base/preferred size of the child view.
+    const base::Optional<int> preferred_cross_size =
+        orientation() == LayoutOrientation::kVertical ? available_cross_size
+                                                      : base::nullopt;
+    flex_child.preferred_size = Normalize(
+        orientation(),
+        flex_child.flex.rule().Run(
+            child,
+            Denormalize(orientation(), {base::nullopt, preferred_cross_size})));
 
     // gfx::Size calculation depends on whether flex is allowed.
     if (main_axis_bounded) {
-      flex_child.available_size = {
-          0, GetAvailableCrossAxisSize(*data, view_index, bounds)};
+      flex_child.available_size = {0, available_cross_size};
       flex_child.current_size = Normalize(
           orientation(),
           flex_child.flex.rule().Run(
               child, Denormalize(orientation(), flex_child.available_size)));
 
-      // We should revisit whether this is a valid assumption for text views
-      // in vertical layouts.
       DCHECK_GE(flex_child.preferred_size.main(),
                 flex_child.current_size.main())
           << " in " << child->GetClassName();

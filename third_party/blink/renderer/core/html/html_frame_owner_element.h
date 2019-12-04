@@ -111,6 +111,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   int MarginWidth() const override { return -1; }
   int MarginHeight() const override { return -1; }
   bool AllowFullscreen() const override { return false; }
+  bool DisallowDocumentAccess() const override { return false; }
   bool AllowPaymentRequest() const override { return false; }
   bool IsDisplayNone() const override { return !embedded_content_view_; }
   AtomicString RequiredCsp() const override { return g_null_atom; }

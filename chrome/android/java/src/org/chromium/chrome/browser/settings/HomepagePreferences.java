@@ -30,7 +30,7 @@ public class HomepagePreferences extends PreferenceFragmentCompat {
         mHomepageManager = HomepageManager.getInstance();
 
         getActivity().setTitle(R.string.options_homepage_title);
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.homepage_preferences);
+        SettingsUtils.addPreferencesFromResource(this, R.xml.homepage_preferences);
 
         ChromeSwitchPreference homepageSwitch =
                 (ChromeSwitchPreference) findPreference(PREF_HOMEPAGE_SWITCH);

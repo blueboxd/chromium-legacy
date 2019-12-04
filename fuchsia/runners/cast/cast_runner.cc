@@ -19,13 +19,10 @@ namespace {
 
 bool AreCastComponentParamsValid(
     const CastComponent::CastComponentParams& params) {
-  if (params.app_config.IsEmpty())
-    return false;
-  if (!params.api_bindings_client->HasBindings())
-    return false;
-  if (!params.rewrite_rules.has_value())
-    return false;
-  return true;
+  return !params.app_config.IsEmpty() &&
+         params.api_bindings_client->HasBindings() &&
+         params.rewrite_rules.has_value() &&
+         params.media_session_id.has_value();
 }
 
 // Creates a CreateContextParams object which can be used as a basis
@@ -148,6 +145,24 @@ void CastRunner::StartComponent(
       cast_app_id, [this, pending_component = pending_component.get()](
                        chromium::cast::ApplicationConfig app_config) {
         GetConfigCallback(pending_component, std::move(app_config));
+      });
+
+  pending_component->application_context =
+      pending_component->agent_manager
+          ->ConnectToAgentService<chromium::cast::ApplicationContext>(
+              CastRunner::kAgentComponentUrl);
+  pending_component->application_context.set_error_handler(
+      [this, pending_component = pending_component.get()](zx_status_t status) {
+        ZX_LOG(ERROR, status) << "ApplicationContext disconnected.";
+        if (!pending_component->media_session_id) {
+          pending_component->media_session_id = 0;
+          MaybeStartComponent(pending_component);
+        }
+      });
+  pending_component->application_context->GetMediaSessionId(
+      [this, pending_component = pending_component.get()](uint64_t session_id) {
+        pending_component->media_session_id = session_id;
+        MaybeStartComponent(pending_component);
       });
 
   pending_components_.emplace(std::move(pending_component));

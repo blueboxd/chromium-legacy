@@ -61,13 +61,9 @@ void NetworkServiceNetworkDelegate::MaybeTruncateReferrer(
   if (base::FeatureList::IsEnabled(
           features::kCapReferrerToOriginOnCrossOrigin)) {
     url::Origin destination_origin = url::Origin::Create(effective_url);
-    url::Origin referrer_origin =
-        url::Origin::Create(GURL(request->referrer()));
-    url::Origin initiator_origin =
-        request->initiator().value_or(referrer_origin);
-    bool same_origin = initiator_origin.IsSameOriginWith(destination_origin);
-    if (!same_origin)
-      request->SetReferrer(referrer_origin.GetURL().spec());
+    url::Origin source_origin = url::Origin::Create(GURL(request->referrer()));
+    if (!destination_origin.IsSameOriginWith(source_origin))
+      request->SetReferrer(source_origin.GetURL().spec());
   }
 }
 

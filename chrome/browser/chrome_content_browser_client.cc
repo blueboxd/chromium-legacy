@@ -3585,16 +3585,6 @@ base::string16 ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
 
 bool ChromeContentBrowserClient::PreSpawnRenderer(sandbox::TargetPolicy* policy,
                                                   RendererSpawnFlags flags) {
-  // Allow the server side of a pipe restricted to the "chrome.nacl."
-  // namespace so that it cannot impersonate other system or other chrome
-  // service pipes. This is also done in nacl_broker_listener.cc.
-  sandbox::ResultCode result =
-      policy->AddRule(sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
-                      sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
-                      L"\\\\.\\pipe\\chrome.nacl.*");
-  if (result != sandbox::SBOX_ALL_OK)
-    return false;
-
 // Does not work under component build because all the component DLLs would need
 // to be manually added and maintained. Does not work under ASAN build because
 // ASAN has not yet fully initialized its instrumentation by the time the CIG
@@ -3614,7 +3604,7 @@ bool ChromeContentBrowserClient::PreSpawnRenderer(sandbox::TargetPolicy* policy,
 
   sandbox::MitigationFlags mitigations = policy->GetProcessMitigations();
   mitigations |= sandbox::MITIGATION_FORCE_MS_SIGNED_BINS;
-  result = policy->SetProcessMitigations(mitigations);
+  sandbox::ResultCode result = policy->SetProcessMitigations(mitigations);
   if (result != sandbox::SBOX_ALL_OK)
     return false;
 

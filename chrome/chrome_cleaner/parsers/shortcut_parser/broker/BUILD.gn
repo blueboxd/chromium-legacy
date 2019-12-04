@@ -67,6 +67,7 @@ source_set("unittest_sources") {
     "//chrome/chrome_cleaner/parsers/shortcut_parser:sandboxed_lnk_parser_test_util",
     "//chrome/chrome_cleaner/parsers/shortcut_parser/target:lnk_parser",
     "//chrome/chrome_cleaner/parsers/target:parser_sandbox_target",
+    "//chrome/chrome_cleaner/test:test_util",
     "//mojo/public/cpp/bindings:bindings",
     "//sandbox/win:sandbox",
     "//testing/gtest",

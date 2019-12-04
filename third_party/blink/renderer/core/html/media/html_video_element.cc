@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/html/media/media_element_parser_helpers.h"
 #include "third_party/blink/renderer/core/html/media/media_remoting_interstitial.h"
 #include "third_party/blink/renderer/core/html/media/picture_in_picture_interstitial.h"
+#include "third_party/blink/renderer/core/html/media/video_request_animation_frame.h"
 #include "third_party/blink/renderer/core/html/media/video_wake_lock.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -55,6 +56,7 @@
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
@@ -113,6 +115,7 @@ void HTMLVideoElement::Trace(Visitor* visitor) {
   visitor->Trace(remoting_interstitial_);
   visitor->Trace(picture_in_picture_interstitial_);
   visitor->Trace(viewport_intersection_observer_);
+  Supplementable<HTMLVideoElement>::Trace(visitor);
   HTMLMediaElement::Trace(visitor);
 }
 
@@ -817,6 +820,24 @@ void HTMLVideoElement::OnIntersectionChangedForLazyLoad(
   web_media_player_->OnBecameVisible();
   lazy_load_intersection_observer_->disconnect();
   lazy_load_intersection_observer_ = nullptr;
+}
+
+void HTMLVideoElement::OnWebMediaPlayerCreated() {
+  if (RuntimeEnabledFeatures::VideoRequestAnimationFrameEnabled()) {
+    if (auto* video_raf = VideoRequestAnimationFrame::From(*this))
+      video_raf->OnWebMediaPlayerCreated();
+  }
+}
+
+void HTMLVideoElement::OnRequestAnimationFrame(
+    base::TimeTicks presentation_time,
+    base::TimeTicks expected_presentation_time,
+    uint32_t presented_frames_counter,
+    const media::VideoFrame& presented_frame) {
+  DCHECK(RuntimeEnabledFeatures::VideoRequestAnimationFrameEnabled());
+  VideoRequestAnimationFrame::From(*this)->OnRequestAnimationFrame(
+      presentation_time, expected_presentation_time, presented_frames_counter,
+      presented_frame);
 }
 
 }  // namespace blink

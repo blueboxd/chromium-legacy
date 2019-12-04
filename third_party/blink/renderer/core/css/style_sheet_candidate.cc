@@ -95,7 +95,7 @@ StyleSheetCandidate::Type StyleSheetCandidate::TypeOf(Node& node) {
     return kInvalid;
   }
 
-  if (IsSVGStyleElement(node))
+  if (IsA<SVGStyleElement>(node))
     return kSVGStyle;
 
   NOTREACHED();
@@ -109,7 +109,7 @@ StyleSheet* StyleSheetCandidate::Sheet() const {
     case kHTMLStyle:
       return To<HTMLStyleElement>(GetNode()).sheet();
     case kSVGStyle:
-      return ToSVGStyleElement(GetNode()).sheet();
+      return To<SVGStyleElement>(GetNode()).sheet();
     case kPi:
       return To<ProcessingInstruction>(GetNode()).sheet();
     default:

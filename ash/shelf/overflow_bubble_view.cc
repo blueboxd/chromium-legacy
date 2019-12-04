@@ -680,7 +680,7 @@ gfx::Rect OverflowBubbleView::GetBubbleBounds() {
   } else {
     bounds = gfx::Rect(0, anchor_rect.bottom() - content_size.height(),
                        content_size.width(), content_size.height());
-    if (GetShelf()->alignment() == SHELF_ALIGNMENT_LEFT)
+    if (GetShelf()->alignment() == ShelfAlignment::kLeft)
       bounds.set_x(anchor_rect.right() + distance_to_overflow_button);
     else
       bounds.set_x(anchor_rect.x() - distance_to_overflow_button -

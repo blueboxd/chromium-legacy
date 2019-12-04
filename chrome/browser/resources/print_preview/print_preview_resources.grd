@@ -183,7 +183,8 @@
                  type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_DATA_LOCAL_PARSERS_JS"
                  file="data/local_parsers.js"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 preprocess="true" />
       <structure name="IDR_PRINT_PREVIEW_DATA_INVITATION_JS"
                  file="data/invitation.js"
                  type="chrome_html" />

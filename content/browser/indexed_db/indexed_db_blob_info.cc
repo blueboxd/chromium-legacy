@@ -40,19 +40,16 @@ IndexedDBBlobInfo::IndexedDBBlobInfo()
 }
 
 IndexedDBBlobInfo::IndexedDBBlobInfo(
-    std::unique_ptr<storage::BlobDataHandle> blob_handle,
     mojo::PendingRemote<blink::mojom::Blob> blob_remote,
+    const std::string& uuid,
     const base::string16& type,
     int64_t size)
     : is_file_(false),
-      blob_handle_(*blob_handle),
       blob_remote_(std::move(blob_remote)),
+      uuid_(uuid),
       type_(type),
       size_(size),
-      key_(DatabaseMetaDataKey::kInvalidBlobKey) {
-  // blob_handle and blob_remote must either both or neither be true.
-  DCHECK(!blob_handle_.has_value() ^ blob_remote_.is_bound());
-}
+      key_(DatabaseMetaDataKey::kInvalidBlobKey) {}
 
 IndexedDBBlobInfo::IndexedDBBlobInfo(const base::string16& type,
                                      int64_t size,
@@ -60,22 +57,19 @@ IndexedDBBlobInfo::IndexedDBBlobInfo(const base::string16& type,
     : is_file_(false), type_(type), size_(size), key_(key) {}
 
 IndexedDBBlobInfo::IndexedDBBlobInfo(
-    std::unique_ptr<storage::BlobDataHandle> blob_handle,
     mojo::PendingRemote<blink::mojom::Blob> blob_remote,
+    const std::string& uuid,
     const base::FilePath& file_path,
     const base::string16& file_name,
     const base::string16& type)
     : is_file_(true),
-      blob_handle_(*blob_handle),
       blob_remote_(std::move(blob_remote)),
+      uuid_(uuid),
       type_(type),
       size_(-1),
       file_name_(file_name),
       file_path_(file_path),
-      key_(DatabaseMetaDataKey::kInvalidBlobKey) {
-  // blob_handle and blob_remote must either both or neither be true.
-  DCHECK(!blob_handle_.has_value() ^ blob_remote_.is_bound());
-}
+      key_(DatabaseMetaDataKey::kInvalidBlobKey) {}
 
 IndexedDBBlobInfo::IndexedDBBlobInfo(int64_t key,
                                      const base::string16& type,

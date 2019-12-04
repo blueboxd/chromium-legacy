@@ -57,11 +57,6 @@ class AdaptiveNotificationPermissionUiSelector : public KeyedService {
   // The |clock| must outlive this instance.
   void set_clock_for_testing(base::Clock* clock) { clock_ = clock; }
 
-  // Override the result of ShouldShowQuietUi. Only used for testing.
-  void set_should_show_quiet_ui_for_testing(bool should_show_quiet_ui) {
-    should_show_quiet_ui_ = should_show_quiet_ui;
-  }
-
  private:
   class Factory : public BrowserContextKeyedServiceFactory {
    public:
@@ -97,9 +92,6 @@ class AdaptiveNotificationPermissionUiSelector : public KeyedService {
   // The clock to use as a source of time, materialized so that a mock clock can
   // be injected for tests.
   base::Clock* clock_;
-
-  // An override for the result of ShouldShowQuietUi. Only used in testing.
-  base::Optional<bool> should_show_quiet_ui_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AdaptiveNotificationPermissionUiSelector);
 };

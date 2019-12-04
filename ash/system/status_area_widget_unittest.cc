@@ -22,7 +22,6 @@
 #include "ash/system/overview/overview_button_tray.h"
 #include "ash/system/palette/palette_tray.h"
 #include "ash/system/session/logout_button_tray.h"
-#include "ash/system/status_area_widget_test_api.h"
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/system/tray/status_area_overflow_button_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -383,8 +382,7 @@ class StatusAreaWidgetCollapseStateTest : public AshTestBase {
   }
 
   void SetCollapseState(StatusAreaWidget::CollapseState collapse_state) {
-    StatusAreaWidgetTestApi test_api(status_area_);
-    test_api.SetCollapseState(collapse_state);
+    status_area_->set_collapse_state_for_test(collapse_state);
 
     virtual_keyboard_->UpdateAfterStatusAreaCollapseChange();
     ime_menu_->UpdateAfterStatusAreaCollapseChange();

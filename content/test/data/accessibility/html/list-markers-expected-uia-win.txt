@@ -1,17 +1,20 @@
 document
 ++list
 ++++listitem
-++++++description Name='• '
+++++++group
+++++++++description Name='• ' IsControlElement=false
 ++++++description Name='First item properly groups itself despite ' IsControlElement=false
 ++++++description Name='bolded' IsControlElement=false
 ++++++description Name=' text.' IsControlElement=false
 ++++listitem
-++++++description Name='• '
+++++++group
+++++++++description Name='• ' IsControlElement=false
 ++++++description Name='This should also be ' IsControlElement=false
 ++++++description Name='seen' IsControlElement=false
 ++++++description Name=' as a group.' IsControlElement=false
 ++++listitem
-++++++description Name='• '
+++++++group
+++++++++description Name='• ' IsControlElement=false
 ++++++description Name='Some ' IsControlElement=false
 ++++++description Name='more' IsControlElement=false
 ++++++description Name=' text.' IsControlElement=false

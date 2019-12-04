@@ -107,12 +107,9 @@ void ParseLpOptions(const base::FilePath& filepath,
   }
 }
 
-void MarkLpOptions(base::StringPiece printer_name, ppd_file_t** ppd) {
-  cups_option_t* options = nullptr;
-  int num_options = 0;
-
-  const char kSystemLpOptionPath[] = "/etc/cups/lpoptions";
-  const char kUserLpOptionPath[] = ".cups/lpoptions";
+void MarkLpOptions(base::StringPiece printer_name, ppd_file_t* ppd) {
+  static constexpr char kSystemLpOptionPath[] = "/etc/cups/lpoptions";
+  static constexpr char kUserLpOptionPath[] = ".cups/lpoptions";
 
   std::vector<base::FilePath> file_locations;
   file_locations.push_back(base::FilePath(kSystemLpOptionPath));
@@ -121,11 +118,11 @@ void MarkLpOptions(base::StringPiece printer_name, ppd_file_t** ppd) {
   file_locations.push_back(base::FilePath(homedir.Append(kUserLpOptionPath)));
 
   for (const base::FilePath& location : file_locations) {
-    num_options = 0;
-    options = nullptr;
+    int num_options = 0;
+    cups_option_t* options = nullptr;
     ParseLpOptions(location, printer_name, &num_options, &options);
     if (num_options > 0 && options) {
-      cupsMarkOptions(*ppd, num_options, options);
+      cupsMarkOptions(ppd, num_options, options);
       cupsFreeOptions(num_options, options);
     }
   }
@@ -451,7 +448,7 @@ bool ParsePpdCapabilities(base::StringPiece printer_name,
     return false;
   }
   ppdMarkDefaults(ppd);
-  MarkLpOptions(printer_name, &ppd);
+  MarkLpOptions(printer_name, ppd);
 
   PrinterSemanticCapsAndDefaults caps;
   caps.collate_capable = true;
@@ -460,8 +457,9 @@ bool ParsePpdCapabilities(base::StringPiece printer_name,
 
   GetDuplexSettings(ppd, &caps.duplex_modes, &caps.duplex_default);
 
+  ColorModel cm_black = UNKNOWN_COLOR_MODEL;
+  ColorModel cm_color = UNKNOWN_COLOR_MODEL;
   bool is_color = false;
-  ColorModel cm_color = UNKNOWN_COLOR_MODEL, cm_black = UNKNOWN_COLOR_MODEL;
   if (!GetColorModelSettings(ppd, &cm_black, &cm_color, &is_color)) {
     VLOG(1) << "Unknown printer color model";
   }

@@ -43,8 +43,6 @@ XrResult OpenXRInputHelper::CreateOpenXRInputHelper(
     XrSession session,
     XrSpace local_space,
     std::unique_ptr<OpenXRInputHelper>* helper) {
-  XrResult xr_result;
-
   std::unique_ptr<OpenXRInputHelper> new_helper =
       std::make_unique<OpenXRInputHelper>(session, local_space);
 
@@ -83,7 +81,7 @@ XrResult OpenXRInputHelper::CreateOpenXRInputHelper(
   RETURN_IF_XR_FAILED(xrAttachSessionActionSets(session, &attach_info));
 
   *helper = std::move(new_helper);
-  return xr_result;
+  return XR_SUCCESS;
 }
 
 OpenXRInputHelper::OpenXRInputHelper(XrSession session, XrSpace local_space)

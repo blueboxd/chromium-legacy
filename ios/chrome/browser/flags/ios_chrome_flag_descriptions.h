@@ -194,6 +194,11 @@ extern const char kFullscreenSmoothScrollingDescription[];
 extern const char kIgnoresViewportScaleLimitsName[];
 extern const char kIgnoresViewportScaleLimitsDescription[];
 
+// Title and description for the flag to present the new UI Reboot on Infobars
+// using OverlayPresenter.
+extern const char kInfobarOverlayUIName[];
+extern const char kInfobarOverlayUIDescription[];
+
 // Title and description for the flag to enable the new UI Reboot on Infobars.
 extern const char kInfobarUIRebootName[];
 extern const char kInfobarUIRebootDescription[];

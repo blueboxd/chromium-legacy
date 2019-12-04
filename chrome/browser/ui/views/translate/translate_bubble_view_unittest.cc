@@ -442,6 +442,9 @@ TEST_F(TranslateBubbleViewTest, TabUiSourceDoneButton) {
   // Expected value is (set id - 1) because user selected id is actual id + 1
   EXPECT_EQ(9, mock_model_->original_language_index_);
   EXPECT_EQ(20, mock_model_->target_language_index_);
+
+  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE,
+            bubble_->GetViewState());
 }
 
 TEST_F(TranslateBubbleViewTest, TabUiTargetDoneButton) {
@@ -466,6 +469,9 @@ TEST_F(TranslateBubbleViewTest, TabUiTargetDoneButton) {
   EXPECT_TRUE(mock_model_->translate_called_);
   EXPECT_EQ(9, mock_model_->original_language_index_);
   EXPECT_EQ(20, mock_model_->target_language_index_);
+
+  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE,
+            bubble_->GetViewState());
 }
 
 TEST_F(TranslateBubbleViewTest, DoneButtonWithoutTranslating) {
@@ -496,69 +502,32 @@ TEST_F(TranslateBubbleViewTest, DoneButtonWithoutTranslating) {
             bubble_->GetViewState());
 }
 
-TEST_F(TranslateBubbleViewTest, TabUiSourceDoneButtonWithoutTranslating) {
+TEST_F(TranslateBubbleViewTest, TabUiDoneButtonWithoutTranslating) {
   scoped_feature_list_.InitAndEnableFeatureWithParameters(
       language::kUseButtonTranslateBubbleUi,
       {{language::kTranslateUIBubbleKey,
         language::kTranslateUIBubbleTabValue}});
 
   CreateAndShowBubble();
-  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE,
-            bubble_->GetViewState());
 
   // Translate the page once.
   mock_model_->Translate();
   EXPECT_TRUE(mock_model_->translate_called_);
 
-  // Go back to the initial view.
-  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE,
-            bubble_->GetViewState());
+  // Set translation called to false so it can be verified that translation is
+  // not called again.
   mock_model_->translate_called_ = false;
 
-  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE,
-            bubble_->GetViewState());
-  bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_SOURCE_LANGUAGE);
-
   // Click the "Done" button with the current language pair. This time,
-  // translation is not performed and the view state will be back to the
-  // previous view.
+  // translation is not performed and the view state will stay at the translated
+  // view.
   PressButton(TranslateBubbleView::BUTTON_ID_DONE);
   EXPECT_FALSE(mock_model_->translate_called_);
 
-  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE,
-            bubble_->GetViewState());
-}
-
-TEST_F(TranslateBubbleViewTest, TabUiTargetDoneButtonWithoutTranslating) {
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      language::kUseButtonTranslateBubbleUi,
-      {{language::kTranslateUIBubbleKey,
-        language::kTranslateUIBubbleTabValue}});
-
-  CreateAndShowBubble();
-  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE,
-            bubble_->GetViewState());
-
-  // Translate the page once.
-  mock_model_->Translate();
-  EXPECT_TRUE(mock_model_->translate_called_);
-
-  // Go back to the initial view.
-  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE,
-            bubble_->GetViewState());
-  mock_model_->translate_called_ = false;
-
-  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE,
-            bubble_->GetViewState());
-  bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE);
-
-  // Click the "Done" button with the current language pair. This time,
-  // translation is not performed and the view state will be back to the
-  // previous view.
-  PressButton(TranslateBubbleView::BUTTON_ID_DONE);
-  EXPECT_FALSE(mock_model_->translate_called_);
-
-  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE,
+  // The page is already in the translated languages if Done doesn't trigger a
+  // translation. Clicking done ensures that the UI is in the after translation
+  // state.
+  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE,
             bubble_->GetViewState());
 }
 

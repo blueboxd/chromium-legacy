@@ -24,11 +24,8 @@ const double kScaleMinVal = 10;
 #endif  // BUILDFLAG(ENABLE_PRINTING)
 
 PageHandler::PageHandler(scoped_refptr<content::DevToolsAgentHost> agent_host,
-                         base::WeakPtr<HeadlessBrowserImpl> browser,
                          content::WebContents* web_contents)
-    : DomainHandler(Page::Metainfo::domainName, browser),
-      agent_host_(agent_host),
-      web_contents_(web_contents) {
+    : agent_host_(agent_host), web_contents_(web_contents) {
   DCHECK(web_contents_);
   DCHECK(agent_host_);
 }
@@ -37,6 +34,10 @@ PageHandler::~PageHandler() = default;
 
 void PageHandler::Wire(UberDispatcher* dispatcher) {
   Page::Dispatcher::wire(dispatcher, this);
+}
+
+Response PageHandler::Disable() {
+  return Response::OK();
 }
 
 void PageHandler::PrintToPDF(Maybe<bool> landscape,

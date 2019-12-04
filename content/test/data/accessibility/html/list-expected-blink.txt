@@ -3,14 +3,20 @@ rootWebArea
 ++++list
 ++++++listItem
 ++++++++listMarker name='• '
+++++++++++staticText name='• '
+++++++++++++inlineTextBox name='• '
 ++++++++staticText name='tic'
 ++++++++++inlineTextBox name='tic'
 ++++++listItem
 ++++++++listMarker name='• '
+++++++++++staticText name='• '
+++++++++++++inlineTextBox name='• '
 ++++++++staticText name='tac'
 ++++++++++inlineTextBox name='tac'
 ++++++listItem
 ++++++++listMarker name='• '
+++++++++++staticText name='• '
+++++++++++++inlineTextBox name='• '
 ++++++++staticText name='toe'
 ++++++++++inlineTextBox name='toe'
 ++++list

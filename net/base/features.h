@@ -119,6 +119,18 @@ NET_EXPORT extern const base::Feature kShortLaxAllowUnsafeThreshold;
 // This only has an effect if the cookie defaults to SameSite=Lax.
 NET_EXPORT extern const base::Feature kSameSiteDefaultChecksMethodRigorously;
 
+// If this is set and has a non-zero param value, any access to a cookie will be
+// granted Legacy access semantics if the last access to a cookie with the same
+// (name, domain, path) from a context that is same-site and permits
+// HttpOnly access occurred less than (param value) milliseconds ago. The last
+// eligible access must have occurred in the current browser session (i.e. it
+// does not persist across sessions). This feature does nothing if
+// kCookiesWithoutSameSiteMustBeSecure is not enabled.
+NET_EXPORT extern const base::Feature
+    kRecentHttpSameSiteAccessGrantsLegacyCookieSemantics;
+NET_EXPORT extern const base::FeatureParam<int>
+    kRecentHttpSameSiteAccessGrantsLegacyCookieSemanticsMilliseconds;
+
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
 // When enabled, use the builtin cert verifier instead of the platform verifier.
 NET_EXPORT extern const base::Feature kCertVerifierBuiltinFeature;

@@ -589,6 +589,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCrashRestoreInfobarMessagesUIName,
      flag_descriptions::kCrashRestoreInfobarMessagesUIDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kCrashRestoreInfobarMessagesUI)},
+    {"infobar-overlay-ui", flag_descriptions::kInfobarOverlayUIName,
+     flag_descriptions::kInfobarOverlayUIDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kInfobarOverlayUI)},
 };
 
 // Add all switches from experimental flags to |command_line|.

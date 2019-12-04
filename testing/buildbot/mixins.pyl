@@ -216,6 +216,13 @@
       },
     },
   },
+  'host_mac_10.14': {
+    'swarming': {
+      'dimensions': {
+        'host os': 'Mac-10.14.6',
+      },
+    },
+  },
   'intel_iris_5100': {
     'swarming': {
       'dimensions': {
@@ -699,6 +706,20 @@
     'swarming': {
       'dimensions': {
         'cpu': 'x86-64',
+      },
+    },
+  },
+  'xcode_11b53': {
+    'swarming': {
+      'dimensions': {
+        'xcode_build_version': '11b53',
+      },
+    },
+  },
+  'xcode_parallelization': {
+    'swarming': {
+      'dimensions': {
+        'xcode_parallelization': 'true',
       },
     },
   },

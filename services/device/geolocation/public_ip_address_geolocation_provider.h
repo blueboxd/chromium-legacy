@@ -55,7 +55,7 @@ class PublicIpAddressGeolocationProvider
 
   // Central PublicIpAddressLocationNotifier for use by all implementations of
   // mojom::Geolocation provided by the CreateGeolocation method.
-  // Note that this must be before the StrongBindingSet<mojom::Geolocation> as
+  // Note that this must be before the UniqueReceiverSet<mojom::Geolocation> as
   // it must outlive the Geolocation implementations.
   std::unique_ptr<PublicIpAddressLocationNotifier>
       public_ip_address_location_notifier_;

@@ -341,10 +341,7 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
     mojo::PendingRemote<blink::mojom::Blob> remote;
     auto receiver = remote.InitWithNewPipeAndPassReceiver();
     storage::BlobImpl::Create(std::move(handle), std::move(receiver));
-
-    handle = blob_context_->GetBlobDataFromUUID(uuid);
-    IndexedDBBlobInfo info(std::move(handle), std::move(remote), file_path,
-                           file_name, type);
+    IndexedDBBlobInfo info(std::move(remote), uuid, file_path, file_name, type);
     return info;
   }
 
@@ -356,9 +353,7 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
     mojo::PendingRemote<blink::mojom::Blob> remote;
     auto receiver = remote.InitWithNewPipeAndPassReceiver();
     storage::BlobImpl::Create(std::move(handle), std::move(receiver));
-
-    handle = blob_context_->GetBlobDataFromUUID(uuid);
-    IndexedDBBlobInfo info(std::move(handle), std::move(remote), type, size);
+    IndexedDBBlobInfo info(std::move(remote), uuid, type, size);
     return info;
   }
 
@@ -405,8 +400,46 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
     return true;
   }
 
-  bool CheckBlobWrites() const {
+  void GetBlobUUIDsForCheckBlobWrites() {
     DCHECK(idb_context_->TaskRunner()->RunsTasksInCurrentSequence());
+
+    blob_remote_uuids_.clear();
+    blob_remote_uuids_.resize(backing_store_->writes().size(), "");
+
+    base::RunLoop loop;
+
+    size_t num_blobs = 0;
+    for (size_t i = 0; i < backing_store_->writes().size(); ++i) {
+      if (!backing_store_->writes()[i].is_file())
+        num_blobs++;
+    }
+    if (num_blobs == 0)
+      return;
+
+    for (size_t i = 0; i < backing_store_->writes().size(); ++i) {
+      const WriteDescriptor& desc = backing_store_->writes()[i];
+      if (desc.is_file())
+        continue;
+      desc.blob()->GetInternalUUID(
+          base::BindLambdaForTesting([&, i](const std::string& uuid) {
+            blob_remote_uuids_[i] = uuid;
+            num_blobs--;
+            if (num_blobs == 0)
+              loop.QuitClosure().Run();
+          }));
+    }
+    loop.Run();
+  }
+
+  bool CheckBlobWrites() {
+    DCHECK(idb_context_->TaskRunner()->RunsTasksInCurrentSequence());
+
+    // Clear uuids so that GetBlobUUIDsForCheckBlobWrites must be re-called.
+    std::vector<std::string> uuids;
+    uuids.swap(blob_remote_uuids_);
+
+    DCHECK_EQ(uuids.size(), backing_store_->writes().size())
+        << "Run GetBlobUUIDsForCheckBlobWrites first";
 
     if (backing_store_->writes().size() != blob_info_.size())
       return false;
@@ -420,7 +453,7 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
         if (desc.file_path() != info.file_path())
           return false;
       } else {
-        if (desc.blob()->uuid() != info.blob_handle()->uuid())
+        if (uuids[i] != info.uuid())
           return false;
       }
     }
@@ -450,6 +483,8 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
   // Blob details referenced by |value3_|. The various CheckBlob*() methods
   // can be used to verify the state as a test progresses.
   std::vector<IndexedDBBlobInfo> blob_info_;
+
+  std::vector<std::string> blob_remote_uuids_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBBackingStoreTestWithBlobs);
 };
@@ -554,6 +589,8 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, PutGetConsistencyWithBlobs) {
                 .ok());
       }));
   RunAllTasksUntilIdle();
+
+  GetBlobUUIDsForCheckBlobWrites();
 
   idb_context_->TaskRunner()->PostTask(
       FROM_HERE, base::BindLambdaForTesting([&]() {
@@ -850,6 +887,8 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, BlobJournalInterleavedTransactions) {
       }));
   RunAllTasksUntilIdle();
 
+  GetBlobUUIDsForCheckBlobWrites();
+
   idb_context_->TaskRunner()->PostTask(
       FROM_HERE, base::BindLambdaForTesting([&]() {
         // Verify transaction1 phase one completed.
@@ -873,6 +912,8 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, BlobJournalInterleavedTransactions) {
                 .ok());
       }));
   RunAllTasksUntilIdle();
+
+  GetBlobUUIDsForCheckBlobWrites();
 
   idb_context_->TaskRunner()->PostTask(
       FROM_HERE, base::BindLambdaForTesting([&]() {
@@ -919,6 +960,8 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, ActiveBlobJournal) {
                 .ok());
       }));
   RunAllTasksUntilIdle();
+
+  GetBlobUUIDsForCheckBlobWrites();
 
   idb_context_->TaskRunner()->PostTask(
       FROM_HERE, base::BindLambdaForTesting([&]() {
@@ -1571,6 +1614,8 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeWithBlobsCorrupt) {
                 .ok());
       }));
   RunAllTasksUntilIdle();
+
+  GetBlobUUIDsForCheckBlobWrites();
 
   idb_context_->TaskRunner()->PostTask(
       FROM_HERE, base::BindLambdaForTesting([&]() {

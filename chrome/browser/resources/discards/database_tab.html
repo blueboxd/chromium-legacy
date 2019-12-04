@@ -11,8 +11,8 @@
       table td,
       table th {
         border: 1px solid #777;
-        padding-left: 4px;
-        padding-right: 4px;
+        padding-inline-end: 4px;
+        padding-inline-start: 4px;
       }
 
       table th {
@@ -94,14 +94,6 @@
               </div>
             </div>
           </th>
-          <th>
-            <div class="header-cell-container">
-              <div>
-                <div>Uses Notifications</div>
-                <div>In Background</div>
-              </div>
-            </div>
-          </th>
           <th data-sort-key="cpuUsage" on-click="onSortClick">
             <div class="header-cell-container">
               <div>
@@ -138,9 +130,6 @@
             <td>[[featureToString_(item.value.updatesFaviconInBackground)]]</td>
             <td>[[featureToString_(item.value.updatesTitleInBackground)]]</td>
             <td>[[featureToString_(item.value.usesAudioInBackground)]]</td>
-            <td>
-                [[featureToString_(item.value.usesNotificationsInBackground)]]
-            </td>
             <td>[[getLoadTimeEstimate_(item, "avgCpuUsageUs")]]</td>
             <td>[[getLoadTimeEstimate_(item, "avgFootprintKb")]]</td>
             <td>[[getLoadTimeEstimate_(item, "avgLoadDurationUs")]]</td>

@@ -76,7 +76,7 @@ base::string16 GetDisplayUsername(const autofill::PasswordForm& form);
 // Returns either the username or the |IDS_PASSWORD_MANAGER_EMPTY_LOGIN| in case
 // it is empty.
 base::string16 GetDisplayUsername(
-    const password_manager::CredentialPair& credential_pair);
+    const password_manager::UiCredential& credential);
 
 // Returns |federation_origin| in a human-readable format.
 base::string16 GetDisplayFederation(const autofill::PasswordForm& form);

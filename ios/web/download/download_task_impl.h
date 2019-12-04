@@ -47,6 +47,7 @@ class DownloadTaskImpl : public DownloadTask {
   // |delegate| must be valid.
   DownloadTaskImpl(const WebState* web_state,
                    const GURL& original_url,
+                   NSString* http_method,
                    const std::string& content_disposition,
                    int64_t total_bytes,
                    const std::string& mime_type,
@@ -64,6 +65,7 @@ class DownloadTaskImpl : public DownloadTask {
   net::URLFetcherResponseWriter* GetResponseWriter() const override;
   NSString* GetIndentifier() const override;
   const GURL& GetOriginalUrl() const override;
+  NSString* GetHttpMethod() const override;
   bool IsDone() const override;
   int GetErrorCode() const override;
   int GetHttpCode() const override;
@@ -119,6 +121,7 @@ class DownloadTaskImpl : public DownloadTask {
   State state_ = State::kNotStarted;
   std::unique_ptr<net::URLFetcherResponseWriter> writer_;
   GURL original_url_;
+  NSString* http_method_ = nil;
   int error_code_ = 0;
   int http_code_ = -1;
   int64_t total_bytes_ = -1;

@@ -13,6 +13,7 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
@@ -74,6 +75,13 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
     kGoToOverviewMode
   };
 
+  class Observer : public base::CheckedObserver {
+   public:
+    // Called when overview visibility is changed during or after window
+    // dragging.
+    virtual void OnOverviewVisibilityChanged(bool visible) {}
+  };
+
   DragWindowFromShelfController(aura::Window* window,
                                 const gfx::Point& location_in_screen,
                                 HotseatState hotseat_state);
@@ -93,8 +101,12 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
 
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
   aura::Window* dragged_window() const { return window_; }
   bool drag_started() const { return drag_started_; }
+  bool show_overview_windows() const { return show_overview_windows_; }
 
  private:
   class WindowsHider;
@@ -140,6 +152,9 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
   // Calls when the user resumes or ends window dragging. Overview should show
   // up and split view indicators should be updated.
   void ShowOverviewDuringOrAfterDrag();
+  // Overview should be hidden when the user drags the window quickly up or
+  // around.
+  void HideOverviewDuringDrag();
 
   // Called when the dragged window should scale down and fade out to home
   // screen after drag ends.
@@ -172,6 +187,11 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
 
   // The hotseat state when drag starts.
   const HotseatState hotseat_state_;
+
+  // True if overview is active and its windows are showing.
+  bool show_overview_windows_ = false;
+
+  base::ObserverList<Observer> observers_;
 
   base::WeakPtrFactory<DragWindowFromShelfController> weak_ptr_factory_{this};
 

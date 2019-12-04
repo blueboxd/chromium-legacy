@@ -137,20 +137,26 @@
         <div id="savedPrintersContainer">
           <div class="settings-box first">
             <div class="start">
-              <span>$i18n{savedPrintersTitle}</span>
+              <span aria-label$="[[savedPrintersAriaLabel_]]">
+                $i18n{savedPrintersTitle}
+              </span>
             </div>
           </div>
 
           <settings-cups-saved-printers id="savedPrinters"
               active-printer="{{activePrinter}}"
-              search-term="[[searchTerm]]">
+              search-term="[[searchTerm]]"
+              printers-count="{{savedPrinterCount_}}">
           </settings-cups-saved-printers>
         </div>
       </template>
 
       <div class="padded first" id="nearbyPrinters">
-        <div>$i18n{nearbyPrintersListTitle}</div>
-        <span class="secondary">
+        <div aria-label$="[[nearbyPrintersAriaLabel_]]">
+            $i18n{nearbyPrintersListTitle}
+        </div>
+        <span id="nearbyPrintersDescription" class="secondary"
+            aria-hidden="true">
           $i18n{nearbyPrintersListDescription}
         </span>
         <a href="$i18n{printingCUPSPrintLearnMoreUrl}"
@@ -182,7 +188,8 @@
       </div>
       <template is="dom-if" if="[[canAddPrinter]]" restamp>
         <settings-cups-nearby-printers search-term="[[searchTerm]]"
-            active-printer="{{activePrinter}}">
+            active-printer="{{activePrinter}}"
+            printers-count="{{nearbyPrinterCount_}}">
         </settings-cups-nearby-printers>
       </template>
     </template>

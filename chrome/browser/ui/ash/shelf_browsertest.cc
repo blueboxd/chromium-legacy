@@ -34,7 +34,7 @@ IN_PROC_BROWSER_TEST_F(ShelfGuestSessionBrowserTest, ShelfAlignment) {
   ash::ShelfAlignment alignment = ash::GetShelfAlignmentPref(
       browser()->profile()->GetPrefs(),
       display::Screen::GetScreen()->GetPrimaryDisplay().id());
-  EXPECT_EQ(ash::SHELF_ALIGNMENT_BOTTOM, alignment);
+  EXPECT_EQ(ash::ShelfAlignment::kBottom, alignment);
 
   // Check the locked state, which is not exposed via prefs.
   EXPECT_FALSE(ash::ShelfTestApi::Create()->IsAlignmentBottomLocked());

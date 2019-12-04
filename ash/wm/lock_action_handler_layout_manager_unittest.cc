@@ -219,7 +219,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, PreserveNormalWindowBounds) {
 
 TEST_F(LockActionHandlerLayoutManagerTest, MaximizedWindowBounds) {
   // Cange the shelf alignment before locking the session.
-  GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_RIGHT);
+  GetPrimaryShelf()->SetAlignment(ShelfAlignment::kRight);
 
   // This should change the shelf alignment to bottom (temporarily for locked
   // state).
@@ -243,7 +243,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, MaximizedWindowBounds) {
 
 TEST_F(LockActionHandlerLayoutManagerTest, FullscreenWindowBounds) {
   // Cange the shelf alignment before locking the session.
-  GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_RIGHT);
+  GetPrimaryShelf()->SetAlignment(ShelfAlignment::kRight);
 
   // This should change the shelf alignment to bottom (temporarily for locked
   // state).

@@ -254,11 +254,17 @@ void VizMainImpl::CreateVizDevTools(mojom::VizDevToolsParamsPtr params) {
 #endif
 }
 
-void VizMainImpl::ExitProcess() {
+void VizMainImpl::ExitProcess(bool immediately) {
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
 
   // Close mojom::VizMain bindings first so the browser can't try to reconnect.
   receiver_.reset();
+
+  if (!gpu_init_->gpu_info().in_process_gpu && immediately) {
+    // Atomically shut down GPU process to make it faster and simpler.
+    base::Process::TerminateCurrentProcessImmediately(/*exit_code=*/0);
+    return;
+  }
 
   if (viz_compositor_thread_runner_) {
     // OOP-D requires destroying RootCompositorFrameSinkImpls on the compositor

@@ -193,10 +193,8 @@ bool HitTestQuery::FindTargetInRegionForLocation(
 
   // Exclude a region and all its descendants if the region has the ignore bit
   // set.
-  if (features::IsVizHitTestingSurfaceLayerEnabled() &&
-      hit_test_data_[region_index].flags & HitTestRegionFlags::kHitTestIgnore) {
+  if (hit_test_data_[region_index].flags & HitTestRegionFlags::kHitTestIgnore)
     return false;
-  }
 
   if (is_location_relative_to_parent) {
     // HasPerspective() is checked for the transform because the point will not

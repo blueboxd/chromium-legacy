@@ -73,6 +73,7 @@ source_set("test_support") {
     "//ios/chrome/browser/ui/main",
     "//ios/chrome/browser/ui/settings",
     "//ios/chrome/browser/ui/settings:settings_root",
+    "//ios/chrome/browser/ui/settings:test_support",
     "//ios/chrome/browser/ui/settings/password",
     "//ios/chrome/browser/ui/settings/password:test_support",
     "//ios/chrome/browser/ui/static_content",

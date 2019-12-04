@@ -67,4 +67,21 @@
 
     runTest(configuration);
   }
+
+  function testAudioConfigWithSpatialRendering(spatialRendering, queryType, contentType) {
+    // Clear previous test result from title.
+    document.title = '';
+
+    log("Testing audio content type: " + contentType + ", spatialRendering: " + spatialRendering);
+
+    const configuration = {
+      type : queryType,
+      audio : {
+        contentType : contentType,
+        spatialRendering : spatialRendering
+      }
+    };
+
+    runTest(configuration);
+  }
 </script>

@@ -29,9 +29,8 @@ using storage::QuotaManager;
 
 namespace content {
 
-namespace {
-
-void BindConnectorOnIOThread(
+// static
+void QuotaDispatcherHost::BindQuotaDispatcherHostOnIOThread(
     int render_process_id,
     int render_frame_id,
     storage::QuotaManager* quota_manager,
@@ -41,39 +40,6 @@ void BindConnectorOnIOThread(
           render_process_id, render_frame_id, quota_manager,
           GetContentClient()->browser()->CreateQuotaPermissionContext()),
       std::move(receiver));
-}
-
-}  // namespace
-
-// static
-void QuotaDispatcherHost::CreateForWorker(
-    mojo::PendingReceiver<blink::mojom::QuotaDispatcherHost> receiver,
-    RenderProcessHost* host,
-    const url::Origin& origin) {
-  // TODO(crbug.com/779444): Save the |origin| here and use it rather than the
-  // one provided by QuotaDispatcher.
-
-  // Bind on the IO thread.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          &BindConnectorOnIOThread, host->GetID(), MSG_ROUTING_NONE,
-          base::RetainedRef(host->GetStoragePartition()->GetQuotaManager()),
-          std::move(receiver)));
-}
-
-// static
-void QuotaDispatcherHost::CreateForFrame(
-    RenderProcessHost* host,
-    int render_frame_id,
-    mojo::PendingReceiver<blink::mojom::QuotaDispatcherHost> receiver) {
-  // Bind on the IO thread.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          &BindConnectorOnIOThread, host->GetID(), render_frame_id,
-          base::RetainedRef(host->GetStoragePartition()->GetQuotaManager()),
-          std::move(receiver)));
 }
 
 QuotaDispatcherHost::QuotaDispatcherHost(

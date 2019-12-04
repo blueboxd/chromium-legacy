@@ -90,6 +90,8 @@ class ChromeBrowserCloudManagementController
   // Returns whether the enterprise startup dialog is being diaplayed.
   bool IsEnterpriseStartupDialogShowing();
 
+  void UnenrollBrowser();
+
   // CloudPolicyClient::Observer implementation:
   void OnPolicyFetched(CloudPolicyClient* client) override;
   void OnRegistrationStateChanged(CloudPolicyClient* client) override;
@@ -104,6 +106,9 @@ class ChromeBrowserCloudManagementController
   void RegisterForCloudManagementWithEnrollmentTokenCallback(
       const std::string& dm_token,
       const std::string& client_id);
+
+  void InvalidatePolicies();
+  void InvalidateDMTokenCallback(bool success);
 
   void CreateReportSchedulerAsync(
       scoped_refptr<base::SequencedTaskRunner> task_runner);

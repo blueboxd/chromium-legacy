@@ -2400,7 +2400,7 @@
       'gfx_unittests': {},
       'unit_tests': {
         'android_swarming': {
-          'shards': 10,
+          'shards': 2,
         },
       },
       'viz_unittests': {},
@@ -3873,11 +3873,6 @@
       },
     },
 
-    'gpu_skia_renderer_telemetry_tests': [
-      'gpu_skia_renderer_non_vulkan_telemetry_tests',
-      'gpu_skia_renderer_vulkan_telemetry_tests',
-    ],
-
     'gpu_skia_renderer_vulkan_gtests': {
       'vulkan_content_browsertests': {
         'args': [
@@ -4194,6 +4189,38 @@
       'ios_components_unittests': {},
     },
 
+    'ios_eg2_tests': {
+      'ios_chrome_integration_eg2tests_module': {
+        'app': 'ios_chrome_integration_eg2tests_module',
+        'host': 'ios_chrome_eg2tests',
+      },
+      'ios_chrome_smoke_eg2tests_module': {
+        'app': 'ios_chrome_smoke_eg2tests_module',
+        'host': 'ios_chrome_eg2tests',
+      },
+      'ios_chrome_settings_eg2tests_module': {
+        'app': 'ios_chrome_settings_eg2tests_module',
+        'host': 'ios_chrome_eg2tests',
+      },
+      'ios_chrome_ui_eg2tests_module': {
+        'app': 'ios_chrome_ui_eg2tests_module',
+        'host': 'ios_chrome_eg2tests',
+        'shards': 2,
+      },
+      'ios_chrome_web_eg2tests_module': {
+        'app': 'ios_chrome_web_eg2tests_module',
+        'host': 'ios_chrome_eg2tests',
+      },
+      'ios_web_shell_eg2tests_module': {
+        'app': 'ios_web_shell_eg2tests_module',
+        'host': 'ios_web_shell_eg2tests',
+      },
+      'ios_showcase_eg2tests_module': {
+        'app': 'ios_showcase_eg2tests_module',
+        'host': 'ios_showcase_eg2tests',
+      },
+    },
+
     # END tests which run on the GPU bots
     'layout_ng_gtests': {
       'webkit_unit_tests_ng': {
@@ -4326,25 +4353,6 @@
 
     'mac_specific_isolated_scripts': {
       'mac_signing_tests': {},
-    },
-
-    'memory_infra_isolated_scripts': {
-      'heap_profiling.mobile': {
-        'args': [
-          '--pageset-repeat=1',
-          '--benchmarks=heap_profiling.mobile.disabled,heap_profiling.mobile.native,heap_profiling.mobile.pseudo',
-          '-v',
-          '--output-format=chartjson',
-          '--browser=android-chromium',
-        ],
-        'isolate_name': 'performance_test_suite',
-        'merge': {
-          'args': [
-            '--smoke-test-mode',
-          ],
-          'script': '//tools/perf/process_perf_results.py',
-        },
-      },
     },
 
     'mojo_chromiumos_specific_gtests': {
@@ -4506,7 +4514,6 @@
       },
       'chrome_app_unittests': {},
       'chromedriver_unittests': {},
-      'color_unittests': {},
       'extensions_browsertests': {},
       'extensions_unittests': {},
       'filesystem_service_unittests': {},  # https://crbug.com/862712
@@ -5862,6 +5869,11 @@
       'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests',
     ],
 
+    'gpu_skia_renderer_telemetry_tests': [
+      'gpu_skia_renderer_non_vulkan_telemetry_tests',
+      'gpu_skia_renderer_vulkan_telemetry_tests',
+    ],
+
     'gpu_v8_desktop_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
@@ -5992,5 +6004,39 @@
       'webview_ui_instrumentation_tests',
       'webview_ui_instrumentation_tests_no_field_trial',
     ],
+  },
+
+  ##############################################################################
+  # Matrix compound test suites.                                               #
+  ##############################################################################
+
+  'matrix_compound_suites': {
+
+    # This is a sample and is not functional
+    'ios_simulator_cr_recipe_gtests': {
+      'ios_eg2_tests': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device type': 'iPhone X',
+              'os': '13.2',
+            },
+            {
+              'device type': 'iPhone 7',
+              'os': '13.2',
+            },
+            {
+              'device type': 'iPhone X',
+              'os': '12.4',
+            },
+            {
+              'device type': 'iPad (6th generation)',
+              'os': '12.4',
+            },
+          ],
+        },
+      },
+    },
+
   }
 }

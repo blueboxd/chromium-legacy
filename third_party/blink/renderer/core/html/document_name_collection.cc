@@ -28,7 +28,9 @@ bool DocumentNameCollection::ElementMatches(const HTMLElement& element) const {
   if (IsA<HTMLFormElement>(element) || IsA<HTMLIFrameElement>(element) ||
       (IsHTMLEmbedElement(element) && ToHTMLEmbedElement(element).IsExposed()))
     return element.GetNameAttribute() == name_;
-  if (IsHTMLObjectElement(element) && ToHTMLObjectElement(element).IsExposed())
+
+  auto* html_image_element = DynamicTo<HTMLObjectElement>(&element);
+  if (html_image_element && html_image_element->IsExposed())
     return element.GetNameAttribute() == name_ ||
            element.GetIdAttribute() == name_;
   if (IsHTMLImageElement(element)) {

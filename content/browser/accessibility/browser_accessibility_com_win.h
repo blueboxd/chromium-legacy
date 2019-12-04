@@ -414,6 +414,9 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
 
   BrowserAccessibilityManager* Manager() const;
 
+  // Private helper methods.
+  bool ShouldFireHypertextEvents() const;
+
   //
   // AXPlatformNode overrides
   //

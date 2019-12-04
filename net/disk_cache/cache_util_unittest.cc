@@ -101,76 +101,45 @@ TEST_F(CacheUtilTest, DeleteCacheFile) {
 TEST_F(CacheUtilTest, PreferredCacheSize) {
   const struct TestCase {
     int64_t available;
-    int expected_without_trial;
-    int expected_with_200_trial;
+    int expected;
   } kTestCases[] = {
+      // Weird negative value for available --- return the "default"
+      {-1000LL, 80 * 1024 * 1024},
+      {-1LL, 80 * 1024 * 1024},
+
+      // 0 produces 0.
+      {0LL, 0},
+
       // Cache is 80% of available space, when default cache size is larger than
       // 80% of available space..
-      {50 * 1024 * 1024LL, 40 * 1024 * 1024, 40 * 1024 * 1024},
+      {50 * 1024 * 1024LL, 40 * 1024 * 1024},
       // Cache is default size, when default size is 10% to 80% of available
       // space.
-      {100 * 1024 * 1024LL, 80 * 1024 * 1024, 80 * 1024 * 1024},
-      {200 * 1024 * 1024LL, 80 * 1024 * 1024, 80 * 1024 * 1024},
-      // Same case as above, but the size is now less than 20% of available
-      // space, so the trial increases cache size, though not yet doubling it.
-      {500 * 1024 * 1024LL, 80 * 1024 * 1024, 100 * 1024 * 1024},
+      {100 * 1024 * 1024LL, 80 * 1024 * 1024},
+      {200 * 1024 * 1024LL, 80 * 1024 * 1024},
       // Cache is 10% of available space if 2.5 * default size is more than 10%
       // of available space.
-      {1000 * 1024 * 1024LL, 100 * 1024 * 1024, 200 * 1024 * 1024},
-      {2000 * 1024 * 1024LL, 200 * 1024 * 1024, 400 * 1024 * 1024},
+      {1000 * 1024 * 1024LL, 100 * 1024 * 1024},
+      {2000 * 1024 * 1024LL, 200 * 1024 * 1024},
       // Cache is 2.5 * kDefaultCacheSize if 2.5 * kDefaultCacheSize uses from
       // 1% to 10% of available space.
-      {10000 * 1024 * 1024LL, 200 * 1024 * 1024, 400 * 1024 * 1024},
+      {10000 * 1024 * 1024LL, 200 * 1024 * 1024},
       // Otherwise, cache is 1% of available space.
-      {20000 * 1024 * 1024LL, 200 * 1024 * 1024, 400 * 1024 * 1024},
+      {20000 * 1024 * 1024LL, 200 * 1024 * 1024},
       // Until it runs into the cache size cap.
-      {32000 * 1024 * 1024LL, 320 * 1024 * 1024, 640 * 1024 * 1024},
-      {50000 * 1024 * 1024LL, 320 * 1024 * 1024, 640 * 1024 * 1024},
+      {32000 * 1024 * 1024LL, 320 * 1024 * 1024},
+      {50000 * 1024 * 1024LL, 320 * 1024 * 1024},
   };
 
   for (const auto& test_case : kTestCases) {
-    EXPECT_EQ(test_case.expected_without_trial,
-              PreferredCacheSize(test_case.available));
+    EXPECT_EQ(test_case.expected, PreferredCacheSize(test_case.available))
+        << test_case.available;
   }
 
   // Check that the cache size cap is 50% higher for native code caches.
   EXPECT_EQ(((320 * 1024 * 1024) / 2) * 3,
             PreferredCacheSize(50000 * 1024 * 1024LL,
                                net::GENERATED_NATIVE_CODE_CACHE));
-
-  // Check 100 "percent_relative_size" matches default behavior.
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    std::map<std::string, std::string> field_trial_params;
-    field_trial_params["percent_relative_size"] = "100";
-    scoped_feature_list.InitAndEnableFeatureWithParameters(
-        disk_cache::kChangeDiskCacheSizeExperiment, field_trial_params);
-    for (const auto& test_case : kTestCases) {
-      EXPECT_EQ(test_case.expected_without_trial,
-                PreferredCacheSize(test_case.available));
-    }
-    // Check that the cache size cap is 50% higher for native code caches.
-    EXPECT_EQ(((320 * 1024 * 1024) / 2) * 3,
-              PreferredCacheSize(50000 * 1024 * 1024LL,
-                                 net::GENERATED_NATIVE_CODE_CACHE));
-  }
-
-  // Check 200 "percent_relative_size".
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    std::map<std::string, std::string> field_trial_params;
-    field_trial_params["percent_relative_size"] = "200";
-    scoped_feature_list.InitAndEnableFeatureWithParameters(
-        disk_cache::kChangeDiskCacheSizeExperiment, field_trial_params);
-    for (const auto& test_case : kTestCases) {
-      EXPECT_EQ(test_case.expected_with_200_trial,
-                PreferredCacheSize(test_case.available));
-    }
-    // Check that the cache size cap is 50% higher for native code caches.
-    EXPECT_EQ(((640 * 1024 * 1024) / 2) * 3,
-              PreferredCacheSize(50000 * 1024 * 1024LL,
-                                 net::GENERATED_NATIVE_CODE_CACHE));
-  }
 }
 
 }  // namespace disk_cache

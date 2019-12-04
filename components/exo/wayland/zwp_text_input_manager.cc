@@ -115,7 +115,7 @@ class WaylandTextInputDelegate : public TextInput::Delegate {
 
   void SendKey(const ui::KeyEvent& event) override {
     uint32_t code = ui::KeycodeConverter::DomCodeToNativeKeycode(event.code());
-    bool pressed = event.flags() | ui::ET_KEY_PRESSED;
+    bool pressed = (event.type() == ui::ET_KEY_PRESSED);
     // TODO(mukai): consolidate the definition of this modifiers_mask with other
     // similar ones in components/exo/keyboard.cc or arc_ime_service.cc.
     constexpr uint32_t modifiers_mask =

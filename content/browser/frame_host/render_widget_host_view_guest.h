@@ -24,15 +24,10 @@
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace IPC {
-class Message;
-}  // namespace IPC
-
 namespace content {
 
 class BrowserPluginGuest;
 class RenderWidgetHost;
-class RenderWidgetHostImpl;
 struct TextInputState;
 
 // See comments in render_widget_host_view.h about this class and its members.
@@ -56,9 +51,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   static RenderWidgetHostViewBase* GetRootView(RenderWidgetHostViewBase* rwhv);
 
   ~RenderWidgetHostViewGuest() override;
-
-  bool OnMessageReceivedFromEmbedder(const IPC::Message& message,
-                                     RenderWidgetHostImpl* embedder);
 
   // Called when this RenderWidgetHostViewGuest is attached.
   void OnAttached();
@@ -176,10 +168,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
       RenderWidgetHostViewBase* owner_view,
       const blink::WebFloatPoint& position,
       const blink::WebFloatPoint& screen_position);
-
-  void OnHandleInputEvent(RenderWidgetHostImpl* embedder,
-                          int browser_plugin_instance_id,
-                          const blink::WebInputEvent* event);
 
   void ProcessTouchpadZoomEventAckInRoot(const blink::WebGestureEvent& event,
                                          InputEventAckState ack_result);

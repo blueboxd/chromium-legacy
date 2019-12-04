@@ -82,7 +82,6 @@ class SiteDataImpl : public base::RefCounted<SiteDataImpl> {
   SiteFeatureUsage UpdatesFaviconInBackground() const;
   SiteFeatureUsage UpdatesTitleInBackground() const;
   SiteFeatureUsage UsesAudioInBackground() const;
-  SiteFeatureUsage UsesNotificationsInBackground() const;
 
   // Returns true if the most authoritative data has been loaded from the
   // backing store.
@@ -109,7 +108,6 @@ class SiteDataImpl : public base::RefCounted<SiteDataImpl> {
   void NotifyUpdatesFaviconInBackground();
   void NotifyUpdatesTitleInBackground();
   void NotifyUsesAudioInBackground();
-  void NotifyUsesNotificationsInBackground();
 
   // Call when a load-time performance measurement becomes available.
   void NotifyLoadTimePerformanceMeasurement(

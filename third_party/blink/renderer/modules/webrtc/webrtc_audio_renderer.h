@@ -24,9 +24,9 @@
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/channel_layout.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_renderer.h"
-#include "third_party/blink/public/platform/modules/webrtc/webrtc_source.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/webrtc/webrtc_source.h"
 
 namespace webrtc {
 class AudioSourceInterface;

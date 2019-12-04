@@ -628,22 +628,6 @@
             }
           ]
         },
-        "test": "color_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.14.6"
-            }
-          ]
-        },
         "test": "components_browsertests"
       },
       {
@@ -2878,16 +2862,6 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
-        "test": "color_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
         "test": "components_browsertests"
       },
       {
@@ -4081,22 +4055,6 @@
           ]
         },
         "test": "chromedriver_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-17134"
-            }
-          ]
-        },
-        "test": "color_unittests"
       },
       {
         "merge": {
@@ -8581,7 +8539,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 10
+          "shards": 2
         },
         "test": "unit_tests"
       },
@@ -14298,7 +14256,333 @@
       }
     ]
   },
-  "ios-simulator-cr-recipe": {},
+  "ios-simulator-cr-recipe": {
+    "gtest_tests": [
+      {
+        "app": "ios_chrome_integration_eg2tests_module",
+        "host": "ios_chrome_eg2tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device type": "iPhone X",
+              "host os": "Mac-10.14.6",
+              "os": "13.2",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11b53",
+              "xcode_parallelization": "true"
+            },
+            {
+              "device type": "iPhone 7",
+              "host os": "Mac-10.14.6",
+              "os": "13.2",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11b53",
+              "xcode_parallelization": "true"
+            },
+            {
+              "device type": "iPhone X",
+              "host os": "Mac-10.14.6",
+              "os": "12.4",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11b53",
+              "xcode_parallelization": "true"
+            },
+            {
+              "device type": "iPad (6th generation)",
+              "host os": "Mac-10.14.6",
+              "os": "12.4",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11b53",
+              "xcode_parallelization": "true"
+            }
+          ]
+        },
+        "test": "ios_chrome_integration_eg2tests_module"
+      },
+      {
+        "app": "ios_chrome_settings_eg2tests_module",
+        "host": "ios_chrome_eg2tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device type": "iPhone X",
+              "host os": "Mac-10.14.6",
+              "os": "13.2",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11b53",
+              "xcode_parallelization": "true"
+            },
+            {
+              "device type": "iPhone 7",
+              "host os": "Mac-10.14.6",
+              "os": "13.2",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11b53",
+              "xcode_parallelization": "true"
+            },
+            {
+              "device type": "iPhone X",
+              "host os": "Mac-10.14.6",
+              "os": "12.4",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11b53",
+              "xcode_parallelization": "true"
+            },
+            {
+              "device type": "iPad (6th generation)",
+              "host os": "Mac-10.14.6",
+              "os": "12.4",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11b53",
+              "xcode_parallelization": "true"
+            }
+          ]
+        },
+        "test": "ios_chrome_settings_eg2tests_module"
+      },
+      {
+        "app": "ios_chrome_smoke_eg2tests_module",
+        "host": "ios_chrome_eg2tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device type": "iPhone X",
+              "host os": "Mac-10.14.6",
+              "os": "13.2",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11b53",
+              "xcode_parallelization": "true"
+            },
+            {
+              "device type": "iPhone 7",
+              "host os": "Mac-10.14.6",
+              "os": "13.2",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11b53",
+              "xcode_parallelization": "true"
+            },
+            {
+              "device type": "iPhone X",
+              "host os": "Mac-10.14.6",
+              "os": "12.4",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11b53",
+              "xcode_parallelization": "true"
+            },
+            {
+              "device type": "iPad (6th generation)",
+              "host os": "Mac-10.14.6",
+              "os": "12.4",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11b53",
+              "xcode_parallelization": "true"
+            }
+          ]
+        },
+        "test": "ios_chrome_smoke_eg2tests_module"
+      },
+      {
+        "app": "ios_chrome_ui_eg2tests_module",
+        "host": "ios_chrome_eg2tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "shards": 2,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device type": "iPhone X",
+              "host os": "Mac-10.14.6",
+              "os": "13.2",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11b53",
+              "xcode_parallelization": "true"
+            },
+            {
+              "device type": "iPhone 7",
+              "host os": "Mac-10.14.6",
+              "os": "13.2",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11b53",
+              "xcode_parallelization": "true"
+            },
+            {
+              "device type": "iPhone X",
+              "host os": "Mac-10.14.6",
+              "os": "12.4",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11b53",
+              "xcode_parallelization": "true"
+            },
+            {
+              "device type": "iPad (6th generation)",
+              "host os": "Mac-10.14.6",
+              "os": "12.4",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11b53",
+              "xcode_parallelization": "true"
+            }
+          ]
+        },
+        "test": "ios_chrome_ui_eg2tests_module"
+      },
+      {
+        "app": "ios_chrome_web_eg2tests_module",
+        "host": "ios_chrome_eg2tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device type": "iPhone X",
+              "host os": "Mac-10.14.6",
+              "os": "13.2",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11b53",
+              "xcode_parallelization": "true"
+            },
+            {
+              "device type": "iPhone 7",
+              "host os": "Mac-10.14.6",
+              "os": "13.2",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11b53",
+              "xcode_parallelization": "true"
+            },
+            {
+              "device type": "iPhone X",
+              "host os": "Mac-10.14.6",
+              "os": "12.4",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11b53",
+              "xcode_parallelization": "true"
+            },
+            {
+              "device type": "iPad (6th generation)",
+              "host os": "Mac-10.14.6",
+              "os": "12.4",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11b53",
+              "xcode_parallelization": "true"
+            }
+          ]
+        },
+        "test": "ios_chrome_web_eg2tests_module"
+      },
+      {
+        "app": "ios_showcase_eg2tests_module",
+        "host": "ios_showcase_eg2tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device type": "iPhone X",
+              "host os": "Mac-10.14.6",
+              "os": "13.2",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11b53",
+              "xcode_parallelization": "true"
+            },
+            {
+              "device type": "iPhone 7",
+              "host os": "Mac-10.14.6",
+              "os": "13.2",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11b53",
+              "xcode_parallelization": "true"
+            },
+            {
+              "device type": "iPhone X",
+              "host os": "Mac-10.14.6",
+              "os": "12.4",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11b53",
+              "xcode_parallelization": "true"
+            },
+            {
+              "device type": "iPad (6th generation)",
+              "host os": "Mac-10.14.6",
+              "os": "12.4",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11b53",
+              "xcode_parallelization": "true"
+            }
+          ]
+        },
+        "test": "ios_showcase_eg2tests_module"
+      },
+      {
+        "app": "ios_web_shell_eg2tests_module",
+        "host": "ios_web_shell_eg2tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device type": "iPhone X",
+              "host os": "Mac-10.14.6",
+              "os": "13.2",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11b53",
+              "xcode_parallelization": "true"
+            },
+            {
+              "device type": "iPhone 7",
+              "host os": "Mac-10.14.6",
+              "os": "13.2",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11b53",
+              "xcode_parallelization": "true"
+            },
+            {
+              "device type": "iPhone X",
+              "host os": "Mac-10.14.6",
+              "os": "12.4",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11b53",
+              "xcode_parallelization": "true"
+            },
+            {
+              "device type": "iPad (6th generation)",
+              "host os": "Mac-10.14.6",
+              "os": "12.4",
+              "pool": "chrome.tests",
+              "xcode_build_version": "11b53",
+              "xcode_parallelization": "true"
+            }
+          ]
+        },
+        "test": "ios_web_shell_eg2tests_module"
+      }
+    ]
+  },
   "linux-annotator-rel": {
     "scripts": [
       {
@@ -17115,22 +17399,6 @@
             }
           ]
         },
-        "test": "color_unittests"
-      },
-      {
-        "isolate_coverage_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
         "test": "components_browsertests"
       },
       {
@@ -18555,21 +18823,6 @@
           ]
         },
         "test": "chromedriver_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test": "color_unittests"
       },
       {
         "merge": {
@@ -20295,22 +20548,6 @@
           ]
         },
         "test": "chromedriver_unittests"
-      },
-      {
-        "isolate_coverage_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test": "color_unittests"
       },
       {
         "isolate_coverage_data": true,
@@ -26052,23 +26289,6 @@
             }
           ]
         },
-        "test": "color_unittests"
-      },
-      {
-        "isolate_coverage_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.13.6"
-            }
-          ]
-        },
         "test": "components_browsertests"
       },
       {
@@ -27418,23 +27638,6 @@
           "expiration": 21600
         },
         "test": "chromedriver_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "os": "Mac-10.15"
-            }
-          ],
-          "expiration": 21600
-        },
-        "test": "color_unittests"
       },
       {
         "merge": {
@@ -29213,17 +29416,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "chromedriver_unittests"
-      },
-      {
-        "isolate_coverage_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "color_unittests"
       },
       {
         "isolate_coverage_data": true,

@@ -78,7 +78,6 @@
     'chromium.android.fyi': {
       'Android WebView P FYI (rel)': 'android_release_bot_minimal_symbols_arm64_webview_google',
       'Android WebView P OOR-CORS FYI (rel)': 'android_release_bot_minimal_symbols_arm64_webview_google',
-      'Memory Infra Tester': 'android_release_thumb_bot',
       'android-marshmallow-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_resource_whitelisting',
       'android-pie-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86',
       'android-bfcache-debug': 'android_debug_static_bot',
@@ -673,7 +672,7 @@
       'android-cronet-arm-dbg': 'android_cronet_debug_static_bot_arm_no_neon',
       'android-kitkat-arm-rel': 'android_release_trybot_fastbuild',
       'android-marshmallow-arm64-coverage-rel': 'gpu_tests_android_release_trybot_arm64_resource_whitelisting_fastbuild_java_coverage',
-      'android-marshmallow-arm64-rel': 'gpu_tests_android_release_trybot_arm64_resource_whitelisting_fastbuild',
+      'android-marshmallow-arm64-rel': 'gpu_tests_android_release_trybot_arm64_resource_whitelisting_fastbuild_java_coverage',
       'android-marshmallow-x86-fyi-rel': 'android_release_trybot_x86_resource_whitelisting',
       'android-oreo-arm64-cts-networkservice-dbg': 'android_debug_trybot_arm64',
       'android-pie-arm64-rel': 'android_release_trybot_arm64_webview_google',
@@ -1175,10 +1174,6 @@
       'resource_whitelisting',
     ],
 
-    'android_release_thumb_bot': [
-      'android', 'release_bot', 'arm_thumb',
-    ],
-
     'android_release_trybot': [
       'android', 'release_trybot', 'strip_debug_info',
     ],
@@ -1656,12 +1651,6 @@
       'android_fastbuild',
     ],
 
-    'gpu_tests_android_release_trybot_arm64_resource_whitelisting_fastbuild': [
-      'gpu_tests', 'android', 'release_trybot', 'arm64', 'static_angle',
-      'resource_whitelisting', 'android_fastbuild', 'webview_google',
-      'android_no_proguard',
-    ],
-
     'gpu_tests_android_release_trybot_arm64_resource_whitelisting_fastbuild_java_coverage': [
       'gpu_tests', 'android', 'release_trybot', 'arm64', 'static_angle',
       'resource_whitelisting', 'android_fastbuild', 'webview_google',
@@ -2118,10 +2107,6 @@
     'arm_no_neon': {
       'mixins': ['arm'],
       'gn_args': 'arm_use_neon=false',
-    },
-
-    'arm_thumb': {
-      'gn_args': 'arm_use_thumb=true',
     },
 
     'asan': {

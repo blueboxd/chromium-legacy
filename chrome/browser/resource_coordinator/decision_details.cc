@@ -21,7 +21,6 @@ const char* kDecisionFailureReasonStrings[] = {
     "Origin has been observed playing audio while backgrounded",
     "Origin has been observed updating favicon while backgrounded",
     "Origin is temporarily protected while under observation",
-    "Origin has been observed emitting notifications while backgrounded",
     "Origin has been observed updating title while backgrounded",
     "Tab is currently capturing the camera and/or microphone",
     "Tab has been protected by an extension",
@@ -97,9 +96,6 @@ void PopulateFailureReason(
       break;
     case DecisionFailureReason::HEURISTIC_INSUFFICIENT_OBSERVATION:
       ukm->SetFailureHeuristicInsufficientObservation(1);
-      break;
-    case DecisionFailureReason::HEURISTIC_NOTIFICATIONS:
-      ukm->SetFailureHeuristicNotifications(1);
       break;
     case DecisionFailureReason::HEURISTIC_TITLE:
       ukm->SetFailureHeuristicTitle(1);

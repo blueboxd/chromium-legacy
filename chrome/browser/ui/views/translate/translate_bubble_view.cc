@@ -697,7 +697,7 @@ void TranslateBubbleView::ConfirmAdvancedOptions() {
   model_->SetAlwaysTranslate(should_always_translate_);
   if (bubble_ui_model_ == language::TranslateUIBubbleModel::TAB) {
     if (model_->IsPageTranslatedInCurrentLanguages()) {
-      SwitchView(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE);
+      SwitchView(TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE);
       SizeToContents();
     } else {
       base::string16 original_language_name;
@@ -1250,7 +1250,7 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvanced() {
       this, l10n_util::GetStringUTF16(IDS_CANCEL));
   advanced_cancel_button->SetID(BUTTON_ID_CANCEL);
   advanced_done_button_ = layout->AddView(std::move(advanced_done_button));
-  advanced_cancel_button_ = layout->AddView(std::move(advanced_cancel_button));
+  layout->AddView(std::move(advanced_cancel_button));
 
   UpdateAdvancedView();
 
@@ -1280,8 +1280,16 @@ TranslateBubbleView::TabUiCreateViewAdvanedSource() {
   source_language_combobox->SetID(COMBOBOX_ID_SOURCE_LANGUAGE);
   source_language_combobox->set_listener(this);
   source_language_combobox_ = source_language_combobox.get();
+
+  auto advanced_done_button = views::MdTextButton::CreateSecondaryUiButton(
+      this, l10n_util::GetStringUTF16(IDS_DONE));
+  advanced_done_button->SetID(BUTTON_ID_DONE);
+  advanced_done_button->SetIsDefault(true);
+  advanced_done_button_source_ = advanced_done_button.get();
+
   return CreateViewAdvancedTabUi(std::move(source_language_combobox),
-                                 std::move(source_language_title_label));
+                                 std::move(source_language_title_label),
+                                 std::move(advanced_done_button));
 }
 
 std::unique_ptr<views::View>
@@ -1304,13 +1312,22 @@ TranslateBubbleView::TabUiCreateViewAdvanedTarget() {
   target_language_combobox->SetID(COMBOBOX_ID_TARGET_LANGUAGE);
   target_language_combobox->set_listener(this);
   target_language_combobox_ = target_language_combobox.get();
+
+  auto advanced_done_button = views::MdTextButton::CreateSecondaryUiButton(
+      this, l10n_util::GetStringUTF16(IDS_DONE));
+  advanced_done_button->SetID(BUTTON_ID_DONE);
+  advanced_done_button->SetIsDefault(true);
+  advanced_done_button_target_ = advanced_done_button.get();
+
   return CreateViewAdvancedTabUi(std::move(target_language_combobox),
-                                 std::move(target_language_title_label));
+                                 std::move(target_language_title_label),
+                                 std::move(advanced_done_button));
 }
 
 std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
     std::unique_ptr<views::Combobox> combobox,
-    std::unique_ptr<views::Label> language_title_label) {
+    std::unique_ptr<views::Label> language_title_label,
+    std::unique_ptr<views::Button> advanced_done_button) {
   const int language_icon_id = IDR_TRANSLATE_BUBBLE_ICON;
   std::unique_ptr<views::ImageView> language_icon =
       std::make_unique<views::ImageView>();
@@ -1408,12 +1425,8 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
   auto advanced_reset_button = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_RESET));
   advanced_reset_button->SetID(BUTTON_ID_RESET);
-  auto advanced_done_button = views::MdTextButton::CreateSecondaryUiButton(
-      this, l10n_util::GetStringUTF16(IDS_DONE));
-  advanced_done_button->SetID(BUTTON_ID_DONE);
-  advanced_done_button->SetIsDefault(true);
-  advanced_cancel_button_ = layout->AddView(std::move(advanced_reset_button));
-  advanced_done_button_ = layout->AddView(std::move(advanced_done_button));
+  layout->AddView(std::move(advanced_reset_button));
+  layout->AddView(std::move(advanced_done_button));
 
   UpdateAdvancedView();
 
@@ -1486,11 +1499,25 @@ void TranslateBubbleView::SwitchToErrorView(
 }
 
 void TranslateBubbleView::UpdateAdvancedView() {
-  DCHECK(advanced_done_button_);
-  advanced_done_button_->SetText(
-      l10n_util::GetStringUTF16(model_->IsPageTranslatedInCurrentLanguages()
-                                    ? IDS_DONE
-                                    : IDS_TRANSLATE_BUBBLE_ACCEPT));
+  if (advanced_done_button_) {
+    advanced_done_button_->SetText(
+        l10n_util::GetStringUTF16(model_->IsPageTranslatedInCurrentLanguages()
+                                      ? IDS_DONE
+                                      : IDS_TRANSLATE_BUBBLE_ACCEPT));
+  }
+  if (advanced_done_button_source_) {
+    advanced_done_button_source_->SetText(
+        l10n_util::GetStringUTF16(model_->IsPageTranslatedInCurrentLanguages()
+                                      ? IDS_DONE
+                                      : IDS_TRANSLATE_BUBBLE_ACCEPT));
+  }
+  if (advanced_done_button_target_) {
+    advanced_done_button_target_->SetText(
+        l10n_util::GetStringUTF16(model_->IsPageTranslatedInCurrentLanguages()
+                                      ? IDS_DONE
+                                      : IDS_TRANSLATE_BUBBLE_ACCEPT));
+  }
+  Layout();
 }
 
 void TranslateBubbleView::UpdateLanguageNames(

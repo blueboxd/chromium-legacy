@@ -764,17 +764,16 @@ SMILTime SVGSMILElement::ResolveActiveEnd(SMILTime resolved_begin) const {
 
 SMILInterval SVGSMILElement::ResolveInterval(SMILTime begin_after,
                                              SMILTime end_after) const {
-  if (begin_times_.IsEmpty())
-    return SMILInterval::Unresolved();
   // Simplified version of the pseudocode in
   // http://www.w3.org/TR/SMIL3/smil-timing.html#q90.
   const size_t kMaxIterations = std::max(begin_times_.size() * 4, 1000000u);
   size_t current_iteration = 0;
-  while (true) {
+  for (auto* search_start = begin_times_.begin();
+       search_start != begin_times_.end(); ++search_start) {
     // Find the (next) instance time in the 'begin' list that is greater or
     // equal to |begin_after|.
     auto* begin_item = std::lower_bound(
-        begin_times_.begin(), begin_times_.end(), begin_after,
+        search_start, begin_times_.end(), begin_after,
         [](const SMILTimeWithOrigin& instance_time, const SMILTime& time) {
           return instance_time.Time() < time;
         });
@@ -789,9 +788,9 @@ SMILInterval SVGSMILElement::ResolveInterval(SMILTime begin_after,
     // Don't allow the interval to end in the past.
     if (temp_end > end_after)
       return SMILInterval(begin_item->Time(), temp_end);
-    // Ensure forward progress.
-    if (begin_after == temp_end)
-      temp_end = begin_after + SMILTime::Epsilon();
+    // Ensure forward progress by only considering the part of the 'begin' list
+    // after |begin_item| for the next iteration.
+    search_start = begin_item;
     begin_after = temp_end;
     // Debugging signal for crbug.com/1021630.
     CHECK_LT(current_iteration++, kMaxIterations);
@@ -840,14 +839,24 @@ void SVGSMILElement::InstanceListChanged() {
   // care of updating the active state and send events as needed.
   SMILTime previous_presentation_time =
       current_presentation_time - SMILTime::Epsilon();
-  if (was_active && interval_.BeginsAfter(previous_presentation_time)) {
-    active_state_ = DetermineActiveState(previous_presentation_time);
+  if (was_active) {
+    const SMILInterval& active_interval =
+        GetActiveInterval(previous_presentation_time);
+    active_state_ =
+        DetermineActiveState(active_interval, previous_presentation_time);
     if (GetActiveState() != kActive)
       EndedActiveInterval();
   }
   if (time_container_) {
-    time_container_->Reschedule(
-        this, ComputeNextIntervalTime(previous_presentation_time));
+    SMILTime next_interval_time;
+    // If we switched interval and the previous interval did not end yet, we
+    // need to consider it when computing the next interval time.
+    if (previous_interval_.IsResolved() &&
+        previous_interval_.EndsAfter(previous_presentation_time))
+      next_interval_time = previous_interval_.end;
+    else
+      next_interval_time = ComputeNextIntervalTime(previous_presentation_time);
+    time_container_->Reschedule(this, next_interval_time);
   }
 }
 
@@ -932,7 +941,7 @@ void SVGSMILElement::AddedToTimeContainer() {
   // care of updating the active state and send events as needed.
   SMILTime previous_presentation_time =
       current_presentation_time - SMILTime::Epsilon();
-  active_state_ = DetermineActiveState(previous_presentation_time);
+  active_state_ = DetermineActiveState(interval_, previous_presentation_time);
   time_container_->Reschedule(
       this, ComputeNextIntervalTime(previous_presentation_time));
 
@@ -1029,8 +1038,9 @@ SMILTime SVGSMILElement::NextProgressTime(SMILTime presentation_time) const {
 }
 
 SVGSMILElement::ActiveState SVGSMILElement::DetermineActiveState(
+    const SMILInterval& interval,
     SMILTime elapsed) const {
-  if (interval_.Contains(elapsed))
+  if (interval.Contains(elapsed))
     return kActive;
   if (is_waiting_for_first_interval_)
     return kInactive;
@@ -1048,7 +1058,7 @@ bool SVGSMILElement::IsContributing(SMILTime elapsed) const {
 
 void SVGSMILElement::UpdateActiveState(SMILTime elapsed) {
   const bool was_active = GetActiveState() == kActive;
-  active_state_ = DetermineActiveState(elapsed);
+  active_state_ = DetermineActiveState(interval_, elapsed);
   const bool is_active = GetActiveState() == kActive;
   const bool interval_restart =
       interval_has_changed_ && previous_interval_.end == interval_.begin;

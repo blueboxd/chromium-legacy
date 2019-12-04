@@ -9,11 +9,6 @@
 
 namespace blink {
 
-std::unique_ptr<webrtc::RtcEventLogOutput> CreateRtcEventLogOutputSinkProxy(
-    RtcEventLogOutputSink* sink) {
-  return std::make_unique<RtcEventLogOutputSinkProxy>(sink);
-}
-
 RtcEventLogOutputSinkProxy::RtcEventLogOutputSinkProxy(
     RtcEventLogOutputSink* sink)
     : sink_(sink) {

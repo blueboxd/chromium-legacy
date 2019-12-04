@@ -13,13 +13,17 @@
 namespace headless {
 namespace protocol {
 
-TargetHandler::TargetHandler(base::WeakPtr<HeadlessBrowserImpl> browser)
-    : DomainHandler(Target::Metainfo::domainName, browser) {}
+TargetHandler::TargetHandler(HeadlessBrowserImpl* browser)
+    : browser_(browser) {}
 
 TargetHandler::~TargetHandler() = default;
 
 void TargetHandler::Wire(UberDispatcher* dispatcher) {
   Target::Dispatcher::wire(dispatcher, this);
+}
+
+Response TargetHandler::Disable() {
+  return Response::OK();
 }
 
 Response TargetHandler::CreateTarget(const std::string& url,
@@ -37,11 +41,11 @@ Response TargetHandler::CreateTarget(const std::string& url,
 
   HeadlessBrowserContext* context;
   if (context_id.isJust()) {
-    context = browser()->GetBrowserContextForId(context_id.fromJust());
+    context = browser_->GetBrowserContextForId(context_id.fromJust());
     if (!context)
       return Response::InvalidParams("browserContextId");
   } else {
-    context = browser()->GetDefaultBrowserContext();
+    context = browser_->GetDefaultBrowserContext();
     if (!context) {
       return Response::Error(
           "You specified no |browserContextId|, but "
@@ -54,8 +58,8 @@ Response TargetHandler::CreateTarget(const std::string& url,
       context->CreateWebContentsBuilder()
           .SetInitialURL(GURL(url))
           .SetWindowSize(gfx::Size(
-              width.fromMaybe(browser()->options()->window_size.width()),
-              height.fromMaybe(browser()->options()->window_size.height())))
+              width.fromMaybe(browser_->options()->window_size.width()),
+              height.fromMaybe(browser_->options()->window_size.height())))
           .SetEnableBeginFrameControl(
               enable_begin_frame_control.fromMaybe(false))
           .Build());
@@ -67,7 +71,7 @@ Response TargetHandler::CreateTarget(const std::string& url,
 Response TargetHandler::CloseTarget(const std::string& target_id,
                                     bool* out_success) {
   HeadlessWebContents* web_contents =
-      browser()->GetWebContentsForDevToolsAgentHostId(target_id);
+      browser_->GetWebContentsForDevToolsAgentHostId(target_id);
   *out_success = false;
   if (web_contents) {
     web_contents->Close();

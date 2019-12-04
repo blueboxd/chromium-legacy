@@ -18,10 +18,8 @@
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/bubble/tooltip_icon.h"
-#include "ui/views/controls/styled_label.h"
-#include "ui/views/layout/box_layout.h"
-
-using views::BoxLayout;
+#include "ui/views/controls/label.h"
+#include "ui/views/layout/fill_layout.h"
 
 namespace {
 
@@ -60,32 +58,6 @@ std::unique_ptr<NonAccessibleImageView> CreateIllustration(
   image_view->SetSize(illustration_size);
   image_view->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
   return image_view;
-}
-
-// Creates the content containing the title and description for the dialog
-// rendered below the illustration.
-std::unique_ptr<views::View> CreateContent(const base::string16& title,
-                                           const base::string16& description) {
-  auto content = std::make_unique<views::View>();
-  content->SetLayoutManager(std::make_unique<BoxLayout>(
-      BoxLayout::Orientation::kVertical, gfx::Insets(),
-      views::LayoutProvider::Get()->GetDistanceMetric(
-          views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
-  content->SetBorder(views::CreateEmptyBorder(
-      views::LayoutProvider::Get()->GetDialogInsetsForContentType(
-          views::CONTROL, views::CONTROL)));
-
-  auto title_label = std::make_unique<views::Label>(
-      title, views::style::CONTEXT_DIALOG_TITLE, views::style::STYLE_PRIMARY);
-  title_label->SetMultiLine(true);
-  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  content->AddChildView(std::move(title_label));
-
-  auto description_label =
-      std::make_unique<views::StyledLabel>(description, nullptr);
-  content->AddChildView(std::move(description_label));
-
-  return content;
 }
 
 std::unique_ptr<views::TooltipIcon> CreateInfoIcon() {
@@ -176,20 +148,26 @@ bool CredentialLeakDialogView::ShouldShowCloseButton() const {
 }
 
 void CredentialLeakDialogView::OnThemeChanged() {
-  UpdateImageView(image_view_, GetNativeTheme()->ShouldUseDarkColors());
+  GetBubbleFrameView()->SetHeaderView(
+      CreateIllustration(GetNativeTheme()->ShouldUseDarkColors()));
+}
+
+base::string16 CredentialLeakDialogView::GetWindowTitle() const {
+  return controller_->GetTitle();
 }
 
 void CredentialLeakDialogView::InitWindow() {
-  SetLayoutManager(std::make_unique<BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
-      0 /* between_child_spacing */));
-  std::unique_ptr<NonAccessibleImageView> illustration =
-      CreateIllustration(GetNativeTheme()->ShouldUseDarkColors());
-  image_view_ = illustration.get();
-  std::unique_ptr<views::View> content =
-      CreateContent(controller_->GetTitle(), controller_->GetDescription());
-  AddChildView(std::move(illustration));
-  AddChildView(std::move(content));
+  SetLayoutManager(std::make_unique<views::FillLayout>());
+  SetBorder(views::CreateEmptyBorder(
+      views::LayoutProvider::Get()->GetDialogInsetsForContentType(
+          views::CONTROL, views::CONTROL)));
+
+  auto description_label = std::make_unique<views::Label>(
+      controller_->GetDescription(), views::style::CONTEXT_LABEL,
+      views::style::STYLE_SECONDARY);
+  description_label->SetMultiLine(true);
+  description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  AddChildView(std::move(description_label));
   SetExtraView(CreateInfoIcon());
 }
 

@@ -28,7 +28,7 @@ class SVGShapePainter {
   void Paint(const PaintInfo&);
 
  private:
-  void FillShape(GraphicsContext&, const PaintFlags&, SkPath::FillType);
+  void FillShape(GraphicsContext&, const PaintFlags&, SkPathFillType);
   void StrokeShape(GraphicsContext&, const PaintFlags&);
 
   void PaintMarkers(const PaintInfo&, const FloatRect& bounding_box);

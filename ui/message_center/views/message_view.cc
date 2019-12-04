@@ -209,7 +209,7 @@ void MessageView::OnContainerAnimationEnded() {
 }
 
 void MessageView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kButton;
+  node_data->role = ax::mojom::Role::kGenericContainer;
   node_data->AddStringAttribute(
       ax::mojom::StringAttribute::kRoleDescription,
       l10n_util::GetStringUTF8(IDS_MESSAGE_NOTIFICATION_ACCESSIBLE_NAME));

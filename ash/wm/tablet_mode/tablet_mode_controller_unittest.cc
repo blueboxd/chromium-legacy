@@ -1279,7 +1279,7 @@ TEST_P(TabletModeControllerTest,
       gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
   WindowState* left_window_state = WindowState::Get(left_window.get());
   ASSERT_TRUE(left_window_state->CanSnap());
-  ASSERT_FALSE(CanSnapInSplitview(left_window.get()));
+  ASSERT_FALSE(split_view_controller()->CanSnapWindow(left_window.get()));
   WMEvent snap_to_left(WM_EVENT_CYCLE_SNAP_LEFT);
   left_window_state->OnWMEvent(&snap_to_left);
   std::unique_ptr<aura::Window> right_window =
@@ -1309,7 +1309,7 @@ TEST_P(TabletModeControllerTest,
       gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
   WindowState* right_window_state = WindowState::Get(right_window.get());
   ASSERT_TRUE(right_window_state->CanSnap());
-  ASSERT_FALSE(CanSnapInSplitview(right_window.get()));
+  ASSERT_FALSE(split_view_controller()->CanSnapWindow(right_window.get()));
   WMEvent snap_to_right(WM_EVENT_CYCLE_SNAP_RIGHT);
   right_window_state->OnWMEvent(&snap_to_right);
   wm::ActivateWindow(right_window.get());
@@ -1338,7 +1338,7 @@ TEST_P(TabletModeControllerTest,
       gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
   WindowState* right_window_state = WindowState::Get(right_window.get());
   ASSERT_TRUE(right_window_state->CanSnap());
-  ASSERT_FALSE(CanSnapInSplitview(right_window.get()));
+  ASSERT_FALSE(split_view_controller()->CanSnapWindow(right_window.get()));
   WMEvent snap_to_right(WM_EVENT_CYCLE_SNAP_RIGHT);
   right_window_state->OnWMEvent(&snap_to_right);
   ASSERT_EQ(left_window.get(), window_util::GetActiveWindow());
@@ -1366,7 +1366,7 @@ TEST_P(TabletModeControllerTest,
       gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
   WindowState* left_window_state = WindowState::Get(left_window.get());
   ASSERT_TRUE(left_window_state->CanSnap());
-  ASSERT_FALSE(CanSnapInSplitview(left_window.get()));
+  ASSERT_FALSE(split_view_controller()->CanSnapWindow(left_window.get()));
   WMEvent snap_to_left(WM_EVENT_CYCLE_SNAP_LEFT);
   left_window_state->OnWMEvent(&snap_to_left);
   std::unique_ptr<aura::Window> right_window =
@@ -1405,6 +1405,24 @@ TEST_P(TabletModeControllerTest, StartTabletActiveLeftSnapPreviousLeftSnap) {
   EXPECT_EQ(window1.get(), split_view_controller()->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
   EXPECT_EQ(window1.get(), window_util::GetActiveWindow());
+}
+
+// Like TabletModeControllerTest.StartTabletActiveLeftSnap, but with an extra
+// display which has no relevant windows on it.
+TEST_P(TabletModeControllerTest,
+       StartTabletActiveLeftSnapPlusExtraneousDisplay) {
+  UpdateDisplay("800x600,800x600");
+  std::unique_ptr<aura::Window> window = CreateDesktopWindowSnappedLeft();
+  tablet_mode_controller()->SetEnabledForTest(true);
+  EXPECT_EQ(2u, Shell::GetAllRootWindows().size());
+  // Make sure display mirroring triggers without any crashes.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, Shell::GetAllRootWindows().size());
+  EXPECT_EQ(SplitViewController::State::kLeftSnapped,
+            split_view_controller()->state());
+  EXPECT_EQ(window.get(), split_view_controller()->left_window());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 }
 
 TEST_P(TabletModeControllerTest, StartTabletActiveLeftSnapOnSecondaryDisplay) {

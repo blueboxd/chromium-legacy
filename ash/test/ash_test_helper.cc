@@ -16,7 +16,6 @@
 #include "ash/display/screen_ash.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/test_keyboard_ui.h"
-#include "ash/mojo_test_interface_factory.h"
 #include "ash/public/cpp/ash_prefs.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/test/test_keyboard_controller_observer.h"

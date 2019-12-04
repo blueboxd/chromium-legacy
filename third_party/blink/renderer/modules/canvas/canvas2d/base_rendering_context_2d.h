@@ -386,7 +386,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
 
   void DrawPathInternal(const Path&,
                         CanvasRenderingContext2DState::PaintType,
-                        SkPath::FillType = SkPath::kWinding_FillType);
+                        SkPathFillType = SkPathFillType::kWinding);
   void DrawImageInternal(cc::PaintCanvas*,
                          CanvasImageSource*,
                          Image*,

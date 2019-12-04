@@ -21,8 +21,7 @@ LanguageState::LanguageState(TranslateDriver* driver)
   DCHECK(translate_driver_);
 }
 
-LanguageState::~LanguageState() {
-}
+LanguageState::~LanguageState() {}
 
 void LanguageState::DidNavigate(bool is_same_document_navigation,
                                 bool is_main_frame,
@@ -76,11 +75,14 @@ bool LanguageState::InTranslateNavigation() const {
   //   - this page is in the same language as the previous page
   //   - the previous page had been translated
   //   - the new page was navigated through a link.
-  return
-      !translation_pending_ &&
-      prev_original_lang_ == original_lang_ &&
-      prev_original_lang_ != prev_current_lang_ &&
-      translate_driver_->IsLinkNavigation();
+  return !translation_pending_ && prev_original_lang_ == original_lang_ &&
+         prev_original_lang_ != prev_current_lang_ &&
+         translate_driver_->IsLinkNavigation();
+}
+
+void LanguageState::SetOriginalLanguage(const std::string& language) {
+  original_lang_ = language;
+  SetIsPageTranslated(current_lang_ != original_lang_);
 }
 
 void LanguageState::SetCurrentLanguage(const std::string& language) {

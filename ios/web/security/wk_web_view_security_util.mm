@@ -145,14 +145,6 @@ SecurityStyle GetSecurityStyleFromTrustResult(SecTrustResultType result) {
     case kSecTrustResultFatalTrustFailure:
     case kSecTrustResultOtherError:
       return SECURITY_STYLE_AUTHENTICATION_BROKEN;
-
-    // TODO(crbug.com/619982): This default clause exists because
-    // kSecTrustResultConfirm was deprecated in iOS7, but leads to a compile
-    // error if used with newer SDKs.  Remove the default clause once this
-    // switch statement successfully compiles without kSecTrustResultConfirm.
-    default:
-      NOTREACHED();
-      return SECURITY_STYLE_UNKNOWN;
   }
 }
 

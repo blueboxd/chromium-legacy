@@ -353,7 +353,11 @@ Still reading?
     <ignore regexp="The resource `R.string.search_widget_title.*` appears to be unused"/>
     <!-- crbug.com/1017492 remove this line and the following line after the bug is resolved -->
     <ignore regexp="The resource `R.string.tab_grid_dialog_toolbar_share_group` appears to be unused"/>
-    <!-- crbug.com/1004570 remove this line and the following three lines after the bug resolved -->
+    <!-- crbug.com/1004570 remove this line and the following seven lines after the bug resolved -->
+    <ignore regexp="The resource `R.string.accessibility_tab_suggestion_review_button` appears to be unused"/>
+    <ignore regexp="The resource `R.string.accessibility_tab_suggestion_close_stale_message` appears to be unused"/>
+    <ignore regexp="The resource `R.string.accessibility_tab_suggestion_dismiss_button` appears to be unused"/>
+    <ignore regexp="The resource `R.plurals.accessibility_tab_suggestion_close_tab_action_button` appears to be unused"/>
     <ignore regexp="The resource `R.string.tab_suggestion_close_stale_message` appears to be unused"/>
     <ignore regexp="The resource `R.string.tab_suggestion_close_tab_action_button` appears to be unused"/>
     <ignore regexp="The resource `R.string.tab_suggestion_review_button` appears to be unused"/>

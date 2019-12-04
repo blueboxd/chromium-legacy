@@ -372,6 +372,10 @@ class AX_EXPORT AXNode final {
   // Returns true if node has ignored state or ignored role.
   bool IsIgnored() const;
 
+  // Returns true if this current node is a list marker or if it's a descendant
+  // of a list marker node. Returns false otherwise.
+  bool IsInListMarker() const;
+
  private:
   // Computes the text offset where each line starts by traversing all child
   // leaf nodes.

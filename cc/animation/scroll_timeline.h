@@ -22,6 +22,10 @@ class ScrollTree;
 // https://wicg.github.io/scroll-animations/#scrolltimeline-interface.
 class CC_ANIMATION_EXPORT ScrollTimeline {
  public:
+  // cc does not know about writing modes. The ScrollDirection below is
+  // converted using blink::scroll_timeline_util::ConvertOrientation which takes
+  // the spec-compliant ScrollDirection enumeration.
+  // https://drafts.csswg.org/scroll-animations/#scrolldirection-enumeration
   enum ScrollDirection {
     ScrollUp,
     ScrollDown,

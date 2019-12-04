@@ -27,7 +27,7 @@ class PermissionPromptAndroidTest : public ChromeRenderViewHostTestHarness {
     scoped_feature_list_.InitAndEnableFeature(
         features::kQuietNotificationPrompts);
     AdaptiveNotificationPermissionUiSelector::GetForProfile(profile())
-        ->set_should_show_quiet_ui_for_testing(true);
+        ->EnableQuietUi();
 
     NavigateAndCommit(GURL("http://example.com"));
 

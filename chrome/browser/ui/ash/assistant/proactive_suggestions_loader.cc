@@ -69,6 +69,7 @@ GURL CreateProactiveSuggestionsUrl(const GURL& url) {
 void ParseProactiveSuggestionsMetadata(const net::HttpResponseHeaders& headers,
                                        int* category,
                                        std::string* description,
+                                       std::string* rich_entry_point_html,
                                        std::string* search_query,
                                        bool* has_content) {
   constexpr char kCategoryHeaderName[] =
@@ -77,11 +78,14 @@ void ParseProactiveSuggestionsMetadata(const net::HttpResponseHeaders& headers,
       "x-assistant-proactive-suggestions-description";
   constexpr char kHasContentHeaderName[] =
       "x-assistant-proactive-suggestions-has-ui-content";
+  constexpr char kRichEntryPointHtmlHeaderName[] =
+      "x-assistant-proactive-suggestions-content-forward-ui";
   constexpr char kSearchQueryHeaderName[] =
       "x-assistant-proactive-suggestions-search-query";
 
   DCHECK_EQ(ash::ProactiveSuggestions::kCategoryUnknown, *category);
   DCHECK(description->empty());
+  DCHECK(rich_entry_point_html->empty());
   DCHECK(search_query->empty());
   DCHECK(!(*has_content));
 
@@ -104,6 +108,16 @@ void ParseProactiveSuggestionsMetadata(const net::HttpResponseHeaders& headers,
     if (name == kHasContentHeaderName) {
       DCHECK(!(*has_content));
       *has_content = (value == "1");
+      continue;
+    }
+    if (name == kRichEntryPointHtmlHeaderName) {
+      // The |rich_entry_point_html| is only used when the rich entry point for
+      // the proactive suggestions feature is enabled.
+      if (chromeos::assistant::features::
+              IsProactiveSuggestionsShowRichEntryPointEnabled()) {
+        DCHECK(rich_entry_point_html->empty());
+        *rich_entry_point_html = value;
+      }
       continue;
     }
     if (name == kSearchQueryHeaderName) {
@@ -167,11 +181,12 @@ void ProactiveSuggestionsLoader::OnSimpleURLLoaderComplete(
   // The proactive suggestions server will return metadata in the HTTP headers.
   int category = ash::ProactiveSuggestions::kCategoryUnknown;
   std::string description;
+  std::string rich_entry_point_html;
   std::string search_query;
   bool has_content = false;
-  ParseProactiveSuggestionsMetadata(*loader_->ResponseInfo()->headers,
-                                    &category, &description, &search_query,
-                                    &has_content);
+  ParseProactiveSuggestionsMetadata(
+      *loader_->ResponseInfo()->headers, &category, &description,
+      &rich_entry_point_html, &search_query, &has_content);
 
   // When the server indicates that there is no content we record the event and
   // return a null set of proactive suggestions.
@@ -189,5 +204,6 @@ void ProactiveSuggestionsLoader::OnSimpleURLLoaderComplete(
   std::move(complete_callback_)
       .Run(base::MakeRefCounted<ash::ProactiveSuggestions>(
           category, std::move(description), std::move(search_query),
-          std::move(*response_body)));
+          /*html=*/std::move(*response_body),
+          std::move(rich_entry_point_html)));
 }

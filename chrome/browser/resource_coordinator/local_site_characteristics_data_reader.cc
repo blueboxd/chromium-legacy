@@ -32,11 +32,6 @@ LocalSiteCharacteristicsDataReader::UsesAudioInBackground() const {
   return impl_->UsesAudioInBackground();
 }
 
-performance_manager::SiteFeatureUsage
-LocalSiteCharacteristicsDataReader::UsesNotificationsInBackground() const {
-  return impl_->UsesNotificationsInBackground();
-}
-
 bool LocalSiteCharacteristicsDataReader::DataLoaded() const {
   return impl_->DataLoaded();
 }

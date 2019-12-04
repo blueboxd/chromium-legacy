@@ -7,12 +7,12 @@
 #include <memory>
 #include <utility>
 
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
-#include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
+#include "chrome/browser/ui/views/tabs/tab_group_views.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
@@ -20,12 +20,13 @@
 
 constexpr int TabGroupUnderline::kStrokeThickness;
 
-TabGroupUnderline::TabGroupUnderline(TabStrip* tab_strip, TabGroupId group)
-    : tab_strip_(tab_strip), group_(group) {
+TabGroupUnderline::TabGroupUnderline(TabGroupViews* tab_group_views,
+                                     TabGroupId group)
+    : tab_group_views_(tab_group_views), group_(group) {
   // Set non-zero bounds to start with, so that painting isn't pruned.
   // Needed because UpdateBounds() happens during OnPaint(), which is called
   // after painting is pruned.
-  const int y = tab_strip_->bounds().height() - 1;
+  const int y = GetLayoutConstant(TAB_HEIGHT) - 1;
   SetBounds(0, y - kStrokeThickness, kStrokeThickness * 2, kStrokeThickness);
 }
 
@@ -35,7 +36,7 @@ void TabGroupUnderline::OnPaint(gfx::Canvas* canvas) {
   SkPath path = GetPath();
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setColor(GetColor());
+  flags.setColor(tab_group_views_->GetGroupColor());
   flags.setStyle(cc::PaintFlags::kFill_Style);
   canvas->DrawPath(path, flags);
 }
@@ -50,10 +51,8 @@ void TabGroupUnderline::UpdateBounds() {
   if (end_x <= start_x)
     return;
 
-  const int start_y = tab_strip_->bounds().height() - 1;
-
-  SetBounds(start_x, start_y - kStrokeThickness, end_x - start_x,
-            kStrokeThickness);
+  const int y = tab_group_views_->GetBounds().height() - 1;
+  SetBounds(start_x, y - kStrokeThickness, end_x - start_x, kStrokeThickness);
 }
 
 // static
@@ -62,29 +61,20 @@ int TabGroupUnderline::GetStrokeInset() {
 }
 
 int TabGroupUnderline::GetStart() const {
-  const TabGroupHeader* group_header = tab_strip_->group_header(group_);
+  const gfx::Rect group_bounds = tab_group_views_->GetBounds();
 
-  return group_header->bounds().x() + GetStrokeInset();
+  return group_bounds.x() + GetStrokeInset();
 }
 
 int TabGroupUnderline::GetEnd() const {
-  // Fall back to the group header end for any corner cases. This ensures
-  // that the underline always has a positive width.
-  const TabGroupHeader* group_header = tab_strip_->group_header(group_);
-  const int header_end = group_header->bounds().right() - GetStrokeInset();
+  const gfx::Rect group_bounds = tab_group_views_->GetBounds();
 
-  const std::vector<int> tabs_in_group =
-      tab_strip_->controller()->ListTabsInGroup(group_);
-  if (tabs_in_group.size() <= 0)
-    return header_end;
+  const Tab* last_grouped_tab = tab_group_views_->GetLastTabInGroup();
+  if (!last_grouped_tab)
+    return group_bounds.right() - GetStrokeInset();
 
-  const int last_tab_index = tabs_in_group[tabs_in_group.size() - 1];
-  const Tab* last_tab = tab_strip_->tab_at(last_tab_index);
-
-  const int tab_end =
-      last_tab->bounds().right() +
-      (last_tab->IsActive() ? kStrokeThickness : -GetStrokeInset());
-  return std::max(tab_end, header_end);
+  return group_bounds.right() +
+         (last_grouped_tab->IsActive() ? kStrokeThickness : -GetStrokeInset());
 }
 
 SkPath TabGroupUnderline::GetPath() const {
@@ -99,11 +89,4 @@ SkPath TabGroupUnderline::GetPath() const {
   path.close();
 
   return path;
-}
-
-SkColor TabGroupUnderline::GetColor() const {
-  const TabGroupVisualData* data =
-      tab_strip_->controller()->GetVisualDataForGroup(group_);
-
-  return data->color();
 }

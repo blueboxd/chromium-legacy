@@ -129,8 +129,6 @@ discards::mojom::SiteCharacteristicsDatabaseEntryPtr ConvertEntryFromProto(
       ConvertFeatureFromProto(proto->updates_title_in_background());
   value->uses_audio_in_background =
       ConvertFeatureFromProto(proto->uses_audio_in_background());
-  value->uses_notifications_in_background =
-      ConvertFeatureFromProto(proto->uses_notifications_in_background());
 
   if (proto->has_load_time_estimates()) {
     const auto& load_time_estimates_proto = proto->load_time_estimates();

@@ -43,7 +43,6 @@ class LenientMockDataWriter : public SiteCharacteristicsDataWriter {
   MOCK_METHOD0(NotifyUpdatesFaviconInBackground, void());
   MOCK_METHOD0(NotifyUpdatesTitleInBackground, void());
   MOCK_METHOD0(NotifyUsesAudioInBackground, void());
-  MOCK_METHOD0(NotifyUsesNotificationsInBackground, void());
   MOCK_METHOD3(NotifyLoadTimePerformanceMeasurement,
                void(base::TimeDelta, base::TimeDelta, uint64_t));
 
@@ -206,9 +205,6 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   observer()->OnAudioStateChanged(true);
   ::testing::Mock::VerifyAndClear(mock_writer);
 
-  observer()->OnNonPersistentNotificationCreated();
-  ::testing::Mock::VerifyAndClear(mock_writer);
-
   EXPECT_CALL(*mock_writer,
               NotifySiteVisibilityChanged(
                   performance_manager::TabVisibility::kBackground));
@@ -250,11 +246,9 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   EXPECT_CALL(*mock_writer, NotifyUsesAudioInBackground());
   EXPECT_CALL(*mock_writer, NotifyUpdatesFaviconInBackground());
   EXPECT_CALL(*mock_writer, NotifyUpdatesTitleInBackground());
-  EXPECT_CALL(*mock_writer, NotifyUsesNotificationsInBackground());
   observer()->OnAudioStateChanged(true);
   observer()->DidUpdateFaviconURL({});
   observer()->TitleWasSet(nullptr);
-  observer()->OnNonPersistentNotificationCreated();
   ::testing::Mock::VerifyAndClear(mock_writer);
 
   EXPECT_CALL(*mock_writer, OnDestroy());
@@ -283,28 +277,6 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   observer()->TitleWasSet(nullptr);
   ::testing::Mock::VerifyAndClear(mock_writer);
   observer()->OnAudioStateChanged(true);
-  ::testing::Mock::VerifyAndClear(mock_writer);
-
-  EXPECT_CALL(*mock_writer, OnDestroy());
-}
-
-TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
-       NotificationEventsWhenLoadingInBackground) {
-  MockDataWriter* mock_writer = NavigateAndReturnMockWriter(kTestUrl1);
-
-  TabLoadTracker::Get()->TransitionStateForTesting(web_contents(),
-                                                   LoadingState::LOADING);
-
-  EXPECT_CALL(*mock_writer,
-              NotifySiteVisibilityChanged(
-                  performance_manager::TabVisibility::kBackground));
-  web_contents()->WasHidden();
-  ::testing::Mock::VerifyAndClear(mock_writer);
-
-  test_clock().Advance(kFeatureUsagePostBackgroundGracePeriod);
-
-  EXPECT_CALL(*mock_writer, NotifyUsesNotificationsInBackground());
-  observer()->OnNonPersistentNotificationCreated();
   ::testing::Mock::VerifyAndClear(mock_writer);
 
   EXPECT_CALL(*mock_writer, OnDestroy());

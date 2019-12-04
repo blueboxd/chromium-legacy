@@ -21,18 +21,13 @@ class Origin;
 
 namespace content {
 class QuotaPermissionContext;
-class RenderProcessHost;
 
 class QuotaDispatcherHost : public blink::mojom::QuotaDispatcherHost {
  public:
-  static void CreateForWorker(
-      mojo::PendingReceiver<blink::mojom::QuotaDispatcherHost> receiver,
-      RenderProcessHost* host,
-      const url::Origin& origin);
-
-  static void CreateForFrame(
-      RenderProcessHost* host,
+  static void BindQuotaDispatcherHostOnIOThread(
+      int render_process_id,
       int render_frame_id,
+      storage::QuotaManager* quota_manager,
       mojo::PendingReceiver<blink::mojom::QuotaDispatcherHost> receiver);
 
   QuotaDispatcherHost(int process_id,

@@ -52,4 +52,7 @@ const char kUseHighGPUThreadPriorityForPerfTests[] =
 const char kNoDelayForDX12VulkanInfoCollection[] =
     "no-delay-for-dx12-vulkan-info-collection";
 
+// Enables measures of how long GPU Main Thread was blocked between SwapBuffers
+const char kEnableGpuBlockedTime[] = "enable-gpu-blocked-time";
+
 }  // namespace switches

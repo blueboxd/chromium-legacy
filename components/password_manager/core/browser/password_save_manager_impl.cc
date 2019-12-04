@@ -11,10 +11,13 @@
 #include "components/autofill/core/browser/validation.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
 #include "components/password_manager/core/browser/form_saver.h"
+#include "components/password_manager/core/browser/form_saver_impl.h"
+#include "components/password_manager/core/browser/multi_store_password_save_manager.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_generation_manager.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/votes_uploader.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 
 using autofill::FormData;
 using autofill::FormFieldData;
@@ -79,6 +82,23 @@ void SanitizePossibleUsernames(PasswordForm* form) {
 }
 
 }  // namespace
+
+// static
+std::unique_ptr<PasswordSaveManagerImpl>
+PasswordSaveManagerImpl::CreatePasswordSaveManagerImpl(
+    const PasswordManagerClient* client) {
+  auto profile_form_saver =
+      std::make_unique<FormSaverImpl>(client->GetProfilePasswordStore());
+
+  return base::FeatureList::IsEnabled(
+             password_manager::features::kEnablePasswordsAccountStorage)
+             ? std::make_unique<MultiStorePasswordSaveManager>(
+                   std::move(profile_form_saver),
+                   std::make_unique<FormSaverImpl>(
+                       client->GetAccountPasswordStore()))
+             : std::make_unique<PasswordSaveManagerImpl>(
+                   std::move(profile_form_saver));
+}
 
 PasswordSaveManagerImpl::PasswordSaveManagerImpl(
     std::unique_ptr<FormSaver> form_saver)

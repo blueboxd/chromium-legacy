@@ -32,10 +32,11 @@ class BrowserDMTokenStorageMac : public BrowserDMTokenStorage {
   std::string InitEnrollmentToken() override;
   std::string InitDMToken() override;
   bool InitEnrollmentErrorOption() override;
-  void SaveDMToken(const std::string& token) override;
+  StoreTask SaveDMTokenTask(const std::string& token,
+                            const std::string& client_id) override;
+  scoped_refptr<base::TaskRunner> SaveDMTokenTaskRunner() override;
 
-  // This should always be the last member of the class.
-  base::WeakPtrFactory<BrowserDMTokenStorageMac> weak_factory_;
+  scoped_refptr<base::TaskRunner> task_runner_;
 
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageMacTest, InitClientId);
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageMacTest, InitEnrollmentToken);

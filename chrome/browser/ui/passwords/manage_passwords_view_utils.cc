@@ -169,10 +169,10 @@ base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
 }
 
 base::string16 GetDisplayUsername(
-    const password_manager::CredentialPair& credential_pair) {
-  return credential_pair.username.empty()
+    const password_manager::UiCredential& credential) {
+  return credential.username().empty()
              ? l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN)
-             : credential_pair.username;
+             : credential.username();
 }
 
 base::string16 GetDisplayFederation(const autofill::PasswordForm& form) {

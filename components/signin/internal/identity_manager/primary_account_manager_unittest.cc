@@ -154,13 +154,16 @@ TEST_F(PrimaryAccountManagerTest, SignOut) {
   EXPECT_FALSE(manager_->IsAuthenticated());
   EXPECT_TRUE(manager_->GetAuthenticatedAccountInfo().email.empty());
   EXPECT_TRUE(manager_->GetAuthenticatedAccountId().empty());
+  EXPECT_EQ(main_account_id,
+            manager_->GetUnconsentedPrimaryAccountInfo().account_id);
   // Should not be persisted anymore
   ShutDownManager();
   CreatePrimaryAccountManager();
   EXPECT_FALSE(manager_->IsAuthenticated());
   EXPECT_TRUE(manager_->GetAuthenticatedAccountInfo().email.empty());
   EXPECT_TRUE(manager_->GetAuthenticatedAccountId().empty());
-  EXPECT_EQ(CoreAccountInfo(), manager_->GetUnconsentedPrimaryAccountInfo());
+  EXPECT_EQ(main_account_id,
+            manager_->GetUnconsentedPrimaryAccountInfo().account_id);
 }
 
 TEST_F(PrimaryAccountManagerTest, SignOutRevoke) {
@@ -204,8 +207,9 @@ TEST_F(PrimaryAccountManagerTest, SignOutDiceNoRevoke) {
   std::vector<CoreAccountId> expected_tokens = {main_account_id,
                                                 other_account_id};
   EXPECT_EQ(expected_tokens, token_service_.GetAccounts());
-  EXPECT_EQ(manager_->GetUnconsentedPrimaryAccountInfo(),
-            manager_->GetAuthenticatedAccountInfo());
+  // Unconsented primary account is not reset.
+  EXPECT_EQ(main_account_id,
+            manager_->GetUnconsentedPrimaryAccountInfo().account_id);
 }
 
 TEST_F(PrimaryAccountManagerTest, SignOutDiceWithError) {

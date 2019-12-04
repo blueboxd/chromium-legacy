@@ -51,8 +51,8 @@ import org.chromium.chrome.browser.settings.ExpandablePreferenceGroup;
 import org.chromium.chrome.browser.settings.LocationSettings;
 import org.chromium.chrome.browser.settings.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.ManagedPreferencesUtils;
-import org.chromium.chrome.browser.settings.PreferenceUtils;
 import org.chromium.chrome.browser.settings.SearchUtils;
+import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.chrome.browser.settings.website.Website.StoredDataClearedCallback;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.ui.widget.Toast;
@@ -350,7 +350,7 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.website_preferences);
+        SettingsUtils.addPreferencesFromResource(this, R.xml.website_preferences);
 
         String title = getArguments().getString(EXTRA_TITLE);
         if (title != null) getActivity().setTitle(title);
@@ -612,7 +612,7 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
         // This will remove the combo box at the top and all the sites listed below it.
         getPreferenceScreen().removeAll();
         // And this will add the filter preference back (combo box).
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.website_preferences);
+        SettingsUtils.addPreferencesFromResource(this, R.xml.website_preferences);
 
         configureGlobalToggles();
 

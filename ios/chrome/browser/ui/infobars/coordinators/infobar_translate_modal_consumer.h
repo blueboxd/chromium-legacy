@@ -9,8 +9,15 @@ namespace {
 // Pref keys passed through setupModalViewControllerWithPrefs:.
 NSString* kSourceLanguagePrefKey = @"sourceLanguage";
 NSString* kTargetLanguagePrefKey = @"targetLanguage";
+NSString* kEnableTranslateButtonPrefKey = @"enableTranslateButton";
+NSString* kEnableAndDisplayShowOriginalButtonPrefKey =
+    @"enableAndDisplayShowOriginalButton";
 NSString* kShouldAlwaysTranslatePrefKey = @"shouldAlwaysTranslate";
+NSString* kDisplayNeverTranslateLanguagePrefKey =
+    @"displayNeverTranslateLanguage";
 NSString* kIsTranslatableLanguagePrefKey = @"isTranslatableLanguage";
+NSString* kDisplayNeverTranslateSiteButtonPrefKey =
+    @"displayNeverTranslateSite";
 NSString* kIsSiteBlacklistedPrefKey = @"isSiteBlacklisted";
 
 }

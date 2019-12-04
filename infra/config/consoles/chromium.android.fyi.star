@@ -8,10 +8,6 @@ luci.console_view(
             category = 'android',
         ),
         luci.console_view_entry(
-            builder = 'ci/Memory Infra Tester',
-            category = 'Memory',
-        ),
-        luci.console_view_entry(
             builder = 'ci/Android WebView P FYI (rel)',
             category = 'webview',
             short_name = 'p-rel',

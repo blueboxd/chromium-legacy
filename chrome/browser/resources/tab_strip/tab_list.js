@@ -80,6 +80,12 @@ class TabListElement extends CustomElement {
       rootMargin: '0% 100%',
     });
 
+    /** @private {number|undefined} */
+    this.activatingTabId_;
+
+    /** @private {number|undefined} Timestamp in ms */
+    this.activatingTabIdTimestamp_;
+
     /** @private {!Element} */
     this.pinnedTabsContainerElement_ =
         /** @type {!Element} */ (
@@ -195,6 +201,9 @@ class TabListElement extends CustomElement {
   createTabElement_(tab) {
     const tabElement = new TabElement();
     tabElement.tab = tab;
+    tabElement.onTabActivating = (id) => {
+      this.onTabActivating_(id);
+    };
     return tabElement;
   }
 
@@ -340,6 +349,13 @@ class TabListElement extends CustomElement {
    * @private
    */
   onTabActivated_(tabId) {
+    if (this.activatingTabId_ === tabId) {
+      this.tabStripEmbedderProxy_.reportTabActivationDuration(
+          Date.now() - this.activatingTabIdTimestamp_);
+    }
+    this.activatingTabId_ = undefined;
+    this.activatingTabIdTimestamp_ = undefined;
+
     // There may be more than 1 TabElement marked as active if other events
     // have updated a Tab to have an active state. For example, if a
     // tab is created with an already active state, there may be 2 active
@@ -358,6 +374,20 @@ class TabListElement extends CustomElement {
           Object.assign({}, newlyActiveTab.tab, {active: true}));
       this.scrollToActiveTab_();
     }
+  }
+
+  /**
+   * @param {number} id The tab ID
+   * @private
+   */
+  onTabActivating_(id) {
+    assert(this.activatingTabId_ === undefined);
+    const activeTab = this.getActiveTab_();
+    if (activeTab && activeTab.tab.id === id) {
+      return;
+    }
+    this.activatingTabId_ = id;
+    this.activatingTabIdTimestamp_ = Date.now();
   }
 
   /**

@@ -4,6 +4,7 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
+import("//build/config/locales.gni")
 import("//device/vr/buildflags/buildflags.gni")
 
 android_aidl("common_aidl") {
@@ -303,61 +304,10 @@ android_library("content_java") {
 
 java_strings_grd("content_strings_grd") {
   grd_file = "java/strings/android_content_strings.grd"
-  outputs = [
-    "values/android_content_strings.xml",
-    "values-am/android_content_strings.xml",
-    "values-ar/android_content_strings.xml",
-    "values-bg/android_content_strings.xml",
-    "values-bn/android_content_strings.xml",
-    "values-ca/android_content_strings.xml",
-    "values-cs/android_content_strings.xml",
-    "values-da/android_content_strings.xml",
-    "values-de/android_content_strings.xml",
-    "values-el/android_content_strings.xml",
-    "values-en-rGB/android_content_strings.xml",
-    "values-es/android_content_strings.xml",
-    "values-es-rUS/android_content_strings.xml",
-    "values-et/android_content_strings.xml",
-    "values-fa/android_content_strings.xml",
-    "values-fi/android_content_strings.xml",
-    "values-fr/android_content_strings.xml",
-    "values-gu/android_content_strings.xml",
-    "values-hi/android_content_strings.xml",
-    "values-hr/android_content_strings.xml",
-    "values-hu/android_content_strings.xml",
-    "values-in/android_content_strings.xml",
-    "values-it/android_content_strings.xml",
-    "values-iw/android_content_strings.xml",
-    "values-ja/android_content_strings.xml",
-    "values-kn/android_content_strings.xml",
-    "values-ko/android_content_strings.xml",
-    "values-lt/android_content_strings.xml",
-    "values-lv/android_content_strings.xml",
-    "values-ml/android_content_strings.xml",
-    "values-mr/android_content_strings.xml",
-    "values-ms/android_content_strings.xml",
-    "values-nb/android_content_strings.xml",
-    "values-nl/android_content_strings.xml",
-    "values-pl/android_content_strings.xml",
-    "values-pt-rBR/android_content_strings.xml",
-    "values-pt-rPT/android_content_strings.xml",
-    "values-ro/android_content_strings.xml",
-    "values-ru/android_content_strings.xml",
-    "values-sk/android_content_strings.xml",
-    "values-sl/android_content_strings.xml",
-    "values-sr/android_content_strings.xml",
-    "values-sv/android_content_strings.xml",
-    "values-sw/android_content_strings.xml",
-    "values-ta/android_content_strings.xml",
-    "values-te/android_content_strings.xml",
-    "values-th/android_content_strings.xml",
-    "values-tl/android_content_strings.xml",
-    "values-tr/android_content_strings.xml",
-    "values-uk/android_content_strings.xml",
-    "values-vi/android_content_strings.xml",
-    "values-zh-rCN/android_content_strings.xml",
-    "values-zh-rTW/android_content_strings.xml",
-  ]
+  outputs = [ "values/android_content_strings.xml" ] +
+            process_file_template(
+                android_bundle_locales_as_resources,
+                [ "values-{{source_name_part}}/android_content_strings.xml" ])
 }
 
 java_cpp_enum("content_public_android_java_enums_srcjar") {

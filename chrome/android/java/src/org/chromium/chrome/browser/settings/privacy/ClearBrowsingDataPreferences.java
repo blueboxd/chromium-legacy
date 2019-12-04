@@ -37,7 +37,7 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.settings.ClearBrowsingDataCheckBoxPreference;
-import org.chromium.chrome.browser.settings.PreferenceUtils;
+import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.chrome.browser.settings.SpinnerPreference;
 import org.chromium.chrome.browser.settings.privacy.BrowsingDataCounterBridge.BrowsingDataCounterCallback;
 import org.chromium.ui.widget.ButtonCompat;
@@ -83,7 +83,7 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragmentCom
 
             int dp = mParent.getResources().getConfiguration().smallestScreenWidthDp;
             if (dp >= MIN_DP_FOR_ICON) {
-                mCheckbox.setIcon(PreferenceUtils.getTintedIcon(
+                mCheckbox.setIcon(SettingsUtils.getTintedIcon(
                         context, ClearBrowsingDataPreferences.getIcon(option)));
             }
         }
@@ -529,7 +529,7 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragmentCom
         }
         mDialogOpened = SystemClock.elapsedRealtime();
         getActivity().setTitle(R.string.clear_browsing_data_title);
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.clear_browsing_data_preferences_tab);
+        SettingsUtils.addPreferencesFromResource(this, R.xml.clear_browsing_data_preferences_tab);
         List<Integer> options = getDialogOptions();
         mItems = new Item[options.size()];
         for (int i = 0; i < options.size(); i++) {

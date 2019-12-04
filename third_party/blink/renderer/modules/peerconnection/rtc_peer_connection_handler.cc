@@ -132,8 +132,8 @@ void RunSynchronousRepeatingClosure(const base::RepeatingClosure& closure,
 void GetRTCSessionDescriptionPlatformFromSessionDescriptionCallback(
     base::OnceCallback<const webrtc::SessionDescriptionInterface*()>
         description_callback,
-    String* out_type,
-    String* out_sdp,
+    std::string* out_type,
+    std::string* out_sdp,
     bool* success) {
   DCHECK(out_type);
   DCHECK(out_sdp);
@@ -144,8 +144,8 @@ void GetRTCSessionDescriptionPlatformFromSessionDescriptionCallback(
   if (description) {
     std::string sdp;
     description->ToString(&sdp);
-    *out_type = String::FromUTF8(description->type());
-    *out_sdp = String::FromUTF8(sdp);
+    *out_type = description->type();
+    *out_sdp = sdp;
     *success = true;
   }
 }
@@ -2006,7 +2006,8 @@ void RTCPeerConnectionHandler::StartEventLog(int output_period_ms) {
   // or find a way to be able to use it.
   // https://crbug.com/775415
   native_peer_connection_->StartRtcEventLog(
-      blink::CreateRtcEventLogOutputSinkProxy(peer_connection_observer_.get()),
+      std::make_unique<RtcEventLogOutputSinkProxy>(
+          peer_connection_observer_.get()),
       output_period_ms);
 }
 
@@ -2584,7 +2585,7 @@ RTCPeerConnectionHandler::GetRTCSessionDescriptionPlatformOnSignalingThread(
   // Initializing |description| on the signaling thread is safe because we
   // own it and wait for it to be initialized here.
 
-  String type, sdp;
+  std::string type, sdp;
   bool success = false;
   RunSynchronousOnceClosureOnSignalingThread(
       base::BindOnce(
@@ -2596,7 +2597,8 @@ RTCPeerConnectionHandler::GetRTCSessionDescriptionPlatformOnSignalingThread(
   if (!success)
     return nullptr;
 
-  return MakeGarbageCollected<RTCSessionDescriptionPlatform>(type, sdp);
+  return MakeGarbageCollected<RTCSessionDescriptionPlatform>(
+      String::FromUTF8(type), String::FromUTF8(sdp));
 }
 
 void RTCPeerConnectionHandler::ReportICEState(

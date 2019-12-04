@@ -144,18 +144,21 @@ def _gather_timing_data(benchmarks_to_shard, timing_data, repeat):
   for b in benchmarks_to_shard:
     story_list = b.stories
     benchmarks_data_by_name[b.name] = b
-    # Initialize the duration of all stories to be shard to 1 * repeat.
+    # Initialize the duration of all stories to be shard to 10 seconds.
     # The reasons are:
-    # 1) Even if the stories are skipped, they still have non neligible
+    # 1) Even if the stories are skipped, they still have non negligible
     #    overhead.
     # 2) For a case of sharding a set of benchmarks with no existing data about
     #    timing, initializing the stories time within a single repeat to 1 leads
     #    to a roughly equal distribution of stories on the shards, whereas
     #    initializing them to zero will make the algorithm put all the stories
     #    into the first shard.
+    # 3) For the case  of adding a new benchmark to a builder that hasn't run
+    #    it before but has run other benchmarks, 10 seconds is a reasonable
+    #    amount of time to guess that it would take the stories to run and
+    #    creates reasonably balanced shard maps.
     for story in story_list:
-      story_timing_dict[b.name + '/' + story] = b.repeat
-
+      story_timing_dict[b.name + '/' + story] = 10
   for run in timing_data:
     benchmark = run['name'].split('/', 1)[0]
     if run['name'] in story_timing_dict:

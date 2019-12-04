@@ -244,7 +244,7 @@ class PipeReader {
     // after SimpleWatcher destruction.
     watcher_.Watch(pipe_.get(), MOJO_HANDLE_SIGNAL_READABLE,
                    base::BindRepeating(&PipeReader::OnReadable,
-				                       base::Unretained(this)));
+                                       base::Unretained(this)));
   }
 
   ~PipeReader() {}

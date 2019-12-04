@@ -228,14 +228,30 @@
       </message>
 
       <!-- Tab Suggestion strings -->
-      <message name="IDS_TAB_SUGGESTION_REVIEW_BUTTON" desc="This text button shows on the TabSuggestion card. When user clicks this text button, user will enter a selection mode where they can view all the suggested tabs and the rest of the open tabs.">
+      <message name="IDS_TAB_SUGGESTION_REVIEW_BUTTON" desc="This text button shows next the message 'X of your tabs haven't been used lately. Close them?'. When a user clicks this 'Review' text button, they will enter a selection mode where they can see the suggested tabs to close, see the rest of their open tabs, and choose what tabs to close.">
           Review
       </message>
-      <message name="IDS_TAB_SUGGESTION_CLOSE_TAB_ACTION_BUTTON" desc="This text button shows on the toolbar of the selection mode. When user clicks this text button, all the selected tabs will be closed">
+      <message name="IDS_TAB_SUGGESTION_CLOSE_TAB_ACTION_BUTTON" desc="When a user chooses to review suggested tabs to close, they enter a section mode to review and close the tabs. In that selection mode, this text button in the toolbar lets the user finalize their choices. When this button is tapped, all the selected tabs will be closed.">
           Close
       </message>
-      <message name="IDS_TAB_SUGGESTION_CLOSE_STALE_MESSAGE" desc="This text shows on the TabSuggestion card. It describes the TabSuggestion.">
+      <message name="IDS_TAB_SUGGESTION_CLOSE_STALE_MESSAGE" desc="On Chrome mobile, this text shows as a suggestion under a user's tabs. The suggestion prompts the user to automatically close some tabs that haven't been used lately. The placeholder denotes the number of suggested tabs to close, which will always be 2 or more (so 'tabs' should be plural).">
           <ph name="NUMBER_OF_TABS">%1$s<ex>2</ex></ph> of your tabs haven't been used lately. Close them?
+      </message>
+      <!-- Accessibility strings for Tab Suggestion -->
+      <message name="IDS_ACCESSIBILITY_TAB_SUGGESTION_REVIEW_BUTTON" desc="The accessibility text to read when the text button 'Review' is focused. The 'Review' button is shown next to the message 'X of your tabs haven't been used lately. Close them?'. User uses that text button to enter a selection mode where they can see the suggested tabs to close, see the rest of their open tabs, and choose what tabs to close.">
+        Review the suggestions.
+      </message>
+      <message name="IDS_ACCESSIBILITY_TAB_SUGGESTION_CLOSE_STALE_MESSAGE" desc="The accessibility text to read when the TAB_SUGGESTION card is focused">
+        Suggestion: <ph name="NUMBER_OF_TABS">%1$s<ex>2</ex></ph> of your tabs haven't been used lately. Close them?
+      </message>
+      <message name="IDS_ACCESSIBILITY_TAB_SUGGESTION_DISMISS_BUTTON" desc="The accessibility text to read when the 'X' button on the TAB_SUGGESTION card is focused">
+        Dismiss the suggestions.
+      </message>
+      <message name="IDS_ACCESSIBILITY_TAB_SUGGESTION_CLOSE_TAB_ACTION_BUTTON" desc="The accessibility text to read when the 'Close' text button in the selection mode toolbar is focused. When this button is tapped, all the selected tabs will be closed.">
+        {TABS_COUNT, plural,
+          =1 {Close <ph name="TABS_COUNT_ONE">%1$d<ex>1</ex></ph> selected tab}
+          other {Close <ph name="TABS_COUNT_MANY">%1$d<ex>8</ex></ph> selected tabs}
+        }
       </message>
     </messages>
   </release>

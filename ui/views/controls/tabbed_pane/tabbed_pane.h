@@ -181,6 +181,8 @@ class VIEWS_EXPORT Tab : public View {
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
 
+  void UpdatePreferredTitleWidth();
+
   TabbedPane* tabbed_pane_;
   Label* title_ = nullptr;
   int preferred_title_width_;

@@ -287,9 +287,9 @@ void PersonalDataManager::Init(
 
   if (!is_off_the_record_) {
     AutofillMetrics::LogIsAutofillEnabledAtStartup(IsAutofillEnabled());
-    AutofillMetrics::LogIsProfileAutofillEnabledAtStartup(
+    AutofillMetrics::LogIsAutofillProfileEnabledAtStartup(
         IsAutofillProfileEnabled());
-    AutofillMetrics::LogIsCreditCardAutofillEnabledAtStartup(
+    AutofillMetrics::LogIsAutofillCreditCardEnabledAtStartup(
         IsAutofillCreditCardEnabled());
   }
 
@@ -1279,11 +1279,11 @@ bool PersonalDataManager::IsAutofillEnabled() const {
 }
 
 bool PersonalDataManager::IsAutofillProfileEnabled() const {
-  return ::autofill::prefs::IsProfileAutofillEnabled(pref_service_);
+  return ::autofill::prefs::IsAutofillProfileEnabled(pref_service_);
 }
 
 bool PersonalDataManager::IsAutofillCreditCardEnabled() const {
-  return ::autofill::prefs::IsCreditCardAutofillEnabled(pref_service_);
+  return ::autofill::prefs::IsAutofillCreditCardEnabled(pref_service_);
 }
 
 bool PersonalDataManager::IsAutofillWalletImportEnabled() const {

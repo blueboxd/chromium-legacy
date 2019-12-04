@@ -897,6 +897,111 @@ crbug.com/lpz external/wpt/xhr/abort-after-send.any.html [ Failure ]
 crbug.com/lpz external/wpt/xhr/abort-after-stop.any.worker.html [ Failure ]
 crbug.com/lpz external/wpt/xhr/send-accept-language.htm [ Failure ]
 
+# Here are tests that were failing on WPT waterfall as of Dec. 2, 2019. They are triaged.
+# ---
+# Reftest with pixel diff. Fails locally. Fails on wpt.fyi
+crbug.com/lpz external/wpt/css/css-fonts/font-display/font-display-change.html [ Failure ]
+crbug.com/lpz external/wpt/css/css-layout-api/fallback-layout/constructor-error.https.html [ Failure ]
+crbug.com/lpz external/wpt/mathml/presentation-markup/direction/direction-007.html [ Failure ]
+crbug.com/lpz external/wpt/mathml/presentation-markup/direction/direction-008.html [ Failure ]
+crbug.com/lpz external/wpt/mathml/presentation-markup/direction/direction-010.html [ Failure ]
+crbug.com/lpz external/wpt/mathml/presentation-markup/direction/direction-token.html [ Failure ]
+crbug.com/lpz external/wpt/mathml/relations/css-styling/dynamic-dir-1.html [ Failure ]
+crbug.com/lpz external/wpt/mathml/relations/css-styling/mathbackground-001.html [ Failure ]
+crbug.com/lpz external/wpt/mathml/relations/css-styling/mathbackground-002.html [ Failure ]
+crbug.com/lpz external/wpt/mathml/relations/css-styling/mathbackground-003.html [ Failure ]
+crbug.com/lpz external/wpt/mathml/relations/css-styling/mathcolor-001.html [ Failure ]
+crbug.com/lpz external/wpt/mathml/relations/css-styling/mathcolor-002.html [ Failure ]
+crbug.com/lpz external/wpt/mathml/relations/css-styling/mathcolor-003.html [ Failure ]
+crbug.com/lpz external/wpt/mathml/relations/css-styling/mathsize-attribute-css-keywords.html [ Failure ]
+crbug.com/lpz external/wpt/mathml/relations/css-styling/mathsize-attribute-legacy-values.html [ Failure ]
+crbug.com/lpz external/wpt/mathml/relations/css-styling/mathsize-attribute.html [ Failure ]
+crbug.com/lpz external/wpt/mathml/relations/html5-tree/color-attributes-1.html [ Failure ]
+# crbug.com/1029945: The forced-colors tests have a dir-level failure expectation in
+# TestExpectations that we are not currently handling.
+crbug.com/1029945 external/wpt/forced-colors-mode/backplate/forced-colors-mode-backplate-01.html [ Failure ]
+crbug.com/1029945 external/wpt/forced-colors-mode/backplate/forced-colors-mode-backplate-02.html [ Failure ]
+crbug.com/1029945 external/wpt/forced-colors-mode/backplate/forced-colors-mode-backplate-03.html [ Failure ]
+crbug.com/1029945 external/wpt/forced-colors-mode/backplate/forced-colors-mode-backplate-04.html [ Failure ]
+crbug.com/1029945 external/wpt/forced-colors-mode/backplate/forced-colors-mode-backplate-05.html [ Failure ]
+crbug.com/1029945 external/wpt/forced-colors-mode/backplate/forced-colors-mode-backplate-06.html [ Failure ]
+crbug.com/1029945 external/wpt/forced-colors-mode/backplate/forced-colors-mode-backplate-08.html [ Failure ]
+crbug.com/1029945 external/wpt/forced-colors-mode/backplate/forced-colors-mode-backplate-09.html [ Failure ]
+crbug.com/1029945 external/wpt/forced-colors-mode/backplate/forced-colors-mode-backplate-10.html [ Failure ]
+crbug.com/1029945 external/wpt/forced-colors-mode/forced-colors-mode-01.html [ Failure ]
+crbug.com/1029945 external/wpt/forced-colors-mode/forced-colors-mode-02.html [ Failure ]
+crbug.com/1029945 external/wpt/forced-colors-mode/forced-colors-mode-05.html [ Failure ]
+crbug.com/1029945 external/wpt/forced-colors-mode/forced-colors-mode-06.html [ Failure ]
+crbug.com/1029945 external/wpt/forced-colors-mode/forced-colors-mode-07.html [ Failure ]
+crbug.com/1029945 external/wpt/forced-colors-mode/forced-colors-mode-08.html [ Failure ]
+crbug.com/1029945 external/wpt/forced-colors-mode/forced-colors-mode-14.html [ Failure ]
+crbug.com/1029945 external/wpt/forced-colors-mode/forced-colors-mode-17.html [ Failure ]
+crbug.com/1029945 external/wpt/forced-colors-mode/forced-colors-mode-18.html [ Failure ]
+crbug.com/1029945 external/wpt/forced-colors-mode/forced-colors-mode-19.html [ Failure ]
+crbug.com/1029945 external/wpt/forced-colors-mode/forced-colors-mode-23.html [ Failure ]
+
+# Reftest with pixel diff. Pass locally. Fails on wpt.fyi
+crbug.com/1030387 external/wpt/css/css-fonts/font-display/font-display-feature-policy-02.tentative.html [ Failure ]
+
+# Reftest with pixel diff. Fails locally. Pass on wpt.fyi
+crbug.com/1030388 external/wpt/css/CSS2/text/bidi-span-001.html [ Failure ]
+
+# Reftest with pixel diff. Flaky locally, not sure about wpt.fyi
+crbug.com/lpz external/wpt/web-animations/timing-model/animations/reverse-running-animation.html [ Pass Failure ]
+
+# Testharness test. Fail locally. Fail on wpt.fyi
+crbug.com/lpz external/wpt/mathml/relations/html5-tree/tabindex-002.html [ Failure ]
+crbug.com/lpz external/wpt/portals/portals-repeated-activate.html [ Failure ]
+crbug.com/lpz external/wpt/sms/interceptor.https.html [ Failure ]
+crbug.com/lpz external/wpt/webxr/events_referenceSpace_reset_immersive.https.html [ Failure ]
+crbug.com/lpz external/wpt/webxr/events_referenceSpace_reset_inline.https.html [ Failure ]
+crbug.com/lpz external/wpt/webxr/getViewerPose_emulatedPosition.https.html [ Failure ]
+crbug.com/lpz external/wpt/webxr/navigator_xr_sameObject.https.html [ Failure ]
+crbug.com/lpz external/wpt/webxr/webxr_feature_policy.https.html [ Failure ]
+crbug.com/lpz external/wpt/webxr/xrDevice_isSessionSupported_immersive_unsupported.https.html [ Failure ]
+crbug.com/lpz external/wpt/webxr/xrDevice_isSessionSupported_immersive.https.html [ Failure ]
+crbug.com/lpz external/wpt/webxr/xrDevice_isSessionSupported_inline.https.html [ Failure ]
+crbug.com/lpz external/wpt/webxr/xrFrame_session_sameObject.https.html [ Failure ]
+crbug.com/lpz external/wpt/webxr/xrInputSource_emulatedPosition.https.html [ Failure ]
+crbug.com/lpz external/wpt/webxr/xrInputSource_sameObject.https.html [ Failure ]
+crbug.com/lpz external/wpt/webxr/xrPose_transform_sameObject.https.html [ Failure ]
+crbug.com/lpz external/wpt/webxr/xrReferenceSpace_originOffset_viewer.https.html [ Failure ]
+crbug.com/lpz external/wpt/webxr/xrRigidTransform_sameObject.https.html [ Failure ]
+crbug.com/lpz external/wpt/webxr/xrSession_features_deviceSupport.https.html [ Failure ]
+crbug.com/lpz external/wpt/webxr/xrSession_requestReferenceSpace_features.https.html [ Failure ]
+crbug.com/lpz external/wpt/webxr/xrSession_sameObject.https.html [ Failure ]
+crbug.com/lpz external/wpt/webxr/xrSession_viewer_availability.https.html [ Failure ]
+crbug.com/lpz external/wpt/webxr/xrSession_visibilityState.https.html [ Failure ]
+crbug.com/lpz external/wpt/webxr/xrView_sameObject.https.html [ Failure ]
+crbug.com/lpz external/wpt/webxr/xrViewerPose_views_sameObject.https.html [ Failure ]
+crbug.com/lpz external/wpt/webxr/xrWebGLLayer_framebuffer_sameObject.https.html [ Failure ]
+
+# Testharness test. Timeout locally. Timeout on wpt.fyi
+crbug.com/lpz external/wpt/event-timing/click-timing.html [ Timeout ]
+crbug.com/lpz external/wpt/event-timing/toJSON.html [ Timeout ]
+crbug.com/lpz external/wpt/portals/portals-set-src-after-activate.html [ Timeout ]
+crbug.com/lpz external/wpt/sms/sms-iframe.https.html [ Timeout ]
+crbug.com/lpz external/wpt/storage-access-api/hasStorageAccess.sub.window.html [ Timeout ]
+crbug.com/lpz external/wpt/storage-access-api/requestStorageAccess.sub.window.html [ Timeout ]
+crbug.com/lpz external/wpt/web-nfc/NDEFReader_scan_filter.https.html [ Timeout ]
+crbug.com/lpz external/wpt/web-nfc/NDEFReader_scan_iframe.https.html [ Timeout ]
+crbug.com/lpz external/wpt/web-nfc/NDEFReader_scan.https.html [ Timeout ]
+crbug.com/lpz external/wpt/web-nfc/NDEFWriter_push.https.html [ Timeout ]
+crbug.com/lpz external/wpt/websockets/stream-tentative/close.any.html [ Timeout ]
+crbug.com/lpz external/wpt/websockets/stream-tentative/close.any.serviceworker.html [ Timeout ]
+crbug.com/lpz external/wpt/websockets/stream-tentative/close.any.sharedworker.html [ Timeout ]
+crbug.com/lpz external/wpt/websockets/stream-tentative/close.any.worker.html [ Timeout ]
+
+# Testharness test. Pass locally (slow when headless). Pass on wpt.fyi
+crbug.com/1030390 external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-negative-screenx-screeny.html [ Failure ]
+crbug.com/1030390 external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-negative-top-left.html [ Failure ]
+
+# Webdriver tests failing due to missing python module, which is being skipped by importer
+# to avoid chromium lint errors. crbug.com/1030372
+crbug.com/1030372 external/wpt/webdriver/tests/take_element_screenshot/iframe.py [ Failure ]
+crbug.com/1030372 external/wpt/webdriver/tests/take_screenshot/iframe.py [ Failure ]
+# --- End triage from Dec.2 2019
+
 # This section is for all referrer-policy tests. There are lots and many of them are flaky, so we
 # just blanket mark every single test as flaky. Since we don't include "Pass" as an expected status
 # we can identify unexpected passes in waterfall runs.

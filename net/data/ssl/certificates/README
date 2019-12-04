@@ -146,6 +146,10 @@ unit tests.
     A certificate and private key valid for *.example.org, used in various
     net unit tests.
 
+- test_names.pem
+    A certificate and private key valid for a number of test names. See
+    [test_names] in ee.cnf. Other names may be added as needed.
+
 - name_constraint_bad.pem
 - name_constraint_good.pem
     Two certificates used to test the built-in ability to restrict a root to

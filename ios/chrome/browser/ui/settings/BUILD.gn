@@ -222,7 +222,6 @@ source_set("constants") {
 }
 
 source_set("test_support") {
-  defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
@@ -230,8 +229,6 @@ source_set("test_support") {
     "passphrase_table_view_controller_test.mm",
     "personal_data_manager_finished_profile_tasks_waiter.cc",
     "personal_data_manager_finished_profile_tasks_waiter.h",
-    "signin_settings_app_interface.h",
-    "signin_settings_app_interface.mm",
   ]
   deps = [
     ":settings",
@@ -240,13 +237,11 @@ source_set("test_support") {
     "//components/autofill/core/browser",
     "//components/keyed_service/core",
     "//components/pref_registry",
-    "//components/prefs",
     "//components/sync",
     "//components/sync:test_support",
     "//components/sync_preferences",
     "//components/sync_preferences:test_support",
     "//google_apis",
-    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/main:test_support",
@@ -257,7 +252,6 @@ source_set("test_support") {
     "//ios/chrome/browser/sync:test_support",
     "//ios/chrome/browser/ui/settings/password",
     "//ios/chrome/browser/ui/table_view:test_support",
-    "//ios/chrome/test/app:test_support",
     "//ios/public/provider/chrome/browser/signin:test_support",
     "//ios/web/public/test",
     "//testing/gtest",
@@ -438,14 +432,10 @@ source_set("eg_app_support+eg2") {
   sources = [
     "block_popups_app_interface.h",
     "block_popups_app_interface.mm",
-    "signin_settings_app_interface.h",
-    "signin_settings_app_interface.mm",
   ]
   deps = [
     "//base",
     "//components/content_settings/core/browser",
-    "//components/prefs",
-    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/content_settings",
     "//ios/chrome/test/app:test_support",
@@ -461,7 +451,6 @@ source_set("eg_test_support+eg2") {
   testonly = true
   sources = [
     "block_popups_app_interface.h",
-    "signin_settings_app_interface.h",
   ]
   public_deps = [
     "//components/content_settings/core/common",
@@ -477,17 +466,12 @@ source_set("eg2_tests") {
   testonly = true
   sources = [
     "block_popups_egtest.mm",
-    "signin_settings_egtest.mm",
   ]
   deps = [
     ":eg_test_support+eg2",
     "//base",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser/ui/authentication:eg_test_support+eg2",
-    "//ios/chrome/browser/ui/authentication/cells:constants",
-    "//ios/chrome/browser/ui/settings:constants",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
-    "//ios/public/provider/chrome/browser/signin:test_support",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
     "//ios/web/public/test/http_server",

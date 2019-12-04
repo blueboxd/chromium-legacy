@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
@@ -66,12 +67,12 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
         mFaviconLoader = new FaviconLoader(mActivity);
         mBottomSheetController.addObserver(new EmptyBottomSheetObserver() {
             @Override
-            public void onSheetStateChanged(int newState) {
-                if (newState == SheetState.HIDDEN) {
-                    destroyContent();
-                    return;
-                }
+            public void onSheetContentChanged(BottomSheetContent newContent) {
+                if (newContent != mSheetContent) destroyContent();
+            }
 
+            @Override
+            public void onSheetStateChanged(int newState) {
                 if (mSheetContent == null) return;
                 mSheetContent.showOpenInNewTabButton(newState == SheetState.FULL);
             }

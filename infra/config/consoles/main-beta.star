@@ -18,9 +18,43 @@ luci.console_view(
             category = 'chromium.linux|release',
             short_name = 'tst',
         ),
-        # TODO(https://crbug.com/922150) Move these to an appropriate console
-        # and/or don't have linux-rel mirror these since they do not appear on
-        # the main console
+        luci.console_view_entry(
+            builder = 'ci-beta/linux-chromeos-rel',
+            category = 'chromium.chromiumos|default',
+            short_name = 'rel',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/chromeos-amd64-generic-rel',
+            category = 'chromium.chromiumos|simple|release|x64',
+            short_name = 'rel',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Mac Builder',
+            category = 'chromium.mac|release',
+            short_name = 'bld',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Mac10.13 Tests',
+            category = 'chromium.mac|release',
+            short_name = '13',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/ios-simulator',
+            category = 'chromium.mac|ios|default',
+            short_name = 'sim',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Win x64 Builder',
+            category = 'chromium.win|release|builder',
+            short_name = '64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Win10 Tests x64',
+            category = 'chromium.win|release|tester',
+            short_name = 'w10',
+        ),
+        # TODO(https://crbug.com/922150) Add the following builders to the main
+        # console or don't have them be mirrored by main waterfall trybots
         luci.console_view_entry(
             builder = 'ci-beta/android-kitkat-arm-rel',
             category = 'chromium.android',
@@ -42,6 +76,26 @@ luci.console_view(
         luci.console_view_entry(
             builder = 'ci-beta/Linux Release (NVIDIA)',
             category = 'chromium.gpu|linux',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/GPU Mac Builder',
+            category = 'chromium.gpu|mac',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Mac Release (Intel)',
+            category = 'chromium.gpu|mac',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Mac Retina Release (AMD)',
+            category = 'chromium.gpu|mac',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/GPU Win x64 Builder',
+            category = 'chromium.gpu|win',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Win10 x64 Release (NVIDIA)',
+            category = 'chromium.gpu|win',
         ),
     ],
 )

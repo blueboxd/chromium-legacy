@@ -890,8 +890,10 @@ TEST_F(ShelfViewTestNotScrollable, AssertNoButtonsOverlap) {
   // Test that any two successive visible icons never overlap in all shelf
   // alignment types.
   const ShelfAlignment kAlignments[] = {
-      SHELF_ALIGNMENT_LEFT, SHELF_ALIGNMENT_RIGHT, SHELF_ALIGNMENT_BOTTOM,
-      SHELF_ALIGNMENT_BOTTOM_LOCKED,
+      ShelfAlignment::kLeft,
+      ShelfAlignment::kRight,
+      ShelfAlignment::kBottom,
+      ShelfAlignment::kBottomLocked,
   };
 
   for (ShelfAlignment alignment : kAlignments) {
@@ -1210,7 +1212,7 @@ TEST_F(ShelfViewTest, ShelfRipOff) {
   ui::test::EventGenerator* generator = GetEventGenerator();
 
   // The test makes some assumptions that the shelf is bottom aligned.
-  ASSERT_EQ(shelf_view_->shelf()->alignment(), SHELF_ALIGNMENT_BOTTOM);
+  ASSERT_EQ(shelf_view_->shelf()->alignment(), ShelfAlignment::kBottom);
 
   // The rip off threshold. Taken from |kRipOffDistance| in shelf_view.cc.
   const int kRipOffDistance = 48;
@@ -1282,7 +1284,7 @@ TEST_F(ShelfViewTest, DragAndDropPinnedRunningApp) {
   ui::test::EventGenerator* generator = GetEventGenerator();
 
   // The test makes some assumptions that the shelf is bottom aligned.
-  ASSERT_EQ(shelf_view_->shelf()->alignment(), SHELF_ALIGNMENT_BOTTOM);
+  ASSERT_EQ(shelf_view_->shelf()->alignment(), ShelfAlignment::kBottom);
 
   // The rip off threshold. Taken from |kRipOffDistance| in shelf_view.cc.
   constexpr int kRipOffDistance = 48;
@@ -1420,7 +1422,7 @@ TEST_F(ShelfViewTest, RemovingItemClosesTooltip) {
   EXPECT_FALSE(tooltip_manager->IsVisible());
 
   // Change the shelf layout. This should not crash.
-  GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  GetPrimaryShelf()->SetAlignment(ShelfAlignment::kLeft);
 }
 
 // Changing the shelf alignment closes any open tooltip.
@@ -1436,7 +1438,7 @@ TEST_F(ShelfViewTest, ShelfAlignmentClosesTooltip) {
   EXPECT_TRUE(tooltip_manager->IsVisible());
 
   // Changing shelf alignment hides the tooltip.
-  GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  GetPrimaryShelf()->SetAlignment(ShelfAlignment::kLeft);
   EXPECT_FALSE(tooltip_manager->IsVisible());
 }
 
@@ -1899,8 +1901,8 @@ TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
   aura::Window* root_window = Shell::GetAllRootWindows()[1];
   Shelf* secondary_shelf = Shelf::ForWindow(root_window);
 
-  secondary_shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
-  ASSERT_EQ(SHELF_ALIGNMENT_LEFT, secondary_shelf->alignment());
+  secondary_shelf->SetAlignment(ShelfAlignment::kLeft);
+  ASSERT_EQ(ShelfAlignment::kLeft, secondary_shelf->alignment());
 
   ShelfView* shelf_view_for_secondary =
       secondary_shelf->GetShelfViewForTesting();
@@ -2254,7 +2256,7 @@ TEST_F(ShelfViewTest, TestShelfItemsAnimations) {
   // The shelf items should not animate when the whole shelf and its contents
   // have to move.
   observer.Reset();
-  shelf_view_->shelf()->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  shelf_view_->shelf()->SetAlignment(ShelfAlignment::kLeft);
   test_api_->RunMessageLoopUntilAnimationsDone();
   EXPECT_EQ(1, observer.icon_positions_animation_duration().InMilliseconds());
 
@@ -2263,8 +2265,8 @@ TEST_F(ShelfViewTest, TestShelfItemsAnimations) {
   PrefService* prefs =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
   const int64_t id = GetPrimaryDisplay().id();
-  shelf_view_->shelf()->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
-  SetShelfAlignmentPref(prefs, id, SHELF_ALIGNMENT_BOTTOM);
+  shelf_view_->shelf()->SetAlignment(ShelfAlignment::kBottom);
+  SetShelfAlignmentPref(prefs, id, ShelfAlignment::kBottom);
   observer.Reset();
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   test_api_->RunMessageLoopUntilAnimationsDone();
@@ -2277,8 +2279,8 @@ TEST_F(ShelfViewTest, TestShelfItemsAnimations) {
 
   // The shelf items should not animate if we are entering or exiting tablet
   // mode, and the shelf alignment is not bottom aligned.
-  shelf_view_->shelf()->SetAlignment(SHELF_ALIGNMENT_LEFT);
-  SetShelfAlignmentPref(prefs, id, SHELF_ALIGNMENT_LEFT);
+  shelf_view_->shelf()->SetAlignment(ShelfAlignment::kLeft);
+  SetShelfAlignmentPref(prefs, id, ShelfAlignment::kLeft);
   observer.Reset();
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   test_api_->RunMessageLoopUntilAnimationsDone();
@@ -2881,8 +2883,7 @@ INSTANTIATE_TEST_SUITE_P(All, ShelfViewMenuTest, testing::Bool());
 TEST_P(ShelfViewMenuTest, ShelfViewMenuAnchorPoint) {
   const ShelfAppButton* shelf_button = GetButtonByID(AddApp());
   const bool context_menu = GetParam();
-  EXPECT_EQ(ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM,
-            GetPrimaryShelf()->alignment());
+  EXPECT_EQ(ash::ShelfAlignment::kBottom, GetPrimaryShelf()->alignment());
 
   // Test for bottom shelf.
   EXPECT_EQ(
@@ -2891,7 +2892,7 @@ TEST_P(ShelfViewMenuTest, ShelfViewMenuAnchorPoint) {
           .y());
 
   // Test for left shelf.
-  GetPrimaryShelf()->SetAlignment(ash::ShelfAlignment::SHELF_ALIGNMENT_LEFT);
+  GetPrimaryShelf()->SetAlignment(ash::ShelfAlignment::kLeft);
 
   EXPECT_EQ(
       shelf_button->GetBoundsInScreen().x(),
@@ -2899,7 +2900,7 @@ TEST_P(ShelfViewMenuTest, ShelfViewMenuAnchorPoint) {
           .x());
 
   // Test for right shelf.
-  GetPrimaryShelf()->SetAlignment(ash::ShelfAlignment::SHELF_ALIGNMENT_RIGHT);
+  GetPrimaryShelf()->SetAlignment(ash::ShelfAlignment::kRight);
 
   EXPECT_EQ(
       shelf_button->GetBoundsInScreen().x(),

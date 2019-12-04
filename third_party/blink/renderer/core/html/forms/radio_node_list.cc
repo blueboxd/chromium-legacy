@@ -95,7 +95,7 @@ bool RadioNodeList::MatchesByIdOrName(const Element& test_element) const {
 bool RadioNodeList::CheckElementMatchesRadioNodeListFilter(
     const Element& test_element) const {
   DCHECK(!ShouldOnlyMatchImgElements());
-  DCHECK(IsHTMLObjectElement(test_element) ||
+  DCHECK(IsA<HTMLObjectElement>(test_element) ||
          test_element.IsFormControlElement());
   if (IsA<HTMLFormElement>(ownerNode())) {
     auto* form_element = To<HTMLElement>(test_element).formOwner();
@@ -117,7 +117,7 @@ bool RadioNodeList::ElementMatches(const Element& element) const {
     return MatchesByIdOrName(element);
   }
 
-  if (!IsHTMLObjectElement(element) && !element.IsFormControlElement())
+  if (!IsA<HTMLObjectElement>(element) && !element.IsFormControlElement())
     return false;
 
   if (IsHTMLInputElement(element) &&

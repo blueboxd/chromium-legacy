@@ -3897,9 +3897,6 @@
   <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PASSWORD_REAUTH" desc="Tooltip for an icon on user's lock screen pod shown by EasyUnlock when the user must enter their password instead of using EasyUnlock, because too much time has passed since their last password entry.">
     For added security, Smart Lock will ask you to enter your password after 20 hours.
   </message>
-  <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_UNSUPPORTED_ANDROID_VERSION" desc="Tooltip for the icon on user's lock screen pod shown by Easy Unlock when a phone set up to unlock the Chromebook is detected, but has an unsupported Android version. The user is asked to update the phone.">
-    Please update your phone to a newer version of Android to unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
-  </message>
   <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_USER" desc="Tooltip text shown on a user's lock screen pod when Easy Unlock feature is enabled for the user, but the user hard locked the device. Hard lock is done by clicking the Easy Unlock icon on the user's pod. When a device is hard locked by a user, the Easy Unlock cannot be used to unlock the device as that user. A password has to be entered to unlock the device.">
     Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is locked for security. Manually enter your password to continue.
   </message>
@@ -3928,7 +3925,7 @@
     Finding your phone
   </message>
   <message name="IDS_SMART_LOCK_SCREENLOCK_AUTHENTICATED_LABEL" desc="Label for the Smart Lock icon used for accessibility purposes. Describes when a phone eligible to unlock the Chromebook is detected and authenticated.">
-    Your device is unlocked with Smart Lock. Press Enter to unlock.
+    Your device can be unlocked with Smart Lock. Press Enter to unlock.
   </message>
 
   <!-- User Image Selection Dialog -->

@@ -72,6 +72,7 @@
     "disabled",
     "disablepictureinpicture",
     "disableremoteplayback",
+    "disallowdocumentaccess",
     "download",
     "draggable",
     "elementtiming",

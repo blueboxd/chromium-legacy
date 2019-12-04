@@ -16,6 +16,13 @@
 
 #define BEGINFRAMETRACKER_FROM_HERE FROM_HERE_WITH_EXPLICIT_FUNCTION("")
 
+namespace perfetto {
+namespace protos {
+namespace pbzero {
+class BeginImplFrameArgs;
+}
+}  // namespace protos
+}  // namespace perfetto
 namespace cc {
 
 // Microclass to trace and check properties for correct BeginFrameArgs (BFA)
@@ -68,8 +75,9 @@ class CC_EXPORT BeginFrameTracker {
   // any time.
   base::TimeDelta Interval() const;
 
-  void AsValueInto(base::TimeTicks now,
-                   base::trace_event::TracedValue* dict) const;
+  void AsProtozeroInto(
+      base::TimeTicks now,
+      perfetto::protos::pbzero::BeginImplFrameArgs* dict) const;
 
   // The following methods violate principles of how viz::BeginFrameArgs should
   // be used. These methods should only be used when there is no other choice.

@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_WEB_PACKAGE_WEB_BUNDLE_UTILS_H_
 #define CONTENT_BROWSER_WEB_PACKAGE_WEB_BUNDLE_UTILS_H_
 
+#include <string>
+
 #include "base/files/file_path.h"
 #include "content/common/content_export.h"
 
@@ -33,7 +35,7 @@ constexpr char kWebBundleFileMimeTypeWithoutParameters[] =
 
 // On Android, returns true if the url scheme is file or content. On other
 // platforms, returns true if the url scheme is file.
-bool IsSupprtedFileScheme(const GURL& url);
+bool IsSupportedFileScheme(const GURL& url);
 
 // Returns true if |url| is the file URL which is specified with
 // --trustable-bundled-exchanges-file-url flag. Always returns false when

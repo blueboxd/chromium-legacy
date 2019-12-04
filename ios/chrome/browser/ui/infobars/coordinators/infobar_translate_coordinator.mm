@@ -41,7 +41,7 @@
 
 // Delegate that holds the Translate Infobar information and actions.
 @property(nonatomic, readonly)
-    translate::TranslateInfoBarDelegate* translateInfoBarDelegate;
+    translate::TranslateInfoBarDelegate* translateInfobarDelegate;
 
 // InfobarBannerViewController owned by this Coordinator.
 @property(nonatomic, strong) InfobarBannerViewController* bannerViewController;
@@ -73,7 +73,7 @@
                            badgeSupport:YES
                                    type:InfobarType::kInfobarTypeTranslate];
   if (self) {
-    _translateInfoBarDelegate = infoBarDelegate;
+    _translateInfobarDelegate = infoBarDelegate;
     _translateInfobarDelegateObserver =
         std::make_unique<TranslateInfobarDelegateObserverBridge>(
             infoBarDelegate, self);
@@ -92,6 +92,7 @@
                    withErrorType:(translate::TranslateErrors::Type)errorType {
   DCHECK(self.currentStep != step);
   self.currentStep = step;
+  self.mediator.currentStep = step;
   switch (self.currentStep) {
     case translate::TranslateStep::TRANSLATE_STEP_TRANSLATING:
       self.translateInProgress = YES;
@@ -131,7 +132,8 @@
   if (!self.started) {
     self.started = YES;
     self.mediator = [[InfobarTranslateMediator alloc]
-        initWithInfoBarDelegate:self.translateInfoBarDelegate];
+        initWithInfoBarDelegate:self.translateInfobarDelegate];
+    self.mediator.currentStep = self.currentStep;
     [self createBannerViewController];
   }
 }
@@ -157,29 +159,31 @@
 
 - (void)performInfobarAction {
   switch (self.currentStep) {
-    case translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE:
+    case translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE: {
       self.userAction |= UserActionTranslate;
 
       // TODO(crbug.com/1014959): Add metrics
-      if (self.translateInfoBarDelegate->ShouldAutoAlwaysTranslate()) {
+      if (self.translateInfobarDelegate->ShouldAutoAlwaysTranslate()) {
         // TODO(crbug.com/1014959): Figure out if we should prompt user with
         // snackbar to auto always translate.
-        self.translateInfoBarDelegate->ToggleAlwaysTranslate();
+        self.translateInfobarDelegate->ToggleAlwaysTranslate();
       }
-      self.translateInfoBarDelegate->Translate();
+      self.translateInfobarDelegate->Translate();
       break;
+    }
     case translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE: {
       self.userAction |= UserActionRevert;
 
       // TODO(crbug.com/1014959): Add metrics
 
-      self.translateInfoBarDelegate->RevertWithoutClosingInfobar();
+      self.translateInfobarDelegate->RevertWithoutClosingInfobar();
       // There is no completion signal (i.e. change of TranslateStep) in
       // translateInfoBarDelegate:didChangeTranslateStep:withErrorType: in
       // response to RevertWithoutClosingInfobar(), so revert Infobar badge
       // accepted state here.
       self.currentStep =
           translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE;
+      self.mediator.currentStep = self.currentStep;
       [self.badgeDelegate infobarWasReverted:self.infobarType
                                  forWebState:self.webState];
       break;
@@ -216,8 +220,8 @@
 }
 
 - (void)infobarBannerWillBeDismissed:(BOOL)userInitiated {
-  if (userInitiated && self.translateInfoBarDelegate)
-    self.translateInfoBarDelegate->InfoBarDismissed();
+  if (userInitiated && self.translateInfobarDelegate)
+    self.translateInfobarDelegate->InfoBarDismissed();
 }
 
 #pragma mark - Modal
@@ -226,14 +230,13 @@
   // Return early if there's no delegate. e.g. A Modal presentation has been
   // triggered after the Infobar was destroyed, but before the badge/banner
   // were dismissed.
-  if (!self.translateInfoBarDelegate)
+  if (!self.translateInfobarDelegate)
     return NO;
 
   self.modalViewController =
       [[InfobarTranslateTableViewController alloc] initWithDelegate:self];
   self.modalViewController.title =
       l10n_util::GetNSString(IDS_IOS_TRANSLATE_INFOBAR_MODAL_TITLE);
-  self.modalViewController.translateButtonText = [self infobarButtonText];
   self.mediator.modalConsumer = self.modalViewController;
   // TODO(crbug.com/1014959): Need to be able to toggle the modal button for
   // when translate is in progress.
@@ -261,6 +264,13 @@
 
 #pragma mark - InfobarTranslateModalDelegate
 
+- (void)showOriginalLanguage {
+  DCHECK(self.currentStep ==
+         translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE);
+  [self performInfobarAction];
+  [self dismissInfobarModal:self animated:YES completion:nil];
+}
+
 - (void)showChangeSourceLanguageOptions {
   InfobarTranslateLanguageSelectionTableViewController* languageSelectionTVC =
       [[InfobarTranslateLanguageSelectionTableViewController alloc]
@@ -279,7 +289,7 @@
   InfobarTranslateLanguageSelectionTableViewController* languageSelectionTVC =
       [[InfobarTranslateLanguageSelectionTableViewController alloc]
                  initWithDelegate:self
-          selectingSourceLanguage:YES];
+          selectingSourceLanguage:NO];
   languageSelectionTVC.title = l10n_util::GetNSString(
       IDS_IOS_TRANSLATE_INFOBAR_SELECT_LANGUAGE_MODAL_TITLE);
   self.mediator.targetLanguageSelectionConsumer = languageSelectionTVC;
@@ -290,31 +300,31 @@
 }
 
 - (void)alwaysTranslateSourceLanguage {
-  DCHECK(!self.translateInfoBarDelegate->ShouldAlwaysTranslate());
+  DCHECK(!self.translateInfobarDelegate->ShouldAlwaysTranslate());
   self.userAction |= UserActionAlwaysTranslate;
   // TODO(crbug.com/1014959): Add metrics
-  self.translateInfoBarDelegate->ToggleAlwaysTranslate();
+  self.translateInfobarDelegate->ToggleAlwaysTranslate();
   // Since toggle turned on always translate, translate now.
   // This doesn't call performInfobarAction, because its implementation checks
   // ShouldAutoAlwaysTranslate(), which modifies the Translate state. There is
   // also no need update the badge state since it will be updated by
   // translateInfoBarDelegate:didChangeTranslateStep:
-  self.translateInfoBarDelegate->Translate();
+  self.translateInfobarDelegate->Translate();
   [self dismissInfobarModal:self animated:YES completion:nil];
 }
 
 - (void)undoAlwaysTranslateSourceLanguage {
-  DCHECK(self.translateInfoBarDelegate->ShouldAlwaysTranslate());
+  DCHECK(self.translateInfobarDelegate->ShouldAlwaysTranslate());
   // TODO(crbug.com/1014959): Add metrics and new user action?
-  self.translateInfoBarDelegate->ToggleAlwaysTranslate();
+  self.translateInfobarDelegate->ToggleAlwaysTranslate();
   [self dismissInfobarModal:self animated:YES completion:nil];
 }
 
 - (void)neverTranslateSourceLanguage {
-  DCHECK(self.translateInfoBarDelegate->IsTranslatableLanguageByPrefs());
+  DCHECK(self.translateInfobarDelegate->IsTranslatableLanguageByPrefs());
   self.userAction |= UserActionNeverTranslateLanguage;
   // TODO(crbug.com/1014959): Add metrics
-  self.translateInfoBarDelegate->ToggleTranslatableLanguageByPrefs();
+  self.translateInfobarDelegate->ToggleTranslatableLanguageByPrefs();
   [self dismissInfobarModal:self
                    animated:YES
                  completion:^{
@@ -325,16 +335,16 @@
 }
 
 - (void)undoNeverTranslateSourceLanguage {
-  DCHECK(!self.translateInfoBarDelegate->IsTranslatableLanguageByPrefs());
-  self.translateInfoBarDelegate->ToggleTranslatableLanguageByPrefs();
+  DCHECK(!self.translateInfobarDelegate->IsTranslatableLanguageByPrefs());
+  self.translateInfobarDelegate->ToggleTranslatableLanguageByPrefs();
   [self dismissInfobarModal:self animated:YES completion:nil];
   // TODO(crbug.com/1014959): implement else logic. Should anything be done?
 }
 
 - (void)neverTranslateSite {
-  DCHECK(!self.translateInfoBarDelegate->IsSiteBlacklisted());
+  DCHECK(!self.translateInfobarDelegate->IsSiteBlacklisted());
   self.userAction |= UserActionNeverTranslateSite;
-  self.translateInfoBarDelegate->ToggleSiteBlacklist();
+  self.translateInfobarDelegate->ToggleSiteBlacklist();
   // TODO(crbug.com/1014959): Add metrics
   [self dismissInfobarModal:self
                    animated:YES
@@ -346,8 +356,8 @@
 }
 
 - (void)undoNeverTranslateSite {
-  DCHECK(self.translateInfoBarDelegate->IsSiteBlacklisted());
-  self.translateInfoBarDelegate->ToggleSiteBlacklist();
+  DCHECK(self.translateInfobarDelegate->IsSiteBlacklisted());
+  self.translateInfobarDelegate->ToggleSiteBlacklist();
   [self dismissInfobarModal:self animated:YES completion:nil];
   // TODO(crbug.com/1014959): implement else logic. Should aything be done?
 }
@@ -411,8 +421,8 @@
   // Formatted as "[source] to [target]".
   return l10n_util::GetNSStringF(
       IDS_IOS_TRANSLATE_INFOBAR_TRANSLATE_BANNER_SUBTITLE,
-      self.translateInfoBarDelegate->original_language_name(),
-      self.translateInfoBarDelegate->target_language_name());
+      self.translateInfobarDelegate->original_language_name(),
+      self.translateInfobarDelegate->target_language_name());
 }
 
 // Returns the text of the banner and modal action button depending on the

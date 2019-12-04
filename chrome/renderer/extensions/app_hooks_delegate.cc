@@ -164,7 +164,7 @@ v8::Local<v8::Value> AppHooksDelegate::GetDetails(
   CHECK(web_frame);
 
   v8::Isolate* isolate = script_context->isolate();
-  if (web_frame->GetDocument().GetSecurityOrigin().IsUnique())
+  if (web_frame->GetDocument().GetSecurityOrigin().IsOpaque())
     return v8::Null(isolate);
 
   const Extension* extension =

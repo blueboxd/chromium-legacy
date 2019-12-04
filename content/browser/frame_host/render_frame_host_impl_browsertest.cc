@@ -47,8 +47,6 @@
 #include "content/test/did_commit_navigation_interceptor.h"
 #include "content/test/frame_host_test_interface.mojom.h"
 #include "content/test/test_content_browser_client.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/features.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_constants.h"
@@ -1265,7 +1263,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
       static_cast<RenderFrameHostImpl*>(wc->GetMainFrame());
 
   EXPECT_TRUE(main_rfh1->GetSuddenTerminationDisablerState(
-      blink::kBeforeUnloadHandler));
+      blink::mojom::SuddenTerminationDisablerType::kBeforeUnloadHandler));
 
   // Make the renderer crash.
   RenderProcessHost* renderer_process = main_rfh1->GetProcess();
@@ -1275,7 +1273,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   crash_observer.Wait();
 
   EXPECT_FALSE(main_rfh1->GetSuddenTerminationDisablerState(
-      blink::kBeforeUnloadHandler));
+      blink::mojom::SuddenTerminationDisablerType::kBeforeUnloadHandler));
 
   // This should not trigger a DCHECK once the renderer sends up the termination
   // disabler flags.
@@ -1285,7 +1283,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   RenderFrameHostImpl* main_rfh2 =
       static_cast<RenderFrameHostImpl*>(wc->GetMainFrame());
   EXPECT_TRUE(main_rfh2->GetSuddenTerminationDisablerState(
-      blink::kBeforeUnloadHandler));
+      blink::mojom::SuddenTerminationDisablerType::kBeforeUnloadHandler));
 }
 
 // Aborted renderer-initiated navigations that don't destroy the current
@@ -1524,7 +1522,7 @@ class ScopedFakeInterfaceProviderRequestInjector
   DISALLOW_COPY_AND_ASSIGN(ScopedFakeInterfaceProviderRequestInjector);
 };
 
-// Monitors the |document_scoped_interface_provider_binding_| of the given
+// Monitors the |document_scoped_interface_provider_receiver_| of the given
 // |render_frame_host| for incoming interface requests for |interface_name|, and
 // invokes |callback| synchronously just before such a request would be
 // dispatched.
@@ -1535,12 +1533,12 @@ class ScopedInterfaceRequestMonitor
                                 base::StringPiece interface_name,
                                 base::RepeatingClosure callback)
       : rfhi_(static_cast<RenderFrameHostImpl*>(render_frame_host)),
-        impl_(binding().SwapImplForTesting(this)),
+        impl_(receiver().SwapImplForTesting(this)),
         interface_name_(interface_name),
         request_callback_(callback) {}
 
   ~ScopedInterfaceRequestMonitor() override {
-    auto* old_impl = binding().SwapImplForTesting(impl_);
+    auto* old_impl = receiver().SwapImplForTesting(impl_);
     DCHECK_EQ(old_impl, this);
   }
 
@@ -1558,8 +1556,8 @@ class ScopedInterfaceRequestMonitor
   }
 
  private:
-  mojo::Binding<service_manager::mojom::InterfaceProvider>& binding() {
-    return rfhi_->document_scoped_interface_provider_binding_for_testing();
+  mojo::Receiver<service_manager::mojom::InterfaceProvider>& receiver() {
+    return rfhi_->document_scoped_interface_provider_receiver_for_testing();
   }
 
   RenderFrameHostImpl* rfhi_;
@@ -1679,7 +1677,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   const GURL first_url(embedded_test_server()->GetURL("/title1.html"));
   const GURL second_url(embedded_test_server()->GetURL("/title2.html"));
 
-  // Prepare an InterfaceProviderRequest with no pending requests.
+  // Prepare an PendingReceiver<InterfaceProvider> with no pending requests.
   mojo::Remote<service_manager::mojom::InterfaceProvider> interface_provider;
   mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
       interface_provider_receiver =
@@ -3525,7 +3523,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, LoadCallbacks) {
                                         loop_until_dcl.QuitClosure());
   shell()->LoadURL(main_document_url);
 
-  EXPECT_FALSE(rfhi->dom_content_loaded());
+  EXPECT_FALSE(rfhi->IsDOMContentLoaded());
   EXPECT_FALSE(web_contents->IsDocumentOnLoadCompletedInMainFrame());
 
   main_document_response.WaitForRequest();
@@ -3537,7 +3535,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, LoadCallbacks) {
       "<img src='/img'>");
 
   load_observer.WaitForNavigationFinished();
-  EXPECT_FALSE(rfhi->dom_content_loaded());
+  EXPECT_FALSE(rfhi->IsDOMContentLoaded());
   EXPECT_FALSE(web_contents->IsDocumentOnLoadCompletedInMainFrame());
 
   main_document_response.Done();
@@ -3546,7 +3544,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, LoadCallbacks) {
   // is still loading.
   loop_until_dcl.Run();
   EXPECT_TRUE(rfhi->is_loading());
-  EXPECT_TRUE(rfhi->dom_content_loaded());
+  EXPECT_TRUE(rfhi->IsDOMContentLoaded());
   EXPECT_FALSE(web_contents->IsDocumentOnLoadCompletedInMainFrame());
 
   base::RunLoop loop_until_onload;
@@ -3558,7 +3556,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, LoadCallbacks) {
 
   // And now onload() should be reached.
   loop_until_onload.Run();
-  EXPECT_TRUE(rfhi->dom_content_loaded());
+  EXPECT_TRUE(rfhi->IsDOMContentLoaded());
   EXPECT_TRUE(web_contents->IsDocumentOnLoadCompletedInMainFrame());
 }
 
@@ -3580,7 +3578,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, LoadingStateResetOnNavigation) {
   shell()->LoadURL(url1);
   loop_until_onload.Run();
 
-  EXPECT_TRUE(rfhi->dom_content_loaded());
+  EXPECT_TRUE(rfhi->IsDOMContentLoaded());
   EXPECT_TRUE(web_contents->IsDocumentOnLoadCompletedInMainFrame());
 
   // Expect that the loading state will be reset after a navigation.
@@ -3595,7 +3593,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, LoadingStateResetOnNavigation) {
       "\r\n");
   navigation_observer.WaitForNavigationFinished();
 
-  EXPECT_FALSE(rfhi->dom_content_loaded());
+  EXPECT_FALSE(rfhi->IsDOMContentLoaded());
   EXPECT_FALSE(web_contents->IsDocumentOnLoadCompletedInMainFrame());
 }
 
@@ -3618,7 +3616,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest,
   shell()->LoadURL(url1);
   loop_until_onload.Run();
 
-  EXPECT_TRUE(rfhi->dom_content_loaded());
+  EXPECT_TRUE(rfhi->IsDOMContentLoaded());
   EXPECT_TRUE(web_contents->IsDocumentOnLoadCompletedInMainFrame());
 
   // Expect that the loading state will NOT be reset after a cancelled
@@ -3636,7 +3634,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest,
       "\r\n");
   navigation_manager.WaitForNavigationFinished();
 
-  EXPECT_TRUE(rfhi->dom_content_loaded());
+  EXPECT_TRUE(rfhi->IsDOMContentLoaded());
   EXPECT_TRUE(web_contents->IsDocumentOnLoadCompletedInMainFrame());
 }
 

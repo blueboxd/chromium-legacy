@@ -759,10 +759,6 @@
     "label": "//ui/gfx:color_transform_fuzzer",
     "type": "fuzzer",
   },
-  "color_unittests": {
-    "label": "//ui/color:color_unittests",
-    "type": "console_test_launcher",
-  },
   "comfort_noise_decoder_fuzzer": {
     "label": "//third_party/webrtc/test/fuzzers:comfort_noise_decoder_fuzzer",
     "type": "fuzzer",

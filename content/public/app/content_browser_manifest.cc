@@ -165,25 +165,12 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .RequireCapability("resource_coordinator", "app")
           .RequireCapability("resource_coordinator", "heap_profiler_helper")
           .ExposeInterfaceFilterCapability_Deprecated(
-              "navigation:shared_worker", "renderer",
-              std::set<const char*>{
-                  "blink.mojom.QuotaDispatcherHost"})
-          .ExposeInterfaceFilterCapability_Deprecated(
-              "navigation:dedicated_worker", "renderer",
-              std::set<const char*>{
-                  "blink.mojom.QuotaDispatcherHost"})
-          .ExposeInterfaceFilterCapability_Deprecated(
-              "navigation:service_worker", "renderer",
-              std::set<const char*>{
-                  "blink.mojom.QuotaDispatcherHost"})
-          .ExposeInterfaceFilterCapability_Deprecated(
               "navigation:frame", "renderer",
               std::set<const char*>{
                   "autofill.mojom.AutofillDriver",
                   "autofill.mojom.PasswordManagerDriver",
                   "blink.mojom.DisplayCutoutHost",
                   "blink.mojom.Portal",
-                  "blink.mojom.QuotaDispatcherHost",
                   "content.mojom.RendererAudioInputStreamFactory",
                   "content.mojom.RendererAudioOutputStreamFactory",
                   "discardable_memory.mojom.DiscardableSharedMemoryManager",

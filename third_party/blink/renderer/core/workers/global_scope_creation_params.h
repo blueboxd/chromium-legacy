@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink-forward.h"
@@ -62,7 +63,8 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       std::unique_ptr<WorkerSettings>,
       V8CacheOptions,
       WorkletModuleResponsesMap*,
-      service_manager::mojom::blink::InterfaceProviderPtrInfo = {},
+      mojo::PendingRemote<service_manager::mojom::blink::InterfaceProvider>
+          interface_provider = mojo::NullRemote(),
       mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>
           browser_interface_broker = mojo::NullRemote(),
       BeginFrameProviderParams begin_frame_provider_params = {},
@@ -152,7 +154,8 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
 
   CrossThreadPersistent<WorkletModuleResponsesMap> module_responses_map;
 
-  service_manager::mojom::blink::InterfaceProviderPtrInfo interface_provider;
+  mojo::PendingRemote<service_manager::mojom::blink::InterfaceProvider>
+      interface_provider;
 
   mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>
       browser_interface_broker;

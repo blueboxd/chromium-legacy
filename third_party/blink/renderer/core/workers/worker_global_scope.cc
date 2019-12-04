@@ -487,7 +487,7 @@ WorkerGlobalScope::WorkerGlobalScope(
   if (creation_params->interface_provider.is_valid()) {
     interface_provider_.Bind(
         mojo::PendingRemote<service_manager::mojom::InterfaceProvider>(
-            creation_params->interface_provider.PassHandle(),
+            creation_params->interface_provider.PassPipe(),
             service_manager::mojom::InterfaceProvider::Version_));
   }
 

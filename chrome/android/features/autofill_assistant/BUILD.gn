@@ -4,6 +4,7 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
+import("//build/config/locales.gni")
 import("//chrome/common/features.gni")
 
 # The animated_poodle_java target is overridden downstream and used
@@ -71,7 +72,6 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantBottomBarCoordinator.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantBottomSheetContent.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantCoordinator.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantDimension.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantKeyboardCoordinator.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantModel.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantOnboardingCoordinator.java",
@@ -110,6 +110,10 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/autofill_assistant/form/AssistantFormModel.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/form/AssistantFormSelectionInput.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/form/AssistantFormSelectionChoice.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/generic_ui/AssistantColor.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/generic_ui/AssistantDimension.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/generic_ui/AssistantDrawable.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/generic_ui/AssistantViewFactory.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/header/AnimatedProgressBar.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/header/AssistantHeaderCoordinator.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/header/AssistantHeaderDelegate.java",
@@ -155,7 +159,6 @@ android_library("java") {
 
 generate_jni("jni_headers") {
   sources = [
-    "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantDimension.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantModel.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantClient.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantDirectActionImpl.java",
@@ -165,6 +168,10 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/chrome/browser/autofill_assistant/form/AssistantFormDelegate.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/form/AssistantFormInput.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/form/AssistantFormModel.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/generic_ui/AssistantColor.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/generic_ui/AssistantDimension.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/generic_ui/AssistantDrawable.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/generic_ui/AssistantViewFactory.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/header/AssistantHeaderDelegate.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/header/AssistantHeaderModel.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/infobox/AssistantInfoBox.java",
@@ -217,6 +224,7 @@ android_library("test_java") {
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantOverlayUiTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantCollectUserDataTestHelper.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantCollectUserDataUiTest.java",
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantGenericUiTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantPaymentTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantPersonalDataManagerTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantTextUtilsTest.java",
@@ -272,59 +280,7 @@ android_resources("java_resources") {
 java_strings_grd("java_strings_grd") {
   defines = chrome_grit_defines
   grd_file = "java/strings/android_chrome_autofill_assistant_strings.grd"
-  outputs = [
-    "values/android_chrome_autofill_assistant_strings.xml",
-    "values-am/android_chrome_autofill_assistant_strings.xml",
-    "values-ar/android_chrome_autofill_assistant_strings.xml",
-    "values-bg/android_chrome_autofill_assistant_strings.xml",
-    "values-bn/android_chrome_autofill_assistant_strings.xml",
-    "values-ca/android_chrome_autofill_assistant_strings.xml",
-    "values-cs/android_chrome_autofill_assistant_strings.xml",
-    "values-da/android_chrome_autofill_assistant_strings.xml",
-    "values-de/android_chrome_autofill_assistant_strings.xml",
-    "values-el/android_chrome_autofill_assistant_strings.xml",
-    "values-en-rGB/android_chrome_autofill_assistant_strings.xml",
-    "values-es/android_chrome_autofill_assistant_strings.xml",
-    "values-es-rUS/android_chrome_autofill_assistant_strings.xml",
-    "values-et/android_chrome_autofill_assistant_strings.xml",
-    "values-fa/android_chrome_autofill_assistant_strings.xml",
-    "values-fi/android_chrome_autofill_assistant_strings.xml",
-    "values-fr/android_chrome_autofill_assistant_strings.xml",
-    "values-gu/android_chrome_autofill_assistant_strings.xml",
-    "values-hi/android_chrome_autofill_assistant_strings.xml",
-    "values-hr/android_chrome_autofill_assistant_strings.xml",
-    "values-hu/android_chrome_autofill_assistant_strings.xml",
-    "values-in/android_chrome_autofill_assistant_strings.xml",
-    "values-it/android_chrome_autofill_assistant_strings.xml",
-    "values-iw/android_chrome_autofill_assistant_strings.xml",
-    "values-ja/android_chrome_autofill_assistant_strings.xml",
-    "values-kn/android_chrome_autofill_assistant_strings.xml",
-    "values-ko/android_chrome_autofill_assistant_strings.xml",
-    "values-lt/android_chrome_autofill_assistant_strings.xml",
-    "values-lv/android_chrome_autofill_assistant_strings.xml",
-    "values-ml/android_chrome_autofill_assistant_strings.xml",
-    "values-mr/android_chrome_autofill_assistant_strings.xml",
-    "values-ms/android_chrome_autofill_assistant_strings.xml",
-    "values-nb/android_chrome_autofill_assistant_strings.xml",
-    "values-nl/android_chrome_autofill_assistant_strings.xml",
-    "values-pl/android_chrome_autofill_assistant_strings.xml",
-    "values-pt-rBR/android_chrome_autofill_assistant_strings.xml",
-    "values-pt-rPT/android_chrome_autofill_assistant_strings.xml",
-    "values-ro/android_chrome_autofill_assistant_strings.xml",
-    "values-ru/android_chrome_autofill_assistant_strings.xml",
-    "values-sk/android_chrome_autofill_assistant_strings.xml",
-    "values-sl/android_chrome_autofill_assistant_strings.xml",
-    "values-sr/android_chrome_autofill_assistant_strings.xml",
-    "values-sv/android_chrome_autofill_assistant_strings.xml",
-    "values-sw/android_chrome_autofill_assistant_strings.xml",
-    "values-ta/android_chrome_autofill_assistant_strings.xml",
-    "values-te/android_chrome_autofill_assistant_strings.xml",
-    "values-th/android_chrome_autofill_assistant_strings.xml",
-    "values-tl/android_chrome_autofill_assistant_strings.xml",
-    "values-tr/android_chrome_autofill_assistant_strings.xml",
-    "values-uk/android_chrome_autofill_assistant_strings.xml",
-    "values-vi/android_chrome_autofill_assistant_strings.xml",
-    "values-zh-rCN/android_chrome_autofill_assistant_strings.xml",
-    "values-zh-rTW/android_chrome_autofill_assistant_strings.xml",
-  ]
+  outputs = [ "values/android_chrome_autofill_assistant_strings.xml" ] + process_file_template(
+                android_bundle_locales_as_resources,
+                [ "values-{{source_name_part}}/android_chrome_autofill_assistant_strings.xml" ])
 }

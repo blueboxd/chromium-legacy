@@ -18,6 +18,7 @@
 #include "chrome/chrome_cleaner/parsers/broker/sandbox_setup_hooks.h"
 #include "chrome/chrome_cleaner/parsers/shortcut_parser/sandboxed_lnk_parser_test_util.h"
 #include "chrome/chrome_cleaner/parsers/target/sandbox_setup.h"
+#include "chrome/chrome_cleaner/test/child_process_logger.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "sandbox/win/src/sandbox_factory.h"
@@ -31,6 +32,26 @@ constexpr unsigned int kDirQuantity = 5;
 
 const base::string16 kLnkArguments = L"-a -b -c -d GenericExample";
 
+class LoggedParserSandboxSetupHooks : public ParserSandboxSetupHooks {
+ public:
+  explicit LoggedParserSandboxSetupHooks(
+      scoped_refptr<MojoTaskRunner> mojo_task_runner,
+      base::OnceClosure connection_error_handler,
+      chrome_cleaner::ChildProcessLogger* child_process_logger)
+      : ParserSandboxSetupHooks(std::move(mojo_task_runner),
+                                std::move(connection_error_handler)),
+        child_process_logger_(child_process_logger) {}
+
+  ResultCode UpdateSandboxPolicy(sandbox::TargetPolicy* policy,
+                                 base::CommandLine* command_line) override {
+    child_process_logger_->UpdateSandboxPolicy(policy);
+    return ParserSandboxSetupHooks::UpdateSandboxPolicy(policy, command_line);
+  }
+
+ private:
+  chrome_cleaner::ChildProcessLogger* child_process_logger_;
+};
+
 }  // namespace
 
 class SandboxedShortcutParserTest : public base::MultiProcessTest {
@@ -40,14 +61,20 @@ class SandboxedShortcutParserTest : public base::MultiProcessTest {
         temp_dirs_with_chrome_lnk_(kDirQuantity) {}
 
   void SetUp() override {
+    ASSERT_TRUE(child_process_logger_.Initialize());
+
     mojo_task_runner_ = MojoTaskRunner::Create();
     ParserSandboxSetupHooks setup_hooks(
         mojo_task_runner_.get(),
         base::BindOnce([] { FAIL() << "Parser sandbox connection error"; }));
-    ASSERT_EQ(
-        RESULT_CODE_SUCCESS,
+
+    ResultCode result_code =
         StartSandboxTarget(MakeCmdLine("SandboxedShortcutParserTargetMain"),
-                           &setup_hooks, SandboxType::kTest));
+                           &setup_hooks, SandboxType::kTest);
+    if (result_code != RESULT_CODE_SUCCESS)
+      child_process_logger_.DumpLogs();
+    ASSERT_EQ(RESULT_CODE_SUCCESS, result_code);
+
     parser_ = setup_hooks.TakeParserRemote();
     shortcut_parser_ = std::make_unique<SandboxedShortcutParser>(
         mojo_task_runner_.get(), parser_.get());
@@ -98,6 +125,8 @@ class SandboxedShortcutParserTest : public base::MultiProcessTest {
   base::FilePath not_lnk_file_path_;
 
   base::test::TaskEnvironment task_environment_;
+
+  chrome_cleaner::ChildProcessLogger child_process_logger_;
 };
 
 MULTIPROCESS_TEST_MAIN(SandboxedShortcutParserTargetMain) {

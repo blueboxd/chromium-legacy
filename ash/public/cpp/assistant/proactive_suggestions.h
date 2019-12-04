@@ -22,13 +22,17 @@ class ASH_PUBLIC_EXPORT ProactiveSuggestions
   static const int kCategoryUnknown = 0;
 
   // Constructs an instance with the specified |category|, |description|,
-  // |search_query|, and renderable |html| content. Note that |category| is an
-  // opaque int that is provided by the proactive suggestions server to
-  // represent the category of the associated content (e.g. news, shopping).
+  // |search_query|, renderable |html| content, and |rich_entry_point_html|.
+  // Note that |category| is an opaque int that is provided by the proactive
+  // suggestions server to represent the category of the associated content
+  // (e.g. news, shopping). Also note that |rich_entry_point_html| may be empty
+  // and is only used when the rich entry point for the proactive suggestions
+  // feature is enabled.
   ProactiveSuggestions(int category,
                        std::string&& description,
                        std::string&& search_query,
-                       std::string&& html);
+                       std::string&& html,
+                       std::string&& rich_entry_point_html);
 
   // Returns true if |a| is considered equivalent to |b|.
   static bool AreEqual(const ProactiveSuggestions* a,
@@ -42,6 +46,9 @@ class ASH_PUBLIC_EXPORT ProactiveSuggestions
   const std::string& description() const { return description_; }
   const std::string& search_query() const { return search_query_; }
   const std::string& html() const { return html_; }
+  const std::string& rich_entry_point_html() const {
+    return rich_entry_point_html_;
+  }
 
  private:
   // Destruction only allowed by base::RefCounted<ProactiveSuggestions>.
@@ -53,6 +60,7 @@ class ASH_PUBLIC_EXPORT ProactiveSuggestions
   const std::string description_;
   const std::string search_query_;
   const std::string html_;
+  const std::string rich_entry_point_html_;
 
   DISALLOW_COPY_AND_ASSIGN(ProactiveSuggestions);
 };

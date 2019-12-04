@@ -22,7 +22,7 @@ namespace {
 
 using ShowVirtualKeyboard =
     password_manager::PasswordManagerDriver::ShowVirtualKeyboard;
-using password_manager::CredentialPair;
+using password_manager::UiCredential;
 using ::testing::_;
 using ::testing::ElementsAreArray;
 using ::testing::Eq;
@@ -30,7 +30,7 @@ using ::testing::ReturnRefOfCopy;
 using ::testing::WithArg;
 using IsOriginSecure = TouchToFillView::IsOriginSecure;
 
-using IsPublicSuffixMatch = CredentialPair::IsPublicSuffixMatch;
+using IsPublicSuffixMatch = UiCredential::IsPublicSuffixMatch;
 
 constexpr char kExampleCom[] = "https://example.com/";
 
@@ -45,8 +45,8 @@ struct MockTouchToFillView : TouchToFillView {
   MOCK_METHOD3(Show,
                void(const GURL&,
                     IsOriginSecure,
-                    base::span<const CredentialPair>));
-  MOCK_METHOD1(OnCredentialSelected, void(const CredentialPair&));
+                    base::span<const UiCredential>));
+  MOCK_METHOD1(OnCredentialSelected, void(const UiCredential&));
   MOCK_METHOD0(OnDismiss, void());
 };
 
@@ -85,7 +85,7 @@ class TouchToFillControllerTest : public testing::Test {
 };
 
 TEST_F(TouchToFillControllerTest, Show_And_Fill) {
-  CredentialPair credentials[] = {
+  UiCredential credentials[] = {
       {base::ASCIIToUTF16("alice"), base::ASCIIToUTF16("p4ssw0rd"),
        GURL(kExampleCom), IsPublicSuffixMatch(false)}};
 
@@ -114,7 +114,7 @@ TEST_F(TouchToFillControllerTest, Show_Insecure_Origin) {
   EXPECT_CALL(driver(), GetLastCommittedURL())
       .WillOnce(ReturnRefOfCopy(GURL("http://example.com")));
 
-  CredentialPair credentials[] = {
+  UiCredential credentials[] = {
       {base::ASCIIToUTF16("alice"), base::ASCIIToUTF16("p4ssw0rd"),
        GURL(kExampleCom), IsPublicSuffixMatch(false)}};
 
@@ -126,7 +126,7 @@ TEST_F(TouchToFillControllerTest, Show_Insecure_Origin) {
 
 TEST_F(TouchToFillControllerTest, Show_And_Fill_Android_Credential) {
   // Test multiple credentials with one of them being an Android credential.
-  CredentialPair credentials[] = {
+  UiCredential credentials[] = {
       {base::ASCIIToUTF16("alice"), base::ASCIIToUTF16("p4ssw0rd"),
        GURL(kExampleCom), IsPublicSuffixMatch(false)},
       {base::ASCIIToUTF16("bob"), base::ASCIIToUTF16("s3cr3t"),
@@ -154,7 +154,7 @@ TEST_F(TouchToFillControllerTest, Show_And_Fill_Android_Credential) {
 }
 
 TEST_F(TouchToFillControllerTest, Dismiss) {
-  CredentialPair credentials[] = {
+  UiCredential credentials[] = {
       {base::ASCIIToUTF16("alice"), base::ASCIIToUTF16("p4ssw0rd"),
        GURL(kExampleCom), IsPublicSuffixMatch(false)}};
 

@@ -6,12 +6,15 @@ AXSelection from AX object anchored position in "List": "", 1 to AX object ancho
 ++++<List>
 ++++++<ListItem>
 ++++++++<ListMarker: 1. >
+++++++++++<StaticText: 1. >
 ++++++++<StaticText: tic>
 ^++++++<ListItem>
 ++++++++<ListMarker: 2. >
+++++++++++<StaticText: 2. >
 ++++++++<StaticText: tac>
 ++++++<ListItem>
 ++++++++<ListMarker: 3. >
+++++++++++<StaticText: 3. >
 ++++++++<StaticText: toe>
 |++++<List>
 ++++++<ListItem>
@@ -30,12 +33,15 @@ AXSelection from AX object anchored position in "GenericContainer": "", 1 to AX 
 ++++<List>
 ++++++<ListItem>
 ++++++++<ListMarker: 1. >
+++++++++++<StaticText: 1. >
 ++++++++<StaticText: tic>
 ++++++<ListItem>
 ++++++++<ListMarker: 2. >
+++++++++++<StaticText: 2. >
 ++++++++<StaticText: tac>
 ++++++<ListItem>
 ++++++++<ListMarker: 3. >
+++++++++++<StaticText: 3. >
 ++++++++<StaticText: toe>
 ^++++<List>
 ++++++<ListItem>

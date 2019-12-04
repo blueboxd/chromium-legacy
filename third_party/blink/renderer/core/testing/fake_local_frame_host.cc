@@ -59,6 +59,10 @@ void FakeLocalFrameHost::EnforceInsecureNavigationsSet(
 void FakeLocalFrameHost::DidChangeActiveSchedulerTrackedFeatures(
     uint64_t features_mask) {}
 
+void FakeLocalFrameHost::SuddenTerminationDisablerChanged(
+    bool present,
+    blink::mojom::SuddenTerminationDisablerType disabler_type) {}
+
 void FakeLocalFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<mojom::blink::LocalFrameHost>(

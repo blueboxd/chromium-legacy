@@ -76,16 +76,16 @@ class ASH_EXPORT ShelfNavigationWidget : public views::Widget,
   // ShelfConfig::Observer:
   void OnShelfConfigUpdated() override;
 
+  // Updates this widget's layout according to current constraints: tablet
+  // mode and shelf orientation.
+  void UpdateLayout();
+
   views::BoundsAnimator* get_bounds_animator_for_testing() {
     return bounds_animator_.get();
   }
 
  private:
   class Delegate;
-
-  // Updates this widget's layout according to current constraints: tablet
-  // mode and shelf orientation.
-  void UpdateLayout();
 
   Shelf* shelf_ = nullptr;
   Delegate* delegate_ = nullptr;

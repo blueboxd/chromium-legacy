@@ -274,9 +274,16 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   void OnHighlightedItemActivated(OverviewItem* item);
   void OnHighlightedItemClosed(OverviewItem* item);
 
+  // Called explicitly (with no list of observers) by the |RootWindowController|
+  // of |root|, so that the associated grid is properly removed and destroyed.
+  // Note: Usually, when a display is removed, it causes a window activation
+  // which ends overview mode, and then this function does not get called. This
+  // function is only needed for when overview mode cannot be ended (see
+  // |OverviewController::CanEndOverview| and https://crbug.com/1024325).
+  void OnRootWindowClosing(aura::Window* root);
+
   // display::DisplayObserver:
   void OnDisplayAdded(const display::Display& display) override;
-  void OnDisplayRemoved(const display::Display& display) override;
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 

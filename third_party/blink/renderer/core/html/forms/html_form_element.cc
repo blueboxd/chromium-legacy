@@ -789,9 +789,8 @@ Element* HTMLFormElement::ElementFromPastNamesMap(
   SECURITY_DCHECK(To<HTMLElement>(element)->formOwner() == this);
   if (IsHTMLImageElement(*element)) {
     SECURITY_DCHECK(ImageElements().Find(element) != kNotFound);
-  } else if (IsHTMLObjectElement(*element)) {
-    SECURITY_DCHECK(ListedElements().Find(ToHTMLObjectElement(element)) !=
-                    kNotFound);
+  } else if (auto* html_image_element = DynamicTo<HTMLObjectElement>(element)) {
+    SECURITY_DCHECK(ListedElements().Find(html_image_element) != kNotFound);
   } else {
     SECURITY_DCHECK(ListedElements().Find(
                         To<HTMLFormControlElement>(element)) != kNotFound);

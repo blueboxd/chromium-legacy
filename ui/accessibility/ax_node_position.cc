@@ -273,7 +273,8 @@ bool AXNodePosition::IsInLineBreakingObject() const {
     return false;
   DCHECK(GetAnchor());
   return GetAnchor()->data().GetBoolAttribute(
-      ax::mojom::BoolAttribute::kIsLineBreakingObject);
+             ax::mojom::BoolAttribute::kIsLineBreakingObject) &&
+         !GetAnchor()->IsInListMarker();
 }
 
 ax::mojom::Role AXNodePosition::GetRole() const {

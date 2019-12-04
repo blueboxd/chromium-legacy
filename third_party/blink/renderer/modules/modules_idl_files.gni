@@ -559,6 +559,7 @@ if (support_webgl2_compute_context) {
 modules_callback_function_idl_files =
     get_path_info([
                     "quota/deprecated_storage_callbacks.idl",
+                    "video_raf/video_frame_request_callback.idl",
                     "xr/xr_frame_request_callback.idl",
                   ],
                   "abspath")
@@ -798,6 +799,7 @@ modules_dictionary_idl_files =
           "speech/speech_synthesis_error_event_init.idl",
           "speech/speech_synthesis_event_init.idl",
           "storage/storage_event_init.idl",
+          "video_raf/video_frame_metadata.idl",
           "webaudio/analyser_options.idl",
           "webaudio/audio_buffer_options.idl",
           "webaudio/audio_buffer_source_options.idl",
@@ -1008,6 +1010,7 @@ modules_dependency_idl_files =
           "speech/window_speech_synthesis.idl",
           "srcobject/html_media_element_src_object.idl",
           "storage/window_storage.idl",
+          "video_raf/html_video_element_video_request_animation_frame.idl",
           "vibration/navigator_vibration.idl",
           "wake_lock/navigator_wake_lock.idl",
           "wake_lock/worker_navigator_wake_lock.idl",

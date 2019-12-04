@@ -7,7 +7,11 @@
 #include <utility>
 #include <vector>
 
+#include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
+#include "url/gurl.h"
+
+using autofill::PasswordForm;
 
 namespace password_manager {
 namespace {
@@ -20,31 +24,39 @@ GURL GetAndroidOrOriginURL(const GURL& url) {
 
 }  // namespace
 
-CredentialPair::CredentialPair(base::string16 username,
-                               base::string16 password,
-                               const GURL& origin_url,
-                               IsPublicSuffixMatch is_public_suffix_match)
-    : username(std::move(username)),
-      password(std::move(password)),
-      origin_url(GetAndroidOrOriginURL(origin_url)),
-      is_public_suffix_match(is_public_suffix_match) {}
-CredentialPair::CredentialPair(CredentialPair&&) = default;
-CredentialPair::CredentialPair(const CredentialPair&) = default;
-CredentialPair& CredentialPair::operator=(CredentialPair&&) = default;
-CredentialPair& CredentialPair::operator=(const CredentialPair&) = default;
-CredentialPair::~CredentialPair() = default;
+UiCredential::UiCredential(base::string16 username,
+                           base::string16 password,
+                           const GURL& origin_url,
+                           IsPublicSuffixMatch is_public_suffix_match)
+    : username_(std::move(username)),
+      password_(std::move(password)),
+      origin_url_(GetAndroidOrOriginURL(origin_url)),
+      is_public_suffix_match_(is_public_suffix_match) {}
 
-bool operator==(const CredentialPair& lhs, const CredentialPair& rhs) {
-  return lhs.username == rhs.username && lhs.password == rhs.password &&
-         lhs.origin_url == rhs.origin_url &&
-         lhs.is_public_suffix_match == rhs.is_public_suffix_match;
+UiCredential::UiCredential(const PasswordForm& form)
+    : username_(form.username_value),
+      password_(form.password_value),
+      origin_url_(GetAndroidOrOriginURL(form.origin)),
+      is_public_suffix_match_(form.is_public_suffix_match) {}
+
+UiCredential::UiCredential(UiCredential&&) = default;
+UiCredential::UiCredential(const UiCredential&) = default;
+UiCredential& UiCredential::operator=(UiCredential&&) = default;
+UiCredential& UiCredential::operator=(const UiCredential&) = default;
+UiCredential::~UiCredential() = default;
+
+bool operator==(const UiCredential& lhs, const UiCredential& rhs) {
+  return lhs.username() == rhs.username() && lhs.password() == rhs.password() &&
+         lhs.origin_url() == rhs.origin_url() &&
+         lhs.is_public_suffix_match() == rhs.is_public_suffix_match();
 }
 
-std::ostream& operator<<(std::ostream& os, const CredentialPair& pair) {
-  os << "(user: \"" << pair.username << "\", "
-     << "pwd: \"" << pair.password << "\", "
-     << "origin: \"" << pair.origin_url << "\", "
-     << (pair.is_public_suffix_match ? "PSL-" : "exact origin ") << "match)";
+std::ostream& operator<<(std::ostream& os, const UiCredential& credential) {
+  os << "(user: \"" << credential.username() << "\", "
+     << "pwd: \"" << credential.password() << "\", "
+     << "origin: \"" << credential.origin_url() << "\", "
+     << (credential.is_public_suffix_match() ? "PSL-" : "exact origin ")
+     << "match)";
   return os;
 }
 
@@ -53,11 +65,11 @@ OriginCredentialStore::OriginCredentialStore(url::Origin origin)
 OriginCredentialStore::~OriginCredentialStore() = default;
 
 void OriginCredentialStore::SaveCredentials(
-    std::vector<CredentialPair> credentials) {
+    std::vector<UiCredential> credentials) {
   credentials_ = std::move(credentials);
 }
 
-base::span<const CredentialPair> OriginCredentialStore::GetCredentials() const {
+base::span<const UiCredential> OriginCredentialStore::GetCredentials() const {
   return credentials_;
 }
 

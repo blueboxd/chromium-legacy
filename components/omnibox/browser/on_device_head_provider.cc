@@ -224,8 +224,7 @@ void OnDeviceHeadProvider::ResetModelInstanceFromNewModel(
     const std::string& new_model_filename) {
   if (new_model_filename.empty())
     return;
-  model_ =
-      OnDeviceHeadServing::Create(new_model_filename, provider_max_matches_);
+  model_ = OnDeviceHeadModel::Create(new_model_filename, provider_max_matches_);
 }
 
 std::unique_ptr<OnDeviceHeadProvider::OnDeviceHeadProviderParams>

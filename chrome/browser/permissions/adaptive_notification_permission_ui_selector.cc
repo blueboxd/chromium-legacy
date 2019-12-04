@@ -129,21 +129,6 @@ void AdaptiveNotificationPermissionUiSelector::RegisterProfilePrefs(
 }
 
 bool AdaptiveNotificationPermissionUiSelector::ShouldShowQuietUi() {
-  if (should_show_quiet_ui_.has_value())
-    return should_show_quiet_ui_.value();
-
-  if (QuietNotificationsPromptConfig::GetActivation() ==
-      QuietNotificationsPromptConfig::Activation::kNever) {
-    return false;
-  }
-
-  if (QuietNotificationsPromptConfig::GetActivation() ==
-      QuietNotificationsPromptConfig::Activation::kAlways) {
-    return true;
-  }
-
-  DCHECK_EQ(QuietNotificationsPromptConfig::GetActivation(),
-            QuietNotificationsPromptConfig::Activation::kAdaptive);
   return profile_->GetPrefs()->GetBoolean(
       kEnableQuietNotificationPermissionUiPrefPath);
 }
@@ -212,50 +197,53 @@ void AdaptiveNotificationPermissionUiSelector::RecordPermissionPromptOutcome(
       std::make_unique<base::Value>(static_cast<int>(action)));
   permission_actions.emplace_back(std::move(new_action_attributes));
 
-  // Turn on quiet UX if adapative activation is enabled and the user has three
-  // denies (ignoring dismisses/ignores) in a row.
-  if (QuietNotificationsPromptConfig::GetActivation() ==
-          QuietNotificationsPromptConfig::Activation::kAdaptive &&
-      !profile_->GetPrefs()->GetBoolean(
+  // If adaptive activation is disabled, or if the quiet UI is already active,
+  // nothing else to do.
+  if (!QuietNotificationsPromptConfig::IsAdaptiveActivationEnabled() ||
+      profile_->GetPrefs()->GetBoolean(
           kEnableQuietNotificationPermissionUiPrefPath)) {
-    size_t rolling_denies_in_a_row = 0u;
-    bool recently_accepted_prompt = false;
+    return;
+  }
 
-    for (auto it = permission_actions.rbegin(); it != permission_actions.rend();
-         ++it) {
-      const base::Optional<int> past_action_as_int =
-          it->FindIntKey(kPermissionActionEntryActionKey);
-      DCHECK(past_action_as_int);
+  // Otherwise, turn on quiet UI if the last three permission decision (ignoring
+  // dismisses and ignores) were all denies.
+  size_t rolling_denies_in_a_row = 0u;
+  bool recently_accepted_prompt = false;
 
-      const PermissionAction past_action =
-          static_cast<PermissionAction>(*past_action_as_int);
+  for (auto it = permission_actions.rbegin(); it != permission_actions.rend();
+       ++it) {
+    const base::Optional<int> past_action_as_int =
+        it->FindIntKey(kPermissionActionEntryActionKey);
+    DCHECK(past_action_as_int);
 
-      switch (past_action) {
-        case PermissionAction::DENIED:
-          ++rolling_denies_in_a_row;
-          break;
-        case PermissionAction::GRANTED:
-          recently_accepted_prompt = true;
-          break;
-        case PermissionAction::DISMISSED:
-        case PermissionAction::IGNORED:
-        case PermissionAction::REVOKED:
-        default:
-          // Ignored.
-          break;
-      }
+    const PermissionAction past_action =
+        static_cast<PermissionAction>(*past_action_as_int);
 
-      if (rolling_denies_in_a_row >= kConsecutiveDeniesThresholdForActivation) {
-        EnableQuietUi();
-
-        // Enable showing promo for the next quiet prompt.
-        EnableShowingPromo();
+    switch (past_action) {
+      case PermissionAction::DENIED:
+        ++rolling_denies_in_a_row;
         break;
-      }
-
-      if (recently_accepted_prompt)
+      case PermissionAction::GRANTED:
+        recently_accepted_prompt = true;
+        break;
+      case PermissionAction::DISMISSED:
+      case PermissionAction::IGNORED:
+      case PermissionAction::REVOKED:
+      default:
+        // Ignored.
         break;
     }
+
+    if (rolling_denies_in_a_row >= kConsecutiveDeniesThresholdForActivation) {
+      EnableQuietUi();
+
+      // Enable showing promo for the next quiet prompt.
+      EnableShowingPromo();
+      break;
+    }
+
+    if (recently_accepted_prompt)
+      break;
   }
 }
 

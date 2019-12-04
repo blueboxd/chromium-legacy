@@ -26,7 +26,6 @@
 #include "third_party/blink/public/mojom/feature_policy/policy_value.mojom.h"
 #include "third_party/blink/public/mojom/messaging/transferable_message.mojom.h"
 #include "ui/accessibility/ax_mode.h"
-#include "ui/events/blink/web_input_event_traits.h"
 #include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
 
 namespace IPC {
@@ -60,51 +59,6 @@ bool ParamTraits<content::WebCursor>::Read(const base::Pickle* m,
 
 void ParamTraits<content::WebCursor>::Log(const param_type& p, std::string* l) {
   l->append("<WebCursor>");
-}
-
-void ParamTraits<WebInputEventPointer>::Write(base::Pickle* m,
-                                              const param_type& p) {
-  m->WriteData(reinterpret_cast<const char*>(p), p->size());
-}
-
-bool ParamTraits<WebInputEventPointer>::Read(const base::Pickle* m,
-                                             base::PickleIterator* iter,
-                                             param_type* r) {
-  const char* data;
-  int data_length;
-  if (!iter->ReadData(&data, &data_length)) {
-    NOTREACHED();
-    return false;
-  }
-  if (data_length < static_cast<int>(sizeof(blink::WebInputEvent))) {
-    NOTREACHED();
-    return false;
-  }
-  param_type event = reinterpret_cast<param_type>(data);
-  // Check that the data size matches that of the event.
-  if (data_length != static_cast<int>(event->size())) {
-    NOTREACHED();
-    return false;
-  }
-  const size_t expected_size_for_type =
-      ui::WebInputEventTraits::GetSize(event->GetType());
-  if (data_length != static_cast<int>(expected_size_for_type)) {
-    NOTREACHED();
-    return false;
-  }
-  *r = event;
-  return true;
-}
-
-void ParamTraits<WebInputEventPointer>::Log(const param_type& p,
-                                            std::string* l) {
-  l->append("(");
-  LogParam(p->size(), l);
-  l->append(", ");
-  LogParam(p->GetType(), l);
-  l->append(", ");
-  LogParam(p->TimeStamp(), l);
-  l->append(")");
 }
 
 void ParamTraits<blink::MessagePortChannel>::Write(base::Pickle* m,

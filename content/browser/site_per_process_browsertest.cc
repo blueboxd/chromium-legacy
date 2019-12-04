@@ -6205,7 +6205,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     mojom::CreateFrameParamsPtr params = mojom::CreateFrameParams::New();
     params->routing_id = frame_routing_id;
     params->interface_bundle = mojom::DocumentScopedInterfaceBundle::New();
-    mojo::MakeRequest(&params->interface_bundle->interface_provider);
+    ignore_result(params->interface_bundle->interface_provider
+                      .InitWithNewPipeAndPassReceiver());
     ignore_result(params->interface_bundle->browser_interface_broker
                       .InitWithNewPipeAndPassReceiver());
     params->previous_routing_id = previous_routing_id;
@@ -6271,7 +6272,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
     mojom::CreateFrameParamsPtr params = mojom::CreateFrameParams::New();
     params->routing_id = frame_routing_id;
     params->interface_bundle = mojom::DocumentScopedInterfaceBundle::New();
-    mojo::MakeRequest(&params->interface_bundle->interface_provider);
+    ignore_result(params->interface_bundle->interface_provider
+                      .InitWithNewPipeAndPassReceiver());
     ignore_result(params->interface_bundle->browser_interface_broker
                       .InitWithNewPipeAndPassReceiver());
     params->previous_routing_id = IPC::mojom::kRoutingIdNone;

@@ -126,7 +126,7 @@ ContextGroup::ContextGroup(
       shared_image_representation_factory_(
           std::make_unique<SharedImageRepresentationFactory>(
               shared_image_manager,
-              memory_tracker.get())) {
+              memory_tracker_.get())) {
   DCHECK(discardable_manager);
   DCHECK(feature_info_);
   DCHECK(mailbox_manager_);
@@ -621,8 +621,6 @@ void ContextGroup::Destroy(DecoderContext* decoder, bool have_context) {
     ReportProgress();
   }
 
-  memory_tracker_ = nullptr;
-
   if (passthrough_discardable_manager_) {
     passthrough_discardable_manager_->DeleteContextGroup(this);
   }
@@ -633,6 +631,7 @@ void ContextGroup::Destroy(DecoderContext* decoder, bool have_context) {
     passthrough_resources_.reset();
     ReportProgress();
   }
+  memory_tracker_ = nullptr;
 }
 
 uint32_t ContextGroup::GetMemRepresented() const {

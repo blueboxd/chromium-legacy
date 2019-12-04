@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+#include "components/translate/core/browser/translate_step.h"
+
 namespace translate {
 class TranslateInfoBarDelegate;
 }  // namespace translate
@@ -34,6 +36,9 @@ class TranslateInfoBarDelegate;
 // mediator.
 @property(nonatomic, weak) id<InfobarTranslateLanguageSelectionConsumer>
     targetLanguageSelectionConsumer;
+
+// The current state of translate.
+@property(nonatomic, assign) translate::TranslateStep currentStep;
 
 @end
 

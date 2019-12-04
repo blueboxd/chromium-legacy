@@ -42,8 +42,9 @@ if [ -z "$DEBUGGER" ]; then
 fi
 
 OUTPUT=$(mktemp "${TMPDIR:-/tmp}"/"$(basename $0)".XXXXX)
+trap "rm $OUTPUT" EXIT
 echo "$TARGET" ${TARGET_FLAGS[@]} >&2
-"$TARGET" ${TARGET_FLAGS[@]} 2>&1 > >(tee $OUTPUT) &
+"$TARGET" ${TARGET_FLAGS[@]} > >(tee $OUTPUT) 2>&1 &
 BROWSER_PID=$!
 
 wait_renderer_pid() {
@@ -66,4 +67,3 @@ if [ -n "$RENDERER_PID" ]; then
 fi
 
 wait
-rm $OUTPUT

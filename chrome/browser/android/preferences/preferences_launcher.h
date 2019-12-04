@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_ANDROID_PREFERENCES_PREFERENCES_LAUNCHER_H_
 
 #include "base/macros.h"
-#include "components/password_manager/core/browser/manage_passwords_referrer.h"
 
 namespace content {
 class WebContents;
@@ -23,11 +22,6 @@ class PreferencesLauncher {
   // Opens the autofill settings page for credit cards.
   static void ShowAutofillCreditCardSettings(
       content::WebContents* web_contents);
-
-  // Opens the password settings page.
-  static void ShowPasswordSettings(
-      content::WebContents* web_contents,
-      password_manager::ManagePasswordsReferrer referrer);
 
  private:
   PreferencesLauncher() {}

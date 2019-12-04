@@ -25,8 +25,6 @@ class SiteCharacteristicsDataReader {
       const = 0;
   virtual performance_manager::SiteFeatureUsage UsesAudioInBackground()
       const = 0;
-  virtual performance_manager::SiteFeatureUsage UsesNotificationsInBackground()
-      const = 0;
 
   // Returns true if this reader is fully initialized and serving the most
   // authoritative data. This can initially return false as the backing store is

@@ -180,6 +180,22 @@ security_state::SecurityLevel GetLevelForPassiveMixedContent() {
              : security_state::NONE;
 }
 
+blink::SecurityStyle GetSecurityStyleForHttp() {
+  bool http_danger_warning_enabled = false;
+  if (base::FeatureList::IsEnabled(
+          security_state::features::kMarkHttpAsFeature)) {
+    std::string parameter = base::GetFieldTrialParamValueByFeature(
+        security_state::features::kMarkHttpAsFeature,
+        security_state::features::kMarkHttpAsFeatureParameterName);
+    if (parameter ==
+        security_state::features::kMarkHttpAsParameterDangerWarning) {
+      http_danger_warning_enabled = true;
+    }
+  }
+  return http_danger_warning_enabled ? blink::SecurityStyle::kInsecure
+                                     : blink::SecurityStyle::kNeutral;
+}
+
 // A delegate class that allows emulating selection of a file for an
 // INPUT TYPE=FILE form field.
 class FileChooserDelegate : public content::WebContentsDelegate {
@@ -1108,7 +1124,9 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   // Ensure that WebContentsObservers don't show an incorrect Form Not Secure
   // explanation. Regression test for https://crbug.com/691412.
   EXPECT_EQ(0u, observer.latest_explanations().neutral_explanations.size());
-  EXPECT_EQ(blink::SecurityStyle::kNeutral, observer.latest_security_style());
+  // The below expectation is based on the feature flag set in the field trial
+  // testing config.
+  EXPECT_EQ(GetSecurityStyleForHttp(), observer.latest_security_style());
 
   content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
   ASSERT_TRUE(entry);
@@ -1230,7 +1248,9 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   // Ensure that WebContentsObservers don't show an incorrect Form Not Secure
   // explanation. Regression test for https://crbug.com/691412.
   EXPECT_EQ(0u, observer.latest_explanations().neutral_explanations.size());
-  EXPECT_EQ(blink::SecurityStyle::kNeutral, observer.latest_security_style());
+  // The below expectation is based on the feature flag set in the field trial
+  // testing config.
+  EXPECT_EQ(GetSecurityStyleForHttp(), observer.latest_security_style());
 
   content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
   ASSERT_TRUE(entry);
@@ -1640,7 +1660,9 @@ IN_PROC_BROWSER_TEST_F(
 
   GURL mixed_content_url(https_server_.GetURL(replacement_path));
   ui_test_utils::NavigateToURL(browser(), mixed_content_url);
-  EXPECT_EQ(blink::SecurityStyle::kNeutral, observer.latest_security_style());
+  // The below expectation is based on the feature flag set in the field trial
+  // testing config.
+  EXPECT_EQ(GetSecurityStyleForHttp(), observer.latest_security_style());
 
   const content::SecurityStyleExplanations& mixed_content_explanation =
       observer.latest_explanations();

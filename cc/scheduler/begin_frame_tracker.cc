@@ -4,6 +4,8 @@
 
 #include "cc/scheduler/begin_frame_tracker.h"
 
+#include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_compositor_scheduler_state.pbzero.h"
+
 namespace cc {
 
 BeginFrameTracker::BeginFrameTracker(const base::Location& location)
@@ -77,36 +79,35 @@ base::TimeDelta BeginFrameTracker::Interval() const {
   return interval;
 }
 
-void BeginFrameTracker::AsValueInto(
+void BeginFrameTracker::AsProtozeroInto(
     base::TimeTicks now,
-    base::trace_event::TracedValue* state) const {
-  state->SetDouble("updated_at_ms",
-                   current_updated_at_.since_origin().InMillisecondsF());
-  state->SetDouble("finished_at_ms",
-                   current_finished_at_.since_origin().InMillisecondsF());
+    perfetto::protos::pbzero::BeginImplFrameArgs* state) const {
+  state->set_updated_at_us(current_updated_at_.since_origin().InMicroseconds());
+  state->set_finished_at_us(
+      current_finished_at_.since_origin().InMicroseconds());
   if (HasFinished()) {
-    state->SetString("state", "FINISHED");
-    state->BeginDictionary("current_args_");
+    state->set_state(
+        perfetto::protos::pbzero::BeginImplFrameArgs::BEGIN_FRAME_FINISHED);
+    current_args_.AsProtozeroInto(state->set_current_args());
   } else {
-    state->SetString("state", "USING");
-    state->BeginDictionary("last_args_");
+    state->set_state(
+        perfetto::protos::pbzero::BeginImplFrameArgs::BEGIN_FRAME_USING);
+    current_args_.AsProtozeroInto(state->set_last_args());
   }
-  current_args_.AsValueInto(state);
-  state->EndDictionary();
 
   base::TimeTicks frame_time = current_args_.frame_time;
   base::TimeTicks deadline = current_args_.deadline;
   base::TimeDelta interval = current_args_.interval;
-  state->BeginDictionary("major_timestamps_in_ms");
-  state->SetDouble("0_interval", interval.InMillisecondsF());
-  state->SetDouble("1_now_to_deadline", (deadline - now).InMillisecondsF());
-  state->SetDouble("2_frame_time_to_now", (now - frame_time).InMillisecondsF());
-  state->SetDouble("3_frame_time_to_deadline",
-                   (deadline - frame_time).InMillisecondsF());
-  state->SetDouble("4_now", now.since_origin().InMillisecondsF());
-  state->SetDouble("5_frame_time", frame_time.since_origin().InMillisecondsF());
-  state->SetDouble("6_deadline", deadline.since_origin().InMillisecondsF());
-  state->EndDictionary();
+
+  auto* timestamps = state->set_timestamps_in_us();
+  timestamps->set_interval_delta(interval.InMicroseconds());
+  timestamps->set_now_to_deadline_delta((deadline - now).InMicroseconds());
+  timestamps->set_frame_time_to_now_delta((now - frame_time).InMicroseconds());
+  timestamps->set_frame_time_to_deadline_delta(
+      (deadline - frame_time).InMicroseconds());
+  timestamps->set_now(now.since_origin().InMicroseconds());
+  timestamps->set_frame_time(frame_time.since_origin().InMicroseconds());
+  timestamps->set_deadline(deadline.since_origin().InMicroseconds());
 }
 
 const viz::BeginFrameArgs& BeginFrameTracker::DangerousMethodCurrentOrLast()

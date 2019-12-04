@@ -44,7 +44,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.settings.PreferenceUtils;
+import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.chrome.browser.settings.autofill.CreditCardNumberFormattingTextWatcher;
 import org.chromium.chrome.browser.ui.widget.AlwaysDismissedDialog;
 import org.chromium.chrome.browser.ui.widget.FadingEdgeScrollView;
@@ -231,7 +231,7 @@ public class EditorDialog
         params.topMargin = toolbar.getLayoutParams().height;
         shadow.setLayoutParams(params);
         scrollView.getViewTreeObserver().addOnScrollChangedListener(
-                PreferenceUtils.getShowShadowOnScrollListener(scrollView, shadow));
+                SettingsUtils.getShowShadowOnScrollListener(scrollView, shadow));
     }
 
     /**

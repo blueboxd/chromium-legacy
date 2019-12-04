@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/syslog_logging.h"
 #include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -81,7 +82,9 @@ BrowserDMTokenStorage* BrowserDMTokenStorage::Get() {
   return storage.get();
 }
 
-BrowserDMTokenStorageLinux::BrowserDMTokenStorageLinux() {}
+BrowserDMTokenStorageLinux::BrowserDMTokenStorageLinux()
+    : task_runner_(
+          base::CreateTaskRunner({base::ThreadPool(), base::MayBlock()})) {}
 
 BrowserDMTokenStorageLinux::~BrowserDMTokenStorageLinux() {}
 
@@ -167,13 +170,15 @@ bool BrowserDMTokenStorageLinux::InitEnrollmentErrorOption() {
          kEnrollmentMandatoryOption;
 }
 
-void BrowserDMTokenStorageLinux::SaveDMToken(const std::string& token) {
-  std::string client_id = RetrieveClientId();
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-      base::BindOnce(&StoreDMTokenInUserDataDir, token, client_id),
-      base::BindOnce(&BrowserDMTokenStorage::OnDMTokenStored,
-                     weak_factory_.GetWeakPtr()));
+BrowserDMTokenStorage::StoreTask BrowserDMTokenStorageLinux::SaveDMTokenTask(
+    const std::string& token,
+    const std::string& client_id) {
+  return base::BindOnce(&StoreDMTokenInUserDataDir, token, client_id);
+}
+
+scoped_refptr<base::TaskRunner>
+BrowserDMTokenStorageLinux::SaveDMTokenTaskRunner() {
+  return task_runner_;
 }
 
 std::string BrowserDMTokenStorageLinux::ReadMachineIdFile() {

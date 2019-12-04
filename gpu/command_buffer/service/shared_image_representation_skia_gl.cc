@@ -53,31 +53,6 @@ SharedImageRepresentationSkiaGL::Create(
       std::move(context_state), manager, backing, tracker));
 }
 
-std::unique_ptr<SharedImageRepresentationSkiaGL>
-SharedImageRepresentationSkiaGL::CreateForPassthrough(
-    std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
-        passthrough_representation,
-    scoped_refptr<SharedContextState> context_state,
-    SharedImageManager* manager,
-    SharedImageBacking* backing,
-    MemoryTypeTracker* tracker) {
-  GrBackendTexture backend_texture;
-  if (!GetGrBackendTexture(
-          context_state->feature_info(),
-          passthrough_representation->GetTexturePassthrough()->target(),
-          backing->size(),
-          passthrough_representation->GetTexturePassthrough()->service_id(),
-          backing->format(), &backend_texture)) {
-    return nullptr;
-  }
-  auto promise_texture = SkPromiseImageTexture::Make(backend_texture);
-  if (!promise_texture)
-    return nullptr;
-  return base::WrapUnique(new SharedImageRepresentationSkiaGL(
-      std::move(passthrough_representation), std::move(promise_texture),
-      std::move(context_state), manager, backing, tracker));
-}
-
 SharedImageRepresentationSkiaGL::SharedImageRepresentationSkiaGL(
     std::unique_ptr<SharedImageRepresentationGLTexture> gl_representation,
     sk_sp<SkPromiseImageTexture> promise_texture,
@@ -89,25 +64,6 @@ SharedImageRepresentationSkiaGL::SharedImageRepresentationSkiaGL(
       gl_representation_(std::move(gl_representation)),
       promise_texture_(std::move(promise_texture)),
       context_state_(std::move(context_state)) {
-  DCHECK(gl_representation_);
-#if DCHECK_IS_ON()
-  context_ = gl::GLContext::GetCurrent();
-#endif
-}
-
-SharedImageRepresentationSkiaGL::SharedImageRepresentationSkiaGL(
-    std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
-        passthrough_representation,
-    sk_sp<SkPromiseImageTexture> promise_texture,
-    scoped_refptr<SharedContextState> context_state,
-    SharedImageManager* manager,
-    SharedImageBacking* backing,
-    MemoryTypeTracker* tracker)
-    : SharedImageRepresentationSkia(manager, backing, tracker),
-      passthrough_representation_(std::move(passthrough_representation)),
-      promise_texture_(std::move(promise_texture)),
-      context_state_(std::move(context_state)) {
-  DCHECK(passthrough_representation_);
 #if DCHECK_IS_ON()
   context_ = gl::GLContext::GetCurrent();
 #endif
@@ -127,13 +83,8 @@ sk_sp<SkSurface> SharedImageRepresentationSkiaGL::BeginWriteAccess(
   DCHECK(!surface_);
   CheckContext();
 
-  if (gl_representation_ &&
-      !gl_representation_->BeginAccess(
+  if (!gl_representation_->BeginAccess(
           GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM)) {
-    return nullptr;
-  } else if (passthrough_representation_ &&
-             !passthrough_representation_->BeginAccess(
-                 GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM)) {
     return nullptr;
   }
 
@@ -154,11 +105,7 @@ void SharedImageRepresentationSkiaGL::EndWriteAccess(sk_sp<SkSurface> surface) {
   DCHECK_EQ(surface.get(), surface_);
   DCHECK(surface->unique());
 
-  if (gl_representation_) {
-    gl_representation_->EndAccess();
-  } else {
-    passthrough_representation_->EndAccess();
-  }
+  gl_representation_->EndAccess();
   mode_ = RepresentationAccessMode::kNone;
   surface_ = nullptr;
 }
@@ -169,14 +116,9 @@ sk_sp<SkPromiseImageTexture> SharedImageRepresentationSkiaGL::BeginReadAccess(
   DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
   CheckContext();
 
-  if (gl_representation_ && !gl_representation_->BeginAccess(
-                                GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM)) {
+  if (!gl_representation_->BeginAccess(
+          GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM))
     return nullptr;
-  } else if (passthrough_representation_ &&
-             !passthrough_representation_->BeginAccess(
-                 GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM)) {
-    return nullptr;
-  }
   mode_ = RepresentationAccessMode::kRead;
   return promise_texture_;
 }
@@ -185,11 +127,7 @@ void SharedImageRepresentationSkiaGL::EndReadAccess() {
   DCHECK_EQ(mode_, RepresentationAccessMode::kRead);
   CheckContext();
 
-  if (gl_representation_) {
-    gl_representation_->EndAccess();
-  } else {
-    passthrough_representation_->EndAccess();
-  }
+  gl_representation_->EndAccess();
   mode_ = RepresentationAccessMode::kNone;
   surface_ = nullptr;
 }

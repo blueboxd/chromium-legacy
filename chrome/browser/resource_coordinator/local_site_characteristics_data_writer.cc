@@ -71,12 +71,6 @@ void LocalSiteCharacteristicsDataWriter::NotifyUsesAudioInBackground() {
   impl_->NotifyUsesAudioInBackground();
 }
 
-void LocalSiteCharacteristicsDataWriter::NotifyUsesNotificationsInBackground() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(performance_manager::TabVisibility::kBackground, tab_visibility_);
-  impl_->NotifyUsesNotificationsInBackground();
-}
-
 void LocalSiteCharacteristicsDataWriter::NotifyLoadTimePerformanceMeasurement(
     base::TimeDelta load_duration,
     base::TimeDelta cpu_usage_estimate,

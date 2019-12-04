@@ -168,11 +168,7 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
                            DoneButtonWithoutTranslating);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
-                           TabUiSourceDoneButtonWithoutTranslating);
-  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
-                           TabUiTargetDoneButtonWithoutTranslating);
-  FRIEND_TEST_ALL_PREFIXES(TabUiSourceTranslateBubbleViewTest,
-                           DoneButtonWithoutTranslating);
+                           TabUiDoneButtonWithoutTranslating);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
                            CancelButtonReturningBeforeTranslate);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
@@ -274,7 +270,8 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   // TAB UI. Caller takes ownership of the returned view.
   std::unique_ptr<views::View> CreateViewAdvancedTabUi(
       std::unique_ptr<views::Combobox> combobox,
-      std::unique_ptr<views::Label> language_title_label);
+      std::unique_ptr<views::Label> language_title_label,
+      std::unique_ptr<views::Button> advance_done_button);
 
   std::unique_ptr<views::Button> CreateCloseButton();
 
@@ -329,8 +326,9 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   views::Checkbox* advanced_always_translate_checkbox_ = nullptr;
   views::TabbedPane* tabbed_pane_ = nullptr;
 
-  views::LabelButton* advanced_cancel_button_ = nullptr;
   views::LabelButton* advanced_done_button_ = nullptr;
+  views::LabelButton* advanced_done_button_source_ = nullptr;
+  views::LabelButton* advanced_done_button_target_ = nullptr;
 
   // Default source/target language without user interaction.
   int previous_source_language_index_;

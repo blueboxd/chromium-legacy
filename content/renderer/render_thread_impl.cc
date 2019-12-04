@@ -53,8 +53,6 @@
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
 #include "components/metrics/public/mojom/single_sample_metrics.mojom.h"
 #include "components/metrics/single_sample_metrics.h"
-#include "components/viz/client/hit_test_data_provider.h"
-#include "components/viz/client/hit_test_data_provider_draw_quad.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/switches.h"
@@ -1685,12 +1683,6 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     // not have that if we're running web tests in single threaded mode.
     // Set it to be our thread's task runner instead.
     params.compositor_task_runner = main_thread_compositor_task_runner_;
-  }
-  if (!features::IsVizHitTestingSurfaceLayerEnabled()) {
-    params.hit_test_data_provider =
-        std::make_unique<viz::HitTestDataProviderDrawQuad>(
-            true /* should_ask_for_child_region */,
-            true /* root_accepts_events */);
   }
 
   // The renderer runs animations and layout for animate_only BeginFrames.

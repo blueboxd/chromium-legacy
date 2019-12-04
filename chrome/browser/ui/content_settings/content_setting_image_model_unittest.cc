@@ -15,6 +15,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/permissions/adaptive_notification_permission_ui_selector.h"
 #include "chrome/browser/permissions/mock_permission_request.h"
 #include "chrome/browser/permissions/permission_features.h"
 #include "chrome/browser/permissions/permission_request.h"
@@ -388,13 +389,15 @@ TEST_F(ContentSettingImageModelTest, NotificationsIconVisibility) {
 
 TEST_F(ContentSettingImageModelTest, NotificationsPrompt) {
 #if !defined(OS_ANDROID)
-  std::map<std::string, std::string> parameters;
-  parameters[kQuietNotificationPromptsActivationParameterName] =
-      kQuietNotificationPromptsActivationAlways;
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeaturesAndParameters(
-      {{features::kQuietNotificationPrompts, parameters}},
+  feature_list.InitWithFeatures(
+      {features::kQuietNotificationPrompts},
       {features::kBlockRepeatedNotificationPermissionPrompts});
+
+  auto* permission_ui_selector =
+      AdaptiveNotificationPermissionUiSelector::GetForProfile(
+          Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+  permission_ui_selector->EnableQuietUi();
 
   auto content_setting_image_model =
       ContentSettingImageModel::CreateForContentType(

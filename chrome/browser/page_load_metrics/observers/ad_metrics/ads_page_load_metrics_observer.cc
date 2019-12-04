@@ -32,6 +32,7 @@
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/reload_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -106,10 +107,16 @@ std::string GetHeavyAdReportMessage(const FrameData& frame_data,
   }
 }
 
-using ResourceMimeType = AdsPageLoadMetricsObserver::ResourceMimeType;
 const char kDisallowedByBlocklistHistogramName[] =
     "PageLoad.Clients.Ads.HeavyAds.DisallowedByBlocklist";
 
+void RecordHeavyAdInterventionDisallowedByBlocklist(bool disallowed) {
+  UMA_HISTOGRAM_BOOLEAN(kDisallowedByBlocklistHistogramName, disallowed);
+}
+
+using ResourceMimeType = AdsPageLoadMetricsObserver::ResourceMimeType;
+const char kIgnoredByReloadHistogramName[] =
+    "PageLoad.Clients.Ads.HeavyAds.IgnoredByReload";
 }  // namespace
 
 // static
@@ -190,11 +197,13 @@ AdsPageLoadMetricsObserver::OnCommit(
   DCHECK(ad_frames_data_.empty());
 
   committed_ = true;
+  page_load_is_reload_ =
+      navigation_handle->GetReloadType() != content::ReloadType::NONE;
+
   aggregate_frame_data_->UpdateForNavigation(
       navigation_handle->GetRenderFrameHost(), true /* frame_navigated */);
   main_frame_data_->UpdateForNavigation(navigation_handle->GetRenderFrameHost(),
                                         true /* frame_navigated */);
-
   // The main frame is never considered an ad.
   ad_frames_data_[navigation_handle->GetFrameTreeNodeId()] =
       ad_frames_data_storage_.end();
@@ -1015,6 +1024,11 @@ void AdsPageLoadMetricsObserver::MaybeTriggerHeavyAdIntervention(
   if (!frame_data->MaybeTriggerHeavyAdIntervention())
     return;
 
+  // Don't trigger the heavy ad intervention on reloads.
+  UMA_HISTOGRAM_BOOLEAN(kIgnoredByReloadHistogramName, page_load_is_reload_);
+  if (page_load_is_reload_)
+    return;
+
   // Check to see if we are allowed to activate on this host.
   if (IsBlocklisted())
     return;
@@ -1140,9 +1154,4 @@ HeavyAdBlocklist* AdsPageLoadMetricsObserver::GetHeavyAdBlocklist() {
     return nullptr;
 
   return heavy_ad_service->heavy_ad_blocklist();
-}
-
-void AdsPageLoadMetricsObserver::RecordHeavyAdInterventionDisallowedByBlocklist(
-    bool disallowed) {
-  UMA_HISTOGRAM_BOOLEAN(kDisallowedByBlocklistHistogramName, disallowed);
 }

@@ -61,9 +61,7 @@ class CONTENT_EXPORT OverscrollController {
 
   // This must be called when the ACK for any event comes in. This updates the
   // overscroll gesture status as appropriate.
-  // Virtual for testing.
-  virtual void ReceivedEventACK(const blink::WebInputEvent& event,
-                                bool processed);
+  void ReceivedEventACK(const blink::WebInputEvent& event, bool processed);
 
   OverscrollMode overscroll_mode() const { return overscroll_mode_; }
 

@@ -185,6 +185,9 @@ bool IsAudioCodecProprietary(AudioCodec codec) {
 }
 
 bool IsDefaultSupportedAudioType(const AudioType& type) {
+  if (type.spatialRendering)
+    return false;
+
 #if !BUILDFLAG(USE_PROPRIETARY_CODECS)
   if (IsAudioCodecProprietary(type.codec))
     return false;

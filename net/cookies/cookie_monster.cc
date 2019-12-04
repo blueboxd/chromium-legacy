@@ -334,6 +334,15 @@ size_t CountCookiesForPossibleDeletion(
   return cookies_count;
 }
 
+// Returns whether the CookieOptions has at least as same-site of a context as
+// |same_site_requirement|, and the options permit HttpOnly access.
+bool IsHttpSameSiteContextAtLeast(
+    const CookieOptions& options,
+    CookieOptions::SameSiteCookieContext same_site_requirement) {
+  return !options.exclude_httponly() &&
+         options.same_site_cookie_context() >= same_site_requirement;
+}
+
 }  // namespace
 
 CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
@@ -1006,6 +1015,8 @@ void CookieMonster::FilterCookiesWithOptions(
     if (options.update_access_time())
       InternalUpdateCookieAccessTime(*it, current_time);
 
+    MaybeRecordCookieAccessWithOptions(**it, options, false);
+
     included_cookies->push_back({**it, status});
   }
 }
@@ -1165,8 +1176,8 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
         CanonicalCookie::CookieInclusionStatus::EXCLUDE_NONCOOKIEABLE_SCHEME);
   }
 
-  cc->IsSetPermittedInContext(options, GetAccessSemanticsForCookie(*cc),
-                              &status);
+  cc->IsSetPermittedInContext(
+      options, GetAccessSemanticsForCookieSet(*cc, options), &status);
 
   const std::string key(GetKey(cc->Domain()));
 
@@ -1223,6 +1234,8 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
       if (!creation_date_to_inherit.is_null()) {
         cc->SetCreationDate(creation_date_to_inherit);
       }
+
+      MaybeRecordCookieAccessWithOptions(*cc, options, true);
 
       InternalInsertCookie(key, std::move(cc), true);
     } else {
@@ -1317,6 +1330,14 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
                         return NetLogCookieMonsterCookieDeleted(
                             cc, mapping.cause, sync_to_store, capture_mode);
                       });
+  }
+
+  // Skip this if the map is empty, to avoid unnecessarily constructing the
+  // UniqueCookieKey.
+  if (!last_http_same_site_accesses_.empty()) {
+    DCHECK(cookie_util::
+               IsRecentHttpSameSiteAccessGrantsLegacyCookieSemanticsEnabled());
+    last_http_same_site_accesses_.erase(it->second->UniqueKey());
   }
 
   if ((cc->IsPersistent() || persist_session_cookies_) && store_.get() &&
@@ -1663,9 +1684,67 @@ bool CookieMonster::HasCookieableScheme(const GURL& url) {
 
 CookieAccessSemantics CookieMonster::GetAccessSemanticsForCookie(
     const CanonicalCookie& cookie) const {
+  if (cookie_util::DoesLastHttpSameSiteAccessGrantLegacySemantics(
+          LastAccessFromHttpSameSiteContext(cookie))) {
+    return CookieAccessSemantics::LEGACY;
+  }
   if (cookie_access_delegate())
     return cookie_access_delegate()->GetAccessSemantics(cookie);
   return CookieAccessSemantics::UNKNOWN;
+}
+
+CookieAccessSemantics CookieMonster::GetAccessSemanticsForCookieSet(
+    const CanonicalCookie& cookie,
+    const CookieOptions& options) const {
+  // If the current cookie access is a set, directly treat the cookie as LEGACY
+  // if the |options| qualify, because there may not be a time entry in
+  // |last_http_same_site_accesses_| since it may be a new cookie without a
+  // previous access. It will still only be added to the map as a qualifying
+  // cookie access if the final inclusion status is include.
+  if (cookie_util::
+          IsRecentHttpSameSiteAccessGrantsLegacyCookieSemanticsEnabled() &&
+      IsHttpSameSiteContextAtLeast(
+          options, CookieOptions::SameSiteCookieContext::SAME_SITE_LAX)) {
+    return CookieAccessSemantics::LEGACY;
+  }
+
+  return GetAccessSemanticsForCookie(cookie);
+}
+
+base::TimeTicks CookieMonster::LastAccessFromHttpSameSiteContext(
+    const CanonicalCookie& cookie) const {
+  // Return early to avoid unnecessarily constructing the UniqueCookieKey
+  if (last_http_same_site_accesses_.empty()) {
+    return base::TimeTicks();
+  }
+
+  const auto it = last_http_same_site_accesses_.find(cookie.UniqueKey());
+  if (it != last_http_same_site_accesses_.end())
+    return it->second;
+  return base::TimeTicks();
+}
+
+void CookieMonster::MaybeRecordCookieAccessWithOptions(
+    const CanonicalCookie& cookie,
+    const CookieOptions& options,
+    bool is_set) {
+  // Don't populate |last_http_same_site_accesses_| if the relevant feature is
+  // not enabled.
+  if (!cookie_util::
+          IsRecentHttpSameSiteAccessGrantsLegacyCookieSemanticsEnabled()) {
+    return;
+  }
+
+  // Don't update time for accesses that don't update access time. (E.g. the
+  // time should not be updated when the cookie is accessed to populate the UI.)
+  if (!options.update_access_time())
+    return;
+
+  CookieOptions::SameSiteCookieContext same_site_requirement =
+      is_set ? CookieOptions::SameSiteCookieContext::SAME_SITE_LAX
+             : CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT;
+  if (IsHttpSameSiteContextAtLeast(options, same_site_requirement))
+    last_http_same_site_accesses_[cookie.UniqueKey()] = base::TimeTicks::Now();
 }
 
 // Test to see if stats should be recorded, and record them if so.

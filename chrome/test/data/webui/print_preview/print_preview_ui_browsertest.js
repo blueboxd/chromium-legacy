@@ -1105,6 +1105,12 @@ TEST_F('PrintPreviewDestinationSettingsTest', 'NoDestinations', function() {
   this.runMochaTest(destination_settings_test.TestNames.NoDestinations);
 });
 
+GEN('#if defined(OS_CHROMEOS)');
+TEST_F('PrintPreviewDestinationSettingsTest', 'EulaIsDisplayed', function() {
+  this.runMochaTest(destination_settings_test.TestNames.EulaIsDisplayed);
+});
+GEN('#endif');
+
 // eslint-disable-next-line no-var
 var PrintPreviewScalingSettingsTest = class extends PrintPreviewTest {
   /** @override */

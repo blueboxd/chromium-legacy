@@ -8,17 +8,22 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
+#include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/cookie_util.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
@@ -39,7 +44,8 @@ class SessionDataDeleter
   SessionDataDeleter(storage::SpecialStoragePolicy* storage_policy,
                      bool delete_only_by_session_only_policy);
 
-  void Run(content::StoragePartition* storage_partition);
+  void Run(content::StoragePartition* storage_partition,
+           HostContentSettingsMap* host_content_settings_map);
 
  private:
   friend class base::RefCountedThreadSafe<SessionDataDeleter>;
@@ -65,7 +71,9 @@ SessionDataDeleter::SessionDataDeleter(
       delete_only_by_session_only_policy_(delete_only_by_session_only_policy) {
 }
 
-void SessionDataDeleter::Run(content::StoragePartition* storage_partition) {
+void SessionDataDeleter::Run(
+    content::StoragePartition* storage_partition,
+    HostContentSettingsMap* host_content_settings_map) {
   if (storage_policy_.get() && storage_policy_->HasSessionOnlyOrigins()) {
     // Cookies are not origin scoped, so they are handled separately.
     const uint32_t removal_mask =
@@ -91,6 +99,15 @@ void SessionDataDeleter::Run(content::StoragePartition* storage_partition) {
         std::move(filter),
         // Fire and forget
         network::mojom::CookieManager::DeleteCookiesCallback());
+
+    // If the feature policy feature is enabled, delete the client hint
+    // preferences
+    if (base::FeatureList::IsEnabled(features::kFeaturePolicyForClientHints) ||
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableExperimentalWebPlatformFeatures)) {
+      host_content_settings_map->ClearSettingsForOneType(
+          ContentSettingsType::CLIENT_HINTS);
+    }
   }
 
   if (!storage_policy_.get() || !storage_policy_->HasSessionOnlyOrigins())
@@ -148,5 +165,6 @@ void DeleteSessionOnlyData(Profile* profile) {
   scoped_refptr<SessionDataDeleter> deleter(
       new SessionDataDeleter(profile->GetSpecialStoragePolicy(),
                              startup_pref_type == SessionStartupPref::LAST));
-  deleter->Run(Profile::GetDefaultStoragePartition(profile));
+  deleter->Run(Profile::GetDefaultStoragePartition(profile),
+               HostContentSettingsMapFactory::GetForProfile(profile));
 }

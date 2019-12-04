@@ -29,6 +29,7 @@ class CastComponent : public WebComponent,
     ~CastComponentParams();
 
     chromium::cast::ApplicationConfigManagerPtr app_config_manager;
+    chromium::cast::ApplicationContextPtr application_context;
     std::unique_ptr<base::fuchsia::StartupContext> startup_context;
     std::unique_ptr<cr_fuchsia::AgentManager> agent_manager;
     std::unique_ptr<ApiBindingsClient> api_bindings_client;
@@ -38,6 +39,7 @@ class CastComponent : public WebComponent,
     chromium::cast::UrlRequestRewriteRulesProviderPtr rewrite_rules_provider;
     base::Optional<std::vector<fuchsia::web::UrlRequestRewriteRule>>
         rewrite_rules;
+    base::Optional<uint64_t> media_session_id;
   };
 
   CastComponent(CastRunner* runner, CastComponentParams params);
@@ -69,6 +71,7 @@ class CastComponent : public WebComponent,
   std::unique_ptr<NamedMessagePortConnector> connector_;
   std::unique_ptr<ApiBindingsClient> api_bindings_client_;
   std::unique_ptr<ApplicationControllerImpl> application_controller_;
+  uint64_t media_session_id_ = 0;
 
   fidl::Binding<fuchsia::web::NavigationEventListener>
       navigation_listener_binding_;

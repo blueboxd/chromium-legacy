@@ -6705,7 +6705,7 @@ TEST_F(AutofillMetricsTest, AddressFormEventsAreSegmented) {
 // Test that we log that Profile Autofill is enabled when filling a form.
 TEST_F(AutofillMetricsTest, AutofillProfileIsEnabledAtPageLoad) {
   base::HistogramTester histogram_tester;
-  autofill_manager_->SetProfileAutofillEnabled(true);
+  autofill_manager_->SetAutofillProfileEnabled(true);
   autofill_manager_->OnFormsSeen(std::vector<FormData>(), TimeTicks());
   histogram_tester.ExpectUniqueSample("Autofill.Address.IsEnabled.PageLoad",
                                       true, 1);
@@ -6714,7 +6714,7 @@ TEST_F(AutofillMetricsTest, AutofillProfileIsEnabledAtPageLoad) {
 // Test that we log that Profile Autofill is disabled when filling a form.
 TEST_F(AutofillMetricsTest, AutofillProfileIsDisabledAtPageLoad) {
   base::HistogramTester histogram_tester;
-  autofill_manager_->SetProfileAutofillEnabled(false);
+  autofill_manager_->SetAutofillProfileEnabled(false);
   autofill_manager_->OnFormsSeen(std::vector<FormData>(), TimeTicks());
   histogram_tester.ExpectUniqueSample("Autofill.Address.IsEnabled.PageLoad",
                                       false, 1);
@@ -6723,7 +6723,7 @@ TEST_F(AutofillMetricsTest, AutofillProfileIsDisabledAtPageLoad) {
 // Test that we log that CreditCard Autofill is enabled when filling a form.
 TEST_F(AutofillMetricsTest, AutofillCreditCardIsEnabledAtPageLoad) {
   base::HistogramTester histogram_tester;
-  autofill_manager_->SetCreditCardAutofillEnabled(true);
+  autofill_manager_->SetAutofillCreditCardEnabled(true);
   autofill_manager_->OnFormsSeen(std::vector<FormData>(), TimeTicks());
   histogram_tester.ExpectUniqueSample("Autofill.CreditCard.IsEnabled.PageLoad",
                                       true, 1);
@@ -6732,7 +6732,7 @@ TEST_F(AutofillMetricsTest, AutofillCreditCardIsEnabledAtPageLoad) {
 // Test that we log that CreditCard Autofill is disabled when filling a form.
 TEST_F(AutofillMetricsTest, AutofillCreditCardIsDisabledAtPageLoad) {
   base::HistogramTester histogram_tester;
-  autofill_manager_->SetCreditCardAutofillEnabled(false);
+  autofill_manager_->SetAutofillCreditCardEnabled(false);
   autofill_manager_->OnFormsSeen(std::vector<FormData>(), TimeTicks());
   histogram_tester.ExpectUniqueSample("Autofill.CreditCard.IsEnabled.PageLoad",
                                       false, 1);

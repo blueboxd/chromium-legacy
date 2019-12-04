@@ -2038,6 +2038,10 @@ base::Optional<int> BrowserAccessibility::GetSetSize() const {
   return node()->GetSetSize();
 }
 
+bool BrowserAccessibility::IsInListMarker() const {
+  return node()->IsInListMarker();
+}
+
 std::string BrowserAccessibility::ToString() const {
   return GetData().ToString();
 }

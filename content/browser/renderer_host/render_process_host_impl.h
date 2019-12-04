@@ -473,9 +473,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
     return render_frame_message_filter_.get();
   }
 
-  void SetBrowserPluginMessageFilterSubFilterForTesting(
-      scoped_refptr<BrowserMessageFilter> message_filter) const;
-
   void set_is_for_guests_only_for_testing(bool is_for_guests_only) {
     is_for_guests_only_ = is_for_guests_only;
   }
@@ -578,6 +575,14 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // process host, and is used by workers via BrowserInterfaceBroker.
   void BindVideoDecodePerfHistory(
       mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver)
+      override;
+
+  // Binds |receiver| to the VideoDecodePerfHistory instance owned by the render
+  // process host, and is used by frames and workers via BrowserInterfaceBroker.
+  void BindQuotaDispatcherHost(
+      int render_frame_id,
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::QuotaDispatcherHost> receiver)
       override;
 
   // Binds |receiver| to the LockManager owned by |storage_partition_impl_|.

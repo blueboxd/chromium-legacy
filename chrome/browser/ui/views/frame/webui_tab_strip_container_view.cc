@@ -34,6 +34,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
@@ -111,13 +112,16 @@ WebUITabStripContainerView::WebUITabStripContainerView(
   DCHECK(UseTouchableTabStrip());
   animation_.SetTweenType(gfx::Tween::Type::FAST_OUT_SLOW_IN);
 
-  SetVisible(false);
-  // TODO(crbug.com/1010589) WebContents are initially assumed to be visible by
-  // default unless explicitly hidden. The WebContents need to be set to hidden
-  // so that the visibility state of the document in JavaScript is correctly
-  // initially set to 'hidden', and the 'visibilitychange' events correctly get
-  // fired.
-  web_view_->GetWebContents()->WasHidden();
+  // Our observed Widget's NativeView may be destroyed before us. We
+  // have no reasonable way of un-registering our pre-target handler
+  // from the NativeView while the Widget is destroying. This disables
+  // EventHandler's check that it has been removed from all
+  // EventTargets.
+  auto_closer_->DisableCheckTargets();
+
+  SetVisible(true);
+  animation_.Reset(1.0);
+  auto_closer_->set_enabled(true);
 
   web_view_->set_allow_accelerators(true);
 
@@ -137,13 +141,6 @@ WebUITabStripContainerView::WebUITabStripContainerView(
   TabStripUI* const tab_strip_ui = static_cast<TabStripUI*>(
       web_view_->GetWebContents()->GetWebUI()->GetController());
   tab_strip_ui->Initialize(browser_, this);
-
-  // Our observed Widget's NativeView may be destroyed before us. We
-  // have no reasonable way of un-registering our pre-target handler
-  // from the NativeView while the Widget is destroying. This disables
-  // EventHandler's check that it has been removed from all
-  // EventTargets.
-  auto_closer_->DisableCheckTargets();
 }
 
 WebUITabStripContainerView::~WebUITabStripContainerView() {
@@ -221,7 +218,14 @@ void WebUITabStripContainerView::SetContainerTargetVisibility(
     animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(250));
     animation_.Show();
     web_view_->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+    time_at_open_ = base::TimeTicks::Now();
   } else {
+    if (time_at_open_) {
+      RecordTabStripUIOpenDurationHistogram(base::TimeTicks::Now() -
+                                            time_at_open_.value());
+      time_at_open_ = base::nullopt;
+    }
+
     animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(200));
     animation_.Hide();
     web_view_->SetFocusBehavior(FocusBehavior::NEVER);
@@ -280,6 +284,7 @@ void WebUITabStripContainerView::CloseForEventOutsideTabStrip() {
 void WebUITabStripContainerView::AnimationEnded(
     const gfx::Animation* animation) {
   DCHECK_EQ(&animation_, animation);
+  PreferredSizeChanged();
   if (animation_.GetCurrentValue() == 0.0)
     SetVisible(false);
 }
@@ -319,7 +324,13 @@ void WebUITabStripContainerView::RemovedFromWidget() {
 }
 
 int WebUITabStripContainerView::GetHeightForWidth(int w) const {
-  return desired_height_ * animation_.GetCurrentValue();
+  if (!GetVisible())
+    return 0;
+  if (!animation_.is_animating())
+    return desired_height_;
+
+  return gfx::Tween::LinearIntValueBetween(animation_.GetCurrentValue(), 0,
+                                           desired_height_);
 }
 
 void WebUITabStripContainerView::ButtonPressed(views::Button* sender,

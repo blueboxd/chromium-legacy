@@ -28,7 +28,8 @@ destination_settings_test.TestNames = {
   UpdateRecentDestinations: 'update recent destinations',
   ResetDestinationOnSignOut: 'reset destination on sign out',
   DisabledSaveAsPdf: 'disabled save as pdf',
-  NoDestinations: 'no destinations'
+  NoDestinations: 'no destinations',
+  EulaIsDisplayed: 'eula is displayed'
 };
 
 suite(destination_settings_test.suiteName, function() {
@@ -43,6 +44,9 @@ suite(destination_settings_test.suiteName, function() {
 
   /** @type {!Array<!RecentDestination>} */
   let recentDestinations = [];
+
+  /** @type {!Array<!LocalDestinationInfo>} */
+  let localDestinations = [];
 
   /** @type {!Array<!Destination>} */
   let destinations = [];
@@ -68,7 +72,7 @@ suite(destination_settings_test.suiteName, function() {
     // Stub out native layer and cloud print interface.
     nativeLayer = new NativeLayerStub();
     NativeLayer.setInstance(nativeLayer);
-    const localDestinations = [];
+    localDestinations = [];
     destinations = getDestinations(nativeLayer, localDestinations);
     nativeLayer.setLocalDestinations(localDestinations);
     cloudPrintInterface = new CloudPrintInterfaceStub();
@@ -733,5 +737,90 @@ suite(destination_settings_test.suiteName, function() {
     return nativeLayer.whenCalled('getPrinters').then(() => {
       assertDropdownItems(['noDestinations']);
     });
+  });
+
+  /**
+   * @param {!Array<!LocalDestinationInfo>} localDestinations The array that
+   *     |info| will be added to.
+   * @param {!Array<!Destinations>} destinations The array that will add a new
+   *     Destination based off of |info|.
+   * @param {!LocalDestinationInfo} info The LocalDestinationInfo to be added.
+   */
+  function addNewDestination(localDestinations, destinations, info) {
+    const eulaDest = new Destination(
+        info.deviceName, DestinationType.LOCAL, DestinationOrigin.CROS,
+        info.printerName, DestinationConnectionStatus.ONLINE,
+        {eulaUrl: info.eulaUrl ? info.eulaUrl : ''});
+
+    localDestinations.push(info);
+    destinations.push(eulaDest);
+    nativeLayer.setLocalDestinations(localDestinations);
+  }
+
+  /**
+   * Tests that destinations with a EULA will display the EULA URL.
+   */
+  test(assert(destination_settings_test.TestNames.EulaIsDisplayed), function() {
+    // Recent destinations start out empty.
+    assertRecentDestinations([]);
+    const expectedUrl = 'http://google.com';
+    const eulaDestInfo = {
+      deviceName: 'ID5',
+      printerName: 'Five',
+      eulaUrl: expectedUrl,
+    };
+    addNewDestination(localDestinations, destinations, eulaDestInfo);
+
+    assertEquals(0, nativeLayer.getCallCount('getPrinterCapabilities'));
+
+    initialize();
+
+    return nativeLayer.whenCalled('getPrinterCapabilities')
+        .then(() => {
+          assertRecentDestinations(['Save as PDF']);
+          assertEquals(1, nativeLayer.getCallCount('getPrinterCapabilities'));
+          // Assert that the EULA URL is hidden.
+          assertTrue(destinationSettings.$.destinationEulaWrapper.hidden);
+
+          nativeLayer.resetResolver('getPrinterCapabilities');
+          // Select a destination that has a EULA URL.
+          selectDestination(destinations[5]);
+          return nativeLayer.whenCalled('getPrinterCapabilities');
+        })
+        .then(() => {
+          assertRecentDestinations(['ID5', 'Save as PDF']);
+          assertEquals(1, nativeLayer.getCallCount('getPrinterCapabilities'));
+
+          // Assert that the EULA URL is displayed.
+          assertFalse(destinationSettings.$.destinationEulaWrapper.hidden);
+          assertEquals(expectedUrl, destinationSettings.destination.eulaUrl);
+
+          nativeLayer.resetResolver('getPrinterCapabilities');
+          // Select a destination without a EULA URL.
+          selectDestination(destinations[4]);
+          return nativeLayer.whenCalled('getPrinterCapabilities');
+        })
+        .then(() => {
+          assertRecentDestinations(['FooDevice', 'ID5', 'Save as PDF']);
+          assertEquals(1, nativeLayer.getCallCount('getPrinterCapabilities'));
+
+          // Assert that switching to a destination without a EULA does
+          // not display the EULA URL.
+          assertTrue(destinationSettings.$.destinationEulaWrapper.hidden);
+
+          nativeLayer.resetResolver('getPrinterCapabilities');
+          // Reselect a destination with a EULA URL.
+          selectDestination(destinations[5]);
+          return nativeLayer.whenCalled('getPrinterCapabilities');
+        })
+        .then(() => {
+          assertRecentDestinations(['ID5', 'FooDevice', 'Save as PDF']);
+          assertEquals(1, nativeLayer.getCallCount('getPrinterCapabilities'));
+
+          // Assert that switching back to a destination with a EULA displays
+          // the EULA URL.
+          assertFalse(destinationSettings.$.destinationEulaWrapper.hidden);
+          assertEquals(expectedUrl, destinationSettings.destination.eulaUrl);
+        });
   });
 });

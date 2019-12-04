@@ -514,13 +514,13 @@ class Browser : public TabStripModelObserver,
       TabStripModel* tab_strip_model,
       const TabStripModelChange& change,
       const TabStripSelectionChange& selection) override;
-  void OnTabGroupVisualDataChanged(
-      TabStripModel* tab_strip_model,
-      TabGroupId group,
-      const TabGroupVisualData* visual_data) override;
+  void OnTabGroupVisualsChanged(TabGroupId group,
+                                const TabGroupVisualData* visual_data) override;
   void TabPinnedStateChanged(TabStripModel* tab_strip_model,
                              content::WebContents* contents,
                              int index) override;
+  void TabGroupedStateChanged(base::Optional<TabGroupId> group,
+                              int index) override;
   void TabStripEmpty() override;
 
   // Overridden from content::WebContentsDelegate:
@@ -855,9 +855,6 @@ class Browser : public TabStripModelObserver,
   void OnTabReplacedAt(content::WebContents* old_contents,
                        content::WebContents* new_contents,
                        int index);
-  void OnTabGroupChanged(int index,
-                         base::Optional<TabGroupId> old_group,
-                         base::Optional<TabGroupId> new_group);
 
   // Handle changes to kDevToolsAvailability preference.
   void OnDevToolsAvailabilityChanged();

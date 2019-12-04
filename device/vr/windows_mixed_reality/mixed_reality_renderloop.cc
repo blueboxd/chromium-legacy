@@ -873,7 +873,7 @@ mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
                                   current_display_info_.Clone()));
   }
 
-  ret->pose->input_state =
+  ret->input_state =
       input_helper_->GetInputState(anchor_origin_.get(), timestamp_.get());
 
   ret->pose->emulated_position = emulated_position_;

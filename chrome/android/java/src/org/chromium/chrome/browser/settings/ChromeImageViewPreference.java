@@ -81,7 +81,7 @@ public class ChromeImageViewPreference extends Preference {
         View view = holder.itemView;
 
         if (mImageRes != 0) {
-            Drawable buttonImg = PreferenceUtils.getTintedIcon(getContext(), mImageRes);
+            Drawable buttonImg = SettingsUtils.getTintedIcon(getContext(), mImageRes);
 
             button.setImageDrawable(buttonImg);
             button.setBackgroundColor(Color.TRANSPARENT);

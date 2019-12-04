@@ -32,7 +32,7 @@ class POLICY_EXPORT MachineLevelUserCloudPolicyManager
   ~MachineLevelUserCloudPolicyManager() override;
 
   // Initializes the cloud connection. |local_state| must stay valid until this
-  // object is deleted.
+  // object is deleted or DisconnectAndRemovePolicy gets called.
   void Connect(PrefService* local_state,
                std::unique_ptr<CloudPolicyClient> client);
 
@@ -44,6 +44,10 @@ class POLICY_EXPORT MachineLevelUserCloudPolicyManager
   void RemoveClientObserver(CloudPolicyClient::Observer* observer);
 
   MachineLevelUserCloudPolicyStore* store() { return store_.get(); }
+
+  // Shuts down the MachineLevelUserCloudPolicyManager (removes and stops
+  // refreshing the cached cloud policy).
+  void DisconnectAndRemovePolicy();
 
   // ConfigurationPolicyProvider:
   void Init(SchemaRegistry* registry) override;

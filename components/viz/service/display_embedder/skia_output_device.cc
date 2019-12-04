@@ -36,12 +36,13 @@ void SkiaOutputDevice::SetGpuVSyncEnabled(bool enabled) {
   NOTIMPLEMENTED();
 }
 
-#if defined(OS_WIN)
-void SkiaOutputDevice::SetEnableDCLayers(bool enable) {
+void SkiaOutputDevice::ScheduleOverlays(
+    SkiaOutputSurface::OverlayList overlays) {
   NOTIMPLEMENTED();
 }
 
-void SkiaOutputDevice::ScheduleDCLayers(std::vector<DCLayerOverlay> dc_layers) {
+#if defined(OS_WIN)
+void SkiaOutputDevice::SetEnableDCLayers(bool enable) {
   NOTIMPLEMENTED();
 }
 #endif

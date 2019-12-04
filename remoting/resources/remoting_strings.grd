@@ -81,80 +81,80 @@
     <output filename="remoting/resources/zh-CN.pak" lang="zh-CN" type="data_package"/>
     <output filename="remoting/resources/zh-TW.pak" lang="zh-TW" type="data_package"/>
 
-    <output filename="remoting/webapp/_locales/am/messages.json" lang="am" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/ar/messages.json" lang="ar" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/bg/messages.json" lang="bg" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/bn/messages.json" lang="bn" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/ca/messages.json" lang="ca" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/cs/messages.json" lang="cs" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/da/messages.json" lang="da" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/de/messages.json" lang="de" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/fa/messages.json" lang="fa" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/am/messages.json" lang="am" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/ar/messages.json" lang="ar" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/bg/messages.json" lang="bg" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/bn/messages.json" lang="bn" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/ca/messages.json" lang="ca" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/cs/messages.json" lang="cs" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/da/messages.json" lang="da" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/de/messages.json" lang="de" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/fa/messages.json" lang="fa" type="chrome_messages_json"/>
     <if expr="not is_ios or not _official_build">
       <!-- The fake-bidi locale isn't accepted by the app store. -->
-      <output filename="remoting/webapp/_locales/fake_bidi/messages.json" lang="fake-bidi" type="chrome_messages_json"/>
+      <output filename="remoting/resources/_locales/fake_bidi/messages.json" lang="fake-bidi" type="chrome_messages_json"/>
     </if>
-    <output filename="remoting/webapp/_locales/el/messages.json" lang="el" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/en/messages.json" lang="en" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/el/messages.json" lang="el" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/en/messages.json" lang="en" type="chrome_messages_json"/>
     <if expr="chromeos">
       <!-- lang="en-US" will create an empty json file. -->
-      <output filename="remoting/webapp/_locales/en_US/messages.json" lang="en" type="chrome_messages_json"/>
+      <output filename="remoting/resources/_locales/en_US/messages.json" lang="en" type="chrome_messages_json"/>
     </if>
-    <output filename="remoting/webapp/_locales/en_GB/messages.json" lang="en-GB" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/es/messages.json" lang="es" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/en_GB/messages.json" lang="en-GB" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/es/messages.json" lang="es" type="chrome_messages_json"/>
     <if expr="is_ios">
       <!-- iOS uses es-MX for es-419 -->
-      <output filename="remoting/webapp/_locales/es_MX/messages.json" lang="es-419" type="chrome_messages_json"/>
+      <output filename="remoting/resources/_locales/es_MX/messages.json" lang="es-419" type="chrome_messages_json"/>
     </if>
     <if expr="not is_ios">
-      <output filename="remoting/webapp/_locales/es_419/messages.json" lang="es-419" type="chrome_messages_json"/>
+      <output filename="remoting/resources/_locales/es_419/messages.json" lang="es-419" type="chrome_messages_json"/>
     </if>
-    <output filename="remoting/webapp/_locales/et/messages.json" lang="et" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/fi/messages.json" lang="fi" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/fil/messages.json" lang="fil" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/fr/messages.json" lang="fr" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/gu/messages.json" lang="gu" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/he/messages.json" lang="he" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/hi/messages.json" lang="hi" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/hr/messages.json" lang="hr" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/hu/messages.json" lang="hu" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/id/messages.json" lang="id" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/it/messages.json" lang="it" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/ja/messages.json" lang="ja" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/kn/messages.json" lang="kn" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/ko/messages.json" lang="ko" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/lt/messages.json" lang="lt" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/lv/messages.json" lang="lv" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/et/messages.json" lang="et" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/fi/messages.json" lang="fi" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/fil/messages.json" lang="fil" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/fr/messages.json" lang="fr" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/gu/messages.json" lang="gu" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/he/messages.json" lang="he" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/hi/messages.json" lang="hi" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/hr/messages.json" lang="hr" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/hu/messages.json" lang="hu" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/id/messages.json" lang="id" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/it/messages.json" lang="it" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/ja/messages.json" lang="ja" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/kn/messages.json" lang="kn" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/ko/messages.json" lang="ko" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/lt/messages.json" lang="lt" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/lv/messages.json" lang="lv" type="chrome_messages_json"/>
     <!-- The translation console uses 'no' for Norwegian (Bokmål), but Chrome uses 'nb'. -->
-    <output filename="remoting/webapp/_locales/ml/messages.json" lang="ml" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/mr/messages.json" lang="mr" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/ms/messages.json" lang="ms" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/nb/messages.json" lang="no" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/nl/messages.json" lang="nl" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/pl/messages.json" lang="pl" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/ml/messages.json" lang="ml" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/mr/messages.json" lang="mr" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/ms/messages.json" lang="ms" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/nb/messages.json" lang="no" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/nl/messages.json" lang="nl" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/pl/messages.json" lang="pl" type="chrome_messages_json"/>
     <if expr="is_ios">
       <!-- iOS uses pt for pt-BR -->
-      <output filename="remoting/webapp/_locales/pt/messages.json" lang="pt-BR" type="chrome_messages_json"/>
+      <output filename="remoting/resources/_locales/pt/messages.json" lang="pt-BR" type="chrome_messages_json"/>
     </if>
     <if expr="not is_ios">
-      <output filename="remoting/webapp/_locales/pt_BR/messages.json" lang="pt-BR" type="chrome_messages_json"/>
+      <output filename="remoting/resources/_locales/pt_BR/messages.json" lang="pt-BR" type="chrome_messages_json"/>
     </if>
-    <output filename="remoting/webapp/_locales/pt_PT/messages.json" lang="pt-PT" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/ro/messages.json" lang="ro" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/ru/messages.json" lang="ru" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/sk/messages.json" lang="sk" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/sl/messages.json" lang="sl" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/sr/messages.json" lang="sr" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/sv/messages.json" lang="sv" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/sw/messages.json" lang="sw" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/ta/messages.json" lang="ta" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/te/messages.json" lang="te" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/th/messages.json" lang="th" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/tr/messages.json" lang="tr" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/uk/messages.json" lang="uk" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/vi/messages.json" lang="vi" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/zh_CN/messages.json" lang="zh-CN" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/zh_TW/messages.json" lang="zh-TW" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/pt_PT/messages.json" lang="pt-PT" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/ro/messages.json" lang="ro" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/ru/messages.json" lang="ru" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/sk/messages.json" lang="sk" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/sl/messages.json" lang="sl" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/sr/messages.json" lang="sr" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/sv/messages.json" lang="sv" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/sw/messages.json" lang="sw" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/ta/messages.json" lang="ta" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/te/messages.json" lang="te" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/th/messages.json" lang="th" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/tr/messages.json" lang="tr" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/uk/messages.json" lang="uk" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/vi/messages.json" lang="vi" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/zh_CN/messages.json" lang="zh-CN" type="chrome_messages_json"/>
+    <output filename="remoting/resources/_locales/zh_TW/messages.json" lang="zh-TW" type="chrome_messages_json"/>
 
     <if expr="is_android">
       <output filename="remoting/android/res/values-am/remoting_strings.xml" lang="am" type="android" context="android_java"/>

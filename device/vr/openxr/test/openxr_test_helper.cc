@@ -187,7 +187,6 @@ XrInstance OpenXrTestHelper::CreateInstance() {
 
 XrResult OpenXrTestHelper::GetActionStateFloat(XrAction action,
                                                XrActionStateFloat* data) const {
-  XrResult xr_result;
 
   RETURN_IF_XR_FAILED(ValidateAction(action));
   const ActionProperties& cur_action_properties = actions_.at(action);
@@ -202,7 +201,6 @@ XrResult OpenXrTestHelper::GetActionStateFloat(XrAction action,
 XrResult OpenXrTestHelper::GetActionStateBoolean(
     XrAction action,
     XrActionStateBoolean* data) const {
-  XrResult xr_result;
 
   RETURN_IF_XR_FAILED(ValidateAction(action));
   const ActionProperties& cur_action_properties = actions_.at(action);
@@ -218,7 +216,6 @@ XrResult OpenXrTestHelper::GetActionStateBoolean(
 XrResult OpenXrTestHelper::GetActionStateVector2f(
     XrAction action,
     XrActionStateVector2f* data) const {
-  XrResult xr_result;
 
   RETURN_IF_XR_FAILED(ValidateAction(action));
   const ActionProperties& cur_action_properties = actions_.at(action);
@@ -233,7 +230,6 @@ XrResult OpenXrTestHelper::GetActionStateVector2f(
 
 XrResult OpenXrTestHelper::GetActionStatePose(XrAction action,
                                               XrActionStatePose* data) const {
-  XrResult xr_result;
 
   RETURN_IF_XR_FAILED(ValidateAction(action));
   const ActionProperties& cur_action_properties = actions_.at(action);
@@ -267,8 +263,6 @@ XrSpace OpenXrTestHelper::CreateReferenceSpace(XrReferenceSpaceType type) {
 XrResult OpenXrTestHelper::CreateAction(XrActionSet action_set,
                                         const XrActionCreateInfo& create_info,
                                         XrAction* action) {
-  XrResult xr_result;
-
   RETURN_IF_XR_FAILED(ValidateActionSet(action_set));
   RETURN_IF_XR_FAILED(ValidateActionSetNotAttached(action_set));
   RETURN_IF_XR_FAILED(ValidateActionCreateInfo(create_info));
@@ -324,7 +318,6 @@ XrActionSet OpenXrTestHelper::CreateActionSet(
 XrResult OpenXrTestHelper::CreateActionSpace(
     const XrActionSpaceCreateInfo& action_space_create_info,
     XrSpace* space) {
-  XrResult xr_result;
   RETURN_IF_XR_FAILED(ValidateActionSpaceCreateInfo(action_space_create_info));
   *space = TreatIntegerAsHandle<XrSpace>(++next_space_);
   action_spaces_[*space] = action_space_create_info.action;
@@ -428,8 +421,6 @@ void OpenXrTestHelper::SetD3DDevice(ID3D11Device* d3d_device) {
 
 XrResult OpenXrTestHelper::AttachActionSets(
     const XrSessionActionSetsAttachInfo& attach_info) {
-  XrResult xr_result;
-
   RETURN_IF(attach_info.type != XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO,
             XR_ERROR_VALIDATION_FAILURE,
             "XrSessionActionSetsAttachInfo type invalid");
@@ -453,7 +444,6 @@ uint32_t OpenXrTestHelper::AttachedActionSetsSize() const {
 }
 
 XrResult OpenXrTestHelper::SyncActionData(XrActionSet action_set) {
-  XrResult xr_result;
 
   RETURN_IF_XR_FAILED(ValidateActionSet(action_set));
   RETURN_IF(ValidateActionSetNotAttached(action_set) !=
@@ -468,7 +458,6 @@ XrResult OpenXrTestHelper::SyncActionData(XrActionSet action_set) {
 }
 
 XrResult OpenXrTestHelper::UpdateAction(XrAction action) {
-  XrResult xr_result;
   RETURN_IF_XR_FAILED(ValidateAction(action));
   const ActionProperties& cur_action_properties = actions_[action];
   std::string path_string = PathToString(cur_action_properties.binding);
@@ -814,7 +803,6 @@ XrResult OpenXrTestHelper::ValidateActionSetNotAttached(
 
 XrResult OpenXrTestHelper::ValidateActionSpaceCreateInfo(
     const XrActionSpaceCreateInfo& create_info) const {
-  XrResult xr_result;
   RETURN_IF(create_info.type != XR_TYPE_ACTION_SPACE_CREATE_INFO,
             XR_ERROR_VALIDATION_FAILURE,
             "ValidateActionSpaceCreateInfo type invalid");
@@ -895,8 +883,6 @@ XrResult OpenXrTestHelper::ValidatePredictedDisplayTime(XrTime time) const {
 
 XrResult OpenXrTestHelper::ValidateXrCompositionLayerProjection(
     const XrCompositionLayerProjection& projection_layer) const {
-  XrResult xr_result;
-
   RETURN_IF(projection_layer.type != XR_TYPE_COMPOSITION_LAYER_PROJECTION,
             XR_ERROR_LAYER_INVALID,
             "XrCompositionLayerProjection type invalid");

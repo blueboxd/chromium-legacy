@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/containers/span.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/stl_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -18,11 +19,22 @@ using testing::ElementsAre;
 
 namespace base {
 
+namespace {
+
+void ConvertToByteSpanAndCheckSize(span<const uint8_t> data,
+                                   size_t expected_size) {
+  EXPECT_EQ(expected_size, data.size());
+}
+
+}  // namespace
+
 TEST(RefCountedMemoryUnitTest, RefCountedStaticMemory) {
   auto mem = MakeRefCounted<RefCountedStaticMemory>("static mem00", 10);
 
   EXPECT_EQ(10U, mem->size());
   EXPECT_EQ("static mem", std::string(mem->front_as<char>(), mem->size()));
+
+  ConvertToByteSpanAndCheckSize(*mem, 10);
 }
 
 TEST(RefCountedMemoryUnitTest, RefCountedBytes) {
@@ -40,16 +52,18 @@ TEST(RefCountedMemoryUnitTest, RefCountedBytes) {
   scoped_refptr<RefCountedMemory> mem2;
   {
     const unsigned char kData[] = {12, 11, 99};
-    mem2 = MakeRefCounted<RefCountedBytes>(kData, base::size(kData));
+    mem2 = MakeRefCounted<RefCountedBytes>(kData, size(kData));
   }
   ASSERT_EQ(3U, mem2->size());
   EXPECT_EQ(12U, mem2->front()[0]);
   EXPECT_EQ(11U, mem2->front()[1]);
   EXPECT_EQ(99U, mem2->front()[2]);
+
+  ConvertToByteSpanAndCheckSize(*mem2, 3);
 }
 
 TEST(RefCountedMemoryUnitTest, RefCountedBytesMutable) {
-  auto mem = base::MakeRefCounted<RefCountedBytes>(10);
+  auto mem = MakeRefCounted<RefCountedBytes>(10);
 
   ASSERT_EQ(10U, mem->size());
   EXPECT_THAT(mem->data(), Each(0U));
@@ -72,6 +86,8 @@ TEST(RefCountedMemoryUnitTest, RefCountedString) {
   EXPECT_EQ('d', mem->front()[0]);
   EXPECT_EQ('e', mem->front()[1]);
   EXPECT_EQ('e', mem->front()[9]);
+
+  ConvertToByteSpanAndCheckSize(*mem, 10);
 }
 
 TEST(RefCountedMemoryUnitTest, Equals) {

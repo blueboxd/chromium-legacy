@@ -2653,11 +2653,11 @@ TEST_F(WindowOcclusionTrackerTest,
        SetOpaqueRegionsForOcclusionAffectsOcclusionOfOtherWindows) {
   MockWindowDelegate* delegate_a = new MockWindowDelegate();
   delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
-  CreateTrackedWindow(delegate_a, gfx::Rect(0, 0, 10, 10));
+  CreateTrackedWindow(delegate_a, gfx::Rect(10, 10, 10, 10));
   EXPECT_FALSE(delegate_a->is_expecting_call());
 
   delegate_a->set_expectation(Window::OcclusionState::OCCLUDED, SkRegion());
-  Window* window_b = CreateUntrackedWindow(gfx::Rect(0, 0, 10, 10));
+  Window* window_b = CreateUntrackedWindow(gfx::Rect(10, 10, 10, 10));
   EXPECT_FALSE(delegate_a->is_expecting_call());
 
   // Make |window_b| transparent, which should make it no longer affect

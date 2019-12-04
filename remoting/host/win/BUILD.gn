@@ -252,7 +252,7 @@ remoting_localize("messages_localizing") {
     "host_messages.mc.jinja2",
   ]
   locales = remoting_locales
-  locale_dir = webapp_locale_dir
+  locale_dir = resources_locale_dir
   encoding = "utf-16"
 
   # This target is funny. It only produces one file and the output doesn't
@@ -513,7 +513,7 @@ remoting_localize("remoting_windows_resources") {
 
   output = "$root_gen_dir/remoting/{{source_name_part}}"
 
-  locale_dir = webapp_locale_dir
+  locale_dir = resources_locale_dir
 
   encoding = "utf-16"
 

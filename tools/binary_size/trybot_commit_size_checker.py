@@ -17,10 +17,10 @@ import archive
 import diagnose_bloat
 import diff
 import describe
-import html_report
+import file_format
 import models
 
-_NDJSON_FILENAME = 'supersize_diff.ndjson'
+_SIZEDIFF_FILENAME = 'supersize_diff.sizediff'
 _TEXT_FILENAME = 'supersize_diff.txt'
 _HTML_REPORT_BASE_URL = (
     'https://storage.googleapis.com/chrome-supersize/viewer.html?load_url=')
@@ -201,10 +201,10 @@ def main():
       _CreateResourceSizesDelta(args.apk_name, args.before_dir, args.after_dir))
   size_deltas.add(resource_sizes_delta)
 
-  # .ndjson can be consumed by the html viewer.
+  # .sizediff can be consumed by the html viewer.
   logging.info('Creating HTML Report')
-  ndjson_path = os.path.join(args.staging_dir, _NDJSON_FILENAME)
-  html_report.BuildReportFromSizeInfo(ndjson_path, delta_size_info)
+  sizediff_path = os.path.join(args.staging_dir, _SIZEDIFF_FILENAME)
+  file_format.SaveDeltaSizeInfo(delta_size_info, sizediff_path)
 
   passing_deltas = set(m for m in size_deltas if m.IsAllowable())
   failing_deltas = size_deltas - passing_deltas
@@ -256,7 +256,7 @@ https://chromium.googlesource.com/chromium/src/+/master/docs/speed/binary_size/a
       },
       {
           'name': '>>> SuperSize HTML Diff <<<',
-          'url': _HTML_REPORT_BASE_URL + '{{' + _NDJSON_FILENAME + '}}',
+          'url': _HTML_REPORT_BASE_URL + '{{' + _SIZEDIFF_FILENAME + '}}',
       },
   ]
   # Remove empty diffs (Mutable Constants, Dex Method, ...).
@@ -277,7 +277,7 @@ https://chromium.googlesource.com/chromium/src/+/master/docs/speed/binary_size/a
   binary_size_extras = [
       {
           'text': 'SuperSize HTML Diff',
-          'url': _HTML_REPORT_BASE_URL + '{{' + _NDJSON_FILENAME + '}}',
+          'url': _HTML_REPORT_BASE_URL + '{{' + _SIZEDIFF_FILENAME + '}}',
       },
       {
           'text': 'SuperSize Text Diff',
@@ -293,7 +293,7 @@ https://chromium.googlesource.com/chromium/src/+/master/docs/speed/binary_size/a
   results_json = {
       'status_code': status_code,
       'summary': summary,
-      'archive_filenames': [_NDJSON_FILENAME, _TEXT_FILENAME],
+      'archive_filenames': [_SIZEDIFF_FILENAME, _TEXT_FILENAME],
       'links': links_json,
       'gerrit_plugin_details': binary_size_plugin_json,
   }

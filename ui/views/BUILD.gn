@@ -12,6 +12,8 @@ import("//ui/base/ui_features.gni")
 import("//ui/ozone/ozone.gni")
 import("//ui/views/features.gni")
 
+assert(toolkit_views)
+
 # Reset sources_assignment_filter for the BUILD.gn file to prevent
 # regression during the migration of Chromium away from the feature.
 # See build/no_sources_assignment_filter.md for more information.

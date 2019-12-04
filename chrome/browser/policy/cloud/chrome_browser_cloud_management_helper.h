@@ -82,6 +82,10 @@ class MachineLevelUserCloudPolicyFetcher : public CloudPolicyService::Observer {
   void AddClientObserver(CloudPolicyClient::Observer* observer);
   void RemoveClientObserver(CloudPolicyClient::Observer* observer);
 
+  // Shuts down |policy_manager_| (removes and stops refreshing the cached cloud
+  // policy).
+  void Disconnect();
+
   // CloudPolicyService::Observer:
   void OnCloudPolicyServiceInitializationCompleted() override;
 

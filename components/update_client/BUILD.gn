@@ -194,6 +194,18 @@ bundle_data("unit_tests_bundle_data") {
   ]
 }
 
+bundle_data("recovery_component_tests_bundle_data") {
+  visibility = [ "//chrome/test:unit_tests" ]
+  testonly = true
+  sources = [
+    "//components/test/data/update_client/ChromeRecovery.crx3",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/" +
+        "{{source_root_relative_dir}}/{{source_file_part}}",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [

@@ -95,6 +95,13 @@ openssl req \
   -reqexts req_localhost_san \
   -config ee.cnf
 
+openssl req \
+  -new \
+  -keyout out/test_names.key \
+  -out out/test_names.req \
+  -reqexts req_test_names \
+  -config ee.cnf
+
 # Generate the leaf certificates
 CA_NAME="req_ca_dn" \
   openssl ca \
@@ -175,6 +182,15 @@ CA_NAME="req_ca_dn" \
     -out out/bad_validity.pem \
     -config ca.cnf
 
+CA_NAME="req_ca_dn" \
+  openssl ca \
+    -batch \
+    -extensions user_cert \
+    -days 3650 \
+    -in out/test_names.req \
+    -out out/test_names.pem \
+    -config ca.cnf
+
 /bin/sh -c "cat out/ok_cert.key out/ok_cert.pem \
     > ../certificates/ok_cert.pem"
 /bin/sh -c "cat out/wildcard.key out/wildcard.pem \
@@ -199,6 +215,8 @@ CA_NAME="req_ca_dn" \
 /bin/sh -c "cat out/int/ok_cert.pem out/int/2048-sha256-int.pem \
     out/2048-sha256-root.pem \
     > ../certificates/x509_verify_results.chain.pem"
+/bin/sh -c "cat out/test_names.key out/test_names.pem \
+    > ../certificates/test_names.pem"
 
 # Now generate the one-off certs
 ## Self-signed cert for SPDY/QUIC/HTTP2 pooling testing

@@ -81,16 +81,13 @@ public class AssistantOverlayCoordinator {
                         model.get(AssistantOverlayModel.TAP_TRACKING_DURATION_MS));
             } else if (AssistantOverlayModel.OVERLAY_IMAGE == propertyKey) {
                 AssistantOverlayImage image = model.get(AssistantOverlayModel.OVERLAY_IMAGE);
-                if (image != null && !TextUtils.isEmpty(image.mImageUrl)
-                        && image.mImageSize != null) {
+                if (image != null && !TextUtils.isEmpty(image.mImageUrl)) {
                     DisplayMetrics displayMetrics = mActivity.getResources().getDisplayMetrics();
                     // TODO(b/143517837) Merge autofill assistant image fetcher UMA names.
                     mImageFetcher.fetchImage(image.mImageUrl,
                             ImageFetcher.ASSISTANT_DETAILS_UMA_CLIENT_NAME, result -> {
-                                int imageSizePixels =
-                                        image.mImageSize.getSizeInPixels(displayMetrics);
-                                image.mImageBitmap = Bitmap.createScaledBitmap(
-                                        result, imageSizePixels, imageSizePixels, true);
+                                image.mImageBitmap = Bitmap.createScaledBitmap(result,
+                                        image.mImageSizeInPixels, image.mImageSizeInPixels, true);
                                 mDrawable.setFullOverlayImage(image);
                             });
                 } else {

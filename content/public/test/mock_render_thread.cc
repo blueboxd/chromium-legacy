@@ -347,8 +347,8 @@ void MockRenderThread::OnCreateWindow(
       mojom::DocumentScopedInterfaceBundle::New();
   frame_routing_id_to_initial_interface_provider_receivers_.emplace(
       reply->main_frame_route_id,
-      mojo::MakeRequest(
-          &reply->main_frame_interface_bundle->interface_provider));
+      reply->main_frame_interface_bundle->interface_provider
+          .InitWithNewPipeAndPassReceiver());
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker;
   frame_routing_id_to_initial_browser_broker_receivers_.emplace(

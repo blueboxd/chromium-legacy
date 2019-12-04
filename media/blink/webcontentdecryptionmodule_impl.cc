@@ -94,8 +94,8 @@ void WebContentDecryptionModuleImpl::Create(
     return;
   }
 
-  // If unique security origin, don't try to create the CDM.
-  if (security_origin.IsUnique() || security_origin.ToString() == "null") {
+  // If opaque security origin, don't try to create the CDM.
+  if (security_origin.IsOpaque() || security_origin.ToString() == "null") {
     std::move(web_cdm_created_cb)
         .Run(nullptr, "EME use is not allowed on unique origins.");
     return;

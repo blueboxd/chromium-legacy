@@ -7,7 +7,9 @@
 
 #include <memory>
 
+#include "base/optional.h"
 #include "base/scoped_observer.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui.h"
 #include "chrome/common/buildflags.h"
@@ -106,6 +108,10 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
   views::View* tab_counter_ = nullptr;
 
   int desired_height_ = 0;
+
+  // When opened, if currently open. Used to calculate metric for how
+  // long the tab strip is kept open.
+  base::Optional<base::TimeTicks> time_at_open_;
 
   gfx::SlideAnimation animation_{this};
 

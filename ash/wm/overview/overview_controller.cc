@@ -216,7 +216,7 @@ void OverviewController::OnOverviewButtonTrayLongPressed(
       return;
 
     // Show a toast if the window cannot be snapped.
-    if (!CanSnapInSplitview(active_window)) {
+    if (!split_view_controller->CanSnapWindow(active_window)) {
       ShowAppCannotSnapToast();
       return;
     }
@@ -244,8 +244,10 @@ void OverviewController::OnOverviewButtonTrayLongPressed(
 
   // Do nothing if no item was retrieved, or if the retrieved item is
   // unsnappable.
-  if (!item_to_snap || !CanSnapInSplitview(item_to_snap->GetWindow()))
+  if (!item_to_snap ||
+      !split_view_controller->CanSnapWindow(item_to_snap->GetWindow())) {
     return;
+  }
 
   split_view_controller->SnapWindow(item_to_snap->GetWindow(),
                                     SplitViewController::LEFT);

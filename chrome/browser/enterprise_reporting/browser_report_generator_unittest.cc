@@ -21,6 +21,10 @@
 #include "device_management_backend.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/common/chrome_constants.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace em = enterprise_management;
 
 namespace enterprise_reporting {
@@ -45,8 +49,6 @@ class BrowserReportGeneratorTest : public ::testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(profile_manager_.SetUp());
-    profile_manager_.CreateGuestProfile();
-    profile_manager_.CreateSystemProfile();
     content::PluginService::GetInstance()->Init();
   }
 
@@ -55,6 +57,16 @@ class BrowserReportGeneratorTest : public ::testing::Test {
         profile_manager()->profiles_dir().AppendASCII(kProfileId),
         base::ASCIIToUTF16(kProfileName), std::string(), base::string16(),
         false, 0, std::string(), EmptyAccountId());
+  }
+
+  void InitializeIrregularProfiles() {
+    profile_manager_.CreateGuestProfile();
+    profile_manager_.CreateSystemProfile();
+
+#if defined(OS_CHROMEOS)
+    profile_manager_.CreateTestingProfile(chrome::kInitialProfile);
+    profile_manager_.CreateTestingProfile(chrome::kLockScreenAppProfile);
+#endif  // defined(OS_CHROMEOS)
   }
 
   void InitializePlugin() {
@@ -112,6 +124,7 @@ class BrowserReportGeneratorTest : public ::testing::Test {
 
 TEST_F(BrowserReportGeneratorTest, GenerateBasicReport) {
   InitializeProfile();
+  InitializeIrregularProfiles();
   InitializePlugin();
   GenerateAndVerify();
 }

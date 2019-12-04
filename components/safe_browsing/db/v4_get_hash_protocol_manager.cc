@@ -617,8 +617,7 @@ void V4GetHashProtocolManager::ParseMetadata(const ThreatMatch& match,
                                              ThreatMetadata* metadata) {
   // Different threat types will handle the metadata differently.
   if (match.threat_type() == API_ABUSE) {
-    if (!match.has_platform_type() ||
-        match.platform_type() != CHROME_PLATFORM) {
+    if (!match.has_platform_type()) {
       RecordParseGetHashResult(UNEXPECTED_PLATFORM_TYPE_ERROR);
       return;
     }

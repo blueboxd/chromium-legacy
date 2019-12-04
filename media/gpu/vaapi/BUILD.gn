@@ -10,6 +10,7 @@ import("//tools/generate_stubs/rules.gni")
 import("//ui/gl/features.gni")
 import("//ui/ozone/ozone.gni")
 
+assert(is_linux)
 assert(use_vaapi)
 
 generate_stubs("libva_stubs") {

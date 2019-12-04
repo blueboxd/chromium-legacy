@@ -166,7 +166,7 @@ TEST_F(ScreenUtilTest, ShelfDisplayBoundsInUnifiedDesktopGrid) {
   EXPECT_EQ(gfx::Size(766, 1254), screen->GetPrimaryDisplay().size());
 
   Shelf* shelf = Shell::GetPrimaryRootWindowController()->shelf();
-  EXPECT_EQ(shelf->alignment(), SHELF_ALIGNMENT_BOTTOM);
+  EXPECT_EQ(shelf->alignment(), ShelfAlignment::kBottom);
 
   // Regardless of where the window is, the shelf with a bottom alignment is
   // always in the bottom left display in the matrix.
@@ -180,20 +180,20 @@ TEST_F(ScreenUtilTest, ShelfDisplayBoundsInUnifiedDesktopGrid) {
 
   // Change the shelf alignment to left, and expect that it now resides in the
   // top left display in the matrix.
-  shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  shelf->SetAlignment(ShelfAlignment::kLeft);
   EXPECT_EQ(gfx::Rect(0, 0, 499, 400),
             screen_util::GetDisplayBoundsWithShelf(window));
 
   // Change the shelf alignment to right, and expect that it now resides in the
   // top right display in the matrix.
-  shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
+  shelf->SetAlignment(ShelfAlignment::kRight);
   EXPECT_EQ(gfx::Rect(499, 0, 267, 400),
             screen_util::GetDisplayBoundsWithShelf(window));
 
   // Change alignment back to bottom and change the unified display zoom factor.
   // Expect that the display with shelf bounds will take into account the zoom
   // factor.
-  shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+  shelf->SetAlignment(ShelfAlignment::kBottom);
   display_manager()->UpdateZoomFactor(display::kUnifiedDisplayId, 3.f);
   const display::Display unified_display =
       display_manager()->GetDisplayForId(display::kUnifiedDisplayId);

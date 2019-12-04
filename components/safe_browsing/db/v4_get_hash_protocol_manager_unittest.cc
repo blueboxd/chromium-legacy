@@ -15,6 +15,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/safe_browsing/db/safebrowsing.pb.h"
 #include "components/safe_browsing/db/util.h"
 #include "components/safe_browsing/db/v4_test_util.h"
@@ -364,8 +365,18 @@ TEST_F(V4GetHashProtocolManagerTest,
 TEST_F(V4GetHashProtocolManagerTest, TestGetHashRequest) {
   FindFullHashesRequest req;
   ThreatInfo* info = req.mutable_threat_info();
-  for (const PlatformType& p :
-       std::set<PlatformType>{GetCurrentPlatformType(), CHROME_PLATFORM}) {
+
+  const std::set<PlatformType> platform_types = {
+    GetCurrentPlatformType(),
+    CHROME_PLATFORM,
+  // TODO(crbug.com/1030487): This special case for Android will no longer be
+  // needed once GetCurrentPlatformType() returns ANDROID_PLATFORM on Android.
+#if defined(OS_ANDROID)
+    ANDROID_PLATFORM,
+#endif
+  };
+
+  for (const PlatformType& p : platform_types) {
     info->add_platform_types(p);
   }
 
@@ -412,7 +423,13 @@ TEST_F(V4GetHashProtocolManagerTest, TestParseHashResponse) {
   res.mutable_minimum_wait_duration()->set_seconds(400);
   ThreatMatch* m = res.add_matches();
   m->set_threat_type(API_ABUSE);
-  m->set_platform_type(CHROME_PLATFORM);
+  // TODO(crbug.com/1030487): This special case for Android will no longer be
+  // needed once GetCurrentPlatformType() returns ANDROID_PLATFORM on Android.
+#if defined(OS_ANDROID)
+  m->set_platform_type(ANDROID_PLATFORM);
+#else
+  m->set_platform_type(GetCurrentPlatformType());
+#endif
   m->set_threat_entry_type(URL);
   m->mutable_cache_duration()->set_seconds(300);
   m->mutable_threat()->set_hash(full_hash);
@@ -670,7 +687,13 @@ TEST_F(V4GetHashProtocolManagerTest,
   res.mutable_negative_cache_duration()->set_seconds(600);
   ThreatMatch* m = res.add_matches();
   m->set_threat_type(API_ABUSE);
-  m->set_platform_type(CHROME_PLATFORM);
+  // TODO(crbug.com/1030487): This special case for Android will no longer be
+  // needed once GetCurrentPlatformType() returns ANDROID_PLATFORM on Android.
+#if defined(OS_ANDROID)
+  m->set_platform_type(ANDROID_PLATFORM);
+#else
+  m->set_platform_type(GetCurrentPlatformType());
+#endif
   m->set_threat_entry_type(URL);
   m->mutable_threat()->set_hash(full_hash);
   ThreatEntryMetadata::MetadataEntry* e =

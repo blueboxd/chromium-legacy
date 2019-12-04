@@ -347,7 +347,6 @@ jumbo_component("headless_non_renderer") {
     "lib/browser/headless_window_tree_host.h",
     "lib/browser/protocol/browser_handler.cc",
     "lib/browser/protocol/browser_handler.h",
-    "lib/browser/protocol/domain_handler.cc",
     "lib/browser/protocol/domain_handler.h",
     "lib/browser/protocol/headless_devtools_session.cc",
     "lib/browser/protocol/headless_devtools_session.h",

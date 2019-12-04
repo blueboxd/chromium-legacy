@@ -157,7 +157,8 @@ bool BrowserAccessibilityPosition::IsInLineBreakingObject() const {
     return false;
   DCHECK(GetAnchor());
   return GetAnchor()->GetBoolAttribute(
-      ax::mojom::BoolAttribute::kIsLineBreakingObject);
+             ax::mojom::BoolAttribute::kIsLineBreakingObject) &&
+         !GetAnchor()->IsInListMarker();
 }
 
 ax::mojom::Role BrowserAccessibilityPosition::GetRole() const {

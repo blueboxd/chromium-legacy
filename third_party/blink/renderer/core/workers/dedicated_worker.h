@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_dedicated_worker.h"
 #include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
@@ -135,7 +136,8 @@ class CORE_EXPORT DedicatedWorker final
   // Used for tracking cross-debugger calls.
   v8_inspector::V8StackTraceId v8_stack_trace_id_;
 
-  service_manager::mojom::blink::InterfaceProviderPtrInfo interface_provider_;
+  mojo::PendingRemote<service_manager::mojom::blink::InterfaceProvider>
+      interface_provider_;
 
   mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>
       browser_interface_broker_;

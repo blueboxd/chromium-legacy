@@ -154,10 +154,6 @@ class CC_EXPORT LayerTreeSettings {
   // the device scale factor.
   bool use_painted_device_scale_factor = false;
 
-  // Whether a HitTestRegionList should be built from the active layer tree when
-  // submitting a CompositorFrame.
-  bool build_hit_test_data = false;
-
   // When false, sync tokens are expected to be present, and are verified,
   // before transfering gpu resources to the display compositor.
   bool delegated_sync_points_required = true;

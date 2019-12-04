@@ -197,8 +197,8 @@ enum ColorFilter {
 };
 
 enum WindRule {
-  RULE_NONZERO = SkPath::kWinding_FillType,
-  RULE_EVENODD = SkPath::kEvenOdd_FillType
+  RULE_NONZERO = static_cast<int>(SkPathFillType::kWinding),
+  RULE_EVENODD = static_cast<int>(SkPathFillType::kEvenOdd)
 };
 
 PLATFORM_EXPORT String CompositeOperatorName(CompositeOperator, BlendMode);

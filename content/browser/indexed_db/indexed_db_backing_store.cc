@@ -58,6 +58,7 @@
 #include "storage/browser/file_system/local_file_stream_writer.h"
 #include "storage/common/database/database_identifier.h"
 #include "storage/common/file_system/file_system_mount_option.h"
+#include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_range.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/leveldatabase/env_chromium.h"
@@ -1572,7 +1573,7 @@ class LocalWriteClosure : public base::RefCountedThreadSafe<LocalWriteClosure> {
       scoped_refptr<ChainedBlobWriter> chained_blob_writer,
       scoped_refptr<base::SequencedTaskRunner> idb_task_runner,
       const FilePath& file_path,
-      std::unique_ptr<storage::BlobDataHandle> blob,
+      mojo::SharedRemote<blink::mojom::Blob> blob,
       const base::Time& last_modified) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     std::unique_ptr<storage::FileStreamWriter> writer =
@@ -1584,10 +1585,27 @@ class LocalWriteClosure : public base::RefCountedThreadSafe<LocalWriteClosure> {
             std::move(writer), chained_blob_writer->GetFlushPolicy()));
 
     DCHECK(blob);
+    MojoCreateDataPipeOptions options;
+    options.struct_size = sizeof(MojoCreateDataPipeOptions);
+    options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
+    options.element_num_bytes = 1;
+    options.capacity_num_bytes =
+        blink::BlobUtils::GetDataPipeCapacity(blink::BlobUtils::kUnknownSize);
+
+    mojo::ScopedDataPipeProducerHandle producer_handle;
+    mojo::ScopedDataPipeConsumerHandle consumer_handle;
+    MojoResult rv =
+        mojo::CreateDataPipe(&options, &producer_handle, &consumer_handle);
+    if (rv != MOJO_RESULT_OK) {
+      chained_blob_writer->ReportWriteCompletion(false, 0u);
+      return;
+    }
+
+    blob->ReadAll(std::move(producer_handle), mojo::NullRemote());
     scoped_refptr<LocalWriteClosure> write_closure(new LocalWriteClosure(
         chained_blob_writer, idb_task_runner, file_path, last_modified));
     delegate->Start(
-        blob->CreateReader(),
+        std::move(consumer_handle),
         base::BindRepeating(&LocalWriteClosure::Run, std::move(write_closure)));
     chained_blob_writer->set_delegate(std::move(delegate));
   }
@@ -1656,11 +1674,9 @@ bool IndexedDBBackingStore::WriteBlobFile(
     DCHECK(descriptor.blob());
     base::PostTask(
         FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(
-            &LocalWriteClosure::WriteBlobToFileOnIOThread,
-            base::WrapRefCounted(chained_blob_writer), task_runner_, path,
-            std::make_unique<storage::BlobDataHandle>(*descriptor.blob()),
-            descriptor.last_modified()));
+        base::BindOnce(&LocalWriteClosure::WriteBlobToFileOnIOThread,
+                       base::WrapRefCounted(chained_blob_writer), task_runner_,
+                       path, descriptor.blob(), descriptor.last_modified()));
   }
   return true;
 }
@@ -3016,9 +3032,8 @@ Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction(
             WriteDescriptor(entry.file_path(), next_blob_key, entry.size(),
                             entry.last_modified()));
       } else {
-        // TODO(enne): convert this to use mojo interfaces instead of handle.
         new_files_to_write->push_back(
-            WriteDescriptor(entry.blob_handle(), next_blob_key, entry.size(),
+            WriteDescriptor(entry.remote(), next_blob_key, entry.size(),
                             entry.last_modified()));
       }
       entry.set_key(next_blob_key);

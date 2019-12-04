@@ -15,8 +15,6 @@
 
 namespace cc {
 
-class LayerTreeImpl;
-
 // ScrollState is based on the proposal for scroll customization in blink, found
 // here: https://goo.gl/1ipTpP.
 class CC_EXPORT ScrollState {
@@ -60,10 +58,6 @@ class CC_EXPORT ScrollState {
     data_.is_direct_manipulation = is_direct_manipulation;
   }
 
-  void set_layer_tree(LayerTreeImpl* layer_tree_impl) {
-    layer_tree_impl_ = layer_tree_impl;
-  }
-
   void set_current_native_scrolling_node(ScrollNode* scroll_node) {
     data_.set_current_native_scrolling_node(scroll_node);
   }
@@ -93,12 +87,10 @@ class CC_EXPORT ScrollState {
 
   double delta_granularity() const { return data_.delta_granularity; }
 
-  LayerTreeImpl* layer_tree_impl() { return layer_tree_impl_; }
   ScrollStateData* data() { return &data_; }
 
  private:
   ScrollStateData data_;
-  LayerTreeImpl* layer_tree_impl_;
 };
 
 }  // namespace cc

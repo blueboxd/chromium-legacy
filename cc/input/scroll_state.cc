@@ -6,13 +6,11 @@
 
 #include <utility>
 
-#include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/scroll_node.h"
 
 namespace cc {
 
-ScrollState::ScrollState(ScrollStateData data)
-    : data_(data), layer_tree_impl_(nullptr) {}
+ScrollState::ScrollState(ScrollStateData data) : data_(data) {}
 
 ScrollState::ScrollState(const ScrollState& other) = default;
 

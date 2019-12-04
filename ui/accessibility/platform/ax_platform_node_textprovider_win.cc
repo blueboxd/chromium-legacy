@@ -64,7 +64,6 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::GetSelection(
   *selection = nullptr;
 
   AXPlatformNodeDelegate* delegate = owner()->GetDelegate();
-
   ui::AXTree::Selection unignored_selection = delegate->GetUnignoredSelection();
 
   AXPlatformNode* anchor_object =
@@ -72,44 +71,35 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::GetSelection(
   AXPlatformNode* focus_object =
       delegate->GetFromNodeID(unignored_selection.focus_object_id);
 
-  // If there's no selected object (or the selected object is not in the
-  // subtree), return success and don't fill the SAFEARRAY
-  //
-  // Note that if a selection spans multiple elements, this will report
-  // that no selection took place. This is expected for this API, rather
-  // than returning the subset of the selection within this node, because
-  // subsequently expanding the ITextRange wouldn't  expand to the full
-  // selection.
-  if (!anchor_object || !focus_object || (anchor_object != focus_object) ||
-      (!anchor_object->IsDescendantOf(owner())))
-    return S_OK;
-
   // anchor_offset corresponds to the selection start index
   // and focus_offset is where the selection ends.
-  // If they are equal, that indicates a caret on editable text,
-  // which should return a degenerate (empty) text range.
   auto start_offset = unignored_selection.anchor_offset;
   auto end_offset = unignored_selection.focus_offset;
 
-  // Reverse start and end if the selection goes backwards
-  if (start_offset > end_offset)
-    std::swap(start_offset, end_offset);
+  // If there's no selected object, or if the selected object is on a single
+  // node that's not editable, return success and don't fill the SAFEARRAY.
+  //
+  // According to UIA's documentation, we should only fill the SAFEARRAY with a
+  // degenerate range if the degenerate range is on an editable node. Otherwise,
+  // the expectations are that the SAFEARRAY is set to nullptr. Here, we are
+  // explicitly not allocating an empty SAFEARRAY.
+  if (!anchor_object || !focus_object ||
+      (anchor_object == focus_object && start_offset == end_offset &&
+       !anchor_object->GetDelegate()->HasVisibleCaretOrSelection())) {
+    return S_OK;
+  }
 
   AXNodePosition::AXPositionInstance start =
       anchor_object->GetDelegate()->CreateTextPositionAt(start_offset);
   AXNodePosition::AXPositionInstance end =
-      anchor_object->GetDelegate()->CreateTextPositionAt(end_offset);
+      focus_object->GetDelegate()->CreateTextPositionAt(end_offset);
 
   DCHECK(!start->IsNullPosition());
   DCHECK(!end->IsNullPosition());
 
-  // At this point, if there is no selection, the start and end endpoints will
-  // create a degenerate range. According to UIA's documentation, we should only
-  // fill the SAFEARRAY with a degenerate range if the degenerate range is on an
-  // editable node. Otherwise, the expectations are that the SAFEARRAY is set to
-  // nullptr. Here, we are explicitly not allocating an empty SAFEARRAY.
-  if (!anchor_object->GetDelegate()->HasVisibleCaretOrSelection())
-    return S_OK;
+  // Reverse start and end if the selection goes backwards
+  if (*start > *end)
+    std::swap(start, end);
 
   Microsoft::WRL::ComPtr<ITextRangeProvider> text_range_provider =
       AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(

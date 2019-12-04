@@ -212,8 +212,6 @@ class GPU_GLES2_EXPORT SharedImageRepresentationGLTexturePassthrough
   GetTexturePassthrough() = 0;
 
  protected:
-  friend class SharedImageRepresentationSkiaGL;
-
   // TODO(ericrk): Make these pure virtual and ensure real implementations
   // exist.
   virtual bool BeginAccess(GLenum mode);

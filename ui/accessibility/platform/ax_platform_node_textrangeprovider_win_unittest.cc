@@ -3928,10 +3928,20 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderSelect) {
     EXPECT_EQ(0, unignored_selection.anchor_offset);
     EXPECT_EQ(10, unignored_selection.focus_offset);
 
-    // When selection spans multiple nodes ITextProvider::GetSelection is not
-    // supported. But the text range is still selected.
+    // Verify the content of the selection.
     document_provider->GetSelection(selection.Receive());
-    ASSERT_EQ(nullptr, selection.Get());
+    ASSERT_NE(nullptr, selection.Get());
+
+    document_provider->GetSelection(selection.Receive());
+    EXPECT_HRESULT_SUCCEEDED(SafeArrayGetUBound(selection.Get(), 1, &ubound));
+    EXPECT_EQ(0, ubound);
+    EXPECT_HRESULT_SUCCEEDED(SafeArrayGetLBound(selection.Get(), 1, &lbound));
+    EXPECT_EQ(0, lbound);
+    EXPECT_HRESULT_SUCCEEDED(SafeArrayGetElement(
+        selection.Get(), &index,
+        static_cast<void**>(&selected_text_range_provider)));
+    EXPECT_UIA_TEXTRANGE_EQ(selected_text_range_provider,
+                            L"some textmore text2");
   }
 
   // A degenerate text range performs select.

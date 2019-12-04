@@ -238,6 +238,9 @@ void CastContentRendererClient::AddSupportedKeySystems(
 
 bool CastContentRendererClient::IsSupportedAudioType(
     const ::media::AudioType& type) {
+  if (type.spatialRendering)
+    return false;
+
 #if defined(OS_ANDROID)
   // No ATV device we know of has (E)AC3 decoder, so it relies on the audio sink
   // device.

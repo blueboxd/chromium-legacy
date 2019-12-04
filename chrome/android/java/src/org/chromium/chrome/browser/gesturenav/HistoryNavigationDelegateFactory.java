@@ -4,22 +4,17 @@
 
 package org.chromium.chrome.browser.gesturenav;
 
-import android.annotation.TargetApi;
+import android.graphics.Insets;
 import android.os.Build;
 import android.view.View;
 import android.view.WindowInsets;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 /**
  * Factory class for {@link HistoryNavigationDelegate}.
@@ -59,7 +54,6 @@ public class HistoryNavigationDelegateFactory {
 
     /**
      * Creates {@link HistoryNavigationDelegate} for native/rendered pages on Tab.
-     * TODO(jinsukkim): Remove the early returns when q is available for upstream.
      */
     public static HistoryNavigationDelegate create(Tab tab) {
         if (!isFeatureFlagEnabled() || ((TabImpl) tab).getActivity() == null) return DEFAULT;
@@ -89,60 +83,23 @@ public class HistoryNavigationDelegateFactory {
                 return mController;
             }
 
-            @TargetApi(Build.VERSION_CODES.O)
             @Override
             public boolean isNavigationEnabled(View view) {
-                if (!BuildInfo.isAtLeastQ() || Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
-                    return true;
-                }
-                Object insets = getSystemGestureInsets(view.getRootWindowInsets());
-                return insetsField(insets, "left") == 0 && insetsField(insets, "right") == 0;
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return true;
+                Insets insets = view.getRootWindowInsets().getSystemGestureInsets();
+                return insets.left == 0 && insets.right == 0;
             }
 
-            /**
-             * @return {@link android.graphics.Insets} object.
-             */
-            @TargetApi(Build.VERSION_CODES.O)
-            private Object getSystemGestureInsets(Object windowInsets) {
-                if (!BuildInfo.isAtLeastQ() || Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
-                    return null;
-                }
-                try {
-                    Method method = WindowInsets.class.getMethod("getSystemGestureInsets");
-                    return method.invoke(windowInsets);
-                } catch (IllegalAccessException | InvocationTargetException
-                        | NoSuchMethodException e) {
-                    // silently fails.
-                }
-                return null;
-            }
-
-            private int insetsField(Object insets, String fieldName) {
-                if (insets == null) return 0;
-                try {
-                    Class<?> Insets = Class.forName("android.graphics.Insets");
-                    Field field = Insets.getDeclaredField(fieldName);
-                    Object value = field.get(Insets.cast(insets));
-                    return (int) value;
-                } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e) {
-                    // silently fails.
-                }
-                return 0;
-            }
-
-            @TargetApi(Build.VERSION_CODES.O)
             @Override
             public void setWindowInsetsChangeObserver(View view, Runnable runnable) {
-                if (!BuildInfo.isAtLeastQ() || Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
-                    return;
-                }
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return;
                 mInsetsChangeRunnable = runnable;
                 view.setOnApplyWindowInsetsListener(
                         runnable != null ? this::onApplyWindowInsets : null);
             }
 
             private WindowInsets onApplyWindowInsets(View view, WindowInsets insets) {
-                assert BuildInfo.isAtLeastQ();
+                assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
                 mInsetsChangeRunnable.run();
                 return insets;
             }

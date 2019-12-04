@@ -270,7 +270,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
       const gfx::Point& viewport_point,
       const gfx::Vector2dF& scroll_delta,
       base::TimeDelta delayed_by = base::TimeDelta()) override;
-  void ApplyScroll(ScrollNode* scroll_node, ScrollState* scroll_state);
   InputHandlerScrollResult ScrollBy(ScrollState* scroll_state) override;
   void RequestUpdateForSynchronousInputHandler() override;
   void SetSynchronousInputHandlerRootScrollOffset(
@@ -907,7 +906,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   bool IsInitialScrollHitTestReliable(
       LayerImpl* layer,
       LayerImpl* first_scrolling_layer_or_drawn_scrollbar);
-  void DistributeScrollDelta(ScrollState* scroll_state);
+  void LatchToScroller(ScrollState* scroll_state, ScrollNode* starting_node);
+  void ScrollLatchedScroller(ScrollState* scroll_state);
 
   bool AnimatePageScale(base::TimeTicks monotonic_time);
   bool AnimateScrollbars(base::TimeTicks monotonic_time);

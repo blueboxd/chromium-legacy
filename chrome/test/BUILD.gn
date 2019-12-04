@@ -324,7 +324,6 @@ static_library("test_support") {
       "//ash",
       "//ash:test_support",
       "//ash/public/cpp:manifest",
-      "//ash/public/cpp:manifest_for_tests",
       "//components/ownership",
       "//components/user_manager:test_support",
       "//ui/aura",
@@ -1146,6 +1145,8 @@ if (!is_android) {
       "../browser/signin/e2e_tests/live_test.cc",
       "../browser/signin/e2e_tests/live_test.h",
       "../browser/site_isolation/chrome_site_per_process_browsertest.cc",
+      "../browser/site_isolation/chrome_site_per_process_test.cc",
+      "../browser/site_isolation/chrome_site_per_process_test.h",
       "../browser/site_isolation/site_details_browsertest.cc",
       "../browser/ssl/known_interception_disclosure_ui_browsertest.cc",
       "../browser/ui/blocked_content/popup_tracker_browsertest.cc",
@@ -1444,7 +1445,6 @@ if (!is_android) {
       deps += [
         "//ash:test_support",
         "//ash/keyboard/ui:test_support",
-        "//ash/public/mojom:test_interfaces",
         "//chrome/browser/chromeos:arc_test_support",
         "//chrome/browser/chromeos:test_support",
         "//chrome/browser/media/router:test_support",
@@ -2710,6 +2710,11 @@ if (!is_android) {
     if (enable_webui_tab_strip) {
       sources += [ "../browser/ui/webui/tab_strip/tab_strip_ui_browsertest.cc" ]
     }
+
+    if (enable_spellcheck) {
+      sources +=
+          [ "../browser/site_isolation/spellcheck_per_process_browsertest.cc" ]
+    }
   }
 }
 
@@ -3372,6 +3377,12 @@ test("unit_tests") {
     "../common/origin_trials/chrome_origin_trial_policy_unittest.cc",
     "../common/pref_names_util_unittest.cc",
     "../common/profiler/thread_profiler_unittest.cc",
+    "../common/string_matching/fuzzy_tokenized_string_match_unittest.cc",
+    "../common/string_matching/sequence_matcher_unittest.cc",
+    "../common/string_matching/term_break_iterator_unittest.cc",
+    "../common/string_matching/tokenized_string_char_iterator_unittest.cc",
+    "../common/string_matching/tokenized_string_match_unittest.cc",
+    "../common/string_matching/tokenized_string_unittest.cc",
     "../renderer/chrome_content_renderer_client_unittest.cc",
     "../renderer/content_settings_agent_impl_unittest.cc",
     "../renderer/instant_restricted_id_cache_unittest.cc",
@@ -4191,17 +4202,11 @@ test("unit_tests") {
       "../browser/ui/app_list/search/search_result_ranker/recurrence_ranker_util_unittest.cc",
       "../browser/ui/app_list/search/search_result_ranker/search_ranking_event_logger_unittest.cc",
       "../browser/ui/app_list/search/search_result_ranker/search_result_ranker_unittest.cc",
-      "../browser/ui/app_list/search/search_utils/fuzzy_tokenized_string_match_unittest.cc",
-      "../browser/ui/app_list/search/search_utils/sequence_matcher_unittest.cc",
       "../browser/ui/app_list/search/settings_shortcut/settings_shortcut_provider_unittest.cc",
       "../browser/ui/app_list/search/settings_shortcut/settings_shortcut_result_unittest.cc",
       "../browser/ui/app_list/search/tests/app_search_provider_unittest.cc",
       "../browser/ui/app_list/search/tests/mixer_unittest.cc",
       "../browser/ui/app_list/search/tests/omnibox_result_unittest.cc",
-      "../browser/ui/app_list/search/tests/term_break_iterator_unittest.cc",
-      "../browser/ui/app_list/search/tests/tokenized_string_char_iterator_unittest.cc",
-      "../browser/ui/app_list/search/tests/tokenized_string_match_unittest.cc",
-      "../browser/ui/app_list/search/tests/tokenized_string_unittest.cc",
       "../browser/ui/app_list/search/tests/zero_state_file_provider_unittest.cc",
       "../browser/ui/app_list/search/tests/zero_state_file_result_unittest.cc",
       "../browser/ui/app_list/test/fake_app_list_model_updater.cc",
@@ -5227,9 +5232,18 @@ test("unit_tests") {
 
   if (enable_webui_tab_strip) {
     sources += [
+      "../browser/ui/views/frame/webui_tab_strip_container_view_unittest.cc",
       "../browser/ui/webui/tab_strip/tab_strip_ui_layout_unittest.cc",
       "../browser/ui/webui/tab_strip/thumbnail_tracker_unittest.cc",
     ]
+  }
+
+  if (is_win && is_chrome_branded) {
+    sources += [
+      "../browser/component_updater/recovery_improved_component_unittest.cc",
+    ]
+    data_deps +=
+        [ "//components/update_client:recovery_component_tests_bundle_data" ]
   }
 }
 
@@ -6467,7 +6481,7 @@ if (is_win) {
 if (is_chromeos) {
   fuzzer_test("tokenized_string_fuzzer") {
     sources = [
-      "../browser/ui/app_list/search/tests/tokenized_string_fuzzer.cc",
+      "../common/string_matching/tokenized_string_fuzzer.cc",
     ]
     deps = [
       "//ash/public/cpp",

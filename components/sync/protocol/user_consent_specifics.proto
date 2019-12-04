@@ -16,7 +16,6 @@ option optimize_for = LITE_RUNTIME;
 
 package sync_pb;
 
-import "sync_enums.proto";
 import "user_consent_types.proto";
 
 // Next id: 14

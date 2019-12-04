@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/containers/flat_set.h"
 #include "base/run_loop.h"
+#include "base/scoped_observer.h"
 #include "base/stl_util.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
@@ -1556,6 +1557,47 @@ TEST_F(
       identity_manager_observer()->UnconsentedPrimaryAccountFromCallback(),
       empty_info);
   EXPECT_EQ(identity_manager()->GetUnconsentedPrimaryAccountInfo(), empty_info);
+}
+
+TEST_F(IdentityManagerTest, UnconsentedPrimaryAccountNotChangedOnSignout) {
+  // Setup cookies and token for the main account.
+  CoreAccountInfo account_info;
+  account_info.email = kTestEmail;
+  account_info.gaia = kTestGaiaId;
+  account_info.account_id =
+      identity_manager()->PickAccountIdForAccount(kTestGaiaId, kTestEmail);
+  SetCookieAccounts(identity_manager(), test_url_loader_factory(),
+                    {{account_info.email, account_info.gaia}});
+  SetRefreshTokenForAccount(identity_manager(), account_info.account_id,
+                            "refresh-token");
+  EXPECT_EQ(account_info,
+            identity_manager()->GetUnconsentedPrimaryAccountInfo());
+  EXPECT_EQ(account_info, identity_manager()->GetPrimaryAccountInfo());
+  EXPECT_TRUE(identity_manager()->HasPrimaryAccountWithRefreshToken());
+
+  // Tests that OnUnconsentedPrimaryAccountChanged is never called.
+  class UnconsentedPrimaryAccountObserver : public IdentityManager::Observer {
+   public:
+    void OnUnconsentedPrimaryAccountChanged(
+        const CoreAccountInfo& unconsented_primary_account_info) override {
+      NOTREACHED();
+      called_ = true;
+    }
+    bool called_ = false;
+  };
+  UnconsentedPrimaryAccountObserver observer;
+  ScopedObserver<IdentityManager, IdentityManager::Observer> scoped_observer(
+      &observer);
+  scoped_observer.Add(identity_manager());
+  // Clear primary account but do not delete the account.
+  ClearPrimaryAccount(identity_manager(),
+                      ClearPrimaryAccountPolicy::KEEP_ALL_ACCOUNTS);
+  // Primary account is cleared, but unconsented account is not.
+  EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
+  EXPECT_EQ(account_info,
+            identity_manager()->GetUnconsentedPrimaryAccountInfo());
+  // OnUnconsentedPrimaryAccountChanged was not fired.
+  EXPECT_FALSE(observer.called_);
 }
 
 TEST_F(IdentityManagerTest,

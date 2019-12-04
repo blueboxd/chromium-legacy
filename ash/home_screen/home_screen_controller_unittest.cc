@@ -105,9 +105,7 @@ TEST_P(HomeScreenControllerTest, ShowLauncherHistograms) {
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
-  base::RunLoop().RunUntilIdle();
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
-  base::RunLoop().RunUntilIdle();
 
   auto window = CreateTestWindow();
   base::HistogramTester tester;
@@ -130,9 +128,7 @@ TEST_P(HomeScreenControllerTest, DraggingHistograms) {
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
-  base::RunLoop().RunUntilIdle();
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
-  base::RunLoop().RunUntilIdle();
 
   base::HistogramTester tester;
   tester.ExpectTotalCount(kHomescreenAnimationHistogram, 0);

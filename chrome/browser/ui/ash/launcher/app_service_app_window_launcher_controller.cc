@@ -10,7 +10,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/launcher/app_service_app_window_crostini_tracker.h"
 #include "chrome/browser/ui/ash/launcher/app_window_base.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -29,11 +29,13 @@ AppServiceAppWindowLauncherController::AppServiceAppWindowLauncherController(
     : AppWindowLauncherController(owner),
       proxy_(apps::AppServiceProxyFactory::GetForProfile(owner->profile())),
       app_service_instance_helper_(
-          std::make_unique<AppServiceInstanceRegistryHelper>(
-              owner->profile())) {
+          std::make_unique<AppServiceInstanceRegistryHelper>(owner->profile())),
+      crostini_tracker_(
+          std::make_unique<AppServiceAppWindowCrostiniTracker>()) {
   aura::Env::GetInstance()->AddObserver(this);
   DCHECK(proxy_);
   DCHECK(app_service_instance_helper_);
+  DCHECK(crostini_tracker_);
   Observe(&proxy_->InstanceRegistry());
 }
 
@@ -103,29 +105,9 @@ void AppServiceAppWindowLauncherController::OnWindowVisibilityChanging(
   if (!observed_windows_.IsObserving(window))
     return;
 
-  ash::ShelfID shelf_id;
-  if (!proxy_->InstanceRegistry().ForOneInstance(
-          window, [&shelf_id](const apps::InstanceUpdate& update) {
-            shelf_id = ash::ShelfID(update.AppId(), update.LaunchId());
-          })) {
-    shelf_id = ash::ShelfID::Deserialize(window->GetProperty(ash::kShelfIDKey));
-  }
-
-  std::string app_id, launch_id;
-
-  if (shelf_id.IsNull()) {
-    if (!plugin_vm::IsPluginVmWindow(window))
-      return;
-    app_id = plugin_vm::kPluginVmAppId;
-    shelf_id = ash::ShelfID(plugin_vm::kPluginVmAppId);
-  } else {
-    if (proxy_->AppRegistryCache().GetAppType(shelf_id.app_id) ==
-        apps::mojom::AppType::kUnknown) {
-      return;
-    }
-    app_id = shelf_id.app_id;
-    launch_id = shelf_id.launch_id;
-  }
+  ash::ShelfID shelf_id = GetShelfId(window);
+  if (shelf_id.IsNull())
+    return;
 
   // Update |state|. The app must be started, and running state. If visible,
   // set it as |kVisible|, otherwise, clear the visible bit.
@@ -140,12 +122,15 @@ void AppServiceAppWindowLauncherController::OnWindowVisibilityChanging(
                     : static_cast<apps::InstanceState>(
                           state & ~(apps::InstanceState::kVisible));
 
-  app_service_instance_helper_->OnInstances(app_id, window, launch_id, state);
+  app_service_instance_helper_->OnInstances(shelf_id.app_id, window,
+                                            shelf_id.launch_id, state);
 
   if (!visible || shelf_id.app_id == extension_misc::kChromeAppId)
     return;
 
   RegisterAppWindow(window, shelf_id);
+
+  crostini_tracker_->OnWindowVisibilityChanging(window, shelf_id.app_id);
 }
 
 void AppServiceAppWindowLauncherController::OnWindowDestroying(
@@ -164,6 +149,9 @@ void AppServiceAppWindowLauncherController::OnWindowDestroying(
     return;
 
   RemoveFromShelf(app_window_it->second.get());
+
+  if (!shelf_id.IsNull())
+    crostini_tracker_->OnWindowDestroying(shelf_id.app_id);
 
   aura_window_to_app_window_.erase(app_window_it);
 }
@@ -376,4 +364,37 @@ bool AppServiceAppWindowLauncherController::IsOpenedInBrowserTab(
       return true;
   }
   return false;
+}
+
+ash::ShelfID AppServiceAppWindowLauncherController::GetShelfId(
+    aura::Window* window) const {
+  std::string shelf_app_id = crostini_tracker_->GetShelfAppId(window);
+  if (!shelf_app_id.empty())
+    return ash::ShelfID(shelf_app_id);
+
+  ash::ShelfID shelf_id;
+
+  // If the window exists in InstanceRegistry, get the shelf id from
+  // InstanceRegistry.
+  bool exist_in_instance = proxy_->InstanceRegistry().ForOneInstance(
+      window, [&shelf_id](const apps::InstanceUpdate& update) {
+        shelf_id = ash::ShelfID(update.AppId(), update.LaunchId());
+      });
+  if (!exist_in_instance) {
+    shelf_id = ash::ShelfID::Deserialize(window->GetProperty(ash::kShelfIDKey));
+  }
+
+  if (!shelf_id.IsNull()) {
+    if (proxy_->AppRegistryCache().GetAppType(shelf_id.app_id) ==
+        apps::mojom::AppType::kUnknown) {
+      return ash::ShelfID();
+    }
+    return shelf_id;
+  }
+
+  // For null shelf id, it could be VM window or ARC apps window.
+  if (plugin_vm::IsPluginVmWindow(window))
+    return ash::ShelfID(plugin_vm::kPluginVmAppId);
+
+  return ash::ShelfID();
 }

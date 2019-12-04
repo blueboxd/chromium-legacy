@@ -99,7 +99,8 @@ class COMPONENT_EXPORT(IPC) MessagePipeReader : public mojom::Channel {
   void Receive(MessageView message_view) override;
   void GetAssociatedInterface(
       const std::string& name,
-      mojom::GenericInterfaceAssociatedRequest request) override;
+      mojo::PendingAssociatedReceiver<mojom::GenericInterface> receiver)
+      override;
 
   // |delegate_| is null once the message pipe is closed.
   Delegate* delegate_;

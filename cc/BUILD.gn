@@ -375,6 +375,7 @@ cc_component("cc") {
     "//cc/base",
     "//cc/paint",
     "//components/viz/common",
+    "//services/tracing/public/cpp:cpp",
     "//skia",
   ]
   deps = [

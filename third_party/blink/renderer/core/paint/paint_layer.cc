@@ -1059,8 +1059,25 @@ void PaintLayer::SetNeedsCompositingInputsUpdateInternal() {
 
   needs_ancestor_dependent_compositing_inputs_update_ = true;
 
+  // We might call this function on a locked element. Now, locked elements might
+  // have a persistent dirty child bit, meaning that the below loop won't mark
+  // the breakcrumb bit further up the chain (since this element appears to
+  // already have a breadcrumb). However, since the element itself needs an
+  // ancestor dependent update, we need to force the propagation at least one
+  // level to the parent. This ensures that the real dirty bit
+  // (|needs_ancestor_dependent_compositing_inputs_update_|) can be discovered
+  // by the compositing update walk.
+  bool child_flag_may_persist_after_update =
+      GetLayoutObject().PrePaintBlockedByDisplayLock(
+          DisplayLockLifecycleTarget::kChildren);
+
+  PaintLayer* initial_layer = child_needs_compositing_inputs_update_ &&
+                                      child_flag_may_persist_after_update
+                                  ? Parent()
+                                  : this;
+
   PaintLayer* last_ancestor = nullptr;
-  for (PaintLayer* current = this;
+  for (PaintLayer* current = initial_layer;
        current && !current->child_needs_compositing_inputs_update_;
        current = current->Parent()) {
     last_ancestor = current;

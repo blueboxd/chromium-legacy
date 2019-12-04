@@ -138,7 +138,7 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
   bool use_fallback_content_ : 1;
 };
 
-// Like ToHTMLObjectElement() but accepts a ListedElement as input
+// Like To<HTMLObjectElement>() but accepts a ListedElement as input
 // instead of a Node.
 const HTMLObjectElement* ToHTMLObjectElementFromListedElement(
     const ListedElement*);

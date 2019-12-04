@@ -5,9 +5,11 @@
 #include "ash/assistant/ui/proactive_suggestions_rich_view.h"
 
 #include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "base/base64.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "ui/aura/window.h"
+#include "ui/views/event_monitor.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -45,85 +47,58 @@ void ProactiveSuggestionsRichView::InitLayout() {
       contents_factory_.get(), std::move(params));
   contents_->AddObserver(this);
 
-  // TODO(dmblack): Replace w/ server provided HTML.
+  // Encode the html for the entry point to be URL safe.
   std::string encoded_html;
-  base::Base64Encode(R"(
-    <!DOCTYPE html>
-    <html>
-      <body>
-        <style>
-          * {
-            box-sizing: border-box;
-            cursor: default;
-            margin: 0;
-            padding: 0;
-            text-decoration: none;
-            user-select: none;
-          }
-          body {
-            align-items: center;
-            background-color: #3c4043;
-            display: flex;
-            height: 32px;
-            max-width: 280px;
-            overflow: hidden;
-          }
-          .EntryPoint {
-            align-items: center;
-            display: flex;
-            flex: 1 1 auto;
-            height: 100%;
-            overflow: hidden;
-          }
-          .Icon {
-            background-image:
-              url("https://www.gstatic.com/images/branding/product/2x/assistant_24dp.png");
-            background-position: center;
-            background-repeat: no-repeat;
-            background-size: 100%;
-            flex: 0 0 auto;
-            height: 16px;
-            margin-left: 8px;
-            width: 16px;
-          }
-          .Label {
-            color: #f1f3f4;
-            flex: 1 1 auto;
-            font-family: Google Sans, sans-serif;
-            font-size: 13px;
-            font-weight: normal;
-            line-height: 20px;
-            margin-left: 8px;
-            overflow: hidden;
-            white-space: nowrap;
-          }
-          .Close {
-            background-color: #f1f3f4;
-            flex: 0 0 auto;
-            height: 32px;
-            width: 32px;
-            -webkit-mask-image:
-              url("https://www.gstatic.com/images/icons/material/system/2x/close_black_24dp.png");
-            -webkit-mask-position: center;
-            -webkit-mask-repeat: no-repeat;
-            -webkit-mask-size: 16px;
-          }
-        </style>
-        <a class="EntryPoint" href="googleassistant://proactive-suggestions?action=entryPointClick">
-          <div class="Icon"></div>
-          <p class="Label">Related pages</p>
-        </a>
-        <a href="googleassistant://proactive-suggestions?action=entryPointClose">
-          <div class="Close"></div>
-        </a>
-      </body>
-    </html>
-    )",
+  base::Base64Encode(proactive_suggestions()->rich_entry_point_html(),
                      &encoded_html);
 
   // Navigate to the data URL representing our encoded HTML.
   constexpr char kDataUriPrefix[] = "data:text/html;base64,";
   contents_->Navigate(GURL(kDataUriPrefix + encoded_html));
+}
+
+void ProactiveSuggestionsRichView::AddedToWidget() {
+  // Our embedded web contents will consume events that would otherwise reach
+  // our view so we need to use an EventMonitor to still receive them.
+  event_monitor_ = views::EventMonitor::CreateWindowMonitor(
+      this, GetWidget()->GetNativeWindow(),
+      {ui::ET_GESTURE_TAP, ui::ET_GESTURE_TAP_CANCEL, ui::ET_GESTURE_TAP_DOWN,
+       ui::ET_MOUSE_ENTERED, ui::ET_MOUSE_MOVED, ui::ET_MOUSE_EXITED});
+}
+
+void ProactiveSuggestionsRichView::OnMouseEntered(const ui::MouseEvent& event) {
+  // Our embedded web contents is expected to consume events that would
+  // otherwise reach our view. We instead handle these events in OnEvent().
+  NOTREACHED();
+}
+
+void ProactiveSuggestionsRichView::OnMouseExited(const ui::MouseEvent& event) {
+  // Our embedded web contents is expected to consume events that would
+  // otherwise reach our view. We instead handle these events in OnEvent().
+  NOTREACHED();
+}
+
+void ProactiveSuggestionsRichView::OnGestureEvent(ui::GestureEvent* event) {
+  // Our embedded web contents is expected to consume events that would
+  // otherwise reach our view. We instead handle these events in OnEvent().
+  NOTREACHED();
+}
+
+void ProactiveSuggestionsRichView::OnEvent(const ui::Event& event) {
+  switch (event.type()) {
+    case ui::ET_GESTURE_TAP:
+    case ui::ET_GESTURE_TAP_CANCEL:
+    case ui::ET_MOUSE_EXITED:
+      delegate()->OnProactiveSuggestionsViewHoverChanged(/*is_hovering=*/false);
+      break;
+    case ui::ET_GESTURE_TAP_DOWN:
+    case ui::ET_MOUSE_ENTERED:
+      delegate()->OnProactiveSuggestionsViewHoverChanged(/*is_hovering=*/true);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 void ProactiveSuggestionsRichView::ShowWhenReady() {

@@ -16,13 +16,7 @@
 #include "cc/scheduler/scheduler_settings.h"
 #include "cc/tiles/tile_priority.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
-
-namespace base {
-namespace trace_event {
-class ConvertableToTraceFormat;
-class TracedValue;
-}
-}
+#include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_compositor_scheduler_state.pbzero.h"
 
 namespace cc {
 
@@ -30,7 +24,6 @@ enum class ScrollHandlerState {
   SCROLL_AFFECTS_SCROLL_HANDLER,
   SCROLL_DOES_NOT_AFFECT_SCROLL_HANDLER,
 };
-const char* ScrollHandlerStateToString(ScrollHandlerState state);
 
 // The SchedulerStateMachine decides how to coordinate main thread activites
 // like painting/running javascript with rendering and input activities on the
@@ -59,8 +52,9 @@ class CC_EXPORT SchedulerStateMachine {
     WAITING_FOR_FIRST_COMMIT,
     WAITING_FOR_FIRST_ACTIVATION,
   };
-  static const char* LayerTreeFrameSinkStateToString(
-      LayerTreeFrameSinkState state);
+  static perfetto::protos::pbzero::ChromeCompositorStateMachine::MajorState::
+      LayerTreeFrameSinkState
+      LayerTreeFrameSinkStateToProtozeroEnum(LayerTreeFrameSinkState state);
 
   // Note: BeginImplFrameState does not cycle through these states in a fixed
   // order on all platforms. It's up to the scheduler to set these correctly.
@@ -69,7 +63,9 @@ class CC_EXPORT SchedulerStateMachine {
     INSIDE_BEGIN_FRAME,
     INSIDE_DEADLINE,
   };
-  static const char* BeginImplFrameStateToString(BeginImplFrameState state);
+  static perfetto::protos::pbzero::ChromeCompositorStateMachine::MajorState::
+      BeginImplFrameState
+      BeginImplFrameStateToProtozeroEnum(BeginImplFrameState state);
 
   // The scheduler uses a deadline to wait for main thread updates before
   // submitting a compositor frame. BeginImplFrameDeadlineMode specifies when
@@ -84,8 +80,14 @@ class CC_EXPORT SchedulerStateMachine {
     BLOCKED,  // Deadline should be blocked indefinitely until the next frame
               // arrives.
   };
+  // TODO(nuskos): Update Scheduler::ScheduleBeginImplFrameDeadline event to
+  // used typed macros so we can remove this ToString function.
   static const char* BeginImplFrameDeadlineModeToString(
       BeginImplFrameDeadlineMode mode);
+  static perfetto::protos::pbzero::ChromeCompositorSchedulerState::
+      BeginImplFrameDeadlineMode
+      BeginImplFrameDeadlineModeToProtozeroEnum(
+          BeginImplFrameDeadlineMode mode);
 
   enum class BeginMainFrameState {
     IDLE,             // A new BeginMainFrame can start.
@@ -93,7 +95,9 @@ class CC_EXPORT SchedulerStateMachine {
     READY_TO_COMMIT,  // A previously issued BeginMainFrame has been processed,
                       // and is ready to commit.
   };
-  static const char* BeginMainFrameStateToString(BeginMainFrameState state);
+  static perfetto::protos::pbzero::ChromeCompositorStateMachine::MajorState::
+      BeginMainFrameState
+      BeginMainFrameStateToProtozeroEnum(BeginMainFrameState state);
 
   // When a redraw is forced, it goes through a complete commit -> activation ->
   // draw cycle. Until a redraw has been forced, it remains in IDLE state.
@@ -103,8 +107,10 @@ class CC_EXPORT SchedulerStateMachine {
     WAITING_FOR_ACTIVATION,
     WAITING_FOR_DRAW,
   };
-  static const char* ForcedRedrawOnTimeoutStateToString(
-      ForcedRedrawOnTimeoutState state);
+  static perfetto::protos::pbzero::ChromeCompositorStateMachine::MajorState::
+      ForcedRedrawOnTimeoutState
+      ForcedRedrawOnTimeoutStateToProtozeroEnum(
+          ForcedRedrawOnTimeoutState state);
 
   BeginMainFrameState begin_main_frame_state() const {
     return begin_main_frame_state_;
@@ -136,10 +142,11 @@ class CC_EXPORT SchedulerStateMachine {
     NOTIFY_BEGIN_MAIN_FRAME_NOT_EXPECTED_UNTIL,
     NOTIFY_BEGIN_MAIN_FRAME_NOT_EXPECTED_SOON,
   };
-  static const char* ActionToString(Action action);
+  static perfetto::protos::pbzero::ChromeCompositorSchedulerAction
+  ActionToProtozeroEnum(Action action);
 
-  std::unique_ptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
-  void AsValueInto(base::trace_event::TracedValue* dict) const;
+  void AsProtozeroInto(
+      perfetto::protos::pbzero::ChromeCompositorStateMachine* state) const;
 
   Action NextAction() const;
   void WillSendBeginMainFrame();

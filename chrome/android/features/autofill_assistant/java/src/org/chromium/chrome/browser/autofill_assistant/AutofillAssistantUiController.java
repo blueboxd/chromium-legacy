@@ -4,7 +4,8 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
-import androidx.annotation.Nullable;
+import android.content.Context;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -323,6 +324,11 @@ class AutofillAssistantUiController {
     @CalledByNative
     private void setPeekMode(@AssistantPeekHeightCoordinator.PeekMode int peekMode) {
         mCoordinator.getBottomBarCoordinator().setPeekMode(peekMode);
+    }
+
+    @CalledByNative
+    private Context getContext() {
+        return mActivity;
     }
 
     // Native methods.

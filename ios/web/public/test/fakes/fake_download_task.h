@@ -27,6 +27,7 @@ class FakeDownloadTask : public DownloadTask {
   net::URLFetcherResponseWriter* GetResponseWriter() const override;
   NSString* GetIndentifier() const override;
   const GURL& GetOriginalUrl() const override;
+  NSString* GetHttpMethod() const override;
   bool IsDone() const override;
   int GetErrorCode() const override;
   int GetHttpCode() const override;

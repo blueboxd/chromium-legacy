@@ -49,6 +49,29 @@ namespace ash {
 
 namespace {
 
+// Defines the states of the Auto Night Light notification as a result of a
+// user's interaction with it.
+// These values are logged to UMA. Entries should not be renumbered and
+// numeric values should never be reused. Please keep in sync with
+// "AshAutoNightLightNotificationState" in
+// src/tools/metrics/histograms/enums.xml.
+enum class AutoNightLightNotificationState {
+  kClosedByUser = 0,
+  kBodyClicked = 1,
+  kButtonClicked = 2,
+  kMaxValue = kButtonClicked,
+};
+
+// The name of the histogram reporting the state of the user's interaction with
+// the Auto Night Light notification.
+constexpr char kAutoNightLightNotificationStateHistogram[] =
+    "Ash.NightLight.AutoNightLightNotificationState";
+
+// The name of a boolean histogram logging when the Auto Night Light
+// notification is shown.
+constexpr char kAutoNightLightNotificationShownHistogram[] =
+    "Ash.NightLight.AutoNightLightNotificationShown";
+
 // Auto Night Light notification IDs.
 constexpr char kNotifierId[] = "ash.night_light_controller_impl";
 constexpr char kNotificationId[] = "ash.auto_night_light_notify";
@@ -654,8 +677,11 @@ void NightLightControllerImpl::SuspendDone(
 }
 
 void NightLightControllerImpl::Close(bool by_user) {
-  if (by_user)
+  if (by_user) {
     DisableShowingFutureAutoNightLightNotification();
+    UMA_HISTOGRAM_ENUMERATION(kAutoNightLightNotificationStateHistogram,
+                              AutoNightLightNotificationState::kClosedByUser);
+  }
 }
 
 void NightLightControllerImpl::Click(
@@ -663,7 +689,8 @@ void NightLightControllerImpl::Click(
     const base::Optional<base::string16>& reply) {
   auto* shell = Shell::Get();
 
-  if (!button_index.has_value()) {
+  const bool body_clicked = !button_index.has_value();
+  if (body_clicked) {
     // Body has been clicked.
     SystemTrayClient* tray_client = shell->system_tray_model()->client();
     auto* session_controller = shell->session_controller();
@@ -673,11 +700,18 @@ void NightLightControllerImpl::Click(
     DCHECK_EQ(0, *button_index);
     SetEnabled(false, AnimationDuration::kShort);
   }
+
+  UMA_HISTOGRAM_ENUMERATION(
+      kAutoNightLightNotificationStateHistogram,
+      body_clicked ? AutoNightLightNotificationState::kBodyClicked
+                   : AutoNightLightNotificationState::kButtonClicked);
+
   message_center::MessageCenter::Get()->RemoveNotification(kNotificationId,
-                                                           /*by_user=*/true);
-  // Closing the notification with `by_user=true` above should end up calling
-  // NightLightControllerImpl::Close() which will disable showing the
-  // notification any further.
+                                                           /*by_user=*/false);
+  // Closing the notification with `by_user=false` above should end up calling
+  // NightLightControllerImpl::Close() but will not disable showing the
+  // notification any further. We must do this explicitly here.
+  DisableShowingFutureAutoNightLightNotification();
   DCHECK(UserHasEverDismissedAutoNightLightNotification());
 }
 
@@ -755,6 +789,8 @@ void NightLightControllerImpl::ShowAutoNightLightNotification() {
   notification->set_priority(message_center::SYSTEM_PRIORITY);
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
+
+  UMA_HISTOGRAM_BOOLEAN(kAutoNightLightNotificationShownHistogram, true);
 }
 
 void NightLightControllerImpl::

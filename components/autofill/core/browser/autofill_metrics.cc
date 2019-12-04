@@ -1380,12 +1380,12 @@ void AutofillMetrics::LogIsAutofillEnabledAtStartup(bool enabled) {
 }
 
 // static
-void AutofillMetrics::LogIsProfileAutofillEnabledAtStartup(bool enabled) {
+void AutofillMetrics::LogIsAutofillProfileEnabledAtStartup(bool enabled) {
   UMA_HISTOGRAM_BOOLEAN("Autofill.Address.IsEnabled.Startup", enabled);
 }
 
 // static
-void AutofillMetrics::LogIsCreditCardAutofillEnabledAtStartup(bool enabled) {
+void AutofillMetrics::LogIsAutofillCreditCardEnabledAtStartup(bool enabled) {
   UMA_HISTOGRAM_BOOLEAN("Autofill.CreditCard.IsEnabled.Startup", enabled);
 }
 
@@ -1400,7 +1400,7 @@ void AutofillMetrics::LogIsAutofillEnabledAtPageLoad(
 }
 
 // static
-void AutofillMetrics::LogIsProfileAutofillEnabledAtPageLoad(
+void AutofillMetrics::LogIsAutofillProfileEnabledAtPageLoad(
     bool enabled,
     AutofillSyncSigninState sync_state) {
   std::string name("Autofill.Address.IsEnabled.PageLoad");
@@ -1410,7 +1410,7 @@ void AutofillMetrics::LogIsProfileAutofillEnabledAtPageLoad(
 }
 
 // static
-void AutofillMetrics::LogIsCreditCardAutofillEnabledAtPageLoad(
+void AutofillMetrics::LogIsAutofillCreditCardEnabledAtPageLoad(
     bool enabled,
     AutofillSyncSigninState sync_state) {
   std::string name("Autofill.CreditCard.IsEnabled.PageLoad");

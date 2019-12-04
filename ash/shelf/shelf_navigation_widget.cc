@@ -8,6 +8,7 @@
 #include "ash/shelf/back_button.h"
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -317,6 +318,8 @@ void ShelfNavigationWidget::OnShelfConfigUpdated() {
 
 void ShelfNavigationWidget::UpdateLayout() {
   bool is_back_button_shown = IsBackButtonShown();
+
+  SetBounds(shelf_->shelf_layout_manager()->GetNavigationBounds());
 
   // Show the back button right away so that the animation is visible.
   if (is_back_button_shown)

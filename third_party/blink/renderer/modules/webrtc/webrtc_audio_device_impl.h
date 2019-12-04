@@ -16,9 +16,9 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/unguessable_token.h"
-#include "third_party/blink/public/platform/modules/webrtc/webrtc_source.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/webrtc/webrtc_audio_device_not_impl.h"
+#include "third_party/blink/renderer/platform/webrtc/webrtc_source.h"
 
 // A WebRtcAudioDeviceImpl instance implements the abstract interface
 // webrtc::AudioDeviceModule which makes it possible for a user (e.g. webrtc::

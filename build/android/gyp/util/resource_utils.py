@@ -61,7 +61,8 @@ MULTIPLE_RES_MAGIC_STRING = b'magic'
 
 
 def ToAndroidLocaleName(chromium_locale):
-  """Convert an Chromium locale name into a corresponding Android one."""
+  """Convert a Chromium locale name into a corresponding Android one."""
+  # Should be in sync with build/config/locales.gni.
   # First handle the special cases, these are needed to deal with Android
   # releases *before* 5.0/Lollipop.
   android_locale = _CHROME_TO_ANDROID_LOCALE_MAP.get(chromium_locale)

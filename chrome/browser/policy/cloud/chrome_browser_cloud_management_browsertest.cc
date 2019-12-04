@@ -145,7 +145,7 @@ class ChromeBrowserExtraSetUp : public ChromeBrowserMainExtraParts {
 };
 
 // Two observers that quit run_loop when policy is fetched and stored or in case
-// there is any error.
+// the core is disconnected in case of error.
 class PolicyFetchStoreObserver : public CloudPolicyStore::Observer {
  public:
   PolicyFetchStoreObserver(CloudPolicyStore* store,
@@ -168,35 +168,31 @@ class PolicyFetchStoreObserver : public CloudPolicyStore::Observer {
   DISALLOW_COPY_AND_ASSIGN(PolicyFetchStoreObserver);
 };
 
-class PolicyFetchClientObserver : public CloudPolicyClient::Observer {
+class PolicyFetchCoreObserver : public CloudPolicyCore::Observer {
  public:
-  PolicyFetchClientObserver(CloudPolicyClient* client,
-                            base::OnceClosure quit_closure)
-      : client_(client), quit_closure_(std::move(quit_closure)) {
-    client_->AddObserver(this);
+  PolicyFetchCoreObserver(CloudPolicyCore* core, base::OnceClosure quit_closure)
+      : core_(core), quit_closure_(std::move(quit_closure)) {
+    core_->AddObserver(this);
   }
-  ~PolicyFetchClientObserver() override { client_->RemoveObserver(this); }
+  ~PolicyFetchCoreObserver() override { core_->RemoveObserver(this); }
 
-  void OnPolicyFetched(CloudPolicyClient* client) override {
-    std::move(quit_closure_).Run();
-  }
+  void OnCoreConnected(CloudPolicyCore* core) override {}
 
-  void OnRegistrationStateChanged(CloudPolicyClient* client) override {}
+  void OnRefreshSchedulerStarted(CloudPolicyCore* core) override {}
 
-  void OnClientError(CloudPolicyClient* client) override {
+  void OnCoreDisconnecting(CloudPolicyCore* core) override {
     // This is called when policy fetching fails and is used in
     // ChromeBrowserCloudManagementController to unenroll the browser. The
     // status must be DM_STATUS_SERVICE_DEVICE_NOT_FOUND for this to happen.
-    EXPECT_EQ(client->status(), DM_STATUS_SERVICE_DEVICE_NOT_FOUND);
-
+    EXPECT_EQ(core->client()->status(), DM_STATUS_SERVICE_DEVICE_NOT_FOUND);
     std::move(quit_closure_).Run();
   }
 
+  void OnRemoteCommandsServiceStarted(CloudPolicyCore* core) override {}
+
  private:
-  CloudPolicyClient* client_;
+  CloudPolicyCore* core_;
   base::OnceClosure quit_closure_;
-  std::unique_ptr<PolicyFetchStoreObserver> store_observer_;
-  DISALLOW_COPY_AND_ASSIGN(PolicyFetchClientObserver);
 };
 
 }  // namespace
@@ -607,13 +603,13 @@ IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyPolicyFetchTest, Test) {
   if (manager->core()->client()->last_policy_timestamp().is_null()) {
     base::RunLoop run_loop;
     // Listen to store event which is fired after policy validation if token is
-    // valid. Otherwise listen to the client event because there is no store
-    // event.
-    std::unique_ptr<PolicyFetchClientObserver> client_observer;
+    // valid. Otherwise listen to the core since it gets disconnected by
+    // unenrollment.
+    std::unique_ptr<PolicyFetchCoreObserver> core_observer;
     std::unique_ptr<PolicyFetchStoreObserver> store_observer;
     if (dm_token() == kInvalidDMToken) {
-      client_observer = std::make_unique<PolicyFetchClientObserver>(
-          manager->core()->client(), run_loop.QuitClosure());
+      core_observer = std::make_unique<PolicyFetchCoreObserver>(
+          manager->core(), run_loop.QuitClosure());
     } else {
       store_observer = std::make_unique<PolicyFetchStoreObserver>(
           manager->store(), run_loop.QuitClosure());

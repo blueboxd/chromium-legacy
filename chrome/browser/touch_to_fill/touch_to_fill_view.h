@@ -12,7 +12,7 @@
 #include "url/gurl.h"
 
 namespace password_manager {
-struct CredentialPair;
+class UiCredential;
 }
 
 // This class represents the interface used for communicating between the Touch
@@ -34,12 +34,12 @@ class TouchToFillView {
   virtual void Show(
       const GURL& url,
       IsOriginSecure is_origin_secure,
-      base::span<const password_manager::CredentialPair> credentials) = 0;
+      base::span<const password_manager::UiCredential> credentials) = 0;
 
   // Invoked in case the user chooses an entry from the credential list
   // presented to them.
   virtual void OnCredentialSelected(
-      const password_manager::CredentialPair& credential) = 0;
+      const password_manager::UiCredential& credential) = 0;
 
   // Invoked if the user dismissed the Touch To Fill sheet without choosing a
   // credential.

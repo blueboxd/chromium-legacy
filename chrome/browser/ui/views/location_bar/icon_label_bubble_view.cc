@@ -363,7 +363,7 @@ void IconLabelBubbleView::AnimationEnded(const gfx::Animation* animation) {
   }
 
   GetInkDrop()->SetShowHighlightOnHover(true);
-  GetInkDrop()->SetShowHighlightOnFocus(true);
+  GetInkDrop()->SetShowHighlightOnFocus(!focus_ring());
 }
 
 void IconLabelBubbleView::AnimationProgressed(const gfx::Animation* animation) {

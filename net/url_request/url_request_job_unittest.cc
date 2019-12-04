@@ -638,8 +638,8 @@ TEST_F(URLRequestJobTest, SlowBrotliRead) {
 TEST(URLRequestJobComputeReferrer, SetsSameOriginForMetricsOnSameOrigin) {
   bool same_origin = false;
   URLRequestJob::ComputeReferrerForPolicy(
-      URLRequest::ReferrerPolicy(), /*original_referrer=*/GURL(),
-      url::Origin::Create(GURL("http://google.com")),
+      URLRequest::ReferrerPolicy(),
+      /*original_referrer=*/GURL("http://google.com"),
       /*destination=*/GURL("http://google.com"), &same_origin);
   EXPECT_TRUE(same_origin);
 }
@@ -647,8 +647,8 @@ TEST(URLRequestJobComputeReferrer, SetsSameOriginForMetricsOnSameOrigin) {
 TEST(URLRequestJobComputeReferrer, SetsSameOriginForMetricsOnCrossOrigin) {
   bool same_origin = true;
   URLRequestJob::ComputeReferrerForPolicy(
-      URLRequest::ReferrerPolicy(), /*original_referrer=*/GURL(),
-      url::Origin::Create(GURL("http://google.com")),
+      URLRequest::ReferrerPolicy(),
+      /*original_referrer=*/GURL("http://google.com"),
       /*destination=*/GURL("http://boggle.com"), &same_origin);
   EXPECT_FALSE(same_origin);
 }
@@ -656,7 +656,7 @@ TEST(URLRequestJobComputeReferrer, SetsSameOriginForMetricsOnCrossOrigin) {
 TEST(URLRequestJobComputeReferrer, AcceptsNullptrInput) {
   // Shouldn't segfault.
   URLRequestJob::ComputeReferrerForPolicy(URLRequest::ReferrerPolicy(), GURL(),
-                                          base::nullopt, GURL(), nullptr);
+                                          GURL(), nullptr);
 }
 
 }  // namespace net

@@ -8,15 +8,6 @@
 
 <body>
   <script>
-    // Instantiates a new non-persistent notification with the given |title|
-    // and |options| and then closes it.
-    function DisplayAndCloseNonPersistentNotification(title, options) {
-      const notification = new Notification(title, options || {});
-      notification.addEventListener('show', e => {
-        notification.close();
-      });
-    }
-
     // Play |test_audio.ogg|.
     function PlayAudio() {
       var audio = new Audio('test_audio.ogg');

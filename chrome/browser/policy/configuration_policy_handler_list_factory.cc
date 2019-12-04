@@ -55,6 +55,7 @@
 #include "components/network_time/network_time_pref_names.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/payments/core/payment_prefs.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
 #include "components/policy/core/browser/configuration_policy_handler_parameters.h"
@@ -1247,6 +1248,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kPrinterTypeDenyList,
     prefs::kPrinterTypeDenyList,
     base::Value::Type::LIST },
+  { key::kPaymentMethodQueryEnabled,
+    payments::kCanMakePaymentEnabled,
+    base::Value::Type::BOOLEAN },
 };
 // clang-format on
 

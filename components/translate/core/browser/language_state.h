@@ -52,6 +52,7 @@ class LanguageState {
   // Returns true if the current page in the associated tab has been translated.
   bool IsPageTranslated() const { return original_lang_ != current_lang_; }
 
+  void SetOriginalLanguage(const std::string& language);
   const std::string& original_language() const { return original_lang_; }
 
   void SetCurrentLanguage(const std::string& language);

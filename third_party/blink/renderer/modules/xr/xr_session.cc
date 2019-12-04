@@ -1398,10 +1398,10 @@ void XRSession::UpdatePresentationFrameState(
   emulated_position_ = emulated_position;
 
   // Process XR input sources
-  if (frame_pose) {
+  if (frame_data) {
     base::span<const device::mojom::blink::XRInputSourceStatePtr> input_states;
-    if (frame_pose->input_state.has_value())
-      input_states = frame_pose->input_state.value();
+    if (frame_data->input_state.has_value())
+      input_states = frame_data->input_state.value();
 
     OnInputStateChangeInternal(frame_id, input_states);
 
@@ -1689,7 +1689,7 @@ void XRSession::RemoveTransientInputSource(XRInputSource* input_source) {
       event_type_names::kInputsourceschange, this, {}, {input_source}));
 }
 
-void XRSession::OnPoseReset() {
+void XRSession::OnMojoSpaceReset() {
   for (const auto& reference_space : reference_spaces_) {
     reference_space->OnReset();
   }

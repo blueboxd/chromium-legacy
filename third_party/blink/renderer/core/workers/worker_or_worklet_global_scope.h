@@ -151,6 +151,8 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
   void ApplySandboxFlags(SandboxFlags mask);
 
+  void SetDefersLoadingForResourceFetchers(bool defers);
+
  protected:
   // Sets outside's CSP used for off-main-thread top-level worker script
   // fetch.
@@ -167,9 +169,6 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
                          network::mojom::CredentialsMode,
                          ModuleScriptCustomFetchType,
                          ModuleTreeClient*);
-
-  void TasksWerePaused() override;
-  void TasksWereUnpaused() override;
 
   const Vector<CSPHeaderAndType>& OutsideContentSecurityPolicyHeaders() const {
     return outside_content_security_policy_headers_;

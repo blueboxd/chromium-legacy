@@ -226,6 +226,11 @@ const char kIgnoresViewportScaleLimitsName[] = "Ignore Viewport Scale Limits";
 const char kIgnoresViewportScaleLimitsDescription[] =
     "When enabled the page can always be scaled, regardless of author intent.";
 
+const char kInfobarOverlayUIName[] = "Use OverlayPresenter for infobars";
+const char kInfobarOverlayUIDescription[] =
+    "When enabled alongside the Infobar UI Reboot, infobars will be presented "
+    "using OverlayPresenter.";
+
 const char kInfobarUIRebootName[] = "Infobar UI Reboot";
 const char kInfobarUIRebootDescription[] =
     "When enabled, Infobar will use the new UI.";

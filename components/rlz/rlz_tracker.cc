@@ -289,15 +289,15 @@ bool RLZTracker::Init(bool first_run,
     // Register for notifications from the omnibox so that we can record when
     // the user performs a first search.
     delegate_->SetOmniboxSearchCallback(
-        base::BindOnce(&RLZTracker::RecordFirstSearch, base::Unretained(this),
-                       ChromeOmnibox()));
+        base::Bind(&RLZTracker::RecordFirstSearch, base::Unretained(this),
+                   ChromeOmnibox()));
 
 #if !defined(OS_IOS)
     // Register for notifications from navigations, to see if the user has used
     // the home page.
     delegate_->SetHomepageSearchCallback(
-        base::BindOnce(&RLZTracker::RecordFirstSearch, base::Unretained(this),
-                       ChromeHomePage()));
+        base::Bind(&RLZTracker::RecordFirstSearch, base::Unretained(this),
+                   ChromeHomePage()));
 #endif
   }
   delegate_->GetReactivationBrand(&reactivation_brand_);

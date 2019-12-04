@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "cc/base/histograms.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
-#include "components/viz/common/hit_test/hit_test_data_builder.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
@@ -72,8 +71,7 @@ DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
     scoped_refptr<ContextProvider> context_provider,
     scoped_refptr<RasterContextProvider> worker_context_provider,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    bool hit_test_data_from_surface_layer)
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
     : LayerTreeFrameSink(std::move(context_provider),
                          std::move(worker_context_provider),
                          std::move(compositor_task_runner),
@@ -88,8 +86,7 @@ DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
                             cc::GetClientNameForMetrics())),
       submit_begin_frame_histogram_(GetHistogramNamed(
           "GraphicsPipeline.%s.SubmitCompositorFrameAfterBeginFrame",
-          cc::GetClientNameForMetrics())),
-      hit_test_data_from_surface_layer_(hit_test_data_from_surface_layer) {
+          cc::GetClientNameForMetrics())) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
@@ -165,14 +162,8 @@ void DirectLayerTreeFrameSink::SubmitCompositorFrame(
                          TRACE_EVENT_FLAG_FLOW_OUT, "step",
                          "SubmitHitTestData");
 
-  base::Optional<HitTestRegionList> hit_test_region_list;
-  if (!hit_test_data_from_surface_layer_) {
-    hit_test_region_list = HitTestDataBuilder::CreateHitTestData(
-        frame, /*root_accepts_events=*/true,
-        /*should_ask_for_child_region=*/false);
-  } else {
-    hit_test_region_list = client_->BuildHitTestData();
-  }
+  base::Optional<HitTestRegionList> hit_test_region_list =
+      client_->BuildHitTestData();
 
   if (!hit_test_region_list) {
     last_hit_test_data_ = HitTestRegionList();

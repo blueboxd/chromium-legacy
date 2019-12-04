@@ -231,6 +231,13 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
 
         // TODO(finnur): Look into whether using #updateView can simplify this logic.
         boolean selected = mSelectionDelegate.isItemSelected(mBitmapDetails);
+
+        // Selection border is not in use when in magnifying mode. Selected bitmaps will still have
+        // a checkmark, indicating selection.
+        if (mCategoryView.isInMagnifyingMode()) {
+            selected = false;
+        }
+
         if (selected == mSelectedState) {
             // No need to change to a state that is already set.
             return;

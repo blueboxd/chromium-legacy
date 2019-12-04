@@ -48,7 +48,8 @@ id<MTLLibrary> API_AVAILABLE(macos(10.11))
     NewLibraryWithRetry(id<MTLDevice> device,
                         NSString* source,
                         MTLCompileOptions* options,
-                        __autoreleasing NSError** error) {
+                        __autoreleasing NSError** error,
+                        gl::ProgressReporter* progress_reporter) {
   // Request and wait on an asynchronous shader compilation. If the compilation
   // does not return within kRetryPeriod, then re-issue the compilation request.
   // The value of kRetryPeriod is the 98th percentile of
@@ -56,8 +57,16 @@ id<MTLLibrary> API_AVAILABLE(macos(10.11))
   SCOPED_UMA_HISTOGRAM_TIMER("Gpu.MetalProxy.NewLibraryTime");
   const base::TimeDelta kRetryPeriod = base::TimeDelta::FromMilliseconds(50);
 
+  // Suppress the watchdog timer for 60 seconds. After that, allow it to kill
+  // the GPU process.
+  const base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(60);
+  const base::TimeTicks start_time = base::TimeTicks::Now();
+
   auto state = base::MakeRefCounted<AsyncMetalState>();
   for (size_t attempt = 0;; ++attempt) {
+    if (base::TimeTicks::Now() - start_time < kTimeout && progress_reporter)
+      progress_reporter->ReportProgress();
+
     // The completion handler will signal the condition variable we will wait
     // on. Note that completionHandler will hold a reference to |state|.
     MTLNewLibraryCompletionHandler completionHandler = ^(id<MTLLibrary> library,
@@ -97,15 +106,20 @@ id<MTLLibrary> API_AVAILABLE(macos(10.11))
 id<MTLRenderPipelineState> API_AVAILABLE(macos(10.11))
     NewRenderPipelineStateWithRetry(id<MTLDevice> device,
                                     MTLRenderPipelineDescriptor* descriptor,
-                                    __autoreleasing NSError** error) {
+                                    __autoreleasing NSError** error,
+                                    gl::ProgressReporter* progress_reporter) {
   // This function is almost-identical to the above NewLibraryWithRetry. See
   // comments in that function.
   // The value of kRetryPeriod is the 99th percentile of
   // Gpu.MetalProxy.NewRenderPipelineStateTime.
   SCOPED_UMA_HISTOGRAM_TIMER("Gpu.MetalProxy.NewRenderPipelineStateTime");
   const base::TimeDelta kRetryPeriod = base::TimeDelta::FromMilliseconds(50);
+  const base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(60);
+  const base::TimeTicks start_time = base::TimeTicks::Now();
   auto state = base::MakeRefCounted<AsyncMetalState>();
   for (size_t attempt = 0;; ++attempt) {
+    if (base::TimeTicks::Now() - start_time < kTimeout && progress_reporter)
+      progress_reporter->ReportProgress();
     MTLNewRenderPipelineStateCompletionHandler completionHandler =
         ^(id<MTLRenderPipelineState> render_pipeline_state, NSError* error) {
           base::AutoLock lock(state->lock);
@@ -148,7 +162,8 @@ class API_AVAILABLE(macos(10.11)) MTLLibraryCache {
   id<MTLLibrary> NewLibraryWithSource(id<MTLDevice> device,
                                       NSString* source,
                                       MTLCompileOptions* options,
-                                      __autoreleasing NSError** error) {
+                                      __autoreleasing NSError** error,
+                                      gl::ProgressReporter* progress_reporter) {
     LibraryKey key(source, options);
     auto found = libraries_.find(key);
     if (found != libraries_.end()) {
@@ -158,7 +173,7 @@ class API_AVAILABLE(macos(10.11)) MTLLibraryCache {
     }
     SCOPED_UMA_HISTOGRAM_TIMER("Gpu.MetalProxy.NewLibraryTime");
     id<MTLLibrary> library =
-        NewLibraryWithRetry(device, source, options, error);
+        NewLibraryWithRetry(device, source, options, error, progress_reporter);
     LibraryData data(library, *error);
     libraries_.insert(std::make_pair(key, std::move(data)));
     return library;
@@ -403,9 +418,8 @@ PROXY_METHOD2_SLOW(nullable id<MTLLibrary>,
       "MTLNewLibraryCount");
   newLibraryCountKey.Set(base::NumberToString(libraryCache_->CacheMissCount()));
 
-  gl::ScopedProgressReporter scoped_reporter(progressReporter_);
-  id<MTLLibrary> library =
-      libraryCache_->NewLibraryWithSource(device_, source, options, error);
+  id<MTLLibrary> library = libraryCache_->NewLibraryWithSource(
+      device_, source, options, error, progressReporter_);
   shaderKey.Clear();
   newLibraryCountKey.Clear();
 
@@ -463,10 +477,9 @@ PROXY_METHOD3_SLOW(void,
       "MTLNewLibraryCount");
   newLibraryCountKey.Set(base::NumberToString(libraryCache_->CacheMissCount()));
 
-  gl::ScopedProgressReporter scoped_reporter(progressReporter_);
   SCOPED_UMA_HISTOGRAM_TIMER("Gpu.MetalProxy.NewRenderPipelineStateTime");
-  id<MTLRenderPipelineState> pipelineState =
-      NewRenderPipelineStateWithRetry(device_, descriptor, error);
+  id<MTLRenderPipelineState> pipelineState = NewRenderPipelineStateWithRetry(
+      device_, descriptor, error, progressReporter_);
 
   vertexShaderKey.Clear();
   fragmentShaderKey.Clear();

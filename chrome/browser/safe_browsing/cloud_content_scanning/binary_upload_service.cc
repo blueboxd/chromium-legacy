@@ -328,10 +328,9 @@ void BinaryUploadService::RecordRequestMetrics(
                                 base::TimeDelta::FromMinutes(6), 50);
 
   if (response.has_malware_scan_verdict()) {
-    // For now just distinguish safe from unsafe verdicts.
     base::UmaHistogramBoolean("SafeBrowsingBinaryUploadRequest.MalwareResult",
-                              response.malware_scan_verdict().verdict() !=
-                                  MalwareDeepScanningVerdict::CLEAN);
+                              response.malware_scan_verdict().status() ==
+                                  MalwareDeepScanningVerdict::SUCCESS);
   }
 
   if (response.has_dlp_scan_verdict()) {

@@ -267,6 +267,14 @@ Panel.setMode = function(mode) {
   $('tutorial').hidden = (Panel.mode_ != Panel.Mode.FULLSCREEN_TUTORIAL);
 
   Panel.updateFromPrefs();
+
+  // Change the orientation of the triangle next to the menus button to indicate
+  // whether the menu is open or closed.
+  if (mode == Panel.Mode.FULLSCREEN_MENUS) {
+    $('triangle').style.transform = 'rotate(180deg)';
+  } else if (mode == Panel.Mode.COLLAPSED) {
+    $('triangle').style.transform = '';
+  }
 };
 
 /**
@@ -524,7 +532,8 @@ Panel.addMenu = function(menuMsg) {
   menu.menuBarItemElement.addEventListener('mouseover', function() {
     Panel.activateMenu(menu);
   }, false);
-
+  menu.menuBarItemElement.addEventListener(
+      'mouseup', Panel.onMouseUpOnMenuTitle_.bind(this, menu), false);
   $('menus_background').appendChild(menu.menuContainerElement);
   Panel.menus_.push(menu);
   return menu;
@@ -673,7 +682,8 @@ Panel.addNodeMenu = function(menuMsg, node, pred, defer) {
   menu.menuBarItemElement.addEventListener('mouseover', function() {
     Panel.activateMenu(menu);
   }, false);
-
+  menu.menuBarItemElement.addEventListener(
+      'mouseup', Panel.onMouseUpOnMenuTitle_.bind(this, menu), false);
   $('menus_background').appendChild(menu.menuContainerElement);
   Panel.menus_.push(menu);
   return menu;
@@ -778,6 +788,19 @@ Panel.onMouseUp = function(event) {
     Panel.pendingCallback_ = Panel.activeMenu_.getCallbackForElement(target);
   }
   Panel.closeMenusAndRestoreFocus();
+};
+
+/**
+ * Activate a menu whose title has been clicked. Stop event propagation at this
+ * point so we don't close the ChromeVox menus and restore focus.
+ * @param {PanelMenu} menu The menu we would like to activate.
+ * @parm {Event} mouseUpEvent The mouseup event.
+ * @private
+ */
+Panel.onMouseUpOnMenuTitle_ = function(menu, mouseUpEvent) {
+  Panel.activateMenu(menu);
+  mouseUpEvent.preventDefault();
+  mouseUpEvent.stopPropagation();
 };
 
 /**

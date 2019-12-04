@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/favicon/history_ui_favicon_request_handler_factory.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,9 +23,11 @@
 #include "components/history/core/browser/top_sites.h"
 #include "content/public/browser/web_contents.h"
 #include "net/url_request/url_request.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "url/gurl.h"
@@ -112,8 +115,7 @@ void FaviconSource::StartDataRequest(
     favicon_service->GetRawFavicon(
         icon_url, favicon_base::IconType::kFavicon, desired_size_in_pixel,
         base::BindOnce(&FaviconSource::OnFaviconDataAvailable,
-                       base::Unretained(this), std::move(callback),
-                       parsed.size_in_dip, parsed.device_scale_factor),
+                       base::Unretained(this), std::move(callback), parsed),
         &cancelable_task_tracker_);
   } else {
     // Intercept requests for prepopulated pages if TopSites exists.
@@ -145,8 +147,7 @@ void FaviconSource::StartDataRequest(
           page_url, {favicon_base::IconType::kFavicon}, desired_size_in_pixel,
           fallback_to_host,
           base::BindOnce(&FaviconSource::OnFaviconDataAvailable,
-                         base::Unretained(this), std::move(callback),
-                         parsed.size_in_dip, parsed.device_scale_factor),
+                         base::Unretained(this), std::move(callback), parsed),
           &cancelable_task_tracker_);
       return;
     }
@@ -158,14 +159,13 @@ void FaviconSource::StartDataRequest(
             HistoryUiFaviconRequestHandlerFactory::GetForBrowserContext(
                 profile_);
     if (!history_ui_favicon_request_handler) {
-      SendDefaultResponse(std::move(callback));
+      SendDefaultResponse(std::move(callback), parsed);
       return;
     }
     history_ui_favicon_request_handler->GetRawFaviconForPageURL(
         page_url, desired_size_in_pixel,
         base::BindOnce(&FaviconSource::OnFaviconDataAvailable,
-                       base::Unretained(this), std::move(callback),
-                       parsed.size_in_dip, parsed.device_scale_factor),
+                       base::Unretained(this), std::move(callback), parsed),
         favicon::FaviconRequestPlatform::kDesktop, parsed_history_ui_origin,
         /*icon_url_for_uma=*/
         GURL(parsed.icon_url), &cancelable_task_tracker_);
@@ -206,15 +206,31 @@ ui::NativeTheme* FaviconSource::GetNativeTheme() {
 
 void FaviconSource::OnFaviconDataAvailable(
     content::URLDataSource::GotDataCallback callback,
-    int size_in_dip,
-    float scale_factor,
+    const chrome::ParsedFaviconPath& parsed,
     const favicon_base::FaviconRawBitmapResult& bitmap_result) {
   if (bitmap_result.is_valid()) {
     // Forward the data along to the networking system.
     std::move(callback).Run(bitmap_result.bitmap_data.get());
   } else {
-    SendDefaultResponse(std::move(callback), size_in_dip, scale_factor);
+    SendDefaultResponse(std::move(callback), parsed);
   }
+}
+
+void FaviconSource::SendDefaultResponse(
+    content::URLDataSource::GotDataCallback callback,
+    const chrome::ParsedFaviconPath& parsed) {
+  if (!parsed.show_fallback_monogram) {
+    SendDefaultResponse(std::move(callback), parsed.size_in_dip,
+                        parsed.device_scale_factor);
+    return;
+  }
+  int icon_size = std::ceil(parsed.size_in_dip * parsed.device_scale_factor);
+  SkBitmap bitmap = favicon::GenerateMonogramFavicon(GURL(parsed.page_url),
+                                                     icon_size, icon_size);
+  std::vector<unsigned char> bitmap_data;
+  bool result = gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &bitmap_data);
+  DCHECK(result);
+  std::move(callback).Run(base::RefCountedBytes::TakeVector(&bitmap_data));
 }
 
 void FaviconSource::SendDefaultResponse(

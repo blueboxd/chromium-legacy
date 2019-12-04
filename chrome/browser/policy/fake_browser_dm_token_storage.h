@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_POLICY_FAKE_BROWSER_DM_TOKEN_STORAGE_H_
 #define CHROME_BROWSER_POLICY_FAKE_BROWSER_DM_TOKEN_STORAGE_H_
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/policy/browser_dm_token_storage.h"
 
 namespace policy {
@@ -33,7 +34,9 @@ class FakeBrowserDMTokenStorage : public BrowserDMTokenStorage {
   std::string InitEnrollmentToken() override;
   std::string InitDMToken() override;
   bool InitEnrollmentErrorOption() override;
-  void SaveDMToken(const std::string& token) override;
+  StoreTask SaveDMTokenTask(const std::string& token,
+                            const std::string& client_id) override;
+  scoped_refptr<base::TaskRunner> SaveDMTokenTaskRunner() override;
 
  private:
   std::string client_id_ = "";

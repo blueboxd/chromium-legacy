@@ -130,6 +130,7 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
       had_resizer_before_relayout_(false),
       scroll_origin_changed_(false),
       scrollbar_manager_(*this),
+      has_last_committed_scroll_offset_(false),
       scroll_corner_(nullptr),
       resizer_(nullptr),
       scroll_anchor_(this),
@@ -525,10 +526,20 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
   // (see: PaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation).
   GetLayoutBox()->SetNeedsPaintPropertyUpdate();
 
-  // Schedule the scroll DOM event.
-  if (GetLayoutBox()->GetNode()) {
-    GetLayoutBox()->GetNode()->GetDocument().EnqueueScrollEventForNode(
-        GetLayoutBox()->GetNode());
+  // Don't enqueue a scroll event yet for scroll reasons that are not about
+  // explicit changes to scroll. Instead, only do so at the time of the next
+  // lifecycle update, to avoid scroll events that are out of date or don't
+  // result in an actual scroll that is visible to the user. These scroll events
+  // will then be dispatched at the *subsequent* animation frame, because
+  // they happen after layout and therefore the next opportunity to fire the
+  // events is at the next lifecycle update (*).
+  //
+  // (*) https://html.spec.whatwg.org/#update-the-rendering steps
+  if (scroll_type == kClampingScroll || scroll_type == kAnchoringScroll) {
+    if (GetLayoutBox()->GetNode())
+      frame_view->SetNeedsEnqueueScrollEvent(this);
+  } else {
+    EnqueueScrollEventIfNeeded();
   }
 
   GetLayoutBox()->View()->ClearHitTestCache();
@@ -618,6 +629,21 @@ IntSize PaintLayerScrollableArea::ScrollOffsetInt() const {
 
 ScrollOffset PaintLayerScrollableArea::GetScrollOffset() const {
   return scroll_offset_;
+}
+
+void PaintLayerScrollableArea::EnqueueScrollEventIfNeeded() {
+  if (scroll_offset_ == last_committed_scroll_offset_ &&
+      has_last_committed_scroll_offset_)
+    return;
+  last_committed_scroll_offset_ = scroll_offset_;
+  has_last_committed_scroll_offset_ = true;
+  if (HasBeenDisposed())
+    return;
+  // Schedule the scroll DOM event.
+  if (GetLayoutBox()->GetNode()) {
+    GetLayoutBox()->GetNode()->GetDocument().EnqueueScrollEventForNode(
+        GetLayoutBox()->GetNode());
+  }
 }
 
 IntSize PaintLayerScrollableArea::MinimumScrollOffsetInt() const {

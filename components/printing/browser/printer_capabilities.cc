@@ -165,10 +165,21 @@ base::Value GetSettingsOnBlockingTaskRunner(
                       base::Value(basic_info.display_name));
   printer_info.SetKey(kSettingPrinterDescription,
                       base::Value(basic_info.printer_description));
+
+  base::Value options(base::Value::Type::DICTIONARY);
+
+#if defined(OS_CHROMEOS)
+  auto it = basic_info.options.find(kPrinterEulaURL);
+  options.SetKey(kPrinterEulaURL, it != basic_info.options.end()
+                                      ? base::Value(it->second)
+                                      : base::Value());
   printer_info.SetKey(
       kCUPSEnterprisePrinter,
       base::Value(base::Contains(basic_info.options, kCUPSEnterprisePrinter) &&
                   basic_info.options.at(kCUPSEnterprisePrinter) == kValueTrue));
+#endif  // defined(OS_CHROMEOS)
+
+  printer_info.SetKey(kSettingPrinterOptions, std::move(options));
 
   base::Value printer_info_capabilities(base::Value::Type::DICTIONARY);
   printer_info_capabilities.SetKey(kPrinter, std::move(printer_info));

@@ -1127,7 +1127,7 @@
   },
   {
     "name": "enable-clipboard-provider-text-suggestions",
-    "owners": [ "gangwu", "chromium-omnibox-team"],
+    "owners": [ "gangwu", "chrome-omnibox-team@google.com"],
     "expiry_milestone": 84
   },
   {
@@ -1620,7 +1620,7 @@
   {
     "name": "enable-oop-rasterization",
     "owners": [ "enne", "khushalsagar" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 86
   },
     {
     "name": "enable-paint-holding",
@@ -2135,6 +2135,11 @@
     "name": "enable-webrtc-stun-origin",
     "owners": [ "qingsi", "jeroendb" ],
     "expiry_milestone": 78
+  },
+  {
+    "name": "enable-webrtc-use-min-max-vea-dimensions",
+    "owners": [ "mcasas", "chromeos-gfx-video@google.com" ],
+    "expiry_milestone": 88
   },
   {
     "name": "enable-winrt-geolocation-implementation",
@@ -2748,7 +2753,7 @@
   {
     "name": "omnibox-disable-instant-extended-limit",
     "owners": [ "pnoland", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "omnibox-display-title-for-current-url",
@@ -2787,12 +2792,12 @@
   },
   {
     "name": "omnibox-material-design-weather-icons",
-    "owners": [ "manukh", "ender", "chromium-omnibox-team" ],
+    "owners": [ "manukh", "ender", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 85
   },
   {
     "name": "omnibox-max-url-matches",
-    "owners": [ "krb", "chromium-omnibox-team" ],
+    "owners": [ "krb", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 82
   },
   {
@@ -2902,8 +2907,8 @@
   },
   {
     "name": "omnibox-zero-suggestions-on-ntp",
-    "owners": [ "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 81
+    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 85
   },
   {
     "name": "omnibox-zero-suggestions-on-ntp-realbox",
@@ -3183,6 +3188,11 @@
     "name": "sharing-derive-vapid-key",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
     "expiry_milestone": 82
+  },
+  {
+    "name": "sharing-device-expiration",
+    "owners": [ "//chrome/browser/sharing/OWNERS" ],
+    "expiry_milestone": 83
   },
   {
     "name": "sharing-peer-connection-receiver",

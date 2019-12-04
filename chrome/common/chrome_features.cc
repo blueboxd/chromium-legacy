@@ -234,7 +234,7 @@ const base::Feature kTerminalSystemAppSplits{"TerminalSystemAppSplits",
 
 // Enable uploading of a zip archive of system logs instead of individual files.
 const base::Feature kUploadZippedSystemLogs{"UploadZippedSystemLogs",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Allow a Wilco DTC (diagnostics and telemetry controller) on Chrome OS.
 // More info about the project may be found here:

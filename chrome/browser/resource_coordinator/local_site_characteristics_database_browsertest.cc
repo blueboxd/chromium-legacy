@@ -14,7 +14,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_impl.h"
@@ -30,7 +29,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/network_session_configurator/common/network_switches.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
@@ -186,11 +184,6 @@ class LocalSiteCharacteristicsDatabaseTest : public InProcessBrowserTest {
     ExecuteScriptInMainFrame("ChangeFavicon()");
   }
 
-  void TriggerNonPersistentNotificationInActiveWebContents() {
-    ExecuteScriptInMainFrame(
-        "DisplayAndCloseNonPersistentNotification('foo');");
-  }
-
   // By default a tab has to play audio while being visible if it wants to be
   // able to play audio in background (see
   // ChromeContentRendererClient::DeferMediaLoad). This makes the current active
@@ -211,15 +204,6 @@ class LocalSiteCharacteristicsDatabaseTest : public InProcessBrowserTest {
     // still playing.
     GetActiveWebContents()->WasHidden();
     test_clock_.Advance(kLongestGracePeriod);
-  }
-
-  // Ensure that the current tab is allowed to display non-persistent
-  // notifications.
-  void AllowBackgroundNotificationInActiveTab() {
-    content::WebContents* web_contents = GetActiveWebContents();
-    NotificationPermissionContext::UpdatePermission(
-        browser()->profile(), web_contents->GetLastCommittedURL().GetOrigin(),
-        CONTENT_SETTING_ALLOW);
   }
 
   void ExpireTitleOrFaviconGracePeriod() {
@@ -336,8 +320,6 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest, NoFeatureUsed) {
             reader->UpdatesTitleInBackground());
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader->UsesAudioInBackground());
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
-            reader->UsesNotificationsInBackground());
 
   test_clock().Advance(kObservationWindowLength);
 
@@ -347,8 +329,6 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest, NoFeatureUsed) {
             reader->UpdatesTitleInBackground());
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureNotInUse,
             reader->UsesAudioInBackground());
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureNotInUse,
-            reader->UsesNotificationsInBackground());
 }
 
 // Test that use features while in foreground, this shouldn't be recorded.
@@ -365,7 +345,6 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest,
   ChangeTitleOfActiveWebContents();
   ChangeFaviconOfActiveWebContents();
   PlayAudioInActiveWebContents();
-  // TODO(sebmarchand): Also trigger a background notification once.
 
   auto reader =
       GetReaderForOrigin(browser()->profile(), url::Origin::Create(test_url));
@@ -383,8 +362,6 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest,
             reader->UpdatesTitleInBackground());
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader->UsesAudioInBackground());
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
-            reader->UsesNotificationsInBackground());
 }
 
 // Test that the audio feature usage in background gets detected properly.
@@ -399,25 +376,6 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest,
           base::Unretained(this)),
       base::BindRepeating(&LocalSiteCharacteristicsDatabaseTest::
                               AllowBackgroundAudioInActiveTab,
-                          base::Unretained(this)));
-}
-
-// Test that the notification feature usage in background gets detected
-// properly.
-// TODO(sebmarchand): Figure out how to trigger a non-persistent notification in
-// this test.
-IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest,
-                       NotificationFeatureUsage) {
-  TestFeatureUsageDetection(
-      &SiteCharacteristicsDataReader::UsesNotificationsInBackground,
-      internal::LocalSiteCharacteristicsDataImpl::TrackedBackgroundFeatures::
-          kNotificationUsageUsage,
-      base::BindRepeating(
-          &LocalSiteCharacteristicsDatabaseTest::
-              TriggerNonPersistentNotificationInActiveWebContents,
-          base::Unretained(this)),
-      base::BindRepeating(&LocalSiteCharacteristicsDatabaseTest::
-                              AllowBackgroundNotificationInActiveTab,
                           base::Unretained(this)));
 }
 

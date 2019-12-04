@@ -211,7 +211,7 @@ void PasswordAutofillManager::DidSelectSuggestion(const base::string16& value,
   ClearPreviewedForm();
   if (identifier == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY ||
       identifier == autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY ||
-      identifier == autofill::POPUP_ITEM_ID_PASSWORD_SYNC_OPTIN)
+      identifier == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPTIN)
     return;
   bool success = PreviewSuggestion(GetUsernameFromSuggestion(value));
   DCHECK(success);
@@ -242,7 +242,8 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
       password_client_->GetMetricsRecorder()->RecordPageLevelUserAction(
           UserAction::kShowAllPasswordsWhileSomeAreSuggested);
     }
-  } else if (identifier == autofill::POPUP_ITEM_ID_PASSWORD_SYNC_OPTIN) {
+  } else if (identifier ==
+             autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPTIN) {
     password_client_->GetPasswordFeatureManager()->SetAccountStorageOptIn(true);
   } else {
     metrics_util::LogPasswordDropdownItemSelected(
@@ -351,7 +352,8 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
     // TODO(crbug.com/1024332): Add proper (translated) string.
     autofill::Suggestion suggestion(
         base::ASCIIToUTF16("Use passwords stored in your Google account"));
-    suggestion.frontend_id = autofill::POPUP_ITEM_ID_PASSWORD_SYNC_OPTIN;
+    suggestion.frontend_id =
+        autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPTIN;
     suggestions.push_back(suggestion);
   }
 

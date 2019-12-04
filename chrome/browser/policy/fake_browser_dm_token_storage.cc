@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/policy/fake_browser_dm_token_storage.h"
+#include "base/bind.h"
+#include "base/task/post_task.h"
+#include "base/threading/thread_task_runner_handle.h"
 
 namespace policy {
 
@@ -59,8 +62,16 @@ bool FakeBrowserDMTokenStorage::InitEnrollmentErrorOption() {
   return enrollment_error_option_;
 }
 
-void FakeBrowserDMTokenStorage::SaveDMToken(const std::string& token) {
-  OnDMTokenStored(storage_enabled_);
+FakeBrowserDMTokenStorage::StoreTask FakeBrowserDMTokenStorage::SaveDMTokenTask(
+    const std::string& token,
+    const std::string& client_id) {
+  return base::BindOnce([](bool enabled) -> bool { return enabled; },
+                        storage_enabled_);
+}
+
+scoped_refptr<base::TaskRunner>
+FakeBrowserDMTokenStorage::SaveDMTokenTaskRunner() {
+  return base::ThreadTaskRunnerHandle::Get();
 }
 
 }  // namespace policy

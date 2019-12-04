@@ -438,6 +438,53 @@ class NodeIDPlusDimensionsWrapper
   AutomationInternalCustomBindings* automation_bindings_;
   NodeIDPlusDimensionsFunction function_;
 };
+
+using NodeIDPlusEventFunction = void (*)(v8::Isolate* isolate,
+                                         v8::ReturnValue<v8::Value> result,
+                                         AutomationAXTreeWrapper* tree_wrapper,
+                                         ui::AXNode* node,
+                                         ax::mojom::Event event_type);
+
+class NodeIDPlusEventWrapper
+    : public base::RefCountedThreadSafe<NodeIDPlusEventWrapper> {
+ public:
+  NodeIDPlusEventWrapper(AutomationInternalCustomBindings* automation_bindings,
+                         NodeIDPlusEventFunction function)
+      : automation_bindings_(automation_bindings), function_(function) {}
+
+  void Run(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    v8::Isolate* isolate = automation_bindings_->GetIsolate();
+    if (args.Length() < 3 || !args[0]->IsString() || !args[1]->IsInt32() ||
+        !args[2]->IsString()) {
+      ThrowInvalidArgumentsException(automation_bindings_);
+    }
+
+    ui::AXTreeID tree_id =
+        ui::AXTreeID::FromString(*v8::String::Utf8Value(isolate, args[0]));
+    int node_id = args[1].As<v8::Int32>()->Value();
+    ax::mojom::Event event_type =
+        ui::ParseEvent(*v8::String::Utf8Value(isolate, args[2]));
+
+    AutomationAXTreeWrapper* tree_wrapper =
+        automation_bindings_->GetAutomationAXTreeWrapperFromTreeID(tree_id);
+    if (!tree_wrapper)
+      return;
+
+    ui::AXNode* node = tree_wrapper->GetUnignoredNodeFromId(node_id);
+    if (!node)
+      return;
+
+    function_(isolate, args.GetReturnValue(), tree_wrapper, node, event_type);
+  }
+
+ private:
+  virtual ~NodeIDPlusEventWrapper() {}
+
+  friend class base::RefCountedThreadSafe<NodeIDPlusEventWrapper>;
+
+  AutomationInternalCustomBindings* automation_bindings_;
+  NodeIDPlusEventFunction function_;
+};
 }  // namespace
 
 class AutomationMessageFilter : public IPC::MessageFilter {
@@ -1422,6 +1469,20 @@ void AutomationInternalCustomBindings::AddRoutes() {
         if (node->GetTableCellAriaRowIndex())
           result.Set(*node->GetTableCellAriaRowIndex());
       });
+  RouteNodeIDPlusEventFunction(
+      "EventListenerAdded",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node,
+         ax::mojom::Event event_type) {
+        tree_wrapper->EventListenerAdded(event_type, node);
+      });
+  RouteNodeIDPlusEventFunction(
+      "EventListenerRemoved",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node,
+         ax::mojom::Event event_type) {
+        tree_wrapper->EventListenerRemoved(event_type, node);
+      });
 }
 
 void AutomationInternalCustomBindings::Invalidate() {
@@ -1913,6 +1974,14 @@ void AutomationInternalCustomBindings::RouteNodeIDPlusDimensionsFunction(
       name, base::BindRepeating(&NodeIDPlusDimensionsWrapper::Run, wrapper));
 }
 
+void AutomationInternalCustomBindings::RouteNodeIDPlusEventFunction(
+    const std::string& name,
+    NodeIDPlusEventFunction callback) {
+  auto wrapper = base::MakeRefCounted<NodeIDPlusEventWrapper>(this, callback);
+  RouteHandlerFunction(
+      name, base::BindRepeating(&NodeIDPlusEventWrapper::Run, wrapper));
+}
+
 void AutomationInternalCustomBindings::GetChildIDAtIndex(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   if (args.Length() < 3 || !args[2]->IsNumber()) {
@@ -2088,6 +2157,27 @@ void AutomationInternalCustomBindings::SendAutomationEvent(
     const gfx::Point& mouse_location,
     const ui::AXEvent& event,
     api::automation::EventType event_type) {
+  AutomationAXTreeWrapper* tree_wrapper =
+      GetAutomationAXTreeWrapperFromTreeID(tree_id);
+  if (!tree_wrapper)
+    return;
+  ui::AXNode* node = tree_wrapper->tree()->GetFromId(event.id);
+  if (!node)
+    return;
+
+  // Both the kNone| and |kHitTestResult| events get used internally to trigger
+  // other behaviors in js.
+  bool fire_event = event.event_type == ax::mojom::Event::kNone ||
+                    event.event_type == ax::mojom::Event::kHitTestResult;
+  while (node && tree_wrapper && !fire_event) {
+    if (tree_wrapper->HasEventListener(event.event_type, node))
+      fire_event = true;
+    node = GetParent(node, &tree_wrapper);
+  }
+
+  if (!fire_event)
+    return;
+
   auto event_params = std::make_unique<base::DictionaryValue>();
   event_params->SetString("treeID", tree_id.ToString());
   event_params->SetInteger("targetID", event.id);

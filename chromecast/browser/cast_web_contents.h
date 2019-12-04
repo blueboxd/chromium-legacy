@@ -333,9 +333,9 @@ class CastWebContents {
   // when it is ready.
   virtual service_manager::BinderRegistry* binder_registry() = 0;
 
-  // Used for owner to pass its |InterfaceProviderPtr|s to CastWebContents.
-  // It is owner's respoinsibility to make sure each |InterfaceProviderPtr| has
-  // distinct mojo interface set.
+  // Used for owner to pass its |InterfaceProvider| pointers to CastWebContents.
+  // It is owner's responsibility to make sure each |InterfaceProvider| pointer
+  // has distinct mojo interface set.
   using InterfaceSet = base::flat_set<std::string>;
   virtual void RegisterInterfaceProvider(
       const InterfaceSet& interface_set,

@@ -176,13 +176,26 @@ directorytree.createRowElementContentFilesNG = (id, label) => {
 /**
  * An optional rowElement depth (indent) style handler where undefined uses the
  * default cr.ui.TreeItem indent styling.
- *
- * TODO(crbug.com/992819): add an implementation for the FILES_NG_ENABLED case,
- * where a rowElement child needs the indent, not the rowElement itself.
- *
  * @type {function(!cr.ui.TreeItem,number)|undefined}
  */
 directorytree.styleRowElementDepth = undefined;
+
+/**
+ * Custom tree row style handler: called when the item's |rowElement| should be
+ * styled to indent |depth| in the tree for FILES_NG_ENABLED case.
+ * @param {!cr.ui.TreeItem} item cr.ui.TreeItem.
+ * @param {number} depth Indent depth (>=0).
+ */
+directorytree.styleRowElementDepthFilesNG = (item, depth) => {
+  const fileRowElement = item.rowElement.firstElementChild;
+
+  const indent = depth * 22;
+  let style = 'padding-inline-start: ' + indent + 'px';
+  const width = indent + 60;
+  style += '; min-width: ' + width + 'px;';
+
+  fileRowElement.setAttribute('style', style);
+};
 
 /**
  * The iron-icon-set prefix for tree rows that have an .align-right-icon class
@@ -1116,19 +1129,19 @@ class VolumeItem extends DirectoryItem {
    */
   setupIcon_(icon, volumeInfo) {
     icon.classList.add('item-icon');
+
     const backgroundImage =
         util.iconSetToCSSBackgroundImageValue(volumeInfo.iconSet);
     if (backgroundImage !== 'none') {
-      // The icon div is not yet added to DOM, therefore it is impossible to
-      // use style.backgroundImage.
       icon.setAttribute('style', 'background-image: ' + backgroundImage);
     }
+
     icon.setAttribute('volume-type-icon', volumeInfo.volumeType);
+
     if (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.MEDIA_VIEW) {
-      icon.setAttribute(
-          'volume-subtype',
-          VolumeManagerCommon.getMediaViewRootTypeFromVolumeId(
-              volumeInfo.volumeId));
+      const subtype = VolumeManagerCommon.getMediaViewRootTypeFromVolumeId(
+          volumeInfo.volumeId);
+      icon.setAttribute('volume-subtype', subtype);
     } else {
       icon.setAttribute('volume-subtype', volumeInfo.deviceType || '');
     }
@@ -1674,6 +1687,10 @@ class AndroidAppItem extends TreeItem {
       if (backgroundImage !== 'none') {
         icon.setAttribute('style', 'background-image: ' + backgroundImage);
       }
+    }
+
+    if (directorytree.FILES_NG_ENABLED && !icon.hasAttribute('style')) {
+      icon.setAttribute('use-generic-provided-icon', '');
     }
 
     // Create an external link icon. TODO(crbug.com/986169) does this icon

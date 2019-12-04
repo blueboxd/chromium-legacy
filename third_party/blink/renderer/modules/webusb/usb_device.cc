@@ -109,7 +109,7 @@ bool ConvertBufferSource(const ArrayBufferOrArrayBufferView& buffer_source,
                          ScriptPromiseResolver* resolver) {
   DCHECK(!buffer_source.IsNull());
   if (buffer_source.IsArrayBuffer()) {
-    ArrayBuffer* array_buffer = buffer_source.GetAsArrayBuffer()->Buffer();
+    DOMArrayBuffer* array_buffer = buffer_source.GetAsArrayBuffer();
     if (array_buffer->IsDetached()) {
       resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kInvalidStateError, kDetachedBuffer));

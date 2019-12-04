@@ -59,22 +59,22 @@ XRPose* XRSpace::getPose(XRSpace* other_space,
     return nullptr;
   }
 
-  // Rigid transforms should always be invertible.
-  DCHECK(mojo_from_space->IsInvertible());
-  TransformationMatrix space_from_mojo = mojo_from_space->Inverse();
-
   std::unique_ptr<TransformationMatrix> mojo_from_other =
       other_space->MojoFromSpace();
   if (!mojo_from_other) {
     return nullptr;
   }
 
+  // Rigid transforms should always be invertible.
+  DCHECK(mojo_from_other->IsInvertible());
+  TransformationMatrix other_from_mojo = mojo_from_other->Inverse();
+
   // TODO(crbug.com/969133): Update how EmulatedPosition is determined here once
   // spec issue https://github.com/immersive-web/webxr/issues/534 has been
   // resolved.
-  TransformationMatrix space_from_other =
-      space_from_mojo.Multiply(*mojo_from_other);
-  return MakeGarbageCollected<XRPose>(space_from_other,
+  TransformationMatrix other_from_space =
+      other_from_mojo.Multiply(*mojo_from_space);
+  return MakeGarbageCollected<XRPose>(other_from_space,
                                       session()->EmulatedPosition());
 }
 

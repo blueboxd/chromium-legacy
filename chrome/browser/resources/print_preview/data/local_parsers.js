@@ -47,7 +47,7 @@ function parseLocalDestination(destinationInfo) {
   const options = {
     description: destinationInfo.printerDescription,
     isEnterprisePrinter: destinationInfo.cupsEnterprisePrinter,
-    policies: destinationInfo.policies
+    policies: destinationInfo.policies,
   };
   if (destinationInfo.printerOptions) {
     // Convert options into cloud print tags format.
@@ -55,6 +55,9 @@ function parseLocalDestination(destinationInfo) {
         Object.keys(destinationInfo.printerOptions).map(function(key) {
           return '__cp__' + key + '=' + this[key];
         }, destinationInfo.printerOptions);
+    // <if expr="chromeos">
+    options.eulaUrl = destinationInfo.printerOptions['printerEulaUrl'];
+    // </if>
   }
   return new Destination(
       destinationInfo.deviceName, DestinationType.LOCAL,

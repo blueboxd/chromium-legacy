@@ -247,6 +247,10 @@ void HTMLIFrameElement::ParseAttribute(
                           WebFeature::kFeaturePolicyAllowAttribute);
       }
     }
+  } else if (name == html_names::kDisallowdocumentaccessAttr) {
+    disallow_document_access_ = !value.IsNull();
+    // We don't need to call tell the client frame properties
+    // changed since this attribute only stays inside the renderer.
   } else {
     // Websites picked up a Chromium article that used this non-specified
     // attribute which ended up changing shape after the specification process.

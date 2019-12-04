@@ -330,7 +330,7 @@ void DrawBleedAdjustedDRRect(GraphicsContext& context,
       // int rect for the clip, in device space).
       SkPath path;
       path.addRRect(inner);
-      path.setFillType(SkPath::kInverseWinding_FillType);
+      path.setFillType(SkPathFillType::kInverseWinding);
 
       PaintFlags flags;
       flags.setColor(color.Rgb());

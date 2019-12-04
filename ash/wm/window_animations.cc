@@ -522,9 +522,9 @@ gfx::Rect GetMinimizeAnimationTargetBoundsInScreen(aura::Window* window) {
   if (item_rect.width() != 0 || item_rect.height() != 0) {
     if (shelf->GetVisibilityState() == SHELF_AUTO_HIDE) {
       gfx::Rect shelf_bounds = shelf->GetWindow()->GetBoundsInScreen();
-      if (shelf->alignment() == SHELF_ALIGNMENT_LEFT)
+      if (shelf->alignment() == ShelfAlignment::kLeft)
         item_rect.set_x(shelf_bounds.right());
-      else if (shelf->alignment() == SHELF_ALIGNMENT_RIGHT)
+      else if (shelf->alignment() == ShelfAlignment::kRight)
         item_rect.set_x(shelf_bounds.x());
       else
         item_rect.set_y(shelf_bounds.y());
@@ -539,12 +539,12 @@ gfx::Rect GetMinimizeAnimationTargetBoundsInScreen(aura::Window* window) {
       display::Screen::GetScreen()->GetDisplayNearestWindow(window).work_area();
   int ltr_adjusted_x = base::i18n::IsRTL() ? work_area.right() : work_area.x();
   switch (shelf->alignment()) {
-    case SHELF_ALIGNMENT_BOTTOM:
-    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+    case ShelfAlignment::kBottom:
+    case ShelfAlignment::kBottomLocked:
       return gfx::Rect(ltr_adjusted_x, work_area.bottom(), 0, 0);
-    case SHELF_ALIGNMENT_LEFT:
+    case ShelfAlignment::kLeft:
       return gfx::Rect(work_area.x(), work_area.y(), 0, 0);
-    case SHELF_ALIGNMENT_RIGHT:
+    case ShelfAlignment::kRight:
       return gfx::Rect(work_area.right(), work_area.y(), 0, 0);
   }
   NOTREACHED();

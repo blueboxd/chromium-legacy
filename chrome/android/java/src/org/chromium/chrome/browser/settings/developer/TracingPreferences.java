@@ -14,7 +14,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.settings.PreferenceUtils;
+import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.chrome.browser.tracing.TracingController;
 import org.chromium.chrome.browser.tracing.TracingNotificationManager;
 
@@ -181,7 +181,7 @@ public class TracingPreferences
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         getActivity().setTitle(MSG_TRACING_TITLE);
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.tracing_preferences);
+        SettingsUtils.addPreferencesFromResource(this, R.xml.tracing_preferences);
 
         mPrefDefaultCategories = findPreference(UI_PREF_DEFAULT_CATEGORIES);
         mPrefNondefaultCategories = findPreference(UI_PREF_NON_DEFAULT_CATEGORIES);

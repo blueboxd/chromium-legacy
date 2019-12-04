@@ -29,9 +29,6 @@ enum class ScreenlockState {
   // A phone eligible to unlock the local device is found, but it does not have
   // a lock screen enabled.
   PHONE_NOT_LOCKABLE,
-  // An enabled phone is found, but it is not allowed to unlock the local device
-  // because it does not support reporting its lock screen state.
-  PHONE_UNSUPPORTED,
   // A phone eligible to unlock the local device is found, but its received
   // signal strength is too low, i.e. the phone is roughly more than 30 feet
   // away, and therefore is not allowed to unlock the device.

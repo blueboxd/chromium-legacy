@@ -2946,6 +2946,16 @@ Unknown properties are collapsed to zero. -->
   <int value="5" label="INSUFFICIENT_RESOURCES"/>
 </enum>
 
+<enum name="AshAutoNightLightNotificationState">
+  <summary>
+    Defines the possible states of the Auto Night Light notification as a result
+    of a user's interaction with it.
+  </summary>
+  <int value="0" label="Closed by user"/>
+  <int value="1" label="Notification's body clicked"/>
+  <int value="2" label="Notification's button clicked"/>
+</enum>
+
 <enum name="AshGestureActionType">
   <int value="0" label="Unknown"/>
   <int value="1" label="Omnibox pinch (deprecated, see crbug.com/826476)"/>
@@ -16517,7 +16527,7 @@ Called by update_net_error_codes.py.-->
   <int value="10" label="Password entry: Phone locked"/>
   <int value="11" label="Password entry: Phone not lockable"/>
   <int value="12" label="Password entry: RSSI too low"/>
-  <int value="13" label="Password entry: Phone not supported"/>
+  <int value="13" label="(Deprecated) Password entry: Phone not supported"/>
   <int value="14" label="Password entry: Phone authenticated"/>
   <int value="15" label="Password entry: Tx power too high"/>
   <int value="16" label="Password entry: Easy sign-in failed"/>
@@ -18856,12 +18866,12 @@ Called by update_net_error_codes.py.-->
   <int value="643" label="GloballyScopeHTTPAuthCacheEnabled"/>
   <int value="644" label="WebComponentsV0Enabled"/>
   <int value="645" label="ClickToCallEnabled"/>
-  <int value="646"
-      label="DeviceLoginScreenShowAccessibilityOptionsInSystemTrayMenu"/>
+  <int value="646" label="DeviceLoginScreenShowOptionsInSystemTrayMenu"/>
   <int value="647" label="PrinterTypeDenyList"/>
   <int value="648" label="ForceLegacyDefaultReferrerPolicy"/>
-  <int value="649" label="DisabledSyncTypesList"/>
+  <int value="649" label="SyncTypesListDisabled"/>
   <int value="650" label="AmbientAuthenticationInPrivateModesEnabled"/>
+  <int value="651" label="PaymentMethodQueryEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -37554,6 +37564,7 @@ from previous Chrome versions.
   <int value="-20267582" label="ResourceLoadingHints:disabled"/>
   <int value="-18464041" label="AutofillPrefilledFields:disabled"/>
   <int value="-17698200" label="DoubleTapToZoomInTabletMode:disabled"/>
+  <int value="-17373827" label="SharingDeviceExpiration:enabled"/>
   <int value="-16824589" label="ash-shelf-color"/>
   <int value="-16086999" label="TrimOnFreeze:enabled"/>
   <int value="-15879016"
@@ -37683,6 +37694,7 @@ from previous Chrome versions.
   <int value="133482330" label="AppNotificationStatusMessaging:enabled"/>
   <int value="136924140" label="OfflineIndicatorV2:enabled"/>
   <int value="138345654" label="enable-ambient-authentication-in-incognito"/>
+  <int value="139569991" label="SharingDeviceExpiration:disabled"/>
   <int value="143725809" label="DownloadProgressInfoBar:enabled"/>
   <int value="146229312" label="WebPaymentsExperimentalFeatures:enabled"/>
   <int value="147342055" label="ChromeHomeClearUrlOnOpen:disabled"/>
@@ -38457,6 +38469,7 @@ from previous Chrome versions.
   <int value="1182356056" label="MacV2GPUSandbox:enabled"/>
   <int value="1183260592" label="WebAssemblyBaseline:enabled"/>
   <int value="1183431946" label="v8-cache-options"/>
+  <int value="1184093076" label="WebRtcUseMinMaxVEADimensions:enabled"/>
   <int value="1184225265" label="AllowSyncXHRInPageDismissal:enabled"/>
   <int value="1185424279" label="enable-media-router"/>
   <int value="1188109510" label="AssistantAudioEraser:enabled"/>
@@ -38756,6 +38769,7 @@ from previous Chrome versions.
   <int value="1559034872" label="AutofillPrefilledFields:enabled"/>
   <int value="1560188739" label="reader-mode-heuristics"/>
   <int value="1561781431" label="VirtualKeyboardBorderedKey:enabled"/>
+  <int value="1562855415" label="WebRtcUseMinMaxVEADimensions:disabled"/>
   <int value="1563255033" label="memlog-stack-mode"/>
   <int value="1567839560"
       label="ChromeHomePersonalizedOmniboxSuggestions:disabled"/>

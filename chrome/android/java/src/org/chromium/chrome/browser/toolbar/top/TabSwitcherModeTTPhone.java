@@ -65,6 +65,8 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
     private ColorStateList mDarkIconTint;
 
     private boolean mIsIncognito;
+    private boolean mShouldShowButtons;
+    private boolean mShouldShowNewTabVariation;
 
     private ObjectAnimator mVisiblityAnimator;
 
@@ -82,8 +84,9 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
         mToggleTabStackButton = findViewById(R.id.tab_switcher_mode_tab_switcher_button);
 
         boolean isBottomToolbarEnabled = FeatureUtilities.isBottomToolbarEnabled();
+        boolean isGridTabSwitcherEnabled = FeatureUtilities.isGridTabSwitcherEnabled();
 
-        if (isBottomToolbarEnabled) {
+        if (isBottomToolbarEnabled && !isGridTabSwitcherEnabled) {
             UiUtils.removeViewFromParent(mNewTabImageButton);
             mNewTabImageButton.destroy();
             mNewTabImageButton = null;
@@ -289,6 +292,34 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
         updatePrimaryColorAndTint();
     }
 
+    /**
+     * @param isVisible Whether the bottom toolbar is visible.
+     */
+    void onBottomToolbarVisibilityChanged(boolean isVisible) {
+        // When bottom toolbar is showing, hide buttons in top toolbar that have overlapping
+        // functionality; otherwise show buttons in top toolbar.
+        mShouldShowButtons = !isVisible;
+        setNewTabButtonVisibility(mShouldShowButtons);
+        setMenuButtonVisibility(mShouldShowButtons);
+    }
+
+    private void setNewTabButtonVisibility(boolean isButtonVisible) {
+        if (mNewTabViewButton != null) {
+            mNewTabViewButton.setVisibility(
+                    mShouldShowNewTabVariation && isButtonVisible ? VISIBLE : GONE);
+        }
+        if (mNewTabImageButton != null) {
+            mNewTabImageButton.setVisibility(
+                    !mShouldShowNewTabVariation && isButtonVisible ? VISIBLE : GONE);
+        }
+    }
+
+    private void setMenuButtonVisibility(boolean isButtonVisible) {
+        if (mMenuButton != null) {
+            mMenuButton.setVisibility(isButtonVisible ? VISIBLE : GONE);
+        }
+    }
+
     private void updatePrimaryColorAndTint() {
         int primaryColor = getToolbarColorForCurrentState();
         if (mPrimaryColor != primaryColor) {
@@ -391,16 +422,16 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
                             .getFieldTrialParamByFeature(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                                     "tab_grid_layout_android_new_tab")
                             .equals("NewTabVariation")
-                || FeatureUtilities.isBottomToolbarEnabled() || mIncognitoToggleTabLayout == null) {
+                || mIncognitoToggleTabLayout == null) {
+            mShouldShowNewTabVariation = false;
             return;
         }
-        boolean hasIncognitoTabs = hasIncognitoTabs();
-        mIncognitoToggleTabLayout.setVisibility(hasIncognitoTabs ? VISIBLE : GONE);
-        if (mNewTabImageButton != null && mNewTabViewButton != null) {
-            // Only show one new tab variation at a time.
-            mNewTabImageButton.setVisibility(hasIncognitoTabs ? VISIBLE : GONE);
-            mNewTabViewButton.setVisibility(hasIncognitoTabs ? GONE : VISIBLE);
-        }
+        // TODO(crbug.com/1012014): Address the empty top toolbar issue when adaptive toolbar and
+        // new tab variation are both on.
+        // Show new tab variation when there are no incognito tabs.
+        mShouldShowNewTabVariation = !hasIncognitoTabs();
+        mIncognitoToggleTabLayout.setVisibility(mShouldShowNewTabVariation ? GONE : VISIBLE);
+        setNewTabButtonVisibility(mShouldShowButtons);
     }
 
     private boolean hasIncognitoTabs() {

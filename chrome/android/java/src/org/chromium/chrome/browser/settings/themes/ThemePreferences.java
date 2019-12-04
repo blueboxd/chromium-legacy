@@ -18,7 +18,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.settings.PreferenceUtils;
+import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.ui.UiUtils;
 
 import java.lang.annotation.Retention;
@@ -47,7 +47,7 @@ public class ThemePreferences extends PreferenceFragmentCompat {
 
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, String rootKey) {
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.theme_preferences);
+        SettingsUtils.addPreferencesFromResource(this, R.xml.theme_preferences);
         getActivity().setTitle(R.string.prefs_themes);
 
         SharedPreferencesManager sharedPreferencesManager = SharedPreferencesManager.getInstance();

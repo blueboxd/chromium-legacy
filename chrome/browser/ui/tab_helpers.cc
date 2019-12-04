@@ -85,7 +85,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
-#include "components/dom_distiller/content/browser/web_contents_main_frame_observer.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/download/content/factory/navigation_monitor_factory.h"
 #include "components/download/content/public/download_navigation_observer.h"
@@ -374,11 +373,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   SupervisedUserNavigationObserver::CreateForWebContents(web_contents);
 #endif
-
-  if (dom_distiller::IsDomDistillerEnabled()) {
-    dom_distiller::WebContentsMainFrameObserver::CreateForWebContents(
-        web_contents);
-  }
 
   if (predictors::LoadingPredictorFactory::GetForProfile(profile))
     predictors::LoadingPredictorTabHelper::CreateForWebContents(web_contents);

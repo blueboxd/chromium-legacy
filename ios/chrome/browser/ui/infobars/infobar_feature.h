@@ -12,6 +12,12 @@
 // Use IsInfobarUIRebootEnabled() instead of this constant directly.
 extern const base::Feature kInfobarUIReboot;
 
+// Feature to choose whether to use OverlayPresenter to show the new Messages
+// Infobar design.  In order for it to work, kInfobarUIReboot needs to also be
+// enabled.
+// Use IsInfobarOverlayUIEnabled() instead of this constant directly.
+extern const base::Feature kInfobarOverlayUI;
+
 // Feature to choose whether Confirm Infobars use the new Messages UI or the
 // legacy one. Also, in order for it to work kInfobarUIReboot needs to be
 // enabled.
@@ -45,6 +51,9 @@ extern const base::Feature kTranslateInfobarMessagesUI;
 
 // Whether the Messages Infobar UI is enabled.
 bool IsInfobarUIRebootEnabled();
+
+// Whether the Messages Infobar UI is presented using OverlayPresenter.
+bool IsInfobarOverlayUIEnabled();
 
 // Whether the Confirm Infobar Messages UI is enabled.
 bool IsConfirmInfobarMessagesUIEnabled();

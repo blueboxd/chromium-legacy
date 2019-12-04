@@ -5,12 +5,11 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace service_manager {
 
 InterfaceProvider::InterfaceProvider() {
-  pending_request_ = interface_provider_.BindNewPipeAndPassReceiver();
+  pending_receiver_ = interface_provider_.BindNewPipeAndPassReceiver();
 }
 
 InterfaceProvider::InterfaceProvider(
@@ -20,29 +19,28 @@ InterfaceProvider::InterfaceProvider(
 InterfaceProvider::~InterfaceProvider() {}
 
 void InterfaceProvider::Close() {
-  if (pending_request_.is_pending())
-    pending_request_.PassMessagePipe().reset();
+  if (pending_receiver_)
+    pending_receiver_.PassPipe().reset();
   interface_provider_.reset();
 }
 
 void InterfaceProvider::Bind(
     mojo::PendingRemote<mojom::InterfaceProvider> interface_provider) {
-  DCHECK(pending_request_.is_pending() || !interface_provider_);
+  DCHECK(pending_receiver_ || !interface_provider_);
   DCHECK(forward_callback_.is_null());
-  if (pending_request_.is_pending()) {
-    mojo::FuseInterface(std::move(pending_request_),
-                        mojo::InterfacePtrInfo<mojom::InterfaceProvider>(
-                            interface_provider.PassPipe(), 0u));
+  if (pending_receiver_) {
+    mojo::FusePipes(std::move(pending_receiver_),
+                    std::move(interface_provider));
   } else {
     interface_provider_.Bind(std::move(interface_provider));
   }
 }
 
 void InterfaceProvider::Forward(const ForwardCallback& callback) {
-  DCHECK(pending_request_.is_pending());
+  DCHECK(pending_receiver_);
   DCHECK(forward_callback_.is_null());
   interface_provider_.reset();
-  pending_request_.PassMessagePipe().reset();
+  pending_receiver_.PassPipe().reset();
   forward_callback_ = callback;
 }
 

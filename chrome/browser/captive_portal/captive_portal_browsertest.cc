@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/navigation_correction_tab_observer.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -556,6 +557,7 @@ class TabActivationWaiter : public TabStripModelObserver {
 class CaptivePortalBrowserTest : public InProcessBrowserTest {
  public:
   CaptivePortalBrowserTest();
+  ~CaptivePortalBrowserTest() override;
 
   // InProcessBrowserTest:
   void SetUpOnMainThread() override;
@@ -895,7 +897,13 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
 };
 
 CaptivePortalBrowserTest::CaptivePortalBrowserTest()
-    : behind_captive_portal_(true) {}
+    : behind_captive_portal_(true) {
+  NavigationCorrectionTabObserver::SetAllowEnableCorrectionsForTesting(true);
+}
+
+CaptivePortalBrowserTest::~CaptivePortalBrowserTest() {
+  NavigationCorrectionTabObserver::SetAllowEnableCorrectionsForTesting(false);
+}
 
 void CaptivePortalBrowserTest::SetUpOnMainThread() {
   url_loader_interceptor_ =

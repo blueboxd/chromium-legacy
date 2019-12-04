@@ -11,6 +11,9 @@
 const base::Feature kInfobarUIReboot{"InfobarUIReboot",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kInfobarOverlayUI{"InfobarOverlayUI",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature enabled by default since it will always be checked along
 // kInfobarUIReboot, effectively working as a kill switch. Meaning that if
 // kInfobarUIReboot is not enabled this feature won't work.
@@ -42,6 +45,11 @@ const base::Feature kTranslateInfobarMessagesUI{
 
 bool IsInfobarUIRebootEnabled() {
   return base::FeatureList::IsEnabled(kInfobarUIReboot);
+}
+
+bool IsInfobarOverlayUIEnabled() {
+  return IsInfobarUIRebootEnabled() &&
+         base::FeatureList::IsEnabled(kInfobarOverlayUI);
 }
 
 bool IsConfirmInfobarMessagesUIEnabled() {

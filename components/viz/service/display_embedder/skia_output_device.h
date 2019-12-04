@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "components/viz/service/display/output_surface.h"
+#include "components/viz/service/display/skia_output_surface.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/src/gpu/GrSemaphore.h"
@@ -37,9 +38,6 @@ class GLImage;
 }
 
 namespace viz {
-#if defined(OS_WIN)
-class DCLayerOverlay;
-#endif
 
 class SkiaOutputDevice {
  public:
@@ -99,9 +97,10 @@ class SkiaOutputDevice {
   virtual void SetDrawRectangle(const gfx::Rect& draw_rectangle);
 
   virtual void SetGpuVSyncEnabled(bool enabled);
+  virtual void ScheduleOverlays(SkiaOutputSurface::OverlayList overlays);
+
 #if defined(OS_WIN)
   virtual void SetEnableDCLayers(bool enabled);
-  virtual void ScheduleDCLayers(std::vector<DCLayerOverlay> dc_layers);
 #endif
 
   const OutputSurface::Capabilities& capabilities() const {

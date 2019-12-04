@@ -150,7 +150,8 @@ void SearchSuggestionParser::SuggestResult::ClassifyMatchContents(
     const bool allow_bolding_all,
     const base::string16& input_text) {
   if (input_text.empty()) {
-    // In case of zero-suggest results, do not highlight matches.
+    // In case of empty-textfield zero-suggest results, like on the NTP,
+    // do not highlight matches.
     match_contents_class_.push_back(
         ACMatchClassification(0, ACMatchClassification::NONE));
     return;

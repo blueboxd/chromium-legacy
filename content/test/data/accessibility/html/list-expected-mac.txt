@@ -2,12 +2,15 @@ AXWebArea
 ++AXList AXSubrole=AXContentList
 ++++AXGroup
 ++++++AXListMarker AXValue='• '
+++++++++AXStaticText AXValue='• '
 ++++++AXStaticText AXValue='tic'
 ++++AXGroup
 ++++++AXListMarker AXValue='• '
+++++++++AXStaticText AXValue='• '
 ++++++AXStaticText AXValue='tac'
 ++++AXGroup
 ++++++AXListMarker AXValue='• '
+++++++++AXStaticText AXValue='• '
 ++++++AXStaticText AXValue='toe'
 ++AXList AXSubrole=AXContentList
 ++++AXGroup

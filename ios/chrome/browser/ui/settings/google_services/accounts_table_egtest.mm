@@ -3,46 +3,24 @@
 // found in the LICENSE file.
 
 #import <EarlGrey/EarlGrey.h>
-#import <XCTest/XCTest.h>
 
-#include "base/strings/sys_string_conversions.h"
-#include "components/strings/grit/components_strings.h"
-#include "components/sync/driver/profile_sync_service.h"
-#include "components/sync/driver/sync_service.h"
-#include "components/sync/engine/sync_encryption_handler.h"
-#include "components/sync/protocol/proto_value_conversions.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
-#include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory_util.h"
-#import "ios/chrome/browser/signin/authentication_service.h"
-#import "ios/chrome/browser/signin/authentication_service_factory.h"
-#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
-#include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
-#include "ios/chrome/grit/ios_strings.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
-#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-using chrome_test_util::AccountsSyncButton;
 using chrome_test_util::ButtonWithAccessibilityLabel;
-using chrome_test_util::GoogleServicesSettingsButton;
 using chrome_test_util::SettingsAccountButton;
 using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SignOutAccountsButton;
 using chrome_test_util::PrimarySignInButton;
-using chrome_test_util::SecondarySignInButton;
-
-typedef NSString* (^ExpectedTextLabelCallback)(NSString* identityEmail);
 
 namespace {
 

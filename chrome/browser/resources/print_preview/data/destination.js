@@ -277,6 +277,7 @@ export class Destination {
    *          certificateStatus:
    *              (DestinationCertificateStatus|undefined),
    *          policies: (DestinationPolicies|undefined),
+   *          eulaUrl: (string|undefined),
    *         }=} opt_params Optional
    *     parameters for the destination.
    */
@@ -405,6 +406,14 @@ export class Destination {
      */
     this.certificateStatus_ = opt_params && opt_params.certificateStatus ||
         DestinationCertificateStatus.NONE;
+
+    // <if expr="chromeos">
+    /**
+     * EULA url for printer's PPD. Empty string indicates no provided EULA.
+     * @private {string}
+     */
+    this.eulaUrl_ = (opt_params && opt_params.eulaUrl) || '';
+    // </if>
 
     assert(
         this.provisionalType_ !=
@@ -578,6 +587,11 @@ export class Destination {
    */
   set policies(policies) {
     this.policies_ = policies;
+  }
+
+  /** @return {string} The EULA URL for a the destination */
+  get eulaUrl() {
+    return this.eulaUrl_;
   }
   // </if>
 

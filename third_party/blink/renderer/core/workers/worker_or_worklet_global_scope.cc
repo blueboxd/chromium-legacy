@@ -476,16 +476,10 @@ void WorkerOrWorkletGlobalScope::FetchModuleScript(
       destination, options, custom_fetch_type, client);
 }
 
-void WorkerOrWorkletGlobalScope::TasksWerePaused() {
-  ExecutionContext::TasksWerePaused();
+void WorkerOrWorkletGlobalScope::SetDefersLoadingForResourceFetchers(
+    bool defers) {
   for (ResourceFetcher* resource_fetcher : resource_fetchers_)
-    resource_fetcher->SetDefersLoading(true);
-}
-
-void WorkerOrWorkletGlobalScope::TasksWereUnpaused() {
-  ExecutionContext::TasksWereUnpaused();
-  for (ResourceFetcher* resource_fetcher : resource_fetchers_)
-    resource_fetcher->SetDefersLoading(false);
+    resource_fetcher->SetDefersLoading(defers);
 }
 
 void WorkerOrWorkletGlobalScope::Trace(blink::Visitor* visitor) {

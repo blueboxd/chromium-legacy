@@ -33,8 +33,6 @@ class LocalSiteCharacteristicsDataReader
   performance_manager::SiteFeatureUsage UpdatesTitleInBackground()
       const override;
   performance_manager::SiteFeatureUsage UsesAudioInBackground() const override;
-  performance_manager::SiteFeatureUsage UsesNotificationsInBackground()
-      const override;
   bool DataLoaded() const override;
   void RegisterDataLoadedCallback(base::OnceClosure&& callback) override;
 

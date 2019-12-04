@@ -15,7 +15,7 @@
 #include "components/infobars/core/infobar_manager.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/infobars/infobar.h"
+#include "ios/chrome/browser/infobars/infobar_ios.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/infobars/infobar_utils.h"
 #include "ios/chrome/browser/send_tab_to_self/ios_send_tab_to_self_infobar_delegate.h"

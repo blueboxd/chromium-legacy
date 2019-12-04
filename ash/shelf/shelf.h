@@ -215,7 +215,7 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   std::unique_ptr<ShelfWidget> shelf_widget_;
 
   // These initial values hide the shelf until user preferences are available.
-  ShelfAlignment alignment_ = SHELF_ALIGNMENT_BOTTOM_LOCKED;
+  ShelfAlignment alignment_ = ShelfAlignment::kBottomLocked;
   ShelfAutoHideBehavior auto_hide_behavior_ = SHELF_AUTO_HIDE_ALWAYS_HIDDEN;
 
   // Sets shelf alignment to bottom during login and screen lock.

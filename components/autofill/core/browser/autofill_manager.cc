@@ -532,10 +532,10 @@ bool AutofillManager::ShouldParseForms(const std::vector<FormData>& forms,
   if (!has_logged_autofill_enabled_) {
     AutofillMetrics::LogIsAutofillEnabledAtPageLoad(autofill_enabled,
                                                     sync_state_);
-    AutofillMetrics::LogIsProfileAutofillEnabledAtPageLoad(
-        IsProfileAutofillEnabled(), sync_state_);
-    AutofillMetrics::LogIsCreditCardAutofillEnabledAtPageLoad(
-        IsCreditCardAutofillEnabled(), sync_state_);
+    AutofillMetrics::LogIsAutofillProfileEnabledAtPageLoad(
+        IsAutofillProfileEnabled(), sync_state_);
+    AutofillMetrics::LogIsAutofillCreditCardEnabledAtPageLoad(
+        IsAutofillCreditCardEnabled(), sync_state_);
     has_logged_autofill_enabled_ = true;
   }
 
@@ -575,10 +575,10 @@ void AutofillManager::OnFormSubmittedImpl(const FormData& form,
   autocomplete_history_manager_->OnWillSubmitForm(
       form_for_autocomplete, client_->IsAutocompleteEnabled());
 
-  if (IsProfileAutofillEnabled()) {
+  if (IsAutofillProfileEnabled()) {
     address_form_event_logger_->OnWillSubmitForm(sync_state_, *submitted_form);
   }
-  if (IsCreditCardAutofillEnabled()) {
+  if (IsAutofillCreditCardEnabled()) {
     credit_card_form_event_logger_->OnWillSubmitForm(sync_state_,
                                                      *submitted_form);
   }
@@ -596,11 +596,11 @@ void AutofillManager::OnFormSubmittedImpl(const FormData& form,
 
   submitted_form->set_submission_source(source);
 
-  if (IsProfileAutofillEnabled()) {
+  if (IsAutofillProfileEnabled()) {
     address_form_event_logger_->OnFormSubmitted(/*force_logging=*/false,
                                                 sync_state_, *submitted_form);
   }
-  if (IsCreditCardAutofillEnabled()) {
+  if (IsAutofillCreditCardEnabled()) {
     credit_card_form_event_logger_->OnFormSubmitted(
         enable_ablation_logging_, sync_state_, *submitted_form);
   }
@@ -613,8 +613,8 @@ void AutofillManager::OnFormSubmittedImpl(const FormData& form,
   // Update Personal Data with the form's submitted data.
   // Also triggers offering local/upload credit card save, if applicable.
   client_->GetFormDataImporter()->ImportFormData(*submitted_form,
-                                                 IsProfileAutofillEnabled(),
-                                                 IsCreditCardAutofillEnabled());
+                                                 IsAutofillProfileEnabled(),
+                                                 IsAutofillCreditCardEnabled());
 }
 
 bool AutofillManager::MaybeStartVoteUploadProcess(
@@ -1348,15 +1348,15 @@ void AutofillManager::OnDidEndTextFieldEditing() {
 }
 
 bool AutofillManager::IsAutofillEnabled() const {
-  return IsProfileAutofillEnabled() || IsCreditCardAutofillEnabled();
+  return IsAutofillProfileEnabled() || IsAutofillCreditCardEnabled();
 }
 
-bool AutofillManager::IsProfileAutofillEnabled() const {
-  return ::autofill::prefs::IsProfileAutofillEnabled(client_->GetPrefs());
+bool AutofillManager::IsAutofillProfileEnabled() const {
+  return ::autofill::prefs::IsAutofillProfileEnabled(client_->GetPrefs());
 }
 
-bool AutofillManager::IsCreditCardAutofillEnabled() const {
-  return ::autofill::prefs::IsCreditCardAutofillEnabled(client_->GetPrefs());
+bool AutofillManager::IsAutofillCreditCardEnabled() const {
+  return ::autofill::prefs::IsAutofillCreditCardEnabled(client_->GetPrefs());
 }
 
 // static

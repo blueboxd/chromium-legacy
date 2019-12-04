@@ -417,13 +417,17 @@ void CompositingRequirementsUpdater::UpdateRecursive(
   //  * may escape |layer|'s clip.
   //  * may need compositing requirements update for another reason (
   //    e.g. change of stacking order)
+  bool recursion_blocked_by_display_lock =
+      layer->GetLayoutObject().PrePaintBlockedByDisplayLock(
+          DisplayLockLifecycleTarget::kChildren);
   bool skip_children =
-      !layer->DescendantHasDirectOrScrollingCompositingReason() &&
-      !needs_recursion_for_composited_scrolling_plus_fixed_or_sticky &&
-      !needs_recursion_for_out_of_flow_descendant &&
-      layer->GetLayoutObject().ShouldClipOverflow() &&
-      !layer->HasCompositingDescendant() &&
-      !layer->DescendantMayNeedCompositingRequirementsUpdate();
+      recursion_blocked_by_display_lock ||
+      (!layer->DescendantHasDirectOrScrollingCompositingReason() &&
+       !needs_recursion_for_composited_scrolling_plus_fixed_or_sticky &&
+       !needs_recursion_for_out_of_flow_descendant &&
+       layer->GetLayoutObject().ShouldClipOverflow() &&
+       !layer->HasCompositingDescendant() &&
+       !layer->DescendantMayNeedCompositingRequirementsUpdate());
 
   if (!skip_children) {
     PaintLayerPaintOrderIterator iterator(*layer, kNegativeZOrderChildren);
@@ -490,7 +494,7 @@ void CompositingRequirementsUpdater::UpdateRecursive(
   }
 
 #if DCHECK_IS_ON()
-  if (skip_children)
+  if (skip_children && !recursion_blocked_by_display_lock)
     CheckSubtreeHasNoCompositing(layer);
 #endif
 
@@ -612,6 +616,18 @@ void CompositingRequirementsUpdater::UpdateRecursive(
   // At this point we have finished collecting all reasons to composite this
   // layer.
   layer->SetCompositingReasons(reasons_to_composite);
+
+  // If we've skipped recursing down to children but children needed an
+  // update, remember this on the display lock context, so that we can restore
+  // the dirty bit when the lock is unlocked.
+  if (layer->DescendantMayNeedCompositingRequirementsUpdate() &&
+      skip_children) {
+    auto* context = layer->GetLayoutObject().GetDisplayLockContext();
+    DCHECK(recursion_blocked_by_display_lock);
+    DCHECK(context);
+    context->NotifyCompositingRequirementsUpdateWasBlocked();
+  }
+
   layer->ClearNeedsCompositingRequirementsUpdate();
   if (reasons_to_composite & CompositingReason::kOverlap)
     compositing_reasons_stats.overlap_layers++;

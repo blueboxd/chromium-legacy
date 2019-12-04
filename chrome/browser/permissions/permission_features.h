@@ -7,11 +7,6 @@
 
 #include "build/build_config.h"
 
-extern const char kQuietNotificationPromptsActivationParameterName[];
-extern const char kQuietNotificationPromptsActivationNever[];
-extern const char kQuietNotificationPromptsActivationAdaptive[];
-extern const char kQuietNotificationPromptsActivationAlways[];
-
 class QuietNotificationsPromptConfig {
  public:
   enum UIFlavor {
@@ -26,15 +21,17 @@ class QuietNotificationsPromptConfig {
 #endif  // OS_ANDROID
   };
 
-  enum class Activation {
-    kNever,
-    // Enable after three consecutive denies.
-    kAdaptive,
-    kAlways,
-  };
+  // Name of the boolean variation parameter that determines if the quiet
+  // notification permission prompt UI should be enabled adaptively after three
+  // consecutive prompt denies.
+  static const char kEnableAdaptiveActivation[];
 
   static UIFlavor UIFlavorToUse();
-  static Activation GetActivation();
+
+  // Whether or not adaptive activation is enabled. Adaptive activation means
+  // that quiet notifications permission prompts will be turned on after three
+  // consecutive prompt denies.
+  static bool IsAdaptiveActivationEnabled();
 };
 
 #endif  // CHROME_BROWSER_PERMISSIONS_PERMISSION_FEATURES_H_

@@ -42,7 +42,7 @@
 #include "components/sync/driver/sync_service.h"
 #import "components/ukm/ios/ukm_url_recorder.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/infobars/infobar.h"
+#include "ios/chrome/browser/infobars/infobar_ios.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
 #include "ios/chrome/browser/passwords/credential_manager.h"

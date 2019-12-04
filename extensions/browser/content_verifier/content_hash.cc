@@ -4,8 +4,10 @@
 
 #include "extensions/browser/content_verifier/content_hash.h"
 
+#include <set>
+
 #include "base/bind.h"
-#include "base/files/file_enumerator.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram_macros.h"
@@ -25,8 +27,6 @@
 namespace extensions {
 
 namespace {
-
-using SortedFilePathSet = std::set<base::FilePath>;
 
 bool CreateDirAndWriteFile(const base::FilePath& destination,
                            const std::string& content) {
@@ -194,10 +194,9 @@ void ContentHash::GetVerifiedContents(
 }
 
 // static
-void ContentHash::FetchVerifiedContents(
-    ContentHash::FetchKey key,
-    const ContentHash::IsCancelledCallback& is_cancelled,
-    GetVerifiedContentsCallback callback) {
+void ContentHash::FetchVerifiedContents(ContentHash::FetchKey key,
+                                        const IsCancelledCallback& is_cancelled,
+                                        GetVerifiedContentsCallback callback) {
   // |fetcher| deletes itself when it's done.
   internals::ContentHashFetcher* fetcher =
       new internals::ContentHashFetcher(std::move(key));
@@ -310,88 +309,70 @@ void ContentHash::RecordFetchResult(bool success) {
   UMA_HISTOGRAM_BOOLEAN("Extensions.ContentVerification.FetchResult", success);
 }
 
-base::Optional<std::vector<std::string>>
-ContentHash::ComputeAndCheckResourceHash(
-    const base::FilePath& full_path,
+bool ContentHash::ShouldComputeHashesForResource(
     const base::FilePath& relative_unix_path) {
-  DCHECK(source_type_ !=
-             ContentVerifierDelegate::VerifierSourceType::SIGNED_HASHES ||
-         verified_contents_);
-
-  if (source_type_ ==
-          ContentVerifierDelegate::VerifierSourceType::SIGNED_HASHES &&
-      !verified_contents_->HasTreeHashRoot(relative_unix_path)) {
-    return base::nullopt;
-  }
-
-  std::string contents;
-  if (!base::ReadFileToString(full_path, &contents)) {
-    LOG(ERROR) << "Could not read " << full_path.MaybeAsASCII();
-    return base::nullopt;
-  }
-
-  // Iterate through taking the hash of each block of size (block_size_) of
-  // the file.
-  std::vector<std::string> hashes =
-      ComputedHashes::GetHashesForContent(contents, block_size_);
   if (source_type_ !=
       ContentVerifierDelegate::VerifierSourceType::SIGNED_HASHES) {
-    return base::make_optional(std::move(hashes));
+    return true;
+  }
+  DCHECK(verified_contents_);
+  return verified_contents_->HasTreeHashRoot(relative_unix_path);
+}
+
+std::set<base::FilePath> ContentHash::GetMismatchedComputedHashes(
+    ComputedHashes::Data* computed_hashes_data) {
+  DCHECK(computed_hashes_data);
+  if (source_type_ !=
+      ContentVerifierDelegate::VerifierSourceType::SIGNED_HASHES) {
+    return std::set<base::FilePath>();
   }
 
-  std::string root =
-      ComputeTreeHashRoot(hashes, block_size_ / crypto::kSHA256Length);
-  if (!verified_contents_->TreeHashRootEquals(relative_unix_path, root)) {
-    VLOG(1) << "content mismatch for " << relative_unix_path.AsUTF8Unsafe();
-    hash_mismatch_unix_paths_.insert(relative_unix_path);
-    return base::nullopt;
+  std::set<base::FilePath> mismatched_hashes;
+
+  for (const auto& resource_info : *computed_hashes_data) {
+    const base::FilePath& relative_unix_path = resource_info.first;
+    const std::vector<std::string>& hashes = resource_info.second.second;
+
+    std::string root =
+        ComputeTreeHashRoot(hashes, block_size_ / crypto::kSHA256Length);
+    if (!verified_contents_->TreeHashRootEquals(relative_unix_path, root))
+      mismatched_hashes.insert(relative_unix_path);
   }
 
-  return base::make_optional(std::move(hashes));
+  return mismatched_hashes;
 }
 
 bool ContentHash::CreateHashes(const base::FilePath& hashes_file,
                                const IsCancelledCallback& is_cancelled) {
+  DCHECK_EQ(ContentVerifierDelegate::VerifierSourceType::SIGNED_HASHES,
+            source_type_);
   base::ElapsedTimer timer;
   did_attempt_creating_computed_hashes_ = true;
-  // Make sure the directory exists.
-  if (!base::CreateDirectoryAndGetError(hashes_file.DirName(), nullptr))
-    return false;
 
-  base::FileEnumerator enumerator(extension_root_, true, /* recursive */
-                                  base::FileEnumerator::FILES);
-  // First discover all the file paths and put them in a sorted set.
-  SortedFilePathSet paths;
-  for (;;) {
-    if (is_cancelled && is_cancelled.Run())
-      return false;
+  base::Optional<ComputedHashes::Data> computed_hashes_data =
+      ComputedHashes::Compute(
+          extension_root_, block_size_, is_cancelled,
+          // Using base::Unretained is safe here as
+          // ShouldComputeHashesForResource is only called synchronously from
+          // ComputedHashes::Compute.
+          base::BindRepeating(&ContentHash::ShouldComputeHashesForResource,
+                              base::Unretained(this)));
 
-    base::FilePath full_path = enumerator.Next();
-    if (full_path.empty())
-      break;
-    paths.insert(full_path);
+  if (computed_hashes_data) {
+    std::set<base::FilePath> hashes_mismatch =
+        GetMismatchedComputedHashes(&computed_hashes_data.value());
+    for (const auto& relative_unix_path : hashes_mismatch) {
+      VLOG(1) << "content mismatch for " << relative_unix_path.AsUTF8Unsafe();
+      // Remove hash entry to keep computed_hashes.json file clear of mismatched
+      // hashes.
+      computed_hashes_data->erase(relative_unix_path);
+    }
+    hash_mismatch_unix_paths_ = std::move(hashes_mismatch);
   }
 
-  // Now iterate over all the paths in sorted order and compute the block hashes
-  // for each one.
-  ComputedHashes::Data computed_hashes_data;
-  for (auto i = paths.begin(); i != paths.end(); ++i) {
-    if (is_cancelled && is_cancelled.Run())
-      return false;
-
-    const base::FilePath& full_path = *i;
-    base::FilePath relative_unix_path;
-    extension_root_.AppendRelativePath(full_path, &relative_unix_path);
-    relative_unix_path = relative_unix_path.NormalizePathSeparatorsTo('/');
-
-    base::Optional<std::vector<std::string>> hashes =
-        ComputeAndCheckResourceHash(full_path, relative_unix_path);
-    if (hashes)
-      computed_hashes_data.AddHashes(relative_unix_path, block_size_,
-                                     std::move(hashes.value()));
-  }
-  bool result =
-      ComputedHashes(std::move(computed_hashes_data)).WriteToFile(hashes_file);
+  bool result = computed_hashes_data &&
+                ComputedHashes(std::move(computed_hashes_data.value()))
+                    .WriteToFile(hashes_file);
   UMA_HISTOGRAM_TIMES("ExtensionContentHashFetcher.CreateHashesTime",
                       timer.Elapsed());
 

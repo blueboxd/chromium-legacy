@@ -14,6 +14,7 @@
 
 #include "base/trace_event/traced_value.h"
 #include "cc/cc_export.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_compositor_scheduler_state.pbzero.h"
 
 namespace base {
 class Value;
@@ -90,7 +91,11 @@ enum TreePriority {
   LAST_TREE_PRIORITY = NEW_CONTENT_TAKES_PRIORITY
   // Be sure to update TreePriorityAsValue when adding new fields.
 };
+// TODO(nuskos): remove TreePriorityToString once we have a utility function to
+// take protozero to strings.
 std::string TreePriorityToString(TreePriority prio);
+perfetto::protos::pbzero::ChromeCompositorStateMachine::MinorState::TreePriority
+TreePriorityToProtozeroEnum(TreePriority priority);
 
 class GlobalStateThatImpactsTilePriority {
  public:

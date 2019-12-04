@@ -199,6 +199,8 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   int GetIndexInParent() override;
   base::string16 GetHypertext() const override;
 
+  bool IsNameExposed();
+
   void UpdateHypertext();
   const AXHypertext& GetAXHypertext();
   const base::OffsetAdjuster::Adjustments& GetHypertextAdjustments();

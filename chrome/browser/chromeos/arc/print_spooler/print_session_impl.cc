@@ -46,9 +46,9 @@ constexpr int kMinimumPdfSize = 50;
 
 // Converts a color mode to its Mojo type.
 mojom::PrintColorMode ToArcColorMode(int color_mode) {
-  base::Optional<bool> is_color = printing::IsColorModelSelected(color_mode);
-  return is_color.value() ? mojom::PrintColorMode::COLOR
-                          : mojom::PrintColorMode::MONOCHROME;
+  return printing::IsColorModelSelected(color_mode)
+             ? mojom::PrintColorMode::COLOR
+             : mojom::PrintColorMode::MONOCHROME;
 }
 
 // Converts a duplex mode to its Mojo type.

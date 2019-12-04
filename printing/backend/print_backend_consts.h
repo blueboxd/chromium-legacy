@@ -14,6 +14,7 @@ PRINTING_EXPORT extern const char kCUPSPrintServerURL[];
 PRINTING_EXPORT extern const char kDriverInfoTagName[];
 PRINTING_EXPORT extern const char kDriverNameTagName[];
 PRINTING_EXPORT extern const char kLocationTagName[];
+PRINTING_EXPORT extern const char kPrinterEulaURL[];
 PRINTING_EXPORT extern const char kValueFalse[];
 PRINTING_EXPORT extern const char kValueTrue[];
 

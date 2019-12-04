@@ -29,7 +29,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPrivateApiTest, GetDisplayLanguageTest) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityPrivateApiTest, OpenSettingsSubpage) {
+// Flaky on a debug build, see crbug.com/1030507.
+#if !defined(NDEBUG)
+#define MAYBE_OpenSettingsSubpage DISABLED_OpenSettingsSubpage
+#else
+#define MAYBE_OpenSettingsSubpage OpenSettingsSubpage
+#endif
+IN_PROC_BROWSER_TEST_F(AccessibilityPrivateApiTest, MAYBE_OpenSettingsSubpage) {
   Profile* profile = chromeos::AccessibilityManager::Get()->profile();
 
   // Install the Settings App.

@@ -521,12 +521,8 @@ void DocumentLoader::SetHistoryItemStateForCommit(
     history_item_ = MakeGarbageCollected<HistoryItem>();
 
   history_item_->SetURL(UrlForHistory());
-  scoped_refptr<const SecurityOrigin> origin =
-      requestor_origin_ ? requestor_origin_
-                        : SecurityOrigin::CreateUniqueOpaque();
   history_item_->SetReferrer(SecurityPolicy::GenerateReferrer(
-      referrer_.referrer_policy, origin, history_item_->Url(),
-      referrer_.referrer));
+      referrer_.referrer_policy, history_item_->Url(), referrer_.referrer));
   if (DeprecatedEqualIgnoringCase(http_method_, "POST")) {
     // FIXME: Eventually we have to make this smart enough to handle the case
     // where we have a stream for the body to handle the "data interspersed with
@@ -1797,7 +1793,11 @@ void DocumentLoader::ParseAndPersistClientHints(
   // do the same thing.
 
   if (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled()) {
-    persist_duration = base::TimeDelta::Max();
+    // JSON cannot store "non-finite" values (i.e. NaN or infinite) so
+    // base::TimeDelta::Max cannot be used. As this will be removed once
+    // the FeaturePolicyForClientHints feature is shipped, a reasonably
+    // large was chosen instead
+    persist_duration = base::TimeDelta::FromDays(1000000);
   } else {
     persist_duration = client_hints_preferences_.GetPersistDuration();
   }

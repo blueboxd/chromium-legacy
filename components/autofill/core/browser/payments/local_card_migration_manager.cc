@@ -172,15 +172,6 @@ void LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog(
       "Autofill.StrikeDatabase.StrikesPresentWhenLocalCardMigrationAccepted",
       GetLocalCardMigrationStrikeDatabase()->GetStrikes());
 
-  // If there are cards which aren't selected, add
-  // kStrikesToAddWhenCardsDeselectedAtMigration strikes to
-  // LocalCardMigrationStrikeDatabase.
-  if (selected_card_guids.size() < migratable_credit_cards_.size()) {
-    GetLocalCardMigrationStrikeDatabase()->AddStrikes(
-        LocalCardMigrationStrikeDatabase::
-            kStrikesToAddWhenCardsDeselectedAtMigration);
-  }
-
   // Update the |migratable_credit_cards_| with the |selected_card_guids|. This
   // will remove any card from |migratable_credit_cards_| of which the GUID is
   // not in |selected_card_guids|.

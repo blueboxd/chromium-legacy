@@ -526,7 +526,7 @@ void WebRtcTextLogHandler::OnGetNetworkInterfaceList(
 
   // TODO(darin): Change SetLogMessageCallback to run on the UI thread.
 
-  auto log_message_callback = base::Bind(
+  auto log_message_callback = base::BindRepeating(
       &ForwardMessageViaTaskRunner, base::SequencedTaskRunnerHandle::Get(),
       base::Bind(&WebRtcTextLogHandler::LogMessage,
                  weak_factory_.GetWeakPtr()));

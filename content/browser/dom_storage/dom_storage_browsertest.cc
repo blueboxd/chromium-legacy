@@ -9,10 +9,9 @@
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "components/services/storage/dom_storage/legacy_dom_storage_database.h"
 #include "components/services/storage/public/cpp/constants.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
-#include "content/browser/dom_storage/dom_storage_database.h"
-#include "content/browser/dom_storage/dom_storage_types.h"
 #include "content/browser/dom_storage/local_storage_context_mojo.h"
 #include "content/browser/dom_storage/session_storage_context_mojo.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
@@ -165,8 +164,8 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, DataMigrates) {
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
     EXPECT_TRUE(base::CreateDirectory(legacy_local_storage_path));
-    DOMStorageDatabase db(db_path);
-    DOMStorageValuesMap data;
+    storage::LegacyDomStorageDatabase db(db_path);
+    storage::LegacyDomStorageValuesMap data;
     data[base::ASCIIToUTF16("foo")] =
         base::NullableString16(base::ASCIIToUTF16("bar"), false);
     db.CommitChanges(false, data);

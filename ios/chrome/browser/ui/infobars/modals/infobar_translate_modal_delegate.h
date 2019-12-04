@@ -12,6 +12,10 @@
 // Delegate to handle Translate Infobar Modal actions.
 @protocol InfobarTranslateModalDelegate <InfobarModalDelegate>
 
+// Indicates the user chose to undo the translation (i.e. show the page in its
+// original language).
+- (void)showOriginalLanguage;
+
 // Indicates the user chose to show options to change the source target
 // language.
 - (void)showChangeSourceLanguageOptions;

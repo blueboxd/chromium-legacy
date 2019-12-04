@@ -146,7 +146,7 @@ TEST_F(IdleSpellCheckControllerTest, ColdModeRangeCrossesShadow) {
       "<object><optgroup></optgroup></object>"
       "</div>");
   auto* html_object_element =
-      ToHTMLObjectElement(GetDocument().QuerySelector("object"));
+      To<HTMLObjectElement>(GetDocument().QuerySelector("object"));
   html_object_element->RenderFallbackContent(
       html_object_element->ContentFrame());
   GetDocument().QuerySelector("div")->focus();

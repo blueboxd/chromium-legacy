@@ -26,9 +26,6 @@ void LocalSiteCharacteristicsNoopDataWriter::NotifyUpdatesTitleInBackground() {}
 void LocalSiteCharacteristicsNoopDataWriter::NotifyUsesAudioInBackground() {}
 
 void LocalSiteCharacteristicsNoopDataWriter::
-    NotifyUsesNotificationsInBackground() {}
-
-void LocalSiteCharacteristicsNoopDataWriter::
     NotifyLoadTimePerformanceMeasurement(
         base::TimeDelta load_duration,
         base::TimeDelta cpu_usage_estimate,

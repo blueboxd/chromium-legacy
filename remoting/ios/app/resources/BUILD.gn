@@ -96,7 +96,7 @@ action("infoplist_strings") {
   script = "//remoting/tools/build/remoting_localize.py"
   args = [
            "--locale_dir",
-           rebase_path(webapp_locale_dir, root_build_dir),
+           rebase_path(resources_locale_dir, root_build_dir),
            "--variables",
            rebase_path(branding_path, root_build_dir),
            "--template",

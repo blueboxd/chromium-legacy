@@ -23,7 +23,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.settings.PreferenceUtils;
+import org.chromium.chrome.browser.settings.SettingsUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -128,7 +128,7 @@ public class AddLanguageFragment extends Fragment {
         mRecyclerView.setAdapter(mAdapter);
         mAdapter.setDisplayedLanguages(mFullLanguageList);
         mRecyclerView.getViewTreeObserver().addOnScrollChangedListener(
-                PreferenceUtils.getShowShadowOnScrollListener(
+                SettingsUtils.getShowShadowOnScrollListener(
                         mRecyclerView, view.findViewById(R.id.shadow)));
         return view;
     }

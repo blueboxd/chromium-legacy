@@ -6,16 +6,13 @@
 
 #include <cstdint>
 
-#include "base/feature_list.h"
-#include "base/test/scoped_feature_list.h"
-#include "components/viz/common/features.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace viz {
 namespace test {
 
-class HitTestQueryTest : public testing::TestWithParam<bool> {
+class HitTestQueryTest : public testing::Test {
  public:
   HitTestQueryTest() = default;
   ~HitTestQueryTest() override = default;
@@ -26,22 +23,7 @@ class HitTestQueryTest : public testing::TestWithParam<bool> {
 
  protected:
   HitTestQuery& hit_test_query() { return hit_test_query_; }
-  void SetUp() override {
-    if (GetParam()) {
-      feature_list_.InitAndEnableFeature(
-          features::kEnableVizHitTestSurfaceLayer);
-    }
 
-    if (!features::IsVizHitTestingSurfaceLayerEnabled()) {
-      // kHitTestIgnore has different meanings in v1 and v2. Some tests set
-      // kHitTestIgnore for certain regions which works for v1 but fails v2.
-      test_flags_ |= HitTestRegionFlags::kHitTestIgnore;
-      return;
-    }
-  }
-
-  base::test::ScopedFeatureList feature_list_;
-  uint32_t test_flags_ = HitTestRegionFlags::kHitTestChildSurface;
   std::vector<AggregatedHitTestRegion> active_data_;
 
  private:
@@ -49,8 +31,6 @@ class HitTestQueryTest : public testing::TestWithParam<bool> {
 
   DISALLOW_COPY_AND_ASSIGN(HitTestQueryTest);
 };
-
-INSTANTIATE_TEST_SUITE_P(/* no prefix */, HitTestQueryTest, testing::Bool());
 
 // One surface.
 //
@@ -60,7 +40,7 @@ INSTANTIATE_TEST_SUITE_P(/* no prefix */, HitTestQueryTest, testing::Bool());
 //  |          |
 //  +----------+
 //
-TEST_P(HitTestQueryTest, OneSurface) {
+TEST_F(HitTestQueryTest, OneSurface) {
   FrameSinkId e_id = FrameSinkId(1, 1);
   gfx::Rect e_bounds = gfx::Rect(0, 0, 600, 600);
   gfx::Transform transform_e_to_e;
@@ -107,7 +87,7 @@ TEST_P(HitTestQueryTest, OneSurface) {
 //  | +---+ |     |      3        c2
 //  +-------------+      4        none
 //
-TEST_P(HitTestQueryTest, OneEmbedderTwoChildren) {
+TEST_F(HitTestQueryTest, OneEmbedderTwoChildren) {
   FrameSinkId e_id = FrameSinkId(1, 1);
   FrameSinkId c1_id = FrameSinkId(2, 2);
   FrameSinkId c2_id = FrameSinkId(3, 3);
@@ -166,7 +146,7 @@ TEST_P(HitTestQueryTest, OneEmbedderTwoChildren) {
 }
 
 // One embedder with a rotated child.
-TEST_P(HitTestQueryTest, OneEmbedderRotatedChild) {
+TEST_F(HitTestQueryTest, OneEmbedderRotatedChild) {
   FrameSinkId e_id = FrameSinkId(1, 1);
   FrameSinkId c_id = FrameSinkId(2, 2);
   gfx::Rect e_bounds_in_e = gfx::Rect(0, 0, 600, 600);
@@ -216,7 +196,7 @@ TEST_P(HitTestQueryTest, OneEmbedderRotatedChild) {
 //  |   ||   4     |       4        b
 //  +--------------+
 //
-TEST_P(HitTestQueryTest, ClippedChildWithTabAndTransparentBackground) {
+TEST_F(HitTestQueryTest, ClippedChildWithTabAndTransparentBackground) {
   FrameSinkId e_id = FrameSinkId(1, 1);
   FrameSinkId c_id = FrameSinkId(2, 2);
   FrameSinkId a_id = FrameSinkId(3, 3);
@@ -233,8 +213,9 @@ TEST_P(HitTestQueryTest, ClippedChildWithTabAndTransparentBackground) {
       e_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
       e_bounds_in_e, transform_e_to_e, 3));  // e
-  active_data_.push_back(AggregatedHitTestRegion(
-      c_id, test_flags_, c_bounds_in_e, transform_e_to_c, 2));  // c
+  active_data_.push_back(
+      AggregatedHitTestRegion(c_id, HitTestRegionFlags::kHitTestChildSurface,
+                              c_bounds_in_e, transform_e_to_c, 2));  // c
   active_data_.push_back(AggregatedHitTestRegion(
       a_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
@@ -293,7 +274,7 @@ TEST_P(HitTestQueryTest, ClippedChildWithTabAndTransparentBackground) {
 //  |   || | 4     |       4        b
 //  +--------------+
 //
-TEST_P(HitTestQueryTest, ClippedChildWithChildUnderneath) {
+TEST_F(HitTestQueryTest, ClippedChildWithChildUnderneath) {
   FrameSinkId e_id = FrameSinkId(1, 1);
   FrameSinkId c_id = FrameSinkId(2, 2);
   FrameSinkId a_id = FrameSinkId(3, 3);
@@ -313,8 +294,9 @@ TEST_P(HitTestQueryTest, ClippedChildWithChildUnderneath) {
       e_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
       e_bounds_in_e, transform_e_to_e, 4));  // e
-  active_data_.push_back(AggregatedHitTestRegion(
-      c_id, test_flags_, c_bounds_in_e, transform_e_to_c, 2));  // c
+  active_data_.push_back(
+      AggregatedHitTestRegion(c_id, HitTestRegionFlags::kHitTestChildSurface,
+                              c_bounds_in_e, transform_e_to_c, 2));  // c
   active_data_.push_back(AggregatedHitTestRegion(
       a_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
@@ -366,7 +348,7 @@ TEST_P(HitTestQueryTest, ClippedChildWithChildUnderneath) {
 
 // Tests transforming location to be in target's coordinate system given the
 // target's ancestor list, in the case of ClippedChildWithChildUnderneath test.
-TEST_P(HitTestQueryTest, ClippedChildWithChildUnderneathTransform) {
+TEST_F(HitTestQueryTest, ClippedChildWithChildUnderneathTransform) {
   FrameSinkId e_id = FrameSinkId(1, 1);
   FrameSinkId c_id = FrameSinkId(2, 2);
   FrameSinkId a_id = FrameSinkId(3, 3);
@@ -386,8 +368,9 @@ TEST_P(HitTestQueryTest, ClippedChildWithChildUnderneathTransform) {
       e_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
       e_bounds_in_e, transform_e_to_e, 4));  // e
-  active_data_.push_back(AggregatedHitTestRegion(
-      c_id, test_flags_, c_bounds_in_e, transform_e_to_c, 2));  // c
+  active_data_.push_back(
+      AggregatedHitTestRegion(c_id, HitTestRegionFlags::kHitTestChildSurface,
+                              c_bounds_in_e, transform_e_to_c, 2));  // c
   active_data_.push_back(AggregatedHitTestRegion(
       a_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
@@ -445,7 +428,7 @@ TEST_P(HitTestQueryTest, ClippedChildWithChildUnderneathTransform) {
 //  |   ||   7     |
 //  +--------------+
 //
-TEST_P(HitTestQueryTest, ClippedChildrenWithTabAndTransparentBackground) {
+TEST_F(HitTestQueryTest, ClippedChildrenWithTabAndTransparentBackground) {
   FrameSinkId e_id = FrameSinkId(1, 1);
   FrameSinkId c1_id = FrameSinkId(2, 2);
   FrameSinkId a_id = FrameSinkId(3, 3);
@@ -471,8 +454,9 @@ TEST_P(HitTestQueryTest, ClippedChildrenWithTabAndTransparentBackground) {
       e_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
       e_bounds_in_e, transform_e_to_e, 6));  // e
-  active_data_.push_back(AggregatedHitTestRegion(
-      c1_id, test_flags_, c1_bounds_in_e, transform_e_to_c1, 2));  // c1
+  active_data_.push_back(
+      AggregatedHitTestRegion(c1_id, HitTestRegionFlags::kHitTestChildSurface,
+                              c1_bounds_in_e, transform_e_to_c1, 2));  // c1
   active_data_.push_back(AggregatedHitTestRegion(
       a_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
@@ -481,8 +465,9 @@ TEST_P(HitTestQueryTest, ClippedChildrenWithTabAndTransparentBackground) {
       b_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
       b_bounds_in_c1, transform_c1_to_b, 0));  // b
-  active_data_.push_back(AggregatedHitTestRegion(
-      c2_id, test_flags_, c2_bounds_in_e, transform_e_to_c2, 2));  // c2
+  active_data_.push_back(
+      AggregatedHitTestRegion(c2_id, HitTestRegionFlags::kHitTestChildSurface,
+                              c2_bounds_in_e, transform_e_to_c2, 2));  // c2
   active_data_.push_back(AggregatedHitTestRegion(
       g_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
@@ -555,7 +540,7 @@ TEST_P(HitTestQueryTest, ClippedChildrenWithTabAndTransparentBackground) {
 // Tests transforming location to be in target's coordinate system given the
 // target's ancestor list, in the case of
 // ClippedChildrenWithTabAndTransparentBackground test.
-TEST_P(HitTestQueryTest,
+TEST_F(HitTestQueryTest,
        ClippedChildrenWithTabAndTransparentBackgroundTransform) {
   FrameSinkId e_id = FrameSinkId(1, 1);
   FrameSinkId c1_id = FrameSinkId(2, 2);
@@ -582,8 +567,9 @@ TEST_P(HitTestQueryTest,
       e_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
       e_bounds_in_e, transform_e_to_e, 6));  // e
-  active_data_.push_back(AggregatedHitTestRegion(
-      c1_id, test_flags_, c1_bounds_in_e, transform_e_to_c1, 2));  // c1
+  active_data_.push_back(
+      AggregatedHitTestRegion(c1_id, HitTestRegionFlags::kHitTestChildSurface,
+                              c1_bounds_in_e, transform_e_to_c1, 2));  // c1
   active_data_.push_back(AggregatedHitTestRegion(
       a_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
@@ -592,8 +578,9 @@ TEST_P(HitTestQueryTest,
       b_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
       b_bounds_in_c1, transform_c1_to_b, 0));  // b
-  active_data_.push_back(AggregatedHitTestRegion(
-      c2_id, test_flags_, c2_bounds_in_e, transform_e_to_c2, 2));  // c2
+  active_data_.push_back(
+      AggregatedHitTestRegion(c2_id, HitTestRegionFlags::kHitTestChildSurface,
+                              c2_bounds_in_e, transform_e_to_c2, 2));  // c2
   active_data_.push_back(AggregatedHitTestRegion(
       g_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
@@ -657,7 +644,7 @@ TEST_P(HitTestQueryTest,
 //  | +--------|----+     |
 //  +---------------------+
 //
-TEST_P(HitTestQueryTest, MultipleLayerChild) {
+TEST_F(HitTestQueryTest, MultipleLayerChild) {
   FrameSinkId e_id = FrameSinkId(1, 1);
   FrameSinkId c1_id = FrameSinkId(2, 2);
   FrameSinkId a_id = FrameSinkId(3, 3);
@@ -680,8 +667,9 @@ TEST_P(HitTestQueryTest, MultipleLayerChild) {
       e_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
       e_bounds_in_e, transform_e_to_e, 5));  // e
-  active_data_.push_back(AggregatedHitTestRegion(
-      c1_id, test_flags_, c1_bounds_in_e, transform_e_to_c1, 3));  // c1
+  active_data_.push_back(
+      AggregatedHitTestRegion(c1_id, HitTestRegionFlags::kHitTestChildSurface,
+                              c1_bounds_in_e, transform_e_to_c1, 3));  // c1
   active_data_.push_back(AggregatedHitTestRegion(
       a_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
@@ -750,7 +738,7 @@ TEST_P(HitTestQueryTest, MultipleLayerChild) {
 //  | +--------|----+     |
 //  +---------------------+
 //
-TEST_P(HitTestQueryTest, MultipleLayerTransparentChild) {
+TEST_F(HitTestQueryTest, MultipleLayerTransparentChild) {
   FrameSinkId e_id = FrameSinkId(1, 1);
   FrameSinkId c1_id = FrameSinkId(2, 2);
   FrameSinkId a_id = FrameSinkId(3, 3);
@@ -773,14 +761,18 @@ TEST_P(HitTestQueryTest, MultipleLayerTransparentChild) {
       e_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
       e_bounds_in_e, transform_e_to_e, 5));  // e
-  active_data_.push_back(AggregatedHitTestRegion(
-      c1_id, test_flags_, c1_bounds_in_e, transform_e_to_c1, 3));  // c1
-  active_data_.push_back(AggregatedHitTestRegion(
-      a_id, test_flags_, a_bounds_in_c1, transform_c1_to_a, 2));  // a
-  active_data_.push_back(AggregatedHitTestRegion(
-      b_id, test_flags_, b_bounds_in_a, transform_a_to_b, 1));  // b
-  active_data_.push_back(AggregatedHitTestRegion(
-      g_id, test_flags_, g_bounds_in_b, transform_b_to_g, 0));  // g
+  active_data_.push_back(
+      AggregatedHitTestRegion(c1_id, HitTestRegionFlags::kHitTestChildSurface,
+                              c1_bounds_in_e, transform_e_to_c1, 3));  // c1
+  active_data_.push_back(
+      AggregatedHitTestRegion(a_id, HitTestRegionFlags::kHitTestChildSurface,
+                              a_bounds_in_c1, transform_c1_to_a, 2));  // a
+  active_data_.push_back(
+      AggregatedHitTestRegion(b_id, HitTestRegionFlags::kHitTestChildSurface,
+                              b_bounds_in_a, transform_a_to_b, 1));  // b
+  active_data_.push_back(
+      AggregatedHitTestRegion(g_id, HitTestRegionFlags::kHitTestChildSurface,
+                              g_bounds_in_b, transform_b_to_g, 0));  // g
   active_data_.push_back(AggregatedHitTestRegion(
       c2_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
@@ -818,7 +810,7 @@ TEST_P(HitTestQueryTest, MultipleLayerTransparentChild) {
   EXPECT_TRUE(target4.flags);
 }
 
-TEST_P(HitTestQueryTest, InvalidAggregatedHitTestRegionData) {
+TEST_F(HitTestQueryTest, InvalidAggregatedHitTestRegionData) {
   FrameSinkId e_id = FrameSinkId(1, 1);
   FrameSinkId c_id = FrameSinkId(2, 2);
   FrameSinkId a_id = FrameSinkId(3, 3);
@@ -836,7 +828,8 @@ TEST_P(HitTestQueryTest, InvalidAggregatedHitTestRegionData) {
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
       e_bounds_in_e, transform_e_to_e, 3));  // e
   active_data_.push_back(AggregatedHitTestRegion(
-      c_id, test_flags_, c_bounds_in_e, transform_e_to_c, INT32_MIN));  // c
+      c_id, HitTestRegionFlags::kHitTestChildSurface, c_bounds_in_e,
+      transform_e_to_c, INT32_MIN));  // c
   active_data_.push_back(AggregatedHitTestRegion(
       a_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
@@ -870,8 +863,9 @@ TEST_P(HitTestQueryTest, InvalidAggregatedHitTestRegionData) {
       e_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
       e_bounds_in_e, transform_e_to_e, INT32_MAX));  // e
-  active_data_.push_back(AggregatedHitTestRegion(
-      c_id, test_flags_, c_bounds_in_e, transform_e_to_c, 2));  // c
+  active_data_.push_back(
+      AggregatedHitTestRegion(c_id, HitTestRegionFlags::kHitTestChildSurface,
+                              c_bounds_in_e, transform_e_to_c, 2));  // c
   active_data_.push_back(AggregatedHitTestRegion(
       a_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
@@ -893,8 +887,9 @@ TEST_P(HitTestQueryTest, InvalidAggregatedHitTestRegionData) {
       e_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
       e_bounds_in_e, transform_e_to_e, 3));  // e
-  active_data_.push_back(AggregatedHitTestRegion(
-      c_id, test_flags_, c_bounds_in_e, transform_e_to_c, 3));  // c
+  active_data_.push_back(
+      AggregatedHitTestRegion(c_id, HitTestRegionFlags::kHitTestChildSurface,
+                              c_bounds_in_e, transform_e_to_c, 3));  // c
   active_data_.push_back(AggregatedHitTestRegion(
       a_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
@@ -913,7 +908,7 @@ TEST_P(HitTestQueryTest, InvalidAggregatedHitTestRegionData) {
 }
 
 // Tests flags kHitTestMouse and kHitTestTouch.
-TEST_P(HitTestQueryTest, MouseTouchFlags) {
+TEST_F(HitTestQueryTest, MouseTouchFlags) {
   FrameSinkId e_id = FrameSinkId(1, 1);
   FrameSinkId c1_id = FrameSinkId(2, 2);
   FrameSinkId c2_id = FrameSinkId(3, 3);
@@ -972,7 +967,7 @@ TEST_P(HitTestQueryTest, MouseTouchFlags) {
                                HitTestRegionFlags::kHitTestTouch);
 }
 
-TEST_P(HitTestQueryTest, RootHitTestAskFlag) {
+TEST_F(HitTestQueryTest, RootHitTestAskFlag) {
   FrameSinkId e_id = FrameSinkId(1, 1);
   gfx::Rect e_bounds = gfx::Rect(0, 0, 600, 600);
   gfx::Transform transform_e_to_e;
@@ -1011,7 +1006,7 @@ TEST_P(HitTestQueryTest, RootHitTestAskFlag) {
 //  | +---+ |     |      3        c2
 //  +-------------+
 //
-TEST_P(HitTestQueryTest, ChildHitTestAskFlag) {
+TEST_F(HitTestQueryTest, ChildHitTestAskFlag) {
   FrameSinkId e_id = FrameSinkId(1, 1);
   FrameSinkId c1_id = FrameSinkId(2, 2);
   FrameSinkId c2_id = FrameSinkId(3, 3);
@@ -1077,7 +1072,7 @@ TEST_P(HitTestQueryTest, ChildHitTestAskFlag) {
 //  |   ||   3     |
 //  +--------------+
 //
-TEST_P(HitTestQueryTest, NestedOOPIFs) {
+TEST_F(HitTestQueryTest, NestedOOPIFs) {
   FrameSinkId e_id = FrameSinkId(1, 1);
   FrameSinkId c_id = FrameSinkId(2, 2);
   FrameSinkId b_id = FrameSinkId(3, 3);
@@ -1138,7 +1133,7 @@ TEST_P(HitTestQueryTest, NestedOOPIFs) {
 }
 
 // Tests getting the transform from root to a given target.
-TEST_P(HitTestQueryTest, GetTransformToTarget) {
+TEST_F(HitTestQueryTest, GetTransformToTarget) {
   FrameSinkId e_id = FrameSinkId(1, 1);
   FrameSinkId c_id = FrameSinkId(2, 2);
   FrameSinkId a_id = FrameSinkId(3, 3);
@@ -1160,8 +1155,9 @@ TEST_P(HitTestQueryTest, GetTransformToTarget) {
       e_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
       e_bounds_in_e, transform_e_to_e, 4));  // e
-  active_data_.push_back(AggregatedHitTestRegion(
-      c_id, test_flags_, c_bounds_in_e, transform_e_to_c, 2));  // c
+  active_data_.push_back(
+      AggregatedHitTestRegion(c_id, HitTestRegionFlags::kHitTestChildSurface,
+                              c_bounds_in_e, transform_e_to_c, 2));  // c
   active_data_.push_back(AggregatedHitTestRegion(
       a_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
@@ -1221,7 +1217,7 @@ TEST_P(HitTestQueryTest, GetTransformToTarget) {
 //  |   |          |
 //  +--------------+
 //
-TEST_P(HitTestQueryTest, TransparentOverlayRegions) {
+TEST_F(HitTestQueryTest, TransparentOverlayRegions) {
   FrameSinkId e_id = FrameSinkId(1, 1);
   FrameSinkId c1_id = FrameSinkId(2, 2);
   FrameSinkId c2_id = FrameSinkId(3, 3);
@@ -1238,9 +1234,11 @@ TEST_P(HitTestQueryTest, TransparentOverlayRegions) {
       e_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
       e_bounds_in_e, transform_e_to_e, 3));  // e
-  active_data_.push_back(AggregatedHitTestRegion(
-      c1_id, test_flags_ | HitTestRegionFlags::kHitTestMouse, c1_bounds_in_e,
-      transform_e_to_c1, 1));  // c1
+  active_data_.push_back(
+      AggregatedHitTestRegion(c1_id,
+                              HitTestRegionFlags::kHitTestChildSurface |
+                                  HitTestRegionFlags::kHitTestMouse,
+                              c1_bounds_in_e, transform_e_to_c1, 1));  // c1
   active_data_.push_back(AggregatedHitTestRegion(
       d1_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
@@ -1270,7 +1268,7 @@ TEST_P(HitTestQueryTest, TransparentOverlayRegions) {
                                HitTestRegionFlags::kHitTestMouse);
 }
 
-TEST_P(HitTestQueryTest, FindTargetForLocationStartingFrom) {
+TEST_F(HitTestQueryTest, FindTargetForLocationStartingFrom) {
   FrameSinkId e_id = FrameSinkId(1, 1);
   FrameSinkId c_id = FrameSinkId(2, 2);
   gfx::Rect e_bounds_in_e = gfx::Rect(0, 0, 600, 600);
@@ -1329,7 +1327,7 @@ TEST_P(HitTestQueryTest, FindTargetForLocationStartingFrom) {
 //  |   |          |
 //  +--------------+
 //
-TEST_P(HitTestQueryTest, OverlappedRootView) {
+TEST_F(HitTestQueryTest, OverlappedRootView) {
   FrameSinkId e_id = FrameSinkId(1, 1);
   FrameSinkId c_id = FrameSinkId(2, 2);
   gfx::Rect e_bounds_in_e = gfx::Rect(0, 0, 600, 600);

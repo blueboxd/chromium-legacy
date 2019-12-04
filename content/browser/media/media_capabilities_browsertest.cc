@@ -34,7 +34,7 @@ const char* kPropSupported = kSupported;
 const char* kPropSupported = kUnsupported;
 #endif  // USE_PROPRIETARY_CODECS
 
-enum StreamType { kAudio, kVideo };
+enum StreamType { kAudio, kVideo, kAudioWithSpatialRendering };
 
 enum ConfigType { kFile, kMediaSource };
 
@@ -49,6 +49,8 @@ class MediaCapabilitiesTest : public ContentBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
                                     "MediaCapabilities");
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "MediaCapabilitiesSpatialAudio");
   }
 
   std::string CanDecodeAudio(const std::string& config_type,
@@ -61,12 +63,24 @@ class MediaCapabilitiesTest : public ContentBrowserTest {
     return CanDecode(config_type, content_type, StreamType::kVideo);
   }
 
+  std::string CanDecodeAudioWithSpatialRendering(
+      const std::string& config_type,
+      const std::string& content_type,
+      bool spatial_rendering) {
+    return CanDecode(config_type, content_type,
+                     StreamType::kAudioWithSpatialRendering, spatial_rendering);
+  }
+
   std::string CanDecode(const std::string& config_type,
                         const std::string& content_type,
-                        StreamType stream_type) {
+                        StreamType stream_type,
+                        const bool& spatial_rendering = false) {
     std::string command;
     if (stream_type == StreamType::kAudio) {
       command.append("testAudioConfig(");
+    } else if (stream_type == StreamType::kAudioWithSpatialRendering) {
+      command.append("testAudioConfigWithSpatialRendering(");
+      command.append(spatial_rendering ? "true, " : "false, ");
     } else {
       command.append("testVideoConfig(");
     }
@@ -227,6 +241,79 @@ IN_PROC_BROWSER_TEST_P(MediaCapabilitiesTestWithConfigType,
   // Ogg not supported in MSE.
   EXPECT_EQ(type_supported,
             CanDecodeAudio(config_type, "'audio/ogg; codecs=\"vorbis\"'"));
+}
+
+// Cover basic spatial rendering support.
+IN_PROC_BROWSER_TEST_P(MediaCapabilitiesTestWithConfigType,
+                       AudioTypesWithSpatialRendering) {
+  base::FilePath file_path = media::GetTestDataFilePath(kDecodeTestFile);
+
+  const std::string& config_type = GetTypeString();
+
+  EXPECT_TRUE(
+      NavigateToURL(shell(), content::GetFileUrlWithQuery(file_path, "")));
+
+  // These common codecs are not associated with a spatial audio format.
+  EXPECT_EQ(kUnsupported, CanDecodeAudioWithSpatialRendering(
+                              config_type, "'audio/webm; codecs=\"opus\"'",
+                              /*spatial_rendering*/ true));
+  EXPECT_EQ(kUnsupported, CanDecodeAudioWithSpatialRendering(
+                              config_type, "'audio/webm; codecs=\"vorbis\"'",
+                              /*spatial_rendering*/ true));
+  EXPECT_EQ(kUnsupported, CanDecodeAudioWithSpatialRendering(
+                              config_type, "'audio/mp4; codecs=\"flac\"'",
+                              /*spatial_rendering*/ true));
+  EXPECT_EQ(kUnsupported,
+            CanDecodeAudioWithSpatialRendering(config_type, "'audio/mpeg'",
+                                               /*spatial_rendering*/ true));
+  EXPECT_EQ(kUnsupported, CanDecodeAudioWithSpatialRendering(
+                              config_type, "'audio/mp4; codecs=\"mp4a.40.02\"'",
+                              /*spatial_rendering*/ true));
+  EXPECT_EQ(kUnsupported,
+            CanDecodeAudioWithSpatialRendering(config_type, "'audio/aac'",
+                                               /*spatial_rendering*/ true));
+
+  // Supported codecs should remain supported when querying with
+  // spatialRendering set to false.
+  EXPECT_EQ(kSupported, CanDecodeAudioWithSpatialRendering(
+                            config_type, "'audio/webm; codecs=\"opus\"'",
+                            /*spatial_rendering*/ false));
+  EXPECT_EQ(kSupported, CanDecodeAudioWithSpatialRendering(
+                            config_type, "'audio/webm; codecs=\"vorbis\"'",
+                            /*spatial_rendering*/ false));
+  EXPECT_EQ(kSupported, CanDecodeAudioWithSpatialRendering(
+                            config_type, "'audio/mp4; codecs=\"flac\"'",
+                            /*spatial_rendering*/ false));
+  EXPECT_EQ(kSupported,
+            CanDecodeAudioWithSpatialRendering(config_type, "'audio/mpeg'",
+                                               /*spatial_rendering*/ false));
+  EXPECT_EQ(kPropSupported,
+            CanDecodeAudioWithSpatialRendering(
+                config_type, "'audio/mp4; codecs=\"mp4a.40.02\"'",
+                /*spatial_rendering*/ false));
+  EXPECT_EQ(kPropSupported,
+            CanDecodeAudioWithSpatialRendering(config_type, "'audio/aac'",
+                                               /*spatial_rendering*/ false));
+
+  // Test a handful of invalid strings.
+  EXPECT_EQ(kUnsupported, CanDecodeAudioWithSpatialRendering(
+                              config_type, "'audio/wav; codecs=\"mp3\"'",
+                              /*spatial_rendering*/ true));
+  EXPECT_EQ(kUnsupported, CanDecodeAudioWithSpatialRendering(
+                              config_type, "'audio/webm; codecs=\"vp8\"'",
+                              /*spatial_rendering*/ true));
+
+  // Dolby Atmos = Dolby Digital Plus + Spatial Rendering. Currently not
+  // supported.
+  EXPECT_EQ(kUnsupported, CanDecodeAudioWithSpatialRendering(
+                              config_type, "'audio/mp4; codecs=\"ec-3\"'",
+                              /*spatial_rendering*/ true));
+  EXPECT_EQ(kUnsupported, CanDecodeAudioWithSpatialRendering(
+                              config_type, "'audio/mp4; codecs=\"mp4a.a6\"'",
+                              /*spatial_rendering*/ true));
+  EXPECT_EQ(kUnsupported, CanDecodeAudioWithSpatialRendering(
+                              config_type, "'audio/mp4; codecs=\"mp4a.A6\"'",
+                              /*spatial_rendering*/ true));
 }
 
 INSTANTIATE_TEST_SUITE_P(File,

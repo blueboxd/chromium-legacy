@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.autofill_assistant.overlay;
 
-import android.graphics.Color;
 import android.graphics.RectF;
 import android.support.annotation.Nullable;
 
@@ -12,7 +11,6 @@ import androidx.annotation.ColorInt;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.chrome.browser.autofill_assistant.AssistantDimension;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
@@ -93,70 +91,27 @@ public class AssistantOverlayModel extends PropertyModel {
     }
 
     @CalledByNative
-    private void setBackgroundColor(@ColorInt int color) {
+    private void setBackgroundColor(@Nullable @ColorInt Integer color) {
         set(BACKGROUND_COLOR, color);
     }
 
     @CalledByNative
-    private void clearBackgroundColor() {
-        set(BACKGROUND_COLOR, null);
-    }
-
-    @CalledByNative
-    private void setHighlightBorderColor(@ColorInt int color) {
+    private void setHighlightBorderColor(@Nullable @ColorInt Integer color) {
         set(HIGHLIGHT_BORDER_COLOR, color);
     }
 
     @CalledByNative
-    private void clearHighlightBorderColor() {
-        set(HIGHLIGHT_BORDER_COLOR, null);
-    }
-
-    @CalledByNative
-    private void setOverlayImage(String imageUrl, @Nullable AssistantDimension imageSize,
-            @Nullable AssistantDimension imageTopMargin,
-            @Nullable AssistantDimension imageBottomMargin, String text, @ColorInt int textColor,
-            @Nullable AssistantDimension textSize) {
+    private void setOverlayImage(String imageUrl, int imageSizeInPixels, int imageTopMarginInPixels,
+            int imageBottomMarginInPixels, String text, @Nullable @ColorInt Integer textColor,
+            int textSizeInPixels) {
         set(OVERLAY_IMAGE,
-                new AssistantOverlayImage(imageUrl, imageSize, imageTopMargin, imageBottomMargin,
-                        text, textColor, textSize));
+                new AssistantOverlayImage(imageUrl, imageSizeInPixels, imageTopMarginInPixels,
+                        imageBottomMarginInPixels, text, textColor, textSizeInPixels));
     }
 
     @CalledByNative
     private void clearOverlayImage() {
         set(OVERLAY_IMAGE, null);
-    }
-
-    /**
-     * Parses {@code colorString} and returns the corresponding color integer. This is only safe to
-     * call for valid strings, which should be checked with {@code isValidColorString} before
-     * calling this method!
-     * @return the 32-bit integer representation of {@code colorString} or an unspecified fallback
-     * value if {@code colorString} is not a valid color string.
-     */
-    @CalledByNative
-    private static @ColorInt int parseColorString(String colorString) {
-        if (!isValidColorString(colorString)) {
-            return Color.BLACK;
-        }
-        return Color.parseColor(colorString);
-    }
-
-    /**
-     * Returns whether {@code colorString} is a valid string representation of a color. Supported
-     * color formats are #RRGGBB and #AARRGGBB.
-     */
-    @CalledByNative
-    private static boolean isValidColorString(String colorString) {
-        if (colorString.isEmpty()) {
-            return false;
-        }
-        try {
-            Color.parseColor(colorString);
-            return true;
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
     }
 
     @CalledByNative

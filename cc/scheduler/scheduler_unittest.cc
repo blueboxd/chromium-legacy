@@ -51,7 +51,6 @@ class FakeSchedulerClient : public SchedulerClient,
 
   void Reset() {
     actions_.clear();
-    states_.clear();
     will_begin_impl_frame_causes_redraw_ = false;
     will_begin_impl_frame_requests_one_begin_impl_frame_ = false;
     invalidate_needs_redraw_ = true;
@@ -70,7 +69,6 @@ class FakeSchedulerClient : public SchedulerClient,
   const std::vector<std::string> Actions() const {
     return std::vector<std::string>(actions_.begin(), actions_.end());
   }
-  std::string StateForAction(int i) const { return states_[i]->ToString(); }
   base::TimeTicks posted_begin_impl_frame_deadline() const {
     return posted_begin_impl_frame_deadline_;
   }
@@ -206,7 +204,6 @@ class FakeSchedulerClient : public SchedulerClient,
     base::AutoReset<bool> mark_inside(&inside_action_, true);
     invalidate_needs_redraw_ = needs_redraw;
     actions_.push_back("ScheduledActionInvalidateLayerTreeFrameSink");
-    states_.push_back(scheduler_->AsValue());
   }
   void ScheduledActionPerformImplSideInvalidation() override {
     EXPECT_FALSE(inside_action_);
@@ -247,7 +244,6 @@ class FakeSchedulerClient : public SchedulerClient,
 
   void PushAction(const char* description) {
     actions_.push_back(description);
-    states_.push_back(scheduler_->AsValue());
   }
 
   // FakeExternalBeginFrameSource::Client implementation.
@@ -283,8 +279,6 @@ class FakeSchedulerClient : public SchedulerClient,
   viz::BeginFrameAck last_begin_frame_ack_;
   base::TimeTicks posted_begin_impl_frame_deadline_;
   std::vector<const char*> actions_;
-  std::vector<std::unique_ptr<base::trace_event::ConvertableToTraceFormat>>
-      states_;
   TestScheduler* scheduler_ = nullptr;
   base::TimeDelta frame_interval_;
 };

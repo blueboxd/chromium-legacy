@@ -4,10 +4,13 @@
 
 #include "chrome/browser/ui/views/crostini/crostini_app_restart_view.h"
 
+#include "chrome/browser/ui/ash/launcher/app_service_app_window_crostini_tracker.h"
+#include "chrome/browser/ui/ash/launcher/app_service_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/crostini_app_window_shelf_controller.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/common/chrome_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/display/screen.h"
@@ -45,9 +48,16 @@ bool CrostiniAppRestartView::ShouldShowCloseButton() const {
 }
 
 bool CrostiniAppRestartView::Accept() {
-  ChromeLauncherController::instance()
-      ->crostini_app_window_shelf_controller()
-      ->Restart(id_, display_id_);
+  if (base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry)) {
+    ChromeLauncherController::instance()
+        ->app_service_app_window_controller()
+        ->app_service_crostini_tracker()
+        ->Restart(id_, display_id_);
+  } else {
+    ChromeLauncherController::instance()
+        ->crostini_app_window_shelf_controller()
+        ->Restart(id_, display_id_);
+  }
   return true;  // Should close the dialog
 }
 

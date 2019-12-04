@@ -1565,6 +1565,7 @@ bool QuitOnSystemTimer(UINT message,
     ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                             BindOnce(&::PostQuitMessage, 0));
   }
+  *result = 0;
   return true;
 }
 
@@ -1579,6 +1580,7 @@ bool DelayedQuitOnSystemTimer(UINT message,
         FROM_HERE, BindOnce(&::PostQuitMessage, 0),
         TimeDelta::FromMilliseconds(10));
   }
+  *result = 0;
   return true;
 }
 

@@ -292,6 +292,7 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
     {"optionPin", IDS_PRINT_PREVIEW_OPTION_PIN},
     {"pinErrorMessage", IDS_PRINT_PREVIEW_PIN_ERROR_MESSAGE},
     {"pinPlaceholder", IDS_PRINT_PREVIEW_PIN_PLACEHOLDER},
+    {"printerEulaURL", IDS_PRINT_PREVIEW_EULA_URL},
 #endif
 #if defined(OS_MACOSX)
     {"openPdfInPreviewOption", IDS_PRINT_PREVIEW_OPEN_PDF_IN_PREVIEW_APP},

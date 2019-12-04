@@ -78,7 +78,7 @@ all_chrome_locales = [
   "eu",
   "fa",
   "fi",
-  "fil",
+  "fil",  # "tl" in .xml but "fil" in TC and .pak
   "fr",
   "fr-CA",
   "gl",
@@ -179,6 +179,31 @@ if (is_android) {
   android_non_bundle_locales =
       all_chrome_locales - android_only_chrome_locales -
       android_chrome_omitted_locales
+
+  # List for Android locale names in .xml exports. Note: needs to stay in sync
+  # with |ToAndroidLocaleName| in build/android/gyp/util/resource_utils.py.
+  #  - add r: (e.g. zh-HK -> zh-rHK )
+  android_bundle_locales_as_resources = []
+  foreach(_locale, locales) {
+    android_bundle_locales_as_resources +=
+        [ string_replace(_locale, "-", "-r") ]
+  }
+
+  #  - remove en-US
+  #  - swap: (he, id, en-419, fil) -> (iw, in, es-rUS, tl)
+  android_bundle_locales_as_resources -= [
+    "en-rUS",
+    "es-r419",
+    "fil",
+    "he",
+    "id",
+  ]
+  android_bundle_locales_as_resources += [
+    "es-rUS",
+    "in",
+    "iw",
+    "tl",
+  ]
 } else {
   # Change if other platforms support more locales
   locales = all_chrome_locales - android_only_chrome_locales

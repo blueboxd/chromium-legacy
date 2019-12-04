@@ -40,7 +40,7 @@ message SiteDataProto {
   optional SiteDataFeatureProto updates_favicon_in_background = 2;
   optional SiteDataFeatureProto updates_title_in_background = 3;
   optional SiteDataFeatureProto uses_audio_in_background = 4;
-  optional SiteDataFeatureProto uses_notifications_in_background = 5;
+  optional SiteDataFeatureProto deprecated_uses_notifications_in_background = 5;
 
   // Load time performance measurement estimates. This maintains a decaying
   // average of the resource usage of a page until shortly after it becomes

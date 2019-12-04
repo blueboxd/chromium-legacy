@@ -16,6 +16,14 @@
 #include "components/viz/service/display/overlay_processor.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
+#if defined(OS_WIN)
+#include "components/viz/service/display/dc_layer_overlay.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "components/viz/service/display/ca_layer_overlay.h"
+#endif
+
 class SkCanvas;
 class SkImage;
 
@@ -25,11 +33,9 @@ class ColorSpace;
 
 namespace viz {
 
+class OverlayCandidate;
 class ContextLostObserver;
 class CopyOutputRequest;
-#if defined(OS_WIN)
-class DCLayerOverlay;
-#endif
 
 namespace copy_output {
 struct RenderPassGeometry;
@@ -42,6 +48,19 @@ struct RenderPassGeometry;
 class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
                                              public ExternalUseClient {
  public:
+#if defined(OS_ANDROID)
+  using OverlayList = std::vector<OverlayCandidate>;
+#elif defined(OS_MACOSX)
+  using OverlayList = CALayerOverlayList;
+#elif defined(OS_WIN)
+  using OverlayList = DCLayerOverlayList;
+#elif defined(USE_OZONE)
+  using OverlayList = std::vector<OverlayCandidate>;
+#else
+  // Default.
+  using OverlayList = std::vector<OverlayCandidate>;
+#endif
+
   explicit SkiaOutputSurface(OutputSurface::Type type);
   ~SkiaOutputSurface() override;
 
@@ -77,11 +96,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
       sk_sp<SkColorSpace> dst_color_space,
       bool has_alpha) = 0;
 
-  // Swaps the current backbuffer to the screen. This method returns a non-empty
-  // sync token which can be waited on to ensure swap is complete if
-  // |wants_sync_token| is true.
-  virtual gpu::SyncToken SkiaSwapBuffers(OutputSurfaceFrame frame,
-                                         bool wants_sync_token) = 0;
+  // Swaps the current backbuffer to the screen.
+  virtual void SkiaSwapBuffers(OutputSurfaceFrame frame) = 0;
 
   // TODO(weiliangc): This API should move to OverlayProcessor.
   // Schedule |output_surface_plane| as an overlay plane to be displayed.
@@ -132,15 +148,15 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
                           const gfx::ColorSpace& color_space,
                           std::unique_ptr<CopyOutputRequest> request) = 0;
 
+  // Schedule drawing overlays at next SkiaSwapBuffers() call. Waits on
+  // |sync_tokens| for the overlay textures to be ready before scheduling.
+  virtual void ScheduleOverlays(OverlayList overlays,
+                                std::vector<gpu::SyncToken> sync_tokens) = 0;
+
 #if defined(OS_WIN)
   // Enables/disables drawing with DC layers. Should be enabled before
   // ScheduleDCLayers() will be called.
   virtual void SetEnableDCLayers(bool enable) = 0;
-
-  // Schedule drawing DC layer overlays at next SkiaSwapBuffers() call. Waits on
-  // |sync_tokens| for the overlay textures to be ready before scheduling.
-  virtual void ScheduleDCLayers(std::vector<DCLayerOverlay> dc_layers,
-                                std::vector<gpu::SyncToken> sync_tokens) = 0;
 #endif
 
   // Add context lost observer.
@@ -160,12 +176,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
       std::vector<gpu::SyncToken> sync_tokens,
       base::flat_set<gpu::Mailbox> promotion_denied,
       base::flat_map<gpu::Mailbox, gfx::Rect> possible_promotions) = 0;
-
-  // Only used for the Android pre-SurfaceControl overlay code path to pass the
-  // single overlay candidate information.
-  virtual void RenderToOverlay(gpu::SyncToken sync_token,
-                               gpu::Mailbox overlay_candidate_mailbox,
-                               const gfx::Rect& bounds) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputSurface);

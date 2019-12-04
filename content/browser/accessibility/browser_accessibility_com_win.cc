@@ -446,8 +446,9 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_newText(
   if (!new_text)
     return E_INVALIDARG;
 
-  if (!old_win_attributes_)
+  if (!old_win_attributes_ && !force_new_hypertext_)
     return E_FAIL;
+  force_new_hypertext_ = false;
 
   size_t start, old_len, new_len;
   ComputeHypertextRemovedAndInserted(&start, &old_len, &new_len);
@@ -1710,11 +1711,7 @@ void BrowserAccessibilityComWin::UpdateStep3FireEvents(
     }
 
     // Fire hypertext-related events.
-    // Do not fire removed/inserted when a name change event will be fired by
-    // AXEventGenerator, as they are providing redundant information and will
-    // lead to duplicate announcements.
-    if (name() == old_win_attributes_->name ||
-        GetData().GetNameFrom() == ax::mojom::NameFrom::kContents) {
+    if (ShouldFireHypertextEvents()) {
       size_t start, old_len, new_len;
       ComputeHypertextRemovedAndInserted(&start, &old_len, &new_len);
       if (old_len > 0) {
@@ -1732,6 +1729,22 @@ void BrowserAccessibilityComWin::UpdateStep3FireEvents(
 
   old_win_attributes_.reset(nullptr);
   old_hypertext_ = ui::AXHypertext();
+}
+
+bool BrowserAccessibilityComWin::ShouldFireHypertextEvents() const {
+  // Do not fire removed/inserted when a name change event will be fired by
+  // AXEventGenerator, as they are providing redundant information and will
+  // lead to duplicate announcements.
+  if (name() != old_win_attributes_->name &&
+      GetData().GetNameFrom() != ax::mojom::NameFrom::kContents)
+    return false;
+
+  // Similarly, for changes to live-regions we already fire an inserted event in
+  // BrowserAccessibilityManagerWin, so we don't want an extra event here.
+  if (GetData().IsContainedInActiveLiveRegion())
+    return false;
+
+  return true;
 }
 
 BrowserAccessibilityManager* BrowserAccessibilityComWin::Manager() const {

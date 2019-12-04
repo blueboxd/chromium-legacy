@@ -295,7 +295,7 @@ AXPlatformNode* AXPlatformNode::FromNativeViewAccessible(
 // AXPlatformNodeWin
 //
 
-AXPlatformNodeWin::AXPlatformNodeWin() {}
+AXPlatformNodeWin::AXPlatformNodeWin() : force_new_hypertext_(false) {}
 
 AXPlatformNodeWin::~AXPlatformNodeWin() {
   ClearOwnRelations();
@@ -303,12 +303,17 @@ AXPlatformNodeWin::~AXPlatformNodeWin() {
 
 void AXPlatformNodeWin::Init(AXPlatformNodeDelegate* delegate) {
   AXPlatformNodeBase::Init(delegate);
+  force_new_hypertext_ = false;
 }
 
 void AXPlatformNodeWin::ClearOwnRelations() {
   for (size_t i = 0; i < relations_.size(); ++i)
     relations_[i]->Invalidate();
   relations_.clear();
+}
+
+void AXPlatformNodeWin::ForceNewHypertext() {
+  force_new_hypertext_ = true;
 }
 
 // Static
@@ -1062,6 +1067,9 @@ IFACEMETHODIMP AXPlatformNodeWin::get_accName(VARIANT var_id, BSTR* name_bstr) {
        GetIAccessible2UsageObserverList()) {
     observer.OnAccNameCalled();
   }
+
+  if (!IsNameExposed())
+    return S_FALSE;
 
   bool has_name = target->HasStringAttribute(ax::mojom::StringAttribute::kName);
   base::string16 name =
@@ -4055,9 +4063,11 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
     } break;
 
     case UIA_NamePropertyId:
-      result->vt = VT_BSTR;
-      GetStringAttributeAsBstr(ax::mojom::StringAttribute::kName,
-                               &result->bstrVal);
+      if (IsNameExposed()) {
+        result->vt = VT_BSTR;
+        GetStringAttributeAsBstr(ax::mojom::StringAttribute::kName,
+                                 &result->bstrVal);
+      }
       break;
 
     case UIA_OrientationPropertyId:
@@ -4848,6 +4858,16 @@ int AXPlatformNodeWin::MSAARole() {
     case ax::mojom::Role::kListItem:
       return ROLE_SYSTEM_LISTITEM;
 
+    case ax::mojom::Role::kListMarker:
+      if (!GetDelegate()->GetChildCount()) {
+        // There's only a name attribute when using Legacy layout. With Legacy
+        // layout, list markers have no child and are considered as StaticText.
+        // We consider a list marker as a group in LayoutNG since it has
+        // a text child node.
+        return ROLE_SYSTEM_STATICTEXT;
+      }
+      return ROLE_SYSTEM_GROUPING;
+
     case ax::mojom::Role::kLog:
       return ROLE_SYSTEM_CLIENT;
 
@@ -4972,7 +4992,6 @@ int AXPlatformNodeWin::MSAARole() {
       return ROLE_SYSTEM_CHECKBUTTON;
 
     case ax::mojom::Role::kRubyAnnotation:
-    case ax::mojom::Role::kListMarker:
     case ax::mojom::Role::kStaticText:
       return ROLE_SYSTEM_STATICTEXT;
 
@@ -5676,6 +5695,16 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
     case ax::mojom::Role::kListItem:
       return L"listitem";
 
+    case ax::mojom::Role::kListMarker:
+      if (!GetDelegate()->GetChildCount()) {
+        // There's only a name attribute when using Legacy layout. With Legacy
+        // layout, list markers have no child and are considered as StaticText.
+        // We consider a list marker as a group in LayoutNG since it has
+        // a text child node.
+        return L"description";
+      }
+      return L"group";
+
     case ax::mojom::Role::kLog:
       return L"log";
 
@@ -5803,7 +5832,6 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
       return L"switch";
 
     case ax::mojom::Role::kRubyAnnotation:
-    case ax::mojom::Role::kListMarker:
     case ax::mojom::Role::kStaticText:
       return L"description";
 
@@ -6339,6 +6367,16 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
     case ax::mojom::Role::kListItem:
       return UIA_ListItemControlTypeId;
 
+    case ax::mojom::Role::kListMarker:
+      if (!GetDelegate()->GetChildCount()) {
+        // There's only a name attribute when using Legacy layout. With Legacy
+        // layout, list markers have no child and are considered as StaticText.
+        // We consider a list marker as a group in LayoutNG since it has
+        // a text child node.
+        return UIA_TextControlTypeId;
+      }
+      return UIA_GroupControlTypeId;
+
     case ax::mojom::Role::kLog:
       return UIA_GroupControlTypeId;
 
@@ -6456,7 +6494,6 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
       return UIA_ButtonControlTypeId;
 
     case ax::mojom::Role::kRubyAnnotation:
-    case ax::mojom::Role::kListMarker:
     case ax::mojom::Role::kStaticText:
       return UIA_TextControlTypeId;
 
@@ -6546,6 +6583,16 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
 
   NOTREACHED();
   return UIA_DocumentControlTypeId;
+}
+
+bool AXPlatformNodeWin::IsNameExposed() const {
+  const AXNodeData& data = GetData();
+  switch (data.role) {
+    case ax::mojom::Role::kListMarker:
+      return !GetDelegate()->GetChildCount();
+    default:
+      return true;
+  }
 }
 
 bool AXPlatformNodeWin::IsUIAControl() const {

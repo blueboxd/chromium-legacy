@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/android/rules.gni")
+import("//build/config/locales.gni")
 import("//chrome/common/features.gni")
 
 android_library("internal_java") {
@@ -95,50 +96,7 @@ android_resources("java_resources") {
 java_strings_grd("java_strings_grd") {
   defines = chrome_grit_defines
   grd_file = "java/strings/android_keyboard_accessory_strings.grd"
-  outputs = [
-    "values-am/android_keyboard_accessory_strings.xml",
-    "values-ar/android_keyboard_accessory_strings.xml",
-    "values-bg/android_keyboard_accessory_strings.xml",
-    "values-ca/android_keyboard_accessory_strings.xml",
-    "values-cs/android_keyboard_accessory_strings.xml",
-    "values-da/android_keyboard_accessory_strings.xml",
-    "values-de/android_keyboard_accessory_strings.xml",
-    "values-el/android_keyboard_accessory_strings.xml",
-    "values/android_keyboard_accessory_strings.xml",
-    "values-en-rGB/android_keyboard_accessory_strings.xml",
-    "values-es/android_keyboard_accessory_strings.xml",
-    "values-es-rUS/android_keyboard_accessory_strings.xml",
-    "values-fa/android_keyboard_accessory_strings.xml",
-    "values-fi/android_keyboard_accessory_strings.xml",
-    "values-tl/android_keyboard_accessory_strings.xml",
-    "values-fr/android_keyboard_accessory_strings.xml",
-    "values-hi/android_keyboard_accessory_strings.xml",
-    "values-hr/android_keyboard_accessory_strings.xml",
-    "values-hu/android_keyboard_accessory_strings.xml",
-    "values-in/android_keyboard_accessory_strings.xml",
-    "values-it/android_keyboard_accessory_strings.xml",
-    "values-iw/android_keyboard_accessory_strings.xml",
-    "values-ja/android_keyboard_accessory_strings.xml",
-    "values-ko/android_keyboard_accessory_strings.xml",
-    "values-lt/android_keyboard_accessory_strings.xml",
-    "values-lv/android_keyboard_accessory_strings.xml",
-    "values-nl/android_keyboard_accessory_strings.xml",
-    "values-nb/android_keyboard_accessory_strings.xml",
-    "values-pl/android_keyboard_accessory_strings.xml",
-    "values-pt-rBR/android_keyboard_accessory_strings.xml",
-    "values-pt-rPT/android_keyboard_accessory_strings.xml",
-    "values-ro/android_keyboard_accessory_strings.xml",
-    "values-ru/android_keyboard_accessory_strings.xml",
-    "values-sk/android_keyboard_accessory_strings.xml",
-    "values-sl/android_keyboard_accessory_strings.xml",
-    "values-sr/android_keyboard_accessory_strings.xml",
-    "values-sv/android_keyboard_accessory_strings.xml",
-    "values-sw/android_keyboard_accessory_strings.xml",
-    "values-th/android_keyboard_accessory_strings.xml",
-    "values-tr/android_keyboard_accessory_strings.xml",
-    "values-uk/android_keyboard_accessory_strings.xml",
-    "values-vi/android_keyboard_accessory_strings.xml",
-    "values-zh-rCN/android_keyboard_accessory_strings.xml",
-    "values-zh-rTW/android_keyboard_accessory_strings.xml",
-  ]
+  outputs = [ "values/android_keyboard_accessory_strings.xml" ] + process_file_template(
+                android_bundle_locales_as_resources,
+                [ "values-{{source_name_part}}/android_keyboard_accessory_strings.xml" ])
 }

@@ -83,8 +83,7 @@ class ShellSurfaceWidget : public views::Widget {
   DISALLOW_COPY_AND_ASSIGN(ShellSurfaceWidget);
 };
 
-class CustomFrameView : public ash::NonClientFrameViewAsh,
-                        public aura::WindowObserver {
+class CustomFrameView : public ash::NonClientFrameViewAsh {
  public:
   using ShapeRects = std::vector<gfx::Rect>;
 
@@ -99,16 +98,9 @@ class CustomFrameView : public ash::NonClientFrameViewAsh,
     SetVisible(enabled);
     if (!enabled)
       NonClientFrameViewAsh::SetShouldPaintHeader(false);
-
-    frame()->GetNativeWindow()->AddObserver(this);
   }
 
-  ~CustomFrameView() override {
-    if (frame() && frame()->GetNativeWindow() &&
-        frame()->GetNativeWindow()->HasObserver(this)) {
-      frame()->GetNativeWindow()->RemoveObserver(this);
-    }
-  }
+  ~CustomFrameView() override = default;
 
   // Overridden from ash::NonClientFrameViewAsh:
   void SetShouldPaintHeader(bool paint) override {
@@ -116,11 +108,6 @@ class CustomFrameView : public ash::NonClientFrameViewAsh,
       NonClientFrameViewAsh::SetShouldPaintHeader(paint);
       return;
     }
-  }
-
-  void OnWindowDestroying(aura::Window* window) override {
-    DCHECK_EQ(frame()->GetNativeWindow(), window);
-    window->RemoveObserver(this);
   }
 
   // Overridden from views::NonClientFrameView:

@@ -54,10 +54,6 @@ const char kShowAggregatedDamage[] = "show-aggregated-damage";
 // The debug borders are offset from the layer rect by a few pixels for clarity.
 const char kShowDCLayerDebugBorders[] = "show-dc-layer-debug-borders";
 
-// Enables the viz hit-test logic (HitTestAggregator and HitTestQuery), with
-// hit-test data coming from surface layer.
-const char kUseVizHitTestSurfaceLayer[] = "use-viz-hit-test-surface-layer";
-
 base::Optional<uint32_t> GetDeadlineToSynchronizeSurfaces() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kRunAllCompositorStagesBeforeDraw)) {

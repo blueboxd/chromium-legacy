@@ -34,9 +34,9 @@ ClipboardHostImpl::ClipboardHostImpl(
 void ClipboardHostImpl::Create(
     mojo::PendingReceiver<blink::mojom::ClipboardHost> receiver) {
   // Clipboard implementations do interesting things, like run nested message
-  // loops. Since StrongBinding<T> synchronously destroys on failure, that can
-  // result in some unfortunate use-after-frees after the nested message loops
-  // exit.
+  // loops. Use manual memory management instead of SelfOwnedReceiver<T> which
+  // synchronously destroys on failure and can result in some unfortunate
+  // use-after-frees after the nested message loops exit.
   auto* host = new ClipboardHostImpl(std::move(receiver));
   host->receiver_.set_disconnect_handler(base::BindOnce(
       [](ClipboardHostImpl* host) {

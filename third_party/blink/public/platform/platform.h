@@ -405,7 +405,7 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Disable/Enable sudden termination on a process level. When possible, it
   // is preferable to disable sudden termination on a per-frame level via
-  // WebLocalFrameClient::SuddenTerminationDisablerChanged.
+  // mojom::LocalFrameHost::SuddenTerminationDisablerChanged.
   // This method should only be called on the main thread.
   virtual void SuddenTerminationChanged(bool enabled) {}
 

@@ -46,6 +46,8 @@ AXRole: AXWebArea
         AXRole: AXPresentational
             AXRole: AXListItem
                 AXRole: AXListMarker "• "
+                    AXRole: AXStaticText "• "
+                        AXRole: AXInlineTextBox "• "
                 AXRole: AXStaticText "Explicit Item 1"
                     AXRole: AXInlineTextBox "Explicit Item 1"
             AXRole: AXListItem

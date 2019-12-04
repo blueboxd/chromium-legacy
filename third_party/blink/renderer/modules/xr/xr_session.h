@@ -203,7 +203,7 @@ class XRSession final
   void AddTransientInputSource(XRInputSource* input_source);
   void RemoveTransientInputSource(XRInputSource* input_source);
 
-  void OnPoseReset();
+  void OnMojoSpaceReset();
 
   const device::mojom::blink::VRDisplayInfoPtr& GetVRDisplayInfo() const {
     return display_info_;

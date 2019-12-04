@@ -73,7 +73,7 @@ bool Path::Contains(const FloatPoint& point, WindRule rule) const {
     return false;
   SkScalar x = point.X();
   SkScalar y = point.Y();
-  SkPath::FillType fill_type = WebCoreWindRuleToSkFillType(rule);
+  SkPathFillType fill_type = WebCoreWindRuleToSkFillType(rule);
   if (path_.getFillType() != fill_type) {
     SkPath tmp(path_);
     tmp.setFillType(fill_type);

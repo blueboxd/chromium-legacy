@@ -109,7 +109,7 @@ class VizMainImpl : public mojom::VizMain {
   }
 
   // Cleanly exits the process.
-  void ExitProcess();
+  void ExitProcess(bool immediately);
 
  private:
   void CreateFrameSinkManagerInternal(mojom::FrameSinkManagerParamsPtr params);

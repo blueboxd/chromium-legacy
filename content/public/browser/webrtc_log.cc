@@ -12,9 +12,10 @@ namespace content {
 // static
 void WebRtcLog::SetLogMessageCallback(
     int render_process_id,
-    const base::Callback<void(const std::string&)>& callback) {
+    base::RepeatingCallback<void(const std::string&)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  MediaStreamManager::RegisterNativeLogCallback(render_process_id, callback);
+  MediaStreamManager::RegisterNativeLogCallback(render_process_id,
+                                                std::move(callback));
 }
 
 // static

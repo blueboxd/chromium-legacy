@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/test/test_simple_task_runner.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
+#include "gpu/config/gpu_preferences.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,7 +30,9 @@ class SchedulerTest : public testing::Test {
   SchedulerTest()
       : task_runner_(new base::TestSimpleTaskRunner()),
         sync_point_manager_(new SyncPointManager),
-        scheduler_(new Scheduler(task_runner_, sync_point_manager_.get())) {}
+        scheduler_(new Scheduler(task_runner_,
+                                 sync_point_manager_.get(),
+                                 GpuPreferences())) {}
 
  protected:
   base::TestSimpleTaskRunner* task_runner() const { return task_runner_.get(); }

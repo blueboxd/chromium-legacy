@@ -159,15 +159,7 @@ TEST_F(GpuWatchdogTest, GpuInitializationHang) {
 }
 
 // Normal GPU Initialization and Running Task
-//
-// Disabled on TSan due to flakiness: https://crbug.com/1030130.
-#if defined(THREAD_SANITIZER)
-#define MAYBE_GpuInitializationAndRunningTasks \
-  DISABLED_GpuInitializationAndRunningTasks
-#else
-#define MAYBE_GpuInitializationAndRunningTasks GpuInitializationAndRunningTasks
-#endif
-TEST_F(GpuWatchdogTest, MAYBE_GpuInitializationAndRunningTasks) {
+TEST_F(GpuWatchdogTest, GpuInitializationAndRunningTasks) {
   // Assume GPU initialization takes 300 milliseconds.
   SimpleTask(base::TimeDelta::FromMilliseconds(300));
   watchdog_thread_->OnInitComplete();

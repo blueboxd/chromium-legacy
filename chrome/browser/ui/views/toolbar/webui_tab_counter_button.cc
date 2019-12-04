@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/toolbar/webui_tab_counter_button.h"
 
+#include <memory>
+
 #include "base/i18n/message_formatter.h"
 #include "base/i18n/number_formatting.h"
 #include "base/strings/utf_string_conversions.h"
@@ -25,16 +27,16 @@
 
 namespace {
 
-class TabCounterLabelUpdater : public TabStripModelObserver {
+class TabCounterUpdater : public TabStripModelObserver {
  public:
-  explicit TabCounterLabelUpdater(views::Label* tab_counter)
-      : tab_counter_(tab_counter) {}
-  ~TabCounterLabelUpdater() override = default;
+  TabCounterUpdater(views::Button* button, views::Label* tab_counter)
+      : button_(button), tab_counter_(tab_counter) {}
+  ~TabCounterUpdater() override = default;
 
   void UpdateCounter(TabStripModel* model) {
     const int num_tabs = model->count();
 
-    tab_counter_->SetTooltipText(
+    button_->SetTooltipText(
         base::i18n::MessageFormatter::FormatWithNumberedArgs(
             l10n_util::GetStringUTF16(IDS_TOOLTIP_WEBUI_TAB_STRIP_TAB_COUNTER),
             num_tabs));
@@ -51,7 +53,8 @@ class TabCounterLabelUpdater : public TabStripModelObserver {
   }
 
  private:
-  views::Label* tab_counter_;
+  views::Button* const button_;
+  views::Label* const tab_counter_;
 };
 
 class WebUITabCounterButton : public views::Button {
@@ -64,7 +67,7 @@ class WebUITabCounterButton : public views::Button {
 
   void OnThemeChanged() override;
 
-  std::unique_ptr<TabCounterLabelUpdater> label_updater_;
+  std::unique_ptr<TabCounterUpdater> counter_updater_;
   views::InkDropContainerView* ink_drop_container_;
   views::Label* label_;
 };
@@ -77,9 +80,6 @@ std::unique_ptr<views::View> CreateWebUITabCounterButton(
   auto tab_counter = std::make_unique<WebUITabCounterButton>(listener);
 
   tab_counter->SetID(VIEW_ID_WEBUI_TAB_STRIP_TAB_COUNTER);
-  // TODO(crbug.com/1028827): replace this with production string and provide
-  // tab count.
-  tab_counter->SetAccessibleName(base::ASCIIToUTF16("Open tab strip"));
 
   // TODO(999557): Create a custom text style to get the correct size/weight.
   // TODO(999557): Figure out how to get the right font.
@@ -107,9 +107,10 @@ std::unique_ptr<views::View> CreateWebUITabCounterButton(
   label->SetBounds(inset_height, inset_height, kDesiredBorderHeight,
                    kDesiredBorderHeight);
 
-  tab_counter->label_updater_ = std::make_unique<TabCounterLabelUpdater>(label);
-  tab_strip_model->AddObserver(tab_counter->label_updater_.get());
-  tab_counter->label_updater_->UpdateCounter(tab_strip_model);
+  tab_counter->counter_updater_ =
+      std::make_unique<TabCounterUpdater>(tab_counter.get(), label);
+  tab_strip_model->AddObserver(tab_counter->counter_updater_.get());
+  tab_counter->counter_updater_->UpdateCounter(tab_strip_model);
 
   return tab_counter;
 }

@@ -15,6 +15,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_compositor_scheduler_state.pbzero.h"
 
 namespace viz {
 
@@ -97,13 +98,11 @@ void BeginFrameObserverBase::OnBeginFrame(const BeginFrameArgs& args) {
   }
 }
 
-void BeginFrameObserverBase::AsValueInto(
-    base::trace_event::TracedValue* state) const {
-  state->SetInteger("dropped_begin_frame_args", dropped_begin_frame_args_);
+void BeginFrameObserverBase::AsProtozeroInto(
+    perfetto::protos::pbzero::BeginFrameObserverState* state) const {
+  state->set_dropped_begin_frame_args(dropped_begin_frame_args_);
 
-  state->BeginDictionary("last_begin_frame_args");
-  last_begin_frame_args_.AsValueInto(state);
-  state->EndDictionary();
+  last_begin_frame_args_.AsProtozeroInto(state->set_last_begin_frame_args());
 }
 
 // BeginFrameSource -------------------------------------------------------
@@ -154,10 +153,10 @@ bool BeginFrameSource::RequestCallbackOnGpuAvailable() {
   return false;
 }
 
-void BeginFrameSource::AsValueInto(
-    base::trace_event::TracedValue* state) const {
+void BeginFrameSource::AsProtozeroInto(
+    perfetto::protos::pbzero::BeginFrameSourceState* state) const {
   // The lower 32 bits of source_id are the interesting piece of |source_id_|.
-  state->SetInteger("source_id", static_cast<uint32_t>(source_id_));
+  state->set_source_id(static_cast<uint32_t>(source_id_));
 }
 
 // StubBeginFrameSource ---------------------------------------------------
@@ -379,16 +378,13 @@ ExternalBeginFrameSource::~ExternalBeginFrameSource() {
   DCHECK(observers_.empty());
 }
 
-void ExternalBeginFrameSource::AsValueInto(
-    base::trace_event::TracedValue* state) const {
-  BeginFrameSource::AsValueInto(state);
+void ExternalBeginFrameSource::AsProtozeroInto(
+    perfetto::protos::pbzero::BeginFrameSourceState* state) const {
+  BeginFrameSource::AsProtozeroInto(state);
 
-  state->SetBoolean("paused", paused_);
-  state->SetInteger("num_observers", observers_.size());
-
-  state->BeginDictionary("last_begin_frame_args");
-  last_begin_frame_args_.AsValueInto(state);
-  state->EndDictionary();
+  state->set_paused(paused_);
+  state->set_num_observers(observers_.size());
+  last_begin_frame_args_.AsProtozeroInto(state->set_last_begin_frame_args());
 }
 
 void ExternalBeginFrameSource::AddObserver(BeginFrameObserver* obs) {

@@ -1737,8 +1737,11 @@ bool WebContentsImpl::NeedToFireBeforeUnloadOrUnload() {
     if (!rfh->IsRenderFrameLive())
       continue;
 
-    if (rfh->GetSuddenTerminationDisablerState(blink::kBeforeUnloadHandler |
-                                               blink::kUnloadHandler)) {
+    if (rfh->GetSuddenTerminationDisablerState(
+            blink::mojom::SuddenTerminationDisablerType::
+                kBeforeUnloadHandler) ||
+        rfh->GetSuddenTerminationDisablerState(
+            blink::mojom::SuddenTerminationDisablerType::kUnloadHandler)) {
       return true;
     }
   }

@@ -24,6 +24,7 @@
 #include "chrome/chrome_cleaner/os/pre_fetched_paths.h"
 #include "chrome/chrome_cleaner/pup_data/pup_data.h"
 #include "chrome/chrome_cleaner/pup_data/test_uws.h"
+#include "chrome/chrome_cleaner/test/child_process_logger.h"
 #include "chrome/chrome_cleaner/test/test_util.h"
 #include "chrome/chrome_cleaner/zip_archiver/sandboxed_zip_archiver.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
@@ -311,8 +312,14 @@ class CleanerTest
 
   void ExpectExitCode(const base::CommandLine& command_line,
                       int expected_exit_code) {
-    base::Process process(
-        base::LaunchProcess(command_line, base::LaunchOptions()));
+    chrome_cleaner::ChildProcessLogger logger;
+    ASSERT_TRUE(logger.Initialize());
+
+    base::LaunchOptions options;
+    logger.UpdateLaunchOptions(&options);
+    base::Process process(base::LaunchProcess(command_line, options));
+    if (!process.IsValid())
+      logger.DumpLogs();
     ASSERT_TRUE(process.IsValid());
 
     int exit_code = -1;
@@ -320,7 +327,8 @@ class CleanerTest
         base::TimeDelta::FromMinutes(10), &exit_code);
     EXPECT_TRUE(exited_within_timeout);
     EXPECT_EQ(expected_exit_code, exit_code);
-
+    if (!exited_within_timeout || expected_exit_code != exit_code)
+      logger.DumpLogs();
     if (!exited_within_timeout)
       process.Terminate(/*exit_code=*/-1, /*wait=*/false);
   }

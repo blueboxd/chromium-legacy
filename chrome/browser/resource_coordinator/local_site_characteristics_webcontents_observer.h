@@ -30,9 +30,6 @@ class LocalSiteCharacteristicsWebContentsObserver
       content::WebContents* contents);
   ~LocalSiteCharacteristicsWebContentsObserver() override;
 
-  // Call once before an instance of this class is created.
-  static void MaybeCreateGraphObserver();
-
   // WebContentsObserver implementation.
   void OnVisibilityChanged(content::Visibility visibility) override;
   void WebContentsDestroyed() override;
@@ -42,9 +39,6 @@ class LocalSiteCharacteristicsWebContentsObserver
   void DidUpdateFaviconURL(
       const std::vector<content::FaviconURL>& candidates) override;
   void OnAudioStateChanged(bool audible) override;
-
-  // GraphObserver notifications public for testing.
-  void OnNonPersistentNotificationCreated();
 
   // TabLoadTracker::Observer:
   void OnLoadingStateChange(content::WebContents* web_contents,
@@ -59,15 +53,10 @@ class LocalSiteCharacteristicsWebContentsObserver
   void ResetWriterForTesting() { writer_.reset(); }
 
  private:
-  // A simple observer on the performance manager graph to get notifications of
-  // events in the graph.
-  class GraphObserver;
-
   enum class FeatureType {
     kTitleChange,
     kFaviconChange,
     kAudioUsage,
-    kNotificationUsage,
   };
 
   // Indicates if the feature usage event just received should be ignored.

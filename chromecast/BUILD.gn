@@ -286,7 +286,7 @@ cast_test_group("cast_tests") {
       # Disable RenderWidgetHostTest.Background because we disable the
       # blacklist to enable WebGL (b/16142554)
       gtest_excludes += [
-        "DOMStorageDatabaseTest.TestCanOpenAndReadWebCoreDatabase",
+        "LegacyDomStorageDatabaseTest.TestCanOpenAndReadWebCoreDatabase",
         "DesktopCaptureDeviceTest.Capture",
         "GamepadProviderTest.PollingAccess",
         "PepperGamepadHostTest.WaitForReply",

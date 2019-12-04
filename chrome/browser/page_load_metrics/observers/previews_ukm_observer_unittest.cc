@@ -10,7 +10,6 @@
 #include "base/base64.h"
 #include "base/macros.h"
 #include "base/metrics/metrics_hashes.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -950,15 +949,7 @@ TEST_F(PreviewsUKMObserverTest, CheckReportingForFlushMetrics) {
               base::nullopt /* hint_source */);
 }
 
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-// Flaky. https://crbug.com/1002223
-#define MAYBE_TestPageEndReasonUMA DISABLED_TestPageEndReasonUMA
-#else
-#define MAYBE_TestPageEndReasonUMA TestPageEndReasonUMA
-#endif
-TEST_F(PreviewsUKMObserverTest, MAYBE_TestPageEndReasonUMA) {
-  std::unique_ptr<base::StatisticsRecorder> recorder(
-      base::StatisticsRecorder::CreateTemporaryForTesting());
+TEST_F(PreviewsUKMObserverTest, TestPageEndReasonUMA) {
   base::HistogramTester histogram_tester;
 
   // No preview:

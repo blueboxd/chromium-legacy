@@ -81,7 +81,8 @@ class StackAddressInterpreter(object):
       lib_path: The path to the WebView library.
 
     Returns:
-      A list of (address, function_name).
+      A list of (address, function_info) where function_info is the function
+      name, plus file name and line if args.show_file_line is set.
     """
     stack_input_path = os.path.join(self.tmp_dir, 'stack_input.txt')
     with open(stack_input_path, 'w') as f:
@@ -103,8 +104,11 @@ class StackAddressInterpreter(object):
     for line in stack_output:
       m = pattern.match(line)
       if m:
-        # We haven't yet seen a case where |file_name_line| could be useful.
-        address_function_pairs.append((m.group('address'), m.group('function')))
+        function_info = m.group('function')
+        if self.args.show_file_line:
+          function_info += " | " + m.group('file_name_line')
+
+        address_function_pairs.append((m.group('address'), function_info))
     return address_function_pairs
 
 
@@ -159,7 +163,7 @@ class SimplePerfRunner(object):
     logging.info("Extracted %d addresses", len(addresses))
     address_function_pairs = self.address_interpreter.Interpret(
         addresses, lib_path)
-    lines = SimplePerfRunner.ReplaceAddressesWithFunctionNames(
+    lines = SimplePerfRunner.ReplaceAddressesWithFunctionInfos(
         lines, address_function_pairs, lib_name)
 
     with open(self.args.report_path, 'w') as f:
@@ -218,7 +222,7 @@ class SimplePerfRunner(object):
     return addresses
 
   @staticmethod
-  def ReplaceAddressesWithFunctionNames(lines, address_function_pairs,
+  def ReplaceAddressesWithFunctionInfos(lines, address_function_pairs,
                                         lib_name):
     """Replaces the addresses with function names.
 
@@ -260,6 +264,8 @@ def main(raw_args):
                             ' Try `app_profiler.py record -h` for more '
                             ' information. Note that not setting this defaults'
                             ' to the default record options.'))
+  parser.add_argument('--show-file-line', action='store_true',
+                      help='Show file name and lines in the result.')
 
   script_common.AddDeviceArguments(parser)
   logging_common.AddLoggingArguments(parser)

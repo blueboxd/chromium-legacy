@@ -49,6 +49,7 @@ namespace {
 const char kUrl[] = "chromium://download.test/";
 const char kContentDisposition[] = "attachment; filename=file.test";
 const char kMimeType[] = "application/pdf";
+NSString* const kHttpMethod = @"POST";
 
 class MockDownloadTaskObserver : public DownloadTaskObserver {
  public:
@@ -128,6 +129,7 @@ class DownloadTaskImplTest : public PlatformTest {
       : task_(std::make_unique<DownloadTaskImpl>(
             &web_state_,
             GURL(kUrl),
+            kHttpMethod,
             kContentDisposition,
             /*total_bytes=*/-1,
             kMimeType,
@@ -152,7 +154,9 @@ class DownloadTaskImplTest : public PlatformTest {
     CRWFakeNSURLSessionTask* session_task =
         [[CRWFakeNSURLSessionTask alloc] initWithURL:url];
     EXPECT_TRUE(task_delegate_.session());
-    OCMExpect([task_delegate_.session() dataTaskWithURL:url])
+    NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:url];
+    request.HTTPMethod = kHttpMethod;
+    OCMExpect([task_delegate_.session() dataTaskWithRequest:request])
         .andReturn(session_task);
 
     // Start the download.
@@ -693,7 +697,7 @@ TEST_F(DownloadTaskImplTest, ValidDataUrl) {
   // Create data:// url download task.
   char kDataUrl[] = "data:text/plain;base64,Q2hyb21pdW0=";
   auto task = std::make_unique<DownloadTaskImpl>(
-      &web_state_, GURL(kDataUrl), kContentDisposition,
+      &web_state_, GURL(kDataUrl), @"GET", kContentDisposition,
       /*total_bytes=*/-1, kMimeType, ui::PageTransition::PAGE_TRANSITION_TYPED,
       task_delegate_.configuration().identifier, &task_delegate_);
 
@@ -725,7 +729,7 @@ TEST_F(DownloadTaskImplTest, EmptyDataUrl) {
   // Create data:// url download task.
   char kDataUrl[] = "data://";
   auto task = std::make_unique<DownloadTaskImpl>(
-      &web_state_, GURL(kDataUrl), kContentDisposition,
+      &web_state_, GURL(kDataUrl), @"GET", kContentDisposition,
       /*total_bytes=*/-1, kMimeType, ui::PageTransition::PAGE_TRANSITION_TYPED,
       task_delegate_.configuration().identifier, &task_delegate_);
 

@@ -236,7 +236,7 @@ enum ShadowCascadeOrder {
   kShadowCascadeV1
 };
 
-enum class SecureContextState { kUnknown, kNonSecure, kSecure };
+enum class SecureContextState { kNonSecure, kSecure };
 
 using DocumentClassFlags = unsigned char;
 
@@ -1527,6 +1527,7 @@ class CORE_EXPORT Document : public ContainerNode,
   LazyLoadImageObserver& EnsureLazyLoadImageObserver();
 
   WindowAgent& GetWindowAgent();
+  WindowAgentFactory* GetWindowAgentFactory() { return window_agent_factory_; }
 
   void CountPotentialFeaturePolicyViolation(
       mojom::FeaturePolicyFeature) const override;

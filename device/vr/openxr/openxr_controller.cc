@@ -85,8 +85,6 @@ XrResult OpenXrController::Initialize(
                    action_set_name.c_str());
   DCHECK(!error);
 
-  XrResult xr_result;
-
   RETURN_IF_XR_FAILED(
       xrCreateActionSet(instance_, &action_set_create_info, &action_set_));
 
@@ -95,14 +93,12 @@ XrResult OpenXrController::Initialize(
 
   RETURN_IF_XR_FAILED(InitializeMicrosoftMotionControllerSpaces());
 
-  return xr_result;
+  return XR_SUCCESS;
 }
 
 XrResult OpenXrController::InitializeMicrosoftMotionControllerActions(
     const std::string& type_string,
     std::map<XrPath, std::vector<XrActionSuggestedBinding>>* bindings) {
-  XrResult xr_result;
-
   const std::string binding_prefix = top_level_user_path_string_ + "/input/";
   const std::string name_prefix = type_string + "_controller_";
 
@@ -170,18 +166,16 @@ XrResult OpenXrController::InitializeMicrosoftMotionControllerActions(
       binding_prefix + "aim", name_prefix + "aim_pose", &pointer_pose_action_,
       bindings));
 
-  return xr_result;
+  return XR_SUCCESS;
 }
 
 XrResult OpenXrController::InitializeMicrosoftMotionControllerSpaces() {
-  XrResult xr_result;
-
   RETURN_IF_XR_FAILED(CreateActionSpace(grip_pose_action_, &grip_pose_space_));
 
   RETURN_IF_XR_FAILED(
       CreateActionSpace(pointer_pose_action_, &pointer_pose_space_));
 
-  return xr_result;
+  return XR_SUCCESS;
 }
 
 uint32_t OpenXrController::GetId() const {
@@ -275,8 +269,6 @@ std::vector<double> OpenXrController::GetAxis(OpenXrAxisType type) const {
 }
 
 XrResult OpenXrController::UpdateInteractionProfile() {
-  XrResult xr_result;
-
   XrPath top_level_user_path;
   RETURN_IF_XR_FAILED(xrStringToPath(
       instance_, top_level_user_path_string_.c_str(), &top_level_user_path));
@@ -297,7 +289,7 @@ XrResult OpenXrController::UpdateInteractionProfile() {
                      output_size, &output_size, out_string));
 
   interaction_profile_ = out_string;
-  return xr_result;
+  return XR_SUCCESS;
 }
 
 base::Optional<gfx::Transform> OpenXrController::GetMojoFromGripTransform(
@@ -371,8 +363,6 @@ XrResult OpenXrController::CreateAction(
     const std::string& action_name,
     XrAction* action,
     std::map<XrPath, std::vector<XrActionSuggestedBinding>>* bindings) {
-  XrResult xr_result;
-
   XrActionCreateInfo action_create_info = {XR_TYPE_ACTION_CREATE_INFO};
   action_create_info.actionType = type;
 
@@ -394,7 +384,7 @@ XrResult OpenXrController::CreateAction(
       xrStringToPath(instance_, binding_string.c_str(), &action_path));
   (*bindings)[profile_path].push_back({*action, action_path});
 
-  return xr_result;
+  return XR_SUCCESS;
 }
 
 XrResult OpenXrController::CreateActionSpace(XrAction action, XrSpace* space) {

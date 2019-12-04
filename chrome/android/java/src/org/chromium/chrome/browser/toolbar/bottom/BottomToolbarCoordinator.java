@@ -109,6 +109,7 @@ class BottomToolbarCoordinator {
         if (mTabSwitcherModeCoordinator != null) {
             mTabSwitcherModeCoordinator.showToolbarOnTop(!isVisible);
         }
+        mBrowsingModeCoordinator.onVisibilityChanged(isVisible);
     }
 
     /**

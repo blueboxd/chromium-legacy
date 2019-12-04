@@ -156,7 +156,6 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     base::WeakPtr<ServiceWorkerContextCore> context)
     : provider_id_(NextProviderId()),
       running_hosted_version_(std::move(running_hosted_version)),
-      interface_provider_binding_(this),
       container_host_(std::make_unique<content::ServiceWorkerContainerHost>(
           type,
           is_parent_frame_secure,
@@ -214,7 +213,7 @@ void ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
   DCHECK(IsProviderForServiceWorker());
   SetWorkerProcessId(process_id);
 
-  interface_provider_binding_.Bind(FilterRendererExposedInterfaces(
+  interface_provider_receiver_.Bind(FilterRendererExposedInterfaces(
       blink::mojom::kNavigation_ServiceWorkerSpec, process_id,
       std::move(interface_provider_receiver)));
 

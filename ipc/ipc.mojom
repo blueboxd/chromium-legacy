@@ -27,7 +27,9 @@ interface Channel {
   Receive(Message message);
 
   // Requests a Channel-associated interface.
-  GetAssociatedInterface(string name, associated GenericInterface& request);
+  GetAssociatedInterface(
+      string name,
+      pending_associated_receiver<GenericInterface> receiver);
 };
 
 // A strictly nominal interface used to identify Channel bootstrap requests.

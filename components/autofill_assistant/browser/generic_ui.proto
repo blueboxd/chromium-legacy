@@ -1,0 +1,160 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+option java_package = "org.chromium.chrome.browser.autofill_assistant.proto";
+option java_multiple_files = true;
+
+package autofill_assistant;
+
+message GenericUserInterfaceProto {
+  // The root view, usually a view container.
+  optional ViewProto root_view = 1;
+}
+
+message ViewProto {
+  // The unique identifier of the view.
+  optional string identifier = 1;
+
+  // Common view attributes, such as padding and background.
+  optional ViewAttributesProto attributes = 2;
+
+  // Layout parameters such as width, height, and gravity.
+  optional ViewLayoutParamsProto layout_params = 3;
+
+  oneof view {
+    ViewContainerProto view_container = 4;
+    // A regular read-only text view.
+    TextViewProto text_view = 5;
+    // A horizontal view divider.
+    DividerViewProto divider_view = 6;
+    // A regular image view.
+    ImageViewProto image_view = 7;
+  }
+}
+
+message ColorProto {
+  oneof color {
+    // The resource identifier of a color.
+    string resource_identifier = 1;
+    // A color in the #RRGGBB or #AARRGGBB format.
+    string parseable_color = 2;
+  }
+}
+
+// Represents a dimension, e.g., width or height.
+message ClientDimensionProto {
+  oneof size {
+    int32 dp = 1;
+    // Factor to multiply with the client's total width.
+    float width_factor = 2;
+    // Factor to multiply with the client's total height.
+    float height_factor = 3;
+  }
+}
+
+message ShapeDrawableProto {
+  message Rectangle { optional ClientDimensionProto corner_radius = 1; }
+
+  oneof shape { Rectangle rectangle = 1; }
+  optional ColorProto background_color = 2;
+  optional ClientDimensionProto stroke_width = 3;
+  optional ColorProto stroke_color = 4;
+}
+
+message BitmapDrawableProto {
+  optional string url = 1;
+  optional ClientDimensionProto width = 2;
+  optional ClientDimensionProto height = 3;
+}
+
+// A drawable for use in backgrounds or in image views.
+message DrawableProto {
+  oneof drawable {
+    // The resource identifier of a drawable.
+    string resource_identifier = 1;
+    // A bitmap retrieved from a URL.
+    BitmapDrawableProto bitmap = 2;
+    // A shape, e.g., a rounded rectangle.
+    ShapeDrawableProto shape = 3;
+  }
+}
+
+// Attributes of the view.
+message ViewAttributesProto {
+  optional int32 padding_start = 1;
+  optional int32 padding_top = 2;
+  optional int32 padding_end = 3;
+  optional int32 padding_bottom = 4;
+
+  optional DrawableProto background = 5;
+}
+
+// Parameters configuring how views attach to their parents.
+message ViewLayoutParamsProto {
+  // Enum values map directly to corresponding Android values. This was done for
+  // two reasons: (1), for ease-of-implementation and (2) because it is unlikely
+  // that any one chosen enum mapping will apply to more than one platform; we
+  // might as well match one platform directly.
+  enum Gravity {
+    UNDEFINED = 0;
+    CENTER = 17;
+    CENTER_HORIZONTAL = 1;
+    CENTER_VERTICAL = 16;
+    START = 8388611;
+    TOP = 48;
+    END = 8388613;
+    BOTTOM = 80;
+    FILL_HORIZONTAL = 7;
+    FILL_VERTICAL = 112;
+  }
+  enum Size {
+    WRAP_CONTENT = -2;
+    MATCH_PARENT = -1;
+  }
+
+  // The width of the view. Values >= 0 are interpreted as dp.
+  optional int32 layout_width = 1 [default = -2];
+  // The width of the view. Values >= 0 are interpreted as dp.
+  optional int32 layout_height = 2 [default = -2];
+  // The relative weight of the view. Only available in some containers.
+  optional float layout_weight = 8;
+
+  optional int32 margin_start = 3;
+  optional int32 margin_top = 4;
+  optional int32 margin_end = 5;
+  optional int32 margin_bottom = 6;
+
+  // A bit-wise OR of the desired |Gravity| values.
+  optional int32 layout_gravity = 7;
+}
+
+message ViewContainerProto {
+  // The list of views to add to this container.
+  repeated ViewProto views = 1;
+
+  oneof container { LinearLayoutProto linear_layout = 2; }
+}
+
+message LinearLayoutProto {
+  enum Orientation {
+    HORIZONTAL = 0;
+    VERTICAL = 1;
+  }
+
+  optional Orientation orientation = 1;
+}
+
+message TextViewProto {
+  optional string text = 1;
+  optional string text_appearance = 2;
+}
+
+message DividerViewProto {}
+
+message ImageViewProto {
+  optional DrawableProto image = 1;
+}

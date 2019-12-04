@@ -340,7 +340,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'chromium_android_gtests',
-          'isolated_scripts': 'monochrome_apk_checker_isolated_script',
         },
         'os_type': 'android',
       },
@@ -604,6 +603,7 @@
       },
       'android-marshmallow-arm64-rel': {
         'mixins': [
+          'code-coverage',
           'marshmallow',
           'bullhead',
         ],
@@ -674,21 +674,6 @@
         ],
         'use_swarming': True,
         'os_type': 'android',
-      },
-      'Memory Infra Tester': {
-        'mixins': [
-          'kitkat',
-          'hammerhead',
-        ],
-        'swarming': {
-          'expiration': 36000,
-          'hard_timeout': 10800,
-          'ignore_task_failure': False,
-          'io_timeout': 3600,
-        },
-        'test_suites': {
-          'isolated_scripts': 'memory_infra_isolated_scripts',
-        },
       },
       'android-bfcache-debug': {
         'mixins': [
@@ -1802,7 +1787,15 @@
         }
       },
       'ios-simulator-cr-recipe': {
-        'test_suites': {}
+        'mixins': [
+          'chrome-swarming-pool',
+          'host_mac_10.14',
+          'xcode_11b53',
+          'xcode_parallelization',
+        ],
+        'test_suites': {
+          'gtest_tests': 'ios_simulator_cr_recipe_gtests'
+        }
       },
       'linux-annotator-rel': {
         'test_suites': {

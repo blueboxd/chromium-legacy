@@ -708,6 +708,7 @@ TEST_P(CRWWebControllerResponseTest,
   EXPECT_EQ(-1, task->GetTotalBytes());
   EXPECT_TRUE(task->GetContentDisposition().empty());
   EXPECT_TRUE(task->GetMimeType().empty());
+  EXPECT_NSEQ(@"GET", task->GetHttpMethod());
   EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
       task->GetTransitionType(),
       ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT));
@@ -734,6 +735,37 @@ TEST_P(CRWWebControllerResponseTest,
 
   // Verify that download task was not created for html response.
   ASSERT_TRUE(download_delegate_.alive_download_tasks().empty());
+}
+
+// Tests that webView:decidePolicyForNavigationResponse:decisionHandler:
+// correctly uses POST HTTP method for post requests.
+TEST_P(CRWWebControllerResponseTest, DownloadForPostRequest) {
+  // Simulate regular navigation response for post request with text/html MIME
+  // type.
+  GURL url(kTestURLString);
+  AddPendingItem(url, ui::PAGE_TRANSITION_TYPED);
+  web_controller()
+      .webStateImpl->GetNavigationManagerImpl()
+      .GetPendingItemInCurrentOrRestoredSession()
+      ->SetPostData([NSData data]);
+  [web_controller() loadCurrentURLWithRendererInitiatedNavigation:NO];
+  NSURLResponse* response = [[NSHTTPURLResponse alloc]
+       initWithURL:[NSURL URLWithString:@(kTestURLString)]
+        statusCode:200
+       HTTPVersion:nil
+      headerFields:nil];
+  WKNavigationResponsePolicy policy = WKNavigationResponsePolicyAllow;
+  ASSERT_TRUE(CallDecidePolicyForNavigationResponseWithResponse(
+      response, /*for_main_frame=*/YES, /*can_show_mime_type=*/NO, &policy));
+  EXPECT_EQ(WKNavigationResponsePolicyCancel, policy);
+
+  // Verify that download task was created with POST method (crbug.com/.
+  ASSERT_EQ(1U, download_delegate_.alive_download_tasks().size());
+  DownloadTask* task =
+      download_delegate_.alive_download_tasks()[0].second.get();
+  ASSERT_TRUE(task);
+  EXPECT_TRUE(task->GetIndentifier());
+  EXPECT_NSEQ(@"POST", task->GetHttpMethod());
 }
 
 // Tests that webView:decidePolicyForNavigationResponse:decisionHandler: creates

@@ -11,7 +11,7 @@
 #include "base/files/file_path.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
-#include "components/omnibox/browser/on_device_head_serving.h"
+#include "components/omnibox/browser/on_device_head_model.h"
 #include "components/omnibox/browser/on_device_model_update_listener.h"
 
 class AutocompleteProviderListener;
@@ -92,7 +92,7 @@ class OnDeviceHeadProvider : public AutocompleteProvider {
 
   // The model instance which serves top suggestions matching the Autocomplete
   // input and is only accessed in |worker_task_runner_|.
-  std::unique_ptr<OnDeviceHeadServing> model_;
+  std::unique_ptr<OnDeviceHeadModel> model_;
 
   // The request id used to trace current request to the on device head model.
   // The id will be increased whenever a new request is received from the

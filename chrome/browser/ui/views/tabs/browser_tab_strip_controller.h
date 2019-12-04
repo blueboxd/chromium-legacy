@@ -98,10 +98,11 @@ class BrowserTabStripController : public TabStripController,
       TabStripModel* tab_strip_model,
       const TabStripModelChange& change,
       const TabStripSelectionChange& selection) override;
-  void OnTabGroupVisualDataChanged(
-      TabStripModel* tab_strip_model,
-      TabGroupId group,
-      const TabGroupVisualData* visual_data) override;
+  void OnTabGroupCreated(TabGroupId group) override;
+  void OnTabGroupContentsChanged(TabGroupId group) override;
+  void OnTabGroupVisualsChanged(TabGroupId group,
+                                const TabGroupVisualData* visual_data) override;
+  void OnTabGroupClosed(TabGroupId group) override;
   void TabChangedAt(content::WebContents* contents,
                     int model_index,
                     TabChangeType change_type) override;
@@ -110,6 +111,8 @@ class BrowserTabStripController : public TabStripController,
                              int model_index) override;
   void TabBlockedStateChanged(content::WebContents* contents,
                               int model_index) override;
+  void TabGroupedStateChanged(base::Optional<TabGroupId> group,
+                              int index) override;
   void SetTabNeedsAttentionAt(int index, bool attention) override;
 
   const Browser* browser() const { return browser_view_->browser(); }

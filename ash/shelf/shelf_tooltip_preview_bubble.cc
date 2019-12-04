@@ -87,8 +87,8 @@ gfx::Rect ShelfTooltipPreviewBubble::GetBubbleBounds() {
   // same purpose. This would allow us to remove this method and the
   // |shelf_alignment_| field.
   gfx::Rect bounds = BubbleDialogDelegateView::GetBubbleBounds();
-  if (shelf_alignment_ == SHELF_ALIGNMENT_BOTTOM ||
-      shelf_alignment_ == SHELF_ALIGNMENT_BOTTOM_LOCKED) {
+  if (shelf_alignment_ == ShelfAlignment::kBottom ||
+      shelf_alignment_ == ShelfAlignment::kBottomLocked) {
     bounds.set_y(bounds.y() - kDistanceToShelf);
   } else {
     bounds.set_x(bounds.x() - kDistanceToShelf);

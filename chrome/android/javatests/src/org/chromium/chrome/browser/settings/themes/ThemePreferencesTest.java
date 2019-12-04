@@ -5,10 +5,14 @@
 package org.chromium.chrome.browser.settings.themes;
 
 import static org.chromium.chrome.browser.ChromeFeatureList.ANDROID_NIGHT_MODE;
+import static org.chromium.chrome.browser.ChromeFeatureList.DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING;
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.DARKEN_WEBSITES_ENABLED_KEY;
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_SETTING_KEY;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
+import android.view.View;
+import android.widget.LinearLayout;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -27,6 +31,7 @@ import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsActivityTest;
 import org.chromium.chrome.browser.settings.themes.ThemePreferences.ThemeSetting;
 import org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription;
+import org.chromium.chrome.browser.ui.widget.RadioButtonWithDescriptionLayout;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
 import org.chromium.chrome.test.util.browser.Features;
@@ -62,6 +67,7 @@ public class ThemePreferencesTest extends DummyUiActivityTestCase {
     public void setUpTest() throws Exception {
         super.setUpTest();
         SharedPreferencesManager.getInstance().removeKey(UI_THEME_SETTING_KEY);
+        SharedPreferencesManager.getInstance().removeKey(DARKEN_WEBSITES_ENABLED_KEY);
         SettingsActivity settingsActivity = SettingsActivityTest.startSettingsActivity(
                 InstrumentationRegistry.getInstrumentation(), ThemePreferences.class.getName());
         mFragment = (ThemePreferences) settingsActivity.getMainFragment();
@@ -71,8 +77,10 @@ public class ThemePreferencesTest extends DummyUiActivityTestCase {
 
     @Override
     public void tearDownTest() throws Exception {
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> SharedPreferencesManager.getInstance().removeKey(UI_THEME_SETTING_KEY));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            SharedPreferencesManager.getInstance().removeKey(UI_THEME_SETTING_KEY);
+            SharedPreferencesManager.getInstance().removeKey(DARKEN_WEBSITES_ENABLED_KEY);
+        });
 
         FeatureUtilities.setNightModeDefaultToLightForTesting(null);
         super.tearDownTest();
@@ -120,6 +128,75 @@ public class ThemePreferencesTest extends DummyUiActivityTestCase {
             Assert.assertEquals(ThemeSetting.DARK, mPreference.getSetting());
             Assert.assertEquals(mPreference.getSetting(),
                     SharedPreferencesManager.getInstance().readInt(UI_THEME_SETTING_KEY));
+        });
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Themes"})
+    @Features.EnableFeatures(DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING)
+    public void testDarkenWebsiteButton() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // Default to light parameter is only applicable pre-Q.
+            if (mDefaultToLight && BuildInfo.isAtLeastQ()) {
+                Assert.assertFalse("Q should not default to light.",
+                        FeatureUtilities.isNightModeDefaultToLight());
+                return;
+            }
+
+            LinearLayout checkboxContainer = mPreference.getCheckboxContainerForTesting();
+            RadioButtonWithDescriptionLayout group = mPreference.getGroupForTesting();
+
+            int expectedDefaultTheme =
+                    mDefaultToLight ? ThemeSetting.LIGHT : ThemeSetting.SYSTEM_DEFAULT;
+            Assert.assertEquals("Incorrect default theme setting.", expectedDefaultTheme,
+                    NightModeUtils.getThemeSetting());
+            assertButtonCheckedCorrectly(
+                    mDefaultToLight ? "Light" : "System default", expectedDefaultTheme);
+
+            // Select System default
+            selectButton(0);
+            Assert.assertTrue(
+                    "Darken website button should be visible when system default is checked",
+                    checkboxContainer.getVisibility() == View.VISIBLE);
+            Assert.assertEquals(
+                    "Darken website button should be below the system default option when system"
+                            + " default is checked",
+                    1, group.indexOfChild(checkboxContainer));
+
+            // Select Light
+            selectButton(1);
+            Assert.assertTrue(
+                    "Darken website button should be invisible when light theme is checked",
+                    checkboxContainer.getVisibility() != View.VISIBLE);
+
+            // Select Dark
+            selectButton(2);
+            Assert.assertTrue("Darken website button should be visible when dark theme is checked",
+                    checkboxContainer.getVisibility() == View.VISIBLE);
+            Assert.assertEquals("Darken website button should be below the dark theme option"
+                            + " when dark theme is checked",
+                    3, group.indexOfChild(checkboxContainer));
+
+            // Check darken website button
+            checkboxContainer.performClick();
+            SharedPreferencesManager sharedPreferencesManager =
+                    SharedPreferencesManager.getInstance();
+            Assert.assertTrue("Darken website feature should be enabled when darken website button"
+                            + " is checked",
+                    mPreference.isDarkenWebsitesEnabled());
+            Assert.assertTrue("Darken website feature should be enabled when darken website button"
+                            + " is checked",
+                    sharedPreferencesManager.readBoolean(DARKEN_WEBSITES_ENABLED_KEY, false));
+
+            // Check system default, darken website button should stay checked
+            selectButton(1);
+            Assert.assertTrue(
+                    "Darken website button should stay its state when changing theme preference",
+                    mPreference.isDarkenWebsitesEnabled());
+            Assert.assertTrue(
+                    "Darken website button should stay its state when changing theme preference",
+                    sharedPreferencesManager.readBoolean(DARKEN_WEBSITES_ENABLED_KEY, false));
         });
     }
 

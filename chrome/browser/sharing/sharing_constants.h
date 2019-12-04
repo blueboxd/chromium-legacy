@@ -20,9 +20,6 @@ extern const base::TimeDelta kSendMessageTimeout;
 // Amount of time before an ack message is expired.
 extern const base::TimeDelta kAckTimeToLive;
 
-// Amount of offline time before decice is consider expired.
-extern const base::TimeDelta kDeviceExpiration;
-
 // Amount of time before FCM registration should happen again.
 extern const base::TimeDelta kRegistrationExpiration;
 

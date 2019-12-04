@@ -1892,7 +1892,7 @@ Element* InspectorStyleSheet::OwnerStyleElement() {
     return nullptr;
 
   if (!IsA<HTMLStyleElement>(owner_element) &&
-      !IsSVGStyleElement(owner_element))
+      !IsA<SVGStyleElement>(owner_element))
     return nullptr;
   return owner_element;
 }

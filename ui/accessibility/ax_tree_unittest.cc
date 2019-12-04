@@ -3859,4 +3859,55 @@ TEST(AXTreeTest, SingleUpdateTogglesIgnoredStateBeforeDestroyingNode) {
       tree.ToString());
 }
 
+// Tests that the IsInListMarker() method returns true if the current node is a
+// list marker or if it's a descendant node of a list marker..
+TEST(AXTreeTest, TestIsInListMarker) {
+  // This test uses the template of a list of one element: "1. List item"
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(8);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].role = ax::mojom::Role::kList;
+  tree_update.nodes[0].child_ids = {2, 3};
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].role = ax::mojom::Role::kListItem;
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].child_ids = {4, 7};
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[3].role = ax::mojom::Role::kListMarker;
+  tree_update.nodes[3].child_ids = {5};
+  tree_update.nodes[4].id = 5;
+  tree_update.nodes[4].role = ax::mojom::Role::kStaticText;  // "1. "
+  tree_update.nodes[4].child_ids = {6};
+  tree_update.nodes[5].id = 6;
+  tree_update.nodes[5].role = ax::mojom::Role::kInlineTextBox;  // "1. "
+  tree_update.nodes[6].id = 7;
+  tree_update.nodes[6].role = ax::mojom::Role::kStaticText;  // "List item"
+  tree_update.nodes[6].child_ids = {8};
+  tree_update.nodes[7].id = 8;
+  tree_update.nodes[7].role = ax::mojom::Role::kInlineTextBox;  // "List item"
+  AXTree tree(tree_update);
+
+  AXNode* list_node = tree.GetFromId(1);
+  ASSERT_EQ(false, list_node->IsInListMarker());
+
+  AXNode* list_item_node = tree.GetFromId(2);
+  ASSERT_EQ(false, list_item_node->IsInListMarker());
+
+  AXNode* list_marker1 = tree.GetFromId(4);
+  ASSERT_EQ(true, list_marker1->IsInListMarker());
+
+  AXNode* static_node1 = tree.GetFromId(5);
+  ASSERT_EQ(true, static_node1->IsInListMarker());
+
+  AXNode* inline_node1 = tree.GetFromId(6);
+  ASSERT_EQ(true, inline_node1->IsInListMarker());
+
+  AXNode* static_node2 = tree.GetFromId(7);
+  ASSERT_EQ(false, static_node2->IsInListMarker());
+
+  AXNode* inline_node2 = tree.GetFromId(8);
+  ASSERT_EQ(false, inline_node2->IsInListMarker());
+}
+
 }  // namespace ui

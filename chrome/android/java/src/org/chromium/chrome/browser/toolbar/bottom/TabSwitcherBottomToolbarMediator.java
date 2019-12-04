@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.toolbar.bottom;
 
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.ThemeColorProvider.ThemeColorObserver;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 
 /**
  * This class is responsible for reacting to events from the outside world, interacting with other
@@ -37,7 +38,12 @@ class TabSwitcherBottomToolbarMediator implements ThemeColorObserver {
      * @param showOnTop Whether to show the tab switcher bottom toolbar on the top of the screen.
      */
     void showToolbarOnTop(boolean showOnTop) {
-        mModel.set(TabSwitcherBottomToolbarModel.SHOW_ON_TOP, showOnTop);
+        // TODO(crbug.com/1012014): Resolve how to manage the toolbar position in tab switcher in
+        // landscape mode. Probably remove code about showing bottom toolbar on top.
+        // When GridTabSwitcher is enabled, show the original top toolbar instead of showing the
+        // bottom toolbar on top.
+        mModel.set(TabSwitcherBottomToolbarModel.SHOW_ON_TOP,
+                showOnTop && !FeatureUtilities.isGridTabSwitcherEnabled());
     }
 
     /**

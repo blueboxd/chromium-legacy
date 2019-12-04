@@ -263,11 +263,10 @@ class AssistantOverlayDrawable extends Drawable implements FullscreenListener {
             return;
         }
 
-        if (mOverlayImage.mTextSize != null) {
-            mTextPaint.setTextSize(mOverlayImage.mTextSize.getSizeInPixels(
-                    mContext.getResources().getDisplayMetrics()));
+        mTextPaint.setTextSize(mOverlayImage.mTextSizeInPixels);
+        if (mOverlayImage.mTextColor != null) {
+            mTextPaint.setColor(mOverlayImage.mTextColor);
         }
-        mTextPaint.setColor(mOverlayImage.mTextColor);
         invalidateSelf();
     }
 
@@ -305,29 +304,22 @@ class AssistantOverlayDrawable extends Drawable implements FullscreenListener {
         canvas.drawPaint(mBackground);
 
         // Draw overlay image, if specified.
-        if (!mPartial && mOverlayImage != null && mOverlayImage.mImageBitmap != null
-                && mOverlayImage.mImageSize != null) {
-            DisplayMetrics displayMetrics = mContext.getResources().getDisplayMetrics();
-            int imageSize = mOverlayImage.mImageSize.getSizeInPixels(displayMetrics);
-            int topMargin = 0;
-            if (mOverlayImage.mImageTopMargin != null) {
-                topMargin = mOverlayImage.mImageTopMargin.getSizeInPixels(displayMetrics);
-            }
+        if (!mPartial && mOverlayImage != null && mOverlayImage.mImageBitmap != null) {
             canvas.drawBitmap(mOverlayImage.mImageBitmap,
-                    bounds.left + (bounds.right - bounds.left) / 2.0f - imageSize / 2.0f,
-                    yTop + topMargin, null);
+                    bounds.left + (bounds.right - bounds.left) / 2.0f
+                            - mOverlayImage.mImageSizeInPixels / 2.0f,
+                    yTop + mOverlayImage.mImageTopMarginInPixels, null);
 
             if (!TextUtils.isEmpty(mOverlayImage.mText)) {
-                int bottomMargin = 0;
-                if (mOverlayImage.mImageBottomMargin != null) {
-                    bottomMargin = mOverlayImage.mImageBottomMargin.getSizeInPixels(displayMetrics);
-                }
                 String text = trimStringToWidth(
                         mOverlayImage.mText, bounds.right - bounds.left, mTextPaint);
                 float textWidth = mTextPaint.measureText(text);
                 canvas.drawText(text,
                         bounds.left + (bounds.right - bounds.left) / 2.0f - textWidth / 2.0f,
-                        yTop + topMargin + imageSize + bottomMargin, mTextPaint);
+                        yTop + mOverlayImage.mImageTopMarginInPixels
+                                + mOverlayImage.mImageSizeInPixels
+                                + mOverlayImage.mImageBottomMarginInPixels,
+                        mTextPaint);
             }
         }
 

@@ -70,8 +70,7 @@ class LocalSiteCharacteristicsDataImpl
     kFaviconUpdate,
     kTitleUpdate,
     kAudioUsage,
-    kNotificationUsageUsage,
-    kMaxValue = kNotificationUsageUsage,
+    kMaxValue = kAudioUsage,
   };
 
   // Must be called when a load event is received for this site, this can be
@@ -94,7 +93,6 @@ class LocalSiteCharacteristicsDataImpl
   performance_manager::SiteFeatureUsage UpdatesFaviconInBackground() const;
   performance_manager::SiteFeatureUsage UpdatesTitleInBackground() const;
   performance_manager::SiteFeatureUsage UsesAudioInBackground() const;
-  performance_manager::SiteFeatureUsage UsesNotificationsInBackground() const;
 
   // Returns true if the most authoritative data has been loaded from the
   // backing store.
@@ -123,7 +121,6 @@ class LocalSiteCharacteristicsDataImpl
   void NotifyUpdatesFaviconInBackground();
   void NotifyUpdatesTitleInBackground();
   void NotifyUsesAudioInBackground();
-  void NotifyUsesNotificationsInBackground();
 
   // Call when a load-time performance measurement becomes available.
   void NotifyLoadTimePerformanceMeasurement(

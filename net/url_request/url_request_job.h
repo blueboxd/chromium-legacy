@@ -242,20 +242,17 @@ class NET_EXPORT URLRequestJob {
   // from the remote party with the actual response headers recieved.
   virtual void SetResponseHeadersCallback(ResponseHeadersCallback callback) {}
 
-  // Given |policy|, |referrer|, an optional |initiator|, and |destination|,
-  // returns the referrer URL mandated by |request|'s referrer policy. If the
-  // initiator does not have a value, which is the case for many
-  // browser-initiated requests, we fallback to using the origin of |referrer|.
+  // Given |policy|, |original_referrer|, and |destination|, returns the
+  // referrer URL mandated by |request|'s referrer policy.
   //
   // If |same_origin_out_for_metrics| is non-null, saves to
-  // |*same_origin_out_for_metrics| whether |initiator| and |destination| are
-  // cross-origin.
+  // |*same_origin_out_for_metrics| whether |original_referrer| and
+  // |destination| are cross-origin.
   // (This allows reporting in a UMA whether the request is same-origin, without
   // recomputing that information.)
   static GURL ComputeReferrerForPolicy(
       URLRequest::ReferrerPolicy policy,
       const GURL& original_referrer,
-      const base::Optional<url::Origin>& initiator,
       const GURL& destination,
       bool* same_origin_out_for_metrics = nullptr);
 

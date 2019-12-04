@@ -166,16 +166,17 @@ There are other arguments specific to other test types (script tests, JUnit
 tests, instrumentation tests, CTS tests); consult the generator script and
 test_suites.pyl for more details and examples.
 
+### Compound test suites
 #### Composition test suites
 
-One level of grouping of test suites is supported: composition test suites. A
+One level of grouping of test suites is composition test suites. A
 composition test suite is an array whose contents must all be names of
 individual test suites. Composition test suites *may not* refer to other
-composition test suites. This restriction is by design. First, adding multiple
-levels of indirection would make it more difficult to figure out which bots run
-which tests. Second, having only one minimal grouping construct motivates
-authors to simplify the configurations of tests on the bots and reduce the
-number of test suites.
+composition or matrix compound test suites. This restriction is by design.
+First, adding multiple levels of indirection would make it more difficult to
+figure out which bots run which tests. Second, having only one minimal grouping
+construct motivates authors to simplify the configurations of tests on the bots
+and reduce the number of test suites.
 
 An example of a composition test suite:
 
@@ -195,6 +196,97 @@ An example of a composition test suite:
 
 A bot referring to `linux_gtests` will run both `base_unittests` and
 `x11_unittests`.
+
+#### Matrix compound test suites
+
+Another level of grouping of basic test suites is the matrix compound test
+suite. A matrix compound test suite is a dictionary, composed of references to
+basic test suites (key) and configurations (value). Matrix compound test suites
+have the same restrictions as composition test suites, in that they *cannot*
+reference other composition or matrix test suites. Configurations defined for
+a basic test suite in a matrix test suite are applied to each tests for the
+referenced basic test suite.
+
+For example, for the given basic test suite definition:
+
+```
+  'ios_eg2_tests': {
+    'basic_unittests': {
+      'app': 'base_unittests',
+    },
+    'components_unittests': {
+      'app': 'components_unittests',
+      'swarming': {
+        'dimension_sets': [
+          {
+            'xcode build version': '11a1027',
+          },
+          {
+            'xcode build version': '11b53',
+          }
+        ]
+      }
+    }
+  }
+```
+
+And a matrix compound test suite `ios_simulator_gtests` referencing that basic
+test suite `ios_eg2_tests`:
+
+```
+  'ios_simulator_gtests': {
+      'ios_eg2_tests': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device type': 'iPhone X',
+              'os': '13.1',
+            },
+            {
+              'device type': 'iPhone X',
+              'os': '12.2',
+            },
+          ]
+        }
+      }
+  }
+```
+
+Results in four tests running:
+
+* base_unittests on iPhone X with os 13.1
+* base_unittests on iPhone X with os 12.2
+* components_unittests on iPhone X with os 13.1 and xcode version 11a1027
+* components_unittests on iPhone X with os 12.2 and xcode version 11b53
+
+Matrix suites reference a list of basic test suites. Each basic test suite has a
+list of tests. Matrix suites take the cross product between the configuration
+defined by the basic suite and the configuration defined by the matrix suite.
+
+When both configurations define swarming dimension sets, matrix suites attempt
+to merge the two lists. In the example above, the swarming dimension set from
+`component_unittests` is merged with the dimension set defined by the matrix
+suite, resulting in the following dimension set:
+
+```
+  'dimension_sets': [
+    {
+      'device type': 'iPhone X',
+      'os': '13.1',
+      'xcode build version': '11a1027',
+    },
+    {
+      'device type': 'iPhone X',
+      'os': '12.2',
+      'xcode build version': '11b53',
+    },
+  ]
+```
+
+Due to limitations of the merging algorithm, mereging dimension sets fail when
+there are more dimension sets defined in the matrix test suite than the basic
+test suite. On failure, the user is notified of an error merging list key
+dimension sets.
 
 ### Waterfalls
 

@@ -57,6 +57,7 @@ source_set("chromeos") {
     ":print_job_info_proto",
     ":screen_brightness_event_proto",
     ":user_activity_event_proto",
+    ":user_charging_event_proto",
     "crostini:crostini_installer_types_mojom",
     "//apps",
     "//ash",
@@ -81,6 +82,7 @@ source_set("chromeos") {
     "//chrome/browser/web_applications/extensions:extensions",
     "//chrome/common",
     "//chrome/common/extensions/api",
+    "//chrome/common/string_matching",
     "//chrome/services/app_service:lib",
     "//chrome/services/app_service/public/cpp:app_update",
     "//chrome/services/file_util/public/cpp",
@@ -1985,6 +1987,8 @@ source_set("chromeos") {
     "power/process_data_collector.h",
     "power/renderer_freezer.cc",
     "power/renderer_freezer.h",
+    "power/smart_charging/smart_charging_manager.cc",
+    "power/smart_charging/smart_charging_manager.h",
     "preferences.cc",
     "preferences.h",
     "printing/automatic_usb_printer_configurer.cc",
@@ -2887,6 +2891,7 @@ source_set("unit_tests") {
     "power/power_metrics_reporter_unittest.cc",
     "power/process_data_collector_unittest.cc",
     "power/renderer_freezer_unittest.cc",
+    "power/smart_charging/smart_charging_manager_unittest.cc",
     "preferences_unittest.cc",
     "printing/automatic_usb_printer_configurer_unittest.cc",
     "printing/bulk_printers_calculator_unittest.cc",
@@ -3118,6 +3123,12 @@ proto_library("attestation_proto") {
 proto_library("screen_brightness_event_proto") {
   sources = [
     "power/ml/screen_brightness_event.proto",
+  ]
+}
+
+proto_library("user_charging_event_proto") {
+  sources = [
+    "power/smart_charging/user_charging_event.proto",
   ]
 }
 

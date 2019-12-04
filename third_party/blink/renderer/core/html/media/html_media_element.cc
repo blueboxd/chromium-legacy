@@ -1287,6 +1287,8 @@ void HTMLMediaElement::StartPlayerLoad() {
     return;
   }
 
+  OnWebMediaPlayerCreated();
+
   if (GetLayoutObject())
     GetLayoutObject()->SetShouldDoFullPaintInvalidation();
   // Make sure if we create/re-create the WebMediaPlayer that we update our

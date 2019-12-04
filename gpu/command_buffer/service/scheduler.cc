@@ -13,6 +13,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
+#include "gpu/config/gpu_preferences.h"
 
 namespace gpu {
 
@@ -289,12 +290,19 @@ void Scheduler::Sequence::RemoveClientWait(CommandBufferId command_buffer_id) {
 }
 
 Scheduler::Scheduler(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                     SyncPointManager* sync_point_manager)
+                     SyncPointManager* sync_point_manager,
+                     const GpuPreferences& gpu_preferences)
     : task_runner_(std::move(task_runner)),
-      sync_point_manager_(sync_point_manager) {
+      sync_point_manager_(sync_point_manager),
+      blocked_time_collection_enabled_(
+          gpu_preferences.enable_gpu_blocked_time_metric) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Store weak ptr separately because calling GetWeakPtr() is not thread safe.
   weak_ptr_ = weak_factory_.GetWeakPtr();
+
+  if (blocked_time_collection_enabled_ && !base::ThreadTicks::IsSupported()) {
+    DLOG(ERROR) << "GPU Blocked time collection is enabled but not supported.";
+  }
 }
 
 Scheduler::~Scheduler() {
@@ -526,16 +534,13 @@ void Scheduler::RunNextTask() {
     base::AutoUnlock auto_unlock(lock_);
     order_data->BeginProcessingOrderNumber(order_num);
 
-    bool supports_thread_time = base::ThreadTicks::IsSupported();
+    if (blocked_time_collection_enabled_ && base::ThreadTicks::IsSupported()) {
+      // We can't call base::ThreadTicks::Now() if it's not supported
+      base::ThreadTicks thread_time_start = base::ThreadTicks::Now();
+      base::TimeTicks wall_time_start = base::TimeTicks::Now();
 
-    // We can't call base::ThreadTicks::Now() if it's not supported
-    base::ThreadTicks thread_time_start =
-        supports_thread_time ? base::ThreadTicks::Now() : base::ThreadTicks();
-    base::TimeTicks wall_time_start = base::TimeTicks::Now();
+      std::move(closure).Run();
 
-    std::move(closure).Run();
-
-    if (supports_thread_time) {
       base::TimeDelta thread_time_elapsed =
           base::ThreadTicks::Now() - thread_time_start;
       base::TimeDelta wall_time_elapsed =
@@ -543,6 +548,8 @@ void Scheduler::RunNextTask() {
       base::TimeDelta blocked_time = wall_time_elapsed - thread_time_elapsed;
 
       total_blocked_time_ += blocked_time;
+    } else {
+      std::move(closure).Run();
     }
 
     if (order_data->IsProcessingOrderNumber())
@@ -566,7 +573,7 @@ void Scheduler::RunNextTask() {
 }
 
 base::TimeDelta Scheduler::TakeTotalBlockingTime() {
-  if (!base::ThreadTicks::IsSupported())
+  if (!blocked_time_collection_enabled_ || !base::ThreadTicks::IsSupported())
     return base::TimeDelta::Min();
   base::TimeDelta result;
   std::swap(result, total_blocked_time_);

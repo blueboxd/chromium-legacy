@@ -139,10 +139,10 @@ class AppListControllerImplTest : public AshTestBase {
 // orientation.
 TEST_F(AppListControllerImplTest, AppListHiddenWhenShelfAlignmentChanges) {
   Shelf* const shelf = AshTestBase::GetPrimaryShelf();
-  shelf->SetAlignment(ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM);
+  shelf->SetAlignment(ShelfAlignment::kBottom);
 
   const std::vector<ash::ShelfAlignment> alignments(
-      {SHELF_ALIGNMENT_LEFT, SHELF_ALIGNMENT_RIGHT, SHELF_ALIGNMENT_BOTTOM});
+      {ShelfAlignment::kLeft, ShelfAlignment::kRight, ShelfAlignment::kBottom});
   for (ash::ShelfAlignment alignment : alignments) {
     ShowAppListNow();
     EXPECT_TRUE(Shell::Get()
@@ -690,7 +690,7 @@ class AppListAnimationTest : public AshTestBase,
     AshTestBase::SetUp();
 
     Shelf* const shelf = AshTestBase::GetPrimaryShelf();
-    shelf->SetAlignment(ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM);
+    shelf->SetAlignment(ShelfAlignment::kBottom);
 
     if (GetParam()) {
       shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);

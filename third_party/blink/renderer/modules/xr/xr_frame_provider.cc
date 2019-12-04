@@ -397,12 +397,12 @@ void XRFrameProvider::ProcessScheduledFrame(
     if (!immersive_session_ || immersive_session_->ended())
       return;
 
-    if (frame_pose && frame_pose->pose_reset) {
-      immersive_session_->OnPoseReset();
+    if (frame_data && frame_data->mojo_space_reset) {
+      immersive_session_->OnMojoSpaceReset();
     }
 
-    // Check if immersive session is still set as OnPoseReset may have allowed a
-    // ForceEndSession to be triggered.
+    // Check if immersive session is still set as |OnMojoSpaceReset| may have
+    // allowed a ForceEndSession to be triggered.
     if (!immersive_session_ || immersive_session_->ended()) {
       return;
     }
@@ -457,8 +457,8 @@ void XRFrameProvider::ProcessScheduledFrame(
       if (session->ended())
         continue;
 
-      if (frame_pose && frame_pose->pose_reset) {
-        session->OnPoseReset();
+      if (frame_data && frame_data->mojo_space_reset) {
+        session->OnMojoSpaceReset();
       }
 
       // If the pose reset caused us to end, we should stop processing.

@@ -69,6 +69,28 @@ Polymer({
         return loadTimeData.getBoolean('updatedCupsPrintersUiEnabled');
       },
     },
+
+    /**@private */
+    nearbyPrintersAriaLabel_: {
+      type: String,
+      computed: 'getNearbyPrintersAriaLabel_(nearbyPrinterCount_)',
+    },
+
+    /**@private */
+    savedPrintersAriaLabel_: {
+      type: String,
+      computed: 'getSavedPrintersAriaLabel_(savedPrinterCount_)',
+    },
+
+    nearbyPrinterCount_: {
+      type: Number,
+      value: 0,
+    },
+
+    savedPrinterCount_: {
+      type: Number,
+      value: 0,
+    },
   },
 
   listeners: {
@@ -271,5 +293,25 @@ Polymer({
    */
   doesAccountHaveSavedPrinters_: function() {
     return !!this.savedPrinters_.length;
-  }
+  },
+
+  /** @private */
+  getSavedPrintersAriaLabel_: function() {
+    const printerLabel =
+        this.savedPrinterCount_ == 0  ? 'savedPrintersCountNone' :
+        this.savedPrinterCount_ == 1 ? 'savedPrintersCountOne' :
+        'savedPrintersCountMany';
+
+    return loadTimeData.getStringF(printerLabel, this.savedPrinterCount_);
+  },
+
+  /** @private */
+  getNearbyPrintersAriaLabel_: function() {
+    const printerLabel =
+        this.nearbyPrinterCount_ == 0  ? 'nearbyPrintersCountNone' :
+        this.nearbyPrinterCount_ == 1 ? 'nearbyPrintersCountOne' :
+        'nearbyPrintersCountMany';
+
+    return loadTimeData.getStringF(printerLabel, this.nearbyPrinterCount_);
+  },
 });

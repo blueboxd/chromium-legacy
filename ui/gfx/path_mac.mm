@@ -108,14 +108,14 @@ NSBezierPath* CreateNSBezierPathFromSkPath(const SkPath& path) {
 
   // Set up the fill type.
   switch (path.getFillType()) {
-    case SkPath::kWinding_FillType:
+    case SkPathFillType::kWinding:
       [result setWindingRule:NSNonZeroWindingRule];
       break;
-    case SkPath::kEvenOdd_FillType:
+    case SkPathFillType::kEvenOdd:
       [result setWindingRule:NSEvenOddWindingRule];
       break;
-    case SkPath::kInverseWinding_FillType:
-    case SkPath::kInverseEvenOdd_FillType:
+    case SkPathFillType::kInverseWinding:
+    case SkPathFillType::kInverseEvenOdd:
       NOTREACHED() << "NSBezierCurve does not support inverse fill types.";
       break;
   }

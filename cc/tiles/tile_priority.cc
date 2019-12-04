@@ -86,6 +86,21 @@ std::string TreePriorityToString(TreePriority prio) {
   }
 }
 
+perfetto::protos::pbzero::ChromeCompositorStateMachine::MinorState::TreePriority
+TreePriorityToProtozeroEnum(TreePriority priority) {
+  using pbzeroMinorState =
+      perfetto::protos::pbzero::ChromeCompositorStateMachine::MinorState;
+  switch (priority) {
+    case TreePriority::SAME_PRIORITY_FOR_BOTH_TREES:
+      return pbzeroMinorState::TREE_PRIORITY_SAME_PRIORITY_FOR_BOTH_TREES;
+    case TreePriority::SMOOTHNESS_TAKES_PRIORITY:
+      return pbzeroMinorState::TREE_PRIORITY_SMOOTHNESS_TAKES_PRIORITY;
+    case TreePriority::NEW_CONTENT_TAKES_PRIORITY:
+      return pbzeroMinorState::TREE_PRIORITY_NEW_CONTENT_TAKES_PRIORITY;
+  }
+  return pbzeroMinorState::TREE_PRIORITY_UNSPECIFIED;
+}
+
 void GlobalStateThatImpactsTilePriority::AsValueInto(
     base::trace_event::TracedValue* state) const {
   state->SetString("memory_limit_policy",

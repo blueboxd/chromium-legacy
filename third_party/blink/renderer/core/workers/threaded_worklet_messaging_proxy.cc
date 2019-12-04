@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/workers/threaded_worklet_messaging_proxy.h"
 
 #include "base/single_thread_task_runner.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
@@ -69,9 +70,9 @@ void ThreadedWorkletMessagingProxy::Initialize(
           base::UnguessableToken::Create(),
           std::make_unique<WorkerSettings>(document->GetSettings()),
           kV8CacheOptionsDefault, module_responses_map,
-          service_manager::mojom::blink::InterfaceProviderPtrInfo(),
-          mojo::NullRemote(), BeginFrameProviderParams(),
-          nullptr /* parent_feature_policy */, document->GetAgentClusterID());
+          mojo::NullRemote() /*interface_provider*/, mojo::NullRemote(),
+          BeginFrameProviderParams(), nullptr /* parent_feature_policy */,
+          document->GetAgentClusterID());
 
   // Worklets share the pre-initialized backing thread so that we don't have to
   // specify the backing thread startup data.

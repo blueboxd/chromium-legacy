@@ -31,10 +31,9 @@ std::unique_ptr<Browser::Bounds> CreateBrowserBounds(
 
 }  // namespace
 
-BrowserHandler::BrowserHandler(base::WeakPtr<HeadlessBrowserImpl> browser,
+BrowserHandler::BrowserHandler(HeadlessBrowserImpl* browser,
                                const std::string& target_id)
-    : DomainHandler(Browser::Metainfo::domainName, browser),
-      target_id_(target_id) {}
+    : browser_(browser), target_id_(target_id) {}
 
 BrowserHandler::~BrowserHandler() = default;
 
@@ -42,12 +41,16 @@ void BrowserHandler::Wire(UberDispatcher* dispatcher) {
   Browser::Dispatcher::wire(dispatcher, this);
 }
 
+Response BrowserHandler::Disable() {
+  return Response::OK();
+}
+
 Response BrowserHandler::GetWindowForTarget(
     Maybe<std::string> target_id,
     int* out_window_id,
     std::unique_ptr<Browser::Bounds>* out_bounds) {
   HeadlessWebContentsImpl* web_contents = HeadlessWebContentsImpl::From(
-      browser()->GetWebContentsForDevToolsAgentHostId(
+      browser_->GetWebContentsForDevToolsAgentHostId(
           target_id.fromMaybe(target_id_)));
   if (!web_contents)
     return Response::Error("No web contents for the given target id");
@@ -62,7 +65,7 @@ Response BrowserHandler::GetWindowBounds(
     int window_id,
     std::unique_ptr<Browser::Bounds>* out_bounds) {
   HeadlessWebContentsImpl* web_contents =
-      browser()->GetWebContentsForWindowId(window_id);
+      browser_->GetWebContentsForWindowId(window_id);
   if (!web_contents)
     return Response::Error("Browser window not found");
   *out_bounds = CreateBrowserBounds(web_contents);
@@ -70,8 +73,9 @@ Response BrowserHandler::GetWindowBounds(
 }
 
 Response BrowserHandler::Close() {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&HeadlessBrowserImpl::Shutdown, browser()));
+  base::PostTask(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&HeadlessBrowserImpl::Shutdown, browser_->GetWeakPtr()));
   return Response::OK();
 }
 
@@ -79,7 +83,7 @@ Response BrowserHandler::SetWindowBounds(
     int window_id,
     std::unique_ptr<Browser::Bounds> window_bounds) {
   HeadlessWebContentsImpl* web_contents =
-      browser()->GetWebContentsForWindowId(window_id);
+      browser_->GetWebContentsForWindowId(window_id);
   if (!web_contents)
     return Response::Error("Browser window not found");
 

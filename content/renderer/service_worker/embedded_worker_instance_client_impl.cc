@@ -34,7 +34,7 @@ void EmbeddedWorkerInstanceClientImpl::Create(
         receiver) {
   // This won't be leaked because the lifetime will be managed internally.
   // See the class documentation for detail.
-  // We can't use MakeStrongBinding because must give the worker thread
+  // We can't use MakeSelfOwnedReceiver because must give the worker thread
   // a chance to stop by calling TerminateWorkerContext() and waiting
   // before destructing.
   new EmbeddedWorkerInstanceClientImpl(std::move(receiver),
@@ -86,7 +86,7 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
       std::move(params->service_worker_receiver),
       std::move(params->controller_receiver), std::move(params->instance_host),
       std::move(params->provider_info), this, std::move(start_timing),
-      std::move(params->preference_watcher_request),
+      std::move(params->preference_watcher_receiver),
       std::move(params->subresource_loader_factories),
       std::move(params->subresource_loader_updater),
       params->script_url_to_skip_throttling, initiator_thread_task_runner_,
@@ -117,7 +117,7 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
   service_worker_context_client_->StartWorkerContextOnInitiatorThread(
       std::move(worker), std::move(start_data),
       std::move(installed_scripts_manager_params),
-      params->content_settings_proxy.PassHandle(), cache_storage.PassPipe(),
+      params->content_settings_proxy.PassPipe(), cache_storage.PassPipe(),
       interface_provider.PassPipe(), browser_interface_broker.PassPipe());
 }
 

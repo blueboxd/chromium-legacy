@@ -12,7 +12,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
-#include "components/dom_distiller/content/browser/web_contents_main_frame_observer.h"
 #include "components/dom_distiller/core/distiller_page.h"
 #include "components/dom_distiller/core/dom_distiller_constants.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
@@ -90,25 +89,18 @@ void DistillerPageWebContents::DistillPageImpl(const GURL& url,
 
   if (source_page_handle_ && source_page_handle_->web_contents() &&
       source_page_handle_->web_contents()->GetLastCommittedURL() == url) {
-    WebContentsMainFrameObserver* main_frame_observer =
-        WebContentsMainFrameObserver::FromWebContents(
-            source_page_handle_->web_contents());
-    if (main_frame_observer && main_frame_observer->is_initialized()) {
-      if (main_frame_observer->is_document_loaded_in_main_frame()) {
-        // Main frame has already loaded for the current WebContents, so execute
-        // JavaScript immediately.
-        ExecuteJavaScript();
-      } else {
-        // Main frame document has not loaded yet, so wait until it has before
-        // executing JavaScript. It will trigger after DOMContentLoaded is
-        // called for the main frame.
-        content::WebContentsObserver::Observe(
-            source_page_handle_->web_contents());
-      }
+    if (source_page_handle_->web_contents()
+            ->GetMainFrame()
+            ->IsDOMContentLoaded()) {
+      // Main frame has already loaded for the current WebContents, so execute
+      // JavaScript immediately.
+      ExecuteJavaScript();
     } else {
-      // The WebContentsMainFrameObserver has not been correctly initialized,
-      // so fall back to creating a new WebContents.
-      CreateNewWebContents(url);
+      // Main frame document has not loaded yet, so wait until it has before
+      // executing JavaScript. It will trigger after DOMContentLoaded is
+      // called for the main frame.
+      content::WebContentsObserver::Observe(
+          source_page_handle_->web_contents());
     }
   } else {
     CreateNewWebContents(url);

@@ -425,7 +425,7 @@ gfx::Insets UnifiedSystemTrayBubble::GetInsets() {
   bool in_tablet_mode = Shell::Get()->tablet_mode_controller() &&
                         Shell::Get()->tablet_mode_controller()->InTabletMode();
   bool is_bottom_alignment =
-      tray_->shelf()->alignment() == SHELF_ALIGNMENT_BOTTOM;
+      tray_->shelf()->alignment() == ShelfAlignment::kBottom;
   if (chromeos::switches::ShouldShowShelfHotseat() && in_tablet_mode &&
       !ShelfConfig::Get()->is_in_app() && is_bottom_alignment) {
     insets.set_bottom(0);

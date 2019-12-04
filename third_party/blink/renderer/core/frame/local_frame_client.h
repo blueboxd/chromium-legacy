@@ -40,7 +40,6 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
-#include "third_party/blink/public/common/sudden_termination_disabler_type.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-blink-forward.h"
@@ -344,10 +343,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   unsigned BackForwardLength() override { return 0; }
 
   virtual bool IsLocalFrameClientImpl() const { return false; }
-
-  virtual void SuddenTerminationDisablerChanged(bool present,
-                                                SuddenTerminationDisablerType) {
-  }
 
   // Overwrites the given URL to use an HTML5 embed if possible. An empty URL is
   // returned if the URL is not overriden.

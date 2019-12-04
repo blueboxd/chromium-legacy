@@ -17,7 +17,7 @@ class TaskAttributionTiming final : public PerformanceEntry {
 
  public:
   static TaskAttributionTiming* Create(const AtomicString& type,
-                                       const String& container_type,
+                                       const AtomicString& container_type,
                                        const String& container_src,
                                        const String& container_id,
                                        const String& container_name) {
@@ -28,7 +28,7 @@ class TaskAttributionTiming final : public PerformanceEntry {
   AtomicString entryType() const override;
   PerformanceEntryType EntryTypeEnum() const override;
 
-  String containerType() const;
+  AtomicString containerType() const;
   String containerSrc() const;
   String containerId() const;
   String containerName() const;
@@ -36,7 +36,7 @@ class TaskAttributionTiming final : public PerformanceEntry {
   void Trace(blink::Visitor*) override;
 
   TaskAttributionTiming(const AtomicString& type,
-                        const String& container_type,
+                        const AtomicString& container_type,
                         const String& container_src,
                         const String& container_id,
                         const String& container_name);
@@ -45,7 +45,8 @@ class TaskAttributionTiming final : public PerformanceEntry {
  private:
   void BuildJSONValue(V8ObjectBuilder&) const override;
 
-  String container_type_;
+  AtomicString container_type_;
+  // TODO(crbug.com/1030396): change the members below to AtomicString.
   String container_src_;
   String container_id_;
   String container_name_;

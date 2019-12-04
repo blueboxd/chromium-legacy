@@ -24,6 +24,9 @@ TEST(TranslateServiceTest, CheckTranslatableURL) {
   GURL empty_url = GURL(std::string());
   EXPECT_FALSE(TranslateService::IsTranslatableURL(empty_url));
 
+  GURL about_blank_url = GURL("about:blank");
+  EXPECT_FALSE(TranslateService::IsTranslatableURL(about_blank_url));
+
   std::string chrome = std::string(content::kChromeUIScheme) + "://flags";
   GURL chrome_url = GURL(chrome);
   EXPECT_FALSE(TranslateService::IsTranslatableURL(chrome_url));

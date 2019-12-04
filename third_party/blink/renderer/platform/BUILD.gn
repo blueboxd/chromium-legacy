@@ -1423,6 +1423,7 @@ jumbo_component("platform") {
     "webrtc/track_observer.cc",
     "webrtc/track_observer.h",
     "webrtc/webrtc_logging.cc",
+    "webrtc/webrtc_source.h",
     "webrtc/webrtc_video_frame_adapter.cc",
     "webrtc/webrtc_video_frame_adapter.h",
     "webrtc/webrtc_video_utils.cc",

@@ -28,16 +28,6 @@ TabStripModelChange::Remove::~Remove() = default;
 //
 TabStripModelChange::TabStripModelChange() = default;
 
-TabStripModelChange::GroupChange::GroupChange() = default;
-
-TabStripModelChange::GroupChange::GroupChange(const GroupChange& other) =
-    default;
-
-TabStripModelChange::GroupChange& TabStripModelChange::GroupChange::operator=(
-    const GroupChange& other) = default;
-
-TabStripModelChange::GroupChange::~GroupChange() = default;
-
 TabStripModelChange::TabStripModelChange(Insert delta)
     : TabStripModelChange(Type::kInserted,
                           std::make_unique<Insert>(std::move(delta))) {}
@@ -53,10 +43,6 @@ TabStripModelChange::TabStripModelChange(Move delta)
 TabStripModelChange::TabStripModelChange(Replace delta)
     : TabStripModelChange(Type::kReplaced,
                           std::make_unique<Replace>(std::move(delta))) {}
-
-TabStripModelChange::TabStripModelChange(GroupChange delta)
-    : TabStripModelChange(Type::kGroupChanged,
-                          std::make_unique<GroupChange>(std::move(delta))) {}
 
 TabStripModelChange::~TabStripModelChange() = default;
 
@@ -78,12 +64,6 @@ const TabStripModelChange::Move* TabStripModelChange::GetMove() const {
 const TabStripModelChange::Replace* TabStripModelChange::GetReplace() const {
   DCHECK_EQ(type_, Type::kReplaced);
   return static_cast<const Replace*>(delta_.get());
-}
-
-const TabStripModelChange::GroupChange* TabStripModelChange::GetGroupChange()
-    const {
-  DCHECK_EQ(type_, Type::kGroupChanged);
-  return static_cast<const GroupChange*>(delta_.get());
 }
 
 TabStripModelChange::TabStripModelChange(Type type,
@@ -130,10 +110,15 @@ void TabStripModelObserver::OnTabStripModelChanged(
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {}
 
-void TabStripModelObserver::OnTabGroupVisualDataChanged(
-    TabStripModel* tab_strip_model,
+void TabStripModelObserver::OnTabGroupCreated(TabGroupId group) {}
+
+void TabStripModelObserver::OnTabGroupContentsChanged(TabGroupId group) {}
+
+void TabStripModelObserver::OnTabGroupVisualsChanged(
     TabGroupId group,
     const TabGroupVisualData* visual_data) {}
+
+void TabStripModelObserver::OnTabGroupClosed(TabGroupId group) {}
 
 void TabStripModelObserver::TabChangedAt(WebContents* contents,
                                          int index,
@@ -149,6 +134,10 @@ void TabStripModelObserver::TabPinnedStateChanged(
 void TabStripModelObserver::TabBlockedStateChanged(WebContents* contents,
                                                    int index) {
 }
+
+void TabStripModelObserver::TabGroupedStateChanged(
+    base::Optional<TabGroupId> group,
+    int index) {}
 
 void TabStripModelObserver::TabStripEmpty() {
 }

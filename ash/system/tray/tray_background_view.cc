@@ -127,12 +127,15 @@ class TrayBackgroundView::HighlightPathGenerator
 
   // HighlightPathGenerator:
   SkPath GetHighlightPath(const views::View* view) override {
+    const int focus_ring_padding = 1;
     const int border_radius = ShelfConfig::Get()->control_border_radius();
     SkPath path;
-    path.addRoundRect(
-        gfx::RectToSkRect(static_cast<const TrayBackgroundView*>(view)
-                              ->GetBackgroundBounds()),
-        border_radius, border_radius);
+
+    gfx::Rect bounds =
+        static_cast<const TrayBackgroundView*>(view)->GetBackgroundBounds();
+    bounds.Inset(gfx::Insets(focus_ring_padding));
+
+    path.addRoundRect(gfx::RectToSkRect(bounds), border_radius, border_radius);
     return path;
   }
 
@@ -413,8 +416,8 @@ views::View* TrayBackgroundView::GetBubbleAnchor() const {
 gfx::Insets TrayBackgroundView::GetBubbleAnchorInsets() const {
   gfx::Insets anchor_insets = GetBubbleAnchor()->GetInsets();
   gfx::Insets tray_bg_insets = GetInsets();
-  if (shelf_->alignment() == SHELF_ALIGNMENT_BOTTOM ||
-      shelf_->alignment() == SHELF_ALIGNMENT_BOTTOM_LOCKED) {
+  if (shelf_->alignment() == ShelfAlignment::kBottom ||
+      shelf_->alignment() == ShelfAlignment::kBottomLocked) {
     return gfx::Insets(-tray_bg_insets.top(), anchor_insets.left(),
                        -tray_bg_insets.bottom(), anchor_insets.right());
   } else {

@@ -98,8 +98,8 @@ class AutofillAgentTests : public PlatformTest {
     AddWebFrame(std::move(main_frame));
 
     prefs_ = autofill::test::PrefServiceForTesting();
-    autofill::prefs::SetProfileAutofillEnabled(prefs_.get(), true);
-    autofill::prefs::SetCreditCardAutofillEnabled(prefs_.get(), true);
+    autofill::prefs::SetAutofillProfileEnabled(prefs_.get(), true);
+    autofill::prefs::SetAutofillCreditCardEnabled(prefs_.get(), true);
     autofill_agent_ =
         [[AutofillAgent alloc] initWithPrefService:prefs_.get()
                                           webState:&test_web_state_];

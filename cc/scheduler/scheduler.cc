@@ -16,6 +16,8 @@
 #include "cc/metrics/begin_main_frame_metrics.h"
 #include "cc/metrics/compositor_timing_history.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
+#include "services/tracing/public/cpp/perfetto/macros.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_compositor_scheduler_state.pbzero.h"
 
 namespace cc {
 
@@ -154,7 +156,7 @@ void Scheduler::DidSubmitCompositorFrame(uint32_t frame_token) {
 }
 
 void Scheduler::DidReceiveCompositorFrameAck() {
-  DCHECK_GT(state_machine_.pending_submit_frames(), 0) << AsValue()->ToString();
+  DCHECK_GT(state_machine_.pending_submit_frames(), 0);
   compositor_timing_history_->DidReceiveCompositorFrameAck();
   state_machine_.DidReceiveCompositorFrameAck();
   ProcessScheduledActions();
@@ -784,8 +786,10 @@ void Scheduler::ProcessScheduledActions() {
   SchedulerStateMachine::Action action;
   do {
     action = state_machine_.NextAction();
-    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
-                 "SchedulerStateMachine", "state", AsValue());
+    TRACE_EVENT(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
+                "SchedulerStateMachine", [this](perfetto::EventContext ctx) {
+                  this->AsProtozeroInto(ctx.event()->set_cc_scheduler_state());
+                });
     base::AutoReset<SchedulerStateMachine::Action> mark_inside_action(
         &inside_action_, action);
     switch (action) {
@@ -866,62 +870,47 @@ void Scheduler::ProcessScheduledActions() {
   StartOrStopBeginFrames();
 }
 
-std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
-Scheduler::AsValue() const {
-  auto state = std::make_unique<base::trace_event::TracedValue>();
-  AsValueInto(state.get());
-  return std::move(state);
-}
-
-void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {
+void Scheduler::AsProtozeroInto(
+    perfetto::protos::pbzero::ChromeCompositorSchedulerState* state) const {
   base::TimeTicks now = Now();
 
-  state->BeginDictionary("state_machine");
-  state_machine_.AsValueInto(state);
-  state->EndDictionary();
+  state_machine_.AsProtozeroInto(state->set_state_machine());
 
-  state->SetBoolean("observing_begin_frame_source",
-                    observing_begin_frame_source_);
-  state->SetBoolean("begin_impl_frame_deadline_task",
-                    !begin_impl_frame_deadline_task_.IsCancelled());
-  state->SetBoolean("pending_begin_frame_task",
-                    !pending_begin_frame_task_.IsCancelled());
-  state->SetBoolean("skipped_last_frame_missed_exceeded_deadline",
-                    skipped_last_frame_missed_exceeded_deadline_);
-  state->SetBoolean("skipped_last_frame_to_reduce_latency",
-                    skipped_last_frame_to_reduce_latency_);
-  state->SetString("inside_action",
-                   SchedulerStateMachine::ActionToString(inside_action_));
-  state->SetString("deadline_mode",
-                   SchedulerStateMachine::BeginImplFrameDeadlineModeToString(
-                       deadline_mode_));
+  state->set_observing_begin_frame_source(observing_begin_frame_source_);
+  state->set_begin_impl_frame_deadline_task(
+      !begin_impl_frame_deadline_task_.IsCancelled());
+  state->set_pending_begin_frame_task(!pending_begin_frame_task_.IsCancelled());
+  state->set_skipped_last_frame_missed_exceeded_deadline(
+      skipped_last_frame_missed_exceeded_deadline_);
+  state->set_skipped_last_frame_to_reduce_latency(
+      skipped_last_frame_to_reduce_latency_);
+  state->set_inside_action(
+      SchedulerStateMachine::ActionToProtozeroEnum(inside_action_));
+  state->set_deadline_mode(
+      SchedulerStateMachine::BeginImplFrameDeadlineModeToProtozeroEnum(
+          deadline_mode_));
 
-  state->SetDouble("deadline_ms", deadline_.since_origin().InMillisecondsF());
-  state->SetDouble("deadline_scheduled_at_ms",
-                   deadline_scheduled_at_.since_origin().InMillisecondsF());
+  state->set_deadline_us(deadline_.since_origin().InMicroseconds());
+  state->set_deadline_scheduled_at_us(
+      deadline_scheduled_at_.since_origin().InMicroseconds());
 
-  state->SetDouble("now_ms", Now().since_origin().InMillisecondsF());
-  state->SetDouble("now_to_deadline_ms", (deadline_ - Now()).InMillisecondsF());
-  state->SetDouble("now_to_deadline_scheduled_at_ms",
-                   (deadline_scheduled_at_ - Now()).InMillisecondsF());
+  state->set_now_us(Now().since_origin().InMicroseconds());
+  state->set_now_to_deadline_delta_us((deadline_ - Now()).InMicroseconds());
+  state->set_now_to_deadline_scheduled_at_delta_us(
+      (deadline_scheduled_at_ - Now()).InMicroseconds());
 
-  state->BeginDictionary("begin_impl_frame_args");
-  begin_impl_frame_tracker_.AsValueInto(now, state);
-  state->EndDictionary();
+  begin_impl_frame_tracker_.AsProtozeroInto(now,
+                                            state->set_begin_impl_frame_args());
 
-  state->BeginDictionary("begin_frame_observer_state");
-  BeginFrameObserverBase::AsValueInto(state);
-  state->EndDictionary();
+  BeginFrameObserverBase::AsProtozeroInto(
+      state->set_begin_frame_observer_state());
 
   if (begin_frame_source_) {
-    state->BeginDictionary("begin_frame_source_state");
-    begin_frame_source_->AsValueInto(state);
-    state->EndDictionary();
+    begin_frame_source_->AsProtozeroInto(state->set_begin_frame_source_state());
   }
 
-  state->BeginDictionary("compositor_timing_history");
-  compositor_timing_history_->AsValueInto(state);
-  state->EndDictionary();
+  compositor_timing_history_->AsProtozeroInto(
+      state->set_compositor_timing_history());
 }
 
 void Scheduler::UpdateCompositorTimingHistoryRecordingEnabled() {

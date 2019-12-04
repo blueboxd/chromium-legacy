@@ -13,7 +13,7 @@ namespace ash {
 
 ShelfLockingManager::ShelfLockingManager(Shelf* shelf)
     : shelf_(shelf),
-      stored_alignment_(SHELF_ALIGNMENT_BOTTOM_LOCKED),
+      stored_alignment_(ShelfAlignment::kBottomLocked),
       scoped_session_observer_(this) {
   DCHECK(shelf_);
   Shell::Get()->lock_state_controller()->AddObserver(this);
@@ -48,10 +48,10 @@ void ShelfLockingManager::OnLockStateEvent(EventType event) {
 
 void ShelfLockingManager::UpdateLockedState() {
   const ShelfAlignment alignment = shelf_->alignment();
-  if (is_locked() && alignment != SHELF_ALIGNMENT_BOTTOM_LOCKED) {
+  if (is_locked() && alignment != ShelfAlignment::kBottomLocked) {
     stored_alignment_ = alignment;
-    shelf_->SetAlignment(SHELF_ALIGNMENT_BOTTOM_LOCKED);
-  } else if (!is_locked() && alignment == SHELF_ALIGNMENT_BOTTOM_LOCKED) {
+    shelf_->SetAlignment(ShelfAlignment::kBottomLocked);
+  } else if (!is_locked() && alignment == ShelfAlignment::kBottomLocked) {
     shelf_->SetAlignment(stored_alignment_);
   }
 }

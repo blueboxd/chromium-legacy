@@ -55,21 +55,23 @@ def launch_dbus(env):
   headless environments. This is fixed by glib commit [1], but this workaround
   will be necessary until the fix rolls into Chromium's CI.
 
-  [1] https://gitlab.gnome.org/GNOME/glib/commit/f2917459f745bebf931bccd5cc2c33aa81ef4d12
+  [1] f2917459f745bebf931bccd5cc2c33aa81ef4d12
 
   Modifies the passed in environment with at least DBUS_SESSION_BUS_ADDRESS and
   DBUS_SESSION_BUS_PID set.
+
+  Returns the pid of the dbus-daemon if started, or None otherwise.
   """
   if 'DBUS_SESSION_BUS_ADDRESS' in os.environ:
     return
   try:
-    dbus_output = subprocess.check_output(
-      ['dbus-launch', '--exit-with-x11'], env=env).split('\n')
+    dbus_output = subprocess.check_output(['dbus-launch'], env=env).split('\n')
     for line in dbus_output:
       m = re.match(r'([^=]+)\=(.+)', line)
       if m:
         env[m.group(1)] = m.group(2)
-  except (subprocess.CalledProcessError, OSError) as e:
+    return int(env['DBUS_SESSION_BUS_PID'])
+  except (subprocess.CalledProcessError, OSError, KeyError, ValueError) as e:
     print 'Exception while running dbus_launch: %s' % e
 
 
@@ -163,7 +165,7 @@ def run_executable(
 
       env['DISPLAY'] = display
 
-      launch_dbus(env)
+      dbus_pid = launch_dbus(env)
 
       if use_openbox:
         openbox_proc = subprocess.Popen(
@@ -189,6 +191,12 @@ def run_executable(
       kill(xcompmgr_proc, 'xcompmgr')
       kill(weston_proc, 'weston')
       kill(xvfb_proc, 'Xvfb')
+
+      # dbus-daemon is not a subprocess, so we can't SIGTERM+waitpid() on it.
+      # To ensure it exits, use SIGKILL which should be safe since all other
+      # processes that it would have been servicing have exited.
+      if dbus_pid:
+        os.kill(dbus_pid, signal.SIGKILL)
   else:
     return test_env.run_executable(cmd, env, stdoutfile)
 

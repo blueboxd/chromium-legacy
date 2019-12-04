@@ -104,9 +104,12 @@ bool IsScriptDisabledForPreview(content::RenderFrame* render_frame) {
   return render_frame->GetPreviewsState() & content::NOSCRIPT_ON;
 }
 
-bool IsUniqueFrame(WebFrame* frame) {
-  return frame->GetSecurityOrigin().IsUnique() ||
-         frame->Top()->GetSecurityOrigin().IsUnique();
+bool IsFrameWithOpaqueOrigin(WebFrame* frame) {
+  // Storage access is keyed off the top origin and the frame's origin.
+  // It will be denied any opaque origins so have this method to return early
+  // instead of making a Sync IPC call.
+  return frame->GetSecurityOrigin().IsOpaque() ||
+         frame->Top()->GetSecurityOrigin().IsOpaque();
 }
 
 }  // namespace
@@ -262,7 +265,7 @@ bool ContentSettingsAgentImpl::AllowDatabase() {
 void ContentSettingsAgentImpl::RequestFileSystemAccessAsync(
     base::OnceCallback<void(bool)> callback) {
   WebLocalFrame* frame = render_frame()->GetWebFrame();
-  if (IsUniqueFrame(frame)) {
+  if (IsFrameWithOpaqueOrigin(frame)) {
     std::move(callback).Run(false);
     return;
   }
@@ -360,7 +363,7 @@ bool ContentSettingsAgentImpl::AllowScriptFromSource(
 
 bool ContentSettingsAgentImpl::AllowStorage(bool local) {
   WebLocalFrame* frame = render_frame()->GetWebFrame();
-  if (IsUniqueFrame(frame))
+  if (IsFrameWithOpaqueOrigin(frame))
     return false;
 
   StoragePermissionsKey key(
@@ -612,7 +615,7 @@ bool ContentSettingsAgentImpl::IsWhitelistedForContentSettings(
   if (document_url.GetString() == content::kUnreachableWebDataURL)
     return true;
 
-  if (origin.IsUnique())
+  if (origin.IsOpaque())
     return false;  // Uninitialized document?
 
   blink::WebString protocol = origin.Protocol();
@@ -640,7 +643,7 @@ bool ContentSettingsAgentImpl::IsWhitelistedForContentSettings(
 bool ContentSettingsAgentImpl::AllowStorageAccess(
     chrome::mojom::ContentSettingsManager::StorageType storage_type) {
   WebLocalFrame* frame = render_frame()->GetWebFrame();
-  if (IsUniqueFrame(frame))
+  if (IsFrameWithOpaqueOrigin(frame))
     return false;
 
   bool result = false;

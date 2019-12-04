@@ -215,9 +215,9 @@ Feature::Context ScriptContextSet::ClassifyJavaScriptContext(
                                    : Feature::BLESSED_EXTENSION_CONTEXT;
   }
 
-  // TODO(kalman): This isUnique() check is wrong, it should be performed as
+  // TODO(kalman): This IsOpaque() check is wrong, it should be performed as
   // part of ScriptContext::IsSandboxedPage().
-  if (!origin.IsUnique() &&
+  if (!origin.IsOpaque() &&
       RendererExtensionRegistry::Get()->ExtensionBindingsAllowed(url)) {
     if (!extension)  // TODO(kalman): when does this happen?
       return Feature::UNSPECIFIED_CONTEXT;

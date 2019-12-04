@@ -703,6 +703,11 @@ CollectUserDataAction::CreateOptionsFromProto() {
         section);
   }
 
+  if (collect_user_data.has_generic_user_interface()) {
+    collect_user_data_options->generic_user_interface =
+        collect_user_data.generic_user_interface();
+  }
+
   // TODO(crbug.com/806868): Maybe we could refactor this to make the confirm
   // chip and direct_action part of the additional_actions.
   std::string confirm_text = collect_user_data.confirm_button_text();

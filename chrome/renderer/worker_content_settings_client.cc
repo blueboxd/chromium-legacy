@@ -19,8 +19,8 @@ WorkerContentSettingsClient::WorkerContentSettingsClient(
     content::RenderFrame* render_frame) {
   blink::WebLocalFrame* frame = render_frame->GetWebFrame();
   const blink::WebDocument& document = frame->GetDocument();
-  if (document.GetSecurityOrigin().IsUnique() ||
-      frame->Top()->GetSecurityOrigin().IsUnique())
+  if (document.GetSecurityOrigin().IsOpaque() ||
+      frame->Top()->GetSecurityOrigin().IsOpaque())
     is_unique_origin_ = true;
 
   document_origin_ = document.GetSecurityOrigin();

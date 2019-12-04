@@ -184,7 +184,6 @@ TEST_F(IntersectionObserverTest, ScrollingElementRootClips) {
                                                           kProgrammaticScroll);
   Compositor().BeginFrame();
   test::RunPendingTasks();
-  ASSERT_FALSE(Compositor().NeedsBeginFrame());
   EXPECT_EQ(observer_delegate->CallCount(), 2);
   EXPECT_EQ(observer_delegate->EntryCount(), 2);
   EXPECT_FALSE(observer_delegate->LastEntry()->isIntersecting());

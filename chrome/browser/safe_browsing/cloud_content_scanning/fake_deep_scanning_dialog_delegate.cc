@@ -52,9 +52,12 @@ DeepScanningClientResponse FakeDeepScanningDialogDelegate::SuccessfulResponse(
         DlpDeepScanningVerdict::SUCCESS);
   }
   if (include_malware) {
+    response.mutable_malware_scan_verdict()->set_status(
+        MalwareDeepScanningVerdict::SUCCESS);
     response.mutable_malware_scan_verdict()->set_verdict(
         MalwareDeepScanningVerdict::CLEAN);
   }
+
   return response;
 }
 
@@ -62,6 +65,8 @@ DeepScanningClientResponse FakeDeepScanningDialogDelegate::SuccessfulResponse(
 DeepScanningClientResponse FakeDeepScanningDialogDelegate::MalwareResponse(
     MalwareDeepScanningVerdict::Verdict verdict) {
   DeepScanningClientResponse response;
+  response.mutable_malware_scan_verdict()->set_status(
+      MalwareDeepScanningVerdict::SUCCESS);
   response.mutable_malware_scan_verdict()->set_verdict(verdict);
   return response;
 }

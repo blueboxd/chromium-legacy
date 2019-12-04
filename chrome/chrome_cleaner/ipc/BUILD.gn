@@ -80,6 +80,7 @@ source_set("ipc_test_util") {
     "//base/test:test_support",
     "//chrome/chrome_cleaner/ipc:sandbox",
     "//chrome/chrome_cleaner/logging:common",
+    "//chrome/chrome_cleaner/test:test_util",
     "//mojo/public/cpp/system",
     "//sandbox/win:sandbox",
     "//testing/gtest",

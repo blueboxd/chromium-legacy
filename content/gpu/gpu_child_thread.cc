@@ -259,7 +259,7 @@ void GpuChildThread::QuitSafelyHelper(
           return;
         GpuChildThread* gpu_child_thread =
             static_cast<GpuChildThread*>(current_child_thread);
-        gpu_child_thread->viz_main_.ExitProcess();
+        gpu_child_thread->viz_main_.ExitProcess(/*immediately=*/true);
       }));
 }
 

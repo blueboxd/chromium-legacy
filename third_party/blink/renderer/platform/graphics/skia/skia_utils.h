@@ -95,14 +95,14 @@ inline bool WebCoreFloatNearlyEqual(float a, float b) {
                              WebCoreFloatToSkScalar(b));
 }
 
-inline SkPath::FillType WebCoreWindRuleToSkFillType(WindRule rule) {
-  return static_cast<SkPath::FillType>(rule);
+inline SkPathFillType WebCoreWindRuleToSkFillType(WindRule rule) {
+  return static_cast<SkPathFillType>(rule);
 }
 
-inline WindRule SkFillTypeToWindRule(SkPath::FillType fill_type) {
+inline WindRule SkFillTypeToWindRule(SkPathFillType fill_type) {
   switch (fill_type) {
-    case SkPath::kWinding_FillType:
-    case SkPath::kEvenOdd_FillType:
+    case SkPathFillType::kWinding:
+    case SkPathFillType::kEvenOdd:
       return static_cast<WindRule>(fill_type);
     default:
       NOTREACHED();

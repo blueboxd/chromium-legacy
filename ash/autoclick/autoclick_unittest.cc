@@ -992,7 +992,7 @@ TEST_F(AutoclickTest, BubbleMovesWithShelfPositionChange) {
   AutoclickMenuView* menu = GetAutoclickMenuView();
   ASSERT_TRUE(menu);
 
-  shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+  shelf->SetAlignment(ShelfAlignment::kBottom);
   // The menu should be positioned above the shelf, not overlapping.
   EXPECT_EQ(menu->GetBoundsInScreen().bottom_right().y(),
             screen_height - shelf->GetIdealBounds().height() -
@@ -1001,7 +1001,7 @@ TEST_F(AutoclickTest, BubbleMovesWithShelfPositionChange) {
   EXPECT_EQ(menu->GetBoundsInScreen().bottom_right().x(),
             screen_width - kCollisionWindowWorkAreaInsetsDp);
 
-  shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  shelf->SetAlignment(ShelfAlignment::kLeft);
   // The menu should move to the bottom of the screen.
   EXPECT_EQ(menu->GetBoundsInScreen().bottom_right().y(),
             screen_height - kCollisionWindowWorkAreaInsetsDp);
@@ -1009,7 +1009,7 @@ TEST_F(AutoclickTest, BubbleMovesWithShelfPositionChange) {
   EXPECT_EQ(menu->GetBoundsInScreen().bottom_right().x(),
             screen_width - kCollisionWindowWorkAreaInsetsDp);
 
-  shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
+  shelf->SetAlignment(ShelfAlignment::kRight);
   // The menu should stay at the bottom of the screen.
   EXPECT_EQ(menu->GetBoundsInScreen().bottom_right().y(),
             screen_height - kCollisionWindowWorkAreaInsetsDp);
@@ -1019,7 +1019,7 @@ TEST_F(AutoclickTest, BubbleMovesWithShelfPositionChange) {
                 shelf->GetIdealBounds().width());
 
   // Reset state.
-  shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+  shelf->SetAlignment(ShelfAlignment::kBottom);
 }
 
 TEST_F(AutoclickTest, AvoidsShelfBubble) {

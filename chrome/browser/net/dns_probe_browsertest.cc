@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/navigation_correction_tab_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -410,11 +411,14 @@ class DnsProbeBrowserTest : public InProcessBrowserTest {
 DnsProbeBrowserTest::DnsProbeBrowserTest()
     : helper_(new DnsProbeBrowserTestIOThreadHelper()),
       active_browser_(NULL),
-      monitored_tab_helper_(NULL) {}
+      monitored_tab_helper_(NULL) {
+  NavigationCorrectionTabObserver::SetAllowEnableCorrectionsForTesting(true);
+}
 
 DnsProbeBrowserTest::~DnsProbeBrowserTest() {
   // No tests should have any unconsumed probe statuses.
   EXPECT_EQ(0, pending_status_count());
+  NavigationCorrectionTabObserver::SetAllowEnableCorrectionsForTesting(false);
 }
 
 void DnsProbeBrowserTest::SetUpOnMainThread() {

@@ -77,7 +77,8 @@ static bool IsAcceptableCSSStyleSheetParent(const Node& parent_node) {
   // clearOwnerNode() when moved out of document. Note that destructor of
   // the nodes don't call clearOwnerNode() with Oilpan.
   return parent_node.IsDocumentNode() || IsA<HTMLLinkElement>(parent_node) ||
-         IsA<HTMLStyleElement>(parent_node) || IsSVGStyleElement(parent_node) ||
+         IsA<HTMLStyleElement>(parent_node) ||
+         IsA<SVGStyleElement>(parent_node) ||
          parent_node.getNodeType() == Node::kProcessingInstructionNode;
 }
 #endif
@@ -599,7 +600,7 @@ bool CSSStyleSheet::CanBeActivated(
 
   if (owner_node_ && owner_node_->IsInShadowTree()) {
     if (IsA<HTMLStyleElement>(owner_node_.Get()) ||
-        IsSVGStyleElement(owner_node_))
+        IsA<SVGStyleElement>(owner_node_.Get()))
       return true;
     auto* html_link_element = DynamicTo<HTMLLinkElement>(owner_node_.Get());
     if (html_link_element && html_link_element->IsImport())

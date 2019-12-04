@@ -1719,7 +1719,7 @@ AtomicString GetUrlStringFromNode(const Node& node) {
     return To<HTMLElement>(node).FastGetAttribute(html_names::kSrcAttr);
   if (IsA<SVGImageElement>(node))
     return To<SVGElement>(node).ImageSourceURL();
-  if (IsHTMLEmbedElement(node) || IsHTMLObjectElement(node) ||
+  if (IsHTMLEmbedElement(node) || IsA<HTMLObjectElement>(node) ||
       IsA<HTMLCanvasElement>(node))
     return To<HTMLElement>(node).ImageSourceURL();
   return AtomicString();

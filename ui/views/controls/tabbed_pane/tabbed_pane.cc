@@ -42,7 +42,7 @@ Tab::Tab(TabbedPane* tabbed_pane, const base::string16& title, View* contents)
   auto title_label = std::make_unique<Label>(title, style::CONTEXT_LABEL,
                                              style::STYLE_TAB_ACTIVE);
   title_ = title_label.get();
-  preferred_title_width_ = title_label->GetPreferredSize().width();
+  UpdatePreferredTitleWidth();
 
   if (tabbed_pane_->GetOrientation() == TabbedPane::Orientation::kVertical) {
     title_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
@@ -58,12 +58,9 @@ Tab::Tab(TabbedPane* tabbed_pane, const base::string16& title, View* contents)
     SetBorder(CreateEmptyBorder(kBorderThickness));
   }
 
-  SetLayoutManager(std::make_unique<FillLayout>());
   SetState(State::kInactive);
-  // Calculate the size while the font list is normal and set the max size.
-  preferred_title_width_ =
-      std::max(preferred_title_width_, title_label->GetPreferredSize().width());
   AddChildView(std::move(title_label));
+  SetLayoutManager(std::make_unique<FillLayout>());
 
   // Use leaf so that name is spoken by screen reader without exposing the
   // children.
@@ -92,18 +89,8 @@ const base::string16& Tab::GetTitleText() const {
 
 void Tab::SetTitleText(const base::string16& text) {
   title_->SetText(text);
-
-  // Active and inactive states use different font sizes. Find the largest size
-  // and reserve that amount of space.
-  State old_state = state_;
-  SetState(State::kActive);
-  preferred_title_width_ = GetPreferredSize().width();
-  SetState(State::kInactive);
-  preferred_title_width_ =
-      std::max(preferred_title_width_, GetPreferredSize().width());
-  SetState(old_state);
-
-  InvalidateLayout();
+  UpdatePreferredTitleWidth();
+  PreferredSizeChanged();
 }
 
 bool Tab::OnMousePressed(const ui::MouseEvent& event) {
@@ -269,6 +256,18 @@ void Tab::OnPaint(gfx::Canvas* canvas) {
   fill_flags.setColor(HasFocus() ? SkColorSetRGB(0xD2, 0xE3, 0xFC)
                                  : SkColorSetRGB(0xE8, 0xF0, 0xFE));
   canvas->DrawPath(path, fill_flags);
+}
+
+void Tab::UpdatePreferredTitleWidth() {
+  // Active and inactive states use different font sizes. Find the largest size
+  // and reserve that amount of space.
+  const State old_state = state_;
+  SetState(State::kActive);
+  preferred_title_width_ = title_->GetPreferredSize().width();
+  SetState(State::kInactive);
+  preferred_title_width_ =
+      std::max(preferred_title_width_, title_->GetPreferredSize().width());
+  SetState(old_state);
 }
 
 BEGIN_METADATA(Tab)

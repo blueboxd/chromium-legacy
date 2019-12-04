@@ -461,7 +461,7 @@ void WebRemoteFrameImpl::RenderFallbackContent() const {
   // ContentFrame() should detach and free-up the OOPIF process (see
   // https://crbug.com/850223).
   auto* owner = frame_->DeprecatedLocalOwner();
-  DCHECK(IsHTMLObjectElement(owner));
+  DCHECK(IsA<HTMLObjectElement>(owner));
   owner->RenderFallbackContent(frame_);
 }
 

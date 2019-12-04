@@ -27,3 +27,15 @@ executable("compression_benchmark") {
   ]
   testonly = true
 }
+
+executable("sha_benchmark") {
+  sources = [
+    "sha_benchmark.cc",
+  ]
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//crypto:crypto",
+  ]
+  testonly = true
+}

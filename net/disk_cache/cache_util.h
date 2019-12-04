@@ -17,8 +17,6 @@ class FilePath;
 
 namespace disk_cache {
 
-NET_EXPORT_PRIVATE extern const base::Feature kChangeDiskCacheSizeExperiment;
-
 // Moves the cache files from the given path to another location.
 // Fails if the destination exists already, or if it doesn't have
 // permission for the operation.  This is basically a rename operation

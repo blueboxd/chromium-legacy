@@ -138,7 +138,7 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT InterfaceProvider {
   BinderMap binders_;
 
   mojo::Remote<mojom::InterfaceProvider> interface_provider_;
-  mojom::InterfaceProviderRequest pending_request_;
+  mojo::PendingReceiver<mojom::InterfaceProvider> pending_receiver_;
 
   // A callback to receive all GetInterface() requests in lieu of the
   // InterfaceProvider pipe.

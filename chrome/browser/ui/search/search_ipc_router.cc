@@ -16,6 +16,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/common/child_process_host.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -42,7 +43,7 @@ class EmbeddedSearchClientFactoryImpl
   EmbeddedSearchClientFactoryImpl(
       content::WebContents* web_contents,
       mojo::AssociatedReceiver<chrome::mojom::EmbeddedSearch>* receiver)
-      : client_receiver_(receiver), factory_bindings_(web_contents, this) {
+      : client_receiver_(receiver), factory_receivers_(web_contents, this) {
     DCHECK(web_contents);
     DCHECK(receiver);
     // Before we are connected to a frame we throw away all messages.
@@ -70,9 +71,9 @@ class EmbeddedSearchClientFactoryImpl
   // in SearchIPCRouter.
   mojo::AssociatedReceiver<chrome::mojom::EmbeddedSearch>* client_receiver_;
 
-  // Binding used to listen to connection requests.
-  content::WebContentsFrameBindingSet<chrome::mojom::EmbeddedSearchConnector>
-      factory_bindings_;
+  // Receivers used to listen to connection requests.
+  content::WebContentsFrameReceiverSet<chrome::mojom::EmbeddedSearchConnector>
+      factory_receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedSearchClientFactoryImpl);
 };
@@ -80,7 +81,7 @@ class EmbeddedSearchClientFactoryImpl
 void EmbeddedSearchClientFactoryImpl::Connect(
     mojo::PendingAssociatedReceiver<chrome::mojom::EmbeddedSearch> receiver,
     mojo::PendingAssociatedRemote<chrome::mojom::EmbeddedSearchClient> client) {
-  content::RenderFrameHost* frame = factory_bindings_.GetCurrentTargetFrame();
+  content::RenderFrameHost* frame = factory_receivers_.GetCurrentTargetFrame();
   const bool is_main_frame = frame->GetParent() == nullptr;
   if (!IsInInstantProcess(frame) || !is_main_frame) {
     return;

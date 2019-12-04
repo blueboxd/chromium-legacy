@@ -40,7 +40,7 @@ void ShowPermissionsDialogHelper::Show(content::BrowserContext* browser_context,
 
   // Show the new-style extensions dialog when it is available. It is currently
   // unavailable by default on Mac.
-  if (CanShowAppInfoDialog()) {
+  if (CanPlatformShowAppInfoDialog()) {
     if (from_webui) {
       UMA_HISTOGRAM_ENUMERATION("Apps.AppInfoDialog.Launches",
                                 AppInfoLaunchSource::FROM_EXTENSIONS_PAGE,

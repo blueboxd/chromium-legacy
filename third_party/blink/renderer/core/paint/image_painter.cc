@@ -223,15 +223,15 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
       context, layout_image_.StyleRef().GetInterpolationQuality());
 
   Node* node = layout_image_.GetNode();
+  auto* image_element = DynamicTo<HTMLImageElement>(node);
   Image::ImageDecodingMode decode_mode =
-      IsHTMLImageElement(node)
-          ? ToHTMLImageElement(node)->GetDecodingModeForPainting(
-                image->paint_image_id())
+      image_element
+          ? image_element->GetDecodingModeForPainting(image->paint_image_id())
           : Image::kUnspecifiedDecode;
 
   // TODO(loonybear): Support image policies on other image types in addition to
   // HTMLImageElement.
-  if (auto* image_element = ToHTMLImageElementOrNull(node)) {
+  if (image_element) {
     if (CheckForOversizedImagesPolicy(layout_image_, image) ||
         image_element->IsImagePolicyViolated()) {
       // Does not set an observer for the placeholder image, setting it to null.
@@ -249,7 +249,7 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
       layout_image_.StyleRef().HasFilterInducingProperty(),
       SkBlendMode::kSrcOver,
       LayoutObject::ShouldRespectImageOrientation(&layout_image_));
-  if ((IsHTMLImageElement(node) || IsA<HTMLVideoElement>(node)) &&
+  if ((IsA<HTMLImageElement>(node) || IsA<HTMLVideoElement>(node)) &&
       !context.ContextDisabled() && layout_image_.CachedImage() &&
       layout_image_.CachedImage()->IsLoaded()) {
     LocalDOMWindow* window = layout_image_.GetDocument().domWindow();

@@ -11,6 +11,8 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_dialog.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/sync_device_info/device_info.h"
 #include "content/public/browser/web_contents.h"
@@ -21,6 +23,10 @@
 SharedClipboardUiController*
 SharedClipboardUiController::GetOrCreateFromWebContents(
     content::WebContents* web_contents) {
+  // Use active WebContents if available.
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (browser)
+    web_contents = browser->tab_strip_model()->GetActiveWebContents();
   SharedClipboardUiController::CreateForWebContents(web_contents);
   return SharedClipboardUiController::FromWebContents(web_contents);
 }

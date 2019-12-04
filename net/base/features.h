@@ -17,11 +17,6 @@ namespace features {
 // https://github.com/WICG/lang-client-hint proposes that we deprecate.
 NET_EXPORT extern const base::Feature kAcceptLanguageHeader;
 
-// Caps the length of the `referer` header to 4k, which should be enough for
-// anyone.
-NET_EXPORT extern const base::Feature kCapRefererHeaderLength;
-NET_EXPORT extern const base::FeatureParam<int> kMaxRefererHeaderLength;
-
 // Enables TLS 1.3 early data.
 NET_EXPORT extern const base::Feature kEnableTLS13EarlyData;
 

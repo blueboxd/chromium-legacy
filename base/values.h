@@ -236,6 +236,10 @@ class BASE_EXPORT Value {
     return old_size - list_.size();
   }
 
+  // Erases all Values from the list.
+  // Note: This CHECKs that type() is Type::LIST.
+  void ClearList();
+
   // |FindKey| looks up |key| in the underlying dictionary. If found, it returns
   // a pointer to the element. Otherwise it returns nullptr.
   // returned. Callers are expected to perform a check against null before using
@@ -785,7 +789,7 @@ class BASE_EXPORT ListValue : public Value {
   explicit ListValue(ListStorage&& in_list) noexcept;
 
   // Clears the contents of this ListValue
-  // DEPRECATED, use GetList()::clear() instead.
+  // DEPRECATED, use ClearList() instead.
   void Clear();
 
   // Returns the number of Values in this list.

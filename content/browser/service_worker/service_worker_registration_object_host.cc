@@ -185,9 +185,9 @@ void ServiceWorkerRegistrationObjectHost::Update(
   // globalObject is a ServiceWorkerGlobalScope object, and globalObject’s
   // associated service worker's state is installing, return a promise rejected
   // with an "InvalidStateError" DOMException and abort these steps.
-  if (container_host_->provider_host()->IsProviderForServiceWorker()) {
-    ServiceWorkerVersion* version =
-        container_host_->provider_host()->running_hosted_version();
+  ServiceWorkerVersion* version = nullptr;
+  if (container_host_->IsContainerForServiceWorker()) {
+    version = container_host_->service_worker_host()->running_hosted_version();
     DCHECK(version);
     if (ServiceWorkerVersion::Status::INSTALLING == version->status()) {
       // This can happen if update() is called during execution of the
@@ -201,8 +201,7 @@ void ServiceWorkerRegistrationObjectHost::Update(
   }
 
   DelayUpdate(
-      container_host_->provider_host()->provider_type(), registration,
-      container_host_->provider_host()->running_hosted_version(),
+      container_host_->type(), registration, version,
       base::BindOnce(
           &ExecuteUpdate, context_, registration->id(),
           false /* force_bypass_cache */, false /* skip_script_comparison */,

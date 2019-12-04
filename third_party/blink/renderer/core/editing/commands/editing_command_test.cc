@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/stl_util.h"
-#include "third_party/blink/public/platform/web_editing_command_type.h"
+#include "third_party/blink/renderer/core/editing/commands/editing_command_type.h"
 #include "third_party/blink/renderer/core/editing/commands/editor_command.h"
 #include "third_party/blink/renderer/core/editing/commands/editor_command_names.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
@@ -20,19 +20,19 @@ namespace {
 
 struct CommandNameEntry {
   const char* name;
-  WebEditingCommandType type;
+  EditingCommandType type;
 };
 
 const CommandNameEntry kCommandNameEntries[] = {
-#define V(name) {#name, WebEditingCommandType::k##name},
+#define V(name) {#name, EditingCommandType::k##name},
     FOR_EACH_BLINK_EDITING_COMMAND_NAME(V)
 #undef V
 };
-// Test all commands except WebEditingCommandType::Invalid.
+// Test all commands except EditingCommandType::Invalid.
 static_assert(
     base::size(kCommandNameEntries) + 1 ==
-        static_cast<size_t>(WebEditingCommandType::kNumberOfCommandTypes),
-    "must test all valid WebEditingCommandType");
+        static_cast<size_t>(EditingCommandType::kNumberOfCommandTypes),
+    "must test all valid EditingCommandType");
 
 }  // anonymous namespace
 

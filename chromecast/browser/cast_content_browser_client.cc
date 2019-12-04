@@ -653,8 +653,6 @@ CastContentBrowserClient::GetServiceManifestOverlay(
     base::StringPiece service_name) {
   if (service_name == content::mojom::kBrowserServiceName)
     return GetCastContentBrowserOverlayManifest();
-  if (service_name == content::mojom::kRendererServiceName)
-    return GetCastContentRendererOverlayManifest();
 
   return base::nullopt;
 }

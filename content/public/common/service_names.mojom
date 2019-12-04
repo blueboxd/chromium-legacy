@@ -15,21 +15,9 @@ const string kSystemServiceName = "content_system";
 // for that BrowserContext.
 const string kBrowserServiceName = "content_browser";
 
-// The default service name used to identify the gpu process when connecting it
-// to the Service Manager.
-const string kGpuServiceName = "content_gpu";
-
 // The service name used to identify the browser process's singleton service
 // instance which packages other browser-wide services.
 const string kPackagedServicesServiceName = "content_packaged_services";
-
-// The default service name used to identify plugin processes when connecting
-// them to the Service Manager.
-const string kPluginServiceName = "content_plugin";
-
-// The default service name used to identify render processes when connecting
-// them to the Service Manager.
-const string kRendererServiceName = "content_renderer";
 
 // The default service name used to identify utility processes when connecting
 // them to the Service Manager.

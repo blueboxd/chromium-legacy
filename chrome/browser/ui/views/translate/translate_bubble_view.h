@@ -162,6 +162,12 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
                            AlwaysTranslateCheckboxAndCancelButton);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
                            AlwaysTranslateCheckboxAndDoneButton);
+  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
+                           TabUIAlwaysTranslateCheckboxShortcut);
+  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
+                           TabUIAlwaysTranslateCheckboxAndCloseButton);
+  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
+                           TabUIAlwaysTranslateCheckboxAndDoneButton);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, DoneButton);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, TabUiSourceDoneButton);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, TabUiTargetDoneButton);
@@ -258,10 +264,10 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   std::unique_ptr<views::View> CreateViewAdvanced();
 
   // Creates source language label and combobox for Tab UI advanced view
-  std::unique_ptr<views::View> TabUiCreateViewAdvanedSource();
+  std::unique_ptr<views::View> TabUiCreateViewAdvancedSource();
 
   // Creates source language label and combobox for Tab UI advanced view
-  std::unique_ptr<views::View> TabUiCreateViewAdvanedTarget();
+  std::unique_ptr<views::View> TabUiCreateViewAdvancedTarget();
 
   // Tab UI present the same view for before/during/after translate state.
   bool TabUiIsEquivalentState(TranslateBubbleModel::ViewState view_state);
@@ -271,7 +277,8 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   std::unique_ptr<views::View> CreateViewAdvancedTabUi(
       std::unique_ptr<views::Combobox> combobox,
       std::unique_ptr<views::Label> language_title_label,
-      std::unique_ptr<views::Button> advance_done_button);
+      std::unique_ptr<views::Button> advance_done_button,
+      std::unique_ptr<views::Checkbox> advanced_always_translate_checkbox);
 
   std::unique_ptr<views::Button> CreateCloseButton();
 

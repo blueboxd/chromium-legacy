@@ -2934,7 +2934,7 @@ RespectImageOrientationEnum LayoutObject::ShouldRespectImageOrientation(
   if (layout_object->GetDocument().IsImageDocument())
     return kRespectImageOrientation;
 
-  if (!IsHTMLImageElement(layout_object->GetNode()))
+  if (!IsA<HTMLImageElement>(layout_object->GetNode()))
     return kDoNotRespectImageOrientation;
 
   if (layout_object->GetDocument().GetSettings() &&

@@ -6,6 +6,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "components/pdf/renderer/pdf_accessibility_tree.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_accessibility.h"
 #include "content/public/renderer/render_frame.h"
@@ -401,7 +402,10 @@ TEST_F(PdfAccessibilityTreeTest, TestHighlightCreation) {
 
   ui::AXNode* highlight_node = paragraph_node->children()[0];
   ASSERT_TRUE(highlight_node);
-  EXPECT_EQ(ax::mojom::Role::kButton, highlight_node->data().role);
+  EXPECT_EQ(ax::mojom::Role::kMark, highlight_node->data().role);
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_AX_ROLE_DESCRIPTION_PDF_HIGHLIGHT),
+            highlight_node->GetStringAttribute(
+                ax::mojom::StringAttribute::kRoleDescription));
   EXPECT_EQ(gfx::RectF(1.0f, 1.0f, 5.0f, 6.0f),
             highlight_node->data().relative_bounds.bounds);
   ASSERT_EQ(1u, highlight_node->children().size());

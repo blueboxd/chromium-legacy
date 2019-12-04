@@ -6,9 +6,6 @@ import("//build/config/chrome_build.gni")
 import("//build/util/lastchange.gni")
 import("//build/util/process_version.gni")
 
-# The path to the BRANDING file in chrome/app/theme.
-branding_file_path = "//chrome/app/theme/$branding_path_component/BRANDING"
-
 # This is a wrapper around process_version() that eases the task of processing
 # a .rc.version file (used especially on Windows).
 #

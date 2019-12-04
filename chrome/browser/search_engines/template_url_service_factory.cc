@@ -56,7 +56,7 @@ std::unique_ptr<KeyedService> TemplateURLServiceFactory::BuildInstanceFor(
           new ChromeTemplateURLServiceClient(
               HistoryServiceFactory::GetForProfile(
                   profile, ServiceAccessType::EXPLICIT_ACCESS))),
-      g_browser_process->rappor_service(), dsp_change_callback);
+      dsp_change_callback);
 }
 
 TemplateURLServiceFactory::TemplateURLServiceFactory()

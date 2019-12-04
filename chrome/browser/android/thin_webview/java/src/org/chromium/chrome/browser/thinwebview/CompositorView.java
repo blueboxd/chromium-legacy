@@ -26,4 +26,11 @@ public interface CompositorView {
      * Request compositor view to render a frame.
      */
     void requestRender();
+
+    /**
+     /**
+     * Sets opacity for the view. {@link ThinWebViewConstraints#supportsOpacity} must be true for
+     * using this method.
+     */
+    void setAlpha(float alpha);
 }

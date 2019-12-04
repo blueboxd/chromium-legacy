@@ -651,6 +651,9 @@ TEST_F(SmsServiceTest, RecordMetricsForCancelOnSuccess) {
 }
 
 TEST_F(SmsServiceTest, RecordMetricsForNewPage) {
+  // This test depends on the page being destroyed on navigation.
+  web_contents()->GetController().GetBackForwardCache().DisableForTesting(
+      content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
   NavigateAndCommit(GURL(kTestUrl));
   NiceMock<MockSmsWebContentsDelegate> delegate;
   WebContentsImpl* web_contents_impl =
@@ -727,6 +730,9 @@ TEST_F(SmsServiceTest, RecordMetricsForSamePage) {
 }
 
 TEST_F(SmsServiceTest, RecordMetricsForExistingPage) {
+  // This test depends on the page being destroyed on navigation.
+  web_contents()->GetController().GetBackForwardCache().DisableForTesting(
+      content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
   NavigateAndCommit(GURL(kTestUrl));  // Add to history.
   NavigateAndCommit(GURL("https://example.com"));
 

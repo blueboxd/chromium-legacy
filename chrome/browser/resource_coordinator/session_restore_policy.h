@@ -15,7 +15,6 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/resource_coordinator/site_characteristics_data_reader.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 
 namespace content {

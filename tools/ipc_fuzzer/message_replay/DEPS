@@ -1,5 +1,6 @@
 include_rules = [
   "+chrome/common",
+  "+content/common",
   "+content/public/common",
   "+mojo/core/embedder",
   "+mojo/public",

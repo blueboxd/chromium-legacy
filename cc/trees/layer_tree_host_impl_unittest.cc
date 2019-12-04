@@ -1102,7 +1102,7 @@ TEST_F(LayerTreeHostImplTest, ScrollActiveOnlyAfterScrollMovement) {
   EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
             status.main_thread_scrolling_reasons);
 
-  EXPECT_FALSE(host_impl_->IsActivelyScrolling());
+  EXPECT_TRUE(host_impl_->IsActivelyScrolling());
   host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2d(0, 10)).get());
   EXPECT_TRUE(host_impl_->IsActivelyScrolling());
   host_impl_->ScrollEnd(EndState().get());
@@ -1183,7 +1183,6 @@ TEST_F(LayerTreeHostImplTest, ActivateTreeScrollingNodeDisappeared) {
             status.main_thread_scrolling_reasons);
   host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2d(0, 10)).get());
   EXPECT_TRUE(host_impl_->active_tree()->CurrentlyScrollingNode());
-  EXPECT_TRUE(host_impl_->did_lock_scrolling_layer_for_testing());
   EXPECT_TRUE(host_impl_->IsActivelyScrolling());
 
   // Create the pending tree containing only the root layer.
@@ -1197,7 +1196,6 @@ TEST_F(LayerTreeHostImplTest, ActivateTreeScrollingNodeDisappeared) {
 
   // The scroll should stop.
   EXPECT_FALSE(host_impl_->active_tree()->CurrentlyScrollingNode());
-  EXPECT_FALSE(host_impl_->did_lock_scrolling_layer_for_testing());
   EXPECT_FALSE(host_impl_->IsActivelyScrolling());
 }
 

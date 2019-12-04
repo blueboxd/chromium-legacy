@@ -18,7 +18,7 @@ namespace content {
 
 ManifestManagerHost::ManifestManagerHost(WebContents* web_contents)
     : WebContentsObserver(web_contents),
-      manifest_url_change_observer_bindings_(web_contents, this) {}
+      manifest_url_change_observer_receivers_(web_contents, this) {}
 
 ManifestManagerHost::~ManifestManagerHost() {
   OnConnectionError();
@@ -81,7 +81,7 @@ void ManifestManagerHost::OnRequestManifestResponse(
 
 void ManifestManagerHost::ManifestUrlChanged(
     const base::Optional<GURL>& manifest_url) {
-  if (manifest_url_change_observer_bindings_.GetCurrentTargetFrame() !=
+  if (manifest_url_change_observer_receivers_.GetCurrentTargetFrame() !=
       web_contents()->GetMainFrame()) {
     return;
   }

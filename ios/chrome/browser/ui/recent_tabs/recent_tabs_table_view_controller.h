@@ -25,8 +25,8 @@ class WebStateList;
                                  UIAdaptivePresentationControllerDelegate>
 // The coordinator's BrowserState.
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
-// The dispatcher used by this ViewController.
-@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
+// The command handler used by this ViewController.
+@property(nonatomic, weak) id<ApplicationCommands> handler;
 // Opaque instructions on how to open urls.
 @property(nonatomic) UrlLoadStrategy loadStrategy;
 // Disposition for tabs restored by this object. Defaults to CURRENT_TAB.

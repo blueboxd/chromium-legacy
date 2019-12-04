@@ -11,7 +11,8 @@ namespace blink {
 
 // DisallowNewWrapper wraps a disallow new type in a GarbageCollected class.
 template <typename T>
-class DisallowNewWrapper : public GarbageCollected<DisallowNewWrapper<T>> {
+class DisallowNewWrapper final
+    : public GarbageCollected<DisallowNewWrapper<T>> {
  public:
   explicit DisallowNewWrapper(const T& value) : value_(value) {
     static_assert(WTF::IsDisallowNew<T>::value,

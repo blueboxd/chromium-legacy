@@ -18,6 +18,7 @@
 #include "content/public/browser/web_contents_user_data.h"
 
 enum class PermissionAction;
+enum class PermissionPromptDisposition;
 class PermissionRequest;
 
 namespace test {
@@ -187,6 +188,8 @@ class PermissionRequestManager
 
   // Autoblocker callback.
   void AutoBlockerDecisionMade(PermissionRequestAutoBlocker::Response response);
+
+  PermissionPromptDisposition DetermineCurrentRequestUIDispositionForUMA();
 
   void DoAutoResponseForTesting();
 

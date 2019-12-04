@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/modules/websockets/web_pepper_socket_channel_client_proxy.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_channel.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_channel_impl.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -59,7 +60,8 @@ std::unique_ptr<WebPepperSocket> WebPepperSocket::Create(
 WebPepperSocketImpl::WebPepperSocketImpl(const WebDocument& document,
                                          WebPepperSocketClient* client)
     : client_(client),
-      channel_proxy_(WebPepperSocketChannelClientProxy::Create(this)),
+      channel_proxy_(
+          MakeGarbageCollected<WebPepperSocketChannelClientProxy>(this)),
       is_closing_or_closed_(false),
       buffered_amount_(0),
       buffered_amount_after_close_(0) {

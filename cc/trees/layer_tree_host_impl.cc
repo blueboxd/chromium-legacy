@@ -2921,7 +2921,7 @@ bool LayerTreeHostImpl::IsActivelyScrolling() const {
   // are actually animating. So assume there are none.
   if (settings_.ignore_root_layer_flings && IsCurrentlyScrollingViewport())
     return false;
-  return did_lock_scrolling_layer_;
+  return true;
 }
 
 void LayerTreeHostImpl::CreatePendingTree() {
@@ -3939,11 +3939,10 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
 
     ElementId current_native_scrolling_element =
         scroll_state->data()->current_native_scrolling_element();
-    if (current_native_scrolling_element.GetStableId() != 0) {
+    if (current_native_scrolling_element) {
       auto& scroll_tree = active_tree_->property_trees()->scroll_tree;
       scrolling_node =
           scroll_tree.FindNodeFromElementId(current_native_scrolling_element);
-      did_lock_scrolling_layer_ = true;
     } else {
       scrolling_node = FindScrollNodeForDeviceViewportPoint(
           device_viewport_point, layer_impl, &scroll_on_main_thread,
@@ -4570,8 +4569,10 @@ void LayerTreeHostImpl::LatchToScroller(ScrollState* scroll_state,
   std::list<ScrollNode*> current_scroll_chain;
   ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
   ScrollNode* scroll_node = nullptr;
-  if (did_lock_scrolling_layer_) {
+  if (scroll_state->data()->current_native_scrolling_element()) {
     DCHECK(starting_node);
+    DCHECK_EQ(starting_node->element_id,
+              scroll_state->data()->current_native_scrolling_element());
 
     // Needed for non-animated scrolls.
     scroll_node = starting_node;
@@ -4712,8 +4713,6 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
   float initial_top_controls_offset =
       browser_controls_offset_manager_->ControlsTopOffset();
 
-  scroll_state->set_delta_consumed_for_scroll_sequence(
-      did_lock_scrolling_layer_);
   scroll_state->set_is_direct_manipulation(touch_scrolling_);
   scroll_state->set_current_native_scrolling_node(scroll_node);
 
@@ -4725,8 +4724,6 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
                        TRACE_EVENT_SCOPE_THREAD, "isNull",
                        current_scrolling_node ? false : true);
   active_tree_->SetCurrentlyScrollingNode(current_scrolling_node);
-  did_lock_scrolling_layer_ =
-      scroll_state->delta_consumed_for_scroll_sequence();
 
   bool did_scroll_x = scroll_state->caused_scroll_x();
   bool did_scroll_y = scroll_state->caused_scroll_y();
@@ -4943,7 +4940,6 @@ bool LayerTreeHostImpl::GetSnapFlingInfoAndSetSnapTarget(
 void LayerTreeHostImpl::ClearCurrentlyScrollingNode() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::ClearCurrentlyScrollingNode");
   active_tree_->ClearCurrentlyScrollingNode();
-  did_lock_scrolling_layer_ = false;
   scroll_affects_scroll_handler_ = false;
   accumulated_root_overscroll_ = gfx::Vector2dF();
   did_scroll_x_for_scroll_gesture_ = false;

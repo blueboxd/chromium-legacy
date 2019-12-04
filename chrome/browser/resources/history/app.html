@@ -63,6 +63,7 @@
     <history-toolbar id="toolbar"
         has-drawer="[[hasDrawer_]]"
         has-more-results="[[!queryResult_.info.finished]]"
+        pending-delete="[[pendingDelete_]]"
         query-info="[[queryResult_.info]]"
         querying="[[queryState_.querying]]"
         search-term="[[queryState_.searchTerm]]"
@@ -85,6 +86,7 @@
           items="{{items}}">
         <history-list id="history" query-state="[[queryState_]]"
             searched-term="[[queryResult_.info.term]]"
+            pending-delete="{{pendingDelete_}}"
             query-result="[[queryResult_]]"
             path="history">
         </history-list>

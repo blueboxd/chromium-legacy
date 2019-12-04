@@ -66,17 +66,5 @@ specific_include_rules = {
     "+services/resource_coordinator/public",
     "+third_party/blink/public/mojom",
   ],
-  "chrome_content_renderer_overlay_manifest\.cc": [
-    "+base/allocator",
-    "+chrome/common/performance_manager/mojom",
-    "+chromeos/services/network_config/public",
-    "+components/autofill/content/common",
-    "+components/dom_distiller/content/common",
-    "+components/spellcheck/common",
-    "+components/subresource_filter/content/mojom",
-    "+extensions/buildflags",
-    "+extensions/common",
-    "+third_party/blink/public/mojom",
-  ],
 }
 

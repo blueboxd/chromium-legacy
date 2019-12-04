@@ -21,7 +21,7 @@
 # stored into the BackForwardCache instead. It isn't deleted.
 -RenderFrameHostManagerTest.CleanupOnCrossProcessNavigation
 -SitePerProcessBrowserTest.SlowUnloadHandlerInIframe
--WebContentsBindingSetBrowserTest.CloseOnFrameDeletion
+-WebContentsReceiverSetBrowserTest.CloseOnFrameDeletion
 
 # Wait for the old process to exit. It won't, because it is still used by a
 # bfcached document.

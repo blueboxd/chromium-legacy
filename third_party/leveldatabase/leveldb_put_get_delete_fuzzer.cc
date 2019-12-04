@@ -4,13 +4,21 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #include <fuzzer/FuzzedDataProvider.h>
 
-#include "leveldb/db.h"
-#include "leveldb/env.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
-#include "util/testharness.h"
+#include "third_party/leveldatabase/src/include/leveldb/db.h"
+#include "third_party/leveldatabase/src/include/leveldb/env.h"
+#include "third_party/leveldatabase/src/include/leveldb/options.h"
+#include "third_party/leveldatabase/src/include/leveldb/slice.h"
+
+#define FUZZING_ASSERT(condition)                                      \
+  if (!(condition)) {                                                  \
+    fprintf(stderr, "%s\n", "Fuzzing Assertion Failure: " #condition); \
+    abort();                                                           \
+  }
 
 using leveldb::DB;
 using leveldb::Env;
@@ -48,11 +56,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   DB* db = nullptr;
   Status open_status = DB::Open(open_opts, "leveldbfuzztest", &db);
-  ASSERT_TRUE(open_status.ok());
+  FUZZING_ASSERT(open_status.ok());
 
   // Put a couple constant values which must be successfully written.
-  ASSERT_OK(db->Put(write_opts, "key1", "val1"));
-  ASSERT_OK(db->Put(write_opts, "key2", "val2"));
+  FUZZING_ASSERT(db->Put(write_opts, "key1", "val1").ok());
+  FUZZING_ASSERT(db->Put(write_opts, "key2", "val2").ok());
 
   // Split the data into a sequence of (key, value) strings and put those in.
   // Also collect both keys and values to be used as keys for retrieval below.

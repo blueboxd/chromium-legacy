@@ -64,6 +64,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "base/strings/string_util_win.h"
 #include "base/win/windows_version.h"
 #endif
 
@@ -252,7 +253,7 @@ CommandLine PrepareCommandLineForGTest(const CommandLine& command_line,
   // on a CommandLine with a wrapper is known to break.
   // TODO(phajdan.jr): Give it a try to support CommandLine removing switches.
 #if defined(OS_WIN)
-  new_command_line.PrependWrapper(ASCIIToUTF16(wrapper));
+  new_command_line.PrependWrapper(UTF8ToWide(wrapper));
 #else
   new_command_line.PrependWrapper(wrapper);
 #endif
@@ -1267,8 +1268,8 @@ bool TestLauncher::Init(CommandLine* command_line) {
     auto filter =
         command_line->GetSwitchValueNative(switches::kTestLauncherFilterFile);
     for (auto filter_file :
-         SplitString(filter, FILE_PATH_LITERAL(";"), base::TRIM_WHITESPACE,
-                     base::SPLIT_WANT_ALL)) {
+         SplitStringPiece(filter, FILE_PATH_LITERAL(";"), base::TRIM_WHITESPACE,
+                          base::SPLIT_WANT_ALL)) {
       base::FilePath filter_file_path =
           base::MakeAbsoluteFilePath(FilePath(filter_file));
       if (!LoadFilterFile(filter_file_path, &positive_file_filter,

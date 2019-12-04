@@ -81,7 +81,7 @@ void LazyImageHelper::StartMonitoring(blink::Element* element) {
 
   using DeferralMessage = LazyLoadImageObserver::DeferralMessage;
   auto deferral_message = DeferralMessage::kNone;
-  if (auto* html_image = ToHTMLImageElementOrNull(element)) {
+  if (auto* html_image = DynamicTo<HTMLImageElement>(element)) {
     LoadingAttrValue loading_attr = GetLoadingAttrValue(*html_image);
     DCHECK_NE(loading_attr, LoadingAttrValue::kEager);
     if (loading_attr == LoadingAttrValue::kAuto) {

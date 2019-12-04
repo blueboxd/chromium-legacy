@@ -33,8 +33,8 @@
 #include "components/prefs/pref_member.h"
 #include "components/safe_browsing/buildflags.h"
 #include "content/public/browser/render_widget_host.h"
-#include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -322,8 +322,9 @@ class ChromePasswordManagerClient
   // once main frame host was created.
   password_manager::ContentCredentialManager content_credential_manager_;
 
-  content::WebContentsFrameBindingSet<autofill::mojom::PasswordGenerationDriver>
-      password_generation_driver_bindings_;
+  content::WebContentsFrameReceiverSet<
+      autofill::mojom::PasswordGenerationDriver>
+      password_generation_driver_receivers_;
 
   // Observer for password generation popup.
   PasswordGenerationPopupObserver* observer_;

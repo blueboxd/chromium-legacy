@@ -324,7 +324,7 @@ std::unique_ptr<developer::ProfileInfo> DeveloperPrivateAPI::CreateProfileInfo(
   info->in_developer_mode =
       !info->is_supervised &&
       prefs->GetBoolean(prefs::kExtensionsUIDeveloperMode);
-  info->app_info_dialog_enabled = CanShowAppInfoDialog();
+  info->app_info_dialog_enabled = CanPlatformShowAppInfoDialog();
   info->can_load_unpacked =
       ExtensionManagementFactory::GetForBrowserContext(profile)
           ->HasWhitelistedExtension();

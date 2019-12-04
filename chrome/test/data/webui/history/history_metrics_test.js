@@ -118,10 +118,10 @@ suite('Metrics', function() {
     await test_util.flushTasks();
 
     MockInteractions.tap(app.$.history.$$('#menuRemoveButton'));
-    await testService.whenCalled('deleteItems');
-
-    deleteComplete();
-    await test_util.flushTasks();
+    await Promise.all([
+      testService.whenCalled('removeVisits'),
+      test_util.flushTasks(),
+    ]);
 
     assertEquals(1, histogramMap['HistoryPage.RemoveEntryPosition'][0]);
     assertEquals(1, histogramMap['HistoryPage.RemoveEntryPositionSubset'][0]);

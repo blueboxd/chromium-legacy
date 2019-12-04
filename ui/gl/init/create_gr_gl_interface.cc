@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "ui/gl/init/create_gr_gl_interface.h"
+
+#include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
@@ -84,6 +87,13 @@ GLboolean glIsSyncEmulateEGL(GLsync sync) {
   NOTREACHED();
   return true;
 }
+
+#if defined(OS_MACOSX)
+std::map<GLuint, base::TimeTicks>& GetProgramCreateTimesMap() {
+  static base::NoDestructor<std::map<GLuint, base::TimeTicks>> instance;
+  return *instance.get();
+}
+#endif
 
 }  // namespace
 
@@ -293,13 +303,30 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
       bind_slow(gl->glCompressedTexSubImage2DFn, progress_reporter);
   functions->fCopyTexSubImage2D =
       bind_slow(gl->glCopyTexSubImage2DFn, progress_reporter);
+#if defined(OS_MACOSX)
+  functions->fCreateProgram = [func = gl->glCreateProgramFn]() {
+    auto& program_create_times = GetProgramCreateTimesMap();
+    GLuint program = func();
+    program_create_times[program] = base::TimeTicks::Now();
+    return program;
+  };
+#else
   functions->fCreateProgram = gl->glCreateProgramFn;
+#endif
   functions->fCreateShader = gl->glCreateShaderFn;
   functions->fCullFace = gl->glCullFaceFn;
   functions->fDeleteBuffers =
       bind_slow(gl->glDeleteBuffersARBFn, progress_reporter);
+#if defined(OS_MACOSX)
+  functions->fDeleteProgram = [func = gl->glDeleteProgramFn](GLuint program) {
+    auto& program_create_times = GetProgramCreateTimesMap();
+    program_create_times.erase(program);
+    func(program);
+  };
+#else
   functions->fDeleteProgram =
       bind_slow(gl->glDeleteProgramFn, progress_reporter);
+#endif
   functions->fDeleteQueries = gl->glDeleteQueriesFn;
   functions->fDeleteSamplers = gl->glDeleteSamplersFn;
   functions->fDeleteShader = bind_slow(gl->glDeleteShaderFn, progress_reporter);
@@ -348,7 +375,23 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   functions->fGetQueryiv = gl->glGetQueryivFn;
   functions->fGetProgramBinary = gl->glGetProgramBinaryFn;
   functions->fGetProgramInfoLog = gl->glGetProgramInfoLogFn;
+#if defined(OS_MACOSX)
+  functions->fGetProgramiv = [func = gl->glGetProgramivFn](
+                                 GLuint program, GLenum pname, GLint* params) {
+    func(program, pname, params);
+    if (pname == 0x8B82 /* GR_GL_LINK_STATUS */) {
+      auto& program_create_times = GetProgramCreateTimesMap();
+      auto found = program_create_times.find(program);
+      if (found != program_create_times.end()) {
+        base::TimeDelta elapsed = base::TimeTicks::Now() - found->second;
+        UMA_HISTOGRAM_TIMES("Gpu.GL.ProgramBuildTime", elapsed);
+        program_create_times.erase(found);
+      }
+    }
+  };
+#else
   functions->fGetProgramiv = gl->glGetProgramivFn;
+#endif
   functions->fGetShaderInfoLog = gl->glGetShaderInfoLogFn;
   functions->fGetShaderiv = gl->glGetShaderivFn;
   functions->fGetString = get_string;

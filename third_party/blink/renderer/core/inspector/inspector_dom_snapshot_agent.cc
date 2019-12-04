@@ -480,7 +480,7 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node, int parent_index) {
       VisitPseudoElements(element, index);
     }
 
-    HTMLImageElement* image_element = ToHTMLImageElementOrNull(node);
+    auto* image_element = DynamicTo<HTMLImageElement>(node);
     if (image_element) {
       SetRare(nodes->getCurrentSourceURL(nullptr), index,
               image_element->currentSrc());

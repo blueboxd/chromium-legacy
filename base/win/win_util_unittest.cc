@@ -57,8 +57,8 @@ TEST(BaseWinUtilTest, TestGetLoadedModulesSnapshot) {
 
   // Load in a new module. Pick zipfldr.dll as it is present from WinXP to
   // Win10, including ARM64 Win10, and yet rarely used.
-  const char16 dll_name[] = FILE_PATH_LITERAL("zipfldr.dll");
-  ASSERT_EQ(NULL, ::GetModuleHandle(as_wcstr(dll_name)));
+  const FilePath::CharType dll_name[] = FILE_PATH_LITERAL("zipfldr.dll");
+  ASSERT_EQ(NULL, ::GetModuleHandle(dll_name));
 
   ScopedNativeLibrary new_dll((FilePath(dll_name)));
   ASSERT_NE(static_cast<HMODULE>(NULL), new_dll.get());

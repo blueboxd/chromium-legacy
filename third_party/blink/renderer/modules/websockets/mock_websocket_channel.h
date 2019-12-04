@@ -22,8 +22,6 @@ class SourceLocation;
 
 class MockWebSocketChannel : public WebSocketChannel {
  public:
-  static MockWebSocketChannel* Create();
-
   MockWebSocketChannel();
   ~MockWebSocketChannel() override;
 

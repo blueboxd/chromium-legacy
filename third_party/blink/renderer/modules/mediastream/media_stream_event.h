@@ -40,7 +40,6 @@ class MediaStreamEvent final : public Event {
   MediaStreamEvent(const AtomicString& type, const MediaStreamEventInit*);
   ~MediaStreamEvent() override;
 
-  static MediaStreamEvent* Create(const AtomicString& type, MediaStream*);
   static MediaStreamEvent* Create(const AtomicString& type,
                                   const MediaStreamEventInit* initializer);
 

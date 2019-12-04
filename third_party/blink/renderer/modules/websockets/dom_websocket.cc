@@ -633,7 +633,8 @@ void DOMWebSocket::DidClose(
 
   ReleaseChannel();
 
-  event_queue_->Dispatch(CloseEvent::Create(was_clean, code, reason));
+  event_queue_->Dispatch(
+      MakeGarbageCollected<CloseEvent>(was_clean, code, reason));
 }
 
 void DOMWebSocket::RecordSendTypeHistogram(WebSocketSendType type) {

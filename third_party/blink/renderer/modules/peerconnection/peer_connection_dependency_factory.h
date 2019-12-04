@@ -9,9 +9,9 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop_current.h"
-#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_checker.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/p2p/stunprober/stun_prober.h"
@@ -181,7 +181,7 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
   base::Thread chrome_signaling_thread_;
   base::Thread chrome_worker_thread_;
 
-  SEQUENCE_CHECKER(sequence_checker_);
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(PeerConnectionDependencyFactory);
 };

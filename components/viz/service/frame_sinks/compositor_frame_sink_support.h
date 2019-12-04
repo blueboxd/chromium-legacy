@@ -19,6 +19,7 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/common/surfaces/surface_range.h"
+#include "components/viz/service/frame_sinks/begin_frame_tracker.h"
 #include "components/viz/service/frame_sinks/surface_resource_holder.h"
 #include "components/viz/service/frame_sinks/surface_resource_holder_client.h"
 #include "components/viz/service/frame_sinks/video_capture/capturable_frame_sink.h"
@@ -68,11 +69,6 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // 1, as the relative ordering of renderer / browser frame submissions allows
   // us to have one outstanding undrawn frame under normal operation.
   static constexpr uint32_t kUndrawnFrameLimit = 3;
-
-  // Defines the number of begin frames that have been sent to a client without
-  // a response before we throttle or stop sending begin frames altogether.
-  static constexpr int kOutstandingFramesStop = 100;
-  static constexpr int kOutstandingFramesThrottle = 10;
 
   CompositorFrameSinkSupport(mojom::CompositorFrameSinkClient* client,
                              FrameSinkManagerImpl* frame_sink_manager,
@@ -333,11 +329,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   bool callback_received_receive_ack_ = true;
   uint32_t trace_sequence_ = 0;
 
-  // Keep track of the number of OnBeginFrame() messages sent the client without
-  // getting a response back. This is to prevent sending a large number of IPCs
-  // to a client that is unresponsive and having the message queue balloon in
-  // size.
-  int outstanding_begin_frames_ = 0;
+  BeginFrameTracker begin_frame_tracker_;
 
   // Maps |frame_token| to the timestamp when that frame was received. This
   // timestamp is combined with the information received in OnSurfacePresented()

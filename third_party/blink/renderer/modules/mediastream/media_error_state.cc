@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/modules/mediastream/media_error_state.h"
 
 #include "third_party/blink/renderer/modules/mediastream/overconstrained_error.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -118,7 +119,7 @@ String MediaErrorState::GetErrorMessage() {
 DOMExceptionOrOverconstrainedError MediaErrorState::CreateError() {
   DCHECK(error_type_ == kConstraintError);
   return DOMExceptionOrOverconstrainedError::FromOverconstrainedError(
-      OverconstrainedError::Create(constraint_, message_));
+      MakeGarbageCollected<OverconstrainedError>(constraint_, message_));
 }
 
 }  // namespace blink

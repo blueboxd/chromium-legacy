@@ -905,7 +905,7 @@ GTEST_BENCHMARKS = {
 
 
 RESOURCE_SIZES_METADATA = BenchmarkMetadata(
-    'agrieve@chromium.org, jbudorick@chromium.org, perezju@chromium.org',
+    'agrieve@chromium.org, jbudorick@chromium.org',
     'Build',
     ('https://chromium.googlesource.com/chromium/src/+/HEAD/'
      'tools/binary_size/README.md#resource_sizes_py'))

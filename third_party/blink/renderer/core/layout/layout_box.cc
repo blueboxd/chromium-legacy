@@ -5467,7 +5467,7 @@ bool LayoutBox::ShouldBeConsideredAsReplaced() const {
     // treated as such.
     return !IsA<HTMLFieldSetElement>(element);
   }
-  return IsHTMLImageElement(element);
+  return IsA<HTMLImageElement>(element);
 }
 
 bool LayoutBox::HasNonCompositedScrollbars() const {

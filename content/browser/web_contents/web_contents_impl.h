@@ -50,8 +50,8 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/common/page_importance_signals.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/three_d_api_types.h"
@@ -265,19 +265,19 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
 #endif  // !defined(OS_ANDROID)
 
-  // Adds a new binding set to the WebContents. Returns a closure which may be
-  // used to remove the binding set at any time. The closure is safe to call
+  // Adds a new receiver set to the WebContents. Returns a closure which may be
+  // used to remove the receiver set at any time. The closure is safe to call
   // even after WebContents destruction.
   //
-  // |binding_set| is not owned and must either outlive this WebContents or be
+  // |receiver_set| is not owned and must either outlive this WebContents or be
   // explicitly removed before being destroyed.
-  base::OnceClosure AddBindingSet(const std::string& interface_name,
-                                  WebContentsBindingSet* binding_set);
+  base::OnceClosure AddReceiverSet(const std::string& interface_name,
+                                   WebContentsReceiverSet* receiver_set);
 
-  // Accesses a WebContentsBindingSet for a specific interface on this
+  // Accesses a WebContentsReceiverSet for a specific interface on this
   // WebContents. Returns null of there is no registered binder for the
   // interface.
-  WebContentsBindingSet* GetBindingSet(const std::string& interface_name);
+  WebContentsReceiverSet* GetReceiverSet(const std::string& interface_name);
 
   // Returns the focused WebContents.
   // If there are multiple inner/outer WebContents (when embedding <webview>,
@@ -1513,8 +1513,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // an outer WebContents the method will return nullptr.
   FindRequestManager* GetOrCreateFindRequestManager();
 
-  // Removes a registered WebContentsBindingSet by interface name.
-  void RemoveBindingSet(const std::string& interface_name);
+  // Removes a registered WebContentsReceiverSet by interface name.
+  void RemoveReceiverSet(const std::string& interface_name);
 
   // Prints a console warning when visiting a localhost site with a bad
   // certificate via --allow-insecure-localhost.
@@ -1581,8 +1581,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // the observer list then.
   base::ObserverList<WebContentsObserver>::Unchecked observers_;
 
-  // Associated interface binding sets attached to this WebContents.
-  std::map<std::string, WebContentsBindingSet*> binding_sets_;
+  // Associated interface receiver sets attached to this WebContents.
+  std::map<std::string, WebContentsReceiverSet*> receiver_sets_;
 
   // True if this tab was opened by another tab. This is not unset if the opener
   // is closed.

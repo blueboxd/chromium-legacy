@@ -25,7 +25,9 @@ class LogBuffer;
   /* Log messages related to the submission of forms. */               \
   T(Submission)                                                        \
   /* Log messages related to communication with autofill server. */    \
-  T(AutofillServer)
+  T(AutofillServer)                                                    \
+  /* Log messages related to metrics collection. */                    \
+  T(Metrics)
 
 // Define a bunch of logging scopes: kContext, kParsing, ...
 #define AUTOFILL_TEMPLATE(NAME) k##NAME,

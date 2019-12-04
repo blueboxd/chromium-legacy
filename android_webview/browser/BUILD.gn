@@ -36,8 +36,6 @@ source_set("browser") {
     "aw_content_browser_client.h",
     "aw_content_browser_overlay_manifest.cc",
     "aw_content_browser_overlay_manifest.h",
-    "aw_content_renderer_overlay_manifest.cc",
-    "aw_content_renderer_overlay_manifest.h",
     "aw_contents.cc",
     "aw_contents.h",
     "aw_contents_client_bridge.cc",

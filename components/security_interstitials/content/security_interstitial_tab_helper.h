@@ -9,8 +9,8 @@
 
 #include "components/security_interstitials/core/common/mojom/interstitial_commands.mojom.h"
 #include "components/security_interstitials/core/controller_client.h"
-#include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace content {
@@ -91,9 +91,9 @@ class SecurityInterstitialTabHelper
   std::unique_ptr<security_interstitials::SecurityInterstitialPage>
       blocking_page_for_currently_committed_navigation_;
 
-  content::WebContentsFrameBindingSet<
+  content::WebContentsFrameReceiverSet<
       security_interstitials::mojom::InterstitialCommands>
-      binding_;
+      receiver_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

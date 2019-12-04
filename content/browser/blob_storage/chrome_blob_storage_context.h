@@ -53,6 +53,10 @@ class CONTENT_EXPORT ChromeBlobStorageContext
   static ChromeBlobStorageContext* GetFor(
       BrowserContext* browser_context);
 
+  // Must be called on the UI thread.
+  static mojo::PendingRemote<storage::mojom::BlobStorageContext> GetRemoteFor(
+      BrowserContext* browser_context);
+
   void InitializeOnIOThread(base::FilePath blob_storage_dir,
                             scoped_refptr<base::TaskRunner> file_task_runner);
 

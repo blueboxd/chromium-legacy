@@ -21,8 +21,6 @@ class Connector;
 
 namespace content {
 
-class ConnectionFilter;
-
 // Encapsulates a connection to a //services/service_manager.
 // Access a global instance on the thread the ServiceContext was bound by
 // calling Holder::Get().
@@ -70,9 +68,7 @@ class CONTENT_EXPORT ServiceManagerConnection {
       service_manager::mojom::ServiceRequest request,
       scoped_refptr<base::SequencedTaskRunner> io_task_runner);
 
-  // Begins accepting incoming connections. Connection filters MUST be added
-  // before calling this in order to avoid races. See AddConnectionFilter()
-  // below.
+  // Begins accepting incoming connections.
   virtual void Start() = 0;
 
   // Stops accepting incoming connections. This happens asynchronously by
@@ -88,25 +84,6 @@ class CONTENT_EXPORT ServiceManagerConnection {
   // connection may already have been closed, in which case |closure| will be
   // run immediately before returning from this function.
   virtual void SetConnectionLostClosure(base::OnceClosure closure) = 0;
-
-  static const int kInvalidConnectionFilterId = 0;
-
-  // Allows the caller to filter inbound connections and/or expose interfaces
-  // on them. |filter| may be created on any thread, but will be used and
-  // destroyed exclusively on the IO thread (the thread corresponding to
-  // |io_task_runner| passed to Create() above.)
-  //
-  // Connection filters MUST be added before calling Start() in order to avoid
-  // races.
-  //
-  // Returns a unique identifier that can be passed to RemoveConnectionFilter()
-  // below.
-  virtual int AddConnectionFilter(
-      std::unique_ptr<ConnectionFilter> filter) = 0;
-
-  // Removes a filter using the id value returned by AddConnectionFilter().
-  // Removal (and destruction) happens asynchronously on the IO thread.
-  virtual void RemoveConnectionFilter(int filter_id) = 0;
 
   // Adds a generic ServiceRequestHandler for a given service name. This
   // will be used to satisfy any incoming calls to CreateService() which

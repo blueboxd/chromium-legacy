@@ -374,7 +374,7 @@ const base::Feature kVerifyHTMLFetchedFromAppCacheBeforeDelay{
 // compositor & IO threads.
 const base::Feature kBlinkCompositorUseDisplayThreadPriority {
   "BlinkCompositorUseDisplayThreadPriority",
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_WIN)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT

@@ -93,7 +93,6 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
-#include "content/browser/renderer_interface_binders.h"
 #include "content/browser/scoped_active_url.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -4646,14 +4645,6 @@ void RenderFrameHostImpl::ResourceLoadComplete(
 }
 
 void RenderFrameHostImpl::RegisterMojoInterfaces() {
-  registry_->AddInterface(
-      base::BindRepeating(&RenderFrameHostImpl::CreateAudioInputStreamFactory,
-                          base::Unretained(this)));
-
-  registry_->AddInterface(
-      base::BindRepeating(&RenderFrameHostImpl::CreateAudioOutputStreamFactory,
-                          base::Unretained(this)));
-
   file_system_manager_.reset(new FileSystemManagerImpl(
       GetProcess()->GetID(),
       GetProcess()->GetStoragePartition()->GetFileSystemContext(),
@@ -5281,7 +5272,8 @@ void RenderFrameHostImpl::CommitNavigation(
               ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
               main_world_origin_for_url_loader_factory,
               &appcache_proxied_receiver, nullptr /* header_client */,
-              nullptr /* bypass_redirect_checks */);
+              nullptr /* bypass_redirect_checks */,
+              nullptr /* factory_override */);
       if (use_proxy) {
         appcache_remote->Clone(std::move(appcache_proxied_receiver));
         appcache_remote.reset();
@@ -5321,7 +5313,8 @@ void RenderFrameHostImpl::CommitNavigation(
           browser_context, this, GetProcess()->GetID(),
           ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
           main_world_origin_for_url_loader_factory, &factory_receiver,
-          nullptr /* header_client */, nullptr /* bypass_redirect_checks */);
+          nullptr /* header_client */, nullptr /* bypass_redirect_checks */,
+          nullptr /* factory_override */);
       CreateWebUIURLLoaderBinding(this, scheme, std::move(factory_receiver));
       // If the renderer has webui bindings, then don't give it access to
       // network loader for security reasons.
@@ -5443,7 +5436,8 @@ void RenderFrameHostImpl::CommitNavigation(
           browser_context, this, GetProcess()->GetID(),
           ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
           main_world_origin_for_url_loader_factory, &factory_receiver,
-          nullptr /* header_client */, nullptr /* bypass_redirect_checks */);
+          nullptr /* header_client */, nullptr /* bypass_redirect_checks */,
+          nullptr /* factory_override */);
       // Keep DevTools proxy last, i.e. closest to the network.
       devtools_instrumentation::WillCreateURLLoaderFactory(
           this, false /* is_navigation */, false /* is_download */,
@@ -6129,10 +6123,12 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
 
   mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
       header_client;
+  network::mojom::URLLoaderFactoryOverridePtr factory_override;
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       context, this, GetProcess()->GetID(),
       ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource, origin,
-      &default_factory_receiver, &header_client, &bypass_redirect_checks);
+      &default_factory_receiver, &header_client, &bypass_redirect_checks,
+      &factory_override);
 
   // Keep DevTools proxy last, i.e. closest to the network.
   devtools_instrumentation::WillCreateURLLoaderFactory(
@@ -6157,15 +6153,15 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
     GetProcess()->CreateURLLoaderFactory(
         origin, main_world_origin, cross_origin_embedder_policy_, &preferences,
         network_isolation_key.value(), std::move(header_client),
-        std::move(factory_receiver));
+        std::move(factory_receiver), std::move(factory_override));
   } else {
     // The ability to create a trusted URLLoaderFactory is not exposed on
     // RenderProcessHost's public API.
     static_cast<RenderProcessHostImpl*>(GetProcess())
-        ->CreateTrustedURLLoaderFactory(origin, main_world_origin,
-                                        cross_origin_embedder_policy_,
-                                        &preferences, std::move(header_client),
-                                        std::move(factory_receiver));
+        ->CreateTrustedURLLoaderFactory(
+            origin, main_world_origin, cross_origin_embedder_policy_,
+            &preferences, std::move(header_client), std::move(factory_receiver),
+            std::move(factory_override));
   }
 
   if (!factory_callback_is_null) {

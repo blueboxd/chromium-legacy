@@ -28,6 +28,9 @@
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/chromeos/policy/remote_commands/user_commands_factory_chromeos.h"
 #include "chrome/browser/chromeos/policy/wildcard_login_checker.h"
+#include "chrome/browser/enterprise_reporting/report_generator.h"
+#include "chrome/browser/enterprise_reporting/report_scheduler.h"
+#include "chrome/browser/enterprise_reporting/request_timer.h"
 #include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -350,6 +353,7 @@ UserCloudPolicyManagerChromeOS::GetAppInstallEventLogUploader() {
 void UserCloudPolicyManagerChromeOS::Shutdown() {
   observed_profile_manager_.RemoveAll();
   app_install_event_log_uploader_.reset();
+  report_scheduler_.reset();
   if (client())
     client()->RemoveObserver(this);
   if (service())
@@ -408,6 +412,9 @@ void UserCloudPolicyManagerChromeOS::
   // available. If refresh scheduler is already started this call will do
   // nothing.
   StartRefreshSchedulerIfReady();
+
+  // Start the report scheduler to periodically upload usage data to DM server.
+  StartReportSchedulerIfReady();
 }
 
 void UserCloudPolicyManagerChromeOS::OnPolicyFetched(
@@ -668,6 +675,9 @@ void UserCloudPolicyManagerChromeOS::OnInitialPolicyFetchComplete(
   UMA_HISTOGRAM_MEDIUM_TIMES(kUMAInitialFetchDelayTotal,
                              now - time_init_started_);
   CancelWaitForPolicyFetch(success);
+
+  if (success)
+    StartReportSchedulerIfReady();
 }
 
 void UserCloudPolicyManagerChromeOS::OnPolicyRefreshTimeout() {
@@ -731,6 +741,20 @@ void UserCloudPolicyManagerChromeOS::StartRefreshSchedulerIfReady() {
                                 policy_prefs::kUserPolicyRefreshRate);
 }
 
+void UserCloudPolicyManagerChromeOS::StartReportSchedulerIfReady() {
+  if (!base::FeatureList::IsEnabled(features::kEnterpriseReportingInChromeOS))
+    return;
+
+  if (!client() || !client()->is_registered())
+    return;
+
+  report_scheduler_ = std::make_unique<enterprise_reporting::ReportScheduler>(
+      client(), std::make_unique<enterprise_reporting::RequestTimer>(),
+      std::make_unique<enterprise_reporting::ReportGenerator>());
+
+  report_scheduler_->OnDMTokenUpdated();
+}
+
 void UserCloudPolicyManagerChromeOS::OnProfileAdded(Profile* profile) {
   if (profile != profile_)
     return;
@@ -782,6 +806,11 @@ void UserCloudPolicyManagerChromeOS::SetUserContextRefreshTokenForTests(
   DCHECK(!refresh_token.empty());
   DCHECK(!user_context_refresh_token_for_tests_);
   user_context_refresh_token_for_tests_ = base::make_optional(refresh_token);
+}
+
+enterprise_reporting::ReportScheduler*
+UserCloudPolicyManagerChromeOS::GetReportSchedulerForTesting() {
+  return report_scheduler_.get();
 }
 
 }  // namespace policy

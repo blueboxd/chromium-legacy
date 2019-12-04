@@ -197,7 +197,6 @@ source_set("blink_headers") {
     "platform/web_double_size.h",
     "platform/web_drag_data.h",
     "platform/web_drag_operation.h",
-    "platform/web_editing_command_type.h",
     "platform/web_effective_connection_type.h",
     "platform/web_encrypted_media_client.h",
     "platform/web_encrypted_media_key_information.h",

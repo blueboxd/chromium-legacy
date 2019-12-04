@@ -498,7 +498,7 @@ const base::Feature kPhotoPickerVideoSupport{"PhotoPickerVideoSupport",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kPhotoPickerZoom{"PhotoPickerZoom",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kReachedCodeProfiler{"ReachedCodeProfiler",
                                          base::FEATURE_DISABLED_BY_DEFAULT};

@@ -1731,12 +1731,10 @@ TEST_F(CompositedLayerMappingTest,
         overflow: scroll;
         opacity: 0.8; /*MainThreadScrollingReason::kHasOpacityAndLCDText*/
       }
-
       #child {
         width: 100px;
         height: 200px;
         transform: translate3d(0, 0, 0);
-        overflow: hidden;
       }
       #uncorrelated {
         transform: translate3d(0, 0, 0);
@@ -1745,7 +1743,6 @@ TEST_F(CompositedLayerMappingTest,
         background-color: red;
       }
     </style>
-
     <div id="scroller">
       <div id="child">
       </div>
@@ -1758,10 +1755,14 @@ TEST_F(CompositedLayerMappingTest,
 
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   ASSERT_TRUE(scrollable_area);
+  ASSERT_TRUE(scrollable_area->VerticalScrollbar()->IsOverlayScrollbar());
 
-  GraphicsLayer* vertical_scrollbar =
+  ASSERT_FALSE(scrollable_area->NeedsCompositedScrolling());
+  EXPECT_FALSE(scrollable_area->VerticalScrollbar()->VisualRect().IsEmpty());
+
+  GraphicsLayer* vertical_scrollbar_layer =
       scrollable_area->GraphicsLayerForVerticalScrollbar();
-  ASSERT_TRUE(vertical_scrollbar);
+  ASSERT_TRUE(vertical_scrollbar_layer);
 
   CompositedLayerMapping* mapping = scroller->GetCompositedLayerMapping();
   ASSERT_TRUE(mapping);
@@ -1776,12 +1777,12 @@ TEST_F(CompositedLayerMappingTest,
       .getElementById("uncorrelated")
       ->setAttribute(html_names::kStyleAttr, "width: 200px");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  EXPECT_FALSE(mapping->NeedsRepaint(*vertical_scrollbar));
+  EXPECT_FALSE(mapping->NeedsRepaint(*vertical_scrollbar_layer));
 
   GetDocument().getElementById("child")->setAttribute(html_names::kStyleAttr,
                                                       "height: 300px");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  EXPECT_TRUE(mapping->NeedsRepaint(*vertical_scrollbar));
+  EXPECT_TRUE(mapping->NeedsRepaint(*vertical_scrollbar_layer));
 }
 
 }  // namespace blink

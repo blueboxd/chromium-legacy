@@ -109,13 +109,23 @@ bool ImageData::ValidateConstructorArguments(
           "The input data type is not supported.");
     }
 
-    if (!data->deprecatedByteLengthAsUnsigned()) {
+    static_assert(
+        std::numeric_limits<unsigned>::max() >=
+            std::numeric_limits<uint32_t>::max(),
+        "We use UINT32_MAX as the upper bound of the input size and expect "
+        "that the result fits into an `unsigned`.");
+    if (!base::CheckedNumeric<uint32_t>(data->byteLengthAsSizeT())
+             .AssignIfValid(&data_length)) {
+      return RaiseDOMExceptionAndReturnFalse(
+          exception_state, DOMExceptionCode::kNotSupportedError,
+          "The input data is too large. The maximum size is 4294967295.");
+    }
+    if (!data_length) {
       return RaiseDOMExceptionAndReturnFalse(
           exception_state, DOMExceptionCode::kInvalidStateError,
           "The input data has zero elements.");
     }
-
-    data_length = data->deprecatedByteLengthAsUnsigned() / data->TypeSize();
+    data_length /= data->TypeSize();
     if (data_length % 4) {
       return RaiseDOMExceptionAndReturnFalse(
           exception_state, DOMExceptionCode::kInvalidStateError,
@@ -175,8 +185,10 @@ DOMArrayBufferView* ImageData::AllocateAndValidateDataArray(
       NOTREACHED();
   }
 
-  if (!data_array || length != data_array->deprecatedByteLengthAsUnsigned() /
-                                   data_array->TypeSize()) {
+  size_t expected_size;
+  if (!data_array || (!base::CheckMul(length, data_array->TypeSize())
+                           .AssignIfValid(&expected_size) &&
+                      expected_size != data_array->byteLengthAsSizeT())) {
     if (exception_state)
       exception_state->ThrowRangeError("Out of memory at ImageData creation");
     return nullptr;
@@ -397,7 +409,8 @@ ImageData* ImageData::Create(NotShared<DOMUint8ClampedArray> data,
                                                nullptr, &exception_state))
     return nullptr;
 
-  unsigned height = data.View()->deprecatedLengthAsUnsigned() / (width * 4);
+  unsigned height =
+      base::checked_cast<unsigned>(data.View()->lengthAsSizeT()) / (width * 4);
   return MakeGarbageCollected<ImageData>(IntSize(width, height), data.View());
 }
 
@@ -683,8 +696,8 @@ ImageData::ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
   if (pixel_format == CanvasPixelFormat::kRGBA8 &&
       storage_format == kUint8ClampedArrayStorageFormat) {
     DOMArrayBuffer* array_buffer = DOMArrayBuffer::Create(content);
-    return DOMUint8ClampedArray::Create(
-        array_buffer, 0, array_buffer->DeprecatedByteLengthAsUnsigned());
+    return DOMUint8ClampedArray::Create(array_buffer, 0,
+                                        array_buffer->ByteLengthAsSizeT());
   }
 
   skcms_PixelFormat src_format = skcms_PixelFormat_RGBA_8888;

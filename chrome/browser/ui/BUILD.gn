@@ -3973,8 +3973,6 @@ jumbo_static_library("ui") {
       "webui/print_preview/print_preview_utils.h",
       "webui/print_preview/printer_handler.cc",
       "webui/print_preview/printer_handler.h",
-      "webui/print_preview/sticky_settings.cc",
-      "webui/print_preview/sticky_settings.h",
     ]
     deps += [
       "//services/device/public/cpp/usb",

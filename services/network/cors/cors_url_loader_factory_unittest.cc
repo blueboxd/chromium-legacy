@@ -72,7 +72,7 @@ class CorsURLLoaderFactoryTest : public testing::Test {
         network_context_.get(), std::move(factory_params),
         resource_scheduler_client,
         cors_url_loader_factory_remote_.BindNewPipeAndPassReceiver(),
-        &origin_access_list_, nullptr);
+        &origin_access_list_);
   }
 
   void CreateLoaderAndStart(const ResourceRequest& request) {

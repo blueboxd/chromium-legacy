@@ -63,6 +63,35 @@ enum class PermissionEmbargoStatus {
   NUM,
 };
 
+// The kind of permission prompt UX used to surface a permission request.
+// Enum used in UKMs and UMAs, do not re-order or change values. Deprecated
+// items should only be commented out. New items should be added at the end,
+// and the "PermissionPromptDisposition" histogram suffix needs to be updated to
+// match (tools/metrics/histograms/histograms.xml).
+enum class PermissionPromptDisposition {
+  // Not all permission actions will have an associated permission prompt (e.g.
+  // changing permission via the settings page).
+  NOT_APPLICABLE = 0,
+
+  // Only used on desktop, a bubble under the site settings padlock.
+  ANCHORED_BUBBLE = 1,
+
+  // Only used on desktop, a static indicator on the right-hand side of the
+  // location bar.
+  LOCATION_BAR_RIGHT_STATIC_ICON = 2,
+
+  // Only used on desktop, an animated indicator on the right-hand side of the
+  // location bar.
+  LOCATION_BAR_RIGHT_ANIMATED_ICON = 3,
+
+  // Only used on Android, a modal dialog.
+  MODAL_DIALOG = 4,
+
+  // Only used on Android, an initially-collapsed infobar at the bottom of the
+  // page.
+  MINI_INFOBAR = 5,
+};
+
 // Provides a convenient way of logging UMA for permission related operations.
 class PermissionUmaUtil {
  public:
@@ -106,7 +135,8 @@ class PermissionUmaUtil {
   static void PermissionPromptResolved(
       const std::vector<PermissionRequest*>& requests,
       content::WebContents* web_contents,
-      PermissionAction permission_action);
+      PermissionAction permission_action,
+      PermissionPromptDisposition ui_disposition);
 
   static void RecordWithBatteryBucket(const std::string& histogram);
 
@@ -120,6 +150,7 @@ class PermissionUmaUtil {
                                      PermissionAction action,
                                      PermissionSourceUI source_ui,
                                      PermissionRequestGestureType gesture_type,
+                                     PermissionPromptDisposition ui_disposition,
                                      const GURL& requesting_origin,
                                      const content::WebContents* web_contents,
                                      Profile* profile);

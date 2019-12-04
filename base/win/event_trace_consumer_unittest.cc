@@ -286,7 +286,7 @@ class EtwTraceConsumerDataTest: public EtwTraceConsumerBaseTest {
 
     // Set up a file session.
     HRESULT hr = controller.StartFileSession(session_name_.c_str(),
-                                             as_wcstr(temp_file_.value()));
+                                             temp_file_.value().c_str());
     if (FAILED(hr))
       return hr;
 
@@ -310,7 +310,7 @@ class EtwTraceConsumerDataTest: public EtwTraceConsumerBaseTest {
   HRESULT ConsumeEventFromTempSession() {
     // Now consume the event(s).
     TestConsumer consumer_;
-    HRESULT hr = consumer_.OpenFileSession(as_wcstr(temp_file_.value()));
+    HRESULT hr = consumer_.OpenFileSession(temp_file_.value().c_str());
     if (SUCCEEDED(hr))
       hr = consumer_.Consume();
     consumer_.Close();

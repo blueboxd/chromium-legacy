@@ -319,39 +319,6 @@ components/rappor/rappor_parameters.h.
   </flags-field>
 </rappor-metric>
 
-<rappor-metric name="Search.DefaultSearchProvider" type="ETLD_PLUS_ONE">
-  <owner>holte@chromium.org</owner>
-  <summary>
-    The domain and registry of the URL for the default search engine. Recorded
-    when a profile is opened or after a profile reset.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="Settings.FirstStartupPage" type="ETLD_PLUS_ONE">
-  <owner>holte@chromium.org</owner>
-  <summary>
-    The domain and registry of the URL of the first page opened on startup.
-    Recorded when a profile is loaded if preferences specify a fixed set of URLs
-    to open on startup.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="Settings.HomePage2" type="ETLD_PLUS_ONE">
-  <owner>holte@chromium.org</owner>
-  <summary>
-    The eTLD+1 of the prefs::kHomePage setting. Recorded when a profile is
-    loaded if the URL is valid and prefs::kHomePageIsNewTabPage is false.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="Settings.NewTabPage" type="ETLD_PLUS_ONE">
-  <owner>holte@chromium.org</owner>
-  <summary>
-    The domain and registry of the URL chrome://newtab is rewritten to. Recorded
-    when a profile is loaded, if the URL is valid.
-  </summary>
-</rappor-metric>
-
 </rappor-metrics>
 
 </rappor-configuration>

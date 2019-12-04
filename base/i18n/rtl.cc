@@ -457,7 +457,7 @@ void WrapPathWithLTRFormatting(const FilePath& path,
 #if defined(OS_MACOSX)
     rtl_safe_path->append(UTF8ToUTF16(path.value()));
 #elif defined(OS_WIN)
-    rtl_safe_path->append(path.value());
+  rtl_safe_path->append(AsString16(path.value()));
 #else  // defined(OS_POSIX) && !defined(OS_MACOSX)
     std::wstring wide_path = base::SysNativeMBToWide(path.value());
     rtl_safe_path->append(WideToUTF16(wide_path));

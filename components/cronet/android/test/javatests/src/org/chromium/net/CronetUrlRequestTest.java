@@ -312,6 +312,30 @@ public class CronetUrlRequestTest {
     }
 
     /**
+     * Tests redirect without location header doesn't cause a crash.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testRedirectWithNullLocationHeader() throws Exception {
+        String url = NativeTestServer.getFileURL("/redirect_broken_header.html");
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+
+        UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
+                url, callback, callback.getExecutor());
+        final UrlRequest urlRequest = builder.build();
+        urlRequest.start();
+        callback.blockForDone();
+        assertEquals("<!DOCTYPE html>\n<html>\n<head>\n<title>Redirect</title>\n"
+                        + "<p>Redirecting...</p>\n</head>\n</html>\n",
+                callback.mResponseAsString);
+        assertEquals(ResponseStep.ON_SUCCEEDED, callback.mResponseStep);
+        assertEquals(302, callback.mResponseInfo.getHttpStatusCode());
+        assertNull(callback.mError);
+        assertFalse(callback.mOnErrorCalled);
+    }
+
+    /**
      * Tests onRedirectReceived after cancel doesn't cause a crash.
      */
     @Test

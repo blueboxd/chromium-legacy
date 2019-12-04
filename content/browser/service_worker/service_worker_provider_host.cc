@@ -12,7 +12,6 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/interface_provider_filtering.h"
-#include "content/browser/renderer_interface_binders.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -37,19 +36,6 @@ namespace {
 int NextProviderId() {
   static int g_next_provider_id = 0;
   return g_next_provider_id++;
-}
-
-void GetInterfaceImpl(const std::string& interface_name,
-                      mojo::ScopedMessagePipeHandle interface_pipe,
-                      const url::Origin& origin,
-                      int process_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto* process = RenderProcessHost::FromID(process_id);
-  if (!process)
-    return;
-
-  BindWorkerInterface(interface_name, std::move(interface_pipe), process,
-                      origin);
 }
 
 void CreateQuicTransportConnectorImpl(
@@ -162,7 +148,9 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
           frame_tree_node_id,
           std::move(host_receiver),
           std::move(container_remote),
-          this,
+          type == blink::mojom::ServiceWorkerProviderType::kForServiceWorker
+              ? this
+              : nullptr,
           context)) {
   DCHECK_NE(blink::mojom::ServiceWorkerProviderType::kUnknown, type);
   if (type == blink::mojom::ServiceWorkerProviderType::kForServiceWorker) {
@@ -193,11 +181,6 @@ ServiceWorkerVersion* ServiceWorkerProviderHost::running_hosted_version()
   return running_hosted_version_.get();
 }
 
-blink::mojom::ServiceWorkerProviderType
-ServiceWorkerProviderHost::provider_type() const {
-  return container_host_->type();
-}
-
 bool ServiceWorkerProviderHost::IsProviderForServiceWorker() const {
   return container_host_->IsContainerForServiceWorker();
 }
@@ -225,11 +208,6 @@ void ServiceWorkerProviderHost::GetInterface(
     mojo::ScopedMessagePipeHandle interface_pipe) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(IsProviderForServiceWorker());
-  RunOrPostTaskOnThread(FROM_HERE, BrowserThread::UI,
-                        base::BindOnce(&GetInterfaceImpl, interface_name,
-                                       std::move(interface_pipe),
-                                       running_hosted_version_->script_origin(),
-                                       worker_process_id_));
 }
 
 void ServiceWorkerProviderHost::CreateQuicTransportConnector(

@@ -64,7 +64,6 @@ static_library("search_engines") {
     "//components/history/core/browser",
     "//components/infobars/core",
     "//components/pref_registry",
-    "//components/rappor",
     "//components/strings",
     "//components/url_formatter",
     "//components/variations",

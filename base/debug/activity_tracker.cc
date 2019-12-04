@@ -1425,7 +1425,7 @@ void GlobalActivityTracker::RecordProcessLaunch(
   }
 
 #if defined(OS_WIN)
-  known_processes_.insert(std::make_pair(pid, UTF16ToUTF8(cmd)));
+  known_processes_.insert(std::make_pair(pid, WideToUTF8(cmd)));
 #else
   known_processes_.insert(std::make_pair(pid, cmd));
 #endif

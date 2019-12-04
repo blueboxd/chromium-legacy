@@ -108,10 +108,11 @@ bool RadioNodeList::CheckElementMatchesRadioNodeListFilter(
 
 bool RadioNodeList::ElementMatches(const Element& element) const {
   if (ShouldOnlyMatchImgElements()) {
-    if (!IsHTMLImageElement(element))
+    auto* html_image_element = DynamicTo<HTMLImageElement>(element);
+    if (!html_image_element)
       return false;
 
-    if (ToHTMLImageElement(element).formOwner() != ownerNode())
+    if (html_image_element->formOwner() != ownerNode())
       return false;
 
     return MatchesByIdOrName(element);

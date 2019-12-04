@@ -515,6 +515,13 @@ var EventListenerAdded = natives.EventListenerAdded;
  */
 var EventListenerRemoved = natives.EventListenerRemoved;
 
+/**
+ * @param {string} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @return {Array}
+ */
+var GetMarkers = natives.GetMarkers;
+
 var logging = requireNative('logging');
 var utils = require('utils');
 
@@ -776,6 +783,10 @@ AutomationNodeImpl.prototype = {
 
   get nonInlineTextWordEnds() {
     return GetWordEndOffsets(this.treeID, this.id);
+  },
+
+  get markers() {
+    return GetMarkers(this.treeID, this.id);
   },
 
   doDefault: function() {
@@ -1244,9 +1255,6 @@ var nodeRefAttributes = [
 
 var intListAttributes = [
     'lineBreaks',
-    'markerEnds',
-    'markerStarts',
-    'markerTypes',
     'wordEnds',
     'wordStarts'];
 
@@ -1760,43 +1768,44 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
   readonly: $Array.concat(
       publicAttributes,
       [
-        'parent',
-        'firstChild',
-        'lastChild',
-        'children',
-        'previousSibling',
-        'nextSibling',
-        'isRootNode',
-        'role',
+        'bold',
         'checked',
+        'children',
+        'customActions',
         'defaultActionVerb',
+        'descriptionFrom',
+        'detectedLanguage',
+        'firstChild',
         'hasPopup',
-        'restriction',
-        'state',
-        'location',
+        'htmlAttributes',
         'imageAnnotation',
         'indexInParent',
-        'lineStartOffsets',
-        'root',
-        'htmlAttributes',
-        'nameFrom',
-        'descriptionFrom',
-        'bold',
+        'isRootNode',
         'italic',
-        'underline',
+        'lastChild',
+        'lineStartOffsets',
         'lineThrough',
-        'detectedLanguage',
-        'customActions',
-        'standardActions',
-        'unclippedLocation',
-        'tableCellColumnHeaders',
-        'tableCellRowHeaders',
-        'tableCellColumnIndex',
-        'tableCellRowIndex',
-        'tableCellAriaRowIndex',
-        'tableCellAriaColumnIndex',
-        'nonInlineTextWordStarts',
+        'location',
+        'markers',
+        'nameFrom',
+        'nextSibling',
         'nonInlineTextWordEnds',
+        'nonInlineTextWordStarts',
+        'parent',
+        'previousSibling',
+        'restriction',
+        'role',
+        'root',
+        'standardActions',
+        'state',
+        'tableCellAriaColumnIndex',
+        'tableCellAriaRowIndex',
+        'tableCellColumnHeaders',
+        'tableCellColumnIndex',
+        'tableCellRowHeaders',
+        'tableCellRowIndex',
+        'unclippedLocation',
+        'underline',
       ]),
 });
 

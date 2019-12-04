@@ -15,6 +15,7 @@
 #include "chrome/browser/sharing/sharing_dialog.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
@@ -27,6 +28,10 @@ using SharingMessage = chrome_browser_sharing::SharingMessage;
 // static
 ClickToCallUiController* ClickToCallUiController::GetOrCreateFromWebContents(
     content::WebContents* web_contents) {
+  // Use active WebContents if available.
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (browser)
+    web_contents = browser->tab_strip_model()->GetActiveWebContents();
   ClickToCallUiController::CreateForWebContents(web_contents);
   return ClickToCallUiController::FromWebContents(web_contents);
 }

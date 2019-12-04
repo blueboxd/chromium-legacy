@@ -133,7 +133,7 @@ MediaStreamTrackMetrics::MediaStreamTrackMetrics()
     : ice_state_(webrtc::PeerConnectionInterface::kIceConnectionNew) {}
 
 MediaStreamTrackMetrics::~MediaStreamTrackMetrics() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   for (const auto& observer : observers_) {
     observer->SendLifetimeMessageForTrack(LifetimeEvent::kDisconnected);
   }
@@ -142,7 +142,7 @@ MediaStreamTrackMetrics::~MediaStreamTrackMetrics() {
 void MediaStreamTrackMetrics::AddTrack(Direction direction,
                                        Kind kind,
                                        const std::string& track_id) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   observers_.push_back(std::make_unique<MediaStreamTrackMetricsObserver>(
       direction, kind, std::move(track_id), this));
   SendLifeTimeMessageDependingOnIceState(observers_.back().get());
@@ -151,7 +151,7 @@ void MediaStreamTrackMetrics::AddTrack(Direction direction,
 void MediaStreamTrackMetrics::RemoveTrack(Direction direction,
                                           Kind kind,
                                           const std::string& track_id) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto it = std::find_if(observers_.begin(), observers_.end(),
                          ObserverFinder(direction, kind, track_id));
   if (it == observers_.end()) {
@@ -165,7 +165,7 @@ void MediaStreamTrackMetrics::RemoveTrack(Direction direction,
 
 void MediaStreamTrackMetrics::IceConnectionChange(
     webrtc::PeerConnectionInterface::IceConnectionState new_state) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   ice_state_ = new_state;
   for (const auto& observer : observers_) {
     SendLifeTimeMessageDependingOnIceState(observer.get());

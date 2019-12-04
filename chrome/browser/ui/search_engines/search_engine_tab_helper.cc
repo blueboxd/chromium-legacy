@@ -86,7 +86,7 @@ void SearchEngineTabHelper::WebContentsDestroyed() {
 
 SearchEngineTabHelper::SearchEngineTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      osdd_handler_bindings_(web_contents, this) {
+      osdd_handler_receivers_(web_contents, this) {
   DCHECK(web_contents);
 
   favicon::CreateContentFaviconDriverForWebContents(web_contents);
@@ -102,7 +102,7 @@ void SearchEngineTabHelper::PageHasOpenSearchDescriptionDocument(
   // keyword.
 
   // Only accept messages from the main frame.
-  if (osdd_handler_bindings_.GetCurrentTargetFrame() !=
+  if (osdd_handler_receivers_.GetCurrentTargetFrame() !=
       web_contents()->GetMainFrame())
     return;
 

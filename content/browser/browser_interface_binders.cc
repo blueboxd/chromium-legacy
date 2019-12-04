@@ -33,6 +33,8 @@
 #include "content/browser/worker_host/shared_worker_connector_impl.h"
 #include "content/browser/worker_host/shared_worker_host.h"
 #include "content/common/input/input_injector.mojom.h"
+#include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
+#include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/service_worker_context.h"
@@ -501,6 +503,14 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
                             base::Unretained(media_stream_manager)),
         base::CreateSingleThreadTaskRunner(BrowserThread::IO));
   }
+
+  map->Add<mojom::RendererAudioInputStreamFactory>(
+      base::BindRepeating(&RenderFrameHostImpl::CreateAudioInputStreamFactory,
+                          base::Unretained(host)));
+
+  map->Add<mojom::RendererAudioOutputStreamFactory>(
+      base::BindRepeating(&RenderFrameHostImpl::CreateAudioOutputStreamFactory,
+                          base::Unretained(host)));
 
   map->Add<media::mojom::ImageCapture>(
       base::BindRepeating(&ImageCaptureImpl::Create));

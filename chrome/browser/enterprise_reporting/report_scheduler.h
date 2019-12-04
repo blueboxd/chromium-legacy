@@ -37,6 +37,8 @@ class ReportScheduler : public ProfileManagerObserver {
 
   void SetReportUploaderForTesting(std::unique_ptr<ReportUploader> uploader);
 
+  RequestTimer* GetRequestTimerForTesting() const;
+
   void OnDMTokenUpdated();
 
  private:

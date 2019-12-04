@@ -304,8 +304,9 @@ void MediaDevices::DevicesEnumerated(
       if (device_type == mojom::blink::MediaDeviceType::MEDIA_AUDIO_INPUT ||
           device_type == mojom::blink::MediaDeviceType::MEDIA_VIDEO_INPUT) {
         InputDeviceInfo* input_device_info =
-            InputDeviceInfo::Create(device_info->device_id, device_info->label,
-                                    device_info->group_id, device_type);
+            MakeGarbageCollected<InputDeviceInfo>(
+                device_info->device_id, device_info->label,
+                device_info->group_id, device_type);
         if (device_type == mojom::blink::MediaDeviceType::MEDIA_VIDEO_INPUT &&
             !video_input_capabilities.IsEmpty()) {
           input_device_info->SetVideoInputCapabilities(

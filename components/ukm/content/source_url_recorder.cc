@@ -11,8 +11,8 @@
 #include "base/metrics/field_trial_params.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "services/metrics/public/cpp/delegating_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -100,8 +100,8 @@ class SourceUrlRecorderWebContentsObserver
                       const GURL& initial_url);
 
   // Receives document source IDs from the renderer.
-  content::WebContentsFrameBindingSet<blink::mojom::UkmSourceIdFrameHost>
-      bindings_;
+  content::WebContentsFrameReceiverSet<blink::mojom::UkmSourceIdFrameHost>
+      receivers_;
 
   // Map from navigation ID to the initial URL for that navigation.
   base::flat_map<int64_t, GURL> pending_navigations_;
@@ -149,7 +149,7 @@ WEB_CONTENTS_USER_DATA_KEY_IMPL(SourceUrlRecorderWebContentsObserver)
 SourceUrlRecorderWebContentsObserver::SourceUrlRecorderWebContentsObserver(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      bindings_(web_contents, this),
+      receivers_(web_contents, this),
       last_committed_full_navigation_source_id_(ukm::kInvalidSourceId),
       last_committed_full_navigation_or_same_document_source_id_(
           ukm::kInvalidSourceId),
@@ -305,7 +305,7 @@ ukm::SourceId SourceUrlRecorderWebContentsObserver::
 void SourceUrlRecorderWebContentsObserver::SetDocumentSourceId(
     int64_t source_id) {
   content::RenderFrameHost* main_frame = web_contents()->GetMainFrame();
-  content::RenderFrameHost* current_frame = bindings_.GetCurrentTargetFrame();
+  content::RenderFrameHost* current_frame = receivers_.GetCurrentTargetFrame();
   bool is_main_frame = main_frame == current_frame;
   bool is_cross_origin_frame =
       is_main_frame ? false
@@ -313,7 +313,7 @@ void SourceUrlRecorderWebContentsObserver::SetDocumentSourceId(
                           current_frame->GetLastCommittedOrigin());
 
   pending_document_created_events_.emplace_back(
-      source_id, !bindings_.GetCurrentTargetFrame()->GetParent(),
+      source_id, !receivers_.GetCurrentTargetFrame()->GetParent(),
       is_cross_origin_frame);
   MaybeFlushPendingEvents();
 }

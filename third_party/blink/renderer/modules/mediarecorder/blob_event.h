@@ -24,9 +24,6 @@ class MODULES_EXPORT BlobEvent final : public Event {
 
   static BlobEvent* Create(const AtomicString& type,
                            const BlobEventInit* initializer);
-  static BlobEvent* Create(const AtomicString& type,
-                           Blob* blob,
-                           double timecode);
 
   BlobEvent(const AtomicString& type, const BlobEventInit* initializer);
   BlobEvent(const AtomicString& type, Blob* blob, double timecode);

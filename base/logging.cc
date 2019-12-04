@@ -204,7 +204,7 @@ uint64_t TickCount() {
 
 void DeleteFilePath(const PathString& log_name) {
 #if defined(OS_WIN)
-  DeleteFile(base::as_wcstr(log_name));
+  DeleteFile(log_name.c_str());
 #elif defined(OS_NACL)
   // Do nothing; unlink() isn't supported on NaCl.
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
@@ -217,14 +217,14 @@ void DeleteFilePath(const PathString& log_name) {
 PathString GetDefaultLogFile() {
 #if defined(OS_WIN)
   // On Windows we use the same path as the exe.
-  base::char16 module_name[MAX_PATH];
-  GetModuleFileName(nullptr, base::as_writable_wcstr(module_name), MAX_PATH);
+  wchar_t module_name[MAX_PATH];
+  GetModuleFileName(nullptr, module_name, MAX_PATH);
 
   PathString log_name = module_name;
   PathString::size_type last_backslash = log_name.rfind('\\', log_name.size());
   if (last_backslash != PathString::npos)
     log_name.erase(last_backslash + 1);
-  log_name += STRING16_LITERAL("debug.log");
+  log_name += FILE_PATH_LITERAL("debug.log");
   return log_name;
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   // On other platforms we just use the current directory.
@@ -325,7 +325,7 @@ bool InitializeLogFileHandle() {
   // appended to across accesses from multiple threads.
   // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364399(v=vs.85).aspx
   // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363858(v=vs.85).aspx
-  g_log_file = CreateFile(base::as_wcstr(*g_log_file_name), FILE_APPEND_DATA,
+  g_log_file = CreateFile(g_log_file_name->c_str(), FILE_APPEND_DATA,
                           FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
                           OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
   if (g_log_file == INVALID_HANDLE_VALUE || g_log_file == nullptr) {
@@ -335,20 +335,19 @@ bool InitializeLogFileHandle() {
     // some consumers of base logging like chrome_elf, etc.
     // Please don't change the code below to use FilePath.
     // try the current directory
-    base::char16 system_buffer[MAX_PATH];
+    wchar_t system_buffer[MAX_PATH];
     system_buffer[0] = 0;
-    DWORD len = ::GetCurrentDirectory(base::size(system_buffer),
-                                      base::as_writable_wcstr(system_buffer));
+    DWORD len = ::GetCurrentDirectory(base::size(system_buffer), system_buffer);
     if (len == 0 || len > base::size(system_buffer))
       return false;
 
     *g_log_file_name = system_buffer;
     // Append a trailing backslash if needed.
     if (g_log_file_name->back() != L'\\')
-      *g_log_file_name += STRING16_LITERAL("\\");
-    *g_log_file_name += STRING16_LITERAL("debug.log");
+      *g_log_file_name += FILE_PATH_LITERAL("\\");
+    *g_log_file_name += FILE_PATH_LITERAL("debug.log");
 
-    g_log_file = CreateFile(base::as_wcstr(*g_log_file_name), FILE_APPEND_DATA,
+    g_log_file = CreateFile(g_log_file_name->c_str(), FILE_APPEND_DATA,
                             FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
                             OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
     if (g_log_file == INVALID_HANDLE_VALUE || g_log_file == nullptr) {
@@ -1161,10 +1160,10 @@ bool IsLoggingToFileEnabled() {
   return g_logging_destination & LOG_TO_FILE;
 }
 
-base::string16 GetLogFileFullPath() {
+std::wstring GetLogFileFullPath() {
   if (g_log_file_name)
     return *g_log_file_name;
-  return base::string16();
+  return std::wstring();
 }
 #endif
 

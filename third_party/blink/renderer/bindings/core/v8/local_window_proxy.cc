@@ -199,17 +199,14 @@ void LocalWindowProxy::Initialize() {
       (world_->IsIsolatedWorld() &&
        IsolatedWorldCSP::Get().HasContentSecurityPolicy(world_->GetWorldId()));
   if (evaluate_csp_for_eval) {
+    // Using 'false' here means V8 will always call back blink for every 'eval'
+    // call being made. Blink executes CSP checks and returns whether or not
+    // V8 can proceed. The callback is
+    // V8Initializer::CodeGenerationCheckCallbackInMainThread().
+    context->AllowCodeGenerationFromStrings(false);
+
     ContentSecurityPolicy* csp =
         GetFrame()->GetDocument()->GetContentSecurityPolicyForWorld();
-    // CSP has two mechanisms for controlling eval, script-src and Trusted
-    // Types, and we need to check both.
-    // TODO(vogelheim): Provide a simple(e) API for this use case.
-    bool allow_code_generation =
-        csp->AllowEval(SecurityViolationReportingPolicy::kSuppressReporting,
-                       ContentSecurityPolicy::kWillNotThrowException,
-                       g_empty_string) &&
-        !csp->IsRequireTrustedTypes();
-    context->AllowCodeGenerationFromStrings(allow_code_generation);
     context->SetErrorMessageForCodeGenerationFromStrings(
         V8String(GetIsolate(), csp->EvalDisabledErrorMessage()));
   }

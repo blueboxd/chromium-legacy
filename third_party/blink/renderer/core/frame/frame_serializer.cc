@@ -383,7 +383,7 @@ void FrameSerializer::AddResourceForElement(Document& document,
         const_cast<Element&>(element).PresentationAttributeStyle(), document);
   }
 
-  if (const auto* image = ToHTMLImageElementOrNull(element)) {
+  if (const auto* image = DynamicTo<HTMLImageElement>(element)) {
     AtomicString image_url_value;
     const Element* parent = element.parentElement();
     if (parent && IsA<HTMLPictureElement>(parent)) {

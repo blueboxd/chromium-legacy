@@ -19,8 +19,10 @@ public class CompositorViewFactory {
      * @param context The context to create this view.
      * @param windowAndroid The associated {@code WindowAndroid} on which the view is to be
      *         displayed.
+     * @param constraints A set of constraints associated with this view.
      */
-    public static CompositorView create(Context context, WindowAndroid windowAndroid) {
-        return new CompositorViewImpl(context, windowAndroid);
+    public static CompositorView create(
+            Context context, WindowAndroid windowAndroid, ThinWebViewConstraints constraints) {
+        return new CompositorViewImpl(context, windowAndroid, constraints);
     }
 }

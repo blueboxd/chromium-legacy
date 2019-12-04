@@ -132,6 +132,7 @@
 /libevdev/src
 /libexif/sources
 /libFuzzer/src
+/libgifcodec
 /libprotobuf-mutator/src
 /libipp/libipp
 /libjingle/source

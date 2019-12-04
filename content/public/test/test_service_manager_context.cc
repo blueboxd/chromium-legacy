@@ -20,7 +20,6 @@ TestServiceManagerContext::TestServiceManagerContext() {
 }
 
 TestServiceManagerContext::~TestServiceManagerContext() {
-  ChildProcessLauncher::ResetRegisteredFilesForTesting();
   ServiceManagerConnection::DestroyForProcess();
 }
 

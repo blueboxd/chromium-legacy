@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "content/renderer/media/audio/mojo_audio_output_ipc.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 
 namespace content {
 
@@ -41,9 +41,9 @@ AudioOutputIPCFactory::CreateAudioOutputIPC(int frame_id) const {
 
 void AudioOutputIPCFactory::RegisterRemoteFactory(
     int frame_id,
-    service_manager::InterfaceProvider* interface_provider) {
+    blink::BrowserInterfaceBrokerProxy* interface_broker) {
   mojo::PendingRemote<mojom::RendererAudioOutputStreamFactory> factory_remote;
-  interface_provider->GetInterface(
+  interface_broker->GetInterface(
       factory_remote.InitWithNewPipeAndPassReceiver());
   // Unretained is safe due to the contract at the top of the header file.
   // It's safe to pass the |factory_remote| PendingRemote between threads.

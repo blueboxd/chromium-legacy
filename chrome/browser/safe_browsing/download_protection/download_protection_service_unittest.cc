@@ -37,10 +37,9 @@
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
-#include "chrome/browser/policy/browser_dm_token_storage.h"
-#include "chrome/browser/policy/fake_browser_dm_token_storage.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/test_binary_upload_service.h"
+#include "chrome/browser/safe_browsing/dm_token_utils.h"
 #include "chrome/browser/safe_browsing/download_protection/check_native_file_system_write_request.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
@@ -300,8 +299,8 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
             profile(),
             base::BindRepeating(&BuildSafeBrowsingPrivateEventRouter));
 
-    storage_.SetClientId("client id");
-    storage_.SetDMToken("dm token");
+    SetDMTokenForTesting(
+        policy::DMToken::CreateValidTokenForTesting("dm_token"));
   }
 
   void TearDown() override {
@@ -665,7 +664,6 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
   base::ScopedTempDir temp_dir_;
   extensions::TestEventRouter* test_event_router_;
   TestingProfileManager testing_profile_manager_;
-  policy::FakeBrowserDMTokenStorage storage_;
 };
 
 class DeepScanningDownloadTest : public DownloadProtectionServiceTest,

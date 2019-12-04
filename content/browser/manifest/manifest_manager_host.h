@@ -8,8 +8,8 @@
 #include "base/callback_forward.h"
 #include "base/containers/id_map.h"
 #include "base/macros.h"
-#include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/manifest/manifest_manager.mojom.h"
 #include "third_party/blink/public/mojom/manifest/manifest_observer.mojom.h"
@@ -64,8 +64,8 @@ class ManifestManagerHost : public WebContentsObserver,
   mojo::Remote<blink::mojom::ManifestManager> manifest_manager_;
   CallbackMap callbacks_;
 
-  WebContentsFrameBindingSet<blink::mojom::ManifestUrlChangeObserver>
-      manifest_url_change_observer_bindings_;
+  WebContentsFrameReceiverSet<blink::mojom::ManifestUrlChangeObserver>
+      manifest_url_change_observer_receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestManagerHost);
 };

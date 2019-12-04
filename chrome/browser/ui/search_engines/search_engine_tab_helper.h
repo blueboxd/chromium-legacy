@@ -12,8 +12,8 @@
 #include "chrome/common/open_search_description_document_handler.mojom.h"
 #include "components/favicon/core/favicon_driver.h"
 #include "components/favicon/core/favicon_driver_observer.h"
-#include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 // Per-tab search engine manager. Handles dealing search engine processing
@@ -48,9 +48,9 @@ class SearchEngineTabHelper
   // If params has a searchable form, this tries to create a new keyword.
   void GenerateKeywordIfNecessary(content::NavigationHandle* handle);
 
-  content::WebContentsFrameBindingSet<
+  content::WebContentsFrameReceiverSet<
       chrome::mojom::OpenSearchDescriptionDocumentHandler>
-      osdd_handler_bindings_;
+      osdd_handler_receivers_;
 
   ScopedObserver<favicon::FaviconDriver, favicon::FaviconDriverObserver>
       favicon_driver_observer_{this};

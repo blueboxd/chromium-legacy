@@ -6987,6 +6987,12 @@ be describing additional metrics about the same event.
       capped at 10 ignores.
     </summary>
   </metric>
+  <metric name="PromptDisposition">
+    <summary>
+      An enum of type PermissionPromptDisposition. The UI used to display a
+      permission prompt, if any.
+    </summary>
+  </metric>
   <metric name="Source">
     <summary>
       An enum of type PermissionSourceUI. The UI surface for this action.

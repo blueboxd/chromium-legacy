@@ -92,7 +92,8 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
           header_client,
-      bool* bypass_redirect_checks) override;
+      bool* bypass_redirect_checks,
+      network::mojom::URLLoaderFactoryOverridePtr* factory_override) override;
   bool HandleExternalProtocol(
       const GURL& url,
       content::WebContents::OnceGetter web_contents_getter,

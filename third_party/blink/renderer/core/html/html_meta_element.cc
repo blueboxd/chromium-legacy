@@ -574,6 +574,8 @@ void HTMLMetaElement::ProcessContent() {
     ProcessViewportContentAttribute(content_value,
                                     ViewportDescription::kViewportMeta);
   } else if (EqualIgnoringASCIICase(name_value, "referrer")) {
+    UseCounter::Count(&GetDocument(),
+                      WebFeature::kHTMLMetaElementReferrerPolicy);
     GetDocument().ParseAndSetReferrerPolicy(content_value,
                                             true /* support legacy keywords */);
   } else if (EqualIgnoringASCIICase(name_value, "handheldfriendly") &&

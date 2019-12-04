@@ -229,14 +229,6 @@ void BackForwardCacheMetrics::MarkNotRestoredWithReason(
 
 void BackForwardCacheMetrics::UpdateNotRestoredReasonsForNavigation(
     NavigationRequest* navigation) {
-  if (last_committed_navigation_entry_id_ != navigation->nav_entry_id()) {
-    CHECK(!navigation->IsServedFromBackForwardCache())
-        << "BackForwardCache should not be used when navigation entry id does "
-           "not match the last committed navigation entry for this document";
-    not_restored_reasons_.set(
-        static_cast<size_t>(NotRestoredReason::kNotMostRecentNavigationEntry));
-  }
-
   // |last_committed_main_frame_navigation_id_| is -1 when navigation history
   // has never been initialized. This can happen only when the session history
   // has been restored.

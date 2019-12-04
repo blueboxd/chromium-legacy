@@ -426,8 +426,9 @@ void PermissionRequestManager::FinalizeBubble(
     PermissionAction permission_action) {
   DCHECK(IsRequestInProgress());
 
-  PermissionUmaUtil::PermissionPromptResolved(requests_, web_contents(),
-                                              permission_action);
+  PermissionUmaUtil::PermissionPromptResolved(
+      requests_, web_contents(), permission_action,
+      DetermineCurrentRequestUIDispositionForUMA());
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
@@ -622,6 +623,23 @@ void PermissionRequestManager::AutoBlockerDecisionMade(
     PermissionRequestAutoBlocker::Response response) {
   current_request_autoblocker_response_ = response;
   ScheduleShowBubble();
+}
+
+PermissionPromptDisposition
+PermissionRequestManager::DetermineCurrentRequestUIDispositionForUMA() {
+#if defined(OS_ANDROID)
+  return ShouldCurrentRequestUseQuietUI()
+             ? PermissionPromptDisposition::MINI_INFOBAR
+             : PermissionPromptDisposition::MODAL_DIALOG;
+#else
+  return !ShouldCurrentRequestUseQuietUI()
+             ? PermissionPromptDisposition::ANCHORED_BUBBLE
+             : QuietNotificationsPromptConfig::UIFlavorToUse() ==
+                       QuietNotificationsPromptConfig::STATIC_ICON
+                   ? PermissionPromptDisposition::LOCATION_BAR_RIGHT_STATIC_ICON
+                   : PermissionPromptDisposition::
+                         LOCATION_BAR_RIGHT_ANIMATED_ICON;
+#endif
 }
 
 void PermissionRequestManager::DoAutoResponseForTesting() {

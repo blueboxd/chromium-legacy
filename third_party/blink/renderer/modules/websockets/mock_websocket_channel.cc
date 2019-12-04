@@ -9,10 +9,6 @@
 
 namespace blink {
 
-MockWebSocketChannel* MockWebSocketChannel::Create() {
-  return MakeGarbageCollected<testing::StrictMock<MockWebSocketChannel>>();
-}
-
 MockWebSocketChannel::MockWebSocketChannel() = default;
 MockWebSocketChannel::~MockWebSocketChannel() = default;
 

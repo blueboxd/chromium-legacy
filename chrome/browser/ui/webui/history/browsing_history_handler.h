@@ -81,6 +81,8 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
 
   base::OnceClosure query_history_continuation_;
 
+  std::string remove_visits_callback_;
+
   base::WeakPtrFactory<BrowsingHistoryHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingHistoryHandler);

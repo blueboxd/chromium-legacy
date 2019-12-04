@@ -198,8 +198,6 @@ if (!is_ios && !is_android) {
     sources = [
       "src/util/histogram.cc",
       "src/util/histogram.h",
-      "src/util/testharness.cc",
-      "src/util/testharness.h",
       "src/util/testutil.cc",
       "src/util/testutil.h",
     ]
@@ -209,6 +207,8 @@ if (!is_ios && !is_android) {
 
     public_deps = [
       ":leveldb_static",
+      "//third_party/googletest:gmock",
+      "//third_party/googletest:gtest",
     ]
     deps = [
       "//base",
@@ -449,7 +449,5 @@ fuzzer_test("leveldb_put_get_delete_fuzzer") {
   ]
   deps = [
     ":leveldatabase",
-    ":leveldb_testutil",
-    "//base/test:test_support",
   ]
 }

@@ -172,18 +172,33 @@ TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
     BrowsingHistoryHandlerWithWebUIForTesting handler(web_ui());
     handler.RegisterMessages();
 
-    // Simulate an ongoing delete request.
-    handler.browsing_history_service_->has_pending_delete_request_ = true;
+    // First, send historyLoaded so that JS will be allowed.
+    base::Value init_args(base::Value::Type::LIST);
+    init_args.Append("history-loaded-callback-id");
+    handler.HandleHistoryLoaded(&base::Value::AsListValue(init_args));
 
-    web_history_service()->ExpireHistoryBetween(
-        std::set<GURL>(), base::Time(), base::Time::Max(),
-        base::Bind(
-            &history::BrowsingHistoryService::RemoveWebHistoryComplete,
-            handler.browsing_history_service_->weak_factory_.GetWeakPtr()),
-        PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
+    // Simulate a delete request.
+    base::Value args(base::Value::Type::LIST);
+    args.Append("remove-visits-callback-id");
+    base::Value to_remove(base::Value::Type::LIST);
+    base::Value visit(base::Value::Type::DICTIONARY);
+    visit.SetStringKey("url", "https://www.google.com");
+    base::Value timestamps(base::Value::Type::LIST);
+    timestamps.Append(12345678.0);
+    visit.SetKey("timestamps", std::move(timestamps));
+    to_remove.Append(std::move(visit));
+    args.Append(std::move(to_remove));
+    handler.HandleRemoveVisits(&base::Value::AsListValue(args));
 
     EXPECT_EQ(3U, web_ui()->call_data().size());
-    EXPECT_EQ("deleteComplete", web_ui()->call_data().back()->function_name());
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    EXPECT_EQ("cr.webUIResponse", data.function_name());
+    std::string callback_id;
+    ASSERT_TRUE(data.arg1()->GetAsString(&callback_id));
+    EXPECT_EQ("remove-visits-callback-id", callback_id);
+    bool success = false;
+    ASSERT_TRUE(data.arg2()->GetAsBoolean(&success));
+    ASSERT_TRUE(success);
   }
 
   // When history sync is not active, we don't listen to WebHistoryService

@@ -3,6 +3,7 @@ include_rules = [
   "+components/discardable_memory/service",
   "+components/services/paint_preview_compositor/public/mojom",
   "+components/strings/grit/components_strings.h",
+  "+components/keyed_service/core",
   "+content/public/browser",
   "+content/public/test",
   "+third_party/blink/public/common",

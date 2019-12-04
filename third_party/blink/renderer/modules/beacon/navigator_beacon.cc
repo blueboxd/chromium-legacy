@@ -85,8 +85,18 @@ bool NavigatorBeacon::SendBeaconImpl(
   bool allowed;
 
   if (data.IsArrayBufferView()) {
-    allowed = PingLoader::SendBeacon(GetSupplementable()->GetFrame(), url,
-                                     data.GetAsArrayBufferView().View());
+    auto* data_view = data.GetAsArrayBufferView().View();
+    if (!base::CheckedNumeric<wtf_size_t>(data_view->byteLengthAsSizeT())
+             .IsValid()) {
+      // At the moment the PingLoader::SendBeacon implementation cannot deal
+      // with huge ArrayBuffers.
+      exception_state.ThrowRangeError(
+          "The data provided to sendBeacon() exceeds the maximally possible "
+          "length, which is 4294967295.");
+      return false;
+    }
+    allowed =
+        PingLoader::SendBeacon(GetSupplementable()->GetFrame(), url, data_view);
   } else if (data.IsBlob()) {
     Blob* blob = data.GetAsBlob();
     if (!cors::IsCorsSafelistedContentType(blob->type())) {

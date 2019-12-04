@@ -2786,8 +2786,8 @@ void RTCPeerConnection::DidAddReceiverPlanB(
           MediaStream::Create(GetExecutionContext(), descriptor,
                               std::move(audio_tracks), std::move(video_tracks));
       // Schedule to fire "pc.onaddstream".
-      ScheduleDispatchEvent(
-          MediaStreamEvent::Create(event_type_names::kAddstream, stream));
+      ScheduleDispatchEvent(MakeGarbageCollected<MediaStreamEvent>(
+          event_type_names::kAddstream, stream));
     } else {
       // The stream already exists, add the track to it.
       // This will cause to schedule to fire "stream.onaddtrack".
@@ -2829,8 +2829,8 @@ void RTCPeerConnection::DidRemoveReceiverPlanB(
       // need for |StreamEnded|.
       stream->StreamEnded();
       stream->UnregisterObserver(this);
-      ScheduleDispatchEvent(
-          MediaStreamEvent::Create(event_type_names::kRemovestream, stream));
+      ScheduleDispatchEvent(MakeGarbageCollected<MediaStreamEvent>(
+          event_type_names::kRemovestream, stream));
     }
   }
 
@@ -2954,13 +2954,13 @@ void RTCPeerConnection::DidModifyTransceivers(
   // Legacy APIs: "pc.onaddstream" and "pc.onremovestream".
   for (const auto& current_stream : current_streams) {
     if (!previous_streams.Contains(current_stream)) {
-      ScheduleDispatchEvent(MediaStreamEvent::Create(
+      ScheduleDispatchEvent(MakeGarbageCollected<MediaStreamEvent>(
           event_type_names::kAddstream, current_stream));
     }
   }
   for (const auto& previous_stream : previous_streams) {
     if (!current_streams.Contains(previous_stream)) {
-      ScheduleDispatchEvent(MediaStreamEvent::Create(
+      ScheduleDispatchEvent(MakeGarbageCollected<MediaStreamEvent>(
           event_type_names::kRemovestream, previous_stream));
     }
   }

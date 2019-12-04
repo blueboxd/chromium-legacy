@@ -35,8 +35,42 @@ def _CheckPolicyTemplatesSyntax(input_api, output_api):
       device_policy_proto_path = input_api.os_path.join(
           local_path, '../proto/chrome_device_policy.proto')
       args = ["--device_policy_proto_path=" + device_policy_proto_path]
+
+      root = input_api.change.RepositoryRoot()
+
+      current_version = None
+      original_file_contents = None
+
+      # Check if there is a tag that allows us to bypass compatibility checks.
+      # This can be used in situations where there is a bug in the validation
+      # code or if a policy change needs to urgently be submitted.
+      if not input_api.change.tags.get('BYPASS_POLICY_COMPATIBILITY_CHECK'):
+        # Get the current version from the VERSION file so that we can check
+        # which policies are un-released and thus can be changed at will.
+        try:
+          version_path = input_api.os_path.join(
+          root, 'chrome', 'VERSION')
+          with open(version_path, "rb") as f:
+            current_version = int(f.readline().split("=")[1])
+            print ('Checking policies against current version: ' +
+              current_version)
+        except:
+          pass
+
+        # Get the original file contents of the policy file so that we can check
+        # the compatibility of template changes in it
+        template_path = input_api.os_path.join(
+          root, 'components', 'policy', 'resources', 'policy_templates.json')
+        affected_files = input_api.change.AffectedFiles()
+        template_affected_file = next(iter(f \
+          for f in affected_files if f.AbsoluteLocalPath() == template_path))
+        if template_affected_file is not None:
+          original_file_contents = \
+            '\n'.join(template_affected_file.OldContents())
+
       checker = syntax_check_policy_template_json.PolicyTemplateChecker()
-      if checker.Run(args, filepath) > 0:
+      if checker.Run(args, filepath,
+        original_file_contents, current_version) > 0:
         return [output_api.PresubmitError('Syntax error(s) in file:',
                                           [filepath])]
     finally:

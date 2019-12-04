@@ -6,27 +6,3 @@ per-file content_browser_manifest.cc=file://ipc/SECURITY_OWNERS
 per-file content_browser_manifest.h=set noparent
 per-file content_browser_manifest.h=file://ipc/SECURITY_OWNERS
 
-per-file content_gpu_manifest.cc=set noparent
-per-file content_gpu_manifest.cc=file://ipc/SECURITY_OWNERS
-per-file content_gpu_manifest.h=set noparent
-per-file content_gpu_manifest.h=file://ipc/SECURITY_OWNERS
-
-per-file content_plugin_manifest.cc=set noparent
-per-file content_plugin_manifest.cc=file://ipc/SECURITY_OWNERS
-per-file content_plugin_manifest.h=set noparent
-per-file content_plugin_manifest.h=file://ipc/SECURITY_OWNERS
-
-per-file content_renderer_manifest.cc=set noparent
-per-file content_renderer_manifest.cc=file://ipc/SECURITY_OWNERS
-per-file content_renderer_manifest.h=set noparent
-per-file content_renderer_manifest.h=file://ipc/SECURITY_OWNERS
-
-per-file content_utility_manifest.cc=set noparent
-per-file content_utility_manifest.cc=file://ipc/SECURITY_OWNERS
-per-file content_utility_manifest.h=set noparent
-per-file content_utility_manifest.h=file://ipc/SECURITY_OWNERS
-
-per-file v8_snapshot_overlay_manifest.cc=set noparent
-per-file v8_snapshot_overlay_manifest.cc=file://ipc/SECURITY_OWNERS
-per-file v8_snapshot_overlay_manifest.h=set noparent
-per-file v8_snapshot_overlay_manifest.h=file://ipc/SECURITY_OWNERS

@@ -50,13 +50,13 @@ MULTIPROCESS_TEST_MAIN(ReturnNine) {
 
 void ScopedProcessInformationTest::DoCreateProcess(
     const std::string& main_id, PROCESS_INFORMATION* process_handle) {
-  base::string16 cmd_line = MakeCmdLine(main_id).GetCommandLineString();
+  base::CommandLine::StringType cmd_line =
+      MakeCmdLine(main_id).GetCommandLineString();
   STARTUPINFO startup_info = {};
   startup_info.cb = sizeof(startup_info);
 
-  EXPECT_TRUE(::CreateProcess(NULL, base::as_writable_wcstr(cmd_line), NULL,
-                              NULL, false, 0, NULL, NULL, &startup_info,
-                              process_handle));
+  EXPECT_TRUE(::CreateProcess(NULL, base::data(cmd_line), NULL, NULL, false, 0,
+                              NULL, NULL, &startup_info, process_handle));
 }
 
 TEST_F(ScopedProcessInformationTest, InitiallyInvalid) {

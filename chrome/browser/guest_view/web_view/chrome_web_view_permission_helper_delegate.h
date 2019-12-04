@@ -9,7 +9,7 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/common/plugin.mojom.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "content/public/browser/web_contents_binding_set.h"
+#include "content/public/browser/web_contents_receiver_set.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper_delegate.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -56,8 +56,8 @@ class ChromeWebViewPermissionHelperDelegate
   void BlockedUnauthorizedPlugin(const base::string16& name,
                                  const std::string& identifier) override;
 
-  content::WebContentsFrameBindingSet<chrome::mojom::PluginAuthHost>
-      plugin_auth_host_bindings_;
+  content::WebContentsFrameReceiverSet<chrome::mojom::PluginAuthHost>
+      plugin_auth_host_receivers_;
 
   void OnPermissionResponse(const std::string& identifier,
                             bool allow,

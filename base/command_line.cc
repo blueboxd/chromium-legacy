@@ -20,6 +20,8 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #include <shellapi.h>
+
+#include "base/strings/string_util_win.h"
 #endif
 
 namespace base {
@@ -92,7 +94,7 @@ void AppendSwitchesAndArguments(CommandLine* command_line,
   for (size_t i = 1; i < argv.size(); ++i) {
     CommandLine::StringType arg = argv[i];
 #if defined(OS_WIN)
-    TrimWhitespace(arg, TRIM_ALL, &arg);
+    arg = CommandLine::StringType(TrimWhitespace(arg, TRIM_ALL));
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
     TrimWhitespaceASCII(arg, TRIM_ALL, &arg);
 #endif
@@ -286,7 +288,7 @@ FilePath CommandLine::GetProgram() const {
 
 void CommandLine::SetProgram(const FilePath& program) {
 #if defined(OS_WIN)
-  TrimWhitespace(program.value(), TRIM_ALL, &argv_[0]);
+  argv_[0] = StringType(TrimWhitespace(program.value(), TRIM_ALL));
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   TrimWhitespaceASCII(program.value(), TRIM_ALL, &argv_[0]);
 #else

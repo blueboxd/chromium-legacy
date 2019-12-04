@@ -18,8 +18,8 @@
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/prefs/pref_member.h"
 #include "content/public/browser/reload_type.h"
-#include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace user_prefs {
@@ -87,9 +87,9 @@ class NetErrorTabHelper
     return dns_probe_status_;
   }
 
-  content::WebContentsFrameBindingSet<chrome::mojom::NetworkDiagnostics>&
-  network_diagnostics_bindings_for_testing() {
-    return network_diagnostics_bindings_;
+  content::WebContentsFrameReceiverSet<chrome::mojom::NetworkDiagnostics>&
+  network_diagnostics_receivers_for_testing() {
+    return network_diagnostics_receivers_;
   }
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
@@ -122,10 +122,10 @@ class NetErrorTabHelper
   virtual void DownloadPageLaterHelper(const GURL& url);
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
-  content::WebContentsFrameBindingSet<chrome::mojom::NetworkDiagnostics>
-      network_diagnostics_bindings_;
-  content::WebContentsFrameBindingSet<chrome::mojom::NetworkEasterEgg>
-      network_easter_egg_bindings_;
+  content::WebContentsFrameReceiverSet<chrome::mojom::NetworkDiagnostics>
+      network_diagnostics_receivers_;
+  content::WebContentsFrameReceiverSet<chrome::mojom::NetworkEasterEgg>
+      network_easter_egg_receivers_;
 
   // True if the last provisional load that started was for an error page.
   bool is_error_page_;

@@ -331,32 +331,42 @@ void BrowsingHistoryHandler::HandleQueryHistoryContinuation(
 }
 
 void BrowsingHistoryHandler::HandleRemoveVisits(const base::ListValue* args) {
-  std::vector<BrowsingHistoryService::HistoryEntry> items_to_remove;
-  items_to_remove.reserve(args->GetSize());
-  for (auto it = args->begin(); it != args->end(); ++it) {
-    const base::DictionaryValue* deletion = nullptr;
-    base::string16 url;
-    const base::ListValue* timestamps = nullptr;
+  CHECK(args->GetList().size() == 2);
+  const base::Value& callback_id = args->GetList()[0];
+  CHECK(remove_visits_callback_.empty());
+  remove_visits_callback_ = callback_id.GetString();
 
+  std::vector<BrowsingHistoryService::HistoryEntry> items_to_remove;
+  const base::Value& items = args->GetList()[1];
+  base::Value::ConstListView list = items.GetList();
+  items_to_remove.reserve(list.size());
+  for (size_t i = 0; i < list.size(); ++i) {
     // Each argument is a dictionary with properties "url" and "timestamps".
-    if (!(it->GetAsDictionary(&deletion) && deletion->GetString("url", &url) &&
-          deletion->GetList("timestamps", &timestamps))) {
+    if (!list[i].is_dict()) {
       NOTREACHED() << "Unable to extract arguments";
       return;
     }
-    DCHECK_GT(timestamps->GetSize(), 0U);
-    BrowsingHistoryService::HistoryEntry entry;
-    entry.url = GURL(url);
 
-    double timestamp;
-    for (auto ts_iterator = timestamps->begin();
-         ts_iterator != timestamps->end(); ++ts_iterator) {
-      if (!ts_iterator->GetAsDouble(&timestamp)) {
+    const std::string* url_ptr = list[i].FindStringKey("url");
+    const base::Value* timestamps_ptr = list[i].FindListKey("timestamps");
+    if (!url_ptr || !timestamps_ptr) {
+      NOTREACHED() << "Unable to extract arguments";
+      return;
+    }
+
+    base::Value::ConstListView timestamps = timestamps_ptr->GetList();
+    DCHECK_GT(timestamps.size(), 0U);
+    BrowsingHistoryService::HistoryEntry entry;
+    entry.url = GURL(*url_ptr);
+
+    for (size_t ts_index = 0; ts_index < timestamps.size(); ++ts_index) {
+      if (!timestamps[ts_index].is_double() && !timestamps[ts_index].is_int()) {
         NOTREACHED() << "Unable to extract visit timestamp.";
         continue;
       }
 
-      base::Time visit_time = base::Time::FromJsTime(timestamp);
+      base::Time visit_time =
+          base::Time::FromJsTime(timestamps[ts_index].GetDouble());
       entry.all_timestamps.insert(visit_time.ToInternalValue());
     }
 
@@ -417,11 +427,16 @@ void BrowsingHistoryHandler::OnQueryComplete(
 }
 
 void BrowsingHistoryHandler::OnRemoveVisitsComplete() {
-  web_ui()->CallJavascriptFunctionUnsafe("deleteComplete");
+  CHECK(!remove_visits_callback_.empty());
+  ResolveJavascriptCallback(base::Value(remove_visits_callback_),
+                            base::Value());
+  remove_visits_callback_.clear();
 }
 
 void BrowsingHistoryHandler::OnRemoveVisitsFailed() {
-  web_ui()->CallJavascriptFunctionUnsafe("deleteFailed");
+  CHECK(!remove_visits_callback_.empty());
+  RejectJavascriptCallback(base::Value(remove_visits_callback_), base::Value());
+  remove_visits_callback_.clear();
 }
 
 void BrowsingHistoryHandler::HistoryDeleted() {

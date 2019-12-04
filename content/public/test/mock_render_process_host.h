@@ -29,8 +29,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/network_isolation_key.h"
-#include "services/service_manager/public/cpp/identity.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 
 #if defined(OS_ANDROID)
 #include "content/public/browser/android/child_process_importance.h"
@@ -143,10 +141,7 @@ class MockRenderProcessHost : public RenderProcessHost {
       const WebRtcRtpPacketCallback& packet_callback) override;
   void EnableWebRtcEventLogOutput(int lid, int output_period_ms) override;
   void DisableWebRtcEventLogOutput(int lid) override;
-  void BindInterface(const std::string& interface_name,
-                     mojo::ScopedMessagePipeHandle interface_pipe) override;
   void BindReceiver(mojo::GenericPendingReceiver receiver) override;
-  const service_manager::Identity& GetChildIdentity() override;
   std::unique_ptr<base::PersistentMemoryAllocator> TakeMetricsAllocator()
       override;
   const base::TimeTicks& GetInitTimeForNavigationMetrics() override;
@@ -166,8 +161,8 @@ class MockRenderProcessHost : public RenderProcessHost {
       const net::NetworkIsolationKey& network_isolation_key,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
           header_client,
-      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
-      override;
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
+      network::mojom::URLLoaderFactoryOverridePtr factory_override) override;
 
   bool MayReuseHost() override;
   bool IsUnused() override;
@@ -293,7 +288,6 @@ class MockRenderProcessHost : public RenderProcessHost {
   int foreground_service_worker_count_;
   std::unique_ptr<mojo::AssociatedRemote<mojom::Renderer>> renderer_interface_;
   std::map<std::string, InterfaceBinder> binder_overrides_;
-  service_manager::Identity child_identity_;
   bool is_renderer_locked_to_site_ = false;
   network::mojom::URLLoaderFactory* url_loader_factory_;
   mojo::PendingReceiver<blink::mojom::CacheStorage> cache_storage_receiver_;

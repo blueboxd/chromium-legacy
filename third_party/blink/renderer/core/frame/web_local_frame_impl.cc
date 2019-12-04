@@ -964,7 +964,7 @@ void WebLocalFrameImpl::ReloadImage(const WebNode& web_node) {
   hit_test_result.SetInnerNode(node);
   hit_test_result.SetToShadowHostIfInRestrictedShadowRoot();
   node = hit_test_result.InnerNodeOrImageMapImage();
-  if (auto* image_element = ToHTMLImageElementOrNull(*node))
+  if (auto* image_element = DynamicTo<HTMLImageElement>(*node))
     image_element->ForceReload();
 }
 
@@ -2398,7 +2398,7 @@ void WebLocalFrameImpl::CopyImageAt(const WebPoint& pos_in_viewport) {
 void WebLocalFrameImpl::SaveImageAt(const WebPoint& pos_in_viewport) {
   Node* node = HitTestResultForVisualViewportPos(pos_in_viewport)
                    .InnerNodeOrImageMapImage();
-  if (!node || !(IsA<HTMLCanvasElement>(*node) || IsHTMLImageElement(*node)))
+  if (!node || !(IsA<HTMLCanvasElement>(*node) || IsA<HTMLImageElement>(*node)))
     return;
 
   String url = To<Element>(*node).ImageSourceURL();

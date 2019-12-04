@@ -46,6 +46,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "ipc/ipc_sync_channel.h"
 #include "media/base/localized_strings.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_module.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
@@ -110,7 +111,8 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
     cache_stats_recorder_->RecordCacheStats(stats.capacity, stats.size);
   }
 
-  chrome::mojom::CacheStatsRecorderAssociatedPtr cache_stats_recorder_;
+  mojo::AssociatedRemote<chrome::mojom::CacheStatsRecorder>
+      cache_stats_recorder_;
 
   base::WeakPtrFactory<RendererResourceDelegate> weak_factory_{this};
 

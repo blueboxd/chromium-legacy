@@ -252,6 +252,15 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
           "Permissions.Prompt." + decision_string + ".PriorIgnoreCount." +
               PermissionUtil::GetPermissionString(content_settings_type),
           0, 1);
+#if defined(OS_ANDROID)
+      histograms.ExpectUniqueSample(
+          "Permissions.Prompt.Disposition.ModalDialog",
+          static_cast<int>(action.value()), 1);
+#else
+      histograms.ExpectUniqueSample(
+          "Permissions.Prompt.Disposition.AnchoredBubble",
+          static_cast<int>(action.value()), 1);
+#endif
     }
 
     EXPECT_EQ(decision, permission_context.GetContentSettingFromMap(url, url));
@@ -275,6 +284,16 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
                 static_cast<int64_t>(content_settings_type));
       EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "Action"),
                 static_cast<int64_t>(action.value()));
+
+#if defined(OS_ANDROID)
+      EXPECT_EQ(
+          *ukm_recorder.GetEntryMetric(entry, "PromptDisposition"),
+          static_cast<int64_t>(PermissionPromptDisposition::MODAL_DIALOG));
+#else
+      EXPECT_EQ(
+          *ukm_recorder.GetEntryMetric(entry, "PromptDisposition"),
+          static_cast<int64_t>(PermissionPromptDisposition::ANCHORED_BUBBLE));
+#endif
     }
   }
 

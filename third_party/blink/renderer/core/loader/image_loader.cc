@@ -389,10 +389,11 @@ static void ConfigureRequest(
     params.SetFetchImportanceMode(importance_mode);
   }
 
+  auto* html_image_element = DynamicTo<HTMLImageElement>(element);
   if (client_hints_preferences.ShouldSend(
           mojom::WebClientHintsType::kResourceWidth) &&
-      IsHTMLImageElement(element))
-    params.SetResourceWidth(ToHTMLImageElement(element).GetResourceWidth());
+      html_image_element)
+    params.SetResourceWidth(html_image_element->GetResourceWidth());
 }
 
 inline void ImageLoader::DispatchErrorEvent() {
@@ -522,7 +523,7 @@ void ImageLoader::DoUpdateFromElement(
     if (update_behavior != kUpdateForcedReload &&
         lazy_image_load_state_ == LazyImageLoadState::kNone) {
       const auto* frame = document.GetFrame();
-      if (auto* html_image = ToHTMLImageElementOrNull(GetElement())) {
+      if (auto* html_image = DynamicTo<HTMLImageElement>(GetElement())) {
         switch (LazyImageHelper::DetermineEligibilityAndTrackVisibilityMetrics(
             *frame, html_image, params.Url())) {
           case LazyImageHelper::Eligibility::kEnabledFullyDeferred:
@@ -557,7 +558,7 @@ void ImageLoader::DoUpdateFromElement(
     // handling needed for them.
     // TODO(rajendrant): Disable subresource redirect when CORS,
     // content-security-policy does not allow cross-origin accesses.
-    if (auto* html_image = ToHTMLImageElementOrNull(GetElement())) {
+    if (auto* html_image = DynamicTo<HTMLImageElement>(GetElement())) {
       if (base::FeatureList::IsEnabled(blink::features::kSubresourceRedirect) &&
           html_image->ElementCreatedByParser() &&
           GetNetworkStateNotifier().SaveDataEnabled()) {
@@ -826,14 +827,15 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
   // TODO(loonybear): support image policies on other images in addition to
   // HTMLImageElement.
   // crbug.com/930281
+  auto* html_image_element = DynamicTo<HTMLImageElement>(element_.Get());
   if (CheckForUnoptimizedImagePolicy(element_->GetDocument(), image_content_) &&
-      IsHTMLImageElement(element_))
-    ToHTMLImageElement(element_.Get())->SetImagePolicyViolated();
+      html_image_element)
+    html_image_element->SetImagePolicyViolated();
 
   DispatchDecodeRequestsIfComplete();
 
-  if (auto* html_image = ToHTMLImageElementOrNull(GetElement()))
-    LazyImageHelper::RecordMetricsOnLoadFinished(html_image);
+  if (html_image_element)
+    LazyImageHelper::RecordMetricsOnLoadFinished(html_image_element);
 
   if (loading_image_document_) {
     CHECK(!pending_load_event_.IsActive());

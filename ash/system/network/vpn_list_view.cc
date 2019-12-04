@@ -263,6 +263,8 @@ void VPNListNetworkEntry::UpdateFromNetworkState(
     if (IsVpnConfigAllowed()) {
       disconnect_button_ = TrayPopupUtils::CreateTrayPopupButton(
           this, l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_VPN_DISCONNECT));
+      disconnect_button_->SetAccessibleName(l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_DISCONNECT_BUTTON_A11Y_LABEL, label));
       AddRightView(disconnect_button_);
     }
     tri_view()->SetContainerBorder(
@@ -270,8 +272,21 @@ void VPNListNetworkEntry::UpdateFromNetworkState(
         views::CreateEmptyBorder(
             0, kTrayPopupButtonEndMargin - kTrayPopupLabelHorizontalPadding, 0,
             kTrayPopupButtonEndMargin));
+    SetAccessibleName(l10n_util::GetStringFUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_A11Y_LABEL_OPEN_WITH_CONNECTION_STATUS,
+        label,
+        l10n_util::GetStringUTF16(
+            IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED)));
   } else if (vpn->connection_state == ConnectionStateType::kConnecting) {
+    SetAccessibleName(l10n_util::GetStringFUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_A11Y_LABEL_OPEN_WITH_CONNECTION_STATUS,
+        label,
+        l10n_util::GetStringUTF16(
+            IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTING)));
     owner_->SetupConnectingScrollListItem(this);
+  } else {
+    SetAccessibleName(l10n_util::GetStringFUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_A11Y_LABEL_CONNECT, label));
   }
 
   Layout();

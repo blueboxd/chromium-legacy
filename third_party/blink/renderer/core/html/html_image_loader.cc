@@ -59,7 +59,7 @@ void HTMLImageLoader::NoImageResourceToLoad() {
   if (To<HTMLElement>(GetElement())->AltText().IsEmpty())
     return;
 
-  if (auto* image = ToHTMLImageElementOrNull(GetElement()))
+  if (auto* image = DynamicTo<HTMLImageElement>(GetElement()))
     image->EnsureCollapsedOrFallbackContent();
   else if (auto* input = ToHTMLInputElementOrNull(GetElement()))
     input->EnsureFallbackContent();
@@ -71,7 +71,7 @@ void HTMLImageLoader::ImageNotifyFinished(ImageResourceContent*) {
   ImageLoader::ImageNotifyFinished(cached_image);
 
   bool load_error = cached_image->ErrorOccurred();
-  if (auto* image = ToHTMLImageElementOrNull(*element)) {
+  if (auto* image = DynamicTo<HTMLImageElement>(*element)) {
     if (load_error)
       image->EnsureCollapsedOrFallbackContent();
     else

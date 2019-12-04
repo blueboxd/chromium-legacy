@@ -1030,6 +1030,7 @@ crbug.com/714962 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/mult
 crbug.com/714962 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-width-large-002.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-width-small-001.xht [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-zero-height-001.xht [ Failure ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/nested-with-too-tall-line.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/abspos-after-break-after.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/abspos-new-width-rebalance.html [ Crash Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/balance-float-after-forced-break.html [ Failure ]
@@ -3979,14 +3980,15 @@ crbug.com/636055 external/wpt/css/css-multicol/multicol-span-all-margin-nested-0
 crbug.com/990240 external/wpt/css/css-multicol/multicol-span-all-rule-001.html [ Failure ]
 crbug.com/792446 external/wpt/css/css-multicol/multicol-span-float-001.xht [ Failure ]
 crbug.com/964183 external/wpt/css/css-multicol/multicol-width-005.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-multicol/nested-with-too-tall-line.html [ Failure ]
 
 crbug.com/796961 external/wpt/css/css-pseudo/marker-content-002.html [ Failure ]
 crbug.com/796961 external/wpt/css/css-pseudo/marker-content-005.html [ Failure ]
-crbug.com/457718 external/wpt/css/css-pseudo/marker-content-007.html [ Failure ]
-crbug.com/457718 external/wpt/css/css-pseudo/marker-content-008.html [ Failure ]
-crbug.com/457718 external/wpt/css/css-pseudo/marker-content-009.html [ Failure ]
+crbug.com/457718 external/wpt/css/css-pseudo/marker-content-007.tentative.html [ Failure ]
+crbug.com/457718 external/wpt/css/css-pseudo/marker-content-008.tentative.html [ Failure ]
+crbug.com/457718 external/wpt/css/css-pseudo/marker-content-009.tentative.html [ Failure ]
 crbug.com/457718 external/wpt/css/css-pseudo/marker-content-010.html [ Failure ]
-crbug.com/457718 external/wpt/css/css-pseudo/marker-content-011.html [ Failure ]
+crbug.com/457718 external/wpt/css/css-pseudo/marker-content-011.tentative.html [ Failure ]
 crbug.com/457718 external/wpt/css/css-pseudo/marker-font-variant-numeric-normal.html [ Failure ]
 crbug.com/457718 external/wpt/css/css-pseudo/marker-list-style-position.html [ Failure ]
 
@@ -5720,8 +5722,6 @@ crbug.com/979298 [ Mac ] virtual/audio-service/media/controls/volumechange-muted
 crbug.com/988248 [ Mac Linux ] virtual/audio-service/media/video-persistence.html [ Pass Failure ]
 crbug.com/979298 [ Mac ] virtual/audio-service/media/video-zoom.html [ Pass Failure ]
 
-crbug.com/986019 virtual/threaded-no-composited-antialiasing/animations/play-state.html [ Pass Failure ]
-
 crbug.com/996219 [ Win ] virtual/text-antialias/emoji-vertical-origin-visual.html [ Failure ]
 
 crbug.com/996597 [ Win ] css2.1/t0905-c5525-flthw-00-c-g.html [ Failure ]
@@ -6032,8 +6032,8 @@ crbug.com/993790 external/wpt/document-policy/required-policy/required-document-
 
 # Temporary suppression to allow devtools-frontend changes
 crbug.com/1025667 http/tests/devtools/inspector-backend-commands.js [ Pass Failure ]
-crbug.com/1029031 http/tests/devtools/user-agent-setting-major-version.js [ Pass Failure ]
 crbug.com/1029489 http/tests/devtools/elements/elements-linkify-attributes.js [ Pass Failure ]
+crbug.com/1030258 http/tests/devtools/resource-har-conversion.js [ Pass Failure ]
 crbug.com/1029521 virtual/threaded/external/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Pass Failure Timeout ]
 crbug.com/1029541 virtual/threaded/external/wpt/web-animations/timing-model/animations/reverse-running-animation.html [ Pass Failure ]
 

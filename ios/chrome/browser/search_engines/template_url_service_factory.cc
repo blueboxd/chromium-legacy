@@ -49,7 +49,6 @@ std::unique_ptr<KeyedService> BuildTemplateURLService(
       std::make_unique<ios::TemplateURLServiceClientImpl>(
           ios::HistoryServiceFactory::GetForBrowserState(
               browser_state, ServiceAccessType::EXPLICIT_ACCESS)),
-      GetApplicationContext()->GetRapporServiceImpl(),
       GetDefaultSearchProviderChangedCallback());
 }
 

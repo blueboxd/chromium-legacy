@@ -19,9 +19,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
-#include "chrome/browser/policy/browser_dm_token_storage.h"
-#include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/dm_token_utils.h"
 #include "chrome/browser/safe_browsing/download_protection/check_client_download_request.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/policy/core/browser/url_blacklist_manager.h"
@@ -46,12 +45,6 @@ const base::Feature kDeepScanningOfUploadsUI{
     "SafeBrowsingDeepScanningOfUploadsUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace {
-
-policy::DMToken* GetDMTokenForTestingStorage() {
-  static policy::DMToken dm_token_storage =
-      policy::DMToken::CreateEmptyTokenForTesting();
-  return &dm_token_storage;
-}
 
 // Global pointer of factory function (RepeatingCallback) used to create
 // instances of DeepScanningDialogDelegate in tests.  !is_null() only in tests.
@@ -321,7 +314,7 @@ bool DeepScanningDialogDelegate::IsEnabled(Profile* profile,
     return false;
 
   // If there's no valid DM token, the upload will fail.
-  if (!GetDMToken().is_valid())
+  if (!GetDMToken(profile).is_valid())
     return false;
 
   // See if content compliance checks are needed.
@@ -417,12 +410,6 @@ void DeepScanningDialogDelegate::ShowForWebContents(
 // static
 void DeepScanningDialogDelegate::SetFactoryForTesting(Factory factory) {
   *GetFactoryStorage() = factory;
-}
-
-// static
-void DeepScanningDialogDelegate::SetDMTokenForTesting(
-    const policy::DMToken& dm_token) {
-  *GetDMTokenForTestingStorage() = dm_token;
 }
 
 DeepScanningDialogDelegate::DeepScanningDialogDelegate(
@@ -526,25 +513,6 @@ void DeepScanningDialogDelegate::FileRequestCallback(
                      response));
 }
 
-// static
-policy::DMToken DeepScanningDialogDelegate::GetDMToken() {
-  policy::DMToken dm_token = *GetDMTokenForTestingStorage();
-
-#if !defined(OS_CHROMEOS)
-  // This is not compiled on chromeos because
-  // ChromeBrowserCloudManagementController does not exist.  Also,
-  // policy::BrowserDMTokenStorage::Get()->RetrieveDMToken() does not return a
-  // valid token either.  Once these are fixed the #if !defined can be removed.
-
-  if (dm_token.is_empty() &&
-      policy::ChromeBrowserCloudManagementController::IsEnabled()) {
-    dm_token = policy::BrowserDMTokenStorage::Get()->RetrieveDMToken();
-  }
-#endif
-
-  return dm_token;
-}
-
 bool DeepScanningDialogDelegate::UploadData() {
   upload_start_time_ = base::TimeTicks::Now();
   if (data_.do_dlp_scan) {
@@ -605,7 +573,9 @@ void DeepScanningDialogDelegate::PrepareRequest(
     request->set_request_malware_scan(std::move(malware_request));
   }
 
-  request->set_dm_token(GetDMToken().value());
+  request->set_dm_token(GetDMToken(Profile::FromBrowserContext(
+                                       web_contents_->GetBrowserContext()))
+                            .value());
 }
 
 void DeepScanningDialogDelegate::FillAllResultsWith(bool status) {

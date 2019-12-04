@@ -1012,15 +1012,6 @@ class CONTENT_EXPORT ContentBrowserClient {
       const std::string& interface_name,
       mojo::ScopedInterfaceEndpointHandle* handle);
 
-  // Content was unable to bind a request for this interface, so the embedder
-  // should try. This is called for interface requests from dedicated, shared
-  // and service workers.
-  virtual void BindInterfaceRequestFromWorker(
-      RenderProcessHost* render_process_host,
-      const url::Origin& origin,
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle interface_pipe) {}
-
   // Handles an unhandled incoming interface binding request from the GPU
   // process. Called on the IO thread.
   virtual void BindGpuHostReceiver(mojo::GenericPendingReceiver receiver) {}
@@ -1256,6 +1247,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Allows the embedder to intercept URLLoaderFactory interfaces used for
   // navigation or being brokered on behalf of a renderer fetching subresources.
   //
+  // The parameters for URLLoaderFactory creation, namely |header_client| and
+  // |factory_override|, are used in the network service where the resulting
+  // factory is bound to |factory_receiver|. Note that |factory_receiver| that's
+  // passed to the network service might be different from the original factory
+  // receiver that was given to the embedder if the embedder had replaced it.
+  //
   // |frame| is nullptr for kWorkerSubResource, kServiceWorkerSubResource and
   // kServiceWorkerScript.
   // For kNavigation type, it's the RenderFrameHost the navigation might commit
@@ -1282,10 +1279,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // TODO(lukasza): https://crbug.com/888079: Ensure that |request_initiator| is
   // always accurate.
   //
-  // |*factory_request| is always valid upon entry and MUST be valid upon
-  // return. The embedder may swap out the value of |*factory_request| for its
+  // |*factory_receiver| is always valid upon entry and MUST be valid upon
+  // return. The embedder may swap out the value of |*factory_receiver| for its
   // own, in which case it must return |true| to indicate that it's proxying
-  // requests for the URLLoaderFactory. Otherwise |*factory_request| is left
+  // requests for the URLLoaderFactory. Otherwise |*factory_receiver| is left
   // unmodified and this must return |false|.
   //
   // |header_client| may be bound within this call. This can be used in
@@ -1293,6 +1290,22 @@ class CONTENT_EXPORT ContentBrowserClient {
   //
   // |bypass_redirect_checks| will be set to true when the embedder will be
   // handling redirect security checks.
+  //
+  // |factory_override| gives the embedder a chance to replace the Network
+  // Service's internal URLLoaderFactory used by security features such as CORS.
+  // The point is to allow the embedder to override network behavior without
+  // losing the security features of the Network Service. The embedder should
+  // use |factory_override| instead of swapping out |*factory_receiver| if such
+  // security features are desired.
+  //
+  // Prefer |factory_receiver| to this parameter if both work, as it is less
+  // error-prone.
+  //
+  // |factory_override| may be nullptr when this WillCreateURLLoaderFactory()
+  // call is for a factory that will be used for requests where such security
+  // features are no-op (e.g., for navigations). Otherwise, |*factory_override|
+  // is nullptr by default, and the embedder can elect to set
+  // |*factory_override| to a valid override.
   //
   // Always called on the UI thread.
   enum class URLLoaderFactoryType {
@@ -1320,7 +1333,8 @@ class CONTENT_EXPORT ContentBrowserClient {
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
           header_client,
-      bool* bypass_redirect_checks);
+      bool* bypass_redirect_checks,
+      network::mojom::URLLoaderFactoryOverridePtr* factory_override);
 
   // Returns true when the embedder wants to intercept a websocket connection.
   virtual bool WillInterceptWebSocket(RenderFrameHost* frame);

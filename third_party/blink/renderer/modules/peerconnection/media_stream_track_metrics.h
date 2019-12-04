@@ -10,7 +10,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/sequence_checker.h"
+#include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -99,7 +99,7 @@ class MODULES_EXPORT MediaStreamTrackMetrics {
 
   webrtc::PeerConnectionInterface::IceConnectionState ice_state_;
 
-  SEQUENCE_CHECKER(sequence_checker_);
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamTrackMetrics);
 };

@@ -275,8 +275,8 @@ void TranslateBubbleView::Init() {
     before_translate_view_ = tab_translate_view_;
     translating_view_ = tab_translate_view_;
     after_translate_view_ = tab_translate_view_;
-    advanced_view_source_ = AddChildView(TabUiCreateViewAdvanedSource());
-    advanced_view_target_ = AddChildView(TabUiCreateViewAdvanedTarget());
+    advanced_view_source_ = AddChildView(TabUiCreateViewAdvancedSource());
+    advanced_view_target_ = AddChildView(TabUiCreateViewAdvancedTarget());
     error_view_ = AddChildView(CreateViewErrorTab());
   } else {
     before_translate_view_ = AddChildView(CreateViewBeforeTranslate());
@@ -325,6 +325,13 @@ void TranslateBubbleView::ButtonPressed(views::Button* sender,
       views::Checkbox* always_checkbox = GetAlwaysTranslateCheckbox();
       DCHECK(always_checkbox);
       should_always_translate_ = always_checkbox->GetChecked();
+      // In the tab UI the always translate button should apply immediately
+      // except for in an advanced view.
+      if (bubble_ui_model_ == language::TranslateUIBubbleModel::TAB &&
+          model_->GetViewState() !=
+              TranslateBubbleModel::VIEW_STATE_SOURCE_LANGUAGE) {
+        model_->SetAlwaysTranslate(should_always_translate_);
+      }
       translate::ReportUiAction(should_always_translate_
                                     ? translate::ALWAYS_TRANSLATE_CHECKED
                                     : translate::ALWAYS_TRANSLATE_UNCHECKED);
@@ -758,8 +765,12 @@ void TranslateBubbleView::UpdateChildVisibilities() {
   // Update the state of the always translate checkbox
   if (advanced_always_translate_checkbox_)
     advanced_always_translate_checkbox_->SetChecked(should_always_translate_);
-  if (before_always_translate_checkbox_)
+  if (before_always_translate_checkbox_) {
+    before_always_translate_checkbox_->SetText(l10n_util::GetStringFUTF16(
+        IDS_TRANSLATE_BUBBLE_ALWAYS_TRANSLATE_LANG,
+        model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex())));
     before_always_translate_checkbox_->SetChecked(should_always_translate_);
+  }
   for (views::View* view : children())
     view->SetVisible(view == GetCurrentView());
 
@@ -892,8 +903,12 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewTab() {
       l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_OPTIONS_MENU_BUTTON));
   tab_translate_options_button->set_request_focus_on_press(true);
 
-  constexpr int kColumnSetId = 0;
-  views::ColumnSet* cs = layout->AddColumnSet(kColumnSetId);
+  enum {
+    COLUMN_SET_ID_TABS,
+    COLUMN_SET_ID_ALWAYS_CHECKBOX,
+  };
+
+  views::ColumnSet* cs = layout->AddColumnSet(COLUMN_SET_ID_TABS);
   if (!UseGoogleTranslateBranding()) {
     // Column and padding for the optional translate icon.
     cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
@@ -918,7 +933,12 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewTab() {
                 views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
                 0);
 
-  layout->StartRow(1, kColumnSetId);
+  cs = layout->AddColumnSet(COLUMN_SET_ID_ALWAYS_CHECKBOX);
+  cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
+                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
+                0);
+
+  layout->StartRow(1, COLUMN_SET_ID_TABS);
   if (!UseGoogleTranslateBranding()) {
     // If the bottom branding isn't showing, display the leading translate icon
     // otherwise it's not obvious what the bubble is about. This should only
@@ -940,6 +960,29 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewTab() {
   tabbed_pane_->AddTab(original_language_name, CreateEmptyPane());
   tabbed_pane_->AddTab(target_language_name, CreateEmptyPane());
   tabbed_pane_->set_listener(this);
+
+  // Don't show the the always translate checkbox if the original language is
+  // unknown.
+  auto original_language =
+      model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex());
+  if (model_->ShouldShowAlwaysTranslateShortcut() &&
+      !original_language.empty()) {
+    layout->AddPaddingRow(
+        views::GridLayout::kFixedSize,
+        provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL) +
+            4);
+    layout->StartRow(views::GridLayout::kFixedSize,
+                     COLUMN_SET_ID_ALWAYS_CHECKBOX);
+    auto before_always_translate_checkbox = std::make_unique<views::Checkbox>(
+        l10n_util::GetStringFUTF16(
+            IDS_TRANSLATE_BUBBLE_ALWAYS_TRANSLATE_LANG,
+            model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex())),
+        this);
+    before_always_translate_checkbox->SetID(BUTTON_ID_ALWAYS_TRANSLATE);
+    before_always_translate_checkbox_ =
+        layout->AddView(std::move(before_always_translate_checkbox));
+    layout->AddPaddingRow(views::GridLayout::kFixedSize, 2);
+  }
 
   return view;
 }
@@ -1258,7 +1301,7 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvanced() {
 }
 
 std::unique_ptr<views::View>
-TranslateBubbleView::TabUiCreateViewAdvanedSource() {
+TranslateBubbleView::TabUiCreateViewAdvancedSource() {
   // Bubble title
   std::unique_ptr<views::Label> source_language_title_label =
       std::make_unique<views::Label>(
@@ -1277,6 +1320,17 @@ TranslateBubbleView::TabUiCreateViewAdvanedSource() {
   auto source_language_combobox =
       std::make_unique<views::Combobox>(source_language_combobox_model_.get());
 
+  // In an incognito window or when the source language is unknown, "Always
+  // translate" checkbox shouldn't be shown.
+  std::unique_ptr<views::Checkbox> advanced_always_translate_checkbox;
+  auto original_language =
+      model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex());
+  if (!is_in_incognito_window_ && !original_language.empty()) {
+    advanced_always_translate_checkbox = std::make_unique<views::Checkbox>(
+        l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ALWAYS), this);
+    advanced_always_translate_checkbox->SetID(BUTTON_ID_ALWAYS_TRANSLATE);
+  }
+
   source_language_combobox->SetID(COMBOBOX_ID_SOURCE_LANGUAGE);
   source_language_combobox->set_listener(this);
   source_language_combobox_ = source_language_combobox.get();
@@ -1289,11 +1343,12 @@ TranslateBubbleView::TabUiCreateViewAdvanedSource() {
 
   return CreateViewAdvancedTabUi(std::move(source_language_combobox),
                                  std::move(source_language_title_label),
-                                 std::move(advanced_done_button));
+                                 std::move(advanced_done_button),
+                                 std::move(advanced_always_translate_checkbox));
 }
 
 std::unique_ptr<views::View>
-TranslateBubbleView::TabUiCreateViewAdvanedTarget() {
+TranslateBubbleView::TabUiCreateViewAdvancedTarget() {
   // Bubble title
   std::unique_ptr<views::Label> target_language_title_label =
       std::make_unique<views::Label>(
@@ -1321,13 +1376,14 @@ TranslateBubbleView::TabUiCreateViewAdvanedTarget() {
 
   return CreateViewAdvancedTabUi(std::move(target_language_combobox),
                                  std::move(target_language_title_label),
-                                 std::move(advanced_done_button));
+                                 std::move(advanced_done_button), nullptr);
 }
 
 std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
     std::unique_ptr<views::Combobox> combobox,
     std::unique_ptr<views::Label> language_title_label,
-    std::unique_ptr<views::Button> advanced_done_button) {
+    std::unique_ptr<views::Button> advanced_done_button,
+    std::unique_ptr<views::Checkbox> advanced_always_translate_checkbox) {
   const int language_icon_id = IDR_TRANSLATE_BUBBLE_ICON;
   std::unique_ptr<views::ImageView> language_icon =
       std::make_unique<views::ImageView>();
@@ -1340,7 +1396,12 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
   views::GridLayout* layout =
       view->SetLayoutManager(std::make_unique<views::GridLayout>());
 
-  enum { COLUMN_SET_ID_TITLE, COLUMN_SET_ID_LANGUAGES, COLUMN_SET_ID_BUTTONS };
+  enum {
+    COLUMN_SET_ID_TITLE,
+    COLUMN_SET_ID_LANGUAGES,
+    COLUMN_SET_ID_ALWAYS_CHECKBOX,
+    COLUMN_SET_ID_BUTTONS
+  };
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
@@ -1381,6 +1442,22 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
 
+  cs = layout->AddColumnSet(COLUMN_SET_ID_ALWAYS_CHECKBOX);
+  if (!UseGoogleTranslateBranding()) {
+    cs->AddPaddingColumn(views::GridLayout::kFixedSize,
+                         language_icon->CalculatePreferredSize().width());
+    cs->AddPaddingColumn(views::GridLayout::kFixedSize,
+                         provider->GetDistanceMetric(
+                             views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
+    cs->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
+                  views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
+                  0);
+  } else {
+    cs->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
+                  views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
+                  0);
+  }
+
   cs = layout->AddColumnSet(COLUMN_SET_ID_BUTTONS);
   cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
                 views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
@@ -1402,9 +1479,9 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
 
   layout->StartRow(views::GridLayout::kFixedSize, COLUMN_SET_ID_TITLE);
   if (!UseGoogleTranslateBranding()) {
-    // If the bottom branding isn't showing, display the leading translate icon
-    // otherwise it's not obvious what the bubble is about. This should only
-    // happen on non-Chrome-branded builds.
+    // If the bottom branding isn't showing, display the leading translate
+    // icon otherwise it's not obvious what the bubble is about. This should
+    // only happen on non-Chrome-branded builds.
     layout->AddView(std::move(language_icon));
   }
   const int vertical_spacing =
@@ -1417,6 +1494,15 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
 
   layout->StartRow(views::GridLayout::kFixedSize, COLUMN_SET_ID_LANGUAGES);
   layout->AddView(std::move(combobox));
+
+  if (advanced_always_translate_checkbox) {
+    layout->AddPaddingRow(views::GridLayout::kFixedSize, vertical_spacing);
+    layout->StartRow(views::GridLayout::kFixedSize,
+                     COLUMN_SET_ID_ALWAYS_CHECKBOX);
+    advanced_always_translate_checkbox_ =
+        layout->AddView(std::move(advanced_always_translate_checkbox));
+  }
+
   layout->AddPaddingRow(views::GridLayout::kFixedSize, vertical_spacing * 3);
 
   layout->StartRow(views::GridLayout::kFixedSize, COLUMN_SET_ID_BUTTONS);
@@ -1447,10 +1533,18 @@ bool TranslateBubbleView::TabUiIsEquivalentState(
 }
 
 views::Checkbox* TranslateBubbleView::GetAlwaysTranslateCheckbox() {
-  if (model_->GetViewState() == TranslateBubbleModel::VIEW_STATE_ADVANCED) {
+  if (model_->GetViewState() == TranslateBubbleModel::VIEW_STATE_ADVANCED ||
+      model_->GetViewState() ==
+          TranslateBubbleModel::VIEW_STATE_SOURCE_LANGUAGE ||
+      model_->GetViewState() ==
+          TranslateBubbleModel::VIEW_STATE_TARGET_LANGUAGE) {
     return advanced_always_translate_checkbox_;
   } else if (model_->GetViewState() ==
-             TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE) {
+                 TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE ||
+             model_->GetViewState() ==
+                 TranslateBubbleModel::VIEW_STATE_TRANSLATING ||
+             model_->GetViewState() ==
+                 TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE) {
     return before_always_translate_checkbox_;
   } else {
     NOTREACHED();
@@ -1479,10 +1573,10 @@ void TranslateBubbleView::SwitchTabForViewState(
   if ((view_state == TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE ||
        view_state == TranslateBubbleModel::VIEW_STATE_TRANSLATING) &&
       tabbed_pane_->GetSelectedTabIndex() != 1) {
-    // When switching to "after" or "during" translate view from something other
-    // than user interaction, |this| needs to unregister from listening to the
-    // tabbed pane events otherwise it'll trigger an additional translation as
-    // if the user had clicked the tabs.
+    // When switching to "after" or "during" translate view from something
+    // other than user interaction, |this| needs to unregister from listening
+    // to the tabbed pane events otherwise it'll trigger an additional
+    // translation as if the user had clicked the tabs.
     tabbed_pane_->set_listener(nullptr);
     tabbed_pane_->SelectTabAt(1, false);
     tabbed_pane_->set_listener(this);

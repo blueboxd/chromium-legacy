@@ -17,12 +17,10 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
-#include "components/policy/core/common/cloud/dm_token.h"
 #include "components/safe_browsing/proto/webprotect.pb.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "url/gurl.h"
@@ -168,9 +166,6 @@ class DeepScanningDialogDelegate : public TabModalConfirmDialogDelegate {
   // DeepScanningDialogDelegates.
   static void SetFactoryForTesting(Factory factory);
 
-  // Overrides the DM token used for testing purposes.
-  static void SetDMTokenForTesting(const policy::DMToken& dm_token);
-
   // Returns true if the given file type is supported for scanning.
   static bool FileTypeSupported(const bool for_malware_scan,
                                 const bool for_dlp_scan,
@@ -197,9 +192,6 @@ class DeepScanningDialogDelegate : public TabModalConfirmDialogDelegate {
 
  private:
   class FileSourceRequest;
-
-  // Gets the device level DM token to use with deep scans.
-  static policy::DMToken GetDMToken();
 
   // Uploads data for deep scanning.  Returns true if uploading is occurring in
   // the background and false if there is nothing to do.

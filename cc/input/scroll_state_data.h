@@ -77,9 +77,13 @@ class CC_EXPORT ScrollStateData {
   // possible, we should store the scroll node.
 
   // The last scroll node to respond to a scroll, or null if none exists.
+  // TODO(bokan): This is redundant with the member below.
   ScrollNode* current_native_scrolling_node_;
   // The id of the last native element to respond to a scroll, or 0 if none
   // exists.
+  // TODO(bokan): In the compositor, this is now only used as an override to
+  // scroller targeting, i.e. we'll latch scrolling to the specified
+  // element_id. It will be renamed when the main thread is also converted.
   ElementId current_native_scrolling_element_;
 };
 

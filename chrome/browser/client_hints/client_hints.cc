@@ -28,15 +28,15 @@ ClientHints::ClientHints(content::BrowserContext* context)
     : context_(context) {}
 
 ClientHints::ClientHints(content::WebContents* tab) {
-  binding_ = std::make_unique<
-      content::WebContentsFrameBindingSet<client_hints::mojom::ClientHints>>(
+  receiver_ = std::make_unique<
+      content::WebContentsFrameReceiverSet<client_hints::mojom::ClientHints>>(
       tab, this);
 }
 
 content::BrowserContext* ClientHints::GetContext() {
   if (!context_) {
     content::RenderProcessHost* rph =
-        binding_->GetCurrentTargetFrame()->GetProcess();
+        receiver_->GetCurrentTargetFrame()->GetProcess();
     DCHECK(rph);
     context_ = rph->GetBrowserContext();
   }

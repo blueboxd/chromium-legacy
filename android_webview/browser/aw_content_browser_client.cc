@@ -12,7 +12,6 @@
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_main_parts.h"
 #include "android_webview/browser/aw_content_browser_overlay_manifest.h"
-#include "android_webview/browser/aw_content_renderer_overlay_manifest.h"
 #include "android_webview/browser/aw_contents.h"
 #include "android_webview/browser/aw_contents_client_bridge.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
@@ -703,8 +702,6 @@ base::Optional<service_manager::Manifest>
 AwContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
   if (name == content::mojom::kBrowserServiceName)
     return GetAWContentBrowserOverlayManifest();
-  if (name == content::mojom::kRendererServiceName)
-    return GetAWContentRendererOverlayManifest();
   return base::nullopt;
 }
 
@@ -977,12 +974,31 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
         header_client,
-    bool* bypass_redirect_checks) {
+    bool* bypass_redirect_checks,
+    network::mojom::URLLoaderFactoryOverridePtr* factory_override) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  auto proxied_receiver = std::move(*factory_receiver);
+  mojo::PendingReceiver<network::mojom::URLLoaderFactory> proxied_receiver;
   mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory_remote;
-  *factory_receiver = target_factory_remote.InitWithNewPipeAndPassReceiver();
+
+  if (factory_override) {
+    // We are interested in factories "inside" of CORS, so use
+    // |factory_override|.
+    *factory_override = network::mojom::URLLoaderFactoryOverride::New();
+    proxied_receiver =
+        (*factory_override)
+            ->overriding_factory.InitWithNewPipeAndPassReceiver();
+    (*factory_override)->overridden_factory_receiver =
+        target_factory_remote.InitWithNewPipeAndPassReceiver();
+  } else {
+    // In this case, |factory_override| is not given. But all callers of
+    // ContentBrowserClient::WillCreateURLLoaderFactory guarantee that
+    // |factory_override| is null only when the security features on the network
+    // service is no-op for requests coming to the URLLoaderFactory. Hence we
+    // can use |factory_receiver| here.
+    proxied_receiver = std::move(*factory_receiver);
+    *factory_receiver = target_factory_remote.InitWithNewPipeAndPassReceiver();
+  }
   int process_id =
       type == URLLoaderFactoryType::kNavigation ? 0 : render_process_id;
 

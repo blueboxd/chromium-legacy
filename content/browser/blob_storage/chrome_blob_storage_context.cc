@@ -141,6 +141,25 @@ ChromeBlobStorageContext* ChromeBlobStorageContext::GetFor(
       context, kBlobStorageContextKeyName);
 }
 
+// static
+mojo::PendingRemote<storage::mojom::BlobStorageContext>
+ChromeBlobStorageContext::GetRemoteFor(BrowserContext* browser_context) {
+  DCHECK(browser_context);
+  mojo::PendingRemote<storage::mojom::BlobStorageContext> remote;
+  auto receiver = remote.InitWithNewPipeAndPassReceiver();
+  base::PostTask(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(
+          [](scoped_refptr<ChromeBlobStorageContext> blob_storage_context,
+             mojo::PendingReceiver<storage::mojom::BlobStorageContext>
+                 receiver) {
+            blob_storage_context->BindMojoContext(std::move(receiver));
+          },
+          base::RetainedRef(ChromeBlobStorageContext::GetFor(browser_context)),
+          std::move(receiver)));
+  return remote;
+}
+
 void ChromeBlobStorageContext::InitializeOnIOThread(
     FilePath blob_storage_dir,
     scoped_refptr<base::TaskRunner> file_task_runner) {

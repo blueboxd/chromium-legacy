@@ -5,7 +5,7 @@
     .target {
       height: 100px;
       width: 100px;
-      animation-duration: 100ms;
+      animation-duration: 1000ms;
       animation-timing-function: linear;
     }
     #translate {
@@ -31,6 +31,9 @@
     }
     .paused {
       animation-play-state: paused;
+    }
+    .quick {
+      animation-duration: 100ms;
     }
   </style>
   <script src="resources/animation-test-helpers.js" type="text/javascript"></script>
@@ -83,6 +86,7 @@
       logPassFail(transform, getComputedStyle(document.getElementById('translate')).transform, 'translate', 'when paused');
       logPassFail(left, getComputedStyle(document.getElementById('left')).left, 'left', 'when paused');
       toggleClass('paused');
+      toggleClass('quick');
     }
 
     function end() {

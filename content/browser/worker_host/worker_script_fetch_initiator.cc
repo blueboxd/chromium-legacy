@@ -309,14 +309,18 @@ void WorkerScriptFetchInitiator::CreateScriptLoader(
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
         default_header_client;
     bool bypass_redirect_checks = false;
+    network::mojom::URLLoaderFactoryOverridePtr factory_override;
     GetContentClient()->browser()->WillCreateURLLoaderFactory(
         storage_partition->browser_context(), creator_render_frame_host,
         worker_process_id,
         ContentBrowserClient::URLLoaderFactoryType::kWorkerMainResource,
         *resource_request->request_initiator, &default_factory_receiver,
-        &default_header_client, &bypass_redirect_checks);
+        &default_header_client, &bypass_redirect_checks, &factory_override);
     factory_bundle_for_browser_info->set_bypass_redirect_checks(
         bypass_redirect_checks);
+
+    // TODO(nhiroki): Handle |default_header_client| correctly.
+    // TODO(nhiroki): Handle |factory_override| correctly.
 
     // TODO(nhiroki): Call
     // devtools_instrumentation::WillCreateURLLoaderFactory() here.

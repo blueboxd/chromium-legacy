@@ -25633,6 +25633,7 @@ Called by update_net_error_codes.py.-->
   <int value="3109" label="V8RTCLegacyStatsReport_Timestamp_AttributeGetter"/>
   <int value="3110" label="InputElementValueAsDateGetter"/>
   <int value="3111" label="InputElementValueAsDateSetter"/>
+  <int value="3112" label="HTMLMetaElementReferrerPolicy"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

@@ -180,7 +180,9 @@ class WebAppInstallTask : content::WebContentsObserver {
       bool is_installable);
 
   // Either dispatches an asynchronous check for whether this installation
-  // should be stopped and
+  // should be stopped and an intent to the Play Store should be made, or
+  // synchronously calls OnDidCheckForIntentToPlayStore() implicitly failing the
+  // check if it cannot be made.
   void CheckForPlayStoreIntentOrGetIcons(
       const blink::Manifest& manifest,
       std::unique_ptr<WebApplicationInfo> web_app_info,

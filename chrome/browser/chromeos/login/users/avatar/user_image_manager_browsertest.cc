@@ -570,49 +570,6 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
   EXPECT_EQ(profile_image.height(), saved_image.height());
 }
 
-IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
-                       PRE_ProfileImageDownloadDoesNotClobber) {
-  RegisterUser(test_account_id1_);
-  chromeos::StartupUtils::MarkOobeCompleted();
-}
-
-// Sets the user image to the profile image, then sets it to one of the default
-// images while the profile image download is still in progress. Verifies that
-// when the download completes, the profile image is ignored and does not
-// clobber the default image chosen in the meantime.
-// TODO(crbug.com/888784) disabled due to flaky timeouts.
-IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
-                       DISABLED_ProfileImageDownloadDoesNotClobber) {
-  const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(test_account_id1_);
-  ASSERT_TRUE(user);
-
-  const gfx::ImageSkia& default_image = default_user_image::GetDefaultImage(
-      default_user_image::kFirstDefaultImageIndex);
-
-  UserImageManagerImpl::IgnoreProfileDataDownloadDelayForTesting();
-  LoginUser(test_account_id1_);
-  UpdatePrimaryAccountInfo(ProfileHelper::Get()->GetProfileByUserUnsafe(user));
-
-  run_loop_.reset(new base::RunLoop);
-  UserImageManager* user_image_manager =
-      ChromeUserManager::Get()->GetUserImageManager(test_account_id1_);
-  user_image_manager->SaveUserImageFromProfileImage();
-  run_loop_->Run();
-
-  user_image_manager->SaveUserDefaultImageIndex(
-      default_user_image::kFirstDefaultImageIndex);
-
-  CompleteProfileImageDownload();
-
-  EXPECT_TRUE(user->HasDefaultImage());
-  EXPECT_EQ(default_user_image::kFirstDefaultImageIndex, user->image_index());
-  EXPECT_TRUE(test::AreImagesEqual(default_image, user->GetImage()));
-  ExpectUserImageInfo(test_account_id1_,
-                      default_user_image::kFirstDefaultImageIndex,
-                      base::FilePath());
-}
-
 class UserImageManagerPolicyTest : public UserImageManagerTest,
                                    public policy::CloudPolicyStore::Observer {
  protected:

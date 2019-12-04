@@ -436,6 +436,11 @@ size_t Value::EraseListValue(const Value& val) {
   return EraseListValueIf([&val](const Value& other) { return val == other; });
 }
 
+void Value::ClearList() {
+  CHECK(is_list());
+  list_.clear();
+}
+
 Value* Value::FindKey(StringPiece key) {
   return const_cast<Value*>(as_const(*this).FindKey(key));
 }

@@ -89,9 +89,9 @@ static const struct goodbad_pair {
 TEST_F(FileUtilICUTest, ReplaceIllegalCharactersInPathTest) {
   for (auto i : kIllegalCharacterCases) {
 #if defined(OS_WIN)
-    string16 bad_name(WideToUTF16(i.bad_name));
+    std::wstring bad_name = i.bad_name;
     ReplaceIllegalCharactersInPath(&bad_name, '-');
-    EXPECT_EQ(WideToUTF16(i.good_name), bad_name);
+    EXPECT_EQ(i.good_name, bad_name);
 #else
     std::string bad_name(WideToUTF8(i.bad_name));
     ReplaceIllegalCharactersInPath(&bad_name, '-');

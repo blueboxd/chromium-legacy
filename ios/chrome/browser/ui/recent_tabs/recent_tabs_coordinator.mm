@@ -7,7 +7,9 @@
 #include "base/ios/block_types.h"
 #include "base/mac/foundation_util.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/ui/commands/application_commands.h"
+#include "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_mediator.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_presentation_delegate.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
@@ -37,7 +39,6 @@
 
 @implementation RecentTabsCoordinator
 @synthesize completion = _completion;
-@synthesize dispatcher = _dispatcher;
 @synthesize mediator = _mediator;
 @synthesize recentTabsNavigationController = _recentTabsNavigationController;
 @synthesize recentTabsTransitioningDelegate = _recentTabsTransitioningDelegate;
@@ -48,9 +49,12 @@
       [[RecentTabsTableViewController alloc] init];
   recentTabsTableViewController.browserState = self.browserState;
   recentTabsTableViewController.loadStrategy = self.loadStrategy;
-  recentTabsTableViewController.dispatcher = self.dispatcher;
+  CommandDispatcher* dispatcher = self.browser->GetCommandDispatcher();
+  id<ApplicationCommands> handler =
+      HandlerForProtocol(dispatcher, ApplicationCommands);
+  recentTabsTableViewController.handler = handler;
   recentTabsTableViewController.presentationDelegate = self;
-  recentTabsTableViewController.webStateList = self.webStateList;
+  recentTabsTableViewController.webStateList = self.browser->GetWebStateList();
 
   // Adds the "Done" button and hooks it up to |stop|.
   UIBarButtonItem* dismissButton = [[UIBarButtonItem alloc]
@@ -141,9 +145,12 @@
 
 - (void)showHistoryFromRecentTabs {
   // Dismiss recent tabs before presenting history.
+  CommandDispatcher* dispatcher = self.browser->GetCommandDispatcher();
+  id<ApplicationCommands> handler =
+      HandlerForProtocol(dispatcher, ApplicationCommands);
   __weak RecentTabsCoordinator* weakSelf = self;
   self.completion = ^{
-    [weakSelf.dispatcher showHistory];
+    [handler showHistory];
     weakSelf.completion = nil;
   };
   [self stop];

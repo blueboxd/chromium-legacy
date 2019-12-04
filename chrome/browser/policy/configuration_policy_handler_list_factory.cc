@@ -1147,7 +1147,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kExternalProtocolDialogShowAlwaysOpenCheckbox,
     prefs::kExternalProtocolDialogShowAlwaysOpenCheckbox,
     base::Value::Type::BOOLEAN },
-
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   { key::kAlternativeBrowserPath,
@@ -1177,9 +1176,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kBrowserSwitcherDelay,
     browser_switcher::prefs::kDelay,
     base::Value::Type::INTEGER },
-  { key::kUnsafeEventsReportingEnabled,
-    prefs::kUnsafeEventsReportingEnabled,
-    base::Value::Type::BOOLEAN },
   { key::kDelayDeliveryUntilVerdict,
     prefs::kDelayDeliveryUntilVerdict,
     base::Value::Type::INTEGER },
@@ -1216,6 +1212,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 #if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
   { key::kBrowserGuestModeEnforced,
     prefs::kBrowserGuestModeEnforced,
+    base::Value::Type::BOOLEAN },
+  { key::kUnsafeEventsReportingEnabled,
+    prefs::kUnsafeEventsReportingEnabled,
     base::Value::Type::BOOLEAN },
 #endif
   { key::kPasswordLeakDetectionEnabled,

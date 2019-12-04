@@ -2534,7 +2534,7 @@ Element* Node::EnclosingLinkEventParentOrSelf() const {
     // For imagemaps, the enclosing link node is the associated area element not
     // the image itself.  So we don't let images be the enclosingLinkNode, even
     // though isLink sometimes returns true for them.
-    if (node->IsLink() && !IsHTMLImageElement(*node)) {
+    if (node->IsLink() && !IsA<HTMLImageElement>(*node)) {
       // Casting to Element is safe because only HTMLAnchorElement,
       // HTMLImageElement and SVGAElement can return true for isLink().
       return To<Element>(const_cast<Node*>(node));

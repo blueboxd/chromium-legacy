@@ -8,7 +8,7 @@
 #include <fuchsia/web/cpp/fidl.h>
 
 #include "base/synchronization/lock.h"
-#include "content/public/browser/web_contents_binding_set.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "fuchsia/engine/common/web_engine_url_loader_throttle.h"
 #include "fuchsia/engine/url_request_rewrite.mojom.h"
 #include "fuchsia/engine/web_engine_export.h"

@@ -123,8 +123,8 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/system_connector.h"
-#include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/child_process_host.h"
@@ -634,8 +634,8 @@ WebContentsImpl::~WebContentsImpl() {
 
   rwh_input_event_router_.reset();
 
-  for (auto& entry : binding_sets_)
-    entry.second->CloseAllBindings();
+  for (auto& entry : receiver_sets_)
+    entry.second->CloseAllReceivers();
 
   WebContentsImpl* outermost = GetOutermostWebContents();
   if (this != outermost && ContainsOrIsFocusedWebContents()) {
@@ -1217,20 +1217,20 @@ void WebContentsImpl::UpdateZoomIfNecessary(const std::string& scheme,
 }
 #endif  // !defined(OS_ANDROID)
 
-base::OnceClosure WebContentsImpl::AddBindingSet(
+base::OnceClosure WebContentsImpl::AddReceiverSet(
     const std::string& interface_name,
-    WebContentsBindingSet* binding_set) {
+    WebContentsReceiverSet* receiver_set) {
   auto result =
-      binding_sets_.insert(std::make_pair(interface_name, binding_set));
+      receiver_sets_.insert(std::make_pair(interface_name, receiver_set));
   DCHECK(result.second);
-  return base::BindOnce(&WebContentsImpl::RemoveBindingSet,
+  return base::BindOnce(&WebContentsImpl::RemoveReceiverSet,
                         weak_factory_.GetWeakPtr(), interface_name);
 }
 
-WebContentsBindingSet* WebContentsImpl::GetBindingSet(
+WebContentsReceiverSet* WebContentsImpl::GetReceiverSet(
     const std::string& interface_name) {
-  auto it = binding_sets_.find(interface_name);
-  if (it == binding_sets_.end())
+  auto it = receiver_sets_.find(interface_name);
+  if (it == receiver_sets_.end())
     return nullptr;
   return it->second;
 }
@@ -5372,9 +5372,9 @@ void WebContentsImpl::OnAssociatedInterfaceRequest(
     RenderFrameHost* render_frame_host,
     const std::string& interface_name,
     mojo::ScopedInterfaceEndpointHandle handle) {
-  auto it = binding_sets_.find(interface_name);
-  if (it != binding_sets_.end())
-    it->second->OnRequestForFrame(render_frame_host, std::move(handle));
+  auto it = receiver_sets_.find(interface_name);
+  if (it != receiver_sets_.end())
+    it->second->OnReceiverForFrame(render_frame_host, std::move(handle));
 }
 
 void WebContentsImpl::OnInterfaceRequest(
@@ -7316,10 +7316,10 @@ void WebContentsImpl::SetJavaScriptDialogManagerForTesting(
   dialog_manager_ = dialog_manager;
 }
 
-void WebContentsImpl::RemoveBindingSet(const std::string& interface_name) {
-  auto it = binding_sets_.find(interface_name);
-  if (it != binding_sets_.end())
-    binding_sets_.erase(it);
+void WebContentsImpl::RemoveReceiverSet(const std::string& interface_name) {
+  auto it = receiver_sets_.find(interface_name);
+  if (it != receiver_sets_.end())
+    receiver_sets_.erase(it);
 }
 
 bool WebContentsImpl::AddDomainInfoToRapporSample(rappor::Sample* sample) {

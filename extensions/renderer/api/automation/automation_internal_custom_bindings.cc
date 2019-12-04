@@ -79,6 +79,24 @@ v8::Local<v8::Object> RectToV8Object(v8::Isolate* isolate,
       .Build();
 }
 
+api::automation::MarkerType ConvertMarkerTypeFromAXToAutomation(
+    ax::mojom::MarkerType ax) {
+  switch (ax) {
+    case ax::mojom::MarkerType::kNone:
+      return api::automation::MARKER_TYPE_NONE;
+    case ax::mojom::MarkerType::kSpelling:
+      return api::automation::MARKER_TYPE_SPELLING;
+    case ax::mojom::MarkerType::kGrammar:
+      return api::automation::MARKER_TYPE_GRAMMAR;
+    case ax::mojom::MarkerType::kTextMatch:
+      return api::automation::MARKER_TYPE_TEXTMATCH;
+    case ax::mojom::MarkerType::kActiveSuggestion:
+      return api::automation::MARKER_TYPE_ACTIVESUGGESTION;
+    case ax::mojom::MarkerType::kSuggestion:
+      return api::automation::MARKER_TYPE_SUGGESTION;
+  }
+}
+
 // Adjust the bounding box of a node from local to global coordinates,
 // walking up the parent hierarchy to offset by frame offsets and
 // scroll offsets.
@@ -855,6 +873,50 @@ void AutomationInternalCustomBindings::AddRoutes() {
             node->GetString16Attribute(ax::mojom::StringAttribute::kName));
         result.Set(gin::ConvertToV8(isolate, word_ends));
       });
+  RouteNodeIDFunction("GetMarkers", [](v8::Isolate* isolate,
+                                       v8::ReturnValue<v8::Value> result,
+                                       AutomationAXTreeWrapper* tree_wrapper,
+                                       ui::AXNode* node) {
+    if (!node->HasIntListAttribute(
+            ax::mojom::IntListAttribute::kMarkerStarts) ||
+        !node->HasIntListAttribute(ax::mojom::IntListAttribute::kMarkerEnds) ||
+        !node->HasIntListAttribute(ax::mojom::IntListAttribute::kMarkerTypes)) {
+      return;
+    }
+
+    const std::vector<int32_t>& marker_starts =
+        node->GetIntListAttribute(ax::mojom::IntListAttribute::kMarkerStarts);
+    const std::vector<int32_t>& marker_ends =
+        node->GetIntListAttribute(ax::mojom::IntListAttribute::kMarkerEnds);
+    const std::vector<int32_t>& marker_types =
+        node->GetIntListAttribute(ax::mojom::IntListAttribute::kMarkerTypes);
+
+    std::vector<v8::Local<v8::Object>> markers;
+    for (size_t i = 0; i < marker_types.size(); ++i) {
+      gin::DataObjectBuilder marker_obj(isolate);
+      marker_obj.Set("startOffset", marker_starts[i]);
+      marker_obj.Set("endOffset", marker_ends[i]);
+
+      gin::DataObjectBuilder flags(isolate);
+      int32_t marker_type = marker_types[i];
+      int32_t marker_pos = 1;
+      while (marker_type) {
+        if (marker_type & 1) {
+          flags.Set(
+              api::automation::ToString(ConvertMarkerTypeFromAXToAutomation(
+                  static_cast<ax::mojom::MarkerType>(marker_pos))),
+              true);
+        }
+        marker_type = marker_type >> 1;
+        marker_pos = marker_pos << 1;
+      }
+
+      marker_obj.Set("flags", flags.Build());
+      markers.push_back(marker_obj.Build());
+    }
+
+    result.Set(gin::ConvertToV8(isolate, markers));
+  });
   // Bindings that take a Tree ID and Node ID and string attribute name
   // and return a property of the node.
 

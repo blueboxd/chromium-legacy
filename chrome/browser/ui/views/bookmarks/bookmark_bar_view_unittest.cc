@@ -131,8 +131,9 @@ class BookmarkBarViewTest : public BrowserWithTestWindowTest {
       content::BrowserContext* profile) {
     return std::make_unique<TemplateURLService>(
         static_cast<Profile*>(profile)->GetPrefs(),
-        std::make_unique<SearchTermsData>(), nullptr, nullptr, nullptr,
-        base::Closure());
+        std::make_unique<SearchTermsData>(),
+        nullptr /* KeywordWebDataService */,
+        nullptr /* TemplateURLServiceClient */, base::Closure());
   }
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkBarViewTest);

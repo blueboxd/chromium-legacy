@@ -87,10 +87,10 @@ ContentSettingsManagerImpl::~ContentSettingsManagerImpl() = default;
 
 // static
 void ContentSettingsManagerImpl::Create(
-    content::RenderFrameHost* render_frame_host,
+    content::RenderProcessHost* render_process_host,
     mojo::PendingReceiver<mojom::ContentSettingsManager> receiver) {
   mojo::MakeSelfOwnedReceiver(
-      base::WrapUnique(new ContentSettingsManagerImpl(render_frame_host)),
+      base::WrapUnique(new ContentSettingsManagerImpl(render_process_host)),
       std::move(receiver));
 }
 
@@ -102,6 +102,7 @@ void ContentSettingsManagerImpl::Clone(
 }
 
 void ContentSettingsManagerImpl::AllowStorageAccess(
+    int32_t render_frame_id,
     StorageType storage_type,
     const url::Origin& origin,
     const GURL& site_for_cookies,
@@ -115,35 +116,35 @@ void ContentSettingsManagerImpl::AllowStorageAccess(
   switch (storage_type) {
     case StorageType::DATABASE:
       TabSpecificContentSettings::WebDatabaseAccessed(
-          render_process_id_, render_frame_id_, url, !allowed);
+          render_process_id_, render_frame_id, url, !allowed);
       break;
     case StorageType::LOCAL_STORAGE:
-      OnDomStorageAccessed(render_process_id_, render_frame_id_, url,
+      OnDomStorageAccessed(render_process_id_, render_frame_id, url,
                            top_frame_origin.GetURL(), true, !allowed);
       break;
     case StorageType::SESSION_STORAGE:
-      OnDomStorageAccessed(render_process_id_, render_frame_id_, url,
+      OnDomStorageAccessed(render_process_id_, render_frame_id, url,
                            top_frame_origin.GetURL(), false, !allowed);
       break;
     case StorageType::FILE_SYSTEM:
 #if BUILDFLAG(ENABLE_EXTENSIONS)
       if (extensions::WebViewRendererState::GetInstance()->IsGuest(
               render_process_id_)) {
-        OnFileSystemAccessedInGuestView(render_process_id_, render_frame_id_,
+        OnFileSystemAccessedInGuestView(render_process_id_, render_frame_id,
                                         url, allowed, std::move(callback));
         return;
       }
 #endif
       TabSpecificContentSettings::FileSystemAccessed(
-          render_process_id_, render_frame_id_, url, !allowed);
+          render_process_id_, render_frame_id, url, !allowed);
       break;
     case StorageType::INDEXED_DB:
       TabSpecificContentSettings::IndexedDBAccessed(
-          render_process_id_, render_frame_id_, url, !allowed);
+          render_process_id_, render_frame_id, url, !allowed);
       break;
     case StorageType::CACHE:
       TabSpecificContentSettings::CacheStorageAccessed(
-          render_process_id_, render_frame_id_, url, !allowed);
+          render_process_id_, render_frame_id, url, !allowed);
       break;
     case StorageType::WEB_LOCKS:
       // State not persisted, no need to record anything.
@@ -153,9 +154,10 @@ void ContentSettingsManagerImpl::AllowStorageAccess(
   std::move(callback).Run(allowed);
 }
 
-void ContentSettingsManagerImpl::OnContentBlocked(ContentSettingsType type) {
+void ContentSettingsManagerImpl::OnContentBlocked(int32_t render_frame_id,
+                                                  ContentSettingsType type) {
   content::RenderFrameHost* frame =
-      content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
+      content::RenderFrameHost::FromID(render_process_id_, render_frame_id);
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(frame);
   if (!web_contents)
@@ -168,17 +170,15 @@ void ContentSettingsManagerImpl::OnContentBlocked(ContentSettingsType type) {
 }
 
 ContentSettingsManagerImpl::ContentSettingsManagerImpl(
-    content::RenderFrameHost* render_frame_host)
-    : render_process_id_(render_frame_host->GetProcess()->GetID()),
-      render_frame_id_(render_frame_host->GetRoutingID()),
+    content::RenderProcessHost* render_process_host)
+    : render_process_id_(render_process_host->GetID()),
       cookie_settings_(
           CookieSettingsFactory::GetForProfile(Profile::FromBrowserContext(
-              render_frame_host->GetProcess()->GetBrowserContext()))) {}
+              render_process_host->GetBrowserContext()))) {}
 
 ContentSettingsManagerImpl::ContentSettingsManagerImpl(
     const ContentSettingsManagerImpl& other)
     : render_process_id_(other.render_process_id_),
-      render_frame_id_(other.render_frame_id_),
       cookie_settings_(other.cookie_settings_) {}
 
 }  // namespace chrome

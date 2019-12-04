@@ -33,15 +33,15 @@ void ValidatePathsAreEqual(const FilePath& expected_path,
   }
 
   // Proceed with LongPathName matching which will also confirm the paths exist.
-  EXPECT_NE(0U, ::GetLongPathName(as_wcstr(expected_path.value()),
+  EXPECT_NE(0U, ::GetLongPathName(expected_path.value().c_str(),
                                   long_expected_path_chars, MAX_PATH))
       << "Failed to get LongPathName of " << expected_path.value();
-  EXPECT_NE(0U, ::GetLongPathName(as_wcstr(actual_path.value()),
+  EXPECT_NE(0U, ::GetLongPathName(actual_path.value().c_str(),
                                   long_actual_path_chars, MAX_PATH))
       << "Failed to get LongPathName of " << actual_path.value();
 
-  FilePath long_expected_path(AsStringPiece16(long_expected_path_chars));
-  FilePath long_actual_path(AsStringPiece16(long_actual_path_chars));
+  FilePath long_expected_path(long_expected_path_chars);
+  FilePath long_actual_path(long_actual_path_chars);
   EXPECT_FALSE(long_expected_path.empty());
   EXPECT_FALSE(long_actual_path.empty());
 
@@ -76,7 +76,7 @@ void ValidateShortcut(const FilePath& shortcut_path,
 
   // Load the shortcut.
   EXPECT_TRUE(
-      SUCCEEDED(hr = i_persist_file->Load(as_wcstr(shortcut_path.value()), 0)))
+      SUCCEEDED(hr = i_persist_file->Load(shortcut_path.value().c_str(), 0)))
       << "Failed to load shortcut at " << shortcut_path.value();
   if (FAILED(hr))
     return;
@@ -84,15 +84,13 @@ void ValidateShortcut(const FilePath& shortcut_path,
   if (properties.options & ShortcutProperties::PROPERTIES_TARGET) {
     EXPECT_TRUE(SUCCEEDED(
         i_shell_link->GetPath(read_target, MAX_PATH, NULL, SLGP_SHORTPATH)));
-    ValidatePathsAreEqual(properties.target,
-                          FilePath(AsStringPiece16(read_target)));
+    ValidatePathsAreEqual(properties.target, FilePath(read_target));
   }
 
   if (properties.options & ShortcutProperties::PROPERTIES_WORKING_DIR) {
     EXPECT_TRUE(SUCCEEDED(
         i_shell_link->GetWorkingDirectory(read_working_dir, MAX_PATH)));
-    ValidatePathsAreEqual(properties.working_dir,
-                          FilePath(AsStringPiece16(read_working_dir)));
+    ValidatePathsAreEqual(properties.working_dir, FilePath(read_working_dir));
   }
 
   if (properties.options & ShortcutProperties::PROPERTIES_ARGUMENTS) {
@@ -110,8 +108,7 @@ void ValidateShortcut(const FilePath& shortcut_path,
   if (properties.options & ShortcutProperties::PROPERTIES_ICON) {
     EXPECT_TRUE(SUCCEEDED(
         i_shell_link->GetIconLocation(read_icon, MAX_PATH, &read_icon_index)));
-    ValidatePathsAreEqual(properties.icon,
-                          FilePath(AsStringPiece16(read_icon)));
+    ValidatePathsAreEqual(properties.icon, FilePath(read_icon));
     EXPECT_EQ(properties.icon_index, read_icon_index);
   }
 

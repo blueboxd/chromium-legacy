@@ -68,7 +68,6 @@
 #include "content/common/unfreezable_frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/common/web_package/signed_exchange_utils.h"
-#include "content/public/common/bind_interface_helpers.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
@@ -1929,7 +1928,7 @@ void RenderFrameImpl::Initialize() {
 
   // AudioOutputIPCFactory may be null in tests.
   if (auto* factory = AudioOutputIPCFactory::get())
-    factory->RegisterRemoteFactory(GetRoutingID(), GetRemoteInterfaces());
+    factory->RegisterRemoteFactory(GetRoutingID(), GetBrowserInterfaceBroker());
 
   AudioRendererSinkCache::ObserveFrame(this);
 
@@ -4532,7 +4531,8 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
       // factory to be registered here, make this a RenderFrameObserver.
       // code.
       factory->MaybeDeregisterRemoteFactory(GetRoutingID());
-      factory->RegisterRemoteFactory(GetRoutingID(), GetRemoteInterfaces());
+      factory->RegisterRemoteFactory(GetRoutingID(),
+                                     GetBrowserInterfaceBroker());
     }
 
     // If the request for |audio_input_stream_factory_| is in flight when
@@ -5283,7 +5283,7 @@ blink::WebString RenderFrameImpl::DoNotTrackValue() {
 mojom::RendererAudioInputStreamFactory*
 RenderFrameImpl::GetAudioInputStreamFactory() {
   if (!audio_input_stream_factory_)
-    GetRemoteInterfaces()->GetInterface(
+    GetBrowserInterfaceBroker()->GetInterface(
         audio_input_stream_factory_.BindNewPipeAndPassReceiver());
   return audio_input_stream_factory_.get();
 }

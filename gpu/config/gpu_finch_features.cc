@@ -72,11 +72,11 @@ const base::Feature kDirectCompositionUnderlays{
 #if defined(OS_WIN)
 // Use a high priority for GPU process on Windows.
 const base::Feature kGpuProcessHighPriorityWin{
-    "GpuProcessHighPriorityWin", base::FEATURE_DISABLED_BY_DEFAULT};
+    "GpuProcessHighPriorityWin", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Use ThreadPriority::DISPLAY for GPU main, viz compositor and IO threads.
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_WIN)
 const base::Feature kGpuUseDisplayThreadPriority{
     "GpuUseDisplayThreadPriority", base::FEATURE_ENABLED_BY_DEFAULT};
 #else

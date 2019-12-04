@@ -53,6 +53,15 @@ class MockFileUtilitiesHost : public mojom::blink::FileUtilitiesHost {
   base::File::Info file_info_;
 };
 
+void ExpectTimestampIsNow(const File& file) {
+  const base::Time now = base::Time::Now();
+  const base::TimeDelta delta_now = now - base::Time::UnixEpoch();
+  // Because lastModified() applies floor() internally, we should compare
+  // integral millisecond values.
+  EXPECT_GE(file.lastModified(), delta_now.InMilliseconds());
+  EXPECT_GE(file.LastModifiedTime(), now);
+}
+
 }  // namespace
 
 TEST(FileTest, NativeFileWithoutTimestamp) {
@@ -65,13 +74,7 @@ TEST(FileTest, NativeFileWithoutTimestamp) {
   EXPECT_TRUE(file->HasBackingFile());
   EXPECT_EQ("/native/path", file->GetPath());
   EXPECT_TRUE(file->FileSystemURL().IsEmpty());
-
-  const base::Time now = base::Time::Now();
-  const base::TimeDelta delta_now = now - base::Time::UnixEpoch();
-  // Because lastModified() applies floor() internally, we should compare
-  // integral millisecond values.
-  EXPECT_GE(file->lastModified(), delta_now.InMilliseconds());
-  EXPECT_GE(file->LastModifiedTime(), now);
+  ExpectTimestampIsNow(*file);
 }
 
 TEST(FileTest, NativeFileWithUnixEpochTimestamp) {
@@ -100,7 +103,27 @@ TEST(FileTest, NativeFileWithApocalypseTimestamp) {
   EXPECT_EQ(base::Time::Max(), file->LastModifiedTime());
 }
 
-TEST(FileTest, blobBackingFile) {
+TEST(FileTest, BlobBackingFileWithoutTimestamp) {
+  auto* const file = MakeGarbageCollected<File>("name", base::nullopt,
+                                                BlobDataHandle::Create());
+  EXPECT_FALSE(file->HasBackingFile());
+  EXPECT_TRUE(file->GetPath().IsEmpty());
+  EXPECT_TRUE(file->FileSystemURL().IsEmpty());
+  ExpectTimestampIsNow(*file);
+}
+
+TEST(FileTest, BlobBackingFileWithWindowsEpochTimestamp) {
+  auto* const file = MakeGarbageCollected<File>("name", base::Time(),
+                                                BlobDataHandle::Create());
+  EXPECT_FALSE(file->HasBackingFile());
+  EXPECT_TRUE(file->GetPath().IsEmpty());
+  EXPECT_TRUE(file->FileSystemURL().IsEmpty());
+  EXPECT_EQ((base::Time() - base::Time::UnixEpoch()).InMilliseconds(),
+            file->lastModified());
+  EXPECT_EQ(base::Time(), file->LastModifiedTime());
+}
+
+TEST(FileTest, BlobBackingFileWithUnixEpochTimestamp) {
   const scoped_refptr<BlobDataHandle> blob_data_handle =
       BlobDataHandle::Create();
   auto* const file = MakeGarbageCollected<File>("name", base::Time::UnixEpoch(),
@@ -108,6 +131,20 @@ TEST(FileTest, blobBackingFile) {
   EXPECT_FALSE(file->HasBackingFile());
   EXPECT_TRUE(file->GetPath().IsEmpty());
   EXPECT_TRUE(file->FileSystemURL().IsEmpty());
+  EXPECT_EQ(INT64_C(0), file->lastModified());
+  EXPECT_EQ(base::Time::UnixEpoch(), file->LastModifiedTime());
+}
+
+TEST(FileTest, BlobBackingFileWithApocalypseTimestamp) {
+  constexpr base::Time kMaxTime = base::Time::Max();
+  auto* const file =
+      MakeGarbageCollected<File>("name", kMaxTime, BlobDataHandle::Create());
+  EXPECT_FALSE(file->HasBackingFile());
+  EXPECT_TRUE(file->GetPath().IsEmpty());
+  EXPECT_TRUE(file->FileSystemURL().IsEmpty());
+  EXPECT_EQ((kMaxTime - base::Time::UnixEpoch()).InMilliseconds(),
+            file->lastModified());
+  EXPECT_EQ(kMaxTime, file->LastModifiedTime());
 }
 
 TEST(FileTest, fileSystemFileWithNativeSnapshot) {
@@ -129,6 +166,54 @@ TEST(FileTest, fileSystemFileWithNativeSnapshotAndSize) {
   EXPECT_TRUE(file->HasBackingFile());
   EXPECT_EQ("/native/snapshot", file->GetPath());
   EXPECT_TRUE(file->FileSystemURL().IsEmpty());
+}
+
+TEST(FileTest, FileSystemFileWithWindowsEpochTimestamp) {
+  FileMetadata metadata;
+  metadata.length = INT64_C(1025);
+  metadata.modification_time = base::Time();
+  metadata.platform_path = "/native/snapshot";
+  File* const file =
+      File::CreateForFileSystemFile("name", metadata, File::kIsUserVisible);
+  EXPECT_TRUE(file->HasBackingFile());
+  EXPECT_EQ("/native/snapshot", file->GetPath());
+  EXPECT_TRUE(file->FileSystemURL().IsEmpty());
+  EXPECT_EQ(UINT64_C(1025), file->size());
+  EXPECT_EQ((base::Time() - base::Time::UnixEpoch()).InMilliseconds(),
+            file->lastModified());
+  EXPECT_EQ(base::Time(), file->LastModifiedTime());
+}
+
+TEST(FileTest, FileSystemFileWithUnixEpochTimestamp) {
+  FileMetadata metadata;
+  metadata.length = INT64_C(1025);
+  metadata.modification_time = base::Time::UnixEpoch();
+  metadata.platform_path = "/native/snapshot";
+  File* const file =
+      File::CreateForFileSystemFile("name", metadata, File::kIsUserVisible);
+  EXPECT_TRUE(file->HasBackingFile());
+  EXPECT_EQ("/native/snapshot", file->GetPath());
+  EXPECT_TRUE(file->FileSystemURL().IsEmpty());
+  EXPECT_EQ(UINT64_C(1025), file->size());
+  EXPECT_EQ(INT64_C(0), file->lastModified());
+  EXPECT_EQ(base::Time::UnixEpoch(), file->LastModifiedTime());
+}
+
+TEST(FileTest, FileSystemFileWithApocalypseTimestamp) {
+  constexpr base::Time kMaxTime = base::Time::Max();
+  FileMetadata metadata;
+  metadata.length = INT64_C(1025);
+  metadata.modification_time = kMaxTime;
+  metadata.platform_path = "/native/snapshot";
+  File* const file =
+      File::CreateForFileSystemFile("name", metadata, File::kIsUserVisible);
+  EXPECT_TRUE(file->HasBackingFile());
+  EXPECT_EQ("/native/snapshot", file->GetPath());
+  EXPECT_TRUE(file->FileSystemURL().IsEmpty());
+  EXPECT_EQ(UINT64_C(1025), file->size());
+  EXPECT_EQ((kMaxTime - base::Time::UnixEpoch()).InMilliseconds(),
+            file->lastModified());
+  EXPECT_EQ(kMaxTime, file->LastModifiedTime());
 }
 
 TEST(FileTest, fileSystemFileWithoutNativeSnapshot) {

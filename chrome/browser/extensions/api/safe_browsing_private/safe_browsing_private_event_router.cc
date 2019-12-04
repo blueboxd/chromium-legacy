@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 
+#include "build/build_config.h"
+
 #include <utility>
 #include <vector>
 
@@ -15,9 +17,17 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/browser_process_platform_part_chromeos.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#else
 #include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
+#endif
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -28,16 +38,35 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/extensions/api/safe_browsing_private.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
+#include "components/policy/core/common/cloud/cloud_policy_util.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
+#include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/realtime_reporting_job_configuration.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/proto/webprotect.pb.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#if defined(OS_CHROMEOS)
+#include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
+#endif
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
+
+namespace {
+
+#if defined(OS_CHROMEOS)
+const char kActiveDirectoryPolicyClientDescription[] = "an Active Directory";
+const char kPolicyClientDescription[] = "any";
+const char kUserPolicyClientDescription[] = "a user";
+#else
+const char kChromeBrowserCloudManagementClientDescription[] =
+    "a machine-level user";
+#endif
+
+}  // namespace
 
 namespace extensions {
 
@@ -527,72 +556,102 @@ void SafeBrowsingPrivateEventRouter::OnDangerousDownloadWarningBypassed(
           threat_type, mime_type, content_size));
 }
 
+// static
 bool SafeBrowsingPrivateEventRouter::ShouldInitRealtimeReportingClient() {
-  // This method is not compiled on Chrome OS because
-  // ChromeBrowserCloudManagementController does not exist. Once this is
-  // fixed the #if !defined can be removed.
-#if !defined(OS_CHROMEOS)
-  if (!base::FeatureList::IsEnabled(kRealtimeReportingFeature))
+  if (!base::FeatureList::IsEnabled(kRealtimeReportingFeature)) {
+    DVLOG(2) << "Safe browsing real-time reporting is not enabled.";
     return false;
+  }
 
-  if (!policy::ChromeBrowserCloudManagementController::IsEnabled())
+  if (!IsRealtimeReportingAvailable()) {
+    DVLOG(1) << "Safe browsing real-time event reporting is only available for "
+                "managed browsers or devices.";
     return false;
-
+  }
   return true;
-#else
-  return false;
-#endif
 }
 
 void SafeBrowsingPrivateEventRouter::SetCloudPolicyClientForTesting(
-    std::unique_ptr<policy::CloudPolicyClient> client) {
-  DCHECK_EQ(nullptr, client_.get());
-  client_ = std::move(client);
+    policy::CloudPolicyClient* client) {
+  DCHECK_EQ(nullptr, client_);
+  client_ = client;
 }
 
 void SafeBrowsingPrivateEventRouter::InitRealtimeReportingClient() {
   // If already initialized, do nothing.
-  if (client_)
+  if (client_) {
+    DVLOG(2) << "Safe browsing real-time event reporting already initialized.";
     return;
+  }
 
   if (!ShouldInitRealtimeReportingClient())
     return;
 
-  // |identity_manager_| may be null in tests.  If there is no identity
+  // |identity_manager_| may be null in tests. If there is no identity
   // manager don't enable the real-time reporting API since the router won't
   // be able to fill in all the info needed for the reports.
   identity_manager_ = IdentityManagerFactory::GetForProfile(
       Profile::FromBrowserContext(context_));
-  if (!identity_manager_)
+  if (!identity_manager_) {
+    DVLOG(2) << "Safe browsing real-time event requires an identity manager.";
     return;
+  }
 
-  // |device_management_service| may be null in tests.  If there is no device
+  // |device_management_service| may be null in tests. If there is no device
   // management service don't enable the real-time reporting API since the
   // router won't be able to create the reporting server client below.
   policy::DeviceManagementService* device_management_service =
       g_browser_process->browser_policy_connector()
           ->device_management_service();
-  if (!device_management_service)
+  if (!device_management_service) {
+    DVLOG(2) << "Safe browsing real-time event requires a device management "
+                "service.";
     return;
+  }
 
   if (g_browser_process) {
     binary_upload_service_ =
         g_browser_process->safe_browsing_service()->GetBinaryUploadService(
             Profile::FromBrowserContext(context_));
-    binary_upload_service_->IsAuthorized(base::BindOnce(
+    IfAuthorized(base::BindOnce(
         &SafeBrowsingPrivateEventRouter::InitRealtimeReportingClientCallback,
-        weakptr_factory_.GetWeakPtr(), device_management_service));
+        weak_ptr_factory_.GetWeakPtr(), device_management_service));
   }
 }
 
 void SafeBrowsingPrivateEventRouter::InitRealtimeReportingClientCallback(
     policy::DeviceManagementService* device_management_service,
     bool authorized) {
-#if !defined(OS_CHROMEOS)
   // Don't initialize the client if the browser cannot upload data.
-  if (!authorized)
+  if (!authorized) {
+    LOG(WARNING) << "The client is not authorized to do safe browsing "
+                    "real-time event reporting.";
     return;
+  }
 
+  policy::CloudPolicyClient* client = nullptr;
+  std::string policy_client_desc;
+
+#if defined(OS_CHROMEOS)
+  policy_client_desc = kPolicyClientDescription;
+  auto* user = GetChromeOSUser();
+  if (user) {
+    auto* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+    DCHECK(profile);
+    if (user->IsActiveDirectoryUser()) {
+      // TODO(crbug.com/1012048): Handle AD, likely through crbug.com/1012170.
+      policy_client_desc = kActiveDirectoryPolicyClientDescription;
+    } else {
+      policy_client_desc = kUserPolicyClientDescription;
+      auto* policy_manager = profile->GetUserCloudPolicyManagerChromeOS();
+      if (policy_manager)
+        client = policy_manager->core()->client();
+    }
+  } else {
+    LOG(ERROR) << "Could not determine who the user is.";
+  }
+#else
+  policy_client_desc = kChromeBrowserCloudManagementClientDescription;
   // Make sure we have a DM token to proceed.  During the lifetime of a running
   // chrome browser, this can only change from empty to non-empty.  There are
   // no cases where chrome starts with a dm token and then it goes away.
@@ -614,19 +673,35 @@ void SafeBrowsingPrivateEventRouter::InitRealtimeReportingClientCallback(
   // Make sure DeviceManagementService has been initialized.
   device_management_service->ScheduleInitialization(0);
 
-  client_ = std::make_unique<policy::CloudPolicyClient>(
+  private_client_ = std::make_unique<policy::CloudPolicyClient>(
       /*machine_id=*/std::string(), /*machine_model=*/std::string(),
       /*brand_code=*/std::string(), /*ethernet_mac_address=*/std::string(),
       /*dock_mac_address=*/std::string(), /*manufacture_date=*/std::string(),
       device_management_service, g_browser_process->shared_url_loader_factory(),
       nullptr, policy::CloudPolicyClient::DeviceDMTokenCallback());
+  client = private_client_.get();
 
-  if (!client_->is_registered()) {
-    client_->SetupRegistration(
+  if (!client->is_registered()) {
+    client->SetupRegistration(
         dm_token.value(), client_id,
         /*user_affiliation_ids=*/std::vector<std::string>());
   }
 #endif
+
+  OnCloudPolicyClientAvailable(policy_client_desc, client);
+}
+
+void SafeBrowsingPrivateEventRouter::OnCloudPolicyClientAvailable(
+    const std::string& policy_client_desc,
+    policy::CloudPolicyClient* client) {
+  client_ = client;
+  if (client_ == nullptr) {
+    LOG(ERROR) << "Could not obtain " << policy_client_desc
+               << " for safe browsing real-time event reporting.";
+    return;
+  }
+
+  VLOG(1) << "Ready for safe browsing real-time event reporting.";
 }
 
 bool SafeBrowsingPrivateEventRouter::IsRealtimeReportingEnabled() {
@@ -644,14 +719,19 @@ void SafeBrowsingPrivateEventRouter::RealtimeReportingPrefChanged(
     InitRealtimeReportingClient();
 }
 
+void SafeBrowsingPrivateEventRouter::IfAuthorized(
+    base::OnceCallback<void(bool)> cont) {
+  if (binary_upload_service_) {
+    binary_upload_service_->IsAuthorized(std::move(cont));
+  }
+}
+
 void SafeBrowsingPrivateEventRouter::ReportRealtimeEvent(
     const std::string& name,
     EventBuilder event_builder) {
-  if (binary_upload_service_) {
-    binary_upload_service_->IsAuthorized(base::BindOnce(
-        &SafeBrowsingPrivateEventRouter::ReportRealtimeEventCallback,
-        weakptr_factory_.GetWeakPtr(), name, std::move(event_builder)));
-  }
+  IfAuthorized(base::BindOnce(
+      &SafeBrowsingPrivateEventRouter::ReportRealtimeEventCallback,
+      weak_ptr_factory_.GetWeakPtr(), name, std::move(event_builder)));
 }
 
 void SafeBrowsingPrivateEventRouter::ReportRealtimeEventCallback(
@@ -659,8 +739,10 @@ void SafeBrowsingPrivateEventRouter::ReportRealtimeEventCallback(
     EventBuilder event_builder,
     bool authorized) {
   // Ignore the event if we know we can't report it.
-  if (!authorized)
+  if (!authorized) {
+    DVLOG(2) << "Safe browsing real-time reporting is not authorized.";
     return;
+  }
 
   // |client_| should be set when authorized is true.
   DCHECK(client_);
@@ -687,11 +769,42 @@ void SafeBrowsingPrivateEventRouter::ReportRealtimeEventCallback(
       base::DoNothing());
 }
 
-std::string SafeBrowsingPrivateEventRouter::GetProfileUserName() {
+std::string SafeBrowsingPrivateEventRouter::GetProfileUserName() const {
   // |identity_manager_| may be null is some tests.
   return identity_manager_ && identity_manager_->HasPrimaryAccount()
              ? identity_manager_->GetPrimaryAccountInfo().email
              : std::string();
+}
+
+#if defined(OS_CHROMEOS)
+// static
+const user_manager::User* SafeBrowsingPrivateEventRouter::GetChromeOSUser() {
+  return user_manager::UserManager::IsInitialized()
+             ? user_manager::UserManager::Get()->GetPrimaryUser()
+             : nullptr;
+}
+
+#endif
+
+bool SafeBrowsingPrivateEventRouter::IsRealtimeReportingAvailable() {
+#if defined(OS_CHROMEOS)
+  // The device must be managed.
+  if (!g_browser_process->platform_part()
+           ->browser_policy_connector_chromeos()
+           ->IsEnterpriseManaged())
+    return false;
+
+  // The Chrome OS user must be afiliated with the device.
+  auto* user = GetChromeOSUser();
+  if (!user || !user->IsAffiliated())
+    return false;
+
+  // And that user must be managed.
+  auto* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+  return profile && profile->GetProfilePolicyConnector()->IsManaged();
+#else
+  return policy::ChromeBrowserCloudManagementController::IsEnabled();
+#endif
 }
 
 }  // namespace extensions

@@ -88,7 +88,7 @@
             $i18n{moreFromSite}
           </button>
           <button id="menuRemoveButton" class="dropdown-item"
-              hidden="[[!canDeleteHistory_]]"
+              hidden="[[!canDeleteHistory_]]" disabled="[[pendingDelete]]"
               on-click="onRemoveFromHistoryTap_">
             $i18n{removeFromHistory}
           </button>

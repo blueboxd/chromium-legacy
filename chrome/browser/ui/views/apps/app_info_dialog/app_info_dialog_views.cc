@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -22,7 +23,10 @@
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_permissions_panel.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_summary_panel.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/buildflags.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/web_contents.h"
@@ -56,12 +60,39 @@ constexpr gfx::Size kDialogSize = gfx::Size(380, 490);
 
 }  // namespace
 
-bool CanShowAppInfoDialog() {
+bool CanPlatformShowAppInfoDialog() {
 #if defined(OS_MACOSX)
   return false;
 #else
   return true;
 #endif
+}
+
+bool CanShowAppInfoDialog(Profile* profile, const std::string& extension_id) {
+#if defined(OS_CHROMEOS)
+  bool is_system_web_app = web_app::WebAppProvider::Get(profile)
+                               ->system_web_app_manager()
+                               .IsSystemWebApp(extension_id);
+  if (is_system_web_app) {
+    return false;
+  }
+
+  const extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile);
+  const extensions::Extension* extension =
+      registry->GetInstalledExtension(extension_id);
+
+  if (!extension) {
+    return false;
+  }
+
+  // App Management only displays apps that are displayed in the launcher.
+  if (base::FeatureList::IsEnabled(features::kAppManagement) &&
+      !extension->ShouldDisplayInAppLauncher()) {
+    return false;
+  }
+#endif
+  return CanPlatformShowAppInfoDialog();
 }
 
 #if defined(OS_CHROMEOS)

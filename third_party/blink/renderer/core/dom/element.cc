@@ -304,8 +304,9 @@ bool DefinitelyNewFormattingContext(const Node& node,
       // OBJECT.
       if (!element->ChildrenCanHaveStyle())
         return true;
-    } else if (IsHTMLImageElement(element) || element->IsFormControlElement() ||
-               element->IsMediaElement() || element->IsFrameOwnerElement()) {
+    } else if (IsA<HTMLImageElement>(element) ||
+               element->IsFormControlElement() || element->IsMediaElement() ||
+               element->IsFrameOwnerElement()) {
       return true;
     }
   }
@@ -5052,7 +5053,7 @@ const ComputedStyle* Element::EnsureComputedStyle(
       scoped_refptr<ComputedStyle> new_style = nullptr;
       // TODO(crbug.com/953707): Avoid setting inline style during
       // HTMLImageElement::CustomStyleForLayoutObject.
-      if (HasCustomStyleCallbacks() && !IsHTMLImageElement(*this))
+      if (HasCustomStyleCallbacks() && !IsA<HTMLImageElement>(*this))
         new_style = CustomStyleForLayoutObject();
       else
         new_style = OriginalStyleForLayoutObject();

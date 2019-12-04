@@ -438,8 +438,8 @@ void MediaStream::RemoveTrackByComponentAndFireEvents(
   MediaStreamTrack* track = (*tracks)[index];
   track->UnregisterMediaStream(this);
   tracks->EraseAt(index);
-  ScheduleDispatchEvent(
-      MediaStreamTrackEvent::Create(event_type_names::kRemovetrack, track));
+  ScheduleDispatchEvent(MakeGarbageCollected<MediaStreamTrackEvent>(
+      event_type_names::kRemovetrack, track));
 
   if (active() && EmptyOrOnlyEndedTracks()) {
     descriptor_->SetActive(false);
@@ -460,8 +460,8 @@ void MediaStream::AddTrackAndFireEvents(MediaStreamTrack* track) {
   track->RegisterMediaStream(this);
   descriptor_->AddComponent(track->Component());
 
-  ScheduleDispatchEvent(
-      MediaStreamTrackEvent::Create(event_type_names::kAddtrack, track));
+  ScheduleDispatchEvent(MakeGarbageCollected<MediaStreamTrackEvent>(
+      event_type_names::kAddtrack, track));
 
   if (!active() && !track->Ended()) {
     descriptor_->SetActive(true);

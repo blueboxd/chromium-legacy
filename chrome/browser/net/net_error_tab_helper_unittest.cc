@@ -65,7 +65,7 @@ class TestNetErrorTabHelper : public NetErrorTabHelper {
   }
 
   void SetCurrentTargetFrame(content::RenderFrameHost* render_frame_host) {
-    network_diagnostics_bindings_for_testing().SetCurrentTargetFrameForTesting(
+    network_diagnostics_receivers_for_testing().SetCurrentTargetFrameForTesting(
         render_frame_host);
   }
 

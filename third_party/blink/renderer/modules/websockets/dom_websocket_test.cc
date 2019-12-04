@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/modules/websockets/mock_websocket_channel.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -53,7 +54,7 @@ class DOMWebSocketWithMockChannel final : public DOMWebSocket {
 
   explicit DOMWebSocketWithMockChannel(ExecutionContext* context)
       : DOMWebSocket(context),
-        channel_(MockWebSocketChannel::Create()),
+        channel_(MakeGarbageCollected<MockWebSocketChannel>()),
         has_created_channel_(false) {}
 
   MockWebSocketChannel* Channel() { return channel_.Get(); }

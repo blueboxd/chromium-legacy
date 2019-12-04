@@ -13,6 +13,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/fake_deep_scanning_dialog_delegate.h"
+#include "chrome/browser/safe_browsing/dm_token_utils.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_handle_drop.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -67,7 +68,7 @@ class ChromeWebContentsViewDelegateHandleOnPerformDrop : public testing::Test {
         },
         scan_succeeds);
 
-    safe_browsing::DeepScanningDialogDelegate::SetDMTokenForTesting(
+    safe_browsing::SetDMTokenForTesting(
         policy::DMToken::CreateValidTokenForTesting("dm_token"));
     safe_browsing::DeepScanningDialogDelegate::SetFactoryForTesting(
         base::BindRepeating(

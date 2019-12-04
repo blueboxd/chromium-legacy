@@ -37,7 +37,7 @@ suite('history-list supervised-user', function() {
     // Make sure that removeVisits is not being called.
     historyList.historyData_[0].selected = true;
     toolbar.deleteSelectedItems();
-    assertEquals(0, testService.getCallCount('deleteItems'));
+    assertEquals(0, testService.getCallCount('removeVisits'));
   });
 
   test('remove history menu button disabled', function() {

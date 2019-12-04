@@ -209,7 +209,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
 #endif
       driver_factory_(nullptr),
       content_credential_manager_(this),
-      password_generation_driver_bindings_(web_contents, this),
+      password_generation_driver_receivers_(web_contents, this),
       observer_(nullptr),
       credentials_filter_(this, base::BindRepeating(&GetSyncService, profile_)),
       helper_(this) {
@@ -851,7 +851,7 @@ gfx::RectF ChromePasswordManagerClient::GetBoundsInScreenSpace(
 void ChromePasswordManagerClient::AutomaticGenerationAvailable(
     const autofill::password_generation::PasswordGenerationUIData& ui_data) {
   if (!password_manager::bad_message::CheckChildProcessSecurityPolicy(
-          password_generation_driver_bindings_.GetCurrentTargetFrame(),
+          password_generation_driver_receivers_.GetCurrentTargetFrame(),
           ui_data.password_form,
           BadMessageReason::
               CPMD_BAD_ORIGIN_AUTOMATIC_GENERATION_STATUS_CHANGED))
@@ -859,14 +859,14 @@ void ChromePasswordManagerClient::AutomaticGenerationAvailable(
 #if defined(OS_ANDROID)
   if (PasswordGenerationController::AllowedForWebContents(web_contents())) {
     PasswordManagerDriver* driver = driver_factory_->GetDriverForFrame(
-        password_generation_driver_bindings_.GetCurrentTargetFrame());
+        password_generation_driver_receivers_.GetCurrentTargetFrame());
 
     PasswordGenerationController* generation_controller =
         PasswordGenerationController::GetIfExisting(web_contents());
     DCHECK(generation_controller);
 
     gfx::RectF element_bounds_in_screen_space = TransformToRootCoordinates(
-        password_generation_driver_bindings_.GetCurrentTargetFrame(),
+        password_generation_driver_receivers_.GetCurrentTargetFrame(),
         ui_data.bounds);
 
     generation_controller->OnAutomaticGenerationAvailable(
@@ -875,7 +875,7 @@ void ChromePasswordManagerClient::AutomaticGenerationAvailable(
 #else
   password_manager::ContentPasswordManagerDriver* driver =
       driver_factory_->GetDriverForFrame(
-          password_generation_driver_bindings_.GetCurrentTargetFrame());
+          password_generation_driver_receivers_.GetCurrentTargetFrame());
   ShowPasswordGenerationPopup(driver, ui_data,
                               false /* is_manually_triggered */);
 #endif  // defined(OS_ANDROID)
@@ -886,14 +886,14 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
     const autofill::PasswordForm& form,
     uint32_t field_renderer_id) {
   if (!password_manager::bad_message::CheckChildProcessSecurityPolicy(
-          password_generation_driver_bindings_.GetCurrentTargetFrame(), form,
+          password_generation_driver_receivers_.GetCurrentTargetFrame(), form,
           BadMessageReason::CPMD_BAD_ORIGIN_SHOW_PASSWORD_EDITING_POPUP))
     return;
   auto* driver = driver_factory_->GetDriverForFrame(
-      password_generation_driver_bindings_.GetCurrentTargetFrame());
+      password_generation_driver_receivers_.GetCurrentTargetFrame());
   gfx::RectF element_bounds_in_screen_space =
       GetBoundsInScreenSpace(TransformToRootCoordinates(
-          password_generation_driver_bindings_.GetCurrentTargetFrame(),
+          password_generation_driver_receivers_.GetCurrentTargetFrame(),
           bounds));
   autofill::password_generation::PasswordGenerationUIData ui_data(
       bounds, /*max_length=*/0, /*generation_element=*/base::string16(),
@@ -902,7 +902,7 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
   popup_controller_ = PasswordGenerationPopupControllerImpl::GetOrCreate(
       popup_controller_, element_bounds_in_screen_space, ui_data,
       driver->AsWeakPtr(), observer_, web_contents(),
-      password_generation_driver_bindings_.GetCurrentTargetFrame());
+      password_generation_driver_receivers_.GetCurrentTargetFrame());
   DCHECK(!form.password_value.empty());
   popup_controller_->UpdatePassword(form.password_value);
   popup_controller_->Show(
@@ -912,7 +912,7 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
 void ChromePasswordManagerClient::GenerationAvailableForForm(
     const autofill::PasswordForm& form) {
   if (!password_manager::bad_message::CheckChildProcessSecurityPolicy(
-          password_generation_driver_bindings_.GetCurrentTargetFrame(), form,
+          password_generation_driver_receivers_.GetCurrentTargetFrame(), form,
           BadMessageReason::CPMD_BAD_ORIGIN_GENERATION_AVAILABLE_FOR_FORM))
     return;
   // TODO(https://crbug.com/949519): remove this method.
@@ -926,7 +926,7 @@ void ChromePasswordManagerClient::PasswordGenerationRejectedByTyping() {
 void ChromePasswordManagerClient::PresaveGeneratedPassword(
     const autofill::PasswordForm& password_form) {
   if (!password_manager::bad_message::CheckChildProcessSecurityPolicy(
-          password_generation_driver_bindings_.GetCurrentTargetFrame(),
+          password_generation_driver_receivers_.GetCurrentTargetFrame(),
           password_form,
           BadMessageReason::CPMD_BAD_ORIGIN_PRESAVE_GENERATED_PASSWORD))
     return;
@@ -934,20 +934,20 @@ void ChromePasswordManagerClient::PresaveGeneratedPassword(
     popup_controller_->UpdatePassword(password_form.password_value);
 
   PasswordManagerDriver* driver = driver_factory_->GetDriverForFrame(
-      password_generation_driver_bindings_.GetCurrentTargetFrame());
+      password_generation_driver_receivers_.GetCurrentTargetFrame());
   password_manager_.OnPresaveGeneratedPassword(driver, password_form);
 }
 
 void ChromePasswordManagerClient::PasswordNoLongerGenerated(
     const autofill::PasswordForm& password_form) {
   if (!password_manager::bad_message::CheckChildProcessSecurityPolicy(
-          password_generation_driver_bindings_.GetCurrentTargetFrame(),
+          password_generation_driver_receivers_.GetCurrentTargetFrame(),
           password_form,
           BadMessageReason::CPMD_BAD_ORIGIN_PASSWORD_NO_LONGER_GENERATED))
     return;
 
   PasswordManagerDriver* driver = driver_factory_->GetDriverForFrame(
-      password_generation_driver_bindings_.GetCurrentTargetFrame());
+      password_generation_driver_receivers_.GetCurrentTargetFrame());
   password_manager_.OnPasswordNoLongerGenerated(driver, password_form);
 
   PasswordGenerationPopupController* controller = popup_controller_.get();

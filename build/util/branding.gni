@@ -23,16 +23,15 @@ _branding_dictionary_template =
     "installer_short_name = \"@PRODUCT_INSTALLER_SHORTNAME@\" " +
     "team_id = \"@MAC_TEAM_ID@\" "
 
-_branding_file = "//chrome/app/theme/$branding_path_component/BRANDING"
 _result = exec_script("version.py",
                       [
                         "-f",
-                        rebase_path(_branding_file, root_build_dir),
+                        rebase_path(branding_file_path, root_build_dir),
                         "-t",
                         _branding_dictionary_template,
                       ],
                       "scope",
-                      [ _branding_file ])
+                      [ branding_file_path ])
 
 chrome_product_full_name = _result.full_name
 chrome_product_short_name = _result.short_name

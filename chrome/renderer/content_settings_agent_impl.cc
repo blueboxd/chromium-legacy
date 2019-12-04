@@ -19,6 +19,7 @@
 #include "components/content_settings/core/common/content_settings.mojom.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
+#include "content/public/child/child_thread.h"
 #include "content/public/common/client_hints.mojom.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/previews_state.h"
@@ -187,13 +188,13 @@ void ContentSettingsAgentImpl::DidBlockContentType(
     ContentSettingsType settings_type) {
   bool newly_blocked = content_blocked_.insert(settings_type).second;
   if (newly_blocked)
-    GetContentSettingsManager().OnContentBlocked(settings_type);
+    GetContentSettingsManager().OnContentBlocked(routing_id(), settings_type);
 }
 
 void ContentSettingsAgentImpl::BindContentSettingsManager(
     mojo::Remote<chrome::mojom::ContentSettingsManager>* manager) {
   DCHECK(!*manager);
-  render_frame()->GetBrowserInterfaceBroker()->GetInterface(
+  content::ChildThread::Get()->BindHostReceiver(
       manager->BindNewPipeAndPassReceiver());
 }
 
@@ -271,6 +272,7 @@ void ContentSettingsAgentImpl::RequestFileSystemAccessAsync(
   }
 
   GetContentSettingsManager().AllowStorageAccess(
+      routing_id(),
       chrome::mojom::ContentSettingsManager::StorageType::FILE_SYSTEM,
       frame->GetSecurityOrigin(), frame->GetDocument().SiteForCookies(),
       frame->GetDocument().TopFrameOrigin(), std::move(callback));
@@ -374,6 +376,7 @@ bool ContentSettingsAgentImpl::AllowStorage(bool local) {
 
   bool result = false;
   GetContentSettingsManager().AllowStorageAccess(
+      routing_id(),
       local
           ? chrome::mojom::ContentSettingsManager::StorageType::LOCAL_STORAGE
           : chrome::mojom::ContentSettingsManager::StorageType::SESSION_STORAGE,
@@ -648,7 +651,7 @@ bool ContentSettingsAgentImpl::AllowStorageAccess(
 
   bool result = false;
   GetContentSettingsManager().AllowStorageAccess(
-      storage_type, frame->GetSecurityOrigin(),
+      routing_id(), storage_type, frame->GetSecurityOrigin(),
       frame->GetDocument().SiteForCookies(),
       frame->GetDocument().TopFrameOrigin(), &result);
   return result;

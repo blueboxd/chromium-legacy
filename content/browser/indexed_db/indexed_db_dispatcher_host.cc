@@ -28,6 +28,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "net/base/net_errors.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/database/database_util.h"
 #include "storage/browser/file_system/file_stream_reader.h"
@@ -197,9 +198,8 @@ class IndexedDBDataItemReader : public storage::mojom::BlobDataItemReader {
 IndexedDBDispatcherHost::IndexedDBDispatcherHost(
     int ipc_process_id,
     scoped_refptr<IndexedDBContextImpl> indexed_db_context,
-    scoped_refptr<ChromeBlobStorageContext> blob_storage_context)
+    mojo::PendingRemote<storage::mojom::BlobStorageContext> remote)
     : indexed_db_context_(std::move(indexed_db_context)),
-      blob_storage_context_(blob_storage_context),
       file_task_runner_(
           base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
                                   base::TaskPriority::USER_VISIBLE})),
@@ -207,14 +207,9 @@ IndexedDBDispatcherHost::IndexedDBDispatcherHost(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(indexed_db_context_);
-  DCHECK(blob_storage_context);
-
-  // Create both endpoints and send them separately to avoid race conditions.
-  mojo::PendingRemote<storage::mojom::BlobStorageContext> remote;
-  auto receiver = remote.InitWithNewPipeAndPassReceiver();
+  DCHECK(remote.is_valid());
 
   // Bind the BlobStorageContext remote on the idb sequence.
-  // Bind the receiver on the IO thread.
   IDBTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -226,20 +221,6 @@ IndexedDBDispatcherHost::IndexedDBDispatcherHost(
           // As |this| is destroyed on the idb task runner, it is safe to
           // pass it directly.
           base::Unretained(this), std::move(remote)));
-
-  // Subtle note: this needs to be posted to the IO thread from the UI thread so
-  // as not to race with other tasks being posted from the UI thread to the IO
-  // thread to initialize ChromeBlogStorageContext.  If this is posted from the
-  // idb task runner, it may end up running first due to priority inheritance.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          [](scoped_refptr<ChromeBlobStorageContext> blob_storage_context,
-             mojo::PendingReceiver<storage::mojom::BlobStorageContext>
-                 receiver) {
-            blob_storage_context->BindMojoContext(std::move(receiver));
-          },
-          base::RetainedRef(blob_storage_context), std::move(receiver)));
 }
 
 IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {

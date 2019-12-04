@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_receiver_set.h"
 #include "services/device/public/mojom/screen_orientation.mojom.h"
 #include "services/device/public/mojom/screen_orientation_lock_types.mojom.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_lock_type.h"
@@ -76,7 +76,7 @@ class CONTENT_EXPORT ScreenOrientationProvider
 
   LockOrientationCallback pending_callback_;
 
-  WebContentsFrameBindingSet<device::mojom::ScreenOrientation> bindings_;
+  WebContentsFrameReceiverSet<device::mojom::ScreenOrientation> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenOrientationProvider);
 };

@@ -67,5 +67,5 @@ std::unique_ptr<KeyedService> CreateTemplateURLServiceForTesting(
       profile->GetPrefs(), std::make_unique<UIThreadSearchTermsData>(),
       WebDataServiceFactory::GetKeywordWebDataForProfile(
           profile, ServiceAccessType::EXPLICIT_ACCESS),
-      nullptr, nullptr, base::Closure());
+      nullptr /* TemplateURLServiceClient */, base::Closure());
 }

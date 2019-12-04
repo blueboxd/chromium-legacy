@@ -25,32 +25,32 @@ class DOMTypedArray final : public DOMArrayBufferView {
   static ThisType* Create(scoped_refptr<TypedArray> buffer_view) {
     return MakeGarbageCollected<ThisType>(std::move(buffer_view));
   }
-  static ThisType* Create(unsigned length) {
+  static ThisType* Create(size_t length) {
     return Create(TypedArray::Create(length));
   }
-  static ThisType* Create(const ValueType* array, unsigned length) {
+  static ThisType* Create(const ValueType* array, size_t length) {
     return Create(TypedArray::Create(array, length));
   }
   static ThisType* Create(scoped_refptr<ArrayBuffer> buffer,
-                          unsigned byte_offset,
-                          unsigned length) {
+                          size_t byte_offset,
+                          size_t length) {
     return Create(TypedArray::Create(std::move(buffer), byte_offset, length));
   }
   static ThisType* Create(DOMArrayBufferBase* buffer,
-                          unsigned byte_offset,
-                          unsigned length) {
+                          size_t byte_offset,
+                          size_t length) {
     scoped_refptr<TypedArray> buffer_view =
         TypedArray::Create(buffer->Buffer(), byte_offset, length);
     return MakeGarbageCollected<ThisType>(std::move(buffer_view), buffer);
   }
 
-  static ThisType* CreateOrNull(unsigned length) {
+  static ThisType* CreateOrNull(size_t length) {
     scoped_refptr<ArrayBuffer> buffer =
         ArrayBuffer::CreateOrNull(length, sizeof(ValueType));
     return buffer ? Create(std::move(buffer), 0, length) : nullptr;
   }
 
-  static ThisType* CreateUninitializedOrNull(unsigned length) {
+  static ThisType* CreateUninitializedOrNull(size_t length) {
     scoped_refptr<ArrayBuffer> buffer =
         ArrayBuffer::CreateOrNull(length, sizeof(ValueType));
     return buffer ? Create(std::move(buffer), 0, length) : nullptr;
@@ -79,7 +79,7 @@ class DOMTypedArray final : public DOMArrayBufferView {
   }
   // Invoked by the indexed getter. Does not perform range checks; caller
   // is responsible for doing so and returning undefined as necessary.
-  ValueType Item(unsigned index) const { return View()->Item(index); }
+  ValueType Item(size_t index) const { return View()->Item(index); }
 
   v8::Local<v8::Object> Wrap(v8::Isolate*,
                              v8::Local<v8::Object> creation_context) override;

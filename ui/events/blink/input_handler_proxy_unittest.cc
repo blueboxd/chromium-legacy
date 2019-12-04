@@ -15,6 +15,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
 #include "base/test/trace_event_analyzer.h"
+#include "build/build_config.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/trees/swap_promise_monitor.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -1596,7 +1597,16 @@ TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedGestureScroll) {
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 }
 
-TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedGestureScrollPinchScroll) {
+// Disabled due to random failures on win-asan: https://crbug.com/1030589.
+#if defined(ADDRESS_SANITIZER) && defined(OS_WIN)
+#define MAYBE_VSyncAlignedGestureScrollPinchScroll \
+  DISABLED_VSyncAlignedGestureScrollPinchScroll
+#else
+#define MAYBE_VSyncAlignedGestureScrollPinchScroll \
+  VSyncAlignedGestureScrollPinchScroll
+#endif
+TEST_F(InputHandlerProxyEventQueueTest,
+       MAYBE_VSyncAlignedGestureScrollPinchScroll) {
   // Handle scroll on compositor.
   cc::InputHandlerScrollResult scroll_result_did_scroll_;
   scroll_result_did_scroll_.did_scroll = true;

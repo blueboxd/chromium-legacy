@@ -40,6 +40,10 @@ namespace network {
 class SharedURLLoaderFactory;
 }
 
+namespace enterprise_reporting {
+class ReportScheduler;
+}
+
 namespace policy {
 
 class AppInstallEventLogUploader;
@@ -176,6 +180,9 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   // token when fetching the policy OAuth token.
   void SetUserContextRefreshTokenForTests(const std::string& refresh_token);
 
+  // Return the ReportScheduler used to report usage data to the server.
+  enterprise_reporting::ReportScheduler* GetReportSchedulerForTesting();
+
  protected:
   // CloudPolicyManager:
   void GetChromePolicy(PolicyMap* policy_map) override;
@@ -223,6 +230,10 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   // call it multiple times.
   void StartRefreshSchedulerIfReady();
 
+  // Starts report scheduler if all the required conditions are fulfilled.
+  // Exits immediately if corresponding feature flag is closed.
+  void StartReportSchedulerIfReady();
+
   // ProfileManagerObserver:
   void OnProfileAdded(Profile* profile) override;
 
@@ -240,6 +251,9 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
 
   // Helper used to send app push-install event logs to the policy server.
   std::unique_ptr<AppInstallEventLogUploader> app_install_event_log_uploader_;
+
+  // Scheduler used to report usage data to DM server periodically.
+  std::unique_ptr<enterprise_reporting::ReportScheduler> report_scheduler_;
 
   // Username for the wildcard login check if applicable, empty otherwise.
   std::string wildcard_username_;

@@ -39,7 +39,7 @@ void* GetPermissionInfo(const FilePath& path, size_t* length) {
   *length = 0;
   PACL dacl = NULL;
   PSECURITY_DESCRIPTOR security_descriptor;
-  if (GetNamedSecurityInfo(as_wcstr(path.value()), SE_FILE_OBJECT,
+  if (GetNamedSecurityInfo(path.value().c_str(), SE_FILE_OBJECT,
                            DACL_SECURITY_INFORMATION, NULL, NULL, &dacl, NULL,
                            &security_descriptor) != ERROR_SUCCESS) {
     return NULL;
@@ -65,7 +65,7 @@ bool RestorePermissionInfo(const FilePath& path, void* info, size_t length) {
 
   PermissionInfo* perm = reinterpret_cast<PermissionInfo*>(info);
 
-  DWORD rc = SetNamedSecurityInfo(const_cast<wchar_t*>(as_wcstr(path.value())),
+  DWORD rc = SetNamedSecurityInfo(const_cast<wchar_t*>(path.value().c_str()),
                                   SE_FILE_OBJECT, DACL_SECURITY_INFORMATION,
                                   NULL, NULL, &perm->dacl, NULL);
   LocalFree(perm->security_descriptor);
@@ -112,7 +112,7 @@ void SyncPageCacheToDisk() {
 
 bool EvictFileFromSystemCache(const FilePath& file) {
   win::ScopedHandle file_handle(
-      CreateFile(as_wcstr(file.value()), GENERIC_READ | GENERIC_WRITE, 0, NULL,
+      CreateFile(file.value().c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL,
                  OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, NULL));
   if (!file_handle.IsValid())
     return false;
@@ -134,7 +134,7 @@ bool DenyFilePermission(const FilePath& path, DWORD permission) {
   PACL old_dacl;
   PSECURITY_DESCRIPTOR security_descriptor;
 
-  std::unique_ptr<TCHAR[]> path_ptr = ToCStr(as_wcstr(path.value()));
+  std::unique_ptr<TCHAR[]> path_ptr = ToCStr(path.value().c_str());
   if (GetNamedSecurityInfo(path_ptr.get(), SE_FILE_OBJECT,
                            DACL_SECURITY_INFORMATION, nullptr, nullptr,
                            &old_dacl, nullptr,

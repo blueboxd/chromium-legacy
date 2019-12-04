@@ -29,6 +29,24 @@ _DICT_MEMBER_PRESENCE_PREDICATES = {
 }
 
 
+def _blink_member_name(member):
+    assert isinstance(member, web_idl.DictionaryMember)
+
+    class BlinkMemberName(object):
+        def __init__(self, member):
+            blink_name = (member.code_generator_info.property_implemented_as
+                          or member.identifier)
+            self.get_api = name_style.api_func(blink_name)
+            self.set_api = name_style.api_func("set", blink_name)
+            self.has_api = name_style.api_func("has", blink_name)
+            # C++ data member that shows the presence of the IDL member.
+            self.presence_var = name_style.member_var("has", blink_name)
+            # C++ data member that holds the value of the IDL member.
+            self.value_var = name_style.member_var(blink_name)
+
+    return BlinkMemberName(member)
+
+
 def _is_member_always_present(member):
     assert isinstance(member, web_idl.DictionaryMember)
     return member.is_required or member.default_value is not None
@@ -45,10 +63,10 @@ def _member_presence_expr(member):
     if _is_member_always_present(member):
         return "true"
     if _does_use_presence_flag(member):
-        return name_style.member_var("has", member.identifier)
+        return _blink_member_name(member).presence_var
     blink_type = blink_type_info(member.idl_type).member_t
     assert blink_type in _DICT_MEMBER_PRESENCE_PREDICATES
-    _1 = name_style.member_var(member.identifier)
+    _1 = _blink_member_name(member).value_var
     return _format(_DICT_MEMBER_PRESENCE_PREDICATES[blink_type], _1)
 
 
@@ -61,7 +79,7 @@ def make_dict_member_get_def(cg_context):
 
     func_name = "{}::{}".format(
         blink_class_name(cg_context.dictionary),
-        name_style.api_func(member.identifier))
+        _blink_member_name(member).get_api)
     func_def = FunctionDefinitionNode(
         name=T(func_name),
         arg_decls=[],
@@ -70,10 +88,10 @@ def make_dict_member_get_def(cg_context):
     body = func_def.body
     body.add_template_vars(cg_context.template_bindings())
 
-    _1 = name_style.api_func("has", member.identifier)
+    _1 = _blink_member_name(member).has_api
     body.append(T(_format("DCHECK({_1}());", _1=_1)))
 
-    _1 = name_style.member_var(member.identifier)
+    _1 = _blink_member_name(member).value_var
     body.append(T(_format("return {_1};", _1=_1)))
 
     return func_def
@@ -88,7 +106,7 @@ def make_dict_member_has_def(cg_context):
 
     func_name = "{}::{}".format(
         blink_class_name(cg_context.dictionary),
-        name_style.api_func("has", member.identifier))
+        _blink_member_name(member).has_api)
     func_def = FunctionDefinitionNode(
         name=T(func_name), arg_decls=[], return_type=T("bool"))
 
@@ -109,7 +127,7 @@ def make_dict_member_set_def(cg_context):
 
     func_name = "{}::{}".format(
         blink_class_name(cg_context.dictionary),
-        name_style.api_func("set", member.identifier))
+        _blink_member_name(member).set_api)
     func_def = FunctionDefinitionNode(
         name=T(func_name),
         arg_decls=[
@@ -121,11 +139,11 @@ def make_dict_member_set_def(cg_context):
     body = func_def.body
     body.add_template_vars(cg_context.template_bindings())
 
-    _1 = name_style.member_var(member.identifier)
+    _1 = _blink_member_name(member).value_var
     body.append(T(_format("{_1} = value;", _1=_1)))
 
     if _does_use_presence_flag(member):
-        _1 = name_style.member_var("has", member.identifier)
+        _1 = _blink_member_name(member).presence_var
         body.append(T(_format("{_1} = true;", _1=_1)))
 
     return func_def
@@ -225,9 +243,9 @@ v8::Local<v8::Context> current_context = isolate->GetCurrentContext();"""
 
     # TODO(peria): Support runtime enabled / origin trial members.
     for key_index, member in enumerate(own_members):
-        _1 = name_style.api_func("has", member.identifier)
+        _1 = _blink_member_name(member).has_api
         _2 = key_index
-        _3 = name_style.api_func(member.identifier)
+        _3 = _blink_member_name(member).get_api
         pattern = ("""\
 if ({_1}()) {{
   if (!v8_dictionary
@@ -393,7 +411,7 @@ def make_fill_own_dict_member(key_index, member):
 
     T = TextNode
 
-    member_set_func = name_style.api_func("set", member.identifier)
+    member_set_func = _blink_member_name(member).set_api
 
     node = SequenceNode()
 
@@ -451,7 +469,7 @@ def make_dict_trace_def(cg_context):
     def trace_member_node(member):
         pattern = "TraceIfNeeded<{_1}>::Trace(visitor, {_2});"
         _1 = blink_type_info(member.idl_type).member_t
-        _2 = name_style.member_var(member.identifier)
+        _2 = _blink_member_name(member).value_var
         return T(_format(pattern, _1=_1, _2=_2))
 
     body.extend(map(trace_member_node, own_members))

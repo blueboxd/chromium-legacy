@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/views/sharing/sharing_browsertest.h"
 #include "chrome/browser/ui/views/sharing/sharing_dialog_view.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/profile_sync_service.h"
@@ -37,6 +38,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/views/layout/grid_layout.h"
 #include "url/gurl.h"
 
 namespace {
@@ -498,6 +500,44 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, LeftClick_ChooseDevice) {
   CheckLastSharingMessageSent("0123456789");
 }
 #endif
+
+IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, OpenNewTabAndShowBubble) {
+  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL,
+       sync_pb::SharingSpecificFields::UNKNOWN);
+
+  // Open tab to different origin.
+  sessions_helper::OpenTab(
+      /*browser_index=*/0,
+      embedded_test_server()->GetURL("mock2.http", GetTestPageURL()));
+
+  // Expect dialog to be shown in context of active WebContents.
+  base::RunLoop run_loop;
+  ClickToCallUiController::GetOrCreateFromWebContents(
+      GetBrowser(0)->tab_strip_model()->GetWebContentsAt(1))
+      ->set_on_dialog_shown_closure_for_testing(run_loop.QuitClosure());
+
+  // Navigate initial tab to a tel link.
+  NavigateParams params(GetBrowser(0), GURL(kTelUrl), ui::PAGE_TRANSITION_LINK);
+  params.source_contents = web_contents();
+  params.initiator_origin = url::Origin::Create(GURL("mock.http"));
+  params.disposition = WindowOpenDisposition::CURRENT_TAB;
+  ui_test_utils::NavigateToURL(&params);
+
+  // Wait until the bubble is visible.
+  run_loop.Run();
+  views::BubbleDialogDelegateView* bubble =
+      GetPageActionIconView(PageActionIconType::kClickToCall)->GetBubble();
+  ASSERT_NE(nullptr, bubble);
+
+#if defined(OS_CHROMEOS)
+  // Ensure that the dialog shows the origin in column id 1.
+  EXPECT_NE(nullptr, static_cast<views::GridLayout*>(bubble->GetLayoutManager())
+                         ->GetColumnSet(1));
+#else
+  // Ensure that the dialog shows the origin in the footnote.
+  EXPECT_NE(nullptr, bubble->GetFootnoteViewForTesting());
+#endif  // defined(OS_CHROMEOS)
+}
 
 class ClickToCallPolicyTest
     : public policy::PolicyTest,

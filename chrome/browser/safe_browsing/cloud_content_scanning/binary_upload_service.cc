@@ -18,10 +18,10 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/policy/browser_dm_token_storage.h"
-#include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_fcm_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/multipart_uploader.h"
+#include "chrome/browser/safe_browsing/dm_token_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/proto/webprotect.pb.h"
@@ -37,30 +37,6 @@ const int kScanningTimeoutSeconds = 5 * 60;  // 5 minutes
 const char kSbBinaryUploadUrl[] =
     "https://safebrowsing.google.com/safebrowsing/uploads/scan";
 
-policy::DMToken* GetTestingDMTokenStorage() {
-  static policy::DMToken dm_token =
-      policy::DMToken::CreateEmptyTokenForTesting();
-  return &dm_token;
-}
-
-policy::DMToken GetDMToken() {
-  policy::DMToken dm_token = *GetTestingDMTokenStorage();
-
-#if !defined(OS_CHROMEOS)
-  // This is not compiled on chromeos because
-  // ChromeBrowserCloudManagementController does not exist.  Also,
-  // policy::BrowserDMTokenStorage::Get()->RetrieveDMToken() does not return a
-  // valid token either.  Once these are fixed the #if !defined can be removed.
-
-  if (dm_token.is_empty() &&
-      policy::ChromeBrowserCloudManagementController::IsEnabled()) {
-    dm_token = policy::BrowserDMTokenStorage::Get()->RetrieveDMToken();
-  }
-#endif
-
-  return dm_token;
-}
-
 }  // namespace
 
 BinaryUploadService::BinaryUploadService(
@@ -68,6 +44,7 @@ BinaryUploadService::BinaryUploadService(
     Profile* profile)
     : url_loader_factory_(url_loader_factory),
       binary_fcm_service_(BinaryFCMService::Create(profile)),
+      profile_(profile),
       weakptr_factory_(this) {}
 
 BinaryUploadService::BinaryUploadService(
@@ -75,6 +52,7 @@ BinaryUploadService::BinaryUploadService(
     std::unique_ptr<BinaryFCMService> binary_fcm_service)
     : url_loader_factory_(url_loader_factory),
       binary_fcm_service_(std::move(binary_fcm_service)),
+      profile_(nullptr),
       weakptr_factory_(this) {}
 
 BinaryUploadService::~BinaryUploadService() {}
@@ -410,7 +388,7 @@ void BinaryUploadService::IsAuthorized(AuthorizationCallback callback) {
   if (!can_upload_data_.has_value()) {
     // Send a request to check if the browser can upload data.
     if (!pending_validate_data_upload_request_) {
-      auto dm_token = GetDMToken();
+      auto dm_token = GetDMToken(profile_);
       if (!dm_token.is_valid()) {
         std::move(callback).Run(false);
         return;

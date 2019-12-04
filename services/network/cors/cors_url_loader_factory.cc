@@ -54,6 +54,64 @@ InitiatorLockCompatibility VerifyRequestInitiatorLockWithPluginCheck(
 
 }  // namespace
 
+class CorsURLLoaderFactory::FactoryOverride final {
+ public:
+  class ExposedNetworkLoaderFactory final : public mojom::URLLoaderFactory {
+   public:
+    ExposedNetworkLoaderFactory(
+        std::unique_ptr<URLLoaderFactory> network_loader_factory,
+        mojo::PendingReceiver<mojom::URLLoaderFactory> receiver)
+        : network_loader_factory_(std::move(network_loader_factory)) {
+      if (receiver) {
+        receivers_.Add(this, std::move(receiver));
+      }
+    }
+    ~ExposedNetworkLoaderFactory() override = default;
+
+    ExposedNetworkLoaderFactory(const ExposedNetworkLoaderFactory&) = delete;
+    ExposedNetworkLoaderFactory& operator=(const ExposedNetworkLoaderFactory&) =
+        delete;
+
+    // mojom::URLLoaderFactory implementation
+    void CreateLoaderAndStart(
+        mojo::PendingReceiver<mojom::URLLoader> receiver,
+        int32_t routing_id,
+        int32_t request_id,
+        uint32_t options,
+        const ResourceRequest& request,
+        mojo::PendingRemote<mojom::URLLoaderClient> client,
+        const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+        override {
+      return network_loader_factory_->CreateLoaderAndStart(
+          std::move(receiver), routing_id, request_id, options, request,
+          std::move(client), traffic_annotation);
+    }
+    void Clone(
+        mojo::PendingReceiver<mojom::URLLoaderFactory> receiver) override {
+      receivers_.Add(this, std::move(receiver));
+    }
+
+   private:
+    std::unique_ptr<URLLoaderFactory> network_loader_factory_;
+    mojo::ReceiverSet<mojom::URLLoaderFactory> receivers_;
+  };
+
+  FactoryOverride(mojom::URLLoaderFactoryOverridePtr params,
+                  std::unique_ptr<URLLoaderFactory> network_loader_factory)
+      : network_loader_factory_(std::move(network_loader_factory),
+                                std::move(params->overridden_factory_receiver)),
+        overriding_factory_(std::move(params->overriding_factory)) {}
+
+  FactoryOverride(const FactoryOverride&) = delete;
+  FactoryOverride& operator=(const FactoryOverride&) = delete;
+
+  mojom::URLLoaderFactory* get() { return overriding_factory_.get(); }
+
+ private:
+  ExposedNetworkLoaderFactory network_loader_factory_;
+  mojo::Remote<mojom::URLLoaderFactory> overriding_factory_;
+};
+
 bool CorsURLLoaderFactory::allow_external_preflights_for_testing_ = false;
 
 CorsURLLoaderFactory::CorsURLLoaderFactory(
@@ -61,8 +119,7 @@ CorsURLLoaderFactory::CorsURLLoaderFactory(
     mojom::URLLoaderFactoryParamsPtr params,
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
     mojo::PendingReceiver<mojom::URLLoaderFactory> receiver,
-    const OriginAccessList* origin_access_list,
-    std::unique_ptr<mojom::URLLoaderFactory> network_loader_factory_for_testing)
+    const OriginAccessList* origin_access_list)
     : context_(context),
       is_trusted_(params->is_trusted),
       disable_web_security_(params->disable_web_security),
@@ -81,12 +138,18 @@ CorsURLLoaderFactory::CorsURLLoaderFactory(
         params->factory_bound_access_patterns->source_origin,
         params->factory_bound_access_patterns->block_patterns);
   }
-  network_loader_factory_ =
-      network_loader_factory_for_testing
-          ? std::move(network_loader_factory_for_testing)
-          : std::make_unique<network::URLLoaderFactory>(
-                context, std::move(params),
-                std::move(resource_scheduler_client), this);
+
+  auto factory_override = std::move(params->factory_override);
+  auto network_loader_factory = std::make_unique<network::URLLoaderFactory>(
+      context, std::move(params), std::move(resource_scheduler_client), this);
+
+  if (factory_override) {
+    DCHECK(factory_override->overriding_factory);
+    factory_override_ = std::make_unique<FactoryOverride>(
+        std::move(factory_override), std::move(network_loader_factory));
+  } else {
+    network_loader_factory_ = std::move(network_loader_factory);
+  }
 
   receivers_.Add(this, std::move(receiver));
   receivers_.set_disconnect_handler(base::BindRepeating(
@@ -128,20 +191,24 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
     return;
   }
 
+  mojom::URLLoaderFactory* const inner_url_loader_factory =
+      factory_override_ ? factory_override_->get()
+                        : network_loader_factory_.get();
+  DCHECK(inner_url_loader_factory);
   if (context_->IsCorsEnabled() && !disable_web_security_) {
     auto loader = std::make_unique<CorsURLLoader>(
         std::move(receiver), routing_id, request_id, options,
         base::BindOnce(&CorsURLLoaderFactory::DestroyURLLoader,
                        base::Unretained(this)),
         resource_request, std::move(client), traffic_annotation,
-        network_loader_factory_.get(), origin_access_list_,
+        inner_url_loader_factory, origin_access_list_,
         factory_bound_origin_access_list_.get(),
         context_->cors_preflight_controller());
     auto* raw_loader = loader.get();
     OnLoaderCreated(std::move(loader));
     raw_loader->Start();
   } else {
-    network_loader_factory_->CreateLoaderAndStart(
+    inner_url_loader_factory->CreateLoaderAndStart(
         std::move(receiver), routing_id, request_id, options, resource_request,
         std::move(client), traffic_annotation);
   }

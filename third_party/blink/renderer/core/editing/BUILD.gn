@@ -33,6 +33,7 @@ blink_core_sources("editing") {
     "commands/drag_and_drop_command.h",
     "commands/edit_command.cc",
     "commands/edit_command.h",
+    "commands/editing_command_type.h",
     "commands/editing_commands_utilities.cc",
     "commands/editing_commands_utilities.h",
     "commands/editing_state.cc",

@@ -61,13 +61,15 @@ suite('<history-list>', function() {
           const dialog = element.$.dialog.get();
           assertTrue(dialog.open);
           element.$$('.action-button').click();
-          return testService.whenCalled('deleteItems');
+          return testService.whenCalled('removeVisits');
         })
-        .then(test_util.flushTasks)
-        .then(function() {
-          deleteComplete();
+        .then(function(visits) {
+          assertEquals(1, visits.length);
+          assertEquals('http://example.com', visits[0].url);
+          assertEquals('2015-01-01 UTC', visits[0].timestamps[0]);
           return test_util.flushTasks();
         })
+        .then(test_util.flushTasks)
         .then(function() {
           assertEquals(element.historyData_.length, 0);
         });
@@ -398,17 +400,27 @@ suite('<history-list>', function() {
           return test_util.flushTasks();
         })
         .then(function() {
-          testService.resetResolver('deleteItems');
+          testService.resetResolver('removeVisits');
           // Confirmation dialog should appear.
           assertTrue(dialog.open);
           element.$$('.action-button').click();
-          return testService.whenCalled('deleteItems');
+          return testService.whenCalled('removeVisits');
         })
-        .then(test_util.flushTasks)
-        .then(function() {
-          deleteComplete();
+        .then(function(visits) {
+          assertEquals(3, visits.length);
+          assertEquals(TEST_HISTORY_RESULTS[2].url, visits[0].url);
+          assertEquals(
+              TEST_HISTORY_RESULTS[2].allTimestamps[0],
+              visits[0].timestamps[0]);
+          assertEquals(ADDITIONAL_RESULTS[1].url, visits[1].url);
+          assertEquals(
+              ADDITIONAL_RESULTS[1].allTimestamps[0], visits[1].timestamps[0]);
+          assertEquals(ADDITIONAL_RESULTS[3].url, visits[2].url);
+          assertEquals(
+              ADDITIONAL_RESULTS[3].allTimestamps[0], visits[2].timestamps[0]);
           return test_util.flushTasks();
         })
+        .then(test_util.flushTasks)
         .then(function() {
           assertEquals(5, element.historyData_.length);
           assertEquals(element.historyData_[0].dateRelativeDay, '2016-03-15');
@@ -440,13 +452,17 @@ suite('<history-list>', function() {
           items[1].$['menu-button'].click();
           element.$.sharedMenu.get();
           element.$$('#menuRemoveButton').click();
-          return testService.whenCalled('deleteItems');
+          return testService.whenCalled('removeVisits');
         })
-        .then(test_util.flushTasks)
-        .then(function() {
-          deleteComplete();
+        .then(function(visits) {
+          assertEquals(1, visits.length);
+          assertEquals(TEST_HISTORY_RESULTS[1].url, visits[0].url);
+          assertEquals(
+              TEST_HISTORY_RESULTS[1].allTimestamps[0],
+              visits[0].timestamps[0]);
           return test_util.flushTasks();
         })
+        .then(test_util.flushTasks)
         .then(function() {
           assertDeepEquals(
               [
@@ -460,6 +476,65 @@ suite('<history-list>', function() {
           assertDeepEquals(
               [false, false, false],
               Array.from(items).slice(0, 3).map(i => i.selected));
+        });
+  });
+
+  test('delete disabled while pending', function() {
+    app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
+    let items;
+    testService.delayDelete();
+    return test_util.flushTasks()
+        .then(function() {
+          Polymer.dom.flush();
+          items = polymerSelectAll(element, 'history-item');
+          items[1].$.checkbox.click();
+          items[2].$.checkbox.click();
+          items[1].$['menu-button'].click();
+          element.$.sharedMenu.get();
+          element.$$('#menuRemoveButton').click();
+          return testService.whenCalled('removeVisits');
+        })
+        .then(function(visits) {
+          assertEquals(1, visits.length);
+          assertEquals(TEST_HISTORY_RESULTS[1].url, visits[0].url);
+          assertEquals(
+              TEST_HISTORY_RESULTS[1].allTimestamps[0],
+              visits[0].timestamps[0]);
+
+          // Deletion is still happening. Verify that menu button and toolbar
+          // are disabled.
+          assertTrue(element.$$('#menuRemoveButton').disabled);
+          assertEquals(2, toolbar.count);
+          assertTrue(toolbar.$$('cr-toolbar-selection-overlay').deleteDisabled);
+
+          // Key event should be ignored.
+          assertEquals(1, testService.getCallCount('removeVisits'));
+          MockInteractions.pressAndReleaseKeyOn(
+              document.body, 46, '', 'Delete');
+
+          return test_util.flushTasks();
+        })
+        .then(function() {
+          assertEquals(1, testService.getCallCount('removeVisits'));
+          testService.finishRemoveVisits();
+          return test_util.flushTasks();
+        })
+        .then(test_util.flushTasks)
+        .then(function() {
+          // Reselect some items.
+          items = polymerSelectAll(element, 'history-item');
+          items[1].$.checkbox.click();
+          items[2].$.checkbox.click();
+
+          // Check that delete option is re-enabled.
+          assertEquals(2, toolbar.count);
+          assertFalse(
+              toolbar.$$('cr-toolbar-selection-overlay').deleteDisabled);
+
+          // Menu button should also be re-enabled.
+          items[1].$['menu-button'].click();
+          element.$.sharedMenu.get();
+          assertFalse(element.$$('#menuRemoveButton').disabled);
         });
   });
 
@@ -501,7 +576,7 @@ suite('<history-list>', function() {
         .then(function() {
           assertTrue(dialog.open);
           element.$$('.action-button').click();
-          return testService.whenCalled('deleteItems');
+          return testService.whenCalled('removeVisits');
         })
         .then(function(toRemove) {
           assertEquals('https://www.example.com', toRemove[0].url);

@@ -18,12 +18,12 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
-#include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
+#include "chrome/browser/safe_browsing/dm_token_utils.h"
 #include "chrome/browser/safe_browsing/download_protection/check_client_download_request_base.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_item_request.h"
@@ -47,7 +47,6 @@
 namespace safe_browsing {
 
 using content::BrowserThread;
-using policy::BrowserDMTokenStorage;
 
 namespace {
 
@@ -325,7 +324,7 @@ void CheckClientDownloadRequest::UploadBinary(
     request->set_request_malware_scan(std::move(malware_request));
   }
 
-  policy::DMToken dm_token = BrowserDMTokenStorage::Get()->RetrieveDMToken();
+  policy::DMToken dm_token = GetDMToken(profile);
   DCHECK(dm_token.is_valid());
   request->set_dm_token(dm_token.value());
 
@@ -357,9 +356,10 @@ bool CheckClientDownloadRequest::ShouldUploadForDlpScan() {
           CheckContentComplianceValues::CHECK_UPLOADS_AND_DOWNLOADS)
     return false;
 
+  Profile* profile = Profile::FromBrowserContext(GetBrowserContext());
   // If there's no valid DM token, the upload will fail, so we can skip
   // uploading now.
-  if (!BrowserDMTokenStorage::Get()->RetrieveDMToken().is_valid())
+  if (!GetDMToken(profile).is_valid())
     return false;
 
   const base::ListValue* domains = g_browser_process->local_state()->GetList(
@@ -399,7 +399,7 @@ bool CheckClientDownloadRequest::ShouldUploadForMalwareScan(
 
   // If there's no valid DM token, the upload will fail, so we can skip
   // uploading now.
-  return BrowserDMTokenStorage::Get()->RetrieveDMToken().is_valid();
+  return GetDMToken(profile).is_valid();
 }
 
 void CheckClientDownloadRequest::OnDeepScanningComplete(

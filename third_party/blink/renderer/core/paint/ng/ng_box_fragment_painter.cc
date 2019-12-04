@@ -885,8 +885,6 @@ void NGBoxFragmentPainter::PaintColumnRules(
         center = (current_column.X() + previous_column.Right()) / 2;
         box_side = BoxSide::kRight;
       }
-      // The last column may be shorter than the previous ones, but otherwise
-      // they should be the same.
       LayoutUnit rule_length = previous_column.Height();
       DCHECK_GE(rule_length, current_column.Height());
       rule.offset.top = previous_column.offset.top;
@@ -905,8 +903,6 @@ void NGBoxFragmentPainter::PaintColumnRules(
         center = (current_column.Y() + previous_column.Bottom()) / 2;
         box_side = BoxSide::kBottom;
       }
-      // The last column may be shorter than the previous ones, but otherwise
-      // they should be the same.
       LayoutUnit rule_length = previous_column.Width();
       DCHECK_GE(rule_length, current_column.Width());
       rule.offset.left = previous_column.offset.left;

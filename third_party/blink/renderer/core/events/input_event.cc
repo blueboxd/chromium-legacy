@@ -5,9 +5,9 @@
 #include "third_party/blink/renderer/core/events/input_event.h"
 
 #include "base/stl_util.h"
-#include "third_party/blink/public/platform/web_editing_command_type.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
 #include "third_party/blink/renderer/core/dom/range.h"
+#include "third_party/blink/renderer/core/editing/commands/editing_command_type.h"
 
 namespace blink {
 

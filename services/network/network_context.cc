@@ -486,7 +486,7 @@ void NetworkContext::CreateURLLoaderFactory(
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client) {
   url_loader_factories_.emplace(std::make_unique<cors::CorsURLLoaderFactory>(
       this, std::move(params), std::move(resource_scheduler_client),
-      std::move(receiver), &cors_origin_access_list_, nullptr));
+      std::move(receiver), &cors_origin_access_list_));
 }
 
 void NetworkContext::ActivateDohProbes() {

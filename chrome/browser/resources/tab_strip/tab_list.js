@@ -170,10 +170,6 @@ class TabListElement extends CustomElement {
 
     this.tabsApi_.getTabs().then(tabs => {
       tabs.forEach(tab => this.onTabCreated_(tab));
-      this.animationPromises.then(() => {
-        this.scrollToActiveTab_();
-      });
-
       addWebUIListener('tab-created', tab => this.onTabCreated_(tab));
       addWebUIListener(
           'tab-moved', (tabId, newIndex) => this.onTabMoved_(tabId, newIndex));
@@ -272,7 +268,9 @@ class TabListElement extends CustomElement {
 
   /** @private */
   onDocumentVisibilityChange_() {
-    this.scrollToActiveTab_();
+    if (!this.tabStripEmbedderProxy_.isVisible()) {
+      this.scrollToActiveTab_();
+    }
     Array.from(this.tabsContainerElement_.children)
         .forEach((tabElement) => this.updateThumbnailTrackStatus_(tabElement));
   }
@@ -372,7 +370,6 @@ class TabListElement extends CustomElement {
     if (newlyActiveTab) {
       newlyActiveTab.tab = /** @type {!TabData} */ (
           Object.assign({}, newlyActiveTab.tab, {active: true}));
-      this.scrollToActiveTab_();
     }
   }
 
@@ -398,6 +395,9 @@ class TabListElement extends CustomElement {
     const tabElement = this.createTabElement_(tab);
     this.insertTabOrMoveTo_(tabElement, tab.index);
     this.addAnimationPromise_(tabElement.slideIn());
+    if (tab.active) {
+      this.scrollToTab_(tabElement);
+    }
   }
 
   /**
@@ -461,7 +461,6 @@ class TabListElement extends CustomElement {
       if (tab.active) {
         this.scrollToTab_(tabElement);
       }
-
       this.updateThumbnailTrackStatus_(tabElement);
     }
   }

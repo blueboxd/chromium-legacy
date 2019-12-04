@@ -10,7 +10,6 @@ import("//build/config/sysroot.gni")
 import("//build/util/lastchange.gni")
 import("//build/util/process_version.gni")
 import("//build/util/version.gni")
-import("//chrome/process_version_rc_template.gni")  # For branding_file_path.
 import("//components/nacl/features.gni")
 import("//third_party/widevine/cdm/widevine.gni")
 

@@ -76,28 +76,73 @@ Polymer({
   /** @private {boolean} */
   focusRequested_: false,
 
+  /**
+   * GUID of the focused network before the list is updated.  This
+   * is used to re-apply focus to the same network if possible.
+   * @private {string}
+   */
+  focusedGuidBeforeUpdate_: '',
+
+  /**
+   * Index of the focused network before the list is updated.  This
+   * is used to re-apply focus when the previously focused network
+   * is no longer listed.
+   * @private {number}
+   */
+  focusedIndexBeforeUpdate_: -1,
+
   focus: function() {
     this.focusRequested_ = true;
     this.focusFirstItem_();
   },
 
   /** @private */
-  updateListItems_: function() {
-    this.saveScroll(this.$.networkList);
-    const beforeNetworks = this.customItems.filter(function(item) {
-      return item.showBeforeNetworksList == true;
-    });
-    const afterNetworks = this.customItems.filter(function(item) {
-      return item.showBeforeNetworksList == false;
-    });
-    this.listItems_ = beforeNetworks.concat(this.networks, afterNetworks);
-    this.restoreScroll(this.$.networkList);
-    this.updateScrollableContents();
-    if (this.focusRequested_) {
+  saveFocus_: function() {
+    if (this.shadowRoot.activeElement &&
+        this.shadowRoot.activeElement.is === 'network-list-item') {
+      const focusedNetwork = /** @type {!NetworkList.NetworkListItem} */ (
+          this.shadowRoot.activeElement);
+      if (focusedNetwork.item && focusedNetwork.item.guid) {
+        this.focusedGuidBeforeUpdate = focusedNetwork.item.guid;
+        this.focusedIndexBeforeUpdate_ = this.listItems_.findIndex(
+            n => n.guid === this.focusedGuidBeforeUpdate);
+        return;
+      }
+    }
+    this.focusedGuidBeforeUpdate = '';
+    this.focusedIndexBeforeUpdate_ = -1;
+  },
+
+  /** @private */
+  restoreFocus_: function() {
+    if (this.focusedGuidBeforeUpdate) {
+      let currentIndex = this.listItems_.findIndex(
+          (n) => n.guid === this.focusedGuidBeforeUpdate);
+      if (currentIndex < 0) {
+        currentIndex = this.focusedIndexBeforeUpdate_ < this.listItems_.length ?
+            this.focusedIndexBeforeUpdate_ :
+            0;
+      }
+      this.$.networkList.focusItem(currentIndex);
+    } else if (this.focusRequested_) {
       this.async(function() {
         this.focusFirstItem_();
       });
     }
+  },
+
+  /** @private */
+  updateListItems_: function() {
+    this.saveScroll(this.$.networkList);
+    this.saveFocus_();
+    const beforeNetworks =
+        this.customItems.filter(n => n.showBeforeNetworksList == true);
+    const afterNetworks =
+        this.customItems.filter(n => n.showBeforeNetworksList == false);
+    this.listItems_ = beforeNetworks.concat(this.networks, afterNetworks);
+    this.restoreScroll(this.$.networkList);
+    this.updateScrollableContents();
+    this.restoreFocus_();
   },
 
   /** @private */

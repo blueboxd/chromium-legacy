@@ -24,9 +24,9 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
+#include "chrome/browser/printing/print_preview_sticky_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/cloud_devices/common/printer_description.h"
@@ -168,9 +168,10 @@ void ConstructCapabilitiesAndCompleteCallback(
 
 }  // namespace
 
-PdfPrinterHandler::PdfPrinterHandler(Profile* profile,
-                                     content::WebContents* preview_web_contents,
-                                     StickySettings* sticky_settings)
+PdfPrinterHandler::PdfPrinterHandler(
+    Profile* profile,
+    content::WebContents* preview_web_contents,
+    PrintPreviewStickySettings* sticky_settings)
     : preview_web_contents_(preview_web_contents),
       profile_(profile),
       sticky_settings_(sticky_settings) {}

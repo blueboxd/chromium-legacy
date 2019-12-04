@@ -45,9 +45,6 @@ struct WebMediaConfiguration;
 class MODULES_EXPORT MediaRecorderHandler final
     : public GarbageCollected<MediaRecorderHandler> {
  public:
-  static MediaRecorderHandler* Create(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-
   explicit MediaRecorderHandler(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~MediaRecorderHandler();

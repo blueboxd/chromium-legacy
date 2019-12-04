@@ -19,8 +19,10 @@ public class ThinWebViewFactory {
      * @param context The context to create this view.
      * @param windowAndroid The associated {@code WindowAndroid} on which the view is to be
      *         displayed.
+     * @param constraints A set of constraints associated with this view.
      */
-    public static ThinWebView create(Context context, WindowAndroid windowAndroid) {
-        return new ThinWebViewImpl(context, windowAndroid);
+    public static ThinWebView create(
+            Context context, WindowAndroid windowAndroid, ThinWebViewConstraints constraints) {
+        return new ThinWebViewImpl(context, windowAndroid, constraints);
     }
 }

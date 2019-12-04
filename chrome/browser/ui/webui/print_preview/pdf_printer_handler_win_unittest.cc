@@ -43,7 +43,7 @@ class FakePdfPrinterHandler : public PdfPrinterHandler {
  public:
   FakePdfPrinterHandler(Profile* profile,
                         content::WebContents* contents,
-                        StickySettings* sticky_settings)
+                        PrintPreviewStickySettings* sticky_settings)
       : PdfPrinterHandler(profile, contents, sticky_settings),
         save_failed_(false) {}
 

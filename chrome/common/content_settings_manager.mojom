@@ -33,6 +33,7 @@ interface ContentSettingsManager {
   // Then these parameters would not need to be passed here.
   [Sync]
   AllowStorageAccess(
+      int32 render_frame_id,
       StorageType storage_type,
       url.mojom.Origin origin,
       url.mojom.Url site_for_cookies,
@@ -40,5 +41,7 @@ interface ContentSettingsManager {
 
   // Tells the browser that content in the current page was blocked due to the
   // user's content settings.
-  OnContentBlocked(content_settings.mojom.ContentSettingsType type);
+  OnContentBlocked(
+      int32 render_frame_id,
+      content_settings.mojom.ContentSettingsType type);
 };

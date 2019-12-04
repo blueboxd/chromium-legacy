@@ -223,5 +223,9 @@
         Size 20
       </message>
     </if>
+
+    <message name="IDS_AX_ROLE_DESCRIPTION_PDF_HIGHLIGHT" desc="Accessibility role description for PDF highlight">
+      Highlight
+    </message>
   </if>
 </grit-part>

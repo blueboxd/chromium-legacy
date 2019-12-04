@@ -101,7 +101,7 @@ NativeLibrary LoadNativeLibraryHelper(const FilePath& library_path,
     // directory as the library may have dependencies on DLLs in this
     // directory.
     module = ::LoadLibraryExW(
-        as_wcstr(library_path.value()), nullptr,
+        library_path.value().c_str(), nullptr,
         LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
     // If LoadLibraryExW succeeds, log this metric and return.
     if (module) {
@@ -128,7 +128,7 @@ NativeLibrary LoadNativeLibraryHelper(const FilePath& library_path,
       restore_directory = true;
     }
   }
-  module = ::LoadLibraryW(as_wcstr(library_path.value()));
+  module = ::LoadLibraryW(library_path.value().c_str());
 
   // GetLastError() needs to be called immediately after LoadLibraryW call.
   if (!module && error)
@@ -151,13 +151,13 @@ NativeLibrary LoadSystemLibraryHelper(const FilePath& library_path,
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   NativeLibrary module;
   BOOL module_found =
-      ::GetModuleHandleExW(0, as_wcstr(library_path.value()), &module);
+      ::GetModuleHandleExW(0, library_path.value().c_str(), &module);
   if (!module_found) {
     bool are_search_flags_available = AreSearchFlagsAvailable();
     // Prefer LOAD_LIBRARY_SEARCH_SYSTEM32 to avoid DLL preloading attacks.
     DWORD flags = are_search_flags_available ? LOAD_LIBRARY_SEARCH_SYSTEM32
                                              : LOAD_WITH_ALTERED_SEARCH_PATH;
-    module = ::LoadLibraryExW(as_wcstr(library_path.value()), nullptr, flags);
+    module = ::LoadLibraryExW(library_path.value().c_str(), nullptr, flags);
 
     if (!module && error)
       error->code = ::GetLastError();
@@ -232,7 +232,7 @@ NativeLibrary PinSystemLibrary(FilePath::StringPieceType name,
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   ScopedNativeLibrary module;
   if (::GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_PIN,
-                           as_wcstr(library_path.value()),
+                           library_path.value().c_str(),
                            ScopedNativeLibrary::Receiver(module).get())) {
     return module.release();
   }
@@ -244,7 +244,7 @@ NativeLibrary PinSystemLibrary(FilePath::StringPieceType name,
 
   ScopedNativeLibrary temp;
   if (::GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_PIN,
-                           as_wcstr(library_path.value()),
+                           library_path.value().c_str(),
                            ScopedNativeLibrary::Receiver(temp).get())) {
     return module.release();
   }

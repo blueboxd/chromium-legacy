@@ -318,11 +318,14 @@ void CreateNetworkFactoryForNavigationPreloadOnUI(
   // Consult the embedder.
   mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
       header_client;
+  // Here we give nullptr for |factory_override|, because CORS is no-op
+  // for navigations.
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       partition->browser_context(), frame_tree_node->current_frame_host(),
       frame_tree_node->current_frame_host()->GetProcess()->GetID(),
       ContentBrowserClient::URLLoaderFactoryType::kNavigation, url::Origin(),
-      &receiver, &header_client, &bypass_redirect_checks_unused);
+      &receiver, &header_client, &bypass_redirect_checks_unused,
+      /*factory_override=*/nullptr);
 
   // Make the network factory.
   NavigationURLLoaderImpl::CreateURLLoaderFactoryWithHeaderClient(

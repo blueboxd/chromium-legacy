@@ -108,7 +108,7 @@ std::unique_ptr<PfRegion> OpenIcuDataFile(const std::string& filename) {
 #if defined(OS_WIN)
   // TODO(brucedawson): http://crbug.com/445616
   wchar_t tmp_buffer[_MAX_PATH] = {0};
-  wcscpy_s(tmp_buffer, as_wcstr(data_path.value()));
+  wcscpy_s(tmp_buffer, data_path.value().c_str());
   debug::Alias(tmp_buffer);
 #endif
   data_path = data_path.AppendASCII(filename);
@@ -116,7 +116,7 @@ std::unique_ptr<PfRegion> OpenIcuDataFile(const std::string& filename) {
 #if defined(OS_WIN)
   // TODO(brucedawson): http://crbug.com/445616
   wchar_t tmp_buffer2[_MAX_PATH] = {0};
-  wcscpy_s(tmp_buffer2, as_wcstr(data_path.value()));
+  wcscpy_s(tmp_buffer2, data_path.value().c_str());
   debug::Alias(tmp_buffer2);
 #endif
 
@@ -152,7 +152,7 @@ std::unique_ptr<PfRegion> OpenIcuDataFile(const std::string& filename) {
     // TODO(brucedawson): http://crbug.com/445616.
     g_debug_icu_pf_last_error = ::GetLastError();
     g_debug_icu_pf_error_details = file.error_details();
-    wcscpy_s(g_debug_icu_pf_filename, as_wcstr(data_path.value()));
+    wcscpy_s(g_debug_icu_pf_filename, data_path.value().c_str());
   }
 #endif  // OS_WIN
 

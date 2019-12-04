@@ -2490,6 +2490,7 @@ enum WebFeature {
   kV8RTCLegacyStatsReport_Timestamp_AttributeGetter = 3109,
   kInputElementValueAsDateGetter = 3110,
   kInputElementValueAsDateSetter = 3111,
+  kHTMLMetaElementReferrerPolicy = 3112,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

@@ -16,7 +16,7 @@
 #include "components/sync/driver/sync_user_settings.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_binding_set.h"
+#include "content/public/browser/web_contents_receiver_set.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -63,7 +63,7 @@ class SyncEncryptionKeysTabHelper::EncryptionKeyApi
  public:
   EncryptionKeyApi(content::WebContents* web_contents,
                    syncer::SyncService* sync_service)
-      : sync_service_(sync_service), bindings_(web_contents, this) {
+      : sync_service_(sync_service), receivers_(web_contents, this) {
     DCHECK(web_contents);
     DCHECK(sync_service);
   }
@@ -73,7 +73,7 @@ class SyncEncryptionKeysTabHelper::EncryptionKeyApi
       const std::vector<std::vector<uint8_t>>& encryption_keys,
       const std::string& gaia_id,
       SetEncryptionKeysCallback callback) override {
-    CHECK_EQ(bindings_.GetCurrentTargetFrame()->GetLastCommittedOrigin(),
+    CHECK_EQ(receivers_.GetCurrentTargetFrame()->GetLastCommittedOrigin(),
              GetAllowedOrigin());
 
     sync_service_->GetUserSettings()->AddTrustedVaultDecryptionKeys(
@@ -84,9 +84,9 @@ class SyncEncryptionKeysTabHelper::EncryptionKeyApi
  private:
   syncer::SyncService* const sync_service_;
 
-  content::WebContentsFrameBindingSet<
+  content::WebContentsFrameReceiverSet<
       chrome::mojom::SyncEncryptionKeysExtension>
-      bindings_;
+      receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(EncryptionKeyApi);
 };

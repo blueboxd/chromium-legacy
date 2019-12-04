@@ -229,7 +229,6 @@ void ScriptController::ClearWindowProxy() {
 
 void ScriptController::UpdateDocument() {
   window_proxy_manager_->MainWorldProxyMaybeUninitialized()->UpdateDocument();
-  EnableEval();
 }
 
 void ScriptController::ExecuteJavaScriptURL(

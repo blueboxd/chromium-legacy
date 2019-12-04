@@ -5,8 +5,8 @@
 #ifndef CONTENT_BROWSER_DISPLAY_CUTOUT_DISPLAY_CUTOUT_HOST_IMPL_H_
 #define CONTENT_BROWSER_DISPLAY_CUTOUT_DISPLAY_CUTOUT_HOST_IMPL_H_
 
-#include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_receiver_set.h"
 #include "third_party/blink/public/mojom/page/display_cutout.mojom.h"
 
 namespace content {
@@ -80,8 +80,8 @@ class DisplayCutoutHostImpl : public blink::mojom::DisplayCutoutHost {
   // Stores a map of RenderFrameHosts and their current viewport fit values.
   std::map<RenderFrameHost*, blink::mojom::ViewportFit> values_;
 
-  // Holds WebContents associated mojo bindings.
-  WebContentsFrameBindingSet<blink::mojom::DisplayCutoutHost> bindings_;
+  // Holds WebContents associated mojo receivers.
+  WebContentsFrameReceiverSet<blink::mojom::DisplayCutoutHost> receivers_;
 
   // Weak pointer to the owning |WebContentsImpl| instance.
   WebContentsImpl* web_contents_impl_;

@@ -9,7 +9,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "gin/arguments.h"
 #include "gin/object_template_builder.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -76,7 +76,7 @@ gin::ObjectTemplateBuilder ContextualSearchWrapper::GetObjectTemplateBuilder(
 
 bool ContextualSearchWrapper::EnsureServiceConnected() {
   if (render_frame() && !contextual_search_js_api_service_) {
-    render_frame()->GetRemoteInterfaces()->GetInterface(
+    render_frame()->GetBrowserInterfaceBroker()->GetInterface(
         contextual_search_js_api_service_.BindNewPipeAndPassReceiver());
     return true;
   }

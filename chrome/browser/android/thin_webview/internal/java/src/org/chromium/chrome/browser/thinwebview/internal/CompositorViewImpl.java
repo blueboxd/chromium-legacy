@@ -18,6 +18,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.thinwebview.CompositorView;
+import org.chromium.chrome.browser.thinwebview.ThinWebViewConstraints;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -29,6 +30,7 @@ import org.chromium.ui.base.WindowAndroid;
 public class CompositorViewImpl implements CompositorView {
     private final Context mContext;
     private final View mView;
+    private final ThinWebViewConstraints mViewConstraints;
     private long mNativeCompositorViewImpl;
 
     /**
@@ -37,9 +39,12 @@ public class CompositorViewImpl implements CompositorView {
      * @param context The context to create this view.
      * @param windowAndroid The associated {@code WindowAndroid} on which the view is to be
      *         displayed.
+     * @param constraints A set of constraints associated with this view.
      */
-    public CompositorViewImpl(Context context, WindowAndroid windowAndroid) {
+    public CompositorViewImpl(
+            Context context, WindowAndroid windowAndroid, ThinWebViewConstraints constraints) {
         mContext = context;
+        mViewConstraints = constraints.clone();
         mView = useSurfaceView() ? createSurfaceView() : createTextureView();
         mNativeCompositorViewImpl =
                 CompositorViewImplJni.get().init(CompositorViewImpl.this, windowAndroid);
@@ -66,8 +71,16 @@ public class CompositorViewImpl implements CompositorView {
         }
     }
 
+    @Override
+    public void setAlpha(float alpha) {
+        assert mViewConstraints.supportsOpacity;
+        if (mNativeCompositorViewImpl == 0) return;
+        mView.setAlpha(alpha);
+    }
+
     private SurfaceView createSurfaceView() {
         SurfaceView surfaceView = new SurfaceView(mContext);
+        if (mViewConstraints.zOrderOnTop) surfaceView.setZOrderOnTop(true);
         surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(SurfaceHolder surfaceHolder) {
@@ -147,8 +160,9 @@ public class CompositorViewImpl implements CompositorView {
         // TODO(shaktisahu): May be detach and reattach the surface view from the hierarchy.
     }
 
-    private static boolean useSurfaceView() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
+    private boolean useSurfaceView() {
+        if (mViewConstraints.supportsOpacity) return false;
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
     }
 
     @NativeMethods

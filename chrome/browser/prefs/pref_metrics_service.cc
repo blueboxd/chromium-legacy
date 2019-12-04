@@ -19,31 +19,8 @@
 #include "chrome/common/url_constants.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/pref_service.h"
-#include "components/rappor/public/rappor_utils.h"
-#include "components/rappor/rappor_service_impl.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
-#include "content/public/browser/browser_url_handler.h"
 #include "url/gurl.h"
-
-namespace {
-
-#if !defined(OS_ANDROID)
-// Record a sample for the Settings.NewTabPage rappor metric.
-void SampleNewTabPageURL(Profile* profile) {
-  GURL ntp_url(chrome::kChromeUINewTabURL);
-  bool reverse_on_redirect = false;
-  content::BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
-      &ntp_url,
-      profile,
-      &reverse_on_redirect);
-  if (ntp_url.is_valid()) {
-    rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
-                                            "Settings.NewTabPage", ntp_url);
-  }
-}
-#endif
-
-}  // namespace
 
 PrefMetricsService::PrefMetricsService(Profile* profile)
     : profile_(profile), prefs_(profile_->GetPrefs()) {
@@ -68,17 +45,13 @@ void PrefMetricsService::RecordHomePageLaunchMetrics(bool show_home_button,
   // use, due to both false negatives (pages that come from unknown TLD+1 X but
   // consist of a search box that sends to known TLD+1 Y) and false positives
   // (pages that share a TLD+1 with a known engine but aren't actually search
-  // pages, e.g. plus.google.com).  Additionally, record the TLD+1 of non-NTP
-  // homepages through the privacy-preserving Rappor service.
+  // pages, e.g. plus.google.com).
   if (!homepage_is_ntp) {
     if (homepage_url.is_valid()) {
       UMA_HISTOGRAM_ENUMERATION(
           "Settings.HomePageEngineType",
           TemplateURLPrepopulateData::GetEngineType(homepage_url),
           SEARCH_ENGINE_MAX);
-      rappor::SampleDomainAndRegistryFromGURL(
-          g_browser_process->rappor_service(), "Settings.HomePage2",
-          homepage_url);
     }
   }
 }
@@ -95,13 +68,8 @@ void PrefMetricsService::RecordLaunchPrefs() {
                               homepage_url);
 #endif
 
-  // Android does not support overriding the NTP URL.
-#if !defined(OS_ANDROID)
-  SampleNewTabPageURL(profile_);
-#endif
-
   // Tab restoring is always done on Android, so these metrics are not
-  // applicable.  Also, startup pages are not supported on Android
+  // applicable.  Also, startup pages are not supported on Android.
 #if !defined(OS_ANDROID)
   int restore_on_startup = prefs_->GetInteger(prefs::kRestoreOnStartup);
   UMA_HISTOGRAM_ENUMERATION(
@@ -120,11 +88,6 @@ void PrefMetricsService::RecordLaunchPrefs() {
               "Settings.StartupPageEngineTypes",
               TemplateURLPrepopulateData::GetEngineType(start_url),
               SEARCH_ENGINE_MAX);
-          if (i == 0) {
-            rappor::SampleDomainAndRegistryFromGURL(
-                g_browser_process->rappor_service(),
-                "Settings.FirstStartupPage", start_url);
-          }
         }
       }
     }

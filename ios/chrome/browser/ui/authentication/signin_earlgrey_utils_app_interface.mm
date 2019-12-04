@@ -26,6 +26,11 @@
       fakeIdentity);
 }
 
++ (void)forgetFakeIdentity:(FakeChromeIdentity*)fakeIdentity {
+  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
+      ->ForgetIdentity(fakeIdentity, nil);
+}
+
 + (NSString*)primaryAccountGaiaID {
   ios::ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();

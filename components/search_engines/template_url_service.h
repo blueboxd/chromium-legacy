@@ -44,10 +44,6 @@ struct TemplateURLData;
 class TemplateUrlServiceAndroid;
 #endif
 
-namespace rappor {
-class RapporServiceImpl;
-}
-
 namespace syncer {
 class SyncData;
 class SyncErrorFactory;
@@ -112,7 +108,6 @@ class TemplateURLService : public WebDataServiceConsumer,
       std::unique_ptr<SearchTermsData> search_terms_data,
       const scoped_refptr<KeywordWebDataService>& web_data_service,
       std::unique_ptr<TemplateURLServiceClient> client,
-      rappor::RapporServiceImpl* rappor_service,
       const base::RepeatingClosure& dsp_change_callback);
   // The following is for testing.
   TemplateURLService(const Initializer* initializers, const int count);
@@ -741,9 +736,6 @@ class TemplateURLService : public WebDataServiceConsumer,
   scoped_refptr<KeywordWebDataService> web_data_service_ = nullptr;
 
   std::unique_ptr<TemplateURLServiceClient> client_;
-
-  // ---------- Metrics related members ---------------------------------------
-  rappor::RapporServiceImpl* rappor_service_ = nullptr;
 
   // This closure is run when the default search provider is set to Google.
   base::RepeatingClosure dsp_change_callback_;

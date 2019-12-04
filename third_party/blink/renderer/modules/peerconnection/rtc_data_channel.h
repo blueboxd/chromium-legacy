@@ -28,8 +28,8 @@
 #include <memory>
 
 #include "base/gtest_prod_util.h"
-#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread_checker.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
@@ -175,7 +175,7 @@ class MODULES_EXPORT RTCDataChannel final
   unsigned buffered_amount_;
   bool stopped_;
   scoped_refptr<Observer> observer_;
-  SEQUENCE_CHECKER(sequence_checker_);
+  THREAD_CHECKER(thread_checker_);
 };
 
 }  // namespace blink

@@ -11,6 +11,7 @@
 #include "base/syslog_logging.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise_reporting/prefs.h"
 #include "chrome/browser/enterprise_reporting/request_timer.h"
@@ -62,6 +63,10 @@ ReportScheduler::~ReportScheduler() {
 void ReportScheduler::SetReportUploaderForTesting(
     std::unique_ptr<ReportUploader> uploader) {
   report_uploader_ = std::move(uploader);
+}
+
+RequestTimer* ReportScheduler::GetRequestTimerForTesting() const {
+  return request_timer_.get();
 }
 
 void ReportScheduler::OnDMTokenUpdated() {

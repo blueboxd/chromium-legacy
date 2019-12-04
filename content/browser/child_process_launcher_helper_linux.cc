@@ -37,10 +37,9 @@ void ChildProcessLauncherHelper::BeforeLaunchOnClientThread() {
 std::unique_ptr<FileMappedForLaunch>
 ChildProcessLauncherHelper::GetFilesToMap() {
   DCHECK(CurrentlyOnProcessLauncherTaskRunner());
-  return CreateDefaultPosixFilesToMap(child_process_id(),
-                                      mojo_channel_->remote_endpoint(),
-                                      true /* include_service_required_files */,
-                                      GetProcessType(), command_line());
+  return CreateDefaultPosixFilesToMap(
+      child_process_id(), mojo_channel_->remote_endpoint(), files_to_preload_,
+      GetProcessType(), command_line());
 }
 
 bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
@@ -159,18 +158,6 @@ void ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread(
   DCHECK(CurrentlyOnProcessLauncherTaskRunner());
   if (process.CanBackgroundProcesses())
     process.SetProcessBackgrounded(priority.is_background());
-}
-
-// static
-void ChildProcessLauncherHelper::SetRegisteredFilesForService(
-    const std::string& service_name,
-    std::map<std::string, base::FilePath> required_files) {
-  SetFilesToShareForServicePosix(service_name, std::move(required_files));
-}
-
-// static
-void ChildProcessLauncherHelper::ResetRegisteredFilesForTesting() {
-  ResetFilesToShareForTestingPosix();
 }
 
 // static

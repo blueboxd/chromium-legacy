@@ -270,7 +270,7 @@ TEST_F(RTLTest, WrapPathWithLTRFormatting) {
 #if defined(OS_WIN)
     std::wstring win_path(i);
     std::replace(win_path.begin(), win_path.end(), '/', '\\');
-    path = FilePath(as_u16cstr(win_path));
+    path = FilePath(win_path);
     std::wstring wrapped_expected =
         std::wstring(L"\x202a") + win_path + L"\x202c";
 #else

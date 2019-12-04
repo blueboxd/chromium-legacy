@@ -157,7 +157,12 @@ void AXRelationCache::UpdateAriaOwns(
   //
   // Figure out the children that are owned by this object and are in the
   // tree.
-  TreeScope& scope = owner->GetNode()->GetTreeScope();
+
+  Node* node = owner->GetNode();
+  if (!node)
+    return;
+
+  TreeScope& scope = node->GetTreeScope();
   Vector<AXID> validated_owned_child_axids;
   for (const String& id_name : owned_id_vector) {
     Element* element = scope.getElementById(AtomicString(id_name));

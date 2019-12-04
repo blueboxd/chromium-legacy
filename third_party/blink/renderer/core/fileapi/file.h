@@ -26,7 +26,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FILEAPI_FILE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FILEAPI_FILE_H_
 
-#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -202,6 +201,10 @@ class CORE_EXPORT File final : public Blob {
   // http://www.w3.org/TR/FileAPI/#dfn-lastModifiedDate
   ScriptValue lastModifiedDate(ScriptState* script_state) const;
 
+  // Returns File's last modified time.
+  // If the modification time isn't known, the current time is returned.
+  base::Time LastModifiedTime() const;
+
   UserVisibility GetUserVisibility() const { return user_visibility_; }
 
   // Returns the relative path of this file in the context of a directory
@@ -228,10 +231,6 @@ class CORE_EXPORT File final : public Blob {
  private:
   void InvalidateSnapshotMetadata() { snapshot_size_.reset(); }
 
-  // Returns File's last modified time.
-  // If the modification time isn't known, the current time is returned.
-  base::Time LastModifiedTime() const;
-
 #if DCHECK_IS_ON()
   // Instances backed by a file must have an empty file system URL.
   bool HasValidFileSystemURL() const {
@@ -256,14 +255,6 @@ class CORE_EXPORT File final : public Blob {
   const base::Optional<base::Time> snapshot_modification_time_;
 
   String relative_path_;
-
-  FRIEND_TEST_ALL_PREFIXES(FileTest, NativeFileWithoutTimestamp);
-  FRIEND_TEST_ALL_PREFIXES(FileTest, NativeFileWithUnixEpochTimestamp);
-  FRIEND_TEST_ALL_PREFIXES(FileTest, NativeFileWithApocalypseTimestamp);
-  FRIEND_TEST_ALL_PREFIXES(V8ScriptValueSerializerTest,
-                           DecodeFileV4WithSnapshot);
-  FRIEND_TEST_ALL_PREFIXES(V8ScriptValueSerializerTest,
-                           DecodeFileV8WithSnapshot);
 };
 
 template <>

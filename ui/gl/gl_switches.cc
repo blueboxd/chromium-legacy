@@ -174,7 +174,7 @@ const base::Feature kDirectCompositionComplexOverlays{
 
 // Use IDXGIOutput::WaitForVBlank() to drive begin frames.
 const base::Feature kDirectCompositionGpuVSync{
-    "DirectCompositionGpuVSync", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DirectCompositionGpuVSync", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Use presentation feedback event queries (must be enabled) to limit latency.
 const base::Feature kDirectCompositionLowLatencyPresentation{
@@ -192,7 +192,7 @@ const base::Feature kDirectCompositionPreferNV12Overlays{
 // Use per-present event queries to issue presentation feedback to clients.
 // Also needs DirectCompositionGpuVSync.
 const base::Feature kDirectCompositionPresentationFeedback{
-    "DirectCompositionPresentationFeedback", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DirectCompositionPresentationFeedback", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Use decode swap chain created from compatible video decoder buffers.
 const base::Feature kDirectCompositionUseNV12DecodeSwapChain{

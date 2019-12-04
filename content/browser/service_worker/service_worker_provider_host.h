@@ -158,9 +158,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // CompleteStartWorkerPreparation() is called).
   ServiceWorkerVersion* running_hosted_version() const;
 
-  // TODO(https://crbug.com/931087): Remove these functions in favor of the
-  // equivalent functions on ServiceWorkerContainerHost.
-  blink::mojom::ServiceWorkerProviderType provider_type() const;
+  // TODO(https://crbug.com/931087): Remove this function in favor of the
+  // ServiceWorkerContainerHost::IsContainerForServiceWorker().
   bool IsProviderForServiceWorker() const;
 
   // For service worker execution contexts. Completes initialization of this

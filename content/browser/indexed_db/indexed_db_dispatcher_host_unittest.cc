@@ -20,6 +20,7 @@
 #include "base/threading/thread.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
@@ -183,7 +184,7 @@ class IndexedDBDispatcherHostTest : public testing::Test {
         host_(new IndexedDBDispatcherHost(
                   kFakeProcessId,
                   context_impl_,
-                  ChromeBlobStorageContext::GetFor(&browser_context_)),
+                  ChromeBlobStorageContext::GetRemoteFor(&browser_context_)),
               base::OnTaskRunnerDeleter(context_impl_->TaskRunner())) {}
 
   void TearDown() override {

@@ -1856,12 +1856,16 @@ void ServiceWorkerContextWrapper::SetUpLoaderFactoryForUpdateCheckOnUI(
   mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
       header_client;
   bool bypass_redirect_checks = false;
+  // Here we give nullptr for |factory_override|, because CORS is no-op for
+  // requests for this factory.
+  // TODO(yhirano): Use |factory_override| because someday not just CORS but
+  // CORB/CORP will use the factory and those are not no-ops for it
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       storage_partition_->browser_context(), /*frame=*/nullptr,
       ChildProcessHost::kInvalidUniqueID,
       ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerScript,
       url::Origin::Create(scope), &pending_receiver, &header_client,
-      &bypass_redirect_checks);
+      &bypass_redirect_checks, /*factory_override=*/nullptr);
   if (header_client) {
     NavigationURLLoaderImpl::CreateURLLoaderFactoryWithHeaderClient(
         std::move(header_client), std::move(pending_receiver),

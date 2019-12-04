@@ -6,18 +6,22 @@ class TestBrowserService extends TestBrowserProxy {
   constructor() {
     super([
       'deleteForeignSession',
-      'deleteItems',
       'historyLoaded',
       'navigateToUrl',
       'openForeignSessionTab',
       'otherDevicesInitialized',
       'recordHistogram',
+      'removeVisits',
       'queryHistory',
     ]);
     this.histogramMap = {};
     this.actionMap = {};
-    this.pendingDeletePromise_ = null;
-    this.deleted_ = null;
+    /** @private {?PromiseResolver} */
+    this.delayedRemove_ = null;
+  }
+
+  delayDelete() {
+    this.delayedRemove_ = new PromiseResolver();
   }
 
   /** @override */
@@ -26,17 +30,17 @@ class TestBrowserService extends TestBrowserProxy {
   }
 
   /** @override */
-  deleteItems(items) {
-    this.deleted_ = items;
-    this.pendingDeletePromise_ = new PromiseResolver();
-    this.methodCalled('deleteItems', items.map(item => {
-      return {
-        url: item.url,
-        timestamps: item.allTimestamps,
-      };
-    }));
+  removeVisits(visits) {
+    this.methodCalled('removeVisits', visits);
+    if (this.delayedRemove_) {
+      return this.delayedRemove_.promise;
+    }
+    return Promise.resolve();
+  }
 
-    return this.pendingDeletePromise_.promise;
+  finishRemoveVisits() {
+    this.delayedRemove_.resolve();
+    this.delayedRemove_ = null;
   }
 
   /** @override */
@@ -111,13 +115,4 @@ class TestBrowserService extends TestBrowserProxy {
 
   /** @override */
   removeBookmark() {}
-
-  /** @override */
-  resolveDelete(successful) {
-    if (successful) {
-      this.pendingDeletePromise_.resolve(this.deleted_);
-    } else {
-      this.pendingDeletePromise_.reject(this.deleted_);
-    }
-  }
 }

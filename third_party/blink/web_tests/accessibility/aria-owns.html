@@ -16,17 +16,16 @@
 <script>
 test(function(t)
 {
-    var axList1 = accessibilityController.accessibleElementById("list1");
-    console.log('axList1: ' + axList1);
+    const axList1 = accessibilityController.accessibleElementById("list1");
     assert_equals(axList1.role, "AXRole: AXListBox");
     assert_equals(axList1.childrenCount, 3);
 
-    var axItem = axList1.childAtIndex(0);
+    const axItem = axList1.childAtIndex(0);
     assert_equals(axList1.childAtIndex(0).name, "One");
     assert_equals(axList1.childAtIndex(1).name, "Two");
     assert_equals(axList1.childAtIndex(2).name, "Three");
 
-    var axList2 = accessibilityController.accessibleElementById("list2");
+    const axList2 = accessibilityController.accessibleElementById("list2");
     assert_equals(axList2.role, "AXRole: AXListBox");
     assert_equals(axList2.childrenCount, 1);
     assert_equals(axList2.childAtIndex(0).name, "Four");
@@ -44,13 +43,13 @@ test(function(t)
 <script>
 test(function(t)
 {
-    var axParent1 = accessibilityController.accessibleElementById("parent1");
-    var axParent2 = accessibilityController.accessibleElementById("parent2");
-    var axParent3 = accessibilityController.accessibleElementById("parent3");
-    var axChild = accessibilityController.accessibleElementById("child");
+    const axParent1 = accessibilityController.accessibleElementById("parent1");
+    const axParent2 = accessibilityController.accessibleElementById("parent2");
+    const axParent3 = accessibilityController.accessibleElementById("parent3");
+    const axChild = accessibilityController.accessibleElementById("child");
 
     // Either parent1 or parent2 should own the child, but either one is okay.
-    var axActualParent = axChild.parentElement();
+    const axActualParent = axChild.parentElement();
     assert_true(axActualParent.isEqual(axParent1) || axActualParent.isEqual(axParent2));
     if (axActualParent.isEqual(axParent1)) {
         assert_equals(axParent1.childrenCount, 1);
@@ -82,10 +81,10 @@ test(function(t)
     // Since there's no valid resolution to the cycle of aria-owns,
     // just assert that each element's parent is either its real parent
     // or its aria-owned parent, it doesn't matter which one.
-    var axXYZ = accessibilityController.accessibleElementById("xyz");
-    var axX = accessibilityController.accessibleElementById("x");
-    var axY = accessibilityController.accessibleElementById("y");
-    var axZ = accessibilityController.accessibleElementById("z");
+    const axXYZ = accessibilityController.accessibleElementById("xyz");
+    const axX = accessibilityController.accessibleElementById("x");
+    const axY = accessibilityController.accessibleElementById("y");
+    const axZ = accessibilityController.accessibleElementById("z");
     assert_true(axX.parentElement().isEqual(axXYZ) ||
                 axX.parentElement().isEqual(axZ));
     assert_true(axY.parentElement().isEqual(axXYZ) ||
@@ -104,8 +103,8 @@ test(function(t)
 <script>
 test(function(t)
 {
-    var axRealParent = accessibilityController.accessibleElementById("real-parent");
-    var axOwnsSelf  = accessibilityController.accessibleElementById("owns-self");
+    const axRealParent = accessibilityController.accessibleElementById("real-parent");
+    const axOwnsSelf  = accessibilityController.accessibleElementById("owns-self");
 
     assert_true(axOwnsSelf.parentElement().isEqual(axRealParent));
     assert_equals(axOwnsSelf.childrenCount, 0);
@@ -121,8 +120,8 @@ test(function(t)
 <script>
 test(function(t)
 {
-    var axYancy = accessibilityController.accessibleElementById("yancy");
-    var axFry = accessibilityController.accessibleElementById("fry");
+    const axYancy = accessibilityController.accessibleElementById("yancy");
+    const axFry = accessibilityController.accessibleElementById("fry");
 
     assert_equals(axFry.childrenCount, 0);
     assert_equals(axYancy.childrenCount, 1);
@@ -142,7 +141,7 @@ test(function(t)
 <script>
 test(function(t)
 {
-    var axLogicalParent = accessibilityController.accessibleElementById("logical_parent");
+    const axLogicalParent = accessibilityController.accessibleElementById("logical_parent");
 
     assert_equals(axLogicalParent.childrenCount, 4);
     assert_equals(axLogicalParent.childAtIndex(0).childAtIndex(0).name, "1");
@@ -160,19 +159,19 @@ test(function(t)
 <script>
 test(function(t)
 {
-    var axDeadParent = accessibilityController.accessibleElementById(
+    const axDeadParent = accessibilityController.accessibleElementById(
         "dead_parent");
     assert_equals(axDeadParent.role, "AXRole: AXList");
     assert_equals(axDeadParent.childrenCount, 1);
 
-    var axOrphan = axDeadParent.childAtIndex(0);
+    const axOrphan = axDeadParent.childAtIndex(0);
     assert_equals(axOrphan.role, "AXRole: AXListItem");
     assert_equals(axOrphan.parentElement().role, "AXRole: AXList");
 
-    var deadParent = document.getElementById("dead_parent");
+    const deadParent = document.getElementById("dead_parent");
     deadParent.parentElement.removeChild(deadParent);
 
-    var orphan = document.getElementById("orphan");
+    const orphan = document.getElementById("orphan");
     orphan.setAttribute("id", "o2");
     orphan.setAttribute("id", "orphan");
 }, "No crash if an aria-owns parent is deleted and the child is re-added.");

@@ -14,7 +14,6 @@
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/interface_provider_filtering.h"
-#include "content/browser/renderer_interface_binders.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/storage_partition_impl.h"
@@ -57,12 +56,6 @@ void DedicatedWorkerHost::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto* worker_process_host = RenderProcessHost::FromID(worker_process_id_);
-  if (!worker_process_host)
-    return;
-
-  BindWorkerInterface(interface_name, std::move(interface_pipe),
-                      worker_process_host, origin_);
 }
 
 void DedicatedWorkerHost::BindBrowserInterfaceBrokerReceiver(
@@ -302,12 +295,13 @@ DedicatedWorkerHost::CreateNetworkFactoryForSubresources(
 
   mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
       default_header_client;
+  network::mojom::URLLoaderFactoryOverridePtr factory_override;
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       storage_partition_impl->browser_context(),
       /*frame=*/nullptr, worker_process_id_,
       ContentBrowserClient::URLLoaderFactoryType::kWorkerSubResource, origin_,
-      &default_factory_receiver, &default_header_client,
-      bypass_redirect_checks);
+      &default_factory_receiver, &default_header_client, bypass_redirect_checks,
+      &factory_override);
 
   // TODO(nhiroki): Call devtools_instrumentation::WillCreateURLLoaderFactory()
   // here.
@@ -316,7 +310,8 @@ DedicatedWorkerHost::CreateNetworkFactoryForSubresources(
       origin_, origin_,
       ancestor_render_frame_host->cross_origin_embedder_policy(),
       /*preferences=*/nullptr, network_isolation_key_,
-      std::move(default_header_client), std::move(default_factory_receiver));
+      std::move(default_header_client), std::move(default_factory_receiver),
+      std::move(factory_override));
 
   return pending_default_factory;
 }

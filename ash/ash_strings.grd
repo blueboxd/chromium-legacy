@@ -910,8 +910,14 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_A11Y_LABEL_OPEN" desc="Accessibility label used for a network in quick settings network list that opens network settings page.">
         Open settings for <ph name="NETWORK_NAME">$1<ex>Ethernet</ex></ph>
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_A11Y_LABEL_OPEN_WITH_CONNECTION_STATUS" desc="Accessibility label used for a network in quick settings network list that opens network settings page.">
+        Open settings for <ph name="NETWORK_NAME">$1<ex>Ethernet</ex></ph>, <ph name="CONNECTION_STATUS">$2<ex>Connecting</ex></ph>
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_A11Y_LABEL_CONNECT" desc="Accessibility label used for a network in quick settings network list that connects to the network.">
         Connect to <ph name="NETWORK_NAME">$1<ex>Ethernet</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_DISCONNECT_BUTTON_A11Y_LABEL" desc="Accessibility label used for a button to disconnect from a network in quick settings network list.">
+        Disconnect from <ph name="NETWORK_NAME">$1<ex>Ethernet</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ETHERNET_A11Y_DESC_MANAGED" desc="Accessibility description for an enterprise managed ethernet network in the quick settings network list.">
         Managed by your Administrator
@@ -1483,6 +1489,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_MONITORED_WARNING" desc="The label used in the tray popup to warn users their network may be monitored." >
         Network may be monitored
+      </message>
+      <message name="IDS_ASH_A11Y_ROLE_BUTTON" desc="The label used to identify a button. For accessibility only." >
+        Button
       </message>
 
       <message name="IDS_ASH_VIRTUAL_KEYBOARD_TRAY_ACCESSIBLE_NAME" desc="The accessible text for virtual keyboard icon in status tray.">

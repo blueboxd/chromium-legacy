@@ -182,7 +182,7 @@ void HTMLFormControlsCollection::namedGetter(
     return;
 
   if (named_items.size() == 1) {
-    if (!IsHTMLImageElement(*named_items[0]))
+    if (!IsA<HTMLImageElement>(*named_items[0]))
       return_value.SetElement(named_items.at(0));
     return;
   }

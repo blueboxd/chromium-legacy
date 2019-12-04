@@ -48,12 +48,6 @@ class CloseEvent final : public Event {
  public:
   static CloseEvent* Create() { return MakeGarbageCollected<CloseEvent>(); }
 
-  static CloseEvent* Create(bool was_clean,
-                            uint16_t code,
-                            const String& reason) {
-    return MakeGarbageCollected<CloseEvent>(was_clean, code, reason);
-  }
-
   static CloseEvent* Create(const AtomicString& type,
                             const CloseEventInit* initializer) {
     return MakeGarbageCollected<CloseEvent>(type, initializer);

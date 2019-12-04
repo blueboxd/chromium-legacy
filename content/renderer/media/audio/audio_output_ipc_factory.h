@@ -22,8 +22,8 @@ namespace media {
 class AudioOutputIPC;
 }
 
-namespace service_manager {
-class InterfaceProvider;
+namespace blink {
+class BrowserInterfaceBrokerProxy;
 }
 
 namespace content {
@@ -53,7 +53,7 @@ class CONTENT_EXPORT AudioOutputIPCFactory {
   // Does nothing if not using mojo factories.
   void RegisterRemoteFactory(
       int frame_id,
-      service_manager::InterfaceProvider* interface_provider);
+      blink::BrowserInterfaceBrokerProxy* interface_broker);
 
   // Every call to the above method must be matched by a call to this one when
   // the frame is destroyed. Does nothing if not using mojo factories.

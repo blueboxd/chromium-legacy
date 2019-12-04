@@ -20,6 +20,7 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.thinwebview.ThinWebView;
+import org.chromium.chrome.browser.thinwebview.ThinWebViewConstraints;
 import org.chromium.chrome.browser.thinwebview.ThinWebViewFactory;
 import org.chromium.chrome.browser.ui.widget.FadingShadow;
 import org.chromium.chrome.browser.ui.widget.FadingShadowView;
@@ -93,7 +94,10 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
      * bottom sheet.
      */
     private void createThinWebView(int maxSheetHeight) {
-        mThinWebView = ThinWebViewFactory.create(mContext, new ActivityWindowAndroid(mContext));
+        ThinWebViewConstraints thinWebViewConstraints = new ThinWebViewConstraints();
+        thinWebViewConstraints.zOrderOnTop = true;
+        mThinWebView = ThinWebViewFactory.create(
+                mContext, new ActivityWindowAndroid(mContext), thinWebViewConstraints);
 
         mSheetContentView = new FrameLayout(mContext);
         mThinWebView.getView().setLayoutParams(new FrameLayout.LayoutParams(

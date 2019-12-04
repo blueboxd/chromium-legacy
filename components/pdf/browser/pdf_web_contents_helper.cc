@@ -31,7 +31,7 @@ PDFWebContentsHelper::PDFWebContentsHelper(
     content::WebContents* web_contents,
     std::unique_ptr<PDFWebContentsHelperClient> client)
     : content::WebContentsObserver(web_contents),
-      pdf_service_bindings_(web_contents, this),
+      pdf_service_receivers_(web_contents, this),
       client_(std::move(client)) {}
 
 PDFWebContentsHelper::~PDFWebContentsHelper() {

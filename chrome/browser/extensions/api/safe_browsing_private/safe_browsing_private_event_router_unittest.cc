@@ -172,13 +172,10 @@ class SafeBrowsingPrivateEventRouterTest : public testing::Test {
     if (!enabled || client_)
       return;
 
-    // Set a mock cloud policy client in the router.  The router will own the
-    // client, but a pointer to the client is maintained in the test class to
-    // manage expectations.
-    client_ = new policy::MockCloudPolicyClient();
-    std::unique_ptr<policy::CloudPolicyClient> client(client_);
+    // Set a mock cloud policy client in the router.
+    client_ = std::make_unique<policy::MockCloudPolicyClient>();
     SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
-        ->SetCloudPolicyClientForTesting(std::move(client));
+        ->SetCloudPolicyClientForTesting(client_.get());
   }
 
   void SetUpRouters(bool realtime_reporting_enable = true,
@@ -193,10 +190,10 @@ class SafeBrowsingPrivateEventRouterTest : public testing::Test {
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
+  std::unique_ptr<policy::MockCloudPolicyClient> client_;
   TestingProfileManager profile_manager_;
   TestingProfile* profile_;
   extensions::TestEventRouter* event_router_ = nullptr;
-  policy::MockCloudPolicyClient* client_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingPrivateEventRouterTest);
@@ -220,7 +217,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnReuseDetected) {
   EXPECT_EQ("https://phishing.com/", captured_args.FindKey("url")->GetString());
   EXPECT_EQ("user_name_1", captured_args.FindKey("userName")->GetString());
 
-  Mock::VerifyAndClearExpectations(client_);
+  Mock::VerifyAndClearExpectations(client_.get());
   EXPECT_EQ(base::Value::Type::DICTIONARY, report.type());
   base::Value* event_list =
       report.FindKey(policy::RealtimeReportingJobConfiguration::kEventListKey);
@@ -255,7 +252,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnPasswordChanged) {
   auto captured_args = event_observer.PassEventArgs().GetList()[0].Clone();
   EXPECT_EQ("user_name_2", captured_args.GetString());
 
-  Mock::VerifyAndClearExpectations(client_);
+  Mock::VerifyAndClearExpectations(client_.get());
   EXPECT_EQ(base::Value::Type::DICTIONARY, report.type());
   base::Value* event_list =
       report.FindKey(policy::RealtimeReportingJobConfiguration::kEventListKey);
@@ -294,7 +291,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnDangerousDownloadOpened) {
   EXPECT_EQ("sha256_of_malware_exe",
             captured_args.FindKey("downloadDigestSha256")->GetString());
 
-  Mock::VerifyAndClearExpectations(client_);
+  Mock::VerifyAndClearExpectations(client_.get());
   EXPECT_EQ(base::Value::Type::DICTIONARY, report.type());
   base::Value* event_list =
       report.FindKey(policy::RealtimeReportingJobConfiguration::kEventListKey);
@@ -338,7 +335,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest,
   EXPECT_EQ("-201", captured_args.FindKey("netErrorCode")->GetString());
   EXPECT_EQ("", captured_args.FindKey("userName")->GetString());
 
-  Mock::VerifyAndClearExpectations(client_);
+  Mock::VerifyAndClearExpectations(client_.get());
   EXPECT_EQ(base::Value::Type::DICTIONARY, report.type());
   base::Value* event_list =
       report.FindKey(policy::RealtimeReportingJobConfiguration::kEventListKey);
@@ -378,7 +375,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnSecurityInterstitialShown) {
   EXPECT_FALSE(captured_args.FindKey("netErrorCode"));
   EXPECT_EQ("", captured_args.FindKey("userName")->GetString());
 
-  Mock::VerifyAndClearExpectations(client_);
+  Mock::VerifyAndClearExpectations(client_.get());
   EXPECT_EQ(base::Value::Type::DICTIONARY, report.type());
   base::Value* event_list =
       report.FindKey(policy::RealtimeReportingJobConfiguration::kEventListKey);
@@ -412,7 +409,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnDangerousDownloadWarning) {
   TriggerOnDangerousDownloadWarningEvent();
   base::RunLoop().RunUntilIdle();
 
-  Mock::VerifyAndClearExpectations(client_);
+  Mock::VerifyAndClearExpectations(client_.get());
   EXPECT_EQ(base::Value::Type::DICTIONARY, report.type());
   base::Value* event_list =
       report.FindKey(policy::RealtimeReportingJobConfiguration::kEventListKey);
@@ -451,7 +448,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest,
   TriggerOnDangerousDownloadWarningEventBypass();
   base::RunLoop().RunUntilIdle();
 
-  Mock::VerifyAndClearExpectations(client_);
+  Mock::VerifyAndClearExpectations(client_.get());
   EXPECT_EQ(base::Value::Type::DICTIONARY, report.type());
   base::Value* event_list =
       report.FindKey(policy::RealtimeReportingJobConfiguration::kEventListKey);
@@ -486,7 +483,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, PolicyControlOnToOffIsDynamic) {
   TriggerOnSecurityInterstitialShownEvent();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, event_observer.PassEventArgs().GetList().size());
-  Mock::VerifyAndClearExpectations(client_);
+  Mock::VerifyAndClearExpectations(client_.get());
 
   // Now turn off policy.  This time no report should be generated.
   SetReportingPolicy(false);
@@ -494,7 +491,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, PolicyControlOnToOffIsDynamic) {
   TriggerOnSecurityInterstitialShownEvent();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, event_observer.PassEventArgs().GetList().size());
-  Mock::VerifyAndClearExpectations(client_);
+  Mock::VerifyAndClearExpectations(client_.get());
 }
 
 TEST_F(SafeBrowsingPrivateEventRouterTest, PolicyControlOffToOnIsDynamic) {
@@ -513,7 +510,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, PolicyControlOffToOnIsDynamic) {
   TriggerOnSecurityInterstitialShownEvent();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, event_observer.PassEventArgs().GetList().size());
-  Mock::VerifyAndClearExpectations(client_);
+  Mock::VerifyAndClearExpectations(client_.get());
 }
 
 TEST_F(SafeBrowsingPrivateEventRouterTest, TestUnauthorizedOnReuseDetected) {
@@ -529,7 +526,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestUnauthorizedOnReuseDetected) {
   TriggerOnPolicySpecifiedPasswordReuseDetectedEvent();
   base::RunLoop().RunUntilIdle();
 
-  Mock::VerifyAndClearExpectations(client_);
+  Mock::VerifyAndClearExpectations(client_.get());
   EXPECT_EQ(base::Value::Type::NONE, report.type());
 }
 
@@ -545,7 +542,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestUnauthorizedOnPasswordChanged) {
   TriggerOnPolicySpecifiedPasswordChangedEvent();
   base::RunLoop().RunUntilIdle();
 
-  Mock::VerifyAndClearExpectations(client_);
+  Mock::VerifyAndClearExpectations(client_.get());
   EXPECT_EQ(base::Value::Type::NONE, report.type());
 }
 
@@ -562,7 +559,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest,
   TriggerOnDangerousDownloadOpenedEvent();
   base::RunLoop().RunUntilIdle();
 
-  Mock::VerifyAndClearExpectations(client_);
+  Mock::VerifyAndClearExpectations(client_.get());
   EXPECT_EQ(base::Value::Type::NONE, report.type());
 }
 
@@ -579,7 +576,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest,
   TriggerOnSecurityInterstitialProceededEvent();
   base::RunLoop().RunUntilIdle();
 
-  Mock::VerifyAndClearExpectations(client_);
+  Mock::VerifyAndClearExpectations(client_.get());
   EXPECT_EQ(base::Value::Type::NONE, report.type());
 }
 
@@ -596,7 +593,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest,
   TriggerOnSecurityInterstitialShownEvent();
   base::RunLoop().RunUntilIdle();
 
-  Mock::VerifyAndClearExpectations(client_);
+  Mock::VerifyAndClearExpectations(client_.get());
   EXPECT_EQ(base::Value::Type::NONE, report.type());
 }
 
@@ -613,7 +610,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest,
   TriggerOnDangerousDownloadWarningEvent();
   base::RunLoop().RunUntilIdle();
 
-  Mock::VerifyAndClearExpectations(client_);
+  Mock::VerifyAndClearExpectations(client_.get());
   EXPECT_EQ(base::Value::Type::NONE, report.type());
 }
 
@@ -630,7 +627,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest,
   TriggerOnDangerousDownloadWarningEventBypass();
   base::RunLoop().RunUntilIdle();
 
-  Mock::VerifyAndClearExpectations(client_);
+  Mock::VerifyAndClearExpectations(client_.get());
   EXPECT_EQ(base::Value::Type::NONE, report.type());
 }
 
@@ -733,7 +730,7 @@ TEST_P(SafeBrowsingIsRealtimeReportingEnabledTest, CheckRealtimeReport) {
 
   // Make sure UploadRealtimeReport was called the expected number of times.
   if (client_)
-    Mock::VerifyAndClearExpectations(client_);
+    Mock::VerifyAndClearExpectations(client_.get());
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

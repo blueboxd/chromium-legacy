@@ -54,6 +54,7 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/previews/previews_lite_page_redirect_decider.h"
 #include "chrome/browser/previews/previews_offline_helper.h"
+#include "chrome/browser/printing/print_preview_sticky_settings.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -80,7 +81,6 @@
 #include "chrome/browser/ui/webui/flags_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/print_preview/policy_settings.h"
-#include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 #include "chrome/common/buildflags.h"
@@ -876,7 +876,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   printing::PolicySettings::RegisterProfilePrefs(registry);
-  printing::StickySettings::RegisterProfilePrefs(registry);
+  printing::PrintPreviewStickySettings::RegisterProfilePrefs(registry);
 #endif
 
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)

@@ -20,8 +20,8 @@
 #include "components/subresource_filter/content/browser/verified_ruleset_dealer.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
 #include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
-#include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_receiver_set.h"
 
 namespace content {
 class NavigationHandle;
@@ -170,7 +170,7 @@ class ContentSubresourceFilterThrottleManager
   //    OOPIF)
   std::set<const content::RenderFrameHost*> ad_frames_;
 
-  content::WebContentsFrameBindingSet<mojom::SubresourceFilterHost> binding_;
+  content::WebContentsFrameReceiverSet<mojom::SubresourceFilterHost> receiver_;
 
   ScopedObserver<SubresourceFilterObserverManager, SubresourceFilterObserver>
       scoped_observer_{this};

@@ -106,11 +106,6 @@ AudioTrackRecorder::CodecId AudioStringToCodecId(const String& codecs) {
 
 }  // anonymous namespace
 
-MediaRecorderHandler* MediaRecorderHandler::Create(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  return MakeGarbageCollected<MediaRecorderHandler>(std::move(task_runner));
-}
-
 MediaRecorderHandler::MediaRecorderHandler(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : video_bits_per_second_(0),

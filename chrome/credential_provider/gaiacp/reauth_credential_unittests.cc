@@ -178,7 +178,10 @@ class GcpReauthCredentialEnforceAuthReasonGetStringValueTest
   FakeAssociatedUserValidator fake_associated_user_validator_;
 };
 
-TEST_P(GcpReauthCredentialEnforceAuthReasonGetStringValueTest, FidDescription) {
+// Disabled due to consistent failure due to mismatching messages.
+// See also https://crbug.com/1030602.
+TEST_P(GcpReauthCredentialEnforceAuthReasonGetStringValueTest,
+       DISABLED_FidDescription) {
   USES_CONVERSION;
   // Enable standard escrow service features in non-Chrome builds so that
   // the escrow service code can be tested by the build machines.

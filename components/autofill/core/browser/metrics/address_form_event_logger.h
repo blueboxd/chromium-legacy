@@ -21,7 +21,8 @@ class AddressFormEventLogger : public FormEventLoggerBase {
  public:
   AddressFormEventLogger(
       bool is_in_main_frame,
-      AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger);
+      AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
+      AutofillClient* client);
 
   ~AddressFormEventLogger() override;
 

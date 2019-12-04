@@ -16,13 +16,6 @@ BlobEvent* BlobEvent::Create(const AtomicString& type,
   return MakeGarbageCollected<BlobEvent>(type, initializer);
 }
 
-// static
-BlobEvent* BlobEvent::Create(const AtomicString& type,
-                             Blob* blob,
-                             double timecode) {
-  return MakeGarbageCollected<BlobEvent>(type, blob, timecode);
-}
-
 const AtomicString& BlobEvent::InterfaceName() const {
   return event_interface_names::kBlobEvent;
 }

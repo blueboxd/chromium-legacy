@@ -172,7 +172,7 @@ MediaRecorder::MediaRecorder(ExecutionContext* context,
                                       "Execution context is detached.");
     return;
   }
-  recorder_handler_ = MediaRecorderHandler::Create(
+  recorder_handler_ = MakeGarbageCollected<MediaRecorderHandler>(
       context->GetTaskRunner(TaskType::kInternalMediaRealTime));
   if (!recorder_handler_) {
     exception_state.ThrowDOMException(
@@ -324,7 +324,7 @@ void MediaRecorder::requestData(ExceptionState& exception_state) {
 
 bool MediaRecorder::isTypeSupported(ExecutionContext* context,
                                     const String& type) {
-  MediaRecorderHandler* handler = MediaRecorderHandler::Create(
+  MediaRecorderHandler* handler = MakeGarbageCollected<MediaRecorderHandler>(
       context->GetTaskRunner(TaskType::kInternalMediaRealTime));
   if (!handler)
     return false;

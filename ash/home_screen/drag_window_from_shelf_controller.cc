@@ -13,7 +13,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
-#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
@@ -186,7 +185,8 @@ void DragWindowFromShelfController::Drag(const gfx::Point& location_in_screen,
                std::abs(scroll_y) > kShowOverviewThreshold) {
       // If the dragging velocity is large enough, hide overview windows.
       show_overview_timer_.Stop();
-      HideOverviewDuringDrag();
+      overview_session->SetVisibleDuringWindowDragging(/*visible=*/false,
+                                                       /*animate=*/false);
     } else {
       // Otherwise start the |show_overview_timer_| to show and update overview
       // when the dragging slows down or stops.
@@ -273,16 +273,6 @@ void DragWindowFromShelfController::OnWindowDestroying(aura::Window* window) {
   CancelDrag();
   window_->RemoveObserver(this);
   window_ = nullptr;
-}
-
-void DragWindowFromShelfController::AddObserver(
-    DragWindowFromShelfController::Observer* observer) {
-  observers_.AddObserver(observer);
-}
-
-void DragWindowFromShelfController::RemoveObserver(
-    DragWindowFromShelfController::Observer* observer) {
-  observers_.RemoveObserver(observer);
 }
 
 void DragWindowFromShelfController::OnDragStarted(
@@ -493,14 +483,6 @@ bool DragWindowFromShelfController::ShouldRestoreToOriginalBounds(
 bool DragWindowFromShelfController::ShouldGoToHomeScreen(
     const gfx::Point& location_in_screen,
     base::Optional<float> velocity_y) const {
-  // If the drag ends below the shelf, do not go to home screen (theoratically
-  // it may happen in kExtended hotseat case when drag can start and end below
-  // the shelf).
-  if (location_in_screen.y() >=
-      Shelf::ForWindow(window_)->GetIdealBoundsForWorkAreaCalculation().y()) {
-    return false;
-  }
-
   // For a hidden hotseat, if the event end position does not exceed
   // GetReturnToMaximizedThreshold(), it should restore back to the maximized
   // bounds even though the velocity might be large.
@@ -509,22 +491,10 @@ bool DragWindowFromShelfController::ShouldGoToHomeScreen(
     return false;
   }
 
-  // Do not go home if we're in split screen.
-  if (SplitViewController::Get(Shell::GetPrimaryRootWindow())
-          ->InSplitViewMode()) {
-    return false;
-  }
-
-  // If overview is invisible when the drag ends, no matter what the velocity
-  // is, we should go to home screen.
-  if (Shell::Get()->overview_controller()->InOverviewSession() &&
-      !show_overview_windows_) {
-    return true;
-  }
-
-  // Otherwise go home if the velocity is large enough.
   return velocity_y.has_value() && *velocity_y < 0 &&
-         std::abs(*velocity_y) >= kVelocityToHomeScreenThreshold;
+         std::abs(*velocity_y) >= kVelocityToHomeScreenThreshold &&
+         !SplitViewController::Get(Shell::GetPrimaryRootWindow())
+              ->InSplitViewMode();
 }
 
 SplitViewController::SnapPosition
@@ -578,24 +548,8 @@ void DragWindowFromShelfController::ShowOverviewDuringOrAfterDrag() {
   if (!overview_controller->InOverviewSession())
     return;
 
-  show_overview_windows_ = true;
   overview_controller->overview_session()->SetVisibleDuringWindowDragging(
       /*visible=*/true, /*animate=*/true);
-  for (Observer& observer : observers_)
-    observer.OnOverviewVisibilityChanged(true);
-}
-
-void DragWindowFromShelfController::HideOverviewDuringDrag() {
-  show_overview_windows_ = false;
-
-  OverviewController* overview_controller = Shell::Get()->overview_controller();
-  if (!overview_controller->InOverviewSession())
-    return;
-  overview_controller->overview_session()->SetVisibleDuringWindowDragging(
-      /*visible=*/false,
-      /*animate=*/false);
-  for (Observer& observer : observers_)
-    observer.OnOverviewVisibilityChanged(false);
 }
 
 void DragWindowFromShelfController::ScaleDownWindowAfterDrag() {
@@ -645,7 +599,8 @@ void DragWindowFromShelfController::OnWindowDragStartedInOverview() {
     overview_session->SetSplitViewDragIndicatorsDraggedWindow(window_);
   // Hide overview windows first and fade in the windows after delaying
   // kShowOverviewTimeWhenDragSuspend.
-  HideOverviewDuringDrag();
+  overview_session->SetVisibleDuringWindowDragging(/*visible=*/false,
+                                                   /*animate=*/false);
 }
 
 }  // namespace ash

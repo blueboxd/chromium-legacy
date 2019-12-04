@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/modules/mediarecorder/media_recorder_handler.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_registry.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -106,7 +107,7 @@ class MockMediaRecorder : public MediaRecorder {
 class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams> {
  public:
   MediaRecorderHandlerTest()
-      : media_recorder_handler_(MediaRecorderHandler::Create(
+      : media_recorder_handler_(MakeGarbageCollected<MediaRecorderHandler>(
             scheduler::GetSingleThreadTaskRunnerForTesting())),
         audio_source_(kTestAudioChannels,
                       440 /* freq */,

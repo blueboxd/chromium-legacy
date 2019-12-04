@@ -64,7 +64,7 @@ def ComputeTBMv2Metrics(test_result):
   metrics = [tag['value'] for tag in test_result.get('tags', [])
              if tag['key'] == 'tbmv2']
   if not metrics:
-    logging.info('%s: No TBMv2 metrics specified.', test_result['testPath'])
+    logging.debug('%s: No TBMv2 metrics specified.', test_result['testPath'])
     return
 
   if HTML_TRACE_NAME not in artifacts:
@@ -95,7 +95,7 @@ def ComputeTBMv3Metrics(test_result, trace_processor_path):
   metrics = [tag['value'] for tag in test_result.get('tags', [])
              if tag['key'] == 'tbmv3']
   if not metrics:
-    logging.info('%s: No TBMv3 metrics specified.', test_result['testPath'])
+    logging.debug('%s: No TBMv3 metrics specified.', test_result['testPath'])
     return
 
   if CONCATENATED_PROTO_NAME not in artifacts:

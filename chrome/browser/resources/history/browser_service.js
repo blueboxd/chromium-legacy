@@ -9,42 +9,8 @@
 
 cr.define('history', function() {
   class BrowserService {
-    constructor() {
-      /** @private {Array<!HistoryEntry>} */
-      this.pendingDeleteItems_ = null;
-      /** @private {PromiseResolver} */
-      this.pendingDeletePromise_ = null;
-    }
-
     historyLoaded() {
       chrome.send('historyLoaded');
-    }
-
-    /**
-     * @param {!Array<!HistoryEntry>} items
-     * @return {Promise<!Array<!HistoryEntry>>}
-     */
-    deleteItems(items) {
-      if (this.pendingDeleteItems_ != null) {
-        // There's already a deletion in progress, reject immediately.
-        return new Promise(function(resolve, reject) {
-          reject(items);
-        });
-      }
-
-      const removalList = items.map(function(item) {
-        return {
-          url: item.url,
-          timestamps: item.allTimestamps,
-        };
-      });
-
-      this.pendingDeleteItems_ = items;
-      this.pendingDeletePromise_ = new PromiseResolver();
-
-      chrome.send('removeVisits', removalList);
-
-      return this.pendingDeletePromise_.promise;
     }
 
     /**
@@ -52,6 +18,15 @@ cr.define('history', function() {
      */
     removeBookmark(url) {
       chrome.send('removeBookmark', [url]);
+    }
+
+    /**
+     * @param {!Array<!HistoryEntry>} removalList
+     * @return {!Promise} Promise that is resolved when items are deleted
+     *     successfully or rejected when deletion fails.
+     */
+    removeVisits(removalList) {
+      return cr.sendWithPromise('removeVisits', removalList);
     }
 
     /**
@@ -113,23 +88,6 @@ cr.define('history', function() {
       chrome.send('metricsHandler:recordTime', [histogram, time]);
     }
 
-    /** @param {boolean} successful */
-    resolveDelete(successful) {
-      if (this.pendingDeleteItems_ == null ||
-          this.pendingDeletePromise_ == null) {
-        return;
-      }
-
-      if (successful) {
-        this.pendingDeletePromise_.resolve(this.pendingDeleteItems_);
-      } else {
-        this.pendingDeletePromise_.reject(this.pendingDeleteItems_);
-      }
-
-      this.pendingDeleteItems_ = null;
-      this.pendingDeletePromise_ = null;
-    }
-
     menuPromoShown() {
       chrome.send('menuPromoShown');
     }
@@ -167,17 +125,3 @@ cr.define('history', function() {
 
   return {BrowserService: BrowserService};
 });
-
-/**
- * Called by the history backend when deletion was succesful.
- */
-function deleteComplete() {
-  history.BrowserService.getInstance().resolveDelete(true);
-}
-
-/**
- * Called by the history backend when the deletion failed.
- */
-function deleteFailed() {
-  history.BrowserService.getInstance().resolveDelete(false);
-}

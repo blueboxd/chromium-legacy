@@ -17,14 +17,17 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/public/common/connection_filter.h"
+#include "content/common/child_process.mojom-test-utils.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_manager_connection.h"
 #include "ipc/ipc.mojom.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "mojo/core/embedder/configuration.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/system/invitation.h"
@@ -36,30 +39,39 @@
 #endif
 
 namespace ipc_fuzzer {
+
 namespace {
 
-class IPCChannelBootstrapper : public content::ConnectionFilter {
+// Used to simulate a basic child process IPC endpoint and bootstrap the legacy
+// IPC channel driven by this process.
+class FakeChildProcessImpl
+    : public content::mojom::ChildProcessInterceptorForTesting {
  public:
-  explicit IPCChannelBootstrapper(
-      mojo::ScopedMessagePipeHandle bootstrap_handle)
-      : bootstrap_handle_(std::move(bootstrap_handle)) {}
-
- private:
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle* interface_pipe,
-                       service_manager::Connector* connector) override {
-    if (interface_name != IPC::mojom::ChannelBootstrap::Name_)
-      return;
-
-    DCHECK(bootstrap_handle_.is_valid());
-    mojo::FuseMessagePipes(std::move(*interface_pipe),
-                           std::move(bootstrap_handle_));
+  explicit FakeChildProcessImpl(
+      mojo::PendingRemote<IPC::mojom::ChannelBootstrap> legacy_ipc_bootstrap)
+      : legacy_ipc_bootstrap_(std::move(legacy_ipc_bootstrap)) {
+    ignore_result(disconnected_process_.BindNewPipeAndPassReceiver());
   }
 
-  mojo::ScopedMessagePipeHandle bootstrap_handle_;
+  // content::mojom::ChildProcessInterceptorForTesting overrides:
+  content::mojom::ChildProcess* GetForwardingInterface() override {
+    return disconnected_process_.get();
+  }
 
-  DISALLOW_COPY_AND_ASSIGN(IPCChannelBootstrapper);
+  void Initialize(mojo::PendingRemote<content::mojom::ChildProcessHostBootstrap>
+                      bootstrap) override {
+    bootstrap_.Bind(std::move(bootstrap));
+  }
+
+  void BootstrapLegacyIpc(
+      mojo::PendingReceiver<IPC::mojom::ChannelBootstrap> receiver) override {
+    mojo::FusePipes(std::move(receiver), std::move(legacy_ipc_bootstrap_));
+  }
+
+ private:
+  mojo::PendingRemote<IPC::mojom::ChannelBootstrap> legacy_ipc_bootstrap_;
+  mojo::Remote<content::mojom::ChildProcessHostBootstrap> bootstrap_;
+  mojo::Remote<content::mojom::ChildProcess> disconnected_process_;
 };
 
 }  // namespace
@@ -140,19 +152,15 @@ bool ReplayProcess::Initialize(int argc, const char** argv) {
 
 void ReplayProcess::OpenChannel() {
   DCHECK(mojo_invitation_);
-  service_manager_connection_ = content::ServiceManagerConnection::Create(
-      service_manager::mojom::ServiceRequest(
-          mojo_invitation_->ExtractMessagePipe(
-              base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                  service_manager::switches::kServiceRequestChannelToken))),
-      io_thread_.task_runner());
-  mojo::MessagePipe ipc_pipe;
-  service_manager_connection_->AddConnectionFilter(
-      std::make_unique<IPCChannelBootstrapper>(std::move(ipc_pipe.handle0)));
-  service_manager_connection_->Start();
+  mojo::PendingRemote<IPC::mojom::ChannelBootstrap> bootstrap;
+  auto bootstrap_receiver = bootstrap.InitWithNewPipeAndPassReceiver();
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<FakeChildProcessImpl>(std::move(bootstrap)),
+      mojo::PendingReceiver<content::mojom::ChildProcess>(
+          mojo_invitation_->ExtractMessagePipe(0)));
   channel_ = IPC::ChannelProxy::Create(
       IPC::ChannelMojo::CreateClientFactory(
-          std::move(ipc_pipe.handle1), io_thread_.task_runner(),
+          bootstrap_receiver.PassPipe(), io_thread_.task_runner(),
           base::ThreadTaskRunnerHandle::Get()),
       this, io_thread_.task_runner(), base::ThreadTaskRunnerHandle::Get());
 }

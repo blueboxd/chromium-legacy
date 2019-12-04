@@ -77,10 +77,6 @@ class CORE_EXPORT ArrayBuffer : public RefCounted<ArrayBuffer> {
   // instead.
   inline unsigned ByteLengthAsUnsigned() const;
 
-  // Creates a new ArrayBuffer object with copy of bytes in this object
-  // ranging from |begin| up to but not including |end|.
-  inline scoped_refptr<ArrayBuffer> Slice(unsigned begin, unsigned end) const;
-
   void AddView(ArrayBufferView*);
   void RemoveView(ArrayBufferView*);
 
@@ -109,8 +105,6 @@ class CORE_EXPORT ArrayBuffer : public RefCounted<ArrayBuffer> {
       size_t num_elements,
       size_t element_byte_size,
       ArrayBufferContents::InitializationPolicy);
-
-  inline unsigned ClampIndex(unsigned index) const;
 
   ArrayBufferContents contents_;
   ArrayBufferView* first_view_;
@@ -246,12 +240,10 @@ size_t ArrayBuffer::ByteLengthAsSizeT() const {
 // This function is deprecated and should not be used. Use {ByteLengthAsSizeT}
 // instead.
 unsigned ArrayBuffer::ByteLengthAsUnsigned() const {
-  CHECK_LE(contents_.DataLength(),
-           static_cast<size_t>(std::numeric_limits<unsigned>::max()));
   // TODO(dtapuska): Revisit this cast. ArrayBufferContents
   // uses size_t for storing data. Whereas ArrayBuffer IDL is
   // only uint32_t based.
-  return static_cast<unsigned>(contents_.DataLength());
+  return base::checked_cast<unsigned>(contents_.DataLength());
 }
 }  // namespace blink
 

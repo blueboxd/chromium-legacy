@@ -332,17 +332,17 @@ TEST_P(OpenFileTest, MapThenDelete) {
       BindOnce([](const void* view) { ::UnmapViewOfFile(view); }, view));
 
   // Mapped files cannot be deleted under any circumstances.
-  EXPECT_EQ(::DeleteFileW(as_wcstr(temp_file_path().value())), 0);
+  EXPECT_EQ(::DeleteFileW(temp_file_path().value().c_str()), 0);
 
   // But can still be moved under the same conditions as if it weren't mapped.
   if (CanMoveFile(access(), share_mode())) {
-    EXPECT_NE(::MoveFileExW(as_wcstr(temp_file_path().value()),
-                            as_wcstr(temp_file_dest_path().value()), 0),
+    EXPECT_NE(::MoveFileExW(temp_file_path().value().c_str(),
+                            temp_file_dest_path().value().c_str(), 0),
               0)
         << "Last error code: " << ::GetLastError();
   } else {
-    EXPECT_EQ(::MoveFileExW(as_wcstr(temp_file_path().value()),
-                            as_wcstr(temp_file_dest_path().value()), 0),
+    EXPECT_EQ(::MoveFileExW(temp_file_path().value().c_str(),
+                            temp_file_dest_path().value().c_str(), 0),
               0);
   }
 }

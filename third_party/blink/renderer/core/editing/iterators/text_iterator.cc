@@ -169,7 +169,7 @@ bool ShouldHandleChildren(const Node& node,
                           const TextIteratorBehavior& behavior) {
   // To support |TextIteratorEmitsImageAltText|, we don't traversal child
   // nodes, in flat tree.
-  if (IsHTMLImageElement(node))
+  if (IsA<HTMLImageElement>(node))
     return false;
   // Traverse internals of text control elements in flat tree only when
   // |EntersTextControls| flag is set.
@@ -376,7 +376,7 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
                       (html_element &&
                        (IsHTMLFormControlElement(html_element) ||
                         IsA<HTMLLegendElement>(html_element) ||
-                        IsHTMLImageElement(html_element) ||
+                        IsA<HTMLImageElement>(html_element) ||
                         IsA<HTMLMeterElement>(html_element) ||
                         IsA<HTMLProgressElement>(html_element))))) {
             HandleReplacedElement();
@@ -509,7 +509,7 @@ bool TextIteratorAlgorithm<Strategy>::SupportsAltText(const Node& node) {
     return false;
 
   // FIXME: Add isSVGImageElement.
-  if (IsHTMLImageElement(*element))
+  if (IsA<HTMLImageElement>(*element))
     return true;
   if (IsHTMLInputElement(*element) &&
       ToHTMLInputElement(node).type() == input_type_names::kImage)

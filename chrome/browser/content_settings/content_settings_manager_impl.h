@@ -9,7 +9,7 @@
 #include "chrome/common/content_settings_manager.mojom.h"
 
 namespace content {
-class RenderFrameHost;
+class RenderProcessHost;
 }  // namespace content
 
 namespace content_settings {
@@ -23,27 +23,28 @@ class ContentSettingsManagerImpl : public mojom::ContentSettingsManager {
   ~ContentSettingsManagerImpl() override;
 
   static void Create(
-      content::RenderFrameHost* render_frame_host,
+      content::RenderProcessHost* render_process_host,
       mojo::PendingReceiver<mojom::ContentSettingsManager> receiver);
 
   // mojom::ContentSettingsManager methods:
   void Clone(
       mojo::PendingReceiver<mojom::ContentSettingsManager> receiver) override;
-  void AllowStorageAccess(StorageType storage_type,
+  void AllowStorageAccess(int32_t render_frame_id,
+                          StorageType storage_type,
                           const url::Origin& origin,
                           const GURL& site_for_cookies,
                           const url::Origin& top_frame_origin,
                           base::OnceCallback<void(bool)> callback) override;
-  void OnContentBlocked(ContentSettingsType type) override;
+  void OnContentBlocked(int32_t render_frame_id,
+                        ContentSettingsType type) override;
 
  private:
   explicit ContentSettingsManagerImpl(
-      content::RenderFrameHost* render_frame_host);
+      content::RenderProcessHost* render_process_host);
   explicit ContentSettingsManagerImpl(const ContentSettingsManagerImpl& other);
 
   // Use these IDs to hold a weak reference back to the RenderFrameHost.
-  int render_process_id_;
-  int render_frame_id_;
+  const int render_process_id_;
 
   // Used to look up storage permissions.
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;

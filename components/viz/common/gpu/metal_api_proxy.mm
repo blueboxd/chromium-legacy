@@ -50,56 +50,44 @@ id<MTLLibrary> API_AVAILABLE(macos(10.11))
                         MTLCompileOptions* options,
                         __autoreleasing NSError** error,
                         gl::ProgressReporter* progress_reporter) {
-  // Request and wait on an asynchronous shader compilation. If the compilation
-  // does not return within kRetryPeriod, then re-issue the compilation request.
-  // The value of kRetryPeriod is the 98th percentile of
-  // Gpu.MetalProxy.NewLibraryTime.
   SCOPED_UMA_HISTOGRAM_TIMER("Gpu.MetalProxy.NewLibraryTime");
-  const base::TimeDelta kRetryPeriod = base::TimeDelta::FromMilliseconds(50);
-
-  // Suppress the watchdog timer for 60 seconds. After that, allow it to kill
-  // the GPU process.
-  const base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(60);
   const base::TimeTicks start_time = base::TimeTicks::Now();
-
   auto state = base::MakeRefCounted<AsyncMetalState>();
-  for (size_t attempt = 0;; ++attempt) {
-    if (base::TimeTicks::Now() - start_time < kTimeout && progress_reporter)
-      progress_reporter->ReportProgress();
 
-    // The completion handler will signal the condition variable we will wait
-    // on. Note that completionHandler will hold a reference to |state|.
-    MTLNewLibraryCompletionHandler completionHandler = ^(id<MTLLibrary> library,
-                                                         NSError* error) {
-      base::AutoLock lock(state->lock);
-      if (!state->has_result) {
-        UMA_HISTOGRAM_COUNTS_100("Gpu.MetalProxy.NewLibraryAttempt", attempt);
+  // The completion handler will signal the condition variable we will wait
+  // on. Note that completionHandler will hold a reference to |state|.
+  MTLNewLibraryCompletionHandler completionHandler =
+      ^(id<MTLLibrary> library, NSError* error) {
+        base::AutoLock lock(state->lock);
         state->has_result = true;
         state->library = [library retain];
         state->error = [error retain];
         state->condition_variable.Signal();
-      }
-    };
+      };
 
-    // Request asynchronous compilation. Note that |completionHandler| may be
-    // called from within this function call, or it may be called from a
-    // different thread.
-    [device newLibraryWithSource:source
-                         options:options
-               completionHandler:completionHandler];
+  // Request asynchronous compilation. Note that |completionHandler| may be
+  // called from within this function call, or it may be called from a
+  // different thread.
+  if (progress_reporter)
+    progress_reporter->ReportProgress();
+  [device newLibraryWithSource:source
+                       options:options
+             completionHandler:completionHandler];
 
-    // Wait for any of the previous calls to complete.
+  // Suppress the watchdog timer for kTimeout by reporting progress every
+  // half-second. After that, allow it to kill the the GPU process.
+  constexpr base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(60);
+  constexpr base::TimeDelta kWaitPeriod =
+      base::TimeDelta::FromMilliseconds(500);
+  while (true) {
+    if (base::TimeTicks::Now() - start_time < kTimeout && progress_reporter)
+      progress_reporter->ReportProgress();
     base::AutoLock lock(state->lock);
-    state->condition_variable.TimedWait(kRetryPeriod);
-
-    // If we have results from any attempt, use them.
     if (state->has_result) {
       *error = [state->error autorelease];
       return state->library;
     }
-
-    // Otherwise, try compiling the shader again. Keep re-trying forever until
-    // the watchdog timer kills the process.
+    state->condition_variable.TimedWait(kWaitPeriod);
   }
 }
 
@@ -110,36 +98,33 @@ id<MTLRenderPipelineState> API_AVAILABLE(macos(10.11))
                                     gl::ProgressReporter* progress_reporter) {
   // This function is almost-identical to the above NewLibraryWithRetry. See
   // comments in that function.
-  // The value of kRetryPeriod is the 99th percentile of
-  // Gpu.MetalProxy.NewRenderPipelineStateTime.
   SCOPED_UMA_HISTOGRAM_TIMER("Gpu.MetalProxy.NewRenderPipelineStateTime");
-  const base::TimeDelta kRetryPeriod = base::TimeDelta::FromMilliseconds(50);
-  const base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(60);
   const base::TimeTicks start_time = base::TimeTicks::Now();
   auto state = base::MakeRefCounted<AsyncMetalState>();
-  for (size_t attempt = 0;; ++attempt) {
+  MTLNewRenderPipelineStateCompletionHandler completionHandler =
+      ^(id<MTLRenderPipelineState> render_pipeline_state, NSError* error) {
+        base::AutoLock lock(state->lock);
+        state->has_result = true;
+        state->render_pipeline_state = [render_pipeline_state retain];
+        state->error = [error retain];
+        state->condition_variable.Signal();
+      };
+  if (progress_reporter)
+    progress_reporter->ReportProgress();
+  [device newRenderPipelineStateWithDescriptor:descriptor
+                             completionHandler:completionHandler];
+  constexpr base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(60);
+  constexpr base::TimeDelta kWaitPeriod =
+      base::TimeDelta::FromMilliseconds(500);
+  while (true) {
     if (base::TimeTicks::Now() - start_time < kTimeout && progress_reporter)
       progress_reporter->ReportProgress();
-    MTLNewRenderPipelineStateCompletionHandler completionHandler =
-        ^(id<MTLRenderPipelineState> render_pipeline_state, NSError* error) {
-          base::AutoLock lock(state->lock);
-          if (!state->has_result) {
-            UMA_HISTOGRAM_COUNTS_100(
-                "Gpu.MetalProxy.NewRenderPipelineStateAttempt", attempt);
-            state->has_result = true;
-            state->render_pipeline_state = [render_pipeline_state retain];
-            state->error = [error retain];
-            state->condition_variable.Signal();
-          }
-        };
-    [device newRenderPipelineStateWithDescriptor:descriptor
-                               completionHandler:completionHandler];
     base::AutoLock lock(state->lock);
-    state->condition_variable.TimedWait(kRetryPeriod);
     if (state->has_result) {
       *error = [state->error autorelease];
       return state->render_pipeline_state;
     }
+    state->condition_variable.TimedWait(kWaitPeriod);
   }
 }
 

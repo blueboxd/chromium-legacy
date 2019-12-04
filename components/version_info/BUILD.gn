@@ -5,7 +5,6 @@
 import("//build/config/chrome_build.gni")
 import("//build/util/lastchange.gni")
 import("//build/util/process_version.gni")
-import("//chrome/process_version_rc_template.gni")  # For branding_file_path.
 
 declare_args() {
   use_unofficial_version_number = !is_chrome_branded

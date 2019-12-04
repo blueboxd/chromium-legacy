@@ -13,9 +13,11 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "build/build_config.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
+#include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/web_contents.h"
@@ -148,26 +150,65 @@ class SessionRestorePolicyTest : public testing::ChromeTestHarnessWithLocalDB {
     // Put the clock in the future so that we can LastActiveTimes in the past.
     clock_.Advance(base::TimeDelta::FromDays(1));
 
-    contents1_ = CreateTestWebContents();
-    contents2_ = CreateTestWebContents();
-    contents3_ = CreateTestWebContents();
-
-    content::WebContentsTester::For(contents1_.get())
-        ->SetLastActiveTime(clock_.NowTicks() - base::TimeDelta::FromHours(1));
-    content::WebContentsTester::For(contents2_.get())
-        ->SetLastActiveTime(clock_.NowTicks() - base::TimeDelta::FromHours(2));
-    content::WebContentsTester::For(contents3_.get())
-        ->SetLastActiveTime(clock_.NowTicks() - base::TimeDelta::FromHours(3));
+    CreateTestContents();
   }
 
   void TearDown() override {
+#if !defined(OS_ANDROID)
+    resource_coordinator::testing::GetLocalSiteCharacteristicsDataImplForWC(
+        contents1_.get())
+        ->NotifySiteUnloaded(performance_manager::TabVisibility::kBackground);
+    resource_coordinator::testing::GetLocalSiteCharacteristicsDataImplForWC(
+        contents2_.get())
+        ->NotifySiteUnloaded(performance_manager::TabVisibility::kBackground);
+    resource_coordinator::testing::GetLocalSiteCharacteristicsDataImplForWC(
+        contents3_.get())
+        ->NotifySiteUnloaded(performance_manager::TabVisibility::kBackground);
+#endif
+    if (policy_)
+      policy_.reset();
+
     // The WebContents must be deleted before the test harness deletes the
     // RenderProcessHost.
     contents1_.reset();
     contents2_.reset();
     contents3_.reset();
 
+    tab_for_scoring_.clear();
+
     testing::ChromeTestHarnessWithLocalDB::TearDown();
+  }
+
+  void CreateTestContents() {
+    contents1_ = CreateAndInitTestWebContents(
+        GURL("https://a.com"),
+        clock_.NowTicks() - base::TimeDelta::FromHours(1));
+    contents2_ = CreateAndInitTestWebContents(
+        GURL("https://b.com"),
+        clock_.NowTicks() - base::TimeDelta::FromHours(2));
+    contents3_ = CreateAndInitTestWebContents(
+        GURL("https://c.com"),
+        clock_.NowTicks() - base::TimeDelta::FromHours(3));
+
+    tab_for_scoring_ = {contents1_.get(), contents2_.get(), contents3_.get()};
+  }
+
+  std::unique_ptr<content::WebContents> CreateAndInitTestWebContents(
+      const GURL& url,
+      const base::TimeTicks& last_active) {
+    auto contents = CreateTestWebContents();
+    auto* tester = content::WebContentsTester::For(contents.get());
+    tester->SetLastActiveTime(last_active);
+
+#if !defined(OS_ANDROID)
+    ResourceCoordinatorTabHelper::CreateForWebContents(contents.get());
+    tester->NavigateAndCommit(url);
+    resource_coordinator::testing::MarkWebContentsAsLoadedInBackground(
+        contents.get());
+    resource_coordinator::testing::ExpireLocalDBObservationWindows(
+        contents.get());
+#endif
+    return contents;
   }
 
   void CreatePolicy(bool policy_enabled) {
@@ -191,9 +232,9 @@ class SessionRestorePolicyTest : public testing::ChromeTestHarnessWithLocalDB {
 
     policy_->SetTabScoreChangedCallback(base::BindRepeating(
         &TabScoreChangeMock::NotifyTabScoreChanged, base::Unretained(&mock_)));
-    policy_->AddTabForScoring(contents1_.get());
-    policy_->AddTabForScoring(contents2_.get());
-    policy_->AddTabForScoring(contents3_.get());
+
+    for (auto* tab : tab_for_scoring_)
+      policy_->AddTabForScoring(tab);
   }
 
   void WaitForFinalTabScores() {
@@ -202,6 +243,10 @@ class SessionRestorePolicyTest : public testing::ChromeTestHarnessWithLocalDB {
         .WillOnce(::testing::Invoke(
             [&run_loop](content::WebContents*, float) { run_loop.Quit(); }));
     run_loop.Run();
+  }
+
+  void AddExtraTabForScoring(content::WebContents* contents) {
+    tab_for_scoring_.push_back(contents);
   }
 
  protected:
@@ -214,6 +259,8 @@ class SessionRestorePolicyTest : public testing::ChromeTestHarnessWithLocalDB {
   std::unique_ptr<content::WebContents> contents1_;
   std::unique_ptr<content::WebContents> contents2_;
   std::unique_ptr<content::WebContents> contents3_;
+
+  std::vector<content::WebContents*> tab_for_scoring_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionRestorePolicyTest);
@@ -430,11 +477,23 @@ TEST_F(SessionRestorePolicyTest, MultipleAllTabsDoneCallbacks) {
 
   // Another "all tabs scored" notification should be sent after more tabs
   // are added to the policy engine.
-  std::unique_ptr<content::WebContents> contents4 = CreateTestWebContents();
-  std::unique_ptr<content::WebContents> contents5 = CreateTestWebContents();
+  std::unique_ptr<content::WebContents> contents4 =
+      CreateAndInitTestWebContents(GURL("https://d.com"),
+                                   base::TimeTicks::Now());
+  std::unique_ptr<content::WebContents> contents5 =
+      CreateAndInitTestWebContents(GURL("https://e.com"),
+                                   base::TimeTicks::Now());
   policy_->AddTabForScoring(contents4.get());
   policy_->AddTabForScoring(contents5.get());
   WaitForFinalTabScores();
+
+  resource_coordinator::testing::GetLocalSiteCharacteristicsDataImplForWC(
+      contents4.get())
+      ->NotifySiteUnloaded(performance_manager::TabVisibility::kBackground);
+
+  resource_coordinator::testing::GetLocalSiteCharacteristicsDataImplForWC(
+      contents5.get())
+      ->NotifySiteUnloaded(performance_manager::TabVisibility::kBackground);
 }
 
 TEST_F(SessionRestorePolicyTest, CalculateAgeScore) {
@@ -551,5 +610,63 @@ TEST_F(SessionRestorePolicyTest, RescoringSendsNotification) {
   EXPECT_CALL(mock_, NotifyTabScoreChanged(contents2_.get(), score2 + 2.0));
   WaitForFinalTabScores();
 }
+
+#if !defined(OS_ANDROID)
+TEST_F(SessionRestorePolicyTest, FeatureUsageSetUsedInBgBit) {
+  CreatePolicy(true);
+  WaitForFinalTabScores();
+
+  auto iter = policy_->tab_data_.find(contents1_.get());
+  EXPECT_TRUE(iter != policy_->tab_data_.end());
+  EXPECT_FALSE(iter->second->UsedInBg());
+
+  // Indicates that |contents1_| might update its title while in background,
+  // this should set the |used_in_bg_| bit.
+
+  resource_coordinator::testing::GetLocalSiteCharacteristicsDataImplForWC(
+      contents1_.get())
+      ->NotifyUpdatesTitleInBackground();
+
+  // Adding/Removing the tab for scoring will cause the callback to be called a
+  // few times, ignore this.
+  EXPECT_CALL(mock_, NotifyTabScoreChanged(::testing::_, ::testing::_))
+      .Times(::testing::AnyNumber());
+
+  policy_->RemoveTabForScoring(contents1_.get());
+  policy_->AddTabForScoring(contents1_.get());
+  WaitForFinalTabScores();
+
+  iter = policy_->tab_data_.find(contents1_.get());
+  EXPECT_TRUE(iter != policy_->tab_data_.end());
+  EXPECT_TRUE(iter->second->UsedInBg());
+}
+
+TEST_F(SessionRestorePolicyTest, UnknownUsageSetUsedInBgBit) {
+  auto contents = CreateTestWebContents();
+  auto* tester = content::WebContentsTester::For(contents.get());
+  ResourceCoordinatorTabHelper::CreateForWebContents(contents.get());
+  tester->NavigateAndCommit(GURL("https://d.com"));
+
+  // Adding/Removing the tab for scoring will cause the callback to be called a
+  // few times, ignore this.
+  EXPECT_CALL(mock_, NotifyTabScoreChanged(::testing::_, ::testing::_))
+      .Times(::testing::AnyNumber());
+  AddExtraTabForScoring(contents.get());
+
+  CreatePolicy(true);
+  WaitForFinalTabScores();
+
+  performance_manager::SiteFeatureUsage title_feature_usage =
+      resource_coordinator::testing::GetLocalSiteCharacteristicsDataImplForWC(
+          contents.get())
+          ->UpdatesTitleInBackground();
+  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
+            title_feature_usage);
+
+  auto iter = policy_->tab_data_.find(contents.get());
+  EXPECT_TRUE(iter != policy_->tab_data_.end());
+  EXPECT_TRUE(iter->second->UsedInBg());
+}
+#endif
 
 }  // namespace resource_coordinator

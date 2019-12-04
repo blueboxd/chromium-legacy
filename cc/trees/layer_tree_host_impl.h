@@ -797,10 +797,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
     return paint_worklet_tracker_;
   }
 
-  bool did_lock_scrolling_layer_for_testing() const {
-    return did_lock_scrolling_layer_;
-  }
-
   bool can_use_msaa() const { return can_use_msaa_; }
 
  protected:
@@ -1072,7 +1068,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   std::unique_ptr<LayerTreeImpl> recycle_tree_;
 
   InputHandlerClient* input_handler_client_ = nullptr;
-  bool did_lock_scrolling_layer_ = false;
   bool touch_scrolling_ = false;
   bool wheel_scrolling_ = false;
   bool middle_click_autoscrolling_ = false;

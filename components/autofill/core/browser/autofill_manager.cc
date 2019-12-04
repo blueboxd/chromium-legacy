@@ -1443,7 +1443,7 @@ void AutofillManager::Reset() {
       new AutofillMetrics::FormInteractionsUkmLogger(
           client_->GetUkmRecorder(), client_->GetUkmSourceId()));
   address_form_event_logger_.reset(new AddressFormEventLogger(
-      driver()->IsInMainFrame(), form_interactions_ukm_logger_.get()));
+      driver()->IsInMainFrame(), form_interactions_ukm_logger_.get(), client_));
   credit_card_form_event_logger_.reset(new CreditCardFormEventLogger(
       driver()->IsInMainFrame(), form_interactions_ukm_logger_.get(),
       personal_data_, client_));
@@ -1491,7 +1491,8 @@ AutofillManager::AutofillManager(
               client->GetUkmSourceId())),
       address_form_event_logger_(std::make_unique<AddressFormEventLogger>(
           driver->IsInMainFrame(),
-          form_interactions_ukm_logger_.get())),
+          form_interactions_ukm_logger_.get(),
+          client_)),
       credit_card_form_event_logger_(
           std::make_unique<CreditCardFormEventLogger>(
               driver->IsInMainFrame(),

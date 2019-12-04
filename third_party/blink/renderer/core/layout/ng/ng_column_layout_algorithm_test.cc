@@ -121,7 +121,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, EmptyBlock) {
   fragment = iterator.NextChild(&offset);
   ASSERT_TRUE(fragment);
   EXPECT_EQ(PhysicalOffset(), offset);
-  EXPECT_EQ(PhysicalSize(100, 0), fragment->Size());
+  EXPECT_EQ(PhysicalSize(100, 100), fragment->Size());
   EXPECT_FALSE(iterator.NextChild());
 
   // #child fragment in first column
@@ -240,7 +240,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, BlockInTwoColumns) {
     offset:0,0 size:210x100
       offset:0,0 size:100x100
         offset:0,0 size:75x100
-      offset:110,0 size:100x50
+      offset:110,0 size:100x100
         offset:0,0 size:75x50
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -272,7 +272,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, BlockInThreeColumns) {
         offset:0,0 size:75x100
       offset:110,0 size:100x100
         offset:0,0 size:75x100
-      offset:220,0 size:100x50
+      offset:220,0 size:100x100
         offset:0,0 size:75x50
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -304,7 +304,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, ActualColumnCountGreaterThanSpecified) {
         offset:0,0 size:1x100
       offset:110,0 size:100x100
         offset:0,0 size:1x100
-      offset:220,0 size:100x50
+      offset:220,0 size:100x100
         offset:0,0 size:1x50
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -336,7 +336,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, TwoBlocksInTwoColumns) {
       offset:0,0 size:100x100
         offset:0,0 size:75x60
         offset:0,60 size:85x40
-      offset:110,0 size:100x20
+      offset:110,0 size:100x100
         offset:0,0 size:85x20
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -428,11 +428,11 @@ TEST_F(NGColumnLayoutAlgorithmTest, OverflowedBlock) {
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:1000x100
     offset:0,0 size:320x100
-      offset:0,0 size:100x70
+      offset:0,0 size:100x100
         offset:0,0 size:75x60
           offset:0,0 size:50x100
         offset:0,60 size:85x10
-      offset:110,0 size:100x0
+      offset:110,0 size:100x100
         offset:0,0 size:75x0
           offset:0,0 size:50x20
           offset:0,20 size:40x20
@@ -468,18 +468,18 @@ TEST_F(NGColumnLayoutAlgorithmTest, OverflowedBlock2) {
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:1000x100
     offset:0,0 size:320x100
-      offset:0,0 size:100x30
+      offset:0,0 size:100x100
         offset:0,0 size:75x10
           offset:0,0 size:50x100
         offset:0,10 size:85x10
         offset:0,20 size:65x10
           offset:0,0 size:51x80
-      offset:110,0 size:100x0
+      offset:110,0 size:100x100
         offset:0,0 size:75x0
           offset:0,0 size:50x100
         offset:0,0 size:65x0
           offset:0,0 size:51x100
-      offset:220,0 size:100x0
+      offset:220,0 size:100x100
         offset:0,0 size:75x0
           offset:0,0 size:50x20
         offset:0,0 size:65x0
@@ -513,14 +513,14 @@ TEST_F(NGColumnLayoutAlgorithmTest, OverflowedBlock3) {
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:1000x100
     offset:0,0 size:320x100
-      offset:0,0 size:100x70
+      offset:0,0 size:100x100
         offset:0,0 size:75x60
           offset:0,0 size:50x100
         offset:0,60 size:85x10
-      offset:110,0 size:100x0
+      offset:110,0 size:100x100
         offset:0,0 size:75x0
           offset:0,0 size:50x100
-      offset:220,0 size:100x0
+      offset:220,0 size:100x100
         offset:0,0 size:75x0
           offset:0,0 size:50x20
 )DUMP";
@@ -646,7 +646,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, TwoFloatsInTwoColumns) {
       offset:0,0 size:100x100
         offset:0,0 size:15x100
         offset:84,0 size:16x100
-      offset:110,0 size:100x50
+      offset:110,0 size:100x100
         offset:0,0 size:15x50
         offset:84,0 size:16x50
 )DUMP";
@@ -683,7 +683,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, FloatWithForcedBreak) {
         offset:0,0 size:100x50
         offset:0,50 size:77x50
           offset:0,0 size:66x30
-      offset:110,0 size:100x30
+      offset:110,0 size:100x100
         offset:0,0 size:77x30
           offset:0,0 size:55x30
 )DUMP";
@@ -714,7 +714,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, FloatWithMargin) {
     offset:0,0 size:320x100
       offset:0,0 size:100x100
         offset:0,10 size:77x90
-      offset:110,0 size:100x50
+      offset:110,0 size:100x100
         offset:0,0 size:77x50
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -746,7 +746,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, FloatWithMarginBelowFloat) {
       offset:0,0 size:100x100
         offset:0,0 size:66x40
         offset:0,50 size:77x50
-      offset:110,0 size:100x20
+      offset:110,0 size:100x100
         offset:0,0 size:77x20
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -784,7 +784,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, FloatWithLastResortBreak) {
     offset:0,0 size:320x100
       offset:0,0 size:100x100
         offset:0,0 size:99x90
-      offset:110,0 size:100x20
+      offset:110,0 size:100x100
         offset:0,0 size:88x20
           offset:0,0 size:0x20
             offset:0,9 size:0x1
@@ -822,7 +822,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, FloatWithAvoidBreak) {
     offset:0,0 size:320x100
       offset:0,0 size:100x100
         offset:0,0 size:99x90
-      offset:110,0 size:100x20
+      offset:110,0 size:100x100
         offset:0,0 size:88x20
           offset:0,0 size:77x20
 )DUMP";
@@ -860,7 +860,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, FloatWithMarginAndAvoidBreak) {
     offset:0,0 size:320x100
       offset:0,0 size:100x100
         offset:0,0 size:99x90
-      offset:110,0 size:100x25
+      offset:110,0 size:100x100
         offset:0,5 size:88x20
           offset:0,0 size:77x20
 )DUMP";
@@ -905,7 +905,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, UnbreakableFloatBeforeBreakable) {
     offset:0,0 size:320x100
       offset:0,0 size:100x100
         offset:0,0 size:99x90
-      offset:110,0 size:100x50
+      offset:110,0 size:100x100
         offset:0,0 size:22x50
           offset:0,0 size:11x20
         offset:22,0 size:33x50
@@ -941,7 +941,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, BlockWithTopMarginInThreeColumns) {
         offset:0,80 size:60x20
       offset:110,0 size:100x100
         offset:0,0 size:60x100
-      offset:220,0 size:100x30
+      offset:220,0 size:100x100
         offset:0,0 size:60x30
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -1008,7 +1008,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, NestedBlockAfterBlock) {
         offset:0,0 size:100x10
         offset:0,10 size:100x90
           offset:0,0 size:60x90
-      offset:110,0 size:100x50
+      offset:110,0 size:100x100
         offset:0,0 size:100x50
           offset:0,0 size:60x30
           offset:0,30 size:50x20
@@ -1041,7 +1041,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, BreakInsideAvoid) {
     offset:0,0 size:320x100
       offset:0,0 size:100x100
         offset:0,0 size:10x50
-      offset:110,0 size:100x70
+      offset:110,0 size:100x100
         offset:0,0 size:20x70
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -1072,7 +1072,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, BreakInsideAvoidColumn) {
     offset:0,0 size:320x100
       offset:0,0 size:100x100
         offset:0,0 size:10x50
-      offset:110,0 size:100x70
+      offset:110,0 size:100x100
         offset:0,0 size:20x70
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -1105,7 +1105,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, BreakInsideAvoidPage) {
       offset:0,0 size:100x100
         offset:0,0 size:10x50
         offset:0,50 size:20x50
-      offset:110,0 size:100x20
+      offset:110,0 size:100x100
         offset:0,0 size:20x20
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -1142,7 +1142,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, BreakInsideAvoidTallBlock) {
         offset:0,0 size:10x50
       offset:110,0 size:100x100
         offset:0,0 size:20x100
-      offset:220,0 size:100x70
+      offset:220,0 size:100x100
         offset:0,0 size:20x70
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -1181,7 +1181,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, NestedBreakInsideAvoid) {
     offset:0,0 size:320x100
       offset:0,0 size:100x100
         offset:0,0 size:10x50
-      offset:110,0 size:100x60
+      offset:110,0 size:100x100
         offset:0,0 size:30x60
           offset:0,0 size:21x30
           offset:0,30 size:22x30
@@ -1225,7 +1225,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, NestedBreakInsideAvoidTall) {
       offset:110,0 size:100x100
         offset:0,0 size:30x100
           offset:0,0 size:21x30
-      offset:220,0 size:100x80
+      offset:220,0 size:100x100
         offset:0,0 size:30x80
           offset:0,0 size:22x80
 )DUMP";
@@ -1259,7 +1259,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, BreakInsideAvoidAtColumnBoundary) {
     offset:0,0 size:320x100
       offset:0,0 size:100x100
         offset:0,0 size:100x90
-      offset:110,0 size:100x20
+      offset:110,0 size:100x100
         offset:0,0 size:100x20
           offset:0,0 size:20x20
 )DUMP";
@@ -1295,7 +1295,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, MarginTopPastEndOfFragmentainer) {
     offset:0,0 size:320x100
       offset:0,0 size:100x100
         offset:0,0 size:100x90
-      offset:110,0 size:100x20
+      offset:110,0 size:100x100
         offset:0,0 size:20x20
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -1330,7 +1330,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, MarginBottomPastEndOfFragmentainer) {
     offset:0,0 size:320x100
       offset:0,0 size:100x100
         offset:0,0 size:100x90
-      offset:110,0 size:100x20
+      offset:110,0 size:100x100
         offset:0,0 size:20x20
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -1364,7 +1364,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, MarginTopAtEndOfFragmentainer) {
     offset:0,0 size:320x100
       offset:0,0 size:100x100
         offset:0,0 size:100x90
-      offset:110,0 size:100x20
+      offset:110,0 size:100x100
         offset:0,0 size:20x20
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -1398,7 +1398,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, MarginBottomAtEndOfFragmentainer) {
     offset:0,0 size:320x100
       offset:0,0 size:100x100
         offset:0,0 size:100x90
-      offset:110,0 size:100x20
+      offset:110,0 size:100x100
         offset:0,0 size:20x20
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -1437,7 +1437,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, LinesInMulticolExtraSpace) {
           offset:0,9 size:0x1
         offset:0,20 size:0x20
           offset:0,9 size:0x1
-      offset:110,0 size:100x40
+      offset:110,0 size:100x50
         offset:0,0 size:0x20
           offset:0,9 size:0x1
         offset:0,20 size:0x20
@@ -1524,7 +1524,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, LinesInMulticolChildExtraSpace) {
             offset:0,9 size:0x1
           offset:0,20 size:0x20
             offset:0,9 size:0x1
-      offset:110,0 size:100x40
+      offset:110,0 size:100x50
         offset:0,0 size:77x40
           offset:0,0 size:0x20
             offset:0,9 size:0x1
@@ -1618,7 +1618,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, LinesInMulticolChildNoSpaceForFirst) {
             offset:0,9 size:0x1
           offset:0,20 size:0x20
             offset:0,9 size:0x1
-      offset:220,0 size:100x20
+      offset:220,0 size:100x50
         offset:0,0 size:77x20
           offset:0,0 size:0x20
             offset:0,9 size:0x1
@@ -1665,7 +1665,7 @@ TEST_F(NGColumnLayoutAlgorithmTest,
             offset:0,9 size:0x1
           offset:0,20 size:0x20
             offset:0,9 size:0x1
-      offset:220,0 size:100x20
+      offset:220,0 size:100x50
         offset:0,0 size:77x20
           offset:0,0 size:0x20
             offset:0,9 size:0x1
@@ -1710,7 +1710,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, LineAtColumnBoundaryInFirstBlock) {
     offset:0,0 size:320x50
       offset:0,0 size:100x50
         offset:0,0 size:66x50
-      offset:110,0 size:100x20
+      offset:110,0 size:100x50
         offset:0,0 size:66x20
           offset:0,0 size:0x20
             offset:0,9 size:0x1
@@ -1766,7 +1766,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_LinesAndFloatsMulticol) {
           offset:0,9 size:0x1
         offset:21,20 size:0x20
           offset:0,9 size:0x1
-      offset:220,0 size:100x20
+      offset:220,0 size:100x70
         offset:0,0 size:11x20
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -1817,7 +1817,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_FloatBelowLastLineInColumn) {
           offset:0,9 size:0x1
         offset:11,20 size:0x20
           offset:0,9 size:0x1
-      offset:220,0 size:100x40
+      offset:220,0 size:100x70
         offset:0,0 size:11x40
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -1855,7 +1855,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, Orphans) {
     offset:0,0 size:320x90
       offset:0,0 size:100x90
         offset:0,0 size:100x40
-      offset:110,0 size:100x60
+      offset:110,0 size:100x90
         offset:0,0 size:77x60
           offset:0,0 size:0x20
             offset:0,9 size:0x1
@@ -1906,7 +1906,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, OrphansUnsatisfiable) {
           offset:0,9 size:0x1
         offset:0,60 size:0x20
           offset:0,9 size:0x1
-      offset:110,0 size:100x40
+      offset:110,0 size:100x90
         offset:0,0 size:0x20
           offset:0,9 size:0x1
         offset:0,20 size:0x20
@@ -1955,7 +1955,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, Widows) {
           offset:0,9 size:0x1
         offset:0,60 size:0x20
           offset:0,9 size:0x1
-      offset:110,0 size:100x60
+      offset:110,0 size:100x110
         offset:0,0 size:0x20
           offset:0,9 size:0x1
         offset:0,20 size:0x20
@@ -2034,7 +2034,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, WidowsUnsatisfiable) {
           offset:0,9 size:0x1
         offset:0,60 size:0x20
           offset:0,9 size:0x1
-      offset:440,0 size:100x20
+      offset:440,0 size:100x90
         offset:0,0 size:0x20
           offset:0,9 size:0x1
 )DUMP";
@@ -2074,7 +2074,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, OrphansAndUnsatisfiableWidows) {
           offset:0,9 size:0x1
         offset:0,20 size:0x20
           offset:0,9 size:0x1
-      offset:110,0 size:100x40
+      offset:110,0 size:100x70
         offset:0,0 size:0x20
           offset:0,9 size:0x1
         offset:0,20 size:0x20
@@ -2118,7 +2118,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, UnsatisfiableOrphansAndWidows) {
           offset:0,9 size:0x1
         offset:0,40 size:0x20
           offset:0,9 size:0x1
-      offset:110,0 size:100x20
+      offset:110,0 size:100x70
         offset:0,0 size:0x20
           offset:0,9 size:0x1
 )DUMP";
@@ -2163,7 +2163,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, WidowsAndAbspos) {
             offset:0,9 size:0x1
           offset:0,20 size:0x20
             offset:0,9 size:0x1
-      offset:110,0 size:100x60
+      offset:110,0 size:100x70
         offset:0,0 size:100x60
           offset:0,0 size:0x20
             offset:0,9 size:0x1
@@ -2217,7 +2217,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, BreakBetweenLinesNotBefore) {
             offset:0,9 size:0x1
           offset:0,20 size:0x20
             offset:0,9 size:0x1
-      offset:110,0 size:100x40
+      offset:110,0 size:100x100
         offset:0,0 size:55x40
           offset:0,0 size:0x20
             offset:0,9 size:0x1
@@ -2263,7 +2263,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, BreakBetweenLinesNotBefore2) {
         offset:0,80 size:55x20
           offset:0,0 size:0x20
             offset:0,9 size:0x1
-      offset:110,0 size:100x20
+      offset:110,0 size:100x100
         offset:0,0 size:55x20
           offset:0,0 size:0x20
             offset:0,9 size:0x1
@@ -2307,7 +2307,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, BreakBetweenLinesNotBefore3) {
         offset:0,80 size:55x20
           offset:0,0 size:0x20
             offset:0,9 size:0x1
-      offset:110,0 size:100x20
+      offset:110,0 size:100x100
         offset:0,0 size:55x20
           offset:0,0 size:0x20
             offset:0,9 size:0x1
@@ -2348,7 +2348,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_FloatInBlockMovedByOrphans) {
     offset:0,0 size:320x70
       offset:0,0 size:100x70
         offset:0,0 size:11x40
-      offset:110,0 size:100x40
+      offset:110,0 size:100x70
         offset:0,0 size:77x40
           offset:0,0 size:0x20
             offset:0,9 size:0x1
@@ -2393,7 +2393,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_FloatMovedWithWidows) {
       offset:0,0 size:100x90
         offset:0,0 size:0x20
           offset:0,9 size:0x1
-      offset:110,0 size:100x80
+      offset:110,0 size:100x90
         offset:0,0 size:0x20
           offset:0,9 size:0x1
         offset:0,20 size:0x20
@@ -2431,7 +2431,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, BorderAndPadding) {
     offset:0,0 size:330x110
       offset:5,5 size:100x100
         offset:0,0 size:30x100
-      offset:115,5 size:100x50
+      offset:115,5 size:100x100
         offset:0,0 size:30x50
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -2466,7 +2466,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, BreakInsideWithBorder) {
         offset:0,0 size:100x85
         offset:0,85 size:100x15
           offset:10,10 size:80x5
-      offset:110,0 size:100x15
+      offset:110,0 size:100x100
         offset:0,0 size:100x15
           offset:10,0 size:80x5
 )DUMP";
@@ -2519,7 +2519,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, ForcedBreaks) {
           offset:0,10 size:100x10
             offset:0,0 size:100x10
               offset:0,0 size:70x10
-      offset:220,0 size:100x10
+      offset:220,0 size:100x100
         offset:0,0 size:100x10
           offset:0,0 size:80x10
 )DUMP";
@@ -2556,7 +2556,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, ForcedBreakInSecondChild) {
         offset:0,0 size:33x20
         offset:0,20 size:34x80
           offset:0,0 size:35x20
-      offset:110,0 size:100x20
+      offset:110,0 size:100x100
         offset:0,0 size:34x20
           offset:0,0 size:36x20
 )DUMP";
@@ -2605,7 +2605,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, ForcedAndUnforcedBreaksAtSameBoundary) {
           offset:0,0 size:10x70
         offset:33,0 size:34x100
           offset:0,0 size:10x70
-      offset:110,0 size:100x70
+      offset:110,0 size:100x100
         offset:0,0 size:33x70
           offset:0,50 size:20x20
         offset:33,0 size:34x20
@@ -2641,7 +2641,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, ResumeInsideFormattingContextRoot) {
       offset:0,0 size:100x100
         offset:0,0 size:33x100
           offset:0,0 size:10x70
-      offset:110,0 size:100x20
+      offset:110,0 size:100x100
         offset:0,0 size:33x20
           offset:0,0 size:20x20
 )DUMP";
@@ -2673,7 +2673,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, NewFcAtColumnBoundary) {
     offset:0,0 size:320x100
       offset:0,0 size:100x100
         offset:0,0 size:22x100
-      offset:110,0 size:100x50
+      offset:110,0 size:100x100
         offset:0,0 size:33x50
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -2705,7 +2705,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, NewFcWithMargin) {
       offset:0,0 size:100x100
         offset:0,0 size:22x50
         offset:0,80 size:33x20
-      offset:110,0 size:100x30
+      offset:110,0 size:100x100
         offset:0,0 size:33x30
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -2737,7 +2737,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, NewFcBelowFloat) {
       offset:0,0 size:100x100
         offset:0,0 size:22x50
         offset:0,50 size:88x50
-      offset:110,0 size:100x20
+      offset:110,0 size:100x100
         offset:0,0 size:88x20
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -2768,7 +2768,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, NewFcWithMarginPastColumnBoundary) {
     offset:0,0 size:320x100
       offset:0,0 size:100x100
         offset:0,0 size:22x80
-      offset:110,0 size:100x50
+      offset:110,0 size:100x100
         offset:0,0 size:33x50
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -2959,7 +2959,7 @@ TEST_F(NGColumnLayoutAlgorithmTest,
         offset:0,0 size:30x35
       offset:335,5 size:100x35
         offset:0,0 size:30x35
-      offset:445,5 size:100x10
+      offset:445,5 size:100x35
         offset:0,0 size:30x10
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -3025,7 +3025,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingMaxHeight) {
         offset:0,0 size:30x40
       offset:225,5 size:100x40
         offset:0,0 size:30x40
-      offset:335,5 size:100x30
+      offset:335,5 size:100x40
         offset:0,0 size:30x30
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -3167,7 +3167,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingEmptyBlock) {
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:1000x0
     offset:0,0 size:320x0
-      offset:0,0 size:100x0
+      offset:0,0 size:100x1
         offset:0,0 size:20x0
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -3289,13 +3289,13 @@ TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingOverflow) {
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:1000x100
     offset:0,0 size:320x100
-      offset:0,0 size:100x20
+      offset:0,0 size:100x100
         offset:0,0 size:30x20
           offset:0,0 size:33x100
-      offset:110,0 size:100x0
+      offset:110,0 size:100x100
         offset:0,0 size:30x0
           offset:0,0 size:33x100
-      offset:220,0 size:100x0
+      offset:220,0 size:100x100
         offset:0,0 size:30x0
           offset:0,0 size:33x100
 )DUMP";
@@ -3335,7 +3335,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingLines) {
           offset:0,9 size:0x1
         offset:0,20 size:0x20
           offset:0,9 size:0x1
-      offset:220,0 size:100x20
+      offset:220,0 size:100x40
         offset:0,0 size:0x20
           offset:0,9 size:0x1
 )DUMP";
@@ -3384,7 +3384,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingLinesOrphans) {
             offset:0,9 size:0x1
           offset:0,40 size:0x20
             offset:0,9 size:0x1
-      offset:220,0 size:100x40
+      offset:220,0 size:100x60
         offset:0,0 size:100x40
           offset:0,0 size:0x20
             offset:0,9 size:0x1
@@ -3436,7 +3436,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingLinesForcedBreak) {
             offset:0,9 size:0x1
           offset:0,40 size:0x20
             offset:0,9 size:0x1
-      offset:220,0 size:100x40
+      offset:220,0 size:100x60
         offset:0,0 size:100x40
           offset:0,0 size:0x20
             offset:0,9 size:0x1
@@ -3624,7 +3624,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingLinesAvoidBreakInside) {
             offset:0,9 size:0x1
           offset:0,40 size:0x20
             offset:0,9 size:0x1
-      offset:220,0 size:100x40
+      offset:220,0 size:100x60
         offset:0,0 size:100x40
           offset:0,0 size:0x20
             offset:0,9 size:0x1
@@ -3676,7 +3676,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingLinesAvoidBreakInside2) {
             offset:0,9 size:0x1
           offset:0,40 size:0x20
             offset:0,9 size:0x1
-      offset:220,0 size:100x20
+      offset:220,0 size:100x60
         offset:0,0 size:100x20
           offset:0,0 size:0x20
             offset:0,9 size:0x1
@@ -3740,7 +3740,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, ClassCBreakPointBeforeBfc) {
         offset:0,0 size:50x50
         offset:0,50 size:100x40
         offset:0,50 size:55x50
-      offset:110,0 size:100x60
+      offset:110,0 size:100x100
         offset:0,0 size:55x60
           offset:0,0 size:44x60
 )DUMP";
@@ -3776,7 +3776,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, NoClassCBreakPointBeforeBfc) {
       offset:0,0 size:100x100
         offset:0,0 size:50x50
         offset:0,50 size:100x40
-      offset:110,0 size:100x60
+      offset:110,0 size:100x100
         offset:0,0 size:55x60
           offset:0,0 size:44x60
 )DUMP";
@@ -3813,7 +3813,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, ClassCBreakPointBeforeBfcWithClearance) {
         offset:0,0 size:50x50
         offset:0,50 size:1x40
         offset:0,50 size:55x50
-      offset:110,0 size:100x60
+      offset:110,0 size:100x100
         offset:0,0 size:55x60
           offset:0,0 size:44x60
 )DUMP";
@@ -3850,7 +3850,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, ClassCBreakPointBeforeBfcWithMargin) {
         offset:0,0 size:50x50
         offset:0,50 size:100x40
         offset:0,50 size:55x50
-      offset:110,0 size:100x60
+      offset:110,0 size:100x100
         offset:0,0 size:55x60
           offset:0,0 size:44x60
 )DUMP";
@@ -3893,7 +3893,7 @@ TEST_F(NGColumnLayoutAlgorithmTest,
         offset:0,0 size:50x70
         offset:0,70 size:100x20
         offset:0,70 size:57x30
-      offset:110,0 size:100x21
+      offset:110,0 size:100x100
         offset:0,0 size:57x21
           offset:1,0 size:44x20
             offset:0,0 size:33x20
@@ -3936,7 +3936,7 @@ TEST_F(NGColumnLayoutAlgorithmTest,
       offset:0,0 size:100x100
         offset:0,0 size:50x70
         offset:0,70 size:100x20
-      offset:110,0 size:100x41
+      offset:110,0 size:100x100
         offset:0,0 size:57x41
           offset:1,20 size:44x20
             offset:0,0 size:33x20
@@ -3975,7 +3975,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, ClassCBreakPointBeforeLine) {
         offset:0,0 size:50x70
         offset:0,70 size:100x20
         offset:0,70 size:55x30
-      offset:110,0 size:100x20
+      offset:110,0 size:100x100
         offset:0,0 size:55x20
           offset:0,0 size:33x20
             offset:0,0 size:33x11
@@ -4013,7 +4013,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, ForcedBreakAtClassCBreakPoint) {
         offset:0,0 size:50x50
         offset:0,50 size:100x40
         offset:0,50 size:55x50
-      offset:110,0 size:100x20
+      offset:110,0 size:100x100
         offset:0,0 size:55x20
           offset:0,0 size:44x20
 )DUMP";
@@ -4063,9 +4063,9 @@ TEST_F(NGColumnLayoutAlgorithmTest, Nested) {
           offset:55,0 size:44x50
             offset:0,0 size:50x20
             offset:0,20 size:60x20
-      offset:220,0 size:100x22
+      offset:220,0 size:100x50
         offset:0,0 size:100x22
-          offset:1,0 size:44x20
+          offset:1,0 size:44x21
             offset:0,0 size:70x20
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -4102,7 +4102,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, NestedWithEdibleMargin) {
             offset:0,0 size:5x30
       offset:110,0 size:100x50
         offset:0,0 size:100x50
-          offset:0,0 size:45x10
+          offset:0,0 size:45x50
             offset:0,0 size:10x10
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -4133,7 +4133,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, NestedNoInnerContent) {
         offset:0,20 size:100x30
       offset:110,0 size:100x50
         offset:0,0 size:100x50
-      offset:220,0 size:100x22
+      offset:220,0 size:100x50
         offset:0,0 size:100x22
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -4164,11 +4164,11 @@ TEST_F(NGColumnLayoutAlgorithmTest, NestedSomeInnerContent) {
       offset:0,0 size:100x50
         offset:0,0 size:5x20
         offset:0,20 size:100x30
-          offset:1,1 size:44x20
+          offset:1,1 size:44x29
             offset:0,0 size:6x20
       offset:110,0 size:100x50
         offset:0,0 size:100x50
-      offset:220,0 size:100x22
+      offset:220,0 size:100x50
         offset:0,0 size:100x22
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -4225,7 +4225,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, NestedLimitedHeight) {
           offset:110,0 size:45x50
             offset:0,0 size:70x20
             offset:0,20 size:80x20
-          offset:165,0 size:45x20
+          offset:165,0 size:45x50
             offset:0,0 size:90x20
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -4257,7 +4257,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, NestedLimitedHeightWithPadding) {
             offset:0,0 size:22x50
           offset:55,50 size:45x50
             offset:0,0 size:22x50
-      offset:110,0 size:100x50
+      offset:110,0 size:100x100
         offset:0,0 size:100x50
           offset:0,0 size:45x50
             offset:0,0 size:22x50
@@ -4306,7 +4306,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, NestedUnbalancedInnerAutoHeight) {
             offset:0,20 size:45x20
       offset:110,0 size:100x50
         offset:0,0 size:100x50
-          offset:0,0 size:45x40
+          offset:0,0 size:45x50
             offset:0,0 size:45x20
             offset:0,20 size:45x20
 )DUMP";
@@ -4333,7 +4333,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, AbsposFitsInOneColumn) {
           offset:0,0 size:111x50
       offset:110,0 size:100x100
         offset:0,0 size:222x100
-      offset:220,0 size:100x50
+      offset:220,0 size:100x100
         offset:0,0 size:222x50
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -4377,7 +4377,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, Spanner) {
       offset:111,1 size:100x40
         offset:0,0 size:100x20
         offset:0,20 size:100x20
-      offset:221,1 size:100x20
+      offset:221,1 size:100x40
         offset:0,0 size:100x20
       offset:1,41 size:320x44
       offset:1,85 size:100x40
@@ -4386,7 +4386,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, Spanner) {
       offset:111,85 size:100x40
         offset:0,0 size:100x20
         offset:0,20 size:100x20
-      offset:221,85 size:100x20
+      offset:221,85 size:100x40
         offset:0,0 size:100x20
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -4434,7 +4434,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, SpannerWithContent) {
       offset:111,1 size:100x40
         offset:0,0 size:100x20
         offset:0,20 size:100x20
-      offset:221,1 size:100x20
+      offset:221,1 size:100x40
         offset:0,0 size:100x20
       offset:1,41 size:320x62
         offset:1,1 size:318x20
@@ -4446,7 +4446,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, SpannerWithContent) {
       offset:111,103 size:100x40
         offset:0,0 size:100x20
         offset:0,20 size:100x20
-      offset:221,103 size:100x20
+      offset:221,103 size:100x40
         offset:0,0 size:100x20
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -4491,7 +4491,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, TwoSpannersPercentWidth) {
       offset:111,1 size:100x40
         offset:0,0 size:100x20
         offset:0,20 size:100x20
-      offset:221,1 size:100x20
+      offset:221,1 size:100x40
         offset:0,0 size:100x20
       offset:1,41 size:160x44
       offset:1,85 size:160x1
@@ -4501,7 +4501,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, TwoSpannersPercentWidth) {
       offset:111,86 size:100x40
         offset:0,0 size:100x20
         offset:0,20 size:100x20
-      offset:221,86 size:100x20
+      offset:221,86 size:100x40
         offset:0,0 size:100x20
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -4549,10 +4549,10 @@ TEST_F(NGColumnLayoutAlgorithmTest, SpannerNoBalancing) {
       offset:111,1 size:100x40
         offset:0,0 size:100x20
         offset:0,20 size:100x20
-      offset:221,1 size:100x20
+      offset:221,1 size:100x40
         offset:0,0 size:100x20
       offset:1,41 size:320x44
-      offset:1,85 size:100x100
+      offset:1,85 size:100x116
         offset:0,0 size:100x20
         offset:0,20 size:100x20
         offset:0,40 size:100x20
@@ -4596,7 +4596,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, SpannerAtStart) {
       offset:111,45 size:100x40
         offset:0,0 size:100x20
         offset:0,20 size:100x20
-      offset:221,45 size:100x20
+      offset:221,45 size:100x40
         offset:0,0 size:100x20
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -4635,7 +4635,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, SpannerAtEnd) {
       offset:111,1 size:100x40
         offset:0,0 size:100x20
         offset:0,20 size:100x20
-      offset:221,1 size:100x20
+      offset:221,1 size:100x40
         offset:0,0 size:100x20
       offset:1,41 size:320x44
 )DUMP";
@@ -4694,7 +4694,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, SpannerInBlock) {
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:1000x46
     offset:0,0 size:322x46
-      offset:1,1 size:100x0
+      offset:1,1 size:100x1
         offset:0,0 size:11x0
       offset:1,1 size:320x44
 )DUMP";
@@ -4729,7 +4729,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, SpannerWithSiblingsInBlock) {
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:1000x86
     offset:0,0 size:322x86
-      offset:1,1 size:100x0
+      offset:1,1 size:100x1
         offset:0,0 size:11x0
       offset:1,1 size:320x44
       offset:1,45 size:100x40
@@ -4772,7 +4772,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, SpannerInBlockWithSiblings) {
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:1000x86
     offset:0,0 size:322x86
-      offset:1,1 size:100x0
+      offset:1,1 size:100x1
         offset:0,0 size:11x0
       offset:1,1 size:320x44
       offset:1,45 size:100x40
@@ -4965,7 +4965,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, BreakInsideSpannerWithMargins) {
       offset:0,0 size:100x100
         offset:0,0 size:100x100
           offset:0,10 size:33x90
-      offset:110,0 size:100x40
+      offset:110,0 size:100x100
         offset:0,0 size:100x40
           offset:0,0 size:33x10
           offset:0,30 size:44x10
@@ -5059,9 +5059,9 @@ TEST_F(NGColumnLayoutAlgorithmTest, BreakInsideSpanner) {
           offset:1,0 size:98x26
           offset:1,26 size:44x24
             offset:0,0 size:7x20
-          offset:55,26 size:44x20
+          offset:55,26 size:44x24
             offset:0,0 size:8x20
-      offset:220,0 size:100x22
+      offset:220,0 size:100x50
         offset:0,0 size:100x22
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -5109,9 +5109,9 @@ TEST_F(NGColumnLayoutAlgorithmTest, BreakInsideSpannerTwice) {
           offset:1,0 size:98x26
           offset:1,26 size:44x24
             offset:0,0 size:7x20
-          offset:55,26 size:44x20
+          offset:55,26 size:44x24
             offset:0,0 size:8x20
-      offset:330,0 size:100x22
+      offset:330,0 size:100x50
         offset:0,0 size:100x22
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -5159,7 +5159,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, BreakInsideSpannerWithContent) {
             offset:0,0 size:4x20
           offset:1,20 size:44x29
             offset:0,0 size:7x20
-          offset:55,20 size:44x20
+          offset:55,20 size:44x29
             offset:0,0 size:8x20
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -5190,7 +5190,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, ForcedBreakBetweenSpanners) {
       offset:0,0 size:100x100
         offset:0,0 size:100x100
           offset:0,0 size:55x40
-      offset:110,0 size:100x40
+      offset:110,0 size:100x100
         offset:0,0 size:100x40
           offset:0,0 size:66x40
 )DUMP";
@@ -5222,7 +5222,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, ForcedBreakBetweenSpanners2) {
       offset:0,0 size:100x100
         offset:0,0 size:100x100
           offset:0,0 size:55x40
-      offset:110,0 size:100x40
+      offset:110,0 size:100x100
         offset:0,0 size:100x40
           offset:0,0 size:66x40
 )DUMP";
@@ -5260,7 +5260,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, ForcedBreakBetweenSpanners3) {
           offset:0,0 size:55x40
             offset:0,0 size:33x10
             offset:0,10 size:44x10
-      offset:110,0 size:100x40
+      offset:110,0 size:100x100
         offset:0,0 size:100x40
           offset:0,0 size:66x40
 )DUMP";
@@ -5296,7 +5296,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, ForcedBreakBetweenSpanners4) {
       offset:0,0 size:100x100
         offset:0,0 size:100x100
           offset:0,0 size:55x40
-      offset:110,0 size:100x40
+      offset:110,0 size:100x100
         offset:0,0 size:100x40
           offset:0,0 size:66x40
             offset:0,0 size:33x10
@@ -5331,7 +5331,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, ForcedBreakBetweenSpanners5) {
       offset:0,0 size:100x100
         offset:0,0 size:100x100
           offset:0,0 size:55x40
-      offset:110,0 size:100x50
+      offset:110,0 size:100x100
         offset:0,0 size:100x50
           offset:0,10 size:66x40
 )DUMP";
@@ -5364,7 +5364,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, SoftBreakBetweenSpanners) {
       offset:0,0 size:100x100
         offset:0,0 size:100x100
           offset:0,0 size:55x60
-      offset:110,0 size:100x60
+      offset:110,0 size:100x100
         offset:0,0 size:100x60
           offset:0,0 size:66x60
 )DUMP";
@@ -5398,7 +5398,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, SoftBreakBetweenSpanners2) {
       offset:0,0 size:100x100
         offset:0,0 size:100x100
           offset:0,0 size:55x60
-      offset:110,0 size:100x60
+      offset:110,0 size:100x100
         offset:0,0 size:100x60
           offset:0,0 size:66x60
 )DUMP";
@@ -5475,7 +5475,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, AvoidSoftBreakBetweenSpanners2) {
           offset:0,0 size:11x100
             offset:0,0 size:22x20
             offset:0,20 size:33x20
-      offset:110,0 size:100x80
+      offset:110,0 size:100x100
         offset:0,0 size:100x80
           offset:0,0 size:11x20
             offset:0,0 size:44x20
@@ -5526,7 +5526,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, AvoidSoftBreakBetweenSpanners3) {
               offset:0,9 size:0x1
             offset:0,20 size:0x20
               offset:0,9 size:0x1
-      offset:110,0 size:100x80
+      offset:110,0 size:100x100
         offset:0,0 size:100x80
           offset:0,0 size:11x20
             offset:0,0 size:0x20
@@ -5574,9 +5574,9 @@ TEST_F(NGColumnLayoutAlgorithmTest, SoftBreakBetweenRowAndSpanner) {
           offset:0,0 size:45x40
             offset:0,0 size:11x20
             offset:0,20 size:22x20
-          offset:55,0 size:45x20
+          offset:55,0 size:45x40
             offset:0,0 size:33x20
-      offset:110,0 size:100x70
+      offset:110,0 size:100x100
         offset:0,0 size:100x70
           offset:0,0 size:44x70
 )DUMP";
@@ -5626,9 +5626,9 @@ TEST_F(NGColumnLayoutAlgorithmTest, SpannerAsMulticol) {
           offset:0,0 size:100x30
             offset:0,0 size:45x30
               offset:0,0 size:135x20
-            offset:55,0 size:45x20
+            offset:55,0 size:45x30
               offset:0,0 size:136x20
-      offset:220,0 size:100x40
+      offset:220,0 size:100x50
         offset:0,0 size:100x40
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -5666,7 +5666,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, AvoidBreakBetween) {
       offset:0,0 size:100x100
         offset:0,0 size:81x30
         offset:0,30 size:82x30
-      offset:110,0 size:100x60
+      offset:110,0 size:100x100
         offset:0,0 size:83x30
         offset:0,30 size:84x30
 )DUMP";
@@ -5705,7 +5705,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, AvoidAndForceBreakBetween) {
         offset:0,0 size:81x30
         offset:0,30 size:82x30
         offset:0,60 size:83x30
-      offset:110,0 size:100x30
+      offset:110,0 size:100x100
         offset:0,0 size:84x30
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -5747,7 +5747,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, AvoidBreakBetweenInFloat) {
           offset:0,0 size:81x30
           offset:0,30 size:82x30
         offset:0,0 size:100x100
-      offset:110,0 size:100x60
+      offset:110,0 size:100x100
         offset:0,0 size:100x60
           offset:0,0 size:83x30
           offset:0,30 size:84x30
@@ -5797,7 +5797,7 @@ TEST_F(NGColumnLayoutAlgorithmTest,
         offset:0,30 size:82x30
         offset:0,60 size:83x30
         offset:0,90 size:84x10
-      offset:110,0 size:100x20
+      offset:110,0 size:100x100
         offset:0,0 size:84x20
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -5841,7 +5841,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, AvoidBreakBetweenAndInsideIgnoreInside) {
         offset:0,0 size:100x100
           offset:0,0 size:80x20
           offset:0,20 size:81x30
-      offset:110,0 size:100x60
+      offset:110,0 size:100x100
         offset:0,0 size:100x60
           offset:0,0 size:82x30
           offset:0,30 size:83x30
@@ -5938,7 +5938,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, AvoidBreakBetweenInsideBreakableParent) {
         offset:0,0 size:100x40
           offset:0,0 size:33x20
           offset:0,20 size:34x20
-      offset:110,0 size:100x80
+      offset:110,0 size:100x100
         offset:0,0 size:100x80
           offset:0,0 size:35x20
           offset:0,20 size:36x20
@@ -5992,7 +5992,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, AvoidBreakBetweenAfterBreakableSibling) {
         offset:0,0 size:100x100
           offset:0,0 size:33x20
           offset:0,20 size:34x20
-      offset:110,0 size:100x80
+      offset:110,0 size:100x100
         offset:0,0 size:100x40
           offset:0,0 size:35x20
           offset:0,20 size:36x20
@@ -6040,7 +6040,7 @@ TEST_F(NGColumnLayoutAlgorithmTest,
           offset:0,0 size:33x20
           offset:0,20 size:34x20
           offset:0,40 size:35x20
-      offset:110,0 size:100x40
+      offset:110,0 size:100x100
         offset:0,0 size:100x20
           offset:0,0 size:36x20
         offset:0,20 size:37x20
@@ -6087,7 +6087,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, AvoidBreakBetweenHonorOrphansWidows) {
             offset:0,9 size:0x1
           offset:0,20 size:0x20
             offset:0,9 size:0x1
-      offset:110,0 size:100x70
+      offset:110,0 size:100x100
         offset:0,0 size:100x40
           offset:0,0 size:0x20
             offset:0,9 size:0x1
@@ -6132,7 +6132,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, AvoidBreakBetweenHonorOrphansWidows2) {
     offset:0,0 size:320x100
       offset:0,0 size:100x100
         offset:0,0 size:100x40
-      offset:110,0 size:100x70
+      offset:110,0 size:100x100
         offset:0,0 size:100x40
           offset:0,0 size:0x20
             offset:0,9 size:0x1
@@ -6244,7 +6244,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, AvoidBreakBetweenIgnoreOrphansWidows) {
         offset:0,40 size:100x60
           offset:0,0 size:0x20
             offset:0,9 size:0x1
-      offset:110,0 size:100x50
+      offset:110,0 size:100x100
         offset:0,0 size:100x20
           offset:0,0 size:0x20
             offset:0,9 size:0x1
@@ -6293,7 +6293,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, AvoidBreakBetweenLinesInsideBreakAvoid) {
       offset:0,0 size:100x100
         offset:0,0 size:33x20
         offset:0,20 size:34x20
-      offset:110,0 size:100x70
+      offset:110,0 size:100x100
         offset:0,0 size:35x40
           offset:0,0 size:0x20
             offset:0,9 size:0x1
@@ -6337,7 +6337,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, AvoidBreakBetweenBreakAtEarlyClassC) {
       offset:0,0 size:100x100
         offset:0,0 size:22x100
           offset:0,0 size:33x20
-      offset:110,0 size:100x90
+      offset:110,0 size:100x100
         offset:0,0 size:22x20
           offset:0,0 size:44x20
         offset:0,20 size:55x70
@@ -6376,6 +6376,35 @@ TEST_F(NGColumnLayoutAlgorithmTest, AvoidBreakBeforeBlockReplacedContent) {
       offset:110,0 size:100x100
         offset:0,0 size:33x50
         offset:0,50 size:44x50
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, TallReplacedContent) {
+  // Replaced content is unbreakable. Let it overflow the column.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-gap: 10px;
+        column-fill: auto;
+        width: 320px;
+        height: 100px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <img style="display:block; width:44px; height:150px;">
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:44x150
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }

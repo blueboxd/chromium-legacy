@@ -599,6 +599,21 @@ TEST(ValuesTest, EraseListValueIf) {
   EXPECT_EQ(0u, value.EraseListValueIf([](const auto& val) { return true; }));
 }
 
+TEST(ValuesTest, ClearList) {
+  ListValue value;
+  value.Append(1);
+  value.Append(2);
+  value.Append(3);
+  EXPECT_EQ(3u, value.GetList().size());
+
+  value.ClearList();
+  EXPECT_TRUE(value.GetList().empty());
+
+  // ClearList() should be idempotent.
+  value.ClearList();
+  EXPECT_TRUE(value.GetList().empty());
+}
+
 TEST(ValuesTest, FindKey) {
   Value::DictStorage storage;
   storage.emplace("foo", std::make_unique<Value>("bar"));

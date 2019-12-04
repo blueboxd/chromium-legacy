@@ -17,7 +17,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string16.h"
-#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/indexed_db/indexed_db_blob_info.h"
 #include "content/browser/indexed_db/indexed_db_execution_context_connection_tracker.h"
 #include "content/common/content_export.h"
@@ -54,7 +53,8 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
   IndexedDBDispatcherHost(
       int ipc_process_id,
       scoped_refptr<IndexedDBContextImpl> indexed_db_context,
-      scoped_refptr<ChromeBlobStorageContext> blob_storage_context);
+      mojo::PendingRemote<storage::mojom::BlobStorageContext>
+          blob_storage_context);
 
   void AddReceiver(
       int render_process_id,
@@ -78,9 +78,6 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
 
   // A shortcut for accessing our context.
   IndexedDBContextImpl* context() const { return indexed_db_context_.get(); }
-  scoped_refptr<ChromeBlobStorageContext> blob_storage_context() const {
-    return blob_storage_context_;
-  }
   mojo::Remote<storage::mojom::BlobStorageContext>&
   mojo_blob_storage_context() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -156,7 +153,6 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
   base::SequencedTaskRunner* IDBTaskRunner() const;
 
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
-  scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
   mojo::Remote<storage::mojom::BlobStorageContext> mojo_blob_storage_context_;
 
   // Shared task runner used to read blob files on.

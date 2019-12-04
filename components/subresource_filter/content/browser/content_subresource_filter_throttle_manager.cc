@@ -39,7 +39,7 @@ ContentSubresourceFilterThrottleManager::
         VerifiedRulesetDealer::Handle* dealer_handle,
         content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      binding_(web_contents, this),
+      receiver_(web_contents, this),
       dealer_handle_(dealer_handle),
       client_(client) {
   SubresourceFilterObserverManager::CreateForWebContents(web_contents);
@@ -392,7 +392,7 @@ void ContentSubresourceFilterThrottleManager::DidDisallowFirstSubresource() {
 }
 
 void ContentSubresourceFilterThrottleManager::FrameIsAdSubframe() {
-  OnFrameIsAdSubframe(binding_.GetCurrentTargetFrame());
+  OnFrameIsAdSubframe(receiver_.GetCurrentTargetFrame());
 }
 
 void ContentSubresourceFilterThrottleManager::SetDocumentLoadStatistics(

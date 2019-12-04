@@ -81,11 +81,13 @@ editing.TextEditHandler.prototype = {
     if (evt.type !== EventType.TEXT_CHANGED &&
         evt.type !== EventType.TEXT_SELECTION_CHANGED &&
         evt.type !== EventType.DOCUMENT_SELECTION_CHANGED &&
-        evt.type !== EventType.VALUE_CHANGED && evt.type !== EventType.FOCUS)
+        evt.type !== EventType.VALUE_CHANGED && evt.type !== EventType.FOCUS) {
       return;
+    }
     if (!evt.target.state.focused || !evt.target.state.editable ||
-        evt.target != this.node_)
+        evt.target != this.node_) {
       return;
+    }
 
     this.editableText_.onUpdate(evt.eventFrom);
   },
@@ -273,8 +275,9 @@ function AutomationRichEditableText(node) {
   var root = this.node_.root;
   if (!root || !root.selectionStartObject || !root.selectionEndObject ||
       root.selectionStartOffset === undefined ||
-      root.selectionEndOffset === undefined)
+      root.selectionEndOffset === undefined) {
     return;
+  }
 
   this.startLine_ = new editing.EditableLine(
       root.selectionStartObject, root.selectionStartOffset,
@@ -356,8 +359,9 @@ AutomationRichEditableText.prototype = {
     var root = this.node_.root;
     if (!root.selectionStartObject || !root.selectionEndObject ||
         root.selectionStartOffset === undefined ||
-        root.selectionEndOffset === undefined)
+        root.selectionEndOffset === undefined) {
       return;
+    }
 
     var startLine = new editing.EditableLine(
         root.selectionStartObject, root.selectionStartOffset,
@@ -607,22 +611,27 @@ AutomationRichEditableText.prototype = {
    * @private
    */
   speakTextMarker_: function(container, selStart, selEnd) {
-    var markersWithinSelection = 0;
-    if (container.markerTypes) {
-      for (var i = 0; i < container.markerTypes.length; i++) {
+    var markersWithinSelection = {};
+    var markers = container.markers;
+    if (markers) {
+      for (var marker of markers) {
         // See if our selection intersects with this marker.
-        if (container.markerStarts[i] >= selStart ||
-            selEnd < container.markerEnds[i])
-          markersWithinSelection |= container.markerTypes[i];
+        if (marker.startOffset >= selStart || selEnd < marker.endOffset) {
+          for (var key in marker.flags) {
+            markersWithinSelection[key] = true;
+          }
+        }
       }
     }
 
     var msgs = [];
-    if (this.misspelled == !(markersWithinSelection & 1)) {
+    if (this.misspelled ==
+        !(markersWithinSelection[chrome.automation.MarkerType.SPELLING])) {
       this.misspelled = !this.misspelled;
       msgs.push(this.misspelled ? 'misspelling_start' : 'misspelling_end');
     }
-    if (this.grammarError == !(markersWithinSelection & 2)) {
+    if (this.grammarError ==
+        !(markersWithinSelection[chrome.automation.MarkerType.GRAMMAR])) {
       this.grammarError = !this.grammarError;
       msgs.push(this.grammarError ? 'grammar_start' : 'grammar_end');
     }

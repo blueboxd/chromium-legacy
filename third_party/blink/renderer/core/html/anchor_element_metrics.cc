@@ -62,7 +62,7 @@ bool IsInIFrame(const HTMLAnchorElement& anchor_element) {
 bool ContainsImage(const HTMLAnchorElement& anchor_element) {
   for (Node* node = FlatTreeTraversal::FirstChild(anchor_element); node;
        node = FlatTreeTraversal::Next(*node, &anchor_element)) {
-    if (IsHTMLImageElement(*node))
+    if (IsA<HTMLImageElement>(*node))
       return true;
   }
   return false;

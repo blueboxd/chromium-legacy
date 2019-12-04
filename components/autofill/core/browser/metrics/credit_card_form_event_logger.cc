@@ -22,7 +22,8 @@ CreditCardFormEventLogger::CreditCardFormEventLogger(
     AutofillClient* client)
     : FormEventLoggerBase("CreditCard",
                           is_in_main_frame,
-                          form_interactions_ukm_logger),
+                          form_interactions_ukm_logger,
+                          client ? client->GetLogManager() : nullptr),
       personal_data_manager_(personal_data_manager),
       client_(client) {}
 

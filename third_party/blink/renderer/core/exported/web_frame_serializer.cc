@@ -229,7 +229,7 @@ bool MHTMLFrameSerializerDelegate::ShouldIgnoreAttribute(
   // images, as only the value of src is pulled into the archive. Discarding
   // srcset prevents the problem. Long term we should make sure to MHTML plays
   // nicely with srcset.
-  if (IsHTMLImageElement(element) &&
+  if (IsA<HTMLImageElement>(element) &&
       (attribute.LocalName() == html_names::kSrcsetAttr ||
        attribute.LocalName() == html_names::kSizesAttr)) {
     return true;
@@ -298,7 +298,7 @@ Vector<Attribute> MHTMLFrameSerializerDelegate::GetCustomAttributes(
     const Element& element) {
   Vector<Attribute> attributes;
 
-  if (auto* image = ToHTMLImageElementOrNull(element)) {
+  if (auto* image = DynamicTo<HTMLImageElement>(element)) {
     GetCustomAttributesForImageElement(*image, &attributes);
   }
 

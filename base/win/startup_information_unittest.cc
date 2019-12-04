@@ -73,7 +73,7 @@ TEST(StartupInformationTest, InheritStdOut) {
 
   PROCESS_INFORMATION temp_process_info = {};
   ASSERT_TRUE(::CreateProcess(
-      base::as_wcstr(exe_path.value()), cmd_line, nullptr, nullptr, TRUE,
+      exe_path.value().c_str(), cmd_line, nullptr, nullptr, TRUE,
       EXTENDED_STARTUPINFO_PRESENT | CREATE_SUSPENDED, nullptr, nullptr,
       startup_info.startup_info(), &temp_process_info))
       << ::GetLastError();

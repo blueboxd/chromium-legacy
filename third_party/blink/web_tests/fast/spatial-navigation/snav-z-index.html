@@ -1,62 +1,13 @@
-<html>
-  <head>
-    <script src="../../resources/js-test.js"></script>
-    <script src="resources/spatial-navigation-utils.js"></script>
-    <script type="application/javascript">
+<style>
+  div.simple { border: 3px solid red;}
+  div.simple:focus { border: 3px solid gray;}
+  div.positioned { border: 3px solid blue;}
+  div.positioned:focus{ border: 3px solid gray;}
+  #popup {position: absolute; top:120; left:240; border: 8px solid black; z-index:1000}
+</style>
 
-    var resultMap = [
-      ["Down", "s22"],
-      ["Down", "p11"],
-      ["Down", "s23"],
-      ["Down", "p12"],
-      ["Down", "s24"],
-      ["Down", "s25"],
-      ["Up", "s24"],
-      ["Up", "p12"],
-      ["Right", "p22"],
-      ["Left", "p12"],
-      ["Left", "s24"],
-      ["Left", "s14"],
-      ["Up", "s13"],
-      ["Up", "s12"],
-      ["Right", "s22"],
-      ["Right", "p11"],
-      ["Right", "p21"],
-      ["Up", "start"],
-      ["DONE", "DONE"]
-    ];
+Test that SpatNav prefers the elements with higher Z-indices.
 
-    if (window.testRunner) {
-      testRunner.dumpAsText();
-      testRunner.overridePreference("WebKitTabToLinksPreferenceKey", 1);
-      testRunner.overridePreference("WebKitSpatialNavigationEnabled", 1);
-      testRunner.waitUntilDone();
-    }
-
-    function runTest()
-    {
-      // starting the test itself: get to a known place.
-      document.getElementById("start").focus();
-      requestAnimationFrame(() => initTest(resultMap, testCompleted));
-    }
-
-    function testCompleted()
-    {
-      if (window.testRunner)
-        testRunner.notifyDone();
-    }
-
-    window.onload = runTest;
-    </script>
-    <style>
-    div.simple { border: 3px solid red;}
-    div.simple:focus { border: 3px solid gray;}
-    div.positioned { border: 3px solid blue;}
-    div.positioned:focus{ border: 3px solid gray;}
-    #popup {position: absolute; top:120; left:240; border: 8px solid black; z-index:1000}
-    </style>
-  </head>
-<body id="some-content" xmlns="http://www.w3.org/1999/xhtml" style="padding:20px">
 <div id="popup">
 <table><tr><td>
 <div tabindex="1" id="p11" class="positioned"><img src="resources/green.png" width=160px height=60px></div>
@@ -81,7 +32,31 @@
 <div tabindex="4" id="s24" class="simple"><img src="resources/green.png" width=160px height=60px></div>
 <div tabindex="5" id="s25" class="simple"><img src="resources/green.png" width=160px height=60px></div>
 </td></tr></table>
-<div id="console"></div>
-This test is testing that we can prefer the elements with higher Z indexes.
-</body>
-</html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="resources/snav-testharness.js"></script>
+<script>
+  var resultMap = [
+    ["Down", "s22"],
+    ["Down", "p11"],
+    ["Down", "s23"],
+    ["Down", "p12"],
+    ["Down", "s24"],
+    ["Down", "s25"],
+    ["Up", "s24"],
+    ["Up", "p12"],
+    ["Right", "p22"],
+    ["Left", "p12"],
+    ["Left", "s24"],
+    ["Left", "s14"],
+    ["Up", "s13"],
+    ["Up", "s12"],
+    ["Right", "s22"],
+    ["Right", "p11"],
+    ["Right", "p21"],
+    ["Up", "start"],
+  ];
+  // Start at a known place.
+  document.getElementById("start").focus();
+  snav.assertFocusMoves(resultMap);
+</script>

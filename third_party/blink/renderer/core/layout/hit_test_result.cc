@@ -176,10 +176,11 @@ void HitTestResult::SetToShadowHostIfInRestrictedShadowRoot() {
 
 HTMLAreaElement* HitTestResult::ImageAreaForImage() const {
   DCHECK(inner_node_);
-  HTMLImageElement* image_element = ToHTMLImageElementOrNull(inner_node_.Get());
+  auto* image_element = DynamicTo<HTMLImageElement>(inner_node_.Get());
   if (!image_element && inner_node_->IsInShadowTree()) {
     if (inner_node_->ContainingShadowRoot()->IsUserAgent()) {
-      image_element = ToHTMLImageElementOrNull(inner_node_->OwnerShadowHost());
+      image_element =
+          DynamicTo<HTMLImageElement>(inner_node_->OwnerShadowHost());
     }
   }
 
@@ -290,7 +291,7 @@ const AtomicString& HitTestResult::AltDisplayString() const {
   if (!inner_node_or_image_map_image)
     return g_null_atom;
 
-  if (auto* image = ToHTMLImageElementOrNull(*inner_node_or_image_map_image))
+  if (auto* image = DynamicTo<HTMLImageElement>(*inner_node_or_image_map_image))
     return image->FastGetAttribute(html_names::kAltAttr);
 
   if (auto* input = ToHTMLInputElementOrNull(*inner_node_or_image_map_image))
@@ -334,7 +335,7 @@ KURL HitTestResult::AbsoluteImageURL() const {
   // even if they don't have a LayoutImage (e.g. because the image didn't load
   // and we are using an alt container). For other elements we don't create alt
   // containers so ensure they contain a loaded image.
-  if (IsHTMLImageElement(*inner_node_or_image_map_image) ||
+  if (IsA<HTMLImageElement>(*inner_node_or_image_map_image) ||
       (IsHTMLInputElement(*inner_node_or_image_map_image) &&
        ToHTMLInputElement(inner_node_or_image_map_image)->type() ==
            input_type_names::kImage))

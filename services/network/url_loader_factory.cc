@@ -68,6 +68,7 @@ URLLoaderFactory::URLLoaderFactory(
       cors_url_loader_factory_(cors_url_loader_factory) {
   DCHECK(context);
   DCHECK_NE(mojom::kInvalidProcessId, params_->process_id);
+  DCHECK(!params_->factory_override);
 
   if (context_->network_service()) {
     context_->network_service()->keepalive_statistics_recorder()->Register(

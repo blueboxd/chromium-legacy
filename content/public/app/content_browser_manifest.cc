@@ -121,7 +121,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .RequireCapability("file", "file:leveldb")
           .RequireCapability("network", "network_service")
           .RequireCapability("network", "test")
-          .RequireCapability(mojom::kRendererServiceName, "browser")
           .RequireCapability("media", "media:media")
           .RequireCapability("media_renderer", "media:media")
           .RequireCapability("*", "app")
@@ -171,12 +170,8 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "autofill.mojom.PasswordManagerDriver",
                   "blink.mojom.DisplayCutoutHost",
                   "blink.mojom.Portal",
-                  "content.mojom.RendererAudioInputStreamFactory",
-                  "content.mojom.RendererAudioOutputStreamFactory",
                   "discardable_memory.mojom.DiscardableSharedMemoryManager",
                   "viz.mojom.Gpu"})
-          .RequireInterfaceFilterCapability_Deprecated(
-              mojom::kRendererServiceName, "navigation:frame", "browser")
           .PackageService(content::GetManifest())
           .Build()};
   return *manifest;

@@ -18,8 +18,8 @@
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/resource_type.h"
 #include "net/cookies/canonical_cookie.h"
@@ -259,8 +259,8 @@ class MetricsWebContentsObserver
   bool has_navigated_;
 
   base::ObserverList<TestingObserver>::Unchecked testing_observers_;
-  content::WebContentsFrameBindingSet<mojom::PageLoadMetrics>
-      page_load_metrics_binding_;
+  content::WebContentsFrameReceiverSet<mojom::PageLoadMetrics>
+      page_load_metrics_receiver_;
 
   bool web_contents_will_soon_be_destroyed_ = false;
 

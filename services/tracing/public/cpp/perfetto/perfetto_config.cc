@@ -42,7 +42,10 @@ perfetto::TraceConfig GetDefaultPerfettoConfig(
 
   size_t size_limit = chrome_config.GetTraceBufferSizeInKb();
   if (size_limit == 0) {
-    size_limit = 150 * 1024;
+    // TODO(eseckler): Reduce the default buffer size after benchmarks set what
+    // they require. Should also invest some time to reduce the overhead of
+    // begin/end pairs further.
+    size_limit = 200 * 1024;
   }
   auto* buffer_config = perfetto_config.add_buffers();
   buffer_config->set_size_kb(size_limit);

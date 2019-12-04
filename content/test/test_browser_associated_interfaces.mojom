@@ -9,6 +9,6 @@ interface BrowserAssociatedInterfaceTestDriver {
   RequestQuit() => ();
 };
 
-interface WebContentsFrameBindingSetTest {
+interface WebContentsFrameReceiverSetTest {
   Ping() => ();
 };

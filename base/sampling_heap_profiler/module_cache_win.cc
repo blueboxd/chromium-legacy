@@ -49,7 +49,7 @@ void GetDebugInfoForModule(HMODULE module_handle,
   }
 
   FilePath::StringType pdb_filename;
-  if (!UTF8ToUTF16(pdb_file, pdb_file_length, &pdb_filename))
+  if (!UTF8ToWide(pdb_file, pdb_file_length, &pdb_filename))
     return;
   *pdb_name = FilePath(std::move(pdb_filename)).BaseName();
 

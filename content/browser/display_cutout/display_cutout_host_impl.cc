@@ -14,13 +14,13 @@
 namespace content {
 
 DisplayCutoutHostImpl::DisplayCutoutHostImpl(WebContentsImpl* web_contents)
-    : bindings_(web_contents, this), web_contents_impl_(web_contents) {}
+    : receivers_(web_contents, this), web_contents_impl_(web_contents) {}
 
 DisplayCutoutHostImpl::~DisplayCutoutHostImpl() = default;
 
 void DisplayCutoutHostImpl::NotifyViewportFitChanged(
     blink::mojom::ViewportFit value) {
-  ViewportFitChangedForFrame(bindings_.GetCurrentTargetFrame(), value);
+  ViewportFitChangedForFrame(receivers_.GetCurrentTargetFrame(), value);
 }
 
 void DisplayCutoutHostImpl::ViewportFitChangedForFrame(

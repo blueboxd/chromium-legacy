@@ -275,10 +275,10 @@ void URLRequestHttpJob::Start() {
   // instance WebCore::FrameLoader::HideReferrer.
   if (referrer.is_valid()) {
     std::string referer_value = referrer.spec();
-    UMA_HISTOGRAM_COUNTS_10000("Referrer.HeaderLength", referer_value.length());
-    if (base::FeatureList::IsEnabled(features::kCapRefererHeaderLength) &&
-        base::saturated_cast<int>(referer_value.length()) >
-            features::kMaxRefererHeaderLength.Get()) {
+    // We limit the `referer` header to 4k: see step 6 of
+    // https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
+    // and https://github.com/whatwg/fetch/issues/903.
+    if (referer_value.length() > 4096) {
       // Strip the referrer down to its origin, but ensure that it's serialized
       // as a URL (e.g. retaining a trailing `/` character).
       referer_value = url::Origin::Create(referrer).GetURL().spec();

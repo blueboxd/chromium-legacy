@@ -1715,7 +1715,7 @@ static scoped_refptr<Image> ImageFromNode(const Node& node) {
 AtomicString GetUrlStringFromNode(const Node& node) {
   // TODO(editing-dev): This should probably be reconciled with
   // HitTestResult::absoluteImageURL.
-  if (IsHTMLImageElement(node) || IsHTMLInputElement(node))
+  if (IsA<HTMLImageElement>(node) || IsHTMLInputElement(node))
     return To<HTMLElement>(node).FastGetAttribute(html_names::kSrcAttr);
   if (IsA<SVGImageElement>(node))
     return To<SVGElement>(node).ImageSourceURL();
@@ -1756,7 +1756,7 @@ HTMLImageElement* ImageElementFromImageDocument(const Document* document) {
   if (!body)
     return nullptr;
 
-  return ToHTMLImageElementOrNull(body->firstChild());
+  return DynamicTo<HTMLImageElement>(body->firstChild());
 }
 
 }  // namespace blink

@@ -217,7 +217,7 @@ void LazyLoadImageObserver::LoadIfNearViewport(
 
   for (auto entry : entries) {
     Element* element = entry->target();
-    HTMLImageElement* image_element = ToHTMLImageElementOrNull(element);
+    auto* image_element = DynamicTo<HTMLImageElement>(element);
     if (!entry->isIntersecting() && image_element) {
       // Fully load the invisible image elements. The elements can be invisible
       // by style such as display:none, visibility: hidden, or hidden via
@@ -288,7 +288,7 @@ void LazyLoadImageObserver::OnVisibilityChanged(
   DCHECK(!entries.IsEmpty());
 
   for (auto entry : entries) {
-    auto* image_element = ToHTMLImageElementOrNull(entry->target());
+    auto* image_element = DynamicTo<HTMLImageElement>(entry->target());
     if (!image_element)
       continue;
 

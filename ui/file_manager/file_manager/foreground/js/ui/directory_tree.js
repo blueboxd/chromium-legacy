@@ -1847,6 +1847,9 @@ class DirectoryTree extends cr.ui.Tree {
   constructor() {
     super();
 
+    /** @type {Element} the containing DOM element */
+    this.container_ = null;
+
     /** @type {NavigationListModel} */
     this.dataModel_ = null;
 
@@ -1884,6 +1887,10 @@ class DirectoryTree extends cr.ui.Tree {
       directoryModel, volumeManager, metadataModel, fileOperationManager,
       fakeEntriesVisible) {
     cr.ui.Tree.prototype.decorate.call(this);
+
+    if (directorytree.FILES_NG_ENABLED) {
+      this.container_ = document.querySelector('.dialog-navigation-list');
+    }
 
     this.sequence_ = 0;
     this.directoryModel_ = directoryModel;
@@ -2292,10 +2299,25 @@ class DirectoryTree extends cr.ui.Tree {
   }
 
   /**
-   * Updates the UI after the layout has changed.
+   * Updates the UI after the layout has changed, due to splitter, or window
+   * resize. In the FILES_NG_ENABLED case, set tree clipped attribute state.
    */
   relayout() {
+    if (directorytree.FILES_NG_ENABLED) {
+      this.setTreeClippedAttributeState_();
+    }
+
     cr.dispatchSimpleEvent(this, 'relayout', true);
+  }
+
+  /**
+   * Sets the tree clipped attribute state from the this.container_ element's
+   * computed style width.
+   * @private
+   */
+  setTreeClippedAttributeState_() {
+    const width = parseFloat(getComputedStyle(this.container_).width);
+    this.toggleAttribute('clipped', width < 135);
   }
 
   // DirectoryTree is always expanded.

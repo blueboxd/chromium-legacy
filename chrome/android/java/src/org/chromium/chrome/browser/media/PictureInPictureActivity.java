@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.thinwebview.CompositorView;
 import org.chromium.chrome.browser.thinwebview.CompositorViewFactory;
+import org.chromium.chrome.browser.thinwebview.ThinWebViewConstraints;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.content_public.browser.MediaSession;
 import org.chromium.content_public.browser.MediaSessionObserver;
@@ -110,7 +111,8 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
     public void finishNativeInitialization() {
         super.finishNativeInitialization();
 
-        mCompositorView = CompositorViewFactory.create(this, getWindowAndroid());
+        mCompositorView = CompositorViewFactory.create(
+                this, getWindowAndroid(), new ThinWebViewConstraints());
         addContentView(mCompositorView.getView(),
                 new ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));

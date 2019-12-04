@@ -91,7 +91,7 @@ MetricsWebContentsObserver::MetricsWebContentsObserver(
                      content::Visibility::HIDDEN),
       embedder_interface_(std::move(embedder_interface)),
       has_navigated_(false),
-      page_load_metrics_binding_(web_contents, this) {
+      page_load_metrics_receiver_(web_contents, this) {
   // Prerenders erroneously report that they are initially visible, so we
   // manually override visibility state for prerender.
   if (embedder_interface_->IsPrerender(web_contents))
@@ -736,7 +736,7 @@ void MetricsWebContentsObserver::UpdateTiming(
     mojom::CpuTimingPtr cpu_timing,
     mojom::DeferredResourceCountsPtr new_deferred_resource_data) {
   content::RenderFrameHost* render_frame_host =
-      page_load_metrics_binding_.GetCurrentTargetFrame();
+      page_load_metrics_receiver_.GetCurrentTargetFrame();
   OnTimingUpdated(render_frame_host, std::move(timing), std::move(metadata),
                   std::move(new_features), resources, std::move(render_data),
                   std::move(cpu_timing), std::move(new_deferred_resource_data));

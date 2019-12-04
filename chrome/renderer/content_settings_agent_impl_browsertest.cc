@@ -61,7 +61,8 @@ class MockContentSettingsManagerImpl
                  receiver) override {
     ADD_FAILURE() << "Not reached";
   }
-  void AllowStorageAccess(StorageType storage_type,
+  void AllowStorageAccess(int32_t render_frame_id,
+                          StorageType storage_type,
                           const url::Origin& origin,
                           const GURL& site_for_cookies,
                           const url::Origin& top_frame_origin,
@@ -69,7 +70,8 @@ class MockContentSettingsManagerImpl
     ++log_->allow_storage_access_count;
     std::move(callback).Run(true);
   }
-  void OnContentBlocked(ContentSettingsType type) override {
+  void OnContentBlocked(int32_t render_frame_id,
+                        ContentSettingsType type) override {
     ++log_->on_content_blocked_count;
     log_->on_content_blocked_type = type;
   }
@@ -442,6 +444,9 @@ TEST_F(ContentSettingsAgentImplBrowserTest,
 // allow JS and reload the page. In each case, only one of noscript or script
 // tags should be enabled, but never both.
 TEST_F(ContentSettingsAgentImplBrowserTest, ContentSettingsNoscriptTag) {
+  MockContentSettingsAgentImpl mock_agent(view_->GetMainRenderFrame(),
+                                          registry_.get());
+
   // 1. Block JavaScript.
   RendererContentSettingRules content_setting_rules;
   ContentSettingsForOneType& script_setting_rules =

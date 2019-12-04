@@ -50,11 +50,6 @@ class SmartChargingManager : public ui::UserActivityObserver,
 
  private:
   friend class SmartChargingManagerTest;
-  FRIEND_TEST_ALL_PREFIXES(SmartChargingManagerTest,
-                           BrightnessRecoredCorrectly);
-  FRIEND_TEST_ALL_PREFIXES(SmartChargingManagerTest, PowerChangedTest);
-  FRIEND_TEST_ALL_PREFIXES(SmartChargingManagerTest, TimerFiredTest);
-  FRIEND_TEST_ALL_PREFIXES(SmartChargingManagerTest, UserEventCounts);
 
   // Populates the UserChargingEvent proto for logging/inference.
   void PopulateUserChargingEventProto(UserChargingEvent* proto);

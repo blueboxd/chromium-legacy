@@ -39,6 +39,7 @@ SharingBrowserTest::~SharingBrowserTest() = default;
 void SharingBrowserTest::SetUpOnMainThread() {
   SyncTest::SetUpOnMainThread();
   host_resolver()->AddRule("mock.http", "127.0.0.1");
+  host_resolver()->AddRule("mock2.http", "127.0.0.1");
 }
 
 void SharingBrowserTest::Init(

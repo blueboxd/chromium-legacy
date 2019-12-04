@@ -515,8 +515,11 @@ final class JavaUrlRequest extends UrlRequestBase {
                         Collections.unmodifiableList(headerList), false, selectedTransport, "", 0);
                 // TODO(clm) actual redirect handling? post -> get and whatnot?
                 if (responseCode >= 300 && responseCode < 400) {
-                    fireRedirectReceived(mUrlResponseInfo.getAllHeaders());
-                    return;
+                    List<String> locationFields = mUrlResponseInfo.getAllHeaders().get("location");
+                    if (locationFields != null) {
+                        fireRedirectReceived(locationFields.get(0));
+                        return;
+                    }
                 }
                 fireCloseUploadDataProvider();
                 if (responseCode >= 400) {
@@ -550,13 +553,11 @@ final class JavaUrlRequest extends UrlRequestBase {
         }
     }
 
-    private void fireRedirectReceived(final Map<String, List<String>> headerFields) {
+    private void fireRedirectReceived(final String locationField) {
         transitionStates(State.STARTED, State.REDIRECT_RECEIVED, new Runnable() {
             @Override
             public void run() {
-                mPendingRedirectUrl = URI.create(mCurrentUrl)
-                                              .resolve(headerFields.get("location").get(0))
-                                              .toString();
+                mPendingRedirectUrl = URI.create(mCurrentUrl).resolve(locationField).toString();
                 mUrlChain.add(mPendingRedirectUrl);
                 transitionStates(
                         State.REDIRECT_RECEIVED, State.AWAITING_FOLLOW_REDIRECT, new Runnable() {

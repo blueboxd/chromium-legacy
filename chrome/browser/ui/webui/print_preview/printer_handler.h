@@ -23,7 +23,7 @@ class Profile;
 
 namespace printing {
 
-class StickySettings;
+class PrintPreviewStickySettings;
 
 // Wrapper around PrinterProviderAPI to be used by print preview.
 // It makes request lifetime management easier, and hides details of more
@@ -62,7 +62,7 @@ class PrinterHandler {
   static std::unique_ptr<PrinterHandler> CreateForPdfPrinter(
       Profile* profile,
       content::WebContents* preview_web_contents,
-      StickySettings* sticky_settings);
+      PrintPreviewStickySettings* sticky_settings);
 
   static std::unique_ptr<PrinterHandler> CreateForLocalPrinters(
       content::WebContents* preview_web_contents,

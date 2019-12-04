@@ -330,10 +330,10 @@ TEST_F(SVGImageSimTest, PageVisibilityHiddenToVisible) {
   test::RunPendingTasks();
 
   Element* element = GetDocument().getElementById("image");
-  ASSERT_TRUE(IsHTMLImageElement(element));
+  ASSERT_TRUE(IsA<HTMLImageElement>(element));
 
   ImageResourceContent* image_content =
-      ToHTMLImageElement(*element).CachedImage();
+      To<HTMLImageElement>(*element).CachedImage();
   ASSERT_TRUE(image_content);
   ASSERT_TRUE(image_content->IsLoaded());
   ASSERT_TRUE(image_content->HasImage());

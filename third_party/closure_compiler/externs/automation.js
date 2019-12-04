@@ -422,6 +422,18 @@ chrome.automation.DefaultActionVerb = {
 };
 
 /**
+ * @enum {string}
+ * @see https://developer.chrome.com/extensions/automation#type-MarkerType
+ */
+chrome.automation.MarkerType = {
+  SPELLING: 'spelling',
+  GRAMMAR: 'grammar',
+  TEXT_MATCH: 'textMatch',
+  ACTIVE_SUGGESTION: 'activeSuggestion',
+  SUGGESTION: 'suggestion',
+};
+
+/**
  * @typedef {{
  *   left: number,
  *   top: number,
@@ -540,6 +552,16 @@ chrome.automation.CustomAction;
  * @see https://developer.chrome.com/extensions/automation#type-LanguageSpan
  */
 chrome.automation.LanguageSpan;
+
+/**
+ * @typedef {{
+ *   startOffset: number,
+ *   endOffset: number,
+ *   flags: Object
+ * }}
+ * @see https://developer.chrome.com/extensions/automation#type-Marker
+ */
+chrome.automation.Marker;
 
 /**
  * @constructor
@@ -940,25 +962,11 @@ chrome.automation.AutomationNode.prototype.textSelEnd;
 chrome.automation.AutomationNode.prototype.textInputType;
 
 /**
- * An array of indexes of the start position of each text marker.
- * @type {!Array<number>}
- * @see https://developer.chrome.com/extensions/automation#type-markerStarts
+ * An array of Marker objects for this node.
+ * @type {(!Array<!chrome.automation.Marker>|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-markers
  */
-chrome.automation.AutomationNode.prototype.markerStarts;
-
-/**
- * An array of indexes of the end position of each text marker.
- * @type {!Array<number>}
- * @see https://developer.chrome.com/extensions/automation#type-markerEnds
- */
-chrome.automation.AutomationNode.prototype.markerEnds;
-
-/**
- * An array of numerical types indicating the type of each text marker, such as a spelling error.
- * @type {!Array<number>}
- * @see https://developer.chrome.com/extensions/automation#type-markerTypes
- */
-chrome.automation.AutomationNode.prototype.markerTypes;
+chrome.automation.AutomationNode.prototype.markers;
 
 /**
  * If a selection is present, whether the anchor of the selection comes after its focus in the accessibility tree.

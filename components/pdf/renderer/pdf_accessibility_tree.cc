@@ -879,11 +879,11 @@ ui::AXNodeData* PdfAccessibilityTree::CreateImageNode(
 
 ui::AXNodeData* PdfAccessibilityTree::CreateHighlightNode(
     const ppapi::PdfAccessibilityHighlightInfo& highlight) {
-  ui::AXNodeData* highlight_node = CreateNode(ax::mojom::Role::kButton);
+  ui::AXNodeData* highlight_node = CreateNode(ax::mojom::Role::kMark);
 
-  // TODO(crbug.com/1008775): Determine string attributes.
   highlight_node->AddStringAttribute(
-      ax::mojom::StringAttribute::kRoleDescription, std::string());
+      ax::mojom::StringAttribute::kRoleDescription,
+      l10n_util::GetStringUTF8(IDS_AX_ROLE_DESCRIPTION_PDF_HIGHLIGHT));
   highlight_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
                                      std::string());
   highlight_node->relative_bounds.bounds = ToGfxRectF(highlight.bounds);

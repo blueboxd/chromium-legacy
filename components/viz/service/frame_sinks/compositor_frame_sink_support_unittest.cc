@@ -1349,8 +1349,7 @@ TEST_F(CompositorFrameSinkSupportTest, ThrottleUnresponsiveClient) {
 
   // Issue ten OnBeginFrame() messages with no response. They should all be
   // received by the client.
-  for (; sent_frames < CompositorFrameSinkSupport::kOutstandingFramesThrottle;
-       ++sent_frames) {
+  for (; sent_frames < BeginFrameTracker::kLimitThrottle; ++sent_frames) {
     frametime += interval;
 
     args = CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0,
@@ -1360,8 +1359,7 @@ TEST_F(CompositorFrameSinkSupportTest, ThrottleUnresponsiveClient) {
     testing::Mock::VerifyAndClearExpectations(&mock_client);
   }
 
-  for (; sent_frames < CompositorFrameSinkSupport::kOutstandingFramesStop;
-       ++sent_frames) {
+  for (; sent_frames < BeginFrameTracker::kLimitStop; ++sent_frames) {
     base::TimeTicks unthrottle_time =
         frametime + base::TimeDelta::FromSeconds(1);
 
@@ -1390,6 +1388,8 @@ TEST_F(CompositorFrameSinkSupportTest, ThrottleUnresponsiveClient) {
     testing::Mock::VerifyAndClearExpectations(&mock_client);
   }
 
+  BeginFrameArgs last_sent_args = args;
+
   // The client should no longer receive OnBeginFrame() until it becomes
   // responsive again.
   frametime += base::TimeDelta::FromMinutes(1);
@@ -1401,7 +1401,7 @@ TEST_F(CompositorFrameSinkSupportTest, ThrottleUnresponsiveClient) {
 
   // The client becomes responsive again. The next OnBeginFrame() message should
   // be delivered.
-  support->DidNotProduceFrame(BeginFrameAck(args, false));
+  support->DidNotProduceFrame(BeginFrameAck(last_sent_args, false));
 
   frametime += interval;
   args = CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0,

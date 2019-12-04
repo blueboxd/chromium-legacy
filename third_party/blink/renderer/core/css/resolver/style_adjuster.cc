@@ -217,7 +217,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     return;
   }
 
-  if (auto* image = ToHTMLImageElementOrNull(element)) {
+  if (auto* image = DynamicTo<HTMLImageElement>(element)) {
     if (image->IsCollapsed() || style.Display() == EDisplay::kContents)
       style.SetDisplay(EDisplay::kNone);
     return;
@@ -462,7 +462,7 @@ static void AdjustEffectiveTouchAction(ComputedStyle& style,
   bool is_non_replaced_inline_elements =
       style.IsDisplayInlineType() &&
       !(style.IsDisplayReplacedType() || is_svg_root ||
-        IsHTMLImageElement(element) || is_replaced_canvas);
+        IsA<HTMLImageElement>(element) || is_replaced_canvas);
   bool is_table_row_or_column = style.IsDisplayTableRowOrColumnType();
   bool is_layout_object_needed =
       element && element->LayoutObjectIsNeeded(style);

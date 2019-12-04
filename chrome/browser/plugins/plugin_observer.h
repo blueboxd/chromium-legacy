@@ -15,8 +15,8 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/common/plugin.mojom.h"
 #include "components/component_updater/component_updater_service.h"
-#include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
@@ -68,8 +68,8 @@ class PluginObserver : public content::WebContentsObserver,
   std::map<ComponentObserver*, std::unique_ptr<ComponentObserver>>
       component_observers_;
 
-  content::WebContentsFrameBindingSet<chrome::mojom::PluginHost>
-      plugin_host_bindings_;
+  content::WebContentsFrameReceiverSet<chrome::mojom::PluginHost>
+      plugin_host_receivers_;
 
   base::WeakPtrFactory<PluginObserver> weak_ptr_factory_{this};
 

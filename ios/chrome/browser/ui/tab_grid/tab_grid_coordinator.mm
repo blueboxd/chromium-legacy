@@ -185,8 +185,8 @@
       self.remoteTabsMediator;
   baseViewController.remoteTabsViewController.delegate =
       self.remoteTabsMediator;
-  baseViewController.remoteTabsViewController.dispatcher =
-      static_cast<id<ApplicationCommands>>(self.dispatcher);
+  baseViewController.remoteTabsViewController.handler =
+      HandlerForProtocol(self.dispatcher, ApplicationCommands);
   baseViewController.remoteTabsViewController.loadStrategy =
       UrlLoadStrategy::ALWAYS_NEW_FOREGROUND_TAB;
   baseViewController.remoteTabsViewController.restoredTabDisposition =

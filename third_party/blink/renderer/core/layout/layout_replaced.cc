@@ -704,7 +704,7 @@ void LayoutReplaced::ComputeIntrinsicSizingInfo(
 
   auto* elem = DynamicTo<Element>(GetNode());
   if (RuntimeEnabledFeatures::AspectRatioFromWidthAndHeightEnabled() && elem &&
-      IsHTMLImageElement(elem) &&
+      IsA<HTMLImageElement>(elem) &&
       intrinsic_sizing_info.aspect_ratio.IsEmpty() &&
       elem->FastHasAttribute(html_names::kWidthAttr) &&
       elem->FastHasAttribute(html_names::kHeightAttr)) {

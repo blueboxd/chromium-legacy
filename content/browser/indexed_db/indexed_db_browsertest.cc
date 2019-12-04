@@ -27,6 +27,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"

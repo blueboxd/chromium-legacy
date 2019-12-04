@@ -40,20 +40,6 @@ HistoryBrowserTest.prototype = {
   },
 };
 
-function HistoryBrowserServiceTest() {}
-
-HistoryBrowserServiceTest.prototype = {
-  __proto__: HistoryBrowserTest.prototype,
-
-  extraLibraries: HistoryBrowserTest.prototype.extraLibraries.concat([
-    'browser_service_test.js',
-  ]),
-};
-
-TEST_F('HistoryBrowserServiceTest', 'All', function() {
-  mocha.run();
-});
-
 function HistoryDrawerTest() {}
 
 HistoryDrawerTest.prototype = {

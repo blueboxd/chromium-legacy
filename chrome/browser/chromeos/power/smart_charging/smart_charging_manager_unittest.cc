@@ -43,8 +43,13 @@ class SmartChargingManagerTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  SmartChargingManager* smart_charging_manager() {
-    return smart_charging_manager_.get();
+  UserChargingEvent GetUserChargingEvent() {
+    return smart_charging_manager_->user_charging_event_for_test_;
+  }
+
+  base::Optional<power_manager::PowerSupplyProperties::ExternalPower>
+  GetExternalPower() {
+    return smart_charging_manager_->external_power_;
   }
 
  protected:
@@ -96,94 +101,60 @@ TEST_F(SmartChargingManagerTest, BrightnessRecoredCorrectly) {
   // LogEvent() hasn't been called yet.
   ReportPowerChangeEvent(power_manager::PowerSupplyProperties::DISCONNECTED,
                          23.0f);
-  EXPECT_FALSE(
-      smart_charging_manager()->user_charging_event_for_test_.has_features());
-  EXPECT_FALSE(
-      smart_charging_manager()->user_charging_event_for_test_.has_event());
+  EXPECT_FALSE(GetUserChargingEvent().has_features());
+  EXPECT_FALSE(GetUserChargingEvent().has_event());
 
   ReportBrightnessChangeEvent(75.7f);
 
   ReportPowerChangeEvent(power_manager::PowerSupplyProperties::AC, 15.0f);
-  EXPECT_EQ(smart_charging_manager()
-                ->user_charging_event_for_test_.features()
-                .screen_brightness_percent(),
-            75);
+
+  EXPECT_EQ(GetUserChargingEvent().features().screen_brightness_percent(), 75);
 }
 
 TEST_F(SmartChargingManagerTest, PowerChangedTest) {
   // LogEvent() hasn't been called yet.
   ReportPowerChangeEvent(power_manager::PowerSupplyProperties::DISCONNECTED,
                          23.0f);
-  EXPECT_EQ(smart_charging_manager()->external_power_.value(),
+  EXPECT_EQ(GetExternalPower().value(),
             power_manager::PowerSupplyProperties::DISCONNECTED);
-  EXPECT_FALSE(
-      smart_charging_manager()->user_charging_event_for_test_.has_features());
-  EXPECT_FALSE(
-      smart_charging_manager()->user_charging_event_for_test_.has_event());
+  EXPECT_FALSE(GetUserChargingEvent().has_features());
+  EXPECT_FALSE(GetUserChargingEvent().has_event());
 
   // Plugs in the charger.
   ReportPowerChangeEvent(power_manager::PowerSupplyProperties::AC, 15.0f);
-  EXPECT_EQ(smart_charging_manager()->external_power_.value(),
+  EXPECT_EQ(GetExternalPower().value(),
             power_manager::PowerSupplyProperties::AC);
-  EXPECT_EQ(smart_charging_manager()
-                ->user_charging_event_for_test_.features()
-                .battery_percentage(),
-            15);
-  EXPECT_EQ(smart_charging_manager()
-                ->user_charging_event_for_test_.event()
-                .event_id(),
-            0);
-  EXPECT_EQ(
-      smart_charging_manager()->user_charging_event_for_test_.event().reason(),
-      UserChargingEvent::Event::CHARGER_PLUGGED_IN);
+  EXPECT_EQ(GetUserChargingEvent().features().battery_percentage(), 15);
+  EXPECT_EQ(GetUserChargingEvent().event().event_id(), 0);
+  EXPECT_EQ(GetUserChargingEvent().event().reason(),
+            UserChargingEvent::Event::CHARGER_PLUGGED_IN);
 
   // Unplugs the charger.
   ReportPowerChangeEvent(power_manager::PowerSupplyProperties::USB, 85.0f);
-  EXPECT_EQ(smart_charging_manager()->external_power_.value(),
+  EXPECT_EQ(GetExternalPower().value(),
             power_manager::PowerSupplyProperties::USB);
-  EXPECT_EQ(smart_charging_manager()
-                ->user_charging_event_for_test_.features()
-                .battery_percentage(),
-            85);
-  EXPECT_EQ(smart_charging_manager()
-                ->user_charging_event_for_test_.event()
-                .event_id(),
-            1);
-  EXPECT_EQ(
-      smart_charging_manager()->user_charging_event_for_test_.event().reason(),
-      UserChargingEvent::Event::CHARGER_UNPLUGGED);
+  EXPECT_EQ(GetUserChargingEvent().features().battery_percentage(), 85);
+  EXPECT_EQ(GetUserChargingEvent().event().event_id(), 1);
+  EXPECT_EQ(GetUserChargingEvent().event().reason(),
+            UserChargingEvent::Event::CHARGER_UNPLUGGED);
 }
 
 TEST_F(SmartChargingManagerTest, TimerFiredTest) {
   // Timer fired 2 times.
   ReportPowerChangeEvent(power_manager::PowerSupplyProperties::USB, 23.0f);
   FastForwardTimeBySecs(3600);
-  EXPECT_EQ(smart_charging_manager()
-                ->user_charging_event_for_test_.features()
-                .battery_percentage(),
-            23);
-  EXPECT_EQ(smart_charging_manager()
-                ->user_charging_event_for_test_.event()
-                .event_id(),
-            1);
-  EXPECT_EQ(
-      smart_charging_manager()->user_charging_event_for_test_.event().reason(),
-      UserChargingEvent::Event::PERIODIC_LOG);
+  EXPECT_EQ(GetUserChargingEvent().features().battery_percentage(), 23);
+  EXPECT_EQ(GetUserChargingEvent().event().event_id(), 1);
+  EXPECT_EQ(GetUserChargingEvent().event().reason(),
+            UserChargingEvent::Event::PERIODIC_LOG);
 
   // Charger plugged in.
   ReportPowerChangeEvent(power_manager::PowerSupplyProperties::AC, 50.0f);
   FastForwardTimeBySecs(1900);
-  EXPECT_EQ(smart_charging_manager()
-                ->user_charging_event_for_test_.features()
-                .battery_percentage(),
-            50);
-  EXPECT_EQ(smart_charging_manager()
-                ->user_charging_event_for_test_.event()
-                .event_id(),
-            3);
-  EXPECT_EQ(
-      smart_charging_manager()->user_charging_event_for_test_.event().reason(),
-      UserChargingEvent::Event::PERIODIC_LOG);
+  EXPECT_EQ(GetUserChargingEvent().features().battery_percentage(), 50);
+  EXPECT_EQ(GetUserChargingEvent().event().event_id(), 3);
+  EXPECT_EQ(GetUserChargingEvent().event().reason(),
+            UserChargingEvent::Event::PERIODIC_LOG);
 }
 
 TEST_F(SmartChargingManagerTest, UserEventCounts) {
@@ -215,7 +186,7 @@ TEST_F(SmartChargingManagerTest, UserEventCounts) {
   FastForwardTimeBySecs(2);
   FireTimer();
 
-  const auto& proto = smart_charging_manager()->user_charging_event_for_test_;
+  const auto& proto = GetUserChargingEvent();
 
   EXPECT_EQ(proto.features().num_recent_mouse_events(), 1);
   EXPECT_EQ(proto.features().num_recent_touch_events(), 2);

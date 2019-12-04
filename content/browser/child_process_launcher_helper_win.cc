@@ -118,16 +118,5 @@ void ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread(
     process.SetProcessBackgrounded(priority.is_background());
 }
 
-// static
-void ChildProcessLauncherHelper::SetRegisteredFilesForService(
-    const std::string& service_name,
-    std::map<std::string, base::FilePath> required_files) {
-  // No file passing from the manifest on Windows yet.
-  DCHECK(required_files.empty());
-}
-
-// static
-void ChildProcessLauncherHelper::ResetRegisteredFilesForTesting() {}
-
 }  // namespace internal
 }  // namespace content

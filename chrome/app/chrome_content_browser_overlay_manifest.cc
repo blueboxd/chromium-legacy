@@ -140,7 +140,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                 chromeos::network_config::mojom::CrosNetworkConfig,
                 cros::mojom::CameraAppDeviceProvider,
 #endif
-                contextual_search::mojom::ContextualSearchJsApiService,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
                 extensions::KeepAlive,
 #endif

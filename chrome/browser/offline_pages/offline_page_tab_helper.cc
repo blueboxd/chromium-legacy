@@ -101,7 +101,7 @@ bool OfflinePageTabHelper::LoadedOfflinePageInfo::IsValid() const {
 
 OfflinePageTabHelper::OfflinePageTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      mhtml_page_notifier_bindings_(web_contents, this) {
+      mhtml_page_notifier_receivers_(web_contents, this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
@@ -115,7 +115,7 @@ void OfflinePageTabHelper::NotifyMhtmlPageLoadAttempted(
     MHTMLLoadResult load_result,
     const GURL& main_frame_url,
     base::Time date) {
-  if (mhtml_page_notifier_bindings_.GetCurrentTargetFrame() !=
+  if (mhtml_page_notifier_receivers_.GetCurrentTargetFrame() !=
       web_contents()->GetMainFrame()) {
     return;
   }
@@ -399,7 +399,7 @@ OfflinePageTrustedState OfflinePageTabHelper::GetTrustedStateForTest() const {
 
 void OfflinePageTabHelper::SetCurrentTargetFrameForTest(
     content::RenderFrameHost* render_frame_host) {
-  mhtml_page_notifier_bindings_.SetCurrentTargetFrameForTesting(
+  mhtml_page_notifier_receivers_.SetCurrentTargetFrameForTesting(
       render_frame_host);
 }
 

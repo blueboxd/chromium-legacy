@@ -131,7 +131,7 @@ bool ShouldIgnoreContents(const Node& node) {
   if (!element)
     return false;
   return (!element->ShouldSerializeEndTag() && !IsHTMLInputElement(*element)) ||
-         IsA<HTMLIFrameElement>(*element) || IsHTMLImageElement(*element) ||
+         IsA<HTMLIFrameElement>(*element) || IsA<HTMLImageElement>(*element) ||
          IsA<HTMLMeterElement>(*element) || IsA<HTMLObjectElement>(*element) ||
          IsA<HTMLProgressElement>(*element) ||
          (IsA<HTMLSelectElement>(*element) &&

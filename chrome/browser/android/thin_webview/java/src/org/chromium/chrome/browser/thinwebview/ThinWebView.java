@@ -30,6 +30,12 @@ public interface ThinWebView {
     void attachWebContents(WebContents webContents, @Nullable View contentView);
 
     /**
+     * Sets opacity for the view. {@link ThinWebViewConstraints#supportsOpacity} must be true for
+     * using this method.
+     */
+    void setAlpha(float alpha);
+
+    /**
      * Should be called for cleanup when the CompositorView instance is no longer used.
      */
     void destroy();

@@ -112,6 +112,9 @@ Polymer({
       value: loadTimeData.getBoolean('isUserSignedIn'),
     },
 
+    /** @private */
+    pendingDelete_: Boolean,
+
     toolbarShadow_: {
       type: Boolean,
       reflectToAttribute: true,
@@ -301,7 +304,7 @@ Polymer({
 
   /** @private */
   onDeleteCommand_: function() {
-    if (this.$.toolbar.count == 0) {
+    if (this.$.toolbar.count == 0 || this.pendingDelete_) {
       return;
     }
     this.deleteSelected();

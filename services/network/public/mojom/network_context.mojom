@@ -521,6 +521,28 @@ struct SignedExchangeReport {
 const uint32 kBrowserProcessId = 0;
 const uint32 kInvalidProcessId = 0xffffffff;
 
+// URLLoaderFactory made by the network service consists of two layers of
+// factories, the "internal" one that directly talks to the //net layer, and
+// the "outer" one (which is also called CorsURLLoader) that enforces necessary
+// security features such as CORS.
+//
+// This struct can be used to specify an alternative "internal"
+// URLLoaderFactory so that the requests can still go through the "outer" one
+// for security features, but then they are routed to the alternative
+// |overriding_factory| rather than the one that talks to //net, which is also
+// exposed to the consumer as |overridden_factory_receiver|.
+//
+// |overridden_factory_receiver| is useful when the receiver of
+// |overriding_factory|| wants to decide which (of the "internal", or the
+// "alternative" one) URLLoaderFactory to use on a per-request basis.
+struct URLLoaderFactoryOverride {
+  // This factory replaces the "internal" factory.
+  pending_remote<URLLoaderFactory> overriding_factory;
+
+  // A receiver for the replaced "internal" URLLoaderFactory.
+  pending_receiver<URLLoaderFactory>? overridden_factory_receiver;
+};
+
 struct URLLoaderFactoryParams {
   // Process requesting the URLLoaderFactory.
   // Set to kBrowserProcessId to indicate the browser process.
@@ -570,6 +592,9 @@ struct URLLoaderFactoryParams {
   // consumers can issue requests with ResourceRequest::trusted_params
   // populated.
   bool is_trusted;
+
+  // Replaces the "internal" factory used by security features such as CORS.
+  URLLoaderFactoryOverride? factory_override;
 };
 
 // The |credentials| output parameter is given to URLRequest::SetAuth()

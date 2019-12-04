@@ -78,7 +78,7 @@ FileVersionInfoWin::CreateFileVersionInfoWin(const base::FilePath& file_path) {
                                                 base::BlockingType::MAY_BLOCK);
 
   DWORD dummy;
-  const wchar_t* path = base::as_wcstr(file_path.value());
+  const wchar_t* path = file_path.value().c_str();
   const DWORD length = ::GetFileVersionInfoSize(path, &dummy);
   if (length == 0)
     return nullptr;

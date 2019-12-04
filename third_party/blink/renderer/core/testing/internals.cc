@@ -610,7 +610,7 @@ void Internals::advanceImageAnimation(Element* image,
   DCHECK(image);
 
   ImageResourceContent* resource = nullptr;
-  if (auto* html_image = ToHTMLImageElementOrNull(*image)) {
+  if (auto* html_image = DynamicTo<HTMLImageElement>(*image)) {
     resource = html_image->CachedImage();
   } else if (auto* svg_image = DynamicTo<SVGImageElement>(*image)) {
     resource = svg_image->CachedImage();
@@ -2890,13 +2890,14 @@ String Internals::getImageSourceURL(Element* element) {
 
 void Internals::forceImageReload(Element* element,
                                  ExceptionState& exception_state) {
-  if (!element || !IsHTMLImageElement(*element)) {
+  auto* html_image_element = DynamicTo<HTMLImageElement>(element);
+  if (!html_image_element) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidAccessError,
         "The element should be HTMLImageElement.");
   }
 
-  ToHTMLImageElement(*element).ForceReload();
+  html_image_element->ForceReload();
 }
 
 String Internals::selectMenuListText(HTMLSelectElement* select) {

@@ -787,7 +787,7 @@ Element* HTMLFormElement::ElementFromPastNamesMap(
   if (!element)
     return nullptr;
   SECURITY_DCHECK(To<HTMLElement>(element)->formOwner() == this);
-  if (IsHTMLImageElement(*element)) {
+  if (IsA<HTMLImageElement>(*element)) {
     SECURITY_DCHECK(ImageElements().Find(element) != kNotFound);
   } else if (auto* html_image_element = DynamicTo<HTMLObjectElement>(element)) {
     SECURITY_DCHECK(ListedElements().Find(html_image_element) != kNotFound);
@@ -866,14 +866,14 @@ void HTMLFormElement::AnonymousNamedGetter(
   DCHECK(!elements.IsEmpty());
 
   bool only_match_img =
-      !elements.IsEmpty() && IsHTMLImageElement(*elements.front());
+      !elements.IsEmpty() && IsA<HTMLImageElement>(*elements.front());
   if (only_match_img) {
     UseCounter::Count(GetDocument(),
                       WebFeature::kFormNameAccessForImageElement);
     // The following code has performance impact, but it should be small
     // because <img> access via <form> name getter is rarely used.
     for (auto& element : elements) {
-      if (IsHTMLImageElement(*element) && !element->IsDescendantOf(this)) {
+      if (IsA<HTMLImageElement>(*element) && !element->IsDescendantOf(this)) {
         UseCounter::Count(
             GetDocument(),
             WebFeature::kFormNameAccessForNonDescendantImageElement);

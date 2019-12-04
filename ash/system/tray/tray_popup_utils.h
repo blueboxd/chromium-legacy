@@ -32,6 +32,7 @@ class ToggleButton;
 
 namespace ash {
 class HoverHighlightView;
+class UnfocusableLabel;
 
 // Factory/utility functions used by the system menu.
 class TrayPopupUtils {
@@ -92,6 +93,10 @@ class TrayPopupUtils {
   //
   // TODO(bruthig): Update all system menu rows to use this.
   static views::Label* CreateDefaultLabel();
+
+  // Returns a label that has been configured for system menu layout and does
+  // not allow accessibility focus.
+  static UnfocusableLabel* CreateUnfocusableLabel();
 
   // Returns an image view to be used in the main image region of a system menu
   // row. This should be used by all rows that have a main image, i.e. both

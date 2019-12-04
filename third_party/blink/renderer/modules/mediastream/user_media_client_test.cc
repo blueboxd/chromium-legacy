@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/modules/mediastream/mock_constraint_factory.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_source.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_mojo_media_stream_dispatcher_host.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_processor_options.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
@@ -627,8 +628,8 @@ class UserMediaClientTest : public ::testing::Test {
       factory.basic().frame_rate.SetExact(*frame_rate);
 
     auto* apply_constraints_request =
-        blink::ApplyConstraintsRequest::CreateForTesting(
-            web_track, factory.CreateWebMediaConstraints());
+        MakeGarbageCollected<blink::ApplyConstraintsRequest>(
+            web_track, factory.CreateWebMediaConstraints(), nullptr);
     user_media_client_impl_->ApplyConstraints(apply_constraints_request);
     base::RunLoop().RunUntilIdle();
   }

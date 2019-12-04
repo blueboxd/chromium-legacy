@@ -134,8 +134,8 @@ bool NetErrorTabHelper::OnMessageReceived(
 
 NetErrorTabHelper::NetErrorTabHelper(WebContents* contents)
     : WebContentsObserver(contents),
-      network_diagnostics_bindings_(contents, this),
-      network_easter_egg_bindings_(contents, this),
+      network_diagnostics_receivers_(contents, this),
+      network_easter_egg_receivers_(contents, this),
       is_error_page_(false),
       dns_error_active_(false),
       dns_error_page_committed_(false),
@@ -273,8 +273,8 @@ void NetErrorTabHelper::RunNetworkDiagnosticsHelper(
   if (!CanShowNetworkDiagnosticsDialog(web_contents()))
     return;
 
-  if (network_diagnostics_bindings_.GetCurrentTargetFrame()
-          != web_contents()->GetMainFrame()) {
+  if (network_diagnostics_receivers_.GetCurrentTargetFrame() !=
+      web_contents()->GetMainFrame()) {
     return;
   }
 

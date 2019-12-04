@@ -22,6 +22,8 @@
 #include "components/safe_browsing/proto/webprotect.pb.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
+class Profile;
+
 namespace safe_browsing {
 
 // This class encapsulates the process of uploading a file for deep scanning,
@@ -190,6 +192,8 @@ class BinaryUploadService {
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   std::unique_ptr<BinaryFCMService> binary_fcm_service_;
+
+  Profile* const profile_;
 
   // Resources associated with an in-progress request.
   base::flat_map<Request*, std::unique_ptr<Request>> active_requests_;

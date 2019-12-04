@@ -28,6 +28,7 @@
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
+#include "chrome/browser/resource_coordinator/site_characteristics_data_reader.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -179,16 +180,18 @@ void TabDataAccess::SetUsedInBgFromSiteCharacteristicsDataReader(
     TabData* tab_data,
     content::WebContents* contents,
     std::unique_ptr<SiteCharacteristicsDataReader> reader) {
-  static const performance_manager::SiteFeatureUsage kInUse =
-      performance_manager::SiteFeatureUsage::kSiteFeatureInUse;
+  static const performance_manager::SiteFeatureUsage kNotUsed =
+      performance_manager::SiteFeatureUsage::kSiteFeatureNotInUse;
   DCHECK(reader->DataLoaded());
 
   // Determine if background communication with the user is used. A pinned tab
   // has no visible tab title, so tab title updates can be ignored in that case.
   // The audio bit is ignored as tab can't play audio until they have been
-  // visible at least once.
-  bool used_in_bg = reader->UpdatesFaviconInBackground() == kInUse;
-  if (!tab_data->is_pinned && (reader->UpdatesTitleInBackground() == kInUse))
+  // visible at least once. We err on the side of caution, if unsure about a
+  // feature (usually because of a lack of observation) then the feature is
+  // considered as used.
+  bool used_in_bg = reader->UpdatesFaviconInBackground() != kNotUsed;
+  if (!tab_data->is_pinned && (reader->UpdatesTitleInBackground() != kNotUsed))
     used_in_bg = true;
 
   // TODO(sebmarchand): Consider that the tabs that are still under observation

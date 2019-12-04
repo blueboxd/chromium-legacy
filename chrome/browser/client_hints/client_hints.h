@@ -12,7 +12,7 @@
 #include "base/optional.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/client_hints_controller_delegate.h"
-#include "content/public/browser/web_contents_binding_set.h"
+#include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 class GURL;
@@ -51,8 +51,8 @@ class ClientHints : public KeyedService,
   friend class content::WebContentsUserData<ClientHints>;
   content::BrowserContext* context_ = nullptr;
   std::unique_ptr<
-      content::WebContentsFrameBindingSet<client_hints::mojom::ClientHints>>
-      binding_;
+      content::WebContentsFrameReceiverSet<client_hints::mojom::ClientHints>>
+      receiver_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

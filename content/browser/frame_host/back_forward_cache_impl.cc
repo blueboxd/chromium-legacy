@@ -273,6 +273,8 @@ BackForwardCacheCanStoreDocumentResult BackForwardCacheImpl::CanStoreDocument(
 
   CanStoreRenderFrameHost(&result, rfh);
 
+  DVLOG(1) << "CanStoreDocument: " << rfh->GetLastCommittedURL() << " : "
+           << result.ToString();
   return result;
 }
 

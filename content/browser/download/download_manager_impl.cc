@@ -251,7 +251,7 @@ CreateSharedURLLoaderFactoryInfo(StoragePartitionImpl* storage_partition,
         rfh->GetProcess()->GetID(),
         ContentBrowserClient::URLLoaderFactoryType::kDownload, url::Origin(),
         &maybe_proxy_factory_receiver, nullptr /* header_client */,
-        nullptr /* bypass_redirect_checks */);
+        nullptr /* bypass_redirect_checks */, nullptr /* factory_override */);
 
     // If anyone above indicated that they care about proxying, pass the
     // intermediate pipe along to the NetworkDownloadURLLoaderFactoryInfo.

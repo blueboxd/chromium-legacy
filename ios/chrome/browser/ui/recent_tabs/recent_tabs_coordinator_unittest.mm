@@ -18,12 +18,17 @@
 #include "components/sync_sessions/session_sync_service.h"
 #include "components/sync_user_events/global_id_mapper.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#include "ios/chrome/browser/main/test_browser.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/session_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_mock.h"
+#include "ios/chrome/browser/ui/commands/application_commands.h"
+#include "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/recent_tabs/sessions_sync_user_state.h"
+#import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/test/block_cleanup_test.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #include "ios/web/public/test/web_task_environment.h"
@@ -120,7 +125,8 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
  public:
   RecentTabsTableCoordinatorTest()
       : no_error_(GoogleServiceAuthError::NONE),
-        fake_controller_delegate_(syncer::SESSIONS) {}
+        fake_controller_delegate_(syncer::SESSIONS),
+        web_state_list_(&web_state_list_delegate_) {}
 
  protected:
   void SetUp() override {
@@ -135,6 +141,9 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
         base::BindRepeating(
             &BuildMockSessionSyncServiceForRecentTabsTableCoordinator));
     chrome_browser_state_ = test_cbs_builder.Build();
+
+    browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get(),
+                                             &web_state_list_);
   }
 
   void TearDown() override {
@@ -195,7 +204,24 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
   void CreateController() {
     coordinator_ = [[RecentTabsCoordinator alloc]
         initWithBaseViewController:nil
-                      browserState:chrome_browser_state_.get()];
+                           browser:browser_.get()];
+    mock_application_commands_handler_ =
+        [OCMockObject mockForProtocol:@protocol(ApplicationCommands)];
+    mock_application_settings_commands_handler_ =
+        [OCMockObject mockForProtocol:@protocol(ApplicationSettingsCommands)];
+    mock_browsing_data_commands_handler_ =
+        [OCMockObject mockForProtocol:@protocol(BrowsingDataCommands)];
+
+    [browser_->GetCommandDispatcher()
+        startDispatchingToTarget:mock_application_commands_handler_
+                     forProtocol:@protocol(ApplicationCommands)];
+    [browser_->GetCommandDispatcher()
+        startDispatchingToTarget:mock_application_settings_commands_handler_
+                     forProtocol:@protocol(ApplicationSettingsCommands)];
+    [browser_->GetCommandDispatcher()
+        startDispatchingToTarget:mock_browsing_data_commands_handler_
+                     forProtocol:@protocol(BrowsingDataCommands)];
+
     [coordinator_ start];
   }
 
@@ -206,12 +232,18 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
   signin::IdentityTestEnvironment identity_test_env_;
 
   syncer::FakeModelTypeControllerDelegate fake_controller_delegate_;
+  FakeWebStateListDelegate web_state_list_delegate_;
+  WebStateList web_state_list_;
   testing::NiceMock<OpenTabsUIDelegateMock> open_tabs_ui_delegate_;
   testing::NiceMock<GlobalIdMapperMock> global_id_mapper_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
+  std::unique_ptr<Browser> browser_;
 
   // Must be declared *after* |chrome_browser_state_| so it can outlive it.
   RecentTabsCoordinator* coordinator_;
+  id<ApplicationCommands> mock_application_commands_handler_;
+  id<ApplicationSettingsCommands> mock_application_settings_commands_handler_;
+  id<BrowsingDataCommands> mock_browsing_data_commands_handler_;
 };
 
 TEST_F(RecentTabsTableCoordinatorTest, TestConstructorDestructor) {

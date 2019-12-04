@@ -35,10 +35,6 @@ class ChildProcessHostDelegate : public IPC::Listener {
   // OnProcessLaunched is called or it will be invalid and may crash.
   virtual const base::Process& GetProcess() = 0;
 
-  // Binds an interface in the child process.
-  virtual void BindInterface(const std::string& interface_name,
-                             mojo::ScopedMessagePipeHandle interface_pipe) {}
-
   // Binds an interface receiver in the host process, as requested by the child
   // process.
   virtual void BindHostReceiver(mojo::GenericPendingReceiver receiver) {}

@@ -51,7 +51,7 @@ class FileVersionInfoForModuleFactory {
   explicit FileVersionInfoForModuleFactory(const FilePath& path)
       // Load the library with LOAD_LIBRARY_AS_IMAGE_RESOURCE since it shouldn't
       // be executed.
-      : library_(::LoadLibraryEx(base::as_wcstr(path.value()),
+      : library_(::LoadLibraryEx(path.value().c_str(),
                                  nullptr,
                                  LOAD_LIBRARY_AS_IMAGE_RESOURCE)) {
     EXPECT_TRUE(library_.is_valid());
@@ -78,20 +78,21 @@ using FileVersionInfoFactories =
 TYPED_TEST_SUITE(FileVersionInfoTest, FileVersionInfoFactories);
 
 TYPED_TEST(FileVersionInfoTest, HardCodedProperties) {
-  const base::char16 kDLLName[] = STRING16_LITERAL("FileVersionInfoTest1.dll");
+  const base::FilePath::CharType kDLLName[] =
+      FILE_PATH_LITERAL("FileVersionInfoTest1.dll");
 
-  const base::char16* const kExpectedValues[15] = {
+  const wchar_t* const kExpectedValues[15] = {
       // FileVersionInfoTest.dll
-      STRING16_LITERAL("Goooooogle"),                      // company_name
-      STRING16_LITERAL("Google"),                          // company_short_name
-      STRING16_LITERAL("This is the product name"),        // product_name
-      STRING16_LITERAL("This is the product short name"),  // product_short_name
-      STRING16_LITERAL("The Internal Name"),               // internal_name
-      STRING16_LITERAL("4.3.2.1"),                         // product_version
-      STRING16_LITERAL("Special build property"),          // special_build
-      STRING16_LITERAL("This is the original filename"),  // original_filename
-      STRING16_LITERAL("This is my file description"),    // file_description
-      STRING16_LITERAL("1.2.3.4"),                        // file_version
+      L"Goooooogle",                      // company_name
+      L"Google",                          // company_short_name
+      L"This is the product name",        // product_name
+      L"This is the product short name",  // product_short_name
+      L"The Internal Name",               // internal_name
+      L"4.3.2.1",                         // product_version
+      L"Special build property",          // special_build
+      L"This is the original filename",   // original_filename
+      L"This is my file description",     // file_description
+      L"1.2.3.4",                         // file_version
   };
 
   FilePath dll_path = GetTestDataPath();
@@ -102,16 +103,26 @@ TYPED_TEST(FileVersionInfoTest, HardCodedProperties) {
   ASSERT_TRUE(version_info);
 
   int j = 0;
-  EXPECT_EQ(kExpectedValues[j++], version_info->company_name());
-  EXPECT_EQ(kExpectedValues[j++], version_info->company_short_name());
-  EXPECT_EQ(kExpectedValues[j++], version_info->product_name());
-  EXPECT_EQ(kExpectedValues[j++], version_info->product_short_name());
-  EXPECT_EQ(kExpectedValues[j++], version_info->internal_name());
-  EXPECT_EQ(kExpectedValues[j++], version_info->product_version());
-  EXPECT_EQ(kExpectedValues[j++], version_info->special_build());
-  EXPECT_EQ(kExpectedValues[j++], version_info->original_filename());
-  EXPECT_EQ(kExpectedValues[j++], version_info->file_description());
-  EXPECT_EQ(kExpectedValues[j++], version_info->file_version());
+  EXPECT_EQ(kExpectedValues[j++],
+            base::AsWStringPiece(version_info->company_name()));
+  EXPECT_EQ(kExpectedValues[j++],
+            base::AsWStringPiece(version_info->company_short_name()));
+  EXPECT_EQ(kExpectedValues[j++],
+            base::AsWStringPiece(version_info->product_name()));
+  EXPECT_EQ(kExpectedValues[j++],
+            base::AsWStringPiece(version_info->product_short_name()));
+  EXPECT_EQ(kExpectedValues[j++],
+            base::AsWStringPiece(version_info->internal_name()));
+  EXPECT_EQ(kExpectedValues[j++],
+            base::AsWStringPiece(version_info->product_version()));
+  EXPECT_EQ(kExpectedValues[j++],
+            base::AsWStringPiece(version_info->special_build()));
+  EXPECT_EQ(kExpectedValues[j++],
+            base::AsWStringPiece(version_info->original_filename()));
+  EXPECT_EQ(kExpectedValues[j++],
+            base::AsWStringPiece(version_info->file_description()));
+  EXPECT_EQ(kExpectedValues[j++],
+            base::AsWStringPiece(version_info->file_version()));
 }
 
 TYPED_TEST(FileVersionInfoTest, CustomProperties) {

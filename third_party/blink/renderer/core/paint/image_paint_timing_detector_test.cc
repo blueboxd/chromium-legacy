@@ -208,7 +208,7 @@ class ImagePaintTimingDetectorTest : public testing::Test {
     Element* element = GetDocument().getElementById(id);
     // Set image and make it loaded.
     ImageResourceContent* content = CreateImageForTest(width, height);
-    ToHTMLImageElement(element)->SetImageForTest(content);
+    To<HTMLImageElement>(element)->SetImageForTest(content);
   }
 
   void SetChildFrameImageAndPaint(AtomicString id, int width, int height) {
@@ -217,7 +217,7 @@ class ImagePaintTimingDetectorTest : public testing::Test {
     DCHECK(element);
     // Set image and make it loaded.
     ImageResourceContent* content = CreateImageForTest(width, height);
-    ToHTMLImageElement(element)->SetImageForTest(content);
+    To<HTMLImageElement>(element)->SetImageForTest(content);
   }
 
   void SetVideoImageAndPaint(AtomicString id, int width, int height) {

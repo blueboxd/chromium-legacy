@@ -433,7 +433,8 @@ void AppCacheRequestHandler::RunLoaderCallbackForMainResource(
               frame_tree_node->current_frame_host()->GetProcess()->GetID(),
               ContentBrowserClient::URLLoaderFactoryType::kNavigation,
               url::Origin(), &factory_receiver, nullptr /* header_client */,
-              nullptr /* bypass_redirect_checks */);
+              nullptr /* bypass_redirect_checks */,
+              nullptr /* factory_override */);
       if (use_proxy) {
         single_request_factory->Clone(std::move(factory_receiver));
         single_request_factory =

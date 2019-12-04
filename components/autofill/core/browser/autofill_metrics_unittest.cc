@@ -9113,7 +9113,8 @@ TEST_F(AutofillMetricsTest, FormEventMetrics_BySyncState) {
     base::HistogramTester histogram_tester;
     AddressFormEventLogger logger(
         /*is_in_main_frame=*/true,
-        /*form_interactions_ukm_logger=*/nullptr);
+        /*form_interactions_ukm_logger=*/nullptr,
+        /*client=*/nullptr);
     logger.OnDidSeeFillableDynamicForm(AutofillSyncSigninState::kSignedOut,
                                        form_structure);
     histogram_tester.ExpectBucketCount(
@@ -9124,7 +9125,8 @@ TEST_F(AutofillMetricsTest, FormEventMetrics_BySyncState) {
     base::HistogramTester histogram_tester;
     AddressFormEventLogger logger(
         /*is_in_main_frame=*/true,
-        /*form_interactions_ukm_logger=*/nullptr);
+        /*form_interactions_ukm_logger=*/nullptr,
+        /*client=*/nullptr);
     logger.OnDidRefill(AutofillSyncSigninState::kSignedIn, form_structure);
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.Address.WithNoData.SignedIn",

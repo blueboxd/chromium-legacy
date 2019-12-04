@@ -16,11 +16,6 @@ class InputDeviceInfo final : public MediaDeviceInfo {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static InputDeviceInfo* Create(const String& device_id,
-                                 const String& label,
-                                 const String& group_id,
-                                 MediaDeviceType);
-
   InputDeviceInfo(const String& device_id,
                   const String& label,
                   const String& group_id,

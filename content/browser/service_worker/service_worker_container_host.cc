@@ -83,7 +83,7 @@ ServiceWorkerContainerHost::ServiceWorkerContainerHost(
         host_receiver,
     mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
         container_remote,
-    ServiceWorkerProviderHost* provider_host,
+    ServiceWorkerProviderHost* service_worker_host,
     base::WeakPtr<ServiceWorkerContextCore> context)
     : type_(type),
       create_time_(base::TimeTicks::Now()),
@@ -96,20 +96,21 @@ ServiceWorkerContainerHost::ServiceWorkerContainerHost(
                                     frame_tree_node_id)),
       client_uuid_(IsContainerForClient() ? base::GenerateGUID()
                                           : std::string()),
-      provider_host_(provider_host),
+      service_worker_host_(service_worker_host),
       context_(std::move(context)) {
-  DCHECK(provider_host_);
   DCHECK(context_);
 
   DCHECK(host_receiver.is_valid());
   receiver_.Bind(std::move(host_receiver));
 
   if (IsContainerForClient()) {
+    DCHECK(!service_worker_host_);
     DCHECK(container_remote);
     container_.Bind(std::move(container_remote));
     context_->RegisterContainerHostByClientID(client_uuid(), this);
   } else {
     DCHECK(IsContainerForServiceWorker());
+    DCHECK(service_worker_host_);
   }
 }
 
@@ -136,7 +137,7 @@ ServiceWorkerContainerHost::~ServiceWorkerContainerHost() {
       controller_->OnControlleeDestroyed(client_uuid());
   }
 
-  // Remove |provider_host_| as an observer of ServiceWorkerRegistrations.
+  // Remove |this| as an observer of ServiceWorkerRegistrations.
   // TODO(falken): Use ScopedObserver instead of this explicit call.
   controller_.reset();
   controller_registration_.reset();
@@ -942,6 +943,11 @@ ServiceWorkerRegistration* ServiceWorkerContainerHost::controller_registration()
   CheckControllerConsistency(false);
 #endif  // DCHECK_IS_ON()
   return controller_registration_.get();
+}
+
+ServiceWorkerProviderHost* ServiceWorkerContainerHost::service_worker_host() {
+  DCHECK(IsContainerForServiceWorker());
+  return service_worker_host_;
 }
 
 bool ServiceWorkerContainerHost::IsInBackForwardCache() const {

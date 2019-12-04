@@ -2520,7 +2520,8 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "EphemeralTab"
+                        "EphemeralTab",
+                        "EphemeralTabUsingBottomSheet"
                     ]
                 }
             ]

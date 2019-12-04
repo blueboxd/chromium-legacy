@@ -404,11 +404,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::RenderFrameHost* render_frame_host,
       const std::string& interface_name,
       mojo::ScopedInterfaceEndpointHandle* handle) override;
-  void BindInterfaceRequestFromWorker(
-      content::RenderProcessHost* render_process_host,
-      const url::Origin& origin,
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle interface_pipe) override;
   void BindGpuHostReceiver(mojo::GenericPendingReceiver receiver) override;
   void BindHostReceiverForRenderer(
       content::RenderProcessHost* render_process_host,
@@ -483,7 +478,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
           header_client,
-      bool* bypass_redirect_checks) override;
+      bool* bypass_redirect_checks,
+      network::mojom::URLLoaderFactoryOverridePtr* factory_override) override;
   std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>
   WillCreateURLLoaderRequestInterceptors(
       content::NavigationUIData* navigation_ui_data,
@@ -666,8 +662,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   friend class DisableWebRtcEncryptionFlagTest;
   friend class InProcessBrowserTest;
 
-  // Populate |frame_interfaces_|, |frame_interfaces_parameterized_| and
-  // |worker_interfaces_parameterized_|.
+  // Populates |frame_interfaces_| and |frame_interfaces_parameterized_|.
   void InitWebContextInterfaces();
 
   // Initializes |network_contexts_parent_directory_| on the UI thread.
@@ -726,10 +721,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   std::unique_ptr<
       service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>>
       frame_interfaces_parameterized_;
-  std::unique_ptr<
-      service_manager::BinderRegistryWithArgs<content::RenderProcessHost*,
-                                              const url::Origin&>>
-      worker_interfaces_parameterized_;
 
   StartupData* startup_data_;
 

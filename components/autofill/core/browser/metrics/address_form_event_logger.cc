@@ -20,10 +20,12 @@ namespace autofill {
 
 AddressFormEventLogger::AddressFormEventLogger(
     bool is_in_main_frame,
-    AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger)
+    AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
+    AutofillClient* client)
     : FormEventLoggerBase("Address",
                           is_in_main_frame,
-                          form_interactions_ukm_logger) {}
+                          form_interactions_ukm_logger,
+                          client ? client->GetLogManager() : nullptr) {}
 
 AddressFormEventLogger::~AddressFormEventLogger() = default;
 

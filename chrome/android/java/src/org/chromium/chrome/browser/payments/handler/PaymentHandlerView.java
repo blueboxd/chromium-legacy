@@ -14,6 +14,7 @@ import android.widget.FrameLayout;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.thinwebview.ThinWebView;
+import org.chromium.chrome.browser.thinwebview.ThinWebViewConstraints;
 import org.chromium.chrome.browser.thinwebview.ThinWebViewFactory;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.components.embedder_support.view.ContentView;
@@ -45,7 +46,10 @@ import org.chromium.ui.base.ActivityWindowAndroid;
         mContentView = (FrameLayout) LayoutInflater.from(activity).inflate(
                 R.layout.payment_handler_content, null);
 
-        mThinWebView = ThinWebViewFactory.create(activity, new ActivityWindowAndroid(activity));
+        ThinWebViewConstraints thinWebViewConstraints = new ThinWebViewConstraints();
+        thinWebViewConstraints.zOrderOnTop = true;
+        mThinWebView = ThinWebViewFactory.create(
+                activity, new ActivityWindowAndroid(activity), thinWebViewConstraints);
         initContentView(activity, mThinWebView, webContents, webContentView);
     }
 

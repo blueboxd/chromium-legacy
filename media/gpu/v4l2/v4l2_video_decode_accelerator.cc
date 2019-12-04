@@ -697,7 +697,7 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
       return;
     }
     iter->output_frame = VideoFrame::WrapExternalDmabufs(
-        *layout, gfx::Rect(visible_size_), egl_image_size_,
+        *layout, gfx::Rect(visible_size_), visible_size_,
         DuplicateFDs(dmabuf_fds), base::TimeDelta());
   }
 

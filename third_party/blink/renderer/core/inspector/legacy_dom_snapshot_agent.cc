@@ -267,7 +267,7 @@ int LegacyDOMSnapshotAgent::VisitNode(Node* node,
                               include_user_agent_shadow_tree));
     }
 
-    HTMLImageElement* image_element = ToHTMLImageElementOrNull(node);
+    auto* image_element = DynamicTo<HTMLImageElement>(node);
     if (image_element)
       value->setCurrentSourceURL(image_element->currentSrc());
   } else if (auto* document = DynamicTo<Document>(node)) {

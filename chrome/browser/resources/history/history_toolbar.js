@@ -21,6 +21,8 @@ Polymer({
       value: false,
     },
 
+    pendingDelete: Boolean,
+
     // The most recent term entered in the search field. Updated incrementally
     // as the user types.
     searchTerm: {

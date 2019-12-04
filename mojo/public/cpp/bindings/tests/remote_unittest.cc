@@ -937,6 +937,39 @@ TEST_P(RemoteTest, SharedRemoteWithTaskRunner) {
   shared_remote.reset();
 }
 
+TEST_P(RemoteTest, SharedRemoteDisconnectCallback) {
+  PendingRemote<math::Calculator> remote;
+  MathCalculatorImpl calc_impl(remote.InitWithNewPipeAndPassReceiver());
+
+  const scoped_refptr<base::SequencedTaskRunner> main_task_runner =
+      base::CreateSequencedTaskRunner({base::ThreadPool()});
+  SharedRemote<math::Calculator> shared_remote(std::move(remote),
+                                               main_task_runner);
+
+  bool connected = true;
+  base::RunLoop run_loop;
+  // Register a callback to set_disconnect_handler. It should be called when the
+  // pipe is disconnected.
+  shared_remote.set_disconnect_handler(base::BindLambdaForTesting([&] {
+                                         connected = false;
+                                         run_loop.Quit();
+                                       }),
+                                       main_task_runner);
+
+  base::RunLoop run_loop2;
+  shared_remote->Add(123, base::BindLambdaForTesting([&](double result) {
+                       EXPECT_EQ(123, result);
+                       run_loop2.Quit();
+                     }));
+  run_loop2.Run();
+
+  calc_impl.receiver().reset();
+  run_loop.Run();
+
+  // |connected| should be false after calling the disconnect callback.
+  EXPECT_FALSE(connected);
+}
+
 constexpr int32_t kMagicNumber = 42;
 
 class SharedRemoteSyncTestImpl : public mojom::SharedRemoteSyncTest {

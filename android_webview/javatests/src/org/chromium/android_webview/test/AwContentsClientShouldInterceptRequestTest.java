@@ -4,9 +4,14 @@
 
 package org.chromium.android_webview.test;
 
+import static org.chromium.android_webview.test.AwActivityTestRule.WAIT_TIMEOUT_MS;
+
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.util.Pair;
+import android.webkit.JavascriptInterface;
+
+import com.google.common.util.concurrent.SettableFuture;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -34,6 +39,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Tests for the WebViewClient.shouldInterceptRequest() method.
@@ -973,5 +980,235 @@ public class AwContentsClientShouldInterceptRequestTest {
         // This should only be called once, for the original URL, not the final URL.
         Assert.assertEquals(callCount + 1, mShouldInterceptRequestHelper.getCallCount());
         Assert.assertEquals(redirectUrl, mShouldInterceptRequestHelper.getUrls().get(0));
+    }
+
+    private static final String BASE_URL = "http://some.origin.test/index.html";
+    private static final String UNINTERESTING_HTML = "<html><head></head><body>some</body></html>";
+
+    private Future<String> loadPageAndFetchInternal(String stringArgs) throws Throwable {
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+
+        final SettableFuture<String> future = SettableFuture.create();
+        String name = "fetchFuture";
+        Object injectedObject = new Object() {
+            @JavascriptInterface
+            public void success(String type) {
+                future.set(type);
+            }
+            @JavascriptInterface
+            public void error() {
+                future.set("error");
+            }
+        };
+        AwActivityTestRule.addJavascriptInterfaceOnUiThread(mAwContents, injectedObject, name);
+
+        mActivityTestRule.loadDataWithBaseUrlSync(mAwContents,
+                mContentsClient.getOnPageFinishedHelper(), UNINTERESTING_HTML, "text/html", false,
+                BASE_URL, null);
+
+        String template = "Promise.resolve().then(() => fetch(%s))"
+                + ".then((res) => %s.success(res.type), () => %s.error())";
+        mActivityTestRule.executeJavaScriptAndWaitForResult(
+                mAwContents, mContentsClient, String.format(template, stringArgs, name, name));
+        return future;
+    }
+    private Future<String> loadPageAndFetch(String url, String method) throws Throwable {
+        return loadPageAndFetchInternal(String.format("'%s', {method: '%s'}", url, method));
+    }
+    private Future<String> loadPageAndFetch(String url) throws Throwable {
+        return loadPageAndFetch(url, "GET");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Network"})
+    public void testObserveCorsSuccess() throws Throwable {
+        final List<Pair<String, String>> headers = new ArrayList<Pair<String, String>>();
+        headers.add(new Pair("access-control-allow-origin", "http://some.origin.test"));
+        final String destinationUrl = mWebServer.setResponse("/hello.txt", "", headers);
+
+        final Future<String> future = loadPageAndFetch(destinationUrl);
+        Assert.assertEquals(
+                "fetch should succeed", "cors", future.get(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertEquals(2, mShouldInterceptRequestHelper.getUrls().size());
+        Assert.assertEquals(destinationUrl, mShouldInterceptRequestHelper.getUrls().get(1));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Network"})
+    public void testObserveCorsFailure() throws Throwable {
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+
+        final List<Pair<String, String>> headers = new ArrayList<Pair<String, String>>();
+        headers.add(new Pair("access-control-allow-origin", "http://example.com"));
+        final String destinationUrl = mWebServer.setResponse("/hello.txt", "", headers);
+
+        final Future<String> future = loadPageAndFetch(destinationUrl);
+        // The request fails due to origin mismatch.
+        Assert.assertEquals(
+                "fetch should fail", "error", future.get(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertEquals(2, mShouldInterceptRequestHelper.getUrls().size());
+        Assert.assertEquals(destinationUrl, mShouldInterceptRequestHelper.getUrls().get(1));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Network"})
+    public void testObserveCorsPreflightSuccess() throws Throwable {
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+
+        final List<Pair<String, String>> headers = new ArrayList<Pair<String, String>>();
+        headers.add(new Pair("access-control-allow-origin", "http://some.origin.test"));
+        headers.add(new Pair("access-control-allow-methods", "PUT"));
+        final String destinationUrl = mWebServer.setResponse("/hello.txt", "", headers);
+
+        // PUT is not a safelisted method and triggers a preflight.
+        final Future<String> future = loadPageAndFetch(destinationUrl, "PUT");
+        Assert.assertEquals(
+                "fetch should succeed", "cors", future.get(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertEquals(3, mShouldInterceptRequestHelper.getUrls().size());
+        Assert.assertEquals("preflight request should be visible to shouldInterceptRequest",
+                destinationUrl, mShouldInterceptRequestHelper.getUrls().get(1));
+        Assert.assertEquals("actual request should be visible to shouldInterceptRequest",
+                destinationUrl, mShouldInterceptRequestHelper.getUrls().get(2));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Network"})
+    public void testObserveCorsPreflightFailure() throws Throwable {
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+
+        final List<Pair<String, String>> headers = new ArrayList<Pair<String, String>>();
+        headers.add(new Pair("access-control-allow-origin", "http://some.origin.test"));
+        final String destinationUrl = mWebServer.setResponse("/hello.txt", "", headers);
+
+        // PUT is not a safelisted method and triggers a preflight.
+        final Future<String> future = loadPageAndFetch(destinationUrl, "PUT");
+        // The request fails due to the lack of access-control-allow-methods.
+        Assert.assertEquals(
+                "fetch should fail", "error", future.get(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertEquals(2, mShouldInterceptRequestHelper.getUrls().size());
+        Assert.assertEquals("preflight request should be visible to shouldInterceptRequest",
+                destinationUrl, mShouldInterceptRequestHelper.getUrls().get(1));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Network"})
+    public void testInjectCorsSuccess() throws Throwable {
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+
+        // The respond the web server provides doesn't have access-control-allow-origin, but that
+        // doesn't matter.
+        final List<Pair<String, String>> headers = new ArrayList<Pair<String, String>>();
+        final String destinationUrl = mWebServer.setResponse("/hello.txt", "", headers);
+
+        // Injecting a response which has a matching access-control-allow-origin
+        Map<String, String> headersForInjectedResponse = new HashMap<String, String>();
+        headersForInjectedResponse.put("access-control-allow-origin", "http://some.origin.test");
+
+        AwWebResourceResponse response = new AwWebResourceResponse(
+                "text/plain", "utf-8", null /* data */, 200, "OK", headersForInjectedResponse);
+        mShouldInterceptRequestHelper.setReturnValueForUrl(destinationUrl, response);
+
+        final Future<String> future = loadPageAndFetch(destinationUrl);
+        Assert.assertEquals(
+                "fetch should succeed", "cors", future.get(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertEquals(2, mShouldInterceptRequestHelper.getUrls().size());
+        Assert.assertEquals(destinationUrl, mShouldInterceptRequestHelper.getUrls().get(1));
+
+        Assert.assertEquals(0, mWebServer.getRequestCount("/hello.txt"));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Network"})
+    public void testInjectCorsFailure() throws Throwable {
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+
+        // The respond the web server provides has matching access-control-allow-origin, but that
+        // doesn't matter.
+        final List<Pair<String, String>> headers = new ArrayList<Pair<String, String>>();
+        headers.add(new Pair("access-control-allow-origin", "http://some.origin.test"));
+        final String destinationUrl = mWebServer.setResponse("/hello.txt", "", headers);
+
+        // Injecting a response which doesn't have a matching access-control-allow-origin
+        Map<String, String> headersForInjectedResponse = new HashMap<String, String>();
+        AwWebResourceResponse response = new AwWebResourceResponse(
+                "text/plain", "utf-8", null /* data */, 200, "OK", headersForInjectedResponse);
+        mShouldInterceptRequestHelper.setReturnValueForUrl(destinationUrl, response);
+
+        final Future<String> future = loadPageAndFetch(destinationUrl);
+        Assert.assertEquals(
+                "fetch should fail", "error", future.get(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertEquals(2, mShouldInterceptRequestHelper.getUrls().size());
+        Assert.assertEquals(destinationUrl, mShouldInterceptRequestHelper.getUrls().get(1));
+
+        Assert.assertEquals(0, mWebServer.getRequestCount("/hello.txt"));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Network"})
+    public void testInjectCorsPreflightSuccess() throws Throwable {
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+
+        // The respond the web server provides doesn't have matching access-control-allow-origin,
+        // but that doesn't matter.
+        final List<Pair<String, String>> headers = new ArrayList<Pair<String, String>>();
+        final String destinationUrl = mWebServer.setResponse("/hello.txt", "", headers);
+
+        // Injecting a response which has a matching access-control-allow-origin and
+        // access-control-allow-methods.
+        Map<String, String> headersForInjectedResponse = new HashMap<String, String>();
+        headersForInjectedResponse.put("access-control-allow-origin", "http://some.origin.test");
+        headersForInjectedResponse.put("access-control-allow-methods", "PUT");
+        AwWebResourceResponse response = new AwWebResourceResponse(
+                "text/plain", "utf-8", null /* data */, 200, "OK", headersForInjectedResponse);
+        mShouldInterceptRequestHelper.setReturnValueForUrl(destinationUrl, response);
+
+        // PUT is not a safelisted method and triggers a preflight.
+        final Future<String> future = loadPageAndFetch(destinationUrl, "PUT");
+        Assert.assertEquals(
+                "fetch should succeed", "cors", future.get(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertEquals(3, mShouldInterceptRequestHelper.getUrls().size());
+        Assert.assertEquals("preflight request should be visible to shouldInterceptRequest",
+                destinationUrl, mShouldInterceptRequestHelper.getUrls().get(1));
+        Assert.assertEquals("actual request should be visible to shouldInterceptRequest",
+                destinationUrl, mShouldInterceptRequestHelper.getUrls().get(2));
+
+        Assert.assertEquals(0, mWebServer.getRequestCount("/hello.txt"));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Network"})
+    public void testInjectCorsPreflightFailure() throws Throwable {
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+
+        // The respond the web server provides has matching access-control-allow-origin and
+        // access-control-allow-methods, but that doesn't matter.
+        final List<Pair<String, String>> headers = new ArrayList<Pair<String, String>>();
+        headers.add(new Pair("access-control-allow-origin", "http://some.origin.test"));
+        headers.add(new Pair("access-control-allow-methods", "PUT"));
+        final String destinationUrl = mWebServer.setResponse("/hello.txt", "", headers);
+
+        // Injecting a response which doesn't have a matching access-control-allow-origin
+        Map<String, String> headersForInjectedResponse = new HashMap<String, String>();
+        AwWebResourceResponse response = new AwWebResourceResponse(
+                "text/plain", "utf-8", null /* data */, 200, "OK", headersForInjectedResponse);
+        mShouldInterceptRequestHelper.setReturnValueForUrl(destinationUrl, response);
+
+        // PUT is not a safelisted method and triggers a preflight.
+        final Future<String> future = loadPageAndFetch(destinationUrl, "PUT");
+        Assert.assertEquals(
+                "fetch should fail", "error", future.get(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertEquals(2, mShouldInterceptRequestHelper.getUrls().size());
+        Assert.assertEquals("preflight request should be visible to shouldInterceptRequest",
+                destinationUrl, mShouldInterceptRequestHelper.getUrls().get(1));
+
+        Assert.assertEquals(0, mWebServer.getRequestCount("/hello.txt"));
     }
 }

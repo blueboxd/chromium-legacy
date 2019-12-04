@@ -23,21 +23,19 @@ namespace content {
 class WebContents;
 }
 
-namespace printing {
-class StickySettings;
-}
-
 class GURL;
 class Profile;
 
 namespace printing {
+
+class PrintPreviewStickySettings;
 
 class PdfPrinterHandler : public PrinterHandler,
                           public ui::SelectFileDialog::Listener {
  public:
   PdfPrinterHandler(Profile* profile,
                     content::WebContents* preview_web_contents,
-                    StickySettings* sticky_settings);
+                    PrintPreviewStickySettings* sticky_settings);
 
   ~PdfPrinterHandler() override;
 
@@ -91,7 +89,7 @@ class PdfPrinterHandler : public PrinterHandler,
                            const base::FilePath& directory);
 
   Profile* const profile_;
-  StickySettings* const sticky_settings_;
+  PrintPreviewStickySettings* const sticky_settings_;
 
   // Holds the path to the print to pdf request. It is empty if no such request
   // exists.

@@ -32,10 +32,11 @@ FindHandler.uninit_ = function() {
  * @private
  */
 FindHandler.onTextMatch_ = function(evt) {
-  if (!evt.target.markerTypes.some(function(markerType) {
-        return markerType & 4 /* Text match */;
-      }))
+  if (!evt.target.markers.some(function(marker) {
+        return marker.flags[chrome.automation.MarkerType.TEXT_MATCH];
+      })) {
     return;
+  }
 
   var range = cursors.Range.fromNode(evt.target);
   ChromeVoxState.instance.setCurrentRange(range);

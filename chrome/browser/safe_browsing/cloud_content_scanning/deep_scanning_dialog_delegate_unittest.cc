@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/fake_deep_scanning_dialog_delegate.h"
+#include "chrome/browser/safe_browsing/dm_token_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -42,11 +43,10 @@ constexpr char kTestQueryPatternUrl[] = "*?q=5678";
 class ScopedSetDMToken {
  public:
   explicit ScopedSetDMToken(const policy::DMToken& dm_token) {
-    DeepScanningDialogDelegate::SetDMTokenForTesting(dm_token);
+    SetDMTokenForTesting(dm_token);
   }
   ~ScopedSetDMToken() {
-    DeepScanningDialogDelegate::SetDMTokenForTesting(
-        policy::DMToken::CreateEmptyTokenForTesting());
+    SetDMTokenForTesting(policy::DMToken::CreateEmptyTokenForTesting());
   }
 };
 

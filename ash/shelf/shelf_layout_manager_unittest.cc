@@ -16,7 +16,6 @@
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/focus_cycler.h"
 #include "ash/home_screen/drag_window_from_shelf_controller.h"
-#include "ash/home_screen/drag_window_from_shelf_controller_test_api.h"
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/keyboard/ui/keyboard_ui.h"
@@ -3931,11 +3930,6 @@ TEST_P(HotseatShelfLayoutManagerTest, ExitingOvervieHidesHotseat) {
                bottom_shelf_bounds.CenterPoint().y());
   // Small scroll update, to simulate the user holding the pointer.
   UpdateScroll(2);
-  DragWindowFromShelfController* window_drag_controller =
-      GetShelfLayoutManager()->window_drag_controller_for_testing();
-  ASSERT_TRUE(window_drag_controller);
-  DragWindowFromShelfControllerTestApi test_api(window_drag_controller);
-  test_api.WaitUntilOverviewIsShown();
   EndScroll(/*is_fling=*/false, 0.f);
 
   OverviewController* overview_controller = Shell::Get()->overview_controller();

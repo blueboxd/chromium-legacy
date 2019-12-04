@@ -28,33 +28,25 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/common/in_process_child_thread_params.h"
-#include "content/common/service_manager/child_connection.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/common/child_process_host.h"
+#include "content/public/common/child_process_host_delegate.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_content_client_initializer.h"
 #include "content/public/test/test_launcher.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/test/mock_render_process.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/config/gpu_switches.h"
-#include "ipc/ipc.mojom.h"
-#include "ipc/ipc_channel_mojo.h"
-#include "mojo/core/embedder/embedder.h"
-#include "mojo/core/embedder/scoped_ipc_support.h"
-#include "mojo/public/cpp/system/invitation.h"
-#include "services/service_manager/public/cpp/constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -152,7 +144,8 @@ class QuitOnTestMsgFilter : public IPC::MessageFilter {
   base::OnceClosure quit_closure_;
 };
 
-class RenderThreadImplBrowserTest : public testing::Test {
+class RenderThreadImplBrowserTest : public testing::Test,
+                                    public ChildProcessHostDelegate {
  public:
   RenderThreadImplBrowserTest() {}
 
@@ -166,26 +159,9 @@ class RenderThreadImplBrowserTest : public testing::Test {
         base::CreateSingleThreadTaskRunner({BrowserThread::IO});
 
     InitializeMojo();
-    mojo_ipc_support_.reset(new mojo::core::ScopedIPCSupport(
-        io_task_runner, mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST));
-    shell_context_.reset(new TestServiceManagerContext);
-    mojo::OutgoingInvitation invitation;
-    child_connection_ = std::make_unique<ChildConnection>(
-        service_manager::Identity(mojom::kRendererServiceName,
-                                  service_manager::kSystemInstanceGroup,
-                                  base::Token{}, base::Token::CreateRandom()),
-        &invitation, GetSystemConnector(), io_task_runner);
-
-    mojo::MessagePipe pipe;
-    child_connection_->BindInterface(IPC::mojom::ChannelBootstrap::Name_,
-                                     std::move(pipe.handle1));
-
-    channel_ = IPC::ChannelProxy::Create(
-        IPC::ChannelMojo::CreateServerFactory(
-            std::move(pipe.handle0), io_task_runner,
-            blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
-        nullptr, io_task_runner,
-        blink::scheduler::GetSingleThreadTaskRunnerForTesting());
+    process_host_ =
+        ChildProcessHost::Create(this, ChildProcessHost::IpcMode::kNormal);
+    process_host_->CreateChannelMojo();
 
     mock_process_.reset(new MockRenderProcess);
     test_task_counter_ = base::MakeRefCounted<TestTaskCounter>();
@@ -211,8 +187,8 @@ class RenderThreadImplBrowserTest : public testing::Test {
     base::FieldTrialList::CreateTrialsFromCommandLine(
         *cmd, switches::kFieldTrialHandle, -1);
     thread_ = new RenderThreadImpl(
-        InProcessChildThreadParams(io_task_runner, &invitation,
-                                   child_connection_->service_token()),
+        InProcessChildThreadParams(io_task_runner,
+                                   &process_host_->GetMojoInvitation().value()),
         /*renderer_client_id=*/1, std::move(main_thread_scheduler));
     cmd->InitFromArgv(old_argv);
 
@@ -237,8 +213,12 @@ class RenderThreadImplBrowserTest : public testing::Test {
     }
   }
 
+  // ChildProcessHostDelegate implementation:
+  bool OnMessageReceived(const IPC::Message&) override { return true; }
+  const base::Process& GetProcess() override { return null_process_; }
+
  protected:
-  IPC::Sender* sender() { return channel_.get(); }
+  IPC::Sender* sender() { return process_host_.get(); }
 
   void SetBackgroundState(
       mojom::RenderProcessBackgroundState background_state) {
@@ -266,10 +246,8 @@ class RenderThreadImplBrowserTest : public testing::Test {
   std::unique_ptr<ContentRendererClient> content_renderer_client_;
 
   std::unique_ptr<BrowserTaskEnvironment> browser_threads_;
-  std::unique_ptr<TestServiceManagerContext> shell_context_;
-  std::unique_ptr<ChildConnection> child_connection_;
-  std::unique_ptr<IPC::ChannelProxy> channel_;
-  std::unique_ptr<mojo::core::ScopedIPCSupport> mojo_ipc_support_;
+  const base::Process null_process_;
+  std::unique_ptr<ChildProcessHost> process_host_;
 
   std::unique_ptr<MockRenderProcess> mock_process_;
   scoped_refptr<QuitOnTestMsgFilter> test_msg_filter_;

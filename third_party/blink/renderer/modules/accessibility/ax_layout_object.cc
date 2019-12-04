@@ -162,7 +162,7 @@ ScrollableArea* AXLayoutObject::GetScrollableAreaIfScrollable() const {
 static bool IsImageOrAltText(LayoutBoxModelObject* box, Node* node) {
   if (box && box->IsImage())
     return true;
-  if (IsHTMLImageElement(node))
+  if (IsA<HTMLImageElement>(node))
     return true;
   if (IsHTMLInputElement(node) &&
       ToHTMLInputElement(node)->HasFallbackContent())
@@ -960,7 +960,7 @@ String AXLayoutObject::ImageDataUrl(const IntSize& max_size) const {
   ImageBitmapOptions* options = ImageBitmapOptions::Create();
   ImageBitmap* image_bitmap = nullptr;
   Document* document = &node->GetDocument();
-  if (auto* image = ToHTMLImageElementOrNull(node)) {
+  if (auto* image = DynamicTo<HTMLImageElement>(node)) {
     image_bitmap = ImageBitmap::Create(image, base::Optional<IntRect>(),
                                        document, options);
   } else if (auto* canvas = DynamicTo<HTMLCanvasElement>(node)) {

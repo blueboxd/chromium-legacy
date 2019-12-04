@@ -26,37 +26,36 @@ bool PathProviderWin(int key, FilePath* result) {
   // designed for it either, with the exception of GetTempPath (but other
   // things will surely break if the temp path is too long, so we don't bother
   // handling it.
-  char16 system_buffer[MAX_PATH];
+  wchar_t system_buffer[MAX_PATH];
   system_buffer[0] = 0;
-  wchar_t* wsystem_buffer = as_writable_wcstr(system_buffer);
 
   FilePath cur;
   switch (key) {
     case base::FILE_EXE:
-      if (GetModuleFileName(NULL, wsystem_buffer, MAX_PATH) == 0)
+      if (GetModuleFileName(NULL, system_buffer, MAX_PATH) == 0)
         return false;
       cur = FilePath(system_buffer);
       break;
     case base::FILE_MODULE: {
       // the resource containing module is assumed to be the one that
       // this code lives in, whether that's a dll or exe
-      if (GetModuleFileName(CURRENT_MODULE(), wsystem_buffer, MAX_PATH) == 0)
+      if (GetModuleFileName(CURRENT_MODULE(), system_buffer, MAX_PATH) == 0)
         return false;
       cur = FilePath(system_buffer);
       break;
     }
     case base::DIR_WINDOWS:
-      GetWindowsDirectory(wsystem_buffer, MAX_PATH);
+      GetWindowsDirectory(system_buffer, MAX_PATH);
       cur = FilePath(system_buffer);
       break;
     case base::DIR_SYSTEM:
-      GetSystemDirectory(wsystem_buffer, MAX_PATH);
+      GetSystemDirectory(system_buffer, MAX_PATH);
       cur = FilePath(system_buffer);
       break;
     case base::DIR_PROGRAM_FILESX86:
       if (win::OSInfo::GetArchitecture() != win::OSInfo::X86_ARCHITECTURE) {
         if (FAILED(SHGetFolderPath(NULL, CSIDL_PROGRAM_FILESX86, NULL,
-                                   SHGFP_TYPE_CURRENT, wsystem_buffer)))
+                                   SHGFP_TYPE_CURRENT, system_buffer)))
           return false;
         cur = FilePath(system_buffer);
         break;
@@ -65,7 +64,7 @@ bool PathProviderWin(int key, FilePath* result) {
       FALLTHROUGH;
     case base::DIR_PROGRAM_FILES:
       if (FAILED(SHGetFolderPath(NULL, CSIDL_PROGRAM_FILES, NULL,
-                                 SHGFP_TYPE_CURRENT, wsystem_buffer)))
+                                 SHGFP_TYPE_CURRENT, system_buffer)))
         return false;
       cur = FilePath(system_buffer);
       break;
@@ -86,43 +85,43 @@ bool PathProviderWin(int key, FilePath* result) {
       }
 #endif
       if (FAILED(SHGetFolderPath(NULL, CSIDL_PROGRAM_FILES, NULL,
-                                 SHGFP_TYPE_CURRENT, wsystem_buffer)))
+                                 SHGFP_TYPE_CURRENT, system_buffer)))
         return false;
       cur = FilePath(system_buffer);
       break;
     case base::DIR_IE_INTERNET_CACHE:
       if (FAILED(SHGetFolderPath(NULL, CSIDL_INTERNET_CACHE, NULL,
-                                 SHGFP_TYPE_CURRENT, wsystem_buffer)))
+                                 SHGFP_TYPE_CURRENT, system_buffer)))
         return false;
       cur = FilePath(system_buffer);
       break;
     case base::DIR_COMMON_START_MENU:
       if (FAILED(SHGetFolderPath(NULL, CSIDL_COMMON_PROGRAMS, NULL,
-                                 SHGFP_TYPE_CURRENT, wsystem_buffer)))
+                                 SHGFP_TYPE_CURRENT, system_buffer)))
         return false;
       cur = FilePath(system_buffer);
       break;
     case base::DIR_START_MENU:
       if (FAILED(SHGetFolderPath(NULL, CSIDL_PROGRAMS, NULL, SHGFP_TYPE_CURRENT,
-                                 wsystem_buffer)))
+                                 system_buffer)))
         return false;
       cur = FilePath(system_buffer);
       break;
     case base::DIR_APP_DATA:
       if (FAILED(SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT,
-                                 wsystem_buffer)))
+                                 system_buffer)))
         return false;
       cur = FilePath(system_buffer);
       break;
     case base::DIR_COMMON_APP_DATA:
       if (FAILED(SHGetFolderPath(NULL, CSIDL_COMMON_APPDATA, NULL,
-                                 SHGFP_TYPE_CURRENT, wsystem_buffer)))
+                                 SHGFP_TYPE_CURRENT, system_buffer)))
         return false;
       cur = FilePath(system_buffer);
       break;
     case base::DIR_LOCAL_APP_DATA:
       if (FAILED(SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL,
-                                 SHGFP_TYPE_CURRENT, wsystem_buffer)))
+                                 SHGFP_TYPE_CURRENT, system_buffer)))
         return false;
       cur = FilePath(system_buffer);
       break;
@@ -143,19 +142,19 @@ bool PathProviderWin(int key, FilePath* result) {
                                       &path_buf)))
         return false;
 
-      cur = FilePath(as_u16cstr(path_buf.get()));
+      cur = FilePath(path_buf.get());
       break;
     }
     case base::DIR_USER_DESKTOP:
       if (FAILED(SHGetFolderPath(NULL, CSIDL_DESKTOPDIRECTORY, NULL,
-                                 SHGFP_TYPE_CURRENT, wsystem_buffer))) {
+                                 SHGFP_TYPE_CURRENT, system_buffer))) {
         return false;
       }
       cur = FilePath(system_buffer);
       break;
     case base::DIR_COMMON_DESKTOP:
       if (FAILED(SHGetFolderPath(NULL, CSIDL_COMMON_DESKTOPDIRECTORY, NULL,
-                                 SHGFP_TYPE_CURRENT, wsystem_buffer))) {
+                                 SHGFP_TYPE_CURRENT, system_buffer))) {
         return false;
       }
       cur = FilePath(system_buffer);
@@ -187,7 +186,7 @@ bool PathProviderWin(int key, FilePath* result) {
       break;
     case base::DIR_WINDOWS_FONTS:
       if (FAILED(SHGetFolderPath(NULL, CSIDL_FONTS, NULL, SHGFP_TYPE_CURRENT,
-                                 wsystem_buffer))) {
+                                 system_buffer))) {
         return false;
       }
       cur = FilePath(system_buffer);

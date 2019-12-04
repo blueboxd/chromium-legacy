@@ -72,7 +72,7 @@ class DesktopCommonSystemHealth(_CommonSystemHealthBenchmark):
 
 
 @benchmark.Info(emails=['charliea@chromium.org', 'sullivan@chromium.org',
-                        'tdresser@chromium.org', 'perezju@chromium.org',
+                        'tdresser@chromium.org',
                         'chrome-speed-metrics-dev@chromium.org'],
                 component='Speed>Metrics>SystemHealthRegressions',
                 documentation_url='https://bit.ly/system-health-benchmarks')
@@ -150,9 +150,9 @@ class MobileMemorySystemHealth(_MemorySystemHealthBenchmark):
     return 'system_health.memory_mobile'
 
 
-@benchmark.Info(emails=['perezju@chromium.org', 'torne@chromium.org',
-                         'changwan@chromium.org', 'oksamyt@chromium.org'],
-                 component='Mobile>WebView>Perf')
+@benchmark.Info(emails=['oksamyt@chromium.org', 'torne@chromium.org',
+                        'changwan@chromium.org'],
+                component='Mobile>WebView>Perf')
 class WebviewStartupSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
   """Webview startup time benchmark
 

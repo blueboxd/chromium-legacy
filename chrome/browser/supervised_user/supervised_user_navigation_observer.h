@@ -16,8 +16,8 @@
 #include "chrome/browser/supervised_user/supervised_users.h"
 #include "chrome/common/supervised_user_commands.mojom.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
-#include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 class SupervisedUserService;
@@ -145,9 +145,9 @@ class SupervisedUserNavigationObserver
   std::vector<std::unique_ptr<const sessions::SerializedNavigationEntry>>
       blocked_navigations_;
 
-  content::WebContentsFrameBindingSet<
+  content::WebContentsFrameReceiverSet<
       supervised_user::mojom::SupervisedUserCommands>
-      binding_;
+      receiver_;
 
   base::WeakPtrFactory<SupervisedUserNavigationObserver> weak_ptr_factory_{
       this};

@@ -16,7 +16,8 @@
 #include "url/origin.h"
 
 WorkerContentSettingsClient::WorkerContentSettingsClient(
-    content::RenderFrame* render_frame) {
+    content::RenderFrame* render_frame)
+    : render_frame_id_(render_frame->GetRoutingID()) {
   blink::WebLocalFrame* frame = render_frame->GetWebFrame();
   const blink::WebDocument& document = frame->GetDocument();
   if (document.GetSecurityOrigin().IsOpaque() ||
@@ -27,7 +28,7 @@ WorkerContentSettingsClient::WorkerContentSettingsClient(
   site_for_cookies_ = document.SiteForCookies();
   top_frame_origin_ = document.TopFrameOrigin();
 
-  render_frame->GetBrowserInterfaceBroker()->GetInterface(
+  content::ChildThread::Get()->BindHostReceiver(
       pending_content_settings_manager_.InitWithNewPipeAndPassReceiver());
 
   ContentSettingsAgentImpl* agent = ContentSettingsAgentImpl::Get(render_frame);
@@ -42,6 +43,7 @@ WorkerContentSettingsClient::WorkerContentSettingsClient(
       site_for_cookies_(other.site_for_cookies_),
       top_frame_origin_(other.top_frame_origin_),
       allow_running_insecure_content_(other.allow_running_insecure_content_),
+      render_frame_id_(other.render_frame_id_),
       content_setting_rules_(other.content_setting_rules_) {
   other.EnsureContentSettingsManager();
   other.content_settings_manager_->Clone(
@@ -81,7 +83,7 @@ bool WorkerContentSettingsClient::AllowRunningInsecureContent(
   if (!allow_running_insecure_content_ && !allowed_per_settings) {
     EnsureContentSettingsManager();
     content_settings_manager_->OnContentBlocked(
-        ContentSettingsType::MIXEDSCRIPT);
+        render_frame_id_, ContentSettingsType::MIXEDSCRIPT);
     return false;
   }
 
@@ -106,7 +108,7 @@ bool WorkerContentSettingsClient::AllowScriptFromSource(
   if (!allow) {
     EnsureContentSettingsManager();
     content_settings_manager_->OnContentBlocked(
-        ContentSettingsType::JAVASCRIPT);
+        render_frame_id_, ContentSettingsType::JAVASCRIPT);
     return false;
   }
 
@@ -132,9 +134,9 @@ bool WorkerContentSettingsClient::AllowStorageAccess(
   EnsureContentSettingsManager();
 
   bool result = false;
-  content_settings_manager_->AllowStorageAccess(storage_type, document_origin_,
-                                                site_for_cookies_,
-                                                top_frame_origin_, &result);
+  content_settings_manager_->AllowStorageAccess(
+      render_frame_id_, storage_type, document_origin_, site_for_cookies_,
+      top_frame_origin_, &result);
   return result;
 }
 

@@ -624,8 +624,8 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
 
   // |HTMLAnchorElement| sets isLink only when it has kHrefAttr.
   if (GetNode()->IsLink()) {
-    return IsHTMLImageElement(GetNode()) ? ax::mojom::Role::kImageMap
-                                         : ax::mojom::Role::kLink;
+    return IsA<HTMLImageElement>(GetNode()) ? ax::mojom::Role::kImageMap
+                                            : ax::mojom::Role::kLink;
   }
 
   if (IsA<HTMLAnchorElement>(*GetNode())) {
@@ -1239,7 +1239,7 @@ bool AXNodeObject::IsNativeImage() const {
   if (!node)
     return false;
 
-  if (IsHTMLImageElement(*node))
+  if (IsA<HTMLImageElement>(*node))
     return true;
 
   if (IsHTMLPlugInElement(*node))
@@ -2036,9 +2036,10 @@ KURL AXNodeObject::Url() const {
   if (IsWebArea() && GetDocument())
     return GetDocument()->Url();
 
-  if (IsImage() && IsHTMLImageElement(GetNode())) {
+  auto* html_image_element = DynamicTo<HTMLImageElement>(GetNode());
+  if (IsImage() && html_image_element) {
     // Using ImageSourceURL handles both src and srcset.
-    String source_url = ToHTMLImageElement(*GetNode()).ImageSourceURL();
+    String source_url = html_image_element->ImageSourceURL();
     String stripped_image_source_url =
         StripLeadingAndTrailingHTMLSpaces(source_url);
     if (!stripped_image_source_url.IsEmpty())
@@ -3045,9 +3046,6 @@ void AXNodeObject::ComputeAriaOwnsChildren(
     return;
   }
 
-  if (!HasAttribute(html_names::kAriaOwnsAttr))
-    return;
-
   // Case 2: aria-owns attribute
   TokenVectorFromAttribute(id_vector, html_names::kAriaOwnsAttr);
   AXObjectCache().UpdateAriaOwns(this, id_vector, owned_children);
@@ -3339,7 +3337,7 @@ String AXNodeObject::NativeTextAlternative(
   }
 
   // 5.8 img or area Element
-  if (IsHTMLImageElement(GetNode()) || IsA<HTMLAreaElement>(GetNode()) ||
+  if (IsA<HTMLImageElement>(GetNode()) || IsA<HTMLAreaElement>(GetNode()) ||
       (GetLayoutObject() && GetLayoutObject()->IsSVGImage())) {
     // alt
     const AtomicString& alt = GetAttribute(kAltAttr);

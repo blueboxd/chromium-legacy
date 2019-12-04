@@ -39,6 +39,7 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
         target_language_index_(1),
         never_translate_language_(false),
         never_translate_site_(false),
+        should_show_always_translate_sortcut_(false),
         should_always_translate_(false),
         always_translate_checked_(false),
         set_always_translate_called_count_(0),
@@ -99,11 +100,17 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
     return always_translate_checked_;
   }
 
+  bool ShouldShowAlwaysTranslateShortcut() const override {
+    return should_show_always_translate_sortcut_;
+  }
+
+  void SetShouldShowAlwaysTranslateShortcut(bool value) {
+    should_show_always_translate_sortcut_ = value;
+  }
+
   bool ShouldAlwaysTranslate() const override {
     return should_always_translate_;
   }
-
-  bool ShouldShowAlwaysTranslateShortcut() const override { return false; }
 
   void SetAlwaysTranslate(bool value) override {
     should_always_translate_ = value;
@@ -136,6 +143,7 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
   int target_language_index_;
   bool never_translate_language_;
   bool never_translate_site_;
+  bool should_show_always_translate_sortcut_;
   bool should_always_translate_;
   bool always_translate_checked_;
   int set_always_translate_called_count_;
@@ -349,7 +357,6 @@ TEST_F(TranslateBubbleViewTest, TryAgainButton) {
   EXPECT_TRUE(mock_model_->translate_called_);
 }
 
-// This checkbox is not used in Tab Ui.
 TEST_F(TranslateBubbleViewTest, AlwaysTranslateCheckboxAndCancelButton) {
   CreateAndShowBubble();
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_ADVANCED);
@@ -374,10 +381,91 @@ TEST_F(TranslateBubbleViewTest, AlwaysTranslateCheckboxAndCancelButton) {
   EXPECT_EQ(0, mock_model_->set_always_translate_called_count_);
 }
 
-// This checkbox is not used in Tab Ui.
 TEST_F(TranslateBubbleViewTest, AlwaysTranslateCheckboxAndDoneButton) {
   CreateAndShowBubble();
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_ADVANCED);
+
+  // Click the "Always Translate" checkbox. Changing the state of this checkbox
+  // should affect the model after pressing the done button.
+
+  // Check the initial state.
+  EXPECT_FALSE(mock_model_->should_always_translate_);
+  EXPECT_EQ(0, mock_model_->set_always_translate_called_count_);
+  EXPECT_FALSE(bubble_->advanced_always_translate_checkbox_->GetChecked());
+
+  // Click the checkbox. The state is not saved yet.
+  bubble_->advanced_always_translate_checkbox_->SetChecked(true);
+  PressButton(TranslateBubbleView::BUTTON_ID_ALWAYS_TRANSLATE);
+  EXPECT_FALSE(mock_model_->should_always_translate_);
+  EXPECT_EQ(0, mock_model_->set_always_translate_called_count_);
+
+  // Click the done button. The state is saved.
+  PressButton(TranslateBubbleView::BUTTON_ID_DONE);
+  EXPECT_TRUE(mock_model_->should_always_translate_);
+  EXPECT_EQ(1, mock_model_->set_always_translate_called_count_);
+}
+
+TEST_F(TranslateBubbleViewTest, TabUIAlwaysTranslateCheckboxShortcut) {
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      language::kUseButtonTranslateBubbleUi,
+      {{language::kTranslateUIBubbleKey,
+        language::kTranslateUIBubbleTabValue}});
+
+  mock_model_->SetShouldShowAlwaysTranslateShortcut(true);
+  CreateAndShowBubble();
+
+  // Click the "Always Translate" checkbox. Changing the state of this checkbox
+  // should affect the model right away.
+
+  // Check the initial state.
+  EXPECT_FALSE(mock_model_->should_always_translate_);
+  EXPECT_EQ(0, mock_model_->set_always_translate_called_count_);
+  EXPECT_FALSE(bubble_->before_always_translate_checkbox_->GetChecked());
+
+  // Click the checkbox. The state is saved.
+  bubble_->before_always_translate_checkbox_->SetChecked(true);
+  PressButton(TranslateBubbleView::BUTTON_ID_ALWAYS_TRANSLATE);
+  EXPECT_TRUE(mock_model_->should_always_translate_);
+  EXPECT_EQ(1, mock_model_->set_always_translate_called_count_);
+}
+
+TEST_F(TranslateBubbleViewTest, TabUIAlwaysTranslateCheckboxAndCloseButton) {
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      language::kUseButtonTranslateBubbleUi,
+      {{language::kTranslateUIBubbleKey,
+        language::kTranslateUIBubbleTabValue}});
+
+  CreateAndShowBubble();
+  bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_SOURCE_LANGUAGE);
+
+  // Click the "Always Translate" checkbox. Changing the state of this checkbox
+  // should NOT affect the model after pressing the cancel button.
+
+  // Check the initial state.
+  EXPECT_FALSE(mock_model_->should_always_translate_);
+  EXPECT_EQ(0, mock_model_->set_always_translate_called_count_);
+  EXPECT_FALSE(bubble_->advanced_always_translate_checkbox_->GetChecked());
+
+  // Click the checkbox. The state is not saved yet.
+  bubble_->advanced_always_translate_checkbox_->SetChecked(true);
+  PressButton(TranslateBubbleView::BUTTON_ID_ALWAYS_TRANSLATE);
+  EXPECT_FALSE(mock_model_->should_always_translate_);
+  EXPECT_EQ(0, mock_model_->set_always_translate_called_count_);
+
+  // Click the cancel button. The state is not saved.
+  PressButton(TranslateBubbleView::BUTTON_ID_CLOSE);
+  EXPECT_FALSE(mock_model_->should_always_translate_);
+  EXPECT_EQ(0, mock_model_->set_always_translate_called_count_);
+}
+
+TEST_F(TranslateBubbleViewTest, TabUIAlwaysTranslateCheckboxAndDoneButton) {
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      language::kUseButtonTranslateBubbleUi,
+      {{language::kTranslateUIBubbleKey,
+        language::kTranslateUIBubbleTabValue}});
+
+  CreateAndShowBubble();
+  bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_SOURCE_LANGUAGE);
 
   // Click the "Always Translate" checkbox. Changing the state of this checkbox
   // should affect the model after pressing the done button.

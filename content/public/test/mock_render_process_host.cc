@@ -16,7 +16,6 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "base/token.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -35,10 +34,9 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/service_manager_connection.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/test/not_implemented_network_url_loader_factory.h"
 #include "media/media_buildflags.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace content {
@@ -68,11 +66,6 @@ MockRenderProcessHost::MockRenderProcessHost(BrowserContext* browser_context)
       is_unused_(true),
       keep_alive_ref_count_(0),
       foreground_service_worker_count_(0),
-      child_identity_(
-          mojom::kRendererServiceName,
-          BrowserContext::GetServiceInstanceGroupFor(browser_context),
-          base::Token::CreateRandom(),
-          base::Token::CreateRandom()),
       url_loader_factory_(nullptr) {
   // Child process security operations can't be unit tested unless we add
   // ourselves as an existing child process.
@@ -345,23 +338,11 @@ base::TimeDelta MockRenderProcessHost::GetChildProcessIdleTime() {
   return base::TimeDelta::FromMilliseconds(0);
 }
 
-void MockRenderProcessHost::BindInterface(
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  auto it = binder_overrides_.find(interface_name);
-  if (it != binder_overrides_.end())
-    it->second.Run(std::move(interface_pipe));
-}
-
 void MockRenderProcessHost::BindReceiver(
     mojo::GenericPendingReceiver receiver) {
   auto it = binder_overrides_.find(*receiver.interface_name());
   if (it != binder_overrides_.end())
     it->second.Run(receiver.PassPipe());
-}
-
-const service_manager::Identity& MockRenderProcessHost::GetChildIdentity() {
-  return child_identity_;
 }
 
 std::unique_ptr<base::PersistentMemoryAllocator>
@@ -429,7 +410,8 @@ void MockRenderProcessHost::CreateURLLoaderFactory(
     const net::NetworkIsolationKey& network_isolation_key,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
         header_client,
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
+    network::mojom::URLLoaderFactoryOverridePtr factory_override) {
   if (GetNetworkFactoryCallback().is_null()) {
     url_loader_factory_->Clone(std::move(receiver));
     return;

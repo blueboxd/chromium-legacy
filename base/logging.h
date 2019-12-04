@@ -168,7 +168,7 @@ namespace logging {
 
 // TODO(avi): do we want to do a unification of character types here?
 #if defined(OS_WIN)
-typedef base::char16 PathChar;
+typedef wchar_t PathChar;
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 typedef char PathChar;
 #endif
@@ -1030,7 +1030,7 @@ BASE_EXPORT void RawLog(int level, const char* message);
 BASE_EXPORT bool IsLoggingToFileEnabled();
 
 // Returns the default log file path.
-BASE_EXPORT base::string16 GetLogFileFullPath();
+BASE_EXPORT std::wstring GetLogFileFullPath();
 #endif
 
 }  // namespace logging

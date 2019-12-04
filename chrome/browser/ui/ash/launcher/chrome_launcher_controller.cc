@@ -869,14 +869,16 @@ AppIconLoader* ChromeLauncherController::GetAppIconLoaderForApp(
   return nullptr;
 }
 
-bool ChromeLauncherController::CanDoShowAppInfoFlow() {
-  return CanShowAppInfoDialog();
+bool ChromeLauncherController::CanDoShowAppInfoFlow(
+    Profile* profile,
+    const std::string& extension_id) {
+  return CanShowAppInfoDialog(profile, extension_id);
 }
 
 void ChromeLauncherController::DoShowAppInfoFlow(
     Profile* profile,
     const std::string& extension_id) {
-  DCHECK(CanDoShowAppInfoFlow());
+  DCHECK(CanPlatformShowAppInfoDialog());
 
   const extensions::Extension* extension = GetExtension(profile, extension_id);
   if (!extension)

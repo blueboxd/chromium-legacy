@@ -877,7 +877,7 @@ const char* DisplayLockContext::ShouldForceUnlock() const {
   // We allow replaced elements to be locked. This check is similar to the check
   // in DefinitelyNewFormattingContext() in element.cc, but in this case we
   // allow object element to get locked.
-  if (IsA<HTMLObjectElement>(*element_) || IsHTMLImageElement(element_) ||
+  if (IsA<HTMLObjectElement>(*element_) || IsA<HTMLImageElement>(*element_) ||
       element_->IsFormControlElement() || element_->IsMediaElement() ||
       element_->IsFrameOwnerElement() || element_->IsSVGElement()) {
     return nullptr;

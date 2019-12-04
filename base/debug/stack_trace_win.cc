@@ -16,8 +16,8 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
-#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 
@@ -112,8 +112,8 @@ long WINAPI StackDumpExceptionFilter(EXCEPTION_POINTERS* info) {
 }
 
 FilePath GetExePath() {
-  char16 system_buffer[MAX_PATH];
-  GetModuleFileName(NULL, as_writable_wcstr(system_buffer), MAX_PATH);
+  wchar_t system_buffer[MAX_PATH];
+  GetModuleFileName(NULL, system_buffer, MAX_PATH);
   system_buffer[MAX_PATH - 1] = L'\0';
   return FilePath(system_buffer);
 }
@@ -147,20 +147,20 @@ bool InitializeSymbols() {
   // add the directory of the executable to symbol search path.
   // All following errors are non-fatal.
   static constexpr size_t kSymbolsArraySize = 1024;
-  char16 symbols_path[kSymbolsArraySize];
+  wchar_t symbols_path[kSymbolsArraySize];
 
   // Note: The below function takes buffer size as number of characters,
   // not number of bytes!
-  if (!SymGetSearchPathW(GetCurrentProcess(), as_writable_wcstr(symbols_path),
+  if (!SymGetSearchPathW(GetCurrentProcess(), symbols_path,
                          kSymbolsArraySize)) {
     g_init_error = GetLastError();
     DLOG(WARNING) << "SymGetSearchPath failed: " << g_init_error;
     return false;
   }
 
-  string16 new_path = StrCat(
-      {symbols_path, STRING16_LITERAL(";"), GetExePath().DirName().value()});
-  if (!SymSetSearchPathW(GetCurrentProcess(), as_wcstr(new_path))) {
+  std::wstring new_path = StringPrintf(L"%ls;%ls", symbols_path,
+                                       GetExePath().DirName().value().c_str());
+  if (!SymSetSearchPathW(GetCurrentProcess(), new_path.c_str())) {
     g_init_error = GetLastError();
     DLOG(WARNING) << "SymSetSearchPath failed." << g_init_error;
     return false;

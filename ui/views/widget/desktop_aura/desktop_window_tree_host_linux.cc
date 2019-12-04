@@ -257,24 +257,17 @@ void DesktopWindowTreeHostLinux::DispatchEvent(ui::Event* event) {
       FlashFrame(false);
   }
 
-  // Store the location in px to restore it later.
-  gfx::Point previous_mouse_location_in_px;
-  if (event->IsMouseEvent())
-    previous_mouse_location_in_px = event->AsMouseEvent()->location();
-
-  WindowTreeHostPlatform::DispatchEvent(event);
-
-  // Posthandle the event if it has not been consumed.
-  if (!event->handled() && event->IsMouseEvent() &&
-      non_client_window_event_filter_) {
-    auto* mouse_event = event->AsMouseEvent();
-    // Location is set in dip after the event is dispatched to the event sink.
-    // Restore it back to be in px that WindowEventFilterLinux requires.
-    mouse_event->set_location(previous_mouse_location_in_px);
-    mouse_event->set_root_location(previous_mouse_location_in_px);
-    non_client_window_event_filter_->HandleMouseEventWithHitTest(hit_test_code,
-                                                                 mouse_event);
+  // Prehandle the event as long as as we are not able to track if it is handled
+  // or not as SendEventToSink results in copying the event and our copy of the
+  // event will not set to handled unless a dispatcher or a target are
+  // destroyed.
+  if (event->IsMouseEvent() && non_client_window_event_filter_) {
+    non_client_window_event_filter_->HandleMouseEventWithHitTest(
+        hit_test_code, event->AsMouseEvent());
   }
+
+  if (!event->handled())
+    WindowTreeHostPlatform::DispatchEvent(event);
 }
 
 void DesktopWindowTreeHostLinux::OnClosed() {

@@ -94,24 +94,23 @@ void PredictionMetricsHandler::Reset() {
 int PredictionMetricsHandler::GetInterpolatedEventForPredictedEvent(
     const base::TimeTicks& interpolation_timestamp,
     gfx::PointF* interpolated) {
-  size_t idx = -1;
-  while (idx + 1 < events_queue_.size() &&
-         interpolation_timestamp >= events_queue_[idx + 1].time_stamp)
+  size_t idx = 0;
+  while (idx < events_queue_.size() &&
+         interpolation_timestamp >= events_queue_[idx].time_stamp)
     idx++;
 
-  DCHECK(idx >= 0);
-  if (idx < 0 || idx + 1 >= events_queue_.size())
+  if (idx == 0 || idx == events_queue_.size())
     return -1;
 
   float alpha =
-      (interpolation_timestamp - events_queue_[idx].time_stamp)
+      (interpolation_timestamp - events_queue_[idx - 1].time_stamp)
           .InMillisecondsF() /
-      (events_queue_[idx + 1].time_stamp - events_queue_[idx].time_stamp)
+      (events_queue_[idx].time_stamp - events_queue_[idx - 1].time_stamp)
           .InMillisecondsF();
   *interpolated =
-      events_queue_[idx].pos +
-      ScaleVector2d(events_queue_[idx + 1].pos - events_queue_[idx].pos, alpha);
-  return idx;
+      events_queue_[idx - 1].pos +
+      ScaleVector2d(events_queue_[idx].pos - events_queue_[idx - 1].pos, alpha);
+  return idx - 1;
 }
 
 void PredictionMetricsHandler::ComputeMetrics() {

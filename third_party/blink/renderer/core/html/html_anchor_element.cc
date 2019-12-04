@@ -140,14 +140,11 @@ static void AppendServerMapMousePosition(StringBuilder& url, Event* event) {
   DCHECK(event->target());
   Node* target = event->target()->ToNode();
   DCHECK(target);
-  if (!IsHTMLImageElement(*target))
+  auto* image_element = DynamicTo<HTMLImageElement>(target);
+  if (!image_element || !image_element->IsServerMap())
     return;
 
-  HTMLImageElement& image_element = ToHTMLImageElement(*target);
-  if (!image_element.IsServerMap())
-    return;
-
-  LayoutObject* layout_object = image_element.GetLayoutObject();
+  LayoutObject* layout_object = image_element->GetLayoutObject();
   if (!layout_object || !layout_object->IsBox())
     return;
 

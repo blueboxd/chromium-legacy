@@ -18,6 +18,7 @@
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/size_range_layout.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/unfocusable_label.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
@@ -210,6 +211,13 @@ TriView* TrayPopupUtils::CreateMultiTargetRowView() {
 
 views::Label* TrayPopupUtils::CreateDefaultLabel() {
   views::Label* label = new views::Label();
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label->SetSubpixelRenderingEnabled(false);
+  return label;
+}
+
+UnfocusableLabel* TrayPopupUtils::CreateUnfocusableLabel() {
+  UnfocusableLabel* label = new UnfocusableLabel();
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetSubpixelRenderingEnabled(false);
   return label;

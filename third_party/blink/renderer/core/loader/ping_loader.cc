@@ -121,7 +121,10 @@ class BeaconBlob final : public Beacon {
 
 class BeaconDOMArrayBufferView final : public Beacon {
  public:
-  explicit BeaconDOMArrayBufferView(DOMArrayBufferView* data) : data_(data) {}
+  explicit BeaconDOMArrayBufferView(DOMArrayBufferView* data) : data_(data) {
+    CHECK(base::CheckedNumeric<wtf_size_t>(data->byteLengthAsSizeT()).IsValid())
+        << "EncodedFormData::Create cannot deal with huge ArrayBuffers.";
+  }
 
   uint64_t size() const override { return data_->byteLengthAsSizeT(); }
 
@@ -129,7 +132,8 @@ class BeaconDOMArrayBufferView final : public Beacon {
     DCHECK(data_);
 
     scoped_refptr<EncodedFormData> entity_body = EncodedFormData::Create(
-        data_->BaseAddress(), data_->deprecatedByteLengthAsUnsigned());
+        data_->BaseAddress(),
+        base::checked_cast<wtf_size_t>(data_->byteLengthAsSizeT()));
     request.SetHttpBody(std::move(entity_body));
 
     // FIXME: a reasonable choice, but not in the spec; should it give a

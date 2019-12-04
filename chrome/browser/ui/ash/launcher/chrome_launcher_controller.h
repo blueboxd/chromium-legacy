@@ -271,8 +271,9 @@ class ChromeLauncherController
   // to get index of item with id |app_id| or -1 if it's not pinned.
   int PinnedItemIndexByAppID(const std::string& app_id);
 
-  // Whether the controller supports a Show App Info flow.
-  bool CanDoShowAppInfoFlow();
+  // Whether the controller supports a Show App Info flow for a specific
+  // extension.
+  bool CanDoShowAppInfoFlow(Profile* profile, const std::string& extension_id);
 
   // Show the dialog with the application's information. Call only if
   // CanDoShowAppInfoFlow() returns true.

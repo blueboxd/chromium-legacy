@@ -1139,27 +1139,26 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 #pragma mark - SyncPresenter
 
 - (void)showReauthenticateSignin {
-  [self.dispatcher
-              showSignin:
-                  [[ShowSigninCommand alloc]
-                      initWithOperation:AUTHENTICATION_OPERATION_REAUTHENTICATE
-                            accessPoint:signin_metrics::AccessPoint::
-                                            ACCESS_POINT_UNKNOWN]
-      baseViewController:self];
+  [self.handler showSignin:[[ShowSigninCommand alloc]
+                               initWithOperation:
+                                   AUTHENTICATION_OPERATION_REAUTHENTICATE
+                                     accessPoint:signin_metrics::AccessPoint::
+                                                     ACCESS_POINT_UNKNOWN]
+        baseViewController:self];
 }
 
 - (void)showSyncPassphraseSettings {
-  [self.dispatcher showSyncPassphraseSettingsFromViewController:self];
+  [self.handler showSyncPassphraseSettingsFromViewController:self];
 }
 
 - (void)showGoogleServicesSettings {
-  [self.dispatcher showGoogleServicesSettingsFromViewController:self];
+  [self.handler showGoogleServicesSettingsFromViewController:self];
 }
 
 #pragma mark - SigninPresenter
 
 - (void)showSignin:(ShowSigninCommand*)command {
-  [self.dispatcher showSignin:command baseViewController:self];
+  [self.handler showSignin:command baseViewController:self];
 }
 
 #pragma mark - UIAdaptivePresentationControllerDelegate

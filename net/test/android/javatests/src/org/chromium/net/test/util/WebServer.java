@@ -181,8 +181,18 @@ public class WebServer {
             return matchingHeaders;
         }
 
+        private static boolean hasChunkedTransferEncoding(HTTPRequest req) {
+            List<String> transferEncodings = req.headerValues("Transfer-Encoding");
+            for (String encoding : transferEncodings) {
+                if (encoding.equals("chunked")) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         /** Parses an HTTP request from an input stream. */
-        static public HTTPRequest parse(InputStream stream) throws InvalidRequest, IOException {
+        public static HTTPRequest parse(InputStream stream) throws InvalidRequest, IOException {
             boolean firstLine = true;
             HTTPRequest req = new HTTPRequest();
             ArrayList<HTTPHeader> mHeaders = new ArrayList<HTTPHeader>();
@@ -250,7 +260,7 @@ public class WebServer {
                     offset += bytesRead;
                 }
                 req.mBody = content;
-            } else {
+            } else if (hasChunkedTransferEncoding(req)) {
                 ByteArrayOutputStream mBody = new ByteArrayOutputStream();
                 byte[] buffer = new byte[1000];
                 int bytesRead;

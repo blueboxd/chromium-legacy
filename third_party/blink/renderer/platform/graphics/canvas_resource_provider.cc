@@ -553,7 +553,12 @@ class CanvasResourceProviderSwapChain final : public CanvasResourceProvider {
 
   scoped_refptr<StaticBitmapImage> Snapshot() override {
     TRACE_EVENT0("blink", "CanvasResourceProviderSwapChain::Snapshot");
-    return SnapshotInternal();
+
+    // Use ProduceCanvasResource to ensure any queued commands are flushed and
+    // the resource is updated.
+    if (auto resource = ProduceCanvasResource())
+      return resource->Bitmap();
+    return nullptr;
   }
 
   sk_sp<SkSurface> CreateSkSurface() const override {
@@ -1048,10 +1053,7 @@ scoped_refptr<StaticBitmapImage> CanvasResourceProvider::SnapshotInternal() {
     return nullptr;
 
   auto paint_image = MakeImageSnapshot();
-  if (paint_image.GetSkImage()->isTextureBacked() && ContextProviderWrapper()) {
-    return AcceleratedStaticBitmapImage::CreateFromSkImage(
-        paint_image.GetSkImage(), ContextProviderWrapper());
-  }
+  DCHECK(!paint_image.GetSkImage()->isTextureBacked());
   return UnacceleratedStaticBitmapImage::Create(std::move(paint_image));
 }
 

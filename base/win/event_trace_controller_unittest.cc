@@ -165,8 +165,8 @@ TEST_F(EtwTraceControllerTest, StartFileSession) {
   ASSERT_TRUE(CreateTemporaryFileInDir(temp_dir.GetPath(), &temp));
 
   EtwTraceController controller;
-  HRESULT hr = controller.StartFileSession(session_name_.c_str(),
-                                           as_wcstr(temp.value()));
+  HRESULT hr =
+      controller.StartFileSession(session_name_.c_str(), temp.value().c_str());
   if (hr == E_ACCESSDENIED) {
     VLOG(1) << "You must be an administrator to run this test on Vista";
     DeleteFile(temp, false);

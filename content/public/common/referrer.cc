@@ -119,9 +119,10 @@ blink::mojom::ReferrerPtr Referrer::SanitizeForRequest(
       break;
   }
 
-  if ((base::FeatureList::IsEnabled(net::features::kCapRefererHeaderLength) &&
-       base::saturated_cast<int>(sanitized_referrer->url.spec().length()) >
-           net::features::kMaxRefererHeaderLength.Get()) ||
+  // We limit the `referer` header to 4k: see step  of
+  // https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
+  // and https://github.com/whatwg/fetch/issues/903.
+  if (sanitized_referrer->url.spec().length() > 4096 ||
       (base::FeatureList::IsEnabled(
            network::features::kCapReferrerToOriginOnCrossOrigin) &&
        !url::Origin::Create(sanitized_referrer->url)

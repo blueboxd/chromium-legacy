@@ -28,7 +28,9 @@ class LogBuffer;
     "Abort parsing form: Action URL matches kUrlSearchActionRe, indicating "   \
     "that the form may lead to a search.")                                     \
   T(AbortParsingFormHasNoTextfield,                                            \
-    "Abort parsing form: Form has no text field.")
+    "Abort parsing form: Form has no text field.")                             \
+  T(FunnelMetrics, "Funnel Metrics")                                           \
+  T(KeyMetrics, "Key Metrics")
 
 // Log messages for chrome://autofill-internals.
 #define AUTOFILL_TEMPLATE(NAME, MESSAGE) k##NAME,

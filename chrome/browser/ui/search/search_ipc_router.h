@@ -18,7 +18,6 @@
 #include "chrome/common/search/ntp_logging_events.h"
 #include "components/ntp_tiles/ntp_tile_impression.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
-#include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 

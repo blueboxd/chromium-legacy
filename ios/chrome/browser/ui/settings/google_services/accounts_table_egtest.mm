@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
-
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
-#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -49,8 +47,7 @@ id<GREYMatcher> ButtonWithFakeIdentity(FakeChromeIdentity* fakeIdentity) {
 
   // Forget |fakeIdentity|, screens should be popped back to the Main Settings.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
-      ->ForgetIdentity(fakeIdentity, nil);
+  [SigninEarlGreyUtils forgetFakeIdentity:fakeIdentity];
 
   [[EarlGrey selectElementWithMatcher:PrimarySignInButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
@@ -64,8 +61,7 @@ id<GREYMatcher> ButtonWithFakeIdentity(FakeChromeIdentity* fakeIdentity) {
 // account is removed while the "Disconnect Account" dialog is up.
 - (void)testSignInPopUpAccountOnDisconnectAccount {
   FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
-  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
-      fakeIdentity);
+  [SigninEarlGreyUtils addFakeIdentity:fakeIdentity];
 
   // Sign In |fakeIdentity|, then open the Account Settings.
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
@@ -75,8 +71,7 @@ id<GREYMatcher> ButtonWithFakeIdentity(FakeChromeIdentity* fakeIdentity) {
 
   // Forget |fakeIdentity|, screens should be popped back to the Main Settings.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
-      ->ForgetIdentity(fakeIdentity, nil);
+  [SigninEarlGreyUtils forgetFakeIdentity:fakeIdentity];
 
   [[EarlGrey selectElementWithMatcher:PrimarySignInButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
@@ -89,11 +84,9 @@ id<GREYMatcher> ButtonWithFakeIdentity(FakeChromeIdentity* fakeIdentity) {
 // Tests that the Account Settings screen is correctly reloaded when one of
 // the non-primary account is removed.
 - (void)testSignInReloadOnRemoveAccount {
-  ios::FakeChromeIdentityService* identity_service =
-      ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
   FakeChromeIdentity* fakeIdentity1 = [SigninEarlGreyUtils fakeIdentity1];
   FakeChromeIdentity* fakeIdentity2 = [SigninEarlGreyUtils fakeIdentity2];
-  identity_service->AddIdentity(fakeIdentity2);
+  [SigninEarlGreyUtils addFakeIdentity:fakeIdentity2];
 
   // Sign In |fakeIdentity|, then open the Account Settings.
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity1];

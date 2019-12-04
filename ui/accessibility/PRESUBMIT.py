@@ -141,12 +141,14 @@ def CheckEnumsMatch(input_api, output_api):
                     output_api)
   CheckMatchingEnum(ax_enums, 'NameFrom', automation_enums, 'NameFromType',
                     errs, output_api)
-  CheckMatchingEnum(ax_enums, 'DescriptionFrom', automation_enums, 'DescriptionFromType',
-                    errs, output_api)
+  CheckMatchingEnum(ax_enums, 'DescriptionFrom', automation_enums,
+                    'DescriptionFromType', errs, output_api)
   CheckMatchingEnum(ax_enums, 'Restriction', automation_enums,
                    'Restriction', errs, output_api)
   CheckMatchingEnum(ax_enums, 'DefaultActionVerb', automation_enums,
                    'DefaultActionVerb', errs, output_api)
+  CheckMatchingEnum(ax_enums, 'MarkerType', automation_enums,
+                   'MarkerType', errs, output_api)
   return errs
 
 # Given a full path to c++ header, return an array of the first static

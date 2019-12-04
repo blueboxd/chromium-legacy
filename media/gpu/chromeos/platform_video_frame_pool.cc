@@ -133,16 +133,18 @@ base::Optional<GpuBufferLayout> PlatformVideoFramePool::RequestFrames(
   if (!IsSameFormat_Locked(format, coded_size)) {
     DVLOGF(4) << "The video frame format is changed. Clearing the pool.";
     free_frames_.clear();
-  }
 
-  // Create a temporary frame in order to know VideoFrameLayout that VideoFrame
-  // that will be allocated in GetFrame() has.
-  auto frame =
-      create_frame_cb_.Run(gpu_memory_buffer_factory_, format, coded_size,
-                           visible_rect_, natural_size_, base::TimeDelta());
-  if (!frame) {
-    VLOGF(1) << "Failed to create video frame";
-    return base::nullopt;
+    // Create a temporary frame in order to know VideoFrameLayout that
+    // VideoFrame that will be allocated in GetFrame() has.
+    auto frame =
+        create_frame_cb_.Run(gpu_memory_buffer_factory_, format, coded_size,
+                             visible_rect_, natural_size_, base::TimeDelta());
+    if (!frame) {
+      VLOGF(1) << "Failed to create video frame";
+      return base::nullopt;
+    }
+    frame_layout_ = GpuBufferLayout::Create(fourcc, frame->coded_size(),
+                                            frame->layout().planes());
   }
 
   // The pool might become available because of |max_num_frames_| increased.
@@ -150,8 +152,6 @@ base::Optional<GpuBufferLayout> PlatformVideoFramePool::RequestFrames(
   if (frame_available_cb_ && !IsExhausted_Locked())
     std::move(frame_available_cb_).Run();
 
-  frame_layout_ = GpuBufferLayout::Create(fourcc, frame->coded_size(),
-                                          frame->layout().planes());
   return frame_layout_;
 }
 

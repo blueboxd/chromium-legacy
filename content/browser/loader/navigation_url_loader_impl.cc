@@ -1302,7 +1302,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
         frame_tree_node->current_frame_host()->GetProcess()->GetID(),
         ContentBrowserClient::URLLoaderFactoryType::kNavigation, url::Origin(),
         &factory_receiver, nullptr /* header_client */,
-        nullptr /* bypass_redirect_checks */);
+        nullptr /* bypass_redirect_checks */, nullptr /* factory_override */);
     CreateWebUIURLLoaderBinding(frame_tree_node->current_frame_host(), scheme,
                                 std::move(factory_receiver));
   }
@@ -1326,11 +1326,14 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     // connected if the request type supports proxying.
     mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_factory;
     auto factory_receiver = pending_factory.InitWithNewPipeAndPassReceiver();
+    // Here we give nullptr for |factory_override|, because CORS is no-op for
+    // navigations.
     bool use_proxy = GetContentClient()->browser()->WillCreateURLLoaderFactory(
         partition->browser_context(), frame_tree_node->current_frame_host(),
         frame_tree_node->current_frame_host()->GetProcess()->GetID(),
         ContentBrowserClient::URLLoaderFactoryType::kNavigation, url::Origin(),
-        &factory_receiver, &header_client, &bypass_redirect_checks);
+        &factory_receiver, &header_client, &bypass_redirect_checks,
+        nullptr /* factory_override */);
     if (devtools_instrumentation::WillCreateURLLoaderFactory(
             frame_tree_node->current_frame_host(), true /* is_navigation */,
             false /* is_download */, &factory_receiver)) {
@@ -1532,7 +1535,7 @@ void NavigationURLLoaderImpl::BindNonNetworkURLLoaderFactoryReceiver(
       frame->GetProcess()->GetID(),
       ContentBrowserClient::URLLoaderFactoryType::kNavigation, url::Origin(),
       &factory_receiver, nullptr /* header_client */,
-      nullptr /* bypass_redirect_checks */);
+      nullptr /* bypass_redirect_checks */, nullptr /* factory_override */);
   it->second->Clone(std::move(factory_receiver));
 }
 

@@ -26,11 +26,6 @@
 
 namespace blink {
 
-MediaStreamEvent* MediaStreamEvent::Create(const AtomicString& type,
-                                           MediaStream* stream) {
-  return MakeGarbageCollected<MediaStreamEvent>(type, stream);
-}
-
 MediaStreamEvent* MediaStreamEvent::Create(
     const AtomicString& type,
     const MediaStreamEventInit* initializer) {

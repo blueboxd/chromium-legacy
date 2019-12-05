@@ -50,6 +50,12 @@ class ExtensionsContainer {
                             bool is_sticky,
                             const base::Closure& closure) = 0;
 
+  // Shows the popup for the action with |id|, returning true if a popup is
+  // shown. If |grant_active_tab| is true, then active tab permissions should
+  // be given to the action (only do this if this is through a user action).
+  virtual bool ShowToolbarActionPopup(const std::string& action_id,
+                                      bool grant_active_tab) = 0;
+
   // Displays the given |bubble| once the toolbar is no longer animating.
   virtual void ShowToolbarActionBubble(
       std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) = 0;

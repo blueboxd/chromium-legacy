@@ -725,17 +725,17 @@ void ShelfLayoutManager::ProcessMouseWheelEventFromShelf(
 
 ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
   if (state_.pre_lock_screen_animation_active)
-    return SHELF_BACKGROUND_DEFAULT;
+    return ShelfBackgroundType::kDefaultBg;
 
   // Handle all other non active screen states, including OOBE and pre-login.
   if (state_.session_state == session_manager::SessionState::OOBE)
-    return SHELF_BACKGROUND_OOBE;
+    return ShelfBackgroundType::kOobe;
   if (state_.session_state != session_manager::SessionState::ACTIVE) {
     if (Shell::Get()->wallpaper_controller()->HasShownAnyWallpaper() &&
         !Shell::Get()->wallpaper_controller()->IsWallpaperBlurred()) {
-      return SHELF_BACKGROUND_LOGIN_NONBLURRED_WALLPAPER;
+      return ShelfBackgroundType::kLoginNonBlurredWallpaper;
     }
-    return SHELF_BACKGROUND_LOGIN;
+    return ShelfBackgroundType::kLogin;
   }
 
   const bool in_split_view_mode =
@@ -760,34 +760,34 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
               ->app_list_controller()
               ->home_launcher_transition_state() ==
           AppListControllerImpl::HomeLauncherTransitionState::kMostlyHidden) {
-        return SHELF_BACKGROUND_IN_APP;
+        return ShelfBackgroundType::kInApp;
       }
-      return SHELF_BACKGROUND_HOME_LAUNCHER;
+      return ShelfBackgroundType::kHomeLauncher;
     } else if (Shell::Get()
                    ->app_list_controller()
                    ->home_launcher_transition_state() !=
                AppListControllerImpl::HomeLauncherTransitionState::kFinished) {
-      return SHELF_BACKGROUND_HOME_LAUNCHER;
+      return ShelfBackgroundType::kHomeLauncher;
     } else if (maximized) {
       // If the home launcher is not shown but it is maximized, show the
       // in-app shelf.
-      return SHELF_BACKGROUND_IN_APP;
+      return ShelfBackgroundType::kInApp;
     }
   } else if (app_list_is_visible) {
-    return maximized ? SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST
-                     : SHELF_BACKGROUND_APP_LIST;
+    return maximized ? ShelfBackgroundType::kMaximizedWithAppList
+                     : ShelfBackgroundType::kAppList;
   }
 
   if (maximized) {
-    return SHELF_BACKGROUND_MAXIMIZED;
+    return ShelfBackgroundType::kMaximized;
   }
 
   if (Shell::Get()->overview_controller() &&
       Shell::Get()->overview_controller()->InOverviewSession()) {
-    return SHELF_BACKGROUND_OVERVIEW;
+    return ShelfBackgroundType::kOverview;
   }
 
-  return SHELF_BACKGROUND_DEFAULT;
+  return ShelfBackgroundType::kDefaultBg;
 }
 
 void ShelfLayoutManager::MaybeUpdateShelfBackground(AnimationChangeType type) {
@@ -806,12 +806,12 @@ bool ShelfLayoutManager::ShouldBlurShelfBackground() {
     return false;
 
   if (chromeos::switches::ShouldShowShelfHotseat()) {
-    return shelf_background_type_ == SHELF_BACKGROUND_DEFAULT &&
+    return shelf_background_type_ == ShelfBackgroundType::kDefaultBg &&
            state_.session_state == session_manager::SessionState::ACTIVE;
   }
 
-  return (shelf_background_type_ == SHELF_BACKGROUND_HOME_LAUNCHER ||
-          shelf_background_type_ == SHELF_BACKGROUND_DEFAULT) &&
+  return (shelf_background_type_ == ShelfBackgroundType::kHomeLauncher ||
+          shelf_background_type_ == ShelfBackgroundType::kDefaultBg) &&
          state_.session_state == session_manager::SessionState::ACTIVE;
 }
 
@@ -1281,6 +1281,12 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
       // state.
       if (!hotseat_is_in_drag_)
         return hotseat_state();
+
+      if (app_list_visible)
+        return HotseatState::kShown;
+
+      if (in_overview && !in_split_view)
+        return HotseatState::kExtended;
 
       if (shelf_widget_->hotseat_widget()->IsExtended())
         return HotseatState::kExtended;
@@ -2027,7 +2033,7 @@ float ShelfLayoutManager::ComputeTargetOpacity(const State& state) const {
   float opacity_when_visible = kDefaultShelfOpacity;
   if (dimmed_for_inactivity_) {
     opacity_when_visible =
-        (GetShelfBackgroundType() == SHELF_BACKGROUND_MAXIMIZED)
+        (GetShelfBackgroundType() == ShelfBackgroundType::kMaximized)
             ? kMaximizedShelfDimOpacity
             : kFloatingShelfDimOpacity;
   }

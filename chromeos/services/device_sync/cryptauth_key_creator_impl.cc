@@ -87,6 +87,8 @@ CryptAuthKeyCreatorImpl::CryptAuthKeyCreatorImpl()
     : secure_message_delegate_(
           multidevice::SecureMessageDelegateImpl::Factory::NewInstance()) {}
 
+CryptAuthKeyCreatorImpl::~CryptAuthKeyCreatorImpl() = default;
+
 void CryptAuthKeyCreatorImpl::CreateKeys(
     const base::flat_map<CryptAuthKeyBundle::Name, CreateKeyData>&
         keys_to_create,
@@ -100,33 +102,39 @@ void CryptAuthKeyCreatorImpl::CreateKeys(
 
   num_keys_to_create_ = keys_to_create.size();
   keys_to_create_ = keys_to_create;
-  server_ephemeral_dh_ = server_ephemeral_dh;
   create_keys_callback_ = std::move(create_keys_callback);
 
   if (IsClientEphemeralDhKeyNeeded(keys_to_create_)) {
-    DCHECK(server_ephemeral_dh_ && server_ephemeral_dh_->IsAsymmetricKey());
+    DCHECK(server_ephemeral_dh && server_ephemeral_dh->IsAsymmetricKey());
     secure_message_delegate_->GenerateKeyPair(
         base::Bind(&CryptAuthKeyCreatorImpl::OnClientDiffieHellmanGenerated,
-                   base::Unretained(this)));
+                   base::Unretained(this), *server_ephemeral_dh));
     return;
   }
 
-  StartKeyCreation();
+  StartKeyCreation(base::nullopt /* dh_handshake_secret */);
 }
 
-CryptAuthKeyCreatorImpl::~CryptAuthKeyCreatorImpl() = default;
-
 void CryptAuthKeyCreatorImpl::OnClientDiffieHellmanGenerated(
+    const CryptAuthKey& server_ephemeral_dh,
     const std::string& public_key,
     const std::string& private_key) {
-  DCHECK(!public_key.empty() && !private_key.empty());
+  // If the client ephemeral key-pair generation failed, we cannot generate the
+  // Diffie-Hellman handshake secret and, consequently, cannot generate
+  // symmetric keys. Start the key creation process with a null
+  // |dh_handshake_secret|; the symmetric key creation code will handle the
+  // errors.
+  if (public_key.empty() || private_key.empty()) {
+    StartKeyCreation(base::nullopt /* dh_handshake_secret */);
+    return;
+  }
 
   client_ephemeral_dh_ =
       CryptAuthKey(public_key, private_key, CryptAuthKey::Status::kActive,
                    cryptauthv2::KeyType::P256);
 
   secure_message_delegate_->DeriveKey(
-      client_ephemeral_dh_->private_key(), server_ephemeral_dh_->public_key(),
+      client_ephemeral_dh_->private_key(), server_ephemeral_dh.public_key(),
       base::Bind(
           &CryptAuthKeyCreatorImpl::OnDiffieHellmanHandshakeSecretDerived,
           base::Unretained(this)));
@@ -134,16 +142,21 @@ void CryptAuthKeyCreatorImpl::OnClientDiffieHellmanGenerated(
 
 void CryptAuthKeyCreatorImpl::OnDiffieHellmanHandshakeSecretDerived(
     const std::string& symmetric_key) {
-  DCHECK(!symmetric_key.empty());
+  // If the Diffie-Hellman handshake secret could not be derived, then we cannot
+  // generate symmetric keys. Start the key creation process with a null
+  // |dh_handshake_secret|; the symmetric key creation code will handle the
+  // errors.
+  if (symmetric_key.empty()) {
+    StartKeyCreation(base::nullopt /* dh_handshake_secret */);
+    return;
+  }
 
-  dh_handshake_secret_ =
-      CryptAuthKey(symmetric_key, CryptAuthKey::Status::kActive,
-                   cryptauthv2::KeyType::RAW256);
-
-  StartKeyCreation();
+  StartKeyCreation(CryptAuthKey(symmetric_key, CryptAuthKey::Status::kActive,
+                                cryptauthv2::KeyType::RAW256));
 }
 
-void CryptAuthKeyCreatorImpl::StartKeyCreation() {
+void CryptAuthKeyCreatorImpl::StartKeyCreation(
+    const base::Optional<CryptAuthKey>& dh_handshake_secret) {
   for (const auto& key_to_create : keys_to_create_) {
     const CryptAuthKeyBundle::Name& bundle_name = key_to_create.first;
     const CreateKeyData& key_data = key_to_create.second;
@@ -154,8 +167,14 @@ void CryptAuthKeyCreatorImpl::StartKeyCreation() {
     // Enrollment" and the info should be the key handle. This process is
     // synchronous, unlike SecureMessageDelegate calls.
     if (IsValidSymmetricKeyType(key_data.type)) {
+      // Without a Diffie-Hellman secret, no symmetric keys can be created.
+      if (!dh_handshake_secret) {
+        OnSymmetricKeyDerived(bundle_name, std::string() /* symmetric_key */);
+        continue;
+      }
+
       std::string derived_symmetric_key_material = crypto::HkdfSha256(
-          dh_handshake_secret_->symmetric_key(),
+          dh_handshake_secret->symmetric_key(),
           kCryptAuthSymmetricKeyDerivationSalt,
           CryptAuthKeyBundle::KeyBundleNameEnumToString(bundle_name),
           NumBytesForSymmetricKeyType(key_data.type));
@@ -169,7 +188,8 @@ void CryptAuthKeyCreatorImpl::StartKeyCreation() {
 
     // If the key material was explicitly set in CreateKeyData, bypass the
     // standard key creation.
-    if (key_data.public_key && key_data.private_key) {
+    if (key_data.public_key) {
+      DCHECK(key_data.private_key);
       OnAsymmetricKeyPairGenerated(bundle_name, *key_data.public_key,
                                    *key_data.private_key);
       continue;
@@ -186,14 +206,18 @@ void CryptAuthKeyCreatorImpl::OnAsymmetricKeyPairGenerated(
     const std::string& public_key,
     const std::string& private_key) {
   DCHECK(num_keys_to_create_ > 0);
-  DCHECK(!public_key.empty() && !private_key.empty());
+  if (public_key.empty() || private_key.empty()) {
+    // Use null CryptAuthKey if key generation failed.
+    new_keys_.insert_or_assign(bundle_name, base::nullopt);
+  } else {
+    const CryptAuthKeyCreator::CreateKeyData& create_key_data =
+        keys_to_create_.find(bundle_name)->second;
 
-  const CryptAuthKeyCreator::CreateKeyData& create_key_data =
-      keys_to_create_.find(bundle_name)->second;
-
-  new_keys_.try_emplace(bundle_name, public_key, private_key,
-                        create_key_data.status, create_key_data.type,
-                        create_key_data.handle);
+    new_keys_.insert_or_assign(
+        bundle_name,
+        CryptAuthKey(public_key, private_key, create_key_data.status,
+                     create_key_data.type, create_key_data.handle));
+  }
 
   --num_keys_to_create_;
   if (num_keys_to_create_ == 0)
@@ -204,13 +228,18 @@ void CryptAuthKeyCreatorImpl::OnSymmetricKeyDerived(
     CryptAuthKeyBundle::Name bundle_name,
     const std::string& symmetric_key) {
   DCHECK(num_keys_to_create_ > 0);
-  DCHECK(!symmetric_key.empty());
+  if (symmetric_key.empty()) {
+    // Use null CryptAuthKey if key generation failed.
+    new_keys_.insert_or_assign(bundle_name, base::nullopt);
+  } else {
+    const CryptAuthKeyCreator::CreateKeyData& create_key_data =
+        keys_to_create_.find(bundle_name)->second;
 
-  const CryptAuthKeyCreator::CreateKeyData& create_key_data =
-      keys_to_create_.find(bundle_name)->second;
-
-  new_keys_.try_emplace(bundle_name, symmetric_key, create_key_data.status,
-                        create_key_data.type, create_key_data.handle);
+    new_keys_.insert_or_assign(
+        bundle_name,
+        CryptAuthKey(symmetric_key, create_key_data.status,
+                     create_key_data.type, create_key_data.handle));
+  }
 
   --num_keys_to_create_;
   if (num_keys_to_create_ == 0)

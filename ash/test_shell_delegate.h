@@ -22,6 +22,9 @@ class TestShellDelegate : public ShellDelegate {
   std::unique_ptr<ScreenshotDelegate> CreateScreenshotDelegate() override;
   AccessibilityDelegate* CreateAccessibilityDelegate() override;
   bool CanGoBack(gfx::NativeWindow window) const override;
+  void BindNavigableContentsFactory(
+      mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)
+      override;
 
   void SetCanGoBack(bool can_go_back);
 

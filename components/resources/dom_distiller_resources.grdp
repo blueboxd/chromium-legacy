@@ -3,10 +3,9 @@
   <include name="IDR_DOM_DISTILLER_VIEWER_HTML" file="../dom_distiller/core/html/dom_distiller_viewer.html" type="BINDATA" compress="gzip" />
   <include name="IDR_DOM_DISTILLER_VIEWER_JS" file="../dom_distiller/core/javascript/dom_distiller_viewer.js" type="BINDATA" compress="gzip" />
   <include name="IDR_DISTILLER_JS" file="../dom_distiller/core/javascript/domdistiller.js" flattenhtml="true" type="BINDATA" compress="gzip" />
-  <include name="IDR_DISTILLER_CSS" file="../dom_distiller/core/css/distilledpage.css" type="BINDATA" compress="gzip" />
+  <include name="IDR_DISTILLER_CSS" file="../dom_distiller/core/css/distilledpage.css" type="BINDATA" compress="gzip" preprocess="true"/>
   <include name="IDR_DISTILLER_DESKTOP_CSS" file="../dom_distiller/core/css/distilledpage_desktop.css" type="BINDATA" compress="gzip" />
   <include name="IDR_DISTILLER_IOS_CSS" file="../dom_distiller/core/css/distilledpage_ios.css" type="BINDATA" compress="gzip" />
-  <include name="IDR_DISTILLER_MOBILE_CSS" file="../dom_distiller/core/css/distilledpage_mobile.css" type="BINDATA" compress="gzip" />
   <include name="IDR_DISTILLER_LOADING_IMAGE" file="../dom_distiller/core/images/dom_distiller_material_spinner.svg" type="BINDATA" compress="gzip" />
   <include name="IDR_EXTRACT_PAGE_FEATURES_JS" file="../dom_distiller/core/javascript/extract_features.js" type="BINDATA" compress="gzip" />
   <include name="IDR_DISTILLABLE_PAGE_SERIALIZED_MODEL_NEW" file="../dom_distiller/core/data/distillable_page_model_new.bin" type="BINDATA" compress="gzip" />

@@ -11,6 +11,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/services/device_sync/cryptauth_device_sync_result.h"
@@ -114,7 +115,8 @@ class CryptAuthMetadataSyncerImpl : public CryptAuthMetadataSyncer {
       const base::Optional<std::string>& encrypted_metadata);
   void CreateGroupKey();
   void OnGroupKeyCreated(
-      const base::flat_map<CryptAuthKeyBundle::Name, CryptAuthKey>& new_keys,
+      const base::flat_map<CryptAuthKeyBundle::Name,
+                           base::Optional<CryptAuthKey>>& new_keys,
       const base::Optional<CryptAuthKey>& client_ephemeral_dh);
   void MakeSyncMetadataCall();
   void OnSyncMetadataSuccess(const cryptauthv2::SyncMetadataResponse& response);

@@ -30,6 +30,9 @@
 // has its user interaction disabled. Enabled by default.
 @property(nonatomic, assign, getter=isEnabled) BOOL enabled;
 
+// Sets the |checked| property in the cell.
+@property(nonatomic, assign) BOOL checked;
+
 @end
 
 // TableViewCell that displays a text label.

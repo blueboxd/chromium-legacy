@@ -95,7 +95,7 @@ id<GREYMatcher> CardNumberIconView(NSString* icon_type) {
       ensureAppLaunchedWithFeaturesEnabled:{kSettingsAddPaymentMethod,
                                             kCreditCardScanner}
                                   disabled:{}
-                              forceRestart:NO];
+                            relaunchPolicy:NoForceRelaunchAndResetState];
 }
 
 - (void)setUp {

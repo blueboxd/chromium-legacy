@@ -217,31 +217,32 @@ BOOL TraceWGLApi::wglChoosePixelFormatARBFn(HDC dc,
                                             UINT max_formats,
                                             int* formats,
                                             UINT* num_formats) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::wglChoosePixelFormatARB")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceWGLAPI::wglChoosePixelFormatARB")
   return wgl_api_->wglChoosePixelFormatARBFn(dc, int_attrib_list,
                                              float_attrib_list, max_formats,
                                              formats, num_formats);
 }
 
 BOOL TraceWGLApi::wglCopyContextFn(HGLRC hglrcSrc, HGLRC hglrcDst, UINT mask) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::wglCopyContext")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceWGLAPI::wglCopyContext")
   return wgl_api_->wglCopyContextFn(hglrcSrc, hglrcDst, mask);
 }
 
 HGLRC TraceWGLApi::wglCreateContextFn(HDC hdc) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::wglCreateContext")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceWGLAPI::wglCreateContext")
   return wgl_api_->wglCreateContextFn(hdc);
 }
 
 HGLRC TraceWGLApi::wglCreateContextAttribsARBFn(HDC hDC,
                                                 HGLRC hShareContext,
                                                 const int* attribList) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::wglCreateContextAttribsARB")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "TraceWGLAPI::wglCreateContextAttribsARB")
   return wgl_api_->wglCreateContextAttribsARBFn(hDC, hShareContext, attribList);
 }
 
 HGLRC TraceWGLApi::wglCreateLayerContextFn(HDC hdc, int iLayerPlane) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::wglCreateLayerContext")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceWGLAPI::wglCreateLayerContext")
   return wgl_api_->wglCreateLayerContextFn(hdc, iLayerPlane);
 }
 
@@ -250,84 +251,84 @@ HPBUFFERARB TraceWGLApi::wglCreatePbufferARBFn(HDC hDC,
                                                int iWidth,
                                                int iHeight,
                                                const int* piAttribList) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::wglCreatePbufferARB")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceWGLAPI::wglCreatePbufferARB")
   return wgl_api_->wglCreatePbufferARBFn(hDC, iPixelFormat, iWidth, iHeight,
                                          piAttribList);
 }
 
 BOOL TraceWGLApi::wglDeleteContextFn(HGLRC hglrc) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::wglDeleteContext")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceWGLAPI::wglDeleteContext")
   return wgl_api_->wglDeleteContextFn(hglrc);
 }
 
 BOOL TraceWGLApi::wglDestroyPbufferARBFn(HPBUFFERARB hPbuffer) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::wglDestroyPbufferARB")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceWGLAPI::wglDestroyPbufferARB")
   return wgl_api_->wglDestroyPbufferARBFn(hPbuffer);
 }
 
 HGLRC TraceWGLApi::wglGetCurrentContextFn() {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::wglGetCurrentContext")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceWGLAPI::wglGetCurrentContext")
   return wgl_api_->wglGetCurrentContextFn();
 }
 
 HDC TraceWGLApi::wglGetCurrentDCFn() {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::wglGetCurrentDC")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceWGLAPI::wglGetCurrentDC")
   return wgl_api_->wglGetCurrentDCFn();
 }
 
 const char* TraceWGLApi::wglGetExtensionsStringARBFn(HDC hDC) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::wglGetExtensionsStringARB")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceWGLAPI::wglGetExtensionsStringARB")
   return wgl_api_->wglGetExtensionsStringARBFn(hDC);
 }
 
 const char* TraceWGLApi::wglGetExtensionsStringEXTFn() {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::wglGetExtensionsStringEXT")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceWGLAPI::wglGetExtensionsStringEXT")
   return wgl_api_->wglGetExtensionsStringEXTFn();
 }
 
 HDC TraceWGLApi::wglGetPbufferDCARBFn(HPBUFFERARB hPbuffer) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::wglGetPbufferDCARB")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceWGLAPI::wglGetPbufferDCARB")
   return wgl_api_->wglGetPbufferDCARBFn(hPbuffer);
 }
 
 BOOL TraceWGLApi::wglMakeCurrentFn(HDC hdc, HGLRC hglrc) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::wglMakeCurrent")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceWGLAPI::wglMakeCurrent")
   return wgl_api_->wglMakeCurrentFn(hdc, hglrc);
 }
 
 BOOL TraceWGLApi::wglQueryPbufferARBFn(HPBUFFERARB hPbuffer,
                                        int iAttribute,
                                        int* piValue) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::wglQueryPbufferARB")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceWGLAPI::wglQueryPbufferARB")
   return wgl_api_->wglQueryPbufferARBFn(hPbuffer, iAttribute, piValue);
 }
 
 int TraceWGLApi::wglReleasePbufferDCARBFn(HPBUFFERARB hPbuffer, HDC hDC) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::wglReleasePbufferDCARB")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceWGLAPI::wglReleasePbufferDCARB")
   return wgl_api_->wglReleasePbufferDCARBFn(hPbuffer, hDC);
 }
 
 BOOL TraceWGLApi::wglShareListsFn(HGLRC hglrc1, HGLRC hglrc2) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::wglShareLists")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceWGLAPI::wglShareLists")
   return wgl_api_->wglShareListsFn(hglrc1, hglrc2);
 }
 
 BOOL TraceWGLApi::wglSwapIntervalEXTFn(int interval) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::wglSwapIntervalEXT")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceWGLAPI::wglSwapIntervalEXT")
   return wgl_api_->wglSwapIntervalEXTFn(interval);
 }
 
 BOOL TraceWGLApi::wglSwapLayerBuffersFn(HDC hdc, UINT fuPlanes) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::wglSwapLayerBuffers")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceWGLAPI::wglSwapLayerBuffers")
   return wgl_api_->wglSwapLayerBuffersFn(hdc, fuPlanes);
 }
 
-BOOL DebugWGLApi::wglChoosePixelFormatARBFn(HDC dc,
-                                            const int* int_attrib_list,
-                                            const float* float_attrib_list,
-                                            UINT max_formats,
-                                            int* formats,
-                                            UINT* num_formats) {
+BOOL LogWGLApi::wglChoosePixelFormatARBFn(HDC dc,
+                                          const int* int_attrib_list,
+                                          const float* float_attrib_list,
+                                          UINT max_formats,
+                                          int* formats,
+                                          UINT* num_formats) {
   GL_SERVICE_LOG("wglChoosePixelFormatARB"
                  << "(" << dc << ", "
                  << static_cast<const void*>(int_attrib_list) << ", "
@@ -341,7 +342,7 @@ BOOL DebugWGLApi::wglChoosePixelFormatARBFn(HDC dc,
   return result;
 }
 
-BOOL DebugWGLApi::wglCopyContextFn(HGLRC hglrcSrc, HGLRC hglrcDst, UINT mask) {
+BOOL LogWGLApi::wglCopyContextFn(HGLRC hglrcSrc, HGLRC hglrcDst, UINT mask) {
   GL_SERVICE_LOG("wglCopyContext"
                  << "(" << hglrcSrc << ", " << hglrcDst << ", " << mask << ")");
   BOOL result = wgl_api_->wglCopyContextFn(hglrcSrc, hglrcDst, mask);
@@ -349,7 +350,7 @@ BOOL DebugWGLApi::wglCopyContextFn(HGLRC hglrcSrc, HGLRC hglrcDst, UINT mask) {
   return result;
 }
 
-HGLRC DebugWGLApi::wglCreateContextFn(HDC hdc) {
+HGLRC LogWGLApi::wglCreateContextFn(HDC hdc) {
   GL_SERVICE_LOG("wglCreateContext"
                  << "(" << hdc << ")");
   HGLRC result = wgl_api_->wglCreateContextFn(hdc);
@@ -357,9 +358,9 @@ HGLRC DebugWGLApi::wglCreateContextFn(HDC hdc) {
   return result;
 }
 
-HGLRC DebugWGLApi::wglCreateContextAttribsARBFn(HDC hDC,
-                                                HGLRC hShareContext,
-                                                const int* attribList) {
+HGLRC LogWGLApi::wglCreateContextAttribsARBFn(HDC hDC,
+                                              HGLRC hShareContext,
+                                              const int* attribList) {
   GL_SERVICE_LOG("wglCreateContextAttribsARB"
                  << "(" << hDC << ", " << hShareContext << ", "
                  << static_cast<const void*>(attribList) << ")");
@@ -369,7 +370,7 @@ HGLRC DebugWGLApi::wglCreateContextAttribsARBFn(HDC hDC,
   return result;
 }
 
-HGLRC DebugWGLApi::wglCreateLayerContextFn(HDC hdc, int iLayerPlane) {
+HGLRC LogWGLApi::wglCreateLayerContextFn(HDC hdc, int iLayerPlane) {
   GL_SERVICE_LOG("wglCreateLayerContext"
                  << "(" << hdc << ", " << iLayerPlane << ")");
   HGLRC result = wgl_api_->wglCreateLayerContextFn(hdc, iLayerPlane);
@@ -377,11 +378,11 @@ HGLRC DebugWGLApi::wglCreateLayerContextFn(HDC hdc, int iLayerPlane) {
   return result;
 }
 
-HPBUFFERARB DebugWGLApi::wglCreatePbufferARBFn(HDC hDC,
-                                               int iPixelFormat,
-                                               int iWidth,
-                                               int iHeight,
-                                               const int* piAttribList) {
+HPBUFFERARB LogWGLApi::wglCreatePbufferARBFn(HDC hDC,
+                                             int iPixelFormat,
+                                             int iWidth,
+                                             int iHeight,
+                                             const int* piAttribList) {
   GL_SERVICE_LOG("wglCreatePbufferARB"
                  << "(" << hDC << ", " << iPixelFormat << ", " << iWidth << ", "
                  << iHeight << ", " << static_cast<const void*>(piAttribList)
@@ -392,7 +393,7 @@ HPBUFFERARB DebugWGLApi::wglCreatePbufferARBFn(HDC hDC,
   return result;
 }
 
-BOOL DebugWGLApi::wglDeleteContextFn(HGLRC hglrc) {
+BOOL LogWGLApi::wglDeleteContextFn(HGLRC hglrc) {
   GL_SERVICE_LOG("wglDeleteContext"
                  << "(" << hglrc << ")");
   BOOL result = wgl_api_->wglDeleteContextFn(hglrc);
@@ -400,7 +401,7 @@ BOOL DebugWGLApi::wglDeleteContextFn(HGLRC hglrc) {
   return result;
 }
 
-BOOL DebugWGLApi::wglDestroyPbufferARBFn(HPBUFFERARB hPbuffer) {
+BOOL LogWGLApi::wglDestroyPbufferARBFn(HPBUFFERARB hPbuffer) {
   GL_SERVICE_LOG("wglDestroyPbufferARB"
                  << "(" << hPbuffer << ")");
   BOOL result = wgl_api_->wglDestroyPbufferARBFn(hPbuffer);
@@ -408,7 +409,7 @@ BOOL DebugWGLApi::wglDestroyPbufferARBFn(HPBUFFERARB hPbuffer) {
   return result;
 }
 
-HGLRC DebugWGLApi::wglGetCurrentContextFn() {
+HGLRC LogWGLApi::wglGetCurrentContextFn() {
   GL_SERVICE_LOG("wglGetCurrentContext"
                  << "("
                  << ")");
@@ -417,7 +418,7 @@ HGLRC DebugWGLApi::wglGetCurrentContextFn() {
   return result;
 }
 
-HDC DebugWGLApi::wglGetCurrentDCFn() {
+HDC LogWGLApi::wglGetCurrentDCFn() {
   GL_SERVICE_LOG("wglGetCurrentDC"
                  << "("
                  << ")");
@@ -426,7 +427,7 @@ HDC DebugWGLApi::wglGetCurrentDCFn() {
   return result;
 }
 
-const char* DebugWGLApi::wglGetExtensionsStringARBFn(HDC hDC) {
+const char* LogWGLApi::wglGetExtensionsStringARBFn(HDC hDC) {
   GL_SERVICE_LOG("wglGetExtensionsStringARB"
                  << "(" << hDC << ")");
   const char* result = wgl_api_->wglGetExtensionsStringARBFn(hDC);
@@ -434,7 +435,7 @@ const char* DebugWGLApi::wglGetExtensionsStringARBFn(HDC hDC) {
   return result;
 }
 
-const char* DebugWGLApi::wglGetExtensionsStringEXTFn() {
+const char* LogWGLApi::wglGetExtensionsStringEXTFn() {
   GL_SERVICE_LOG("wglGetExtensionsStringEXT"
                  << "("
                  << ")");
@@ -443,7 +444,7 @@ const char* DebugWGLApi::wglGetExtensionsStringEXTFn() {
   return result;
 }
 
-HDC DebugWGLApi::wglGetPbufferDCARBFn(HPBUFFERARB hPbuffer) {
+HDC LogWGLApi::wglGetPbufferDCARBFn(HPBUFFERARB hPbuffer) {
   GL_SERVICE_LOG("wglGetPbufferDCARB"
                  << "(" << hPbuffer << ")");
   HDC result = wgl_api_->wglGetPbufferDCARBFn(hPbuffer);
@@ -451,7 +452,7 @@ HDC DebugWGLApi::wglGetPbufferDCARBFn(HPBUFFERARB hPbuffer) {
   return result;
 }
 
-BOOL DebugWGLApi::wglMakeCurrentFn(HDC hdc, HGLRC hglrc) {
+BOOL LogWGLApi::wglMakeCurrentFn(HDC hdc, HGLRC hglrc) {
   GL_SERVICE_LOG("wglMakeCurrent"
                  << "(" << hdc << ", " << hglrc << ")");
   BOOL result = wgl_api_->wglMakeCurrentFn(hdc, hglrc);
@@ -459,9 +460,9 @@ BOOL DebugWGLApi::wglMakeCurrentFn(HDC hdc, HGLRC hglrc) {
   return result;
 }
 
-BOOL DebugWGLApi::wglQueryPbufferARBFn(HPBUFFERARB hPbuffer,
-                                       int iAttribute,
-                                       int* piValue) {
+BOOL LogWGLApi::wglQueryPbufferARBFn(HPBUFFERARB hPbuffer,
+                                     int iAttribute,
+                                     int* piValue) {
   GL_SERVICE_LOG("wglQueryPbufferARB"
                  << "(" << hPbuffer << ", " << iAttribute << ", "
                  << static_cast<const void*>(piValue) << ")");
@@ -470,7 +471,7 @@ BOOL DebugWGLApi::wglQueryPbufferARBFn(HPBUFFERARB hPbuffer,
   return result;
 }
 
-int DebugWGLApi::wglReleasePbufferDCARBFn(HPBUFFERARB hPbuffer, HDC hDC) {
+int LogWGLApi::wglReleasePbufferDCARBFn(HPBUFFERARB hPbuffer, HDC hDC) {
   GL_SERVICE_LOG("wglReleasePbufferDCARB"
                  << "(" << hPbuffer << ", " << hDC << ")");
   int result = wgl_api_->wglReleasePbufferDCARBFn(hPbuffer, hDC);
@@ -478,7 +479,7 @@ int DebugWGLApi::wglReleasePbufferDCARBFn(HPBUFFERARB hPbuffer, HDC hDC) {
   return result;
 }
 
-BOOL DebugWGLApi::wglShareListsFn(HGLRC hglrc1, HGLRC hglrc2) {
+BOOL LogWGLApi::wglShareListsFn(HGLRC hglrc1, HGLRC hglrc2) {
   GL_SERVICE_LOG("wglShareLists"
                  << "(" << hglrc1 << ", " << hglrc2 << ")");
   BOOL result = wgl_api_->wglShareListsFn(hglrc1, hglrc2);
@@ -486,7 +487,7 @@ BOOL DebugWGLApi::wglShareListsFn(HGLRC hglrc1, HGLRC hglrc2) {
   return result;
 }
 
-BOOL DebugWGLApi::wglSwapIntervalEXTFn(int interval) {
+BOOL LogWGLApi::wglSwapIntervalEXTFn(int interval) {
   GL_SERVICE_LOG("wglSwapIntervalEXT"
                  << "(" << interval << ")");
   BOOL result = wgl_api_->wglSwapIntervalEXTFn(interval);
@@ -494,7 +495,7 @@ BOOL DebugWGLApi::wglSwapIntervalEXTFn(int interval) {
   return result;
 }
 
-BOOL DebugWGLApi::wglSwapLayerBuffersFn(HDC hdc, UINT fuPlanes) {
+BOOL LogWGLApi::wglSwapLayerBuffersFn(HDC hdc, UINT fuPlanes) {
   GL_SERVICE_LOG("wglSwapLayerBuffers"
                  << "(" << hdc << ", " << fuPlanes << ")");
   BOOL result = wgl_api_->wglSwapLayerBuffersFn(hdc, fuPlanes);

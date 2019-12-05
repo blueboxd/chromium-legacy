@@ -169,13 +169,11 @@ id RenderWidgetHostViewMac::GetAccessibilityFocusedUIElement() {
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewMac, public:
 
-RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
-                                                 bool is_guest_view_hack)
+RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
     : RenderWidgetHostViewBase(widget),
       page_at_minimum_scale_(true),
       mouse_wheel_phase_handler_(this),
       is_loading_(false),
-      is_guest_view_hack_(is_guest_view_hack),
       popup_parent_host_view_(nullptr),
       popup_child_host_view_(nullptr),
       gesture_provider_(ui::GetGestureProviderConfig(
@@ -194,16 +192,13 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
   display_ =
       display::Screen::GetScreen()->GetDisplayNearestWindow([NSApp keyWindow]);
 
-  viz::FrameSinkId frame_sink_id = is_guest_view_hack_
-                                       ? AllocateFrameSinkIdForGuestViewHack()
-                                       : host()->GetFrameSinkId();
+  viz::FrameSinkId frame_sink_id = host()->GetFrameSinkId();
 
   browser_compositor_.reset(new BrowserCompositorMac(
       this, this, host()->is_hidden(), display_, frame_sink_id));
   DCHECK(![GetInProcessNSView() window]);
 
-  if (!is_guest_view_hack_)
-    host()->SetView(this);
+  host()->SetView(this);
 
   // Let the page-level input event router know about our surface ID
   // namespace for surface-based hit testing.
@@ -374,13 +369,8 @@ void RenderWidgetHostViewMac::InitAsFullscreen(
 RenderWidgetHostViewBase*
 RenderWidgetHostViewMac::GetFocusedViewForTextSelection() {
   // We obtain the TextSelection from focused RWH which is obtained from the
-  // frame tree. BrowserPlugin-based guests' RWH is not part of the frame tree
-  // and the focused RWH will be that of the embedder which is incorrect. In
-  // this case we should use TextSelection for |this| since RWHV for guest
-  // forwards text selection information to its platform view.
-  return is_guest_view_hack_
-             ? this
-             : GetFocusedWidget() ? GetFocusedWidget()->GetView() : nullptr;
+  // frame tree.
+  return GetFocusedWidget() ? GetFocusedWidget()->GetView() : nullptr;
 }
 
 RenderWidgetHostDelegate*
@@ -880,8 +870,6 @@ void RenderWidgetHostViewMac::TakeFallbackContentFrom(
     RenderWidgetHostView* view) {
   DCHECK(!static_cast<RenderWidgetHostViewBase*>(view)
               ->IsRenderWidgetHostViewChildFrame());
-  DCHECK(!static_cast<RenderWidgetHostViewBase*>(view)
-              ->IsRenderWidgetHostViewGuest());
   RenderWidgetHostViewMac* view_mac =
       static_cast<RenderWidgetHostViewMac*>(view);
   ScopedCAActionDisabler disabler;
@@ -1396,14 +1384,6 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     password_input_enabler_.reset(new ui::ScopedPasswordInputEnabler());
   else
     password_input_enabler_.reset();
-}
-
-// static
-viz::FrameSinkId
-RenderWidgetHostViewMac::AllocateFrameSinkIdForGuestViewHack() {
-  return ImageTransportFactory::GetInstance()
-      ->GetContextFactoryPrivate()
-      ->AllocateFrameSinkId();
 }
 
 MouseWheelPhaseHandler* RenderWidgetHostViewMac::GetMouseWheelPhaseHandler() {

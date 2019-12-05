@@ -36,7 +36,6 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "extensions/common/extension.h"
-#include "services/content/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -290,10 +289,8 @@ void AppListClientImpl::OnPageBreakItemDeleted(int profile_id,
 
 void AppListClientImpl::GetNavigableContentsFactory(
     mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver) {
-  if (profile_) {
-    content::BrowserContext::GetConnectorFor(profile_)->Connect(
-        content::mojom::kServiceName, std::move(receiver));
-  }
+  if (profile_)
+    profile_->BindNavigableContentsFactory(std::move(receiver));
 }
 
 void AppListClientImpl::OnSearchResultVisibilityChanged(const std::string& id,

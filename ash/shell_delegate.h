@@ -11,6 +11,8 @@
 #include "ash/ash_export.h"
 #include "base/callback.h"
 #include "base/strings/string16.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "services/content/public/mojom/navigable_contents_factory.mojom-forward.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace aura {
@@ -40,6 +42,11 @@ class ASH_EXPORT ShellDelegate {
 
   // Check whether the current tab of the browser window can go back.
   virtual bool CanGoBack(gfx::NativeWindow window) const = 0;
+
+  // Binds a NavigableContentsFactory receiver for the current active user.
+  virtual void BindNavigableContentsFactory(
+      mojo::PendingReceiver<content::mojom::NavigableContentsFactory>
+          receiver) = 0;
 
   virtual void OpenKeyboardShortcutHelpPage() const {}
 };

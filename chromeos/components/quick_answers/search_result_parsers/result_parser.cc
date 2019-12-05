@@ -13,11 +13,6 @@ namespace {
 
 using base::Value;
 
-// The result type. Please see go/1ns-doc for more detail.
-enum {
-  kUnitCconverterResult = 13668,
-};
-
 }  // namespace
 
 const Value* ResultParser::GetFirstListElement(const Value& value,
@@ -40,8 +35,8 @@ const Value* ResultParser::GetFirstListElement(const Value& value,
 // static
 std::unique_ptr<ResultParser> ResultParserFactory::Create(
     int one_namespace_type) {
-  switch (one_namespace_type) {
-    case kUnitCconverterResult:
+  switch (static_cast<ResultType>(one_namespace_type)) {
+    case ResultType::kUnitCconverterResult:
       return std::make_unique<UnitConversionResultParser>();
       // TODO(llin): Add other result parsers.
   }

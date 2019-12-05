@@ -6074,7 +6074,7 @@ base::string16 AXPlatformNodeWin::ComputeUIAProperties() {
     }
   }
 
-  if (IsRangeValueSupported(data)) {
+  if (data.IsRangeValueSupported()) {
     FloatAttributeToUIAAriaProperty(
         properties, ax::mojom::FloatAttribute::kMaxValueForRange, "valuemax");
     FloatAttributeToUIAAriaProperty(
@@ -7060,7 +7060,7 @@ BSTR AXPlatformNodeWin::GetValueAttributeAsBstr(AXPlatformNodeWin* target) {
   // provided either via aria-valuenow or the actual control's value is held in
   // |ax::mojom::FloatAttribute::kValueForRange|.
   result = target->GetString16Attribute(ax::mojom::StringAttribute::kValue);
-  if (result.empty() && IsRangeValueSupported(target->GetData())) {
+  if (result.empty() && target->GetData().IsRangeValueSupported()) {
     float fval;
     if (target->GetFloatAttribute(ax::mojom::FloatAttribute::kValueForRange,
                                   &fval)) {
@@ -7308,7 +7308,7 @@ AXPlatformNodeWin::GetPatternProviderFactoryMethod(PATTERNID pattern_id) {
 
   switch (pattern_id) {
     case UIA_ExpandCollapsePatternId:
-      if (SupportsExpandCollapse(data)) {
+      if (data.SupportsExpandCollapse()) {
         return &PatternProvider<IExpandCollapseProvider>;
       }
       break;
@@ -7326,13 +7326,13 @@ AXPlatformNodeWin::GetPatternProviderFactoryMethod(PATTERNID pattern_id) {
       break;
 
     case UIA_InvokePatternId:
-      if (IsInvokable(data)) {
+      if (data.IsInvocable()) {
         return &PatternProvider<IInvokeProvider>;
       }
       break;
 
     case UIA_RangeValuePatternId:
-      if (IsRangeValueSupported(data)) {
+      if (data.IsRangeValueSupported()) {
         return &PatternProvider<IRangeValueProvider>;
       }
       break;

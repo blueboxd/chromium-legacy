@@ -226,8 +226,8 @@ void ScrollableArea::SetScrollOffset(const ScrollOffset& offset,
     return;
   }
 
-  TRACE_EVENT2("blink", "ScrollableArea::SetScrollOffset", "x", offset.Width(),
-               "y", offset.Height());
+  TRACE_EVENT2("blink", "ScrollableArea::SetScrollOffset", "cur_x",
+               GetScrollOffset().Width(), "cur_y", GetScrollOffset().Height());
   TRACE_EVENT_INSTANT1("blink", "Type", TRACE_EVENT_SCOPE_THREAD, "type",
                        scroll_type);
   TRACE_EVENT_INSTANT1("blink", "Behavior", TRACE_EVENT_SCOPE_THREAD,

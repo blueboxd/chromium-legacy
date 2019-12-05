@@ -79,6 +79,9 @@ std::ostream& operator<<(
     case ResultCode::kErrorMissingUserKeyPair:
       stream << "[Error: No user key pair in registry]";
       break;
+    case ResultCode::kErrorCreatingGroupKey:
+      stream << "[Error: Could not create group key]";
+      break;
     case ResultCode::kErrorEncryptingDeviceMetadata:
       stream << "[Error: Could not encrypt local device metadata]";
       break;

@@ -43,7 +43,6 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_simplified_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
 #include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
-#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
@@ -1370,23 +1369,6 @@ void NGBlockNode::UpdateShapeOutsideInfoIfNeeded(
 void NGBlockNode::UseLegacyOutOfFlowPositioning() const {
   DCHECK(box_->IsOutOfFlowPositioned());
   box_->ContainingBlock()->InsertPositionedObject(box_);
-}
-
-// Save static position for legacy AbsPos layout.
-void NGBlockNode::SaveStaticOffsetForLegacy(
-    const LogicalOffset& offset,
-    const LayoutObject* offset_container) {
-  DCHECK(box_->IsOutOfFlowPositioned());
-  // Only set static position if the current offset container
-  // is one that Legacy layout expects static offset from.
-  const LayoutObject* parent = box_->Parent();
-  if (parent == offset_container ||
-      (parent && parent->IsLayoutInline() &&
-       parent->ContainingBlock() == offset_container)) {
-    DCHECK(box_->Layer());
-    box_->Layer()->SetStaticBlockPosition(offset.block_offset);
-    box_->Layer()->SetStaticInlinePosition(offset.inline_offset);
-  }
 }
 
 void NGBlockNode::StoreMargins(const NGConstraintSpace& constraint_space,

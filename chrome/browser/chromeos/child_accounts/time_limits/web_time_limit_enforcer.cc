@@ -16,6 +16,9 @@
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents.h"
 
+namespace chromeos {
+namespace app_time {
+
 namespace {
 
 // URL schemes not on this list:  (e.g., file:// and chrome://,
@@ -31,8 +34,6 @@ bool IsSchemeFiltered(const GURL& url) {
 }
 
 }  // namespace
-
-namespace chromeos {
 
 // static
 bool WebTimeLimitEnforcer::IsEnabled() {
@@ -93,4 +94,5 @@ void WebTimeLimitEnforcer::ReloadAllWebContents() {
   }
 }
 
+}  // namespace app_time
 }  // namespace chromeos

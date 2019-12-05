@@ -12,7 +12,7 @@ import org.chromium.chrome.browser.feed.library.api.host.stream.CardConfiguratio
 
 /** Fake for {@link CardConfiguration}. */
 public class FakeCardConfiguration implements CardConfiguration {
-    private static final ColorDrawable COLOR_DRAWABLE = new ColorDrawable(Color.RED);
+    private static ColorDrawable sColorDrawable;
 
     private int mBottomMargin = 1;
     private int mStartMargin = 2;
@@ -25,7 +25,10 @@ public class FakeCardConfiguration implements CardConfiguration {
 
     @Override
     public Drawable getCardBackground() {
-        return COLOR_DRAWABLE;
+        if (sColorDrawable == null) {
+            sColorDrawable = new ColorDrawable(Color.RED);
+        }
+        return sColorDrawable;
     }
 
     @Override

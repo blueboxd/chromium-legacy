@@ -57,14 +57,10 @@ const char kMonospaceCssClass[] = "monospace";
 
 std::string GetPlatformSpecificCss() {
 #if defined(OS_IOS)
-  return base::StrCat(
-      {ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
-           IDR_DISTILLER_MOBILE_CSS),
-       ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
-           IDR_DISTILLER_IOS_CSS)});
-#elif defined(OS_ANDROID)
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
-      IDR_DISTILLER_MOBILE_CSS);
+      IDR_DISTILLER_IOS_CSS);
+#elif defined(OS_ANDROID)
+  return "";
 #else  // Desktop
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
       IDR_DISTILLER_DESKTOP_CSS);

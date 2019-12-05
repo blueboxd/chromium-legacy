@@ -71,8 +71,8 @@ public class PaymentHandlerCoordinator {
         bottomSheetController.addObserver(mediator);
         webContents.addObserver(mediator);
 
-        PaymentHandlerToolbarCoordinator toolbarCoordinator =
-                new PaymentHandlerToolbarCoordinator(activity, webContents, /*observer=*/mediator);
+        PaymentHandlerToolbarCoordinator toolbarCoordinator = new PaymentHandlerToolbarCoordinator(
+                activity, webContents, url, /*observer=*/mediator);
         PaymentHandlerView view = new PaymentHandlerView(
                 activity, webContents, webContentView, toolbarCoordinator.getView());
         assert toolbarCoordinator.getToolbarHeightPx() == view.getToolbarHeightPx();

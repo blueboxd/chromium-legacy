@@ -18,6 +18,34 @@ message CIPDPackage {
   string dest_path = 3;
 }
 
+message ScreenSettings {
+  // Screen height in pixels.
+  uint32 height = 1;
+
+  // Screen width in pixels.
+  uint32 width = 2;
+
+  // Scren density in dpi.
+  uint32 density = 3;
+}
+
+message SdcardSettings {
+  // Size of the sdcard that should be created for this AVD.
+  // Can be anything that `mksdcard` or `avdmanager -c` would accept:
+  //   - a number of bytes
+  //   - a number followed by K, M, or G, indicating that many
+  //     KiB, MiB, or GiB, respectively.
+  string size = 1;
+}
+
+message AvdSettings {
+  // Settings pertaining to the AVD's screen.
+  ScreenSettings screen = 1;
+
+  // Settings pertaining to the AVD's sdcard.
+  SdcardSettings sdcard = 2;
+}
+
 message Avd {
   // The emulator to use in running the AVD.
   CIPDPackage emulator_package = 1;
@@ -32,4 +60,7 @@ message Avd {
   CIPDPackage avd_package = 4;
   // The name of the AVD to create or use.
   string avd_name = 5;
+
+  // How to configure the AVD at creation.
+  AvdSettings avd_settings = 6;
 }

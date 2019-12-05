@@ -648,6 +648,11 @@ void BrowserChildProcessHostImpl::RegisterCoordinatorClient(
     mojo::PendingReceiver<memory_instrumentation::mojom::Coordinator> receiver,
     mojo::PendingRemote<memory_instrumentation::mojom::ClientProcess>
         client_process) {
+  // The child process may have already terminated by the time this message is
+  // dispatched. We do nothing in that case.
+  if (!IsProcessLaunched())
+    return;
+
   base::PostTask(
       FROM_HERE, BrowserThread::UI,
       base::BindOnce(

@@ -1577,13 +1577,8 @@ void QuicTestPacketMaker::MaybeAddHttp3SettingsFrames(
   for (const auto& frame : GenerateNextStreamFrames(stream_id, false, data))
     frames->push_back(frame);
 
-  if (coalesce_http_frames_) {
-    frames->push_back(GenerateNextStreamFrame(stream_id + 4, false, "\x03"));
-    frames->push_back(GenerateNextStreamFrame(stream_id + 8, false, "\x02"));
-  } else {
-    frames->push_back(GenerateNextStreamFrame(stream_id + 8, false, "\x02"));
-    frames->push_back(GenerateNextStreamFrame(stream_id + 4, false, "\x03"));
-  }
+  frames->push_back(GenerateNextStreamFrame(stream_id + 4, false, "\x03"));
+  frames->push_back(GenerateNextStreamFrame(stream_id + 8, false, "\x02"));
 }
 
 }  // namespace test

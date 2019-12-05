@@ -50,7 +50,6 @@ base::Optional<std::string> GetAuthHeader(crypto::ECPrivateKey* vapid_key,
                                           int time_to_live) {
   base::Value claims(base::Value::Type::DICTIONARY);
   claims.SetKey(kClaimsKeyAudience, base::Value(kFCMServerAudience));
-  claims.RemoveKey(kClaimsKeyAudience);
 
   int64_t exp =
       (base::Time::Now() - base::Time::UnixEpoch()).InSeconds() + time_to_live;

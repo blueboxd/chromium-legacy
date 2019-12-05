@@ -7,7 +7,6 @@
 #include "base/files/platform_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/rand_util.h"
 #include "base/unguessable_token.h"
@@ -59,6 +58,8 @@ class PlatformHandleTest : public testing::Test,
                            public testing::WithParamInterface<HandleType> {
  public:
   PlatformHandleTest() = default;
+  PlatformHandleTest(const PlatformHandleTest&) = delete;
+  PlatformHandleTest& operator=(const PlatformHandleTest&) = delete;
 
   void SetUp() override {
     test_type_ = TestType::kFile;
@@ -86,11 +87,11 @@ class PlatformHandleTest : public testing::Test,
     if (test_type_ == TestType::kFile)
       return GetFileContents(handle);
 #if defined(OS_FUCHSIA) || (defined(OS_MACOSX) && !defined(OS_IOS))
-    else
-      return GetSharedMemoryContents(handle);
-#endif
+    return GetSharedMemoryContents(handle);
+#else
     NOTREACHED();
     return std::string();
+#endif
   }
 
  protected:
@@ -123,9 +124,10 @@ class PlatformHandleTest : public testing::Test,
 #if defined(OS_WIN)
     // We must temporarily release ownership of the handle due to how File
     // interacts with ScopedHandle.
-    base::File file(handle.TakeHandle().Take());
+    base::File file(handle.TakeHandle());
 #else
-    base::File file(handle.GetFD().get());
+    // Do the same as Windows for consistency, even though it is not necessary.
+    base::File file(handle.TakeFD());
 #endif
     std::vector<char> buffer(kTestData.size());
     file.Read(0, buffer.data(), static_cast<int>(buffer.size()));
@@ -135,7 +137,7 @@ class PlatformHandleTest : public testing::Test,
 #if defined(OS_WIN)
     handle = PlatformHandle(base::win::ScopedHandle(file.TakePlatformFile()));
 #else
-    ignore_result(file.TakePlatformFile());
+    handle = PlatformHandle(base::ScopedFD(file.TakePlatformFile()));
 #endif
 
     return contents;
@@ -194,8 +196,6 @@ class PlatformHandleTest : public testing::Test,
   // Needed to reconstitute a base::PlatformSharedMemoryRegion from an unwrapped
   // PlatformHandle.
   base::UnguessableToken shm_guid_;
-
-  DISALLOW_COPY_AND_ASSIGN(PlatformHandleTest);
 };
 
 TEST_P(PlatformHandleTest, BasicConstruction) {

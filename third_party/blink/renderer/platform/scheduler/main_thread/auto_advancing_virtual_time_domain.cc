@@ -161,7 +161,8 @@ const char* AutoAdvancingVirtualTimeDomain::GetName() const {
 }
 
 void AutoAdvancingVirtualTimeDomain::WillProcessTask(
-    const base::PendingTask& pending_task) {}
+    const base::PendingTask& pending_task,
+    bool was_blocked_or_low_priority) {}
 
 void AutoAdvancingVirtualTimeDomain::DidProcessTask(
     const base::PendingTask& pending_task) {

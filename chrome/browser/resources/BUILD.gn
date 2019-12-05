@@ -69,46 +69,6 @@ if (closure_compile) {
   }
 }
 
-grit("invalidations_resources") {
-  source = "invalidations_resources.grd"
-  defines = chrome_grit_defines
-  outputs = [
-    "grit/invalidations_resources.h",
-    "invalidations_resources.pak",
-  ]
-  output_dir = "$root_gen_dir/chrome"
-}
-
-grit("net_internals_resources") {
-  source = "net_internals/net_internals_resources.grd"
-  defines = chrome_grit_defines
-  outputs = [
-    "grit/net_internals_resources.h",
-    "net_internals_resources.pak",
-  ]
-  output_dir = "$root_gen_dir/chrome"
-}
-
-grit("quota_internals_resources") {
-  source = "quota_internals/quota_internals_resources.grd"
-  defines = chrome_grit_defines
-  outputs = [
-    "grit/quota_internals_resources.h",
-    "quota_internals_resources.pak",
-  ]
-  output_dir = "$root_gen_dir/chrome"
-}
-
-grit("webapks_ui_resources") {
-  source = "webapks/webapks_ui_resources.grd"
-  defines = chrome_grit_defines
-  outputs = [
-    "grit/webapks_ui_resources.h",
-    "webapks_ui_resources.pak",
-  ]
-  output_dir = "$root_gen_dir/chrome"
-}
-
 if (!is_android) {
   grit("bookmarks_resources") {
     # The .grd contains references to generated files.
@@ -460,7 +420,10 @@ repack("dev_ui_paks") {
 
   sources = [
     "$root_gen_dir/chrome/bluetooth_internals_resources.pak",
+    "$root_gen_dir/chrome/invalidations_resources.pak",
+    "$root_gen_dir/chrome/net_internals_resources.pak",
     "$root_gen_dir/chrome/omnibox_resources.pak",
+    "$root_gen_dir/chrome/quota_internals_resources.pak",
     "$root_gen_dir/chrome/usb_internals_resources.pak",
     "$root_gen_dir/chrome/webrtc_logs_resources.pak",
     "$root_gen_dir/components/sync_driver_resources.pak",
@@ -469,13 +432,21 @@ repack("dev_ui_paks") {
   ]
   deps = [
     "//chrome/browser/resources/bluetooth_internals:resources",
+    "//chrome/browser/resources/invalidations:invalidations_resources",
     "//chrome/browser/resources/media:webrtc_logs_resources",
+    "//chrome/browser/resources/net_internals:net_internals_resources",
     "//chrome/browser/resources/omnibox:resources",
+    "//chrome/browser/resources/quota_internals:quota_internals_resources",
     "//chrome/browser/resources/usb_internals:resources",
     "//components/sync/driver:resources",
     "//content/browser/resources/media:media_internals_resources",
     "//content/browser/webrtc/resources",
   ]
+
+  if (is_android) {
+    sources += [ "$root_gen_dir/chrome/webapks_ui_resources.pak" ]
+    deps += [ "//chrome/browser/resources/webapks:webapks_ui_resources" ]
+  }
 }
 
 js2gtest("resources_unitjs_tests") {

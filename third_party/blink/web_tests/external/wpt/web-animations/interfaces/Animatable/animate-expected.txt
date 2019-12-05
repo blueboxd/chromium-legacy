@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 140 tests; 137 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 142 tests; 138 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Element.animate() creates an Animation object
 PASS Element.animate() creates an Animation object in the relevant realm of the target element
 PASS Element.animate() creates an Animation object with a KeyframeEffect
@@ -135,10 +135,12 @@ PASS Element.animate() correctly sets the Animation's timeline when triggered on
 PASS Element.animate() calls play on the Animation
 PASS Element.animate() does NOT trigger a style change event
 PASS animate() with pseudoElement parameter creates an Animation object
+PASS animate() with pseudoElement parameter without content creates an Animation object
 PASS animate() with pseudoElement parameter  creates an Animation object for ::marker
 PASS animate() with pseudoElement parameter  creates an Animation object for ::first-line
-FAIL animate() with pseudoElement an Animation object targeting to the correct pseudo-element assert_equals: The returned Animation targets to the correct selector expected (string) "::before" but got (undefined) undefined
-FAIL animate() with pseudoElement an Animation object targeting to the correct pseudo-element for ::marker assert_equals: The returned Animation targets to the correct selector expected (string) "::marker" but got (undefined) undefined
-FAIL animate() with pseudoElement an Animation object targeting to the correct pseudo-element for ::first-line assert_equals: The returned Animation targets to the correct selector expected (string) "::first-line" but got (undefined) undefined
+FAIL animate() with pseudoElement an Animation object targeting the correct pseudo-element assert_equals: The returned Animation targets the correct selector expected (string) "::before" but got (undefined) undefined
+FAIL animate() with pseudoElement without content creates an Animation object targeting the correct pseudo-element assert_equals: The returned Animation targets the correct selector expected (string) "::before" but got (undefined) undefined
+FAIL animate() with pseudoElement an Animation object targeting the correct pseudo-element for ::marker assert_equals: The returned Animation targets the correct selector expected (string) "::marker" but got (undefined) undefined
+FAIL animate() with pseudoElement an Animation object targeting the correct pseudo-element for ::first-line assert_equals: The returned Animation targets the correct selector expected (string) "::first-line" but got (undefined) undefined
 Harness: the test ran to completion.
 

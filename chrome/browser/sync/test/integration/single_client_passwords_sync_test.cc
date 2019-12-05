@@ -43,8 +43,6 @@ const syncer::SyncFirstSetupCompleteSource kSetSourceFromTest =
     syncer::SyncFirstSetupCompleteSource::BASIC_FLOW;
 
 syncer::KeyParams KeystoreKeyParams(const std::string& key) {
-  // Due to mis-encode of keystore keys to base64 we have to always encode such
-  // keys to provide backward compatibility.
   std::string encoded_key;
   base::Base64Encode(key, &encoded_key);
   return {syncer::KeyDerivationParams::CreateForPbkdf2(),

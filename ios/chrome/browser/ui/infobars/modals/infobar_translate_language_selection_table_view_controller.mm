@@ -82,6 +82,22 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   self.modelItems = items;
 }
 
+#pragma mark - UITableViewDataSource
+
+- (UITableViewCell*)tableView:(UITableView*)tableView
+        cellForRowAtIndexPath:(NSIndexPath*)indexPath {
+  UITableViewCell* cell = [super tableView:tableView
+                     cellForRowAtIndexPath:indexPath];
+  // All items should be a TableViewTextItem and of just one type
+  // kItemTypeEnumZero. They are populated in the mediator with this assumption.
+  TableViewTextItem* item = static_cast<TableViewTextItem*>(
+      [self.tableViewModel itemAtIndexPath:indexPath]);
+  if (item.checked) {
+    cell.userInteractionEnabled = NO;
+  }
+  return cell;
+}
+
 #pragma mark - UITableViewDelegate
 
 - (void)tableView:(UITableView*)tableView
@@ -98,6 +114,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
     [self.langageSelectionDelegate didSelectTargetLanguageIndex:indexPath.row
                                                        withName:item.text];
   }
+  [self.navigationController popViewControllerAnimated:YES];
 }
 
 @end

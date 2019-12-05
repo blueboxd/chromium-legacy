@@ -105,8 +105,14 @@ class CryptAuthEnrollmentResult {
     kErrorTimeoutWaitingForGcmRegistration = 33,
     // The enrollment manager timed out waiting for ClientAppMetadata.
     kErrorTimeoutWaitingForClientAppMetadata = 34,
+    // Failed to create the user key pair to be enrolled.
+    kErrorUserKeyPairCreationFailed = 35,
+    // Failed to create the legacy master key to be enrolled.
+    kErrorLegacyMasterKeyCreationFailed = 36,
+    // Failed to create the DeviceSync:BetterTogether key to be enrolled.
+    kErrorDeviceSyncBetterTogetherKeyCreationFailed = 37,
     // Used for UMA logs.
-    kMaxValue = kErrorTimeoutWaitingForClientAppMetadata
+    kMaxValue = kErrorDeviceSyncBetterTogetherKeyCreationFailed
   };
 
   CryptAuthEnrollmentResult(

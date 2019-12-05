@@ -127,9 +127,9 @@ struct FetchAPIDataElement {
   // For kBlob
   string? blob_uuid;
   // For kDataPipe
-  network.mojom.DataPipeGetter? data_pipe_getter;
+  pending_remote<network.mojom.DataPipeGetter>? data_pipe_getter;
   // For kChunkedDataPipe
-  network.mojom.ChunkedDataPipeGetter? chunked_data_pipe_getter;
+  pending_remote<network.mojom.ChunkedDataPipeGetter>? chunked_data_pipe_getter;
 
   uint64 offset;
   uint64 length;

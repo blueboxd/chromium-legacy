@@ -141,7 +141,9 @@ namespace {
 class MockTaskObserver : public base::TaskObserver {
  public:
   MOCK_METHOD1(DidProcessTask, void(const base::PendingTask& task));
-  MOCK_METHOD1(WillProcessTask, void(const base::PendingTask& task));
+  MOCK_METHOD2(WillProcessTask,
+               void(const base::PendingTask& task,
+                    bool was_blocked_or_low_priority));
 };
 
 void NopTask() {}
@@ -154,7 +156,7 @@ TEST_F(SchedulerHelperTest, ObserversNotifiedFor_DefaultTaskRunner) {
   scheduler_helper_->DefaultTaskRunner()->PostTask(FROM_HERE,
                                                    base::BindOnce(&NopTask));
 
-  EXPECT_CALL(observer, WillProcessTask(_)).Times(1);
+  EXPECT_CALL(observer, WillProcessTask(_, _)).Times(1);
   EXPECT_CALL(observer, DidProcessTask(_)).Times(1);
   task_environment_.RunUntilIdle();
 }
@@ -166,7 +168,7 @@ TEST_F(SchedulerHelperTest, ObserversNotNotifiedFor_ControlTaskQueue) {
   scheduler_helper_->ControlNonMainThreadTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&NopTask));
 
-  EXPECT_CALL(observer, WillProcessTask(_)).Times(0);
+  EXPECT_CALL(observer, WillProcessTask(_, _)).Times(0);
   EXPECT_CALL(observer, DidProcessTask(_)).Times(0);
   task_environment_.RunUntilIdle();
 }

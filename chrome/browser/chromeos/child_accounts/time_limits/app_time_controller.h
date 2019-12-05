@@ -8,6 +8,7 @@
 #include <memory>
 
 namespace chromeos {
+namespace app_time {
 
 class WebTimeLimitEnforcer;
 
@@ -31,6 +32,7 @@ class AppTimeController {
   std::unique_ptr<WebTimeLimitEnforcer> web_time_enforcer_;
 };
 
+}  // namespace app_time
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_TIME_LIMITS_APP_TIME_CONTROLLER_H_

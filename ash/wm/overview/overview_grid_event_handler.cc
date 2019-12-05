@@ -24,6 +24,10 @@ namespace ash {
 
 namespace {
 
+// Do not bother moving the grid until a series of scrolls has reached this
+// threshold.
+constexpr float kScrollOffsetThresholdDp = 1.f;
+
 WallpaperView* GetWallpaperViewForRoot(const aura::Window* root_window) {
   auto* wallpaper_widget_controller =
       RootWindowController::ForWindow(root_window)
@@ -74,6 +78,7 @@ void OverviewGridEventHandler::OnGestureEvent(ui::GestureEvent* event) {
       if (!ShouldUseTabletModeGridLayout())
         return;
 
+      scroll_offset_x_cumulative_ = 0.f;
       EndFling();
       grid_->StartScroll();
       event->SetHandled();
@@ -83,7 +88,13 @@ void OverviewGridEventHandler::OnGestureEvent(ui::GestureEvent* event) {
       if (!ShouldUseTabletModeGridLayout())
         return;
 
-      grid_->UpdateScrollOffset(event->details().scroll_x());
+      // Only forward the scrolls to grid once they have exceeded the threshold.
+      const float scroll_offset_x = event->details().scroll_x();
+      scroll_offset_x_cumulative_ += scroll_offset_x;
+      if (std::abs(scroll_offset_x_cumulative_) > kScrollOffsetThresholdDp) {
+        grid_->UpdateScrollOffset(scroll_offset_x_cumulative_);
+        scroll_offset_x_cumulative_ = 0.f;
+      }
       event->SetHandled();
       break;
     }

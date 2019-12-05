@@ -184,7 +184,6 @@ source_set("content_browser_manifest") {
   deps = [
     "//base",
     "//content/public/common:service_names",
-    "//services/content/public/cpp:manifest",
   ]
 
   public_deps = [

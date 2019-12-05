@@ -59,14 +59,6 @@ void OverlayCandidateValidatorAndroid::CheckOverlaySupport(
   }
 }
 
-bool OverlayCandidateValidatorAndroid::AllowCALayerOverlays() const {
-  return false;
-}
-
-bool OverlayCandidateValidatorAndroid::AllowDCLayerOverlays() const {
-  return false;
-}
-
 bool OverlayCandidateValidatorAndroid::NeedsSurfaceOccludingDamageRect() const {
   return false;
 }

@@ -68,8 +68,8 @@ ProcessLaunchResult ElevatedNativeMessagingHost::EnsureElevatedHostCreated() {
 
   // Set up the native messaging channel to talk to the elevated host.
   // Note that input for the elevated channel is output for the elevated host.
-  elevated_channel_.reset(new PipeMessagingChannel(
-      base::File(read_handle.Take()), base::File(write_handle.Take())));
+  elevated_channel_ = std::make_unique<PipeMessagingChannel>(
+      base::File(std::move(read_handle)), base::File(std::move(write_handle)));
   elevated_channel_->Start(this);
 
   if (!host_process_timeout_.is_zero()) {

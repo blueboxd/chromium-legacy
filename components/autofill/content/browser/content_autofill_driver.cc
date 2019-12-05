@@ -132,6 +132,11 @@ void ContentAutofillDriver::PropagateAutofillPredictions(
                                                             forms);
 }
 
+void ContentAutofillDriver::HandleParsedForms(
+    const std::vector<FormStructure*>& forms) {
+  // No op.
+}
+
 void ContentAutofillDriver::SendAutofillTypePredictionsToRenderer(
     const std::vector<FormStructure*>& forms) {
   if (!RendererIsAvailable())

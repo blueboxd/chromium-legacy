@@ -414,8 +414,7 @@ gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {
       shrinking ? image_size.width() : grow_animation_starting_width_;
   const int max_width = image_size.width() + GetInternalSpacing() + label_width;
 
-  // Height is ignored.
-  return gfx::Size(GetWidthBetween(min_width, max_width), 1);
+  return gfx::Size(GetWidthBetween(min_width, max_width), image_size.height());
 }
 
 int IconLabelBubbleView::GetInternalSpacing() const {

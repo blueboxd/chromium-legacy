@@ -23,12 +23,11 @@ const char kAutomationExtensionBackgroundPage[] =
 const char kTargetClosedMessage[] = "Inspected target navigated or closed";
 
 Status MakeNavigationCheckFailedStatus(Status command_status) {
-  if (command_status.code() == kUnexpectedAlertOpen)
-    return Status(kUnexpectedAlertOpen);
-  else if (command_status.code() == kTimeout)
-    return Status(kTimeout);
-  else if (command_status.code() == kNoSuchExecutionContext)
-    return Status(kNoSuchExecutionContext);
+  // Report specific errors to callers for proper handling
+  if (command_status.code() == kUnexpectedAlertOpen ||
+      command_status.code() == kTimeout ||
+      command_status.code() == kNoSuchExecutionContext)
+    return command_status;
   else
     return Status(kUnknownError, "cannot determine loading status",
                   command_status);

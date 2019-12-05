@@ -18,7 +18,7 @@ namespace gl {
 struct GLWindowSystemBindingInfo;
 
 GL_EXPORT void InitializeStaticGLBindingsEGL();
-GL_EXPORT void InitializeDebugGLBindingsEGL();
+GL_EXPORT void InitializeLogGLBindingsEGL();
 GL_EXPORT void ClearBindingsEGL();
 GL_EXPORT bool GetGLWindowSystemBindingInfoEGL(GLWindowSystemBindingInfo* info);
 GL_EXPORT void SetDisabledExtensionsEGL(const std::string& disabled_extensions);
@@ -55,10 +55,10 @@ class GL_EXPORT RealEGLApi : public EGLApiBase {
 };
 
 // Logs debug information for every EGL call.
-class GL_EXPORT DebugEGLApi : public EGLApi {
+class GL_EXPORT LogEGLApi : public EGLApi {
  public:
-  DebugEGLApi(EGLApi* egl_api);
-  ~DebugEGLApi() override;
+  LogEGLApi(EGLApi* egl_api);
+  ~LogEGLApi() override;
   void SetDisabledExtensions(const std::string& disabled_extensions) override;
 
   // Include the auto-generated part of this class. We split this because

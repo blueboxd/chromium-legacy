@@ -56,6 +56,11 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   // Allocates a BSTR from a DLL string resource given by |id|.
   static BSTR AllocErrorString(UINT id);
 
+  // Allocates a BSTR from a DLL string resource given by |id| replacing the
+  // placeholders in the string by the provided replacements.
+  static BSTR AllocErrorString(UINT id,
+                               const std::vector<base::string16>& replacements);
+
   // Gets the directory where the credential provider is installed.
   static HRESULT GetInstallDirectory(base::FilePath* path);
 

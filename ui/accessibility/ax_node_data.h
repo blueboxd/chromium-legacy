@@ -190,8 +190,30 @@ struct AX_EXPORT AXNodeData {
   ax::mojom::ImageAnnotationStatus GetImageAnnotationStatus() const;
   void SetImageAnnotationStatus(ax::mojom::ImageAnnotationStatus status);
 
-  // Helper to determine if |GetRestriction| is either ReadOnly or Disabled
+  // Helper to determine if the data belongs to a node that can respond to
+  // clicks.
+  bool IsClickable() const;
+
+  // Helper to determine if the data has the ignored state or ignored role.
+  bool IsIgnored() const;
+
+  // Helper to determine if the data belongs to a node that is invocable.
+  bool IsInvocable() const;
+
+  // Helper to determine if the data belongs to a node that is a plain
+  // textfield.
+  bool IsPlainTextField() const;
+
+  // Helper to determine if |GetRestriction| is either ReadOnly or Disabled.
   bool IsReadOnlyOrDisabled() const;
+
+  // Helper to determine if the data belongs to a node that supports
+  // range-based value.
+  bool IsRangeValueSupported() const;
+
+  // Helper to determine if the data belongs to a node that supports
+  // expand/collapse.
+  bool SupportsExpandCollapse() const;
 
   // Helper to determine if the node is in an active live region.
   bool IsContainedInActiveLiveRegion() const;

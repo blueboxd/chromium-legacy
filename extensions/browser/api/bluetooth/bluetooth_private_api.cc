@@ -592,8 +592,8 @@ void BluetoothPrivateConnectFunction::DoWork(
           ->GetPairingDelegate(GetExtensionId());
   device->Connect(
       pairing_delegate,
-      base::Bind(&BluetoothPrivateConnectFunction::OnSuccessCallback, this),
-      base::Bind(&BluetoothPrivateConnectFunction::OnErrorCallback, this));
+      base::BindOnce(&BluetoothPrivateConnectFunction::OnSuccessCallback, this),
+      base::BindOnce(&BluetoothPrivateConnectFunction::OnErrorCallback, this));
 }
 
 void BluetoothPrivateConnectFunction::OnSuccessCallback() {
@@ -669,8 +669,8 @@ void BluetoothPrivatePairFunction::DoWork(
 
   device->Pair(
       pairing_delegate,
-      base::Bind(&BluetoothPrivatePairFunction::OnSuccessCallback, this),
-      base::Bind(&BluetoothPrivatePairFunction::OnErrorCallback, this));
+      base::BindOnce(&BluetoothPrivatePairFunction::OnSuccessCallback, this),
+      base::BindOnce(&BluetoothPrivatePairFunction::OnErrorCallback, this));
 }
 
 void BluetoothPrivatePairFunction::OnSuccessCallback() {

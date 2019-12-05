@@ -163,7 +163,7 @@ Tree:
 Tree:
 
 Scrolling to the top
-Class list: data-grid striped-data-grid
+Class list: data-grid no-selection striped-data-grid
 x0
 x1
 x2

@@ -17,7 +17,8 @@ const base::Feature kNewBLEWinImplementation{"NewBLEWinImplementation",
 
 #if defined(OS_CHROMEOS)
 // Enables or disables the use of Bluetooth dispatcher daemon on Chrome OS.
-const base::Feature kNewblueDaemon{"Newblue", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kNewblueDaemon{"Newblue",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_VR)

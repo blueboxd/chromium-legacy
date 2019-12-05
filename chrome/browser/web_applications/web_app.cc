@@ -61,6 +61,10 @@ bool WebApp::IsDefaultApp() const {
   return sources_[Source::kDefault];
 }
 
+bool WebApp::IsSystemApp() const {
+  return sources_[Source::kSystem];
+}
+
 bool WebApp::CanUserUninstallExternalApp() const {
   Sources specified_sources;
   specified_sources[Source::kDefault] = true;
@@ -78,6 +82,19 @@ bool WebApp::HasAnySpecifiedSourcesAndNoOtherSources(
 
 bool WebApp::WasInstalledByUser() const {
   return sources_[Source::kSync] || sources_[Source::kWebAppStore];
+}
+
+Source::Type WebApp::GetHighestPrioritySource() const {
+  // Enumerators in Source enum are declaretd in the order of priority.
+  // Top priority sources are declared first.
+  for (int i = Source::kMinValue; i <= Source::kMaxValue; ++i) {
+    auto source = static_cast<Source::Type>(i);
+    if (sources_[source])
+      return source;
+  }
+
+  NOTREACHED();
+  return Source::kMaxValue;
 }
 
 void WebApp::SetName(const std::string& name) {

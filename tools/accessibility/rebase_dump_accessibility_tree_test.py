@@ -113,13 +113,13 @@ def Run():
   #print(json.dumps(data, indent=4))
 
   for builder in data:
-    print(builder['builder_name'], builder['result'])
-    if builder['result'] == 'FAILURE':
+    print(builder['builder']['builder'], builder['status'])
+    if builder['status'] == 'FAILURE':
       logdog_tokens = [
           'chromium',
           'buildbucket',
           'cr-buildbucket.appspot.com',
-          builder['buildbucket_id'],
+          builder['id'],
           '+',
           'steps',
           '**']

@@ -166,7 +166,7 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
         JSONCallbackHelper callbackHelper = new JSONCallbackHelper();
         int count = callbackHelper.getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            getActivity().getTab().executeScript(script, useSeparateIsolate,
+            getActivity().getBrowser().getActiveTab().executeScript(script, useSeparateIsolate,
                     (JSONObject result) -> { callbackHelper.notifyCalled(result); });
         });
         try {

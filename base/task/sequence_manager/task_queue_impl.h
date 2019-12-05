@@ -121,7 +121,7 @@ class BASE_EXPORT TaskQueueImpl {
   void RemoveFence();
   bool HasActiveFence();
   bool BlockedByFence() const;
-  EnqueueOrder GetLastUnblockEnqueueOrder() const;
+  EnqueueOrder GetEnqueueOrderAtWhichWeBecameUnblocked() const;
 
   // Implementation of TaskQueue::SetObserver.
   void SetObserver(TaskQueue::Observer* observer);
@@ -133,6 +133,11 @@ class BASE_EXPORT TaskQueueImpl {
   // thread.
   bool CouldTaskRun(EnqueueOrder enqueue_order) const;
 
+  // Returns true if a task with |enqueue_order| obtained from this queue was
+  // ever in the queue while it was disabled, blocked by a fence, or less
+  // important than kNormalPriority.
+  bool WasBlockedOrLowPriority(EnqueueOrder enqueue_order) const;
+
   // Must only be called from the thread this task queue was created on.
   void ReloadEmptyImmediateWorkQueue();
 
@@ -143,8 +148,9 @@ class BASE_EXPORT TaskQueueImpl {
   bool GetQuiescenceMonitored() const { return should_monitor_quiescence_; }
   bool GetShouldNotifyObservers() const { return should_notify_observers_; }
 
-  void NotifyWillProcessTask(const PendingTask& pending_task);
-  void NotifyDidProcessTask(const PendingTask& pending_task);
+  void NotifyWillProcessTask(const Task& task,
+                             bool was_blocked_or_low_priority);
+  void NotifyDidProcessTask(const Task& task);
 
   // Check for available tasks in immediate work queues.
   // Used to check if we need to generate notifications about delayed work.
@@ -352,7 +358,29 @@ class BASE_EXPORT TaskQueueImpl {
     trace_event::BlameContext* blame_context = nullptr;  // Not owned.
     EnqueueOrder current_fence;
     Optional<TimeTicks> delayed_fence;
-    EnqueueOrder last_unblocked_enqueue_order;
+    // Snapshots the next sequence number when the queue is unblocked, otherwise
+    // it contains EnqueueOrder::none(). If the EnqueueOrder of a task just
+    // popped from this queue is greater than this, it means that the queue was
+    // never disabled or blocked by a fence while the task was queued.
+    EnqueueOrder enqueue_order_at_which_we_became_unblocked;
+    // If the EnqueueOrder of a task just popped from this queue is greater than
+    // this, it means that the queue was never disabled, blocked by a fence or
+    // less important than kNormalPriority while the task was queued.
+    //
+    // Implementation details:
+    // 1) When the queue is made less important than kNormalPriority, this is
+    //    set to EnqueueOrder::max(). The EnqueueOrder of any task will compare
+    //    less than this.
+    // 2) When the queue is made at least as important as kNormalPriority, this
+    //    snapshots the next sequence number. If the queue is blocked, the value
+    //    is irrelevant because no task should be popped. If the queue is not
+    //    blocked, the EnqueueOrder of any already queued task will compare less
+    //    than this.
+    // 3) When the queue is unblocked while at least as important as
+    //    kNormalPriority, this snapshots the next sequence number. The
+    //    EnqueueOrder of any already queued task will compare less than this.
+    EnqueueOrder
+        enqueue_order_at_which_we_became_unblocked_with_normal_priority;
     OnTaskReadyHandler on_task_ready_handler;
     OnTaskStartedHandler on_task_started_handler;
     OnTaskCompletedHandler on_task_completed_handler;
@@ -441,6 +469,9 @@ class BASE_EXPORT TaskQueueImpl {
   void ReportIpcTaskQueued(Task* pending_task,
                            const char* task_queue_name,
                            const base::TimeDelta& time_since_disabled);
+
+  // Invoked when the queue becomes enabled and not blocked by a fence.
+  void OnQueueUnblocked();
 
   const char* name_;
   SequenceManagerImpl* const sequence_manager_;

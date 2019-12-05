@@ -44,11 +44,19 @@ message PaintPreviewFrameProto {
   map<uint32, int64> content_id_proxy_id_map = 5;
 }
 
+// Metadata for the capture.
+// NEXT_TAG = 2
+message MetadataProto {
+  // URL of the root frame.
+  required string url = 1;
+}
+
 // A paint preview of the entire page.
-// NEXT_TAG = 3
+// NEXT_TAG = 4
 message PaintPreviewProto {
   // The root frame of the RenderFrame tree. This is often the main frame, but
   // may be a root node of a subtree (e.g. paint preview of an iframe).
   required PaintPreviewFrameProto root_frame = 1;
   repeated PaintPreviewFrameProto subframes = 2;
+  required MetadataProto metadata = 3;
 }

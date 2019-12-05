@@ -22,7 +22,6 @@
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_details.h"
 #include "components/policy/core/common/policy_merger.h"
-#include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/core/common/schema.h"
 #include "components/policy/core/common/schema_map.h"
@@ -46,6 +45,7 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "components/user_manager/user_manager.h"
 #endif
@@ -186,25 +186,38 @@ Value PolicyConversions::GetChromePolicies() {
                          GetKnownPolicies(schema_map, policy_namespace));
 }
 
-Value PolicyConversions::GetExtensionsPolicies() {
+Value PolicyConversions::GetExtensionPolicies(PolicyDomain policy_domain) {
   Value policies(Value::Type::LIST);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Add extension policy values.
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(profile_);
+
+  const bool for_signin_screen =
+      policy_domain == POLICY_DOMAIN_SIGNIN_EXTENSIONS;
+#if defined(OS_CHROMEOS)
+  Profile* extension_profile = for_signin_screen
+                                   ? chromeos::ProfileHelper::GetSigninProfile()
+                                   : profile_;
+#else   // defined(OS_CHROMEOS)
+  Profile* extension_profile = profile_;
+#endif  // defined(OS_CHROMEOS)
+
+  const extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(extension_profile);
   if (!registry) {
     LOG(ERROR) << "Can not dump extension policies, no extension registry";
     return policies;
   }
-  auto* schema_registry_service = profile_->GetPolicySchemaRegistryService();
+  auto* schema_registry_service =
+      extension_profile->GetOriginalProfile()->GetPolicySchemaRegistryService();
   if (!schema_registry_service || !schema_registry_service->registry()) {
     LOG(ERROR) << "Can not dump extension policies, no schema registry service";
     return policies;
   }
   const scoped_refptr<SchemaMap> schema_map =
       schema_registry_service->registry()->schema_map();
+  std::unique_ptr<extensions::ExtensionSet> extension_set =
+      registry->GenerateInstalledExtensionsSet();
   for (const scoped_refptr<const extensions::Extension>& extension :
-       registry->enabled_extensions()) {
+       *extension_set) {
     // Skip this extension if it's not an enterprise extension.
     if (!extension->manifest()->HasPath(
             extensions::manifest_keys::kStorageManagedSchema)) {
@@ -212,14 +225,15 @@ Value PolicyConversions::GetExtensionsPolicies() {
     }
 
     PolicyNamespace policy_namespace =
-        PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, extension->id());
+        PolicyNamespace(policy_domain, extension->id());
     PolicyErrorMap empty_error_map;
     Value extension_policies = GetPolicyValues(
-        GetPolicyService(profile_)->GetPolicies(policy_namespace),
+        GetPolicyService(extension_profile)->GetPolicies(policy_namespace),
         &empty_error_map, GetKnownPolicies(schema_map, policy_namespace));
     Value extension_policies_data(Value::Type::DICTIONARY);
     extension_policies_data.SetKey("name", Value(extension->name()));
     extension_policies_data.SetKey("id", Value(extension->id()));
+    extension_policies_data.SetKey("forSigninScreen", Value(for_signin_screen));
     extension_policies_data.SetKey("policies", std::move(extension_policies));
     policies.Append(std::move(extension_policies_data));
   }
@@ -523,8 +537,14 @@ Value DictionaryPolicyConversions::ToValue() {
     all_policies.SetKey("chromePolicies", GetChromePolicies());
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    all_policies.SetKey("extensionPolicies", GetExtensionsPolicies());
-#endif
+    all_policies.SetKey("extensionPolicies",
+                        GetExtensionPolicies(POLICY_DOMAIN_EXTENSIONS));
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+#if BUILDFLAG(ENABLE_EXTENSIONS) && defined(OS_CHROMEOS)
+    all_policies.SetKey("loginScreenExtensionPolicies",
+                        GetExtensionPolicies(POLICY_DOMAIN_SIGNIN_EXTENSIONS));
+#endif  //  BUILDFLAG(ENABLE_EXTENSIONS) && defined(OS_CHROMEOS)
   }
 
 #if defined(OS_CHROMEOS)
@@ -549,8 +569,9 @@ Value DictionaryPolicyConversions::GetDeviceLocalAccountPolicies() {
 }
 #endif
 
-Value DictionaryPolicyConversions::GetExtensionsPolicies() {
-  Value policies = PolicyConversions::GetExtensionsPolicies();
+Value DictionaryPolicyConversions::GetExtensionPolicies(
+    PolicyDomain policy_domain) {
+  Value policies = PolicyConversions::GetExtensionPolicies(policy_domain);
   Value extension_values(Value::Type::DICTIONARY);
   for (auto&& policy : policies.GetList()) {
     extension_values.SetKey(policy.FindKey("id")->GetString(),
@@ -573,12 +594,23 @@ Value ArrayPolicyConversions::ToValue() {
     all_policies.Append(GetChromePolicies());
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    Value extension_policies = GetExtensionsPolicies();
+    Value extension_policies = GetExtensionPolicies(POLICY_DOMAIN_EXTENSIONS);
     all_policies.GetList().insert(
         all_policies.GetList().end(),
         std::make_move_iterator(extension_policies.GetList().begin()),
         std::make_move_iterator(extension_policies.GetList().end()));
-#endif
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+#if BUILDFLAG(ENABLE_EXTENSIONS) && defined(OS_CHROMEOS)
+    Value login_screen_extension_policies =
+        GetExtensionPolicies(POLICY_DOMAIN_SIGNIN_EXTENSIONS);
+    all_policies.GetList().insert(
+        all_policies.GetList().end(),
+        std::make_move_iterator(
+            login_screen_extension_policies.GetList().begin()),
+        std::make_move_iterator(
+            login_screen_extension_policies.GetList().end()));
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS) && defined(OS_CHROMEOS)
   }
 
 #if defined(OS_CHROMEOS)

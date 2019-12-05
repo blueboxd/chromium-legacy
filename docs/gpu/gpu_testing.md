@@ -280,9 +280,9 @@ reason, you can manually pass some flags to force the same behavior:
 
 In order to get around the local run issues, simply pass the `--local-run=1`
 flag to the tests. This will disable uploading, but otherwise go through the
-same steps as a test normally would. Each test will also print out a `file://`
-URL to the image it produces and a link to all approved images for that test in
-Gold.
+same steps as a test normally would. Each test will also print out `file://`
+URLs to the produced image, the closest image for the test known to Gold, and
+the diff between the two.
 
 Because the image produced by the test locally is likely slightly different from
 any of the approved images in Gold, local test runs are likely to fail during

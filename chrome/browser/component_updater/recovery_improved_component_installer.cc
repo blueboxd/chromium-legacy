@@ -34,6 +34,10 @@
 
 namespace component_updater {
 
+constexpr base::TaskTraits RecoveryComponentActionHandler::kTaskTraits;
+constexpr base::TaskTraits
+    RecoveryComponentActionHandler::kTaskTraitsRunCommand;
+
 RecoveryComponentActionHandler::RecoveryComponentActionHandler(
     const std::vector<uint8_t>& key_hash,
     crx_file::VerifierFormat verifier_format)

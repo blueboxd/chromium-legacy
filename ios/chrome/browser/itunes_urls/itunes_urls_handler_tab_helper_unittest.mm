@@ -106,6 +106,9 @@ TEST_F(ITunesUrlsHandlerTabHelperTest, NonMatchingUrlsDoesntLaunchStoreKit) {
       @"itms-apps://itunes.apple.com/us/app/appname/id123",
       /*main_frame=*/true));
   EXPECT_FALSE(VerifyStoreKitLaunched(
+      @"http://test.itunes.apple.com/app/bar/id243?at=12312",
+      /*main_frame=*/true));
+  EXPECT_FALSE(VerifyStoreKitLaunched(
       @"http://geo.apps.apple.com/app/bar/id243?at=12312",
       /*main_frame=*/true));
   EXPECT_FALSE(VerifyStoreKitLaunched(
@@ -148,6 +151,12 @@ TEST_F(ITunesUrlsHandlerTabHelperTest, MatchingUrlsLaunchesStoreKit) {
   EXPECT_NSEQ(expected_params, fake_launcher_.launchedProductParams);
 
   EXPECT_TRUE(VerifyStoreKitLaunched(
+      @"http://geo.itunes.apple.com/app/bar/id243?at=12312",
+      /*main_frame=*/true));
+  expected_params = @{product_id : @"243", af_tkn : @"12312"};
+  EXPECT_NSEQ(expected_params, fake_launcher_.launchedProductParams);
+
+  EXPECT_TRUE(VerifyStoreKitLaunched(
       @"http://apps.apple.com/de/app/bar/id123?at=2&uo=4#foo",
       /*main_frame=*/true));
   expected_params = @{product_id : @"123", af_tkn : @"2", @"uo" : @"4"};
@@ -157,6 +166,6 @@ TEST_F(ITunesUrlsHandlerTabHelperTest, MatchingUrlsLaunchesStoreKit) {
       kITunesURLsHandlingResultHistogram,
       static_cast<base::HistogramBase::Sample>(
           ITunesUrlsStoreKitHandlingResult::kSingleAppUrlHandled),
-      6);
-  histogram_tester_.ExpectTotalCount(kITunesURLsHandlingResultHistogram, 6);
+      7);
+  histogram_tester_.ExpectTotalCount(kITunesURLsHandlingResultHistogram, 7);
 }

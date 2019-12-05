@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include <fontconfig/fontconfig.h>
-#include <sys/stat.h>
 #include <time.h>
 #include <utime.h>
 
 #include <string>
 
 #include "base/base_paths.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
@@ -39,10 +39,10 @@ int main() {
   // presumably checks this later to ensure that the cache is still up to date.
   // We set the mtime to an arbitrary, fixed time in the past.
   base::FilePath test_fonts_file_path = dir_module.Append("test_fonts");
-  struct stat old_times;
+  base::stat_wrapper_t old_times;
   struct utimbuf new_times;
 
-  stat(test_fonts_file_path.value().c_str(), &old_times);
+  base::File::Stat(test_fonts_file_path.value().c_str(), &old_times);
   new_times.actime = old_times.st_atime;
   // Use an arbitrary, fixed time.
   new_times.modtime = 123456789;

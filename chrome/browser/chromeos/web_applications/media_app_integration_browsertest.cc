@@ -6,6 +6,7 @@
 #include "base/path_service.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/chromeos/file_manager/web_file_tasks.h"
 #include "chrome/browser/chromeos/web_applications/system_web_app_integration_test.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/common/chrome_paths.h"
@@ -13,6 +14,7 @@
 #include "chromeos/components/media_app_ui/url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/entry_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using web_app::SystemAppType;
@@ -101,4 +103,30 @@ IN_PROC_BROWSER_TEST_F(MediaAppIntegrationTest, MediaAppLaunchWithFile) {
   EXPECT_EQ("800x600", EvalJsInAppFrame(app, kScript));
 
   // TODO(crbug/1027030): Add tests for re-launching with new files.
+}
+
+// Ensures that chrome://media-app is available as a file task for the ChromeOS
+// file manager and eligible for opening appropriate files / mime types.
+IN_PROC_BROWSER_TEST_F(MediaAppIntegrationTest, MediaAppElibibleOpenTask) {
+  constexpr bool kIsDirectory = false;
+  const extensions::EntryInfo test_entry(TestFile(kFilePng800x600), "image/png",
+                                         kIsDirectory);
+
+  WaitForTestSystemAppInstall();
+
+  std::vector<file_manager::file_tasks::FullTaskDescriptor> result;
+  file_manager::file_tasks::FindWebTasks(profile(), {test_entry}, &result);
+
+  ASSERT_LT(0u, result.size());
+  EXPECT_EQ(1u, result.size());
+  const auto& task = result[0];
+  const auto& descriptor = task.task_descriptor();
+
+  EXPECT_EQ("Media App", task.task_title());
+  EXPECT_EQ(extensions::api::file_manager_private::Verb::VERB_OPEN_WITH,
+            task.task_verb());
+  EXPECT_EQ(descriptor.app_id,
+            *GetManager().GetAppIdForSystemApp(web_app::SystemAppType::MEDIA));
+  EXPECT_EQ(chromeos::kChromeUIMediaAppURL, descriptor.action_id);
+  EXPECT_EQ(file_manager::file_tasks::TASK_TYPE_WEB_APP, descriptor.task_type);
 }

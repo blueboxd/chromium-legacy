@@ -2835,7 +2835,7 @@ TEST_F(AppListViewScalableLayoutTest,
       (window_size.height() - ShelfHeight()) / 16;
   VerifyAppsContainerLayout(
       window_size, 5 /*column_count*/, 4 /*row_count*/,
-      window_size.width() / 16 /*expected_horizontal_margin*/,
+      window_size.width() / 12 /*expected_horizontal_margin*/,
       expected_vertical_margin, 80 /*expected_item_size*/);
 }
 
@@ -2853,10 +2853,10 @@ TEST_F(AppListViewScalableLayoutTest, AppListViewLayoutForSmallPortraitScreen) {
 
   const int expected_vertical_margin =
       (window_size.height() - ShelfHeight()) / 16;
-  VerifyAppsContainerLayout(
-      window_size, 4 /*column_count*/, 5 /*row_count*/,
-      window_size.width() / 12 /*expected_horizontal_margin*/,
-      expected_vertical_margin, 80 /*expected_item_size*/);
+  VerifyAppsContainerLayout(window_size, 4 /*column_count*/, 5 /*row_count*/,
+                            56 /*expected_horizontal_margin*/,
+                            expected_vertical_margin,
+                            80 /*expected_item_size*/);
 }
 
 // Tests fullscreen apps grid sizing and layout for medium sized screens
@@ -2900,7 +2900,7 @@ TEST_F(AppListViewScalableLayoutTest,
       (window_size.height() - ShelfHeight()) / 16;
   VerifyAppsContainerLayout(
       window_size, 4 /*column_count*/, 5 /*row_count*/,
-      window_size.width() / 16 /*expected_horizontal_margin*/,
+      window_size.width() / 12 /*expected_horizontal_margin*/,
       expected_vertical_margin, 88 /*expected_item_size*/);
 }
 
@@ -2944,14 +2944,14 @@ TEST_F(AppListViewScalableLayoutTest, AppListViewLayoutForLargePortraitScreen) {
       (window_size.height() - ShelfHeight()) / 16;
   VerifyAppsContainerLayout(
       window_size, 4 /*column_count*/, 5 /*row_count*/,
-      window_size.width() / 16 /*expected_horizontal_margin*/,
+      window_size.width() / 12 /*expected_horizontal_margin*/,
       expected_vertical_margin, 120 /*expected_item_size*/);
 }
 
 // Tests that apps grid horizontal margin have minimum that ensures the page
 // switcher view can fit next to the apps grid.
 TEST_F(AppListViewScalableLayoutTest, EnsurePageSwitcherFitsAppsGridMargin) {
-  const gfx::Size window_size = gfx::Size(400, 800);
+  const gfx::Size window_size = gfx::Size(440, 800);
   gfx::NativeView parent = GetContext();
   parent->SetBounds(gfx::Rect(window_size));
 
@@ -2963,10 +2963,10 @@ TEST_F(AppListViewScalableLayoutTest, EnsurePageSwitcherFitsAppsGridMargin) {
   const int expected_vertical_margin =
       (window_size.height() - ShelfHeight()) / 16;
   // The horizontal margin is selected so the page switcher fits the margin
-  // space (note that 400 / 12, which is how the margin is normally calculated
+  // space (note that 440 / 12, which is how the margin is normally calculated
   // is smaller than the width required by page switcher).
   VerifyAppsContainerLayout(window_size, 4 /*column_count*/, 5 /*row_count*/,
-                            40 /*expected_horizontal_margin*/,
+                            56 /*expected_horizontal_margin*/,
                             expected_vertical_margin,
                             80 /*expected_item_size*/);
 }
@@ -3011,9 +3011,12 @@ TEST_F(AppListViewScalableLayoutTest,
   Show();
   view_->SetState(ash::AppListViewState::kFullscreenAllApps);
 
+  // The horizontal margin is selected so the page switcher fits the margin
+  // space (note that 650 / 12, which is how the margin is normally calculated
+  // is smaller than the width required by page switcher).
   VerifyAppsContainerLayout(
       window_size, 5 /*column_count*/, 4 /*row_count*/,
-      window_size.width() / 16 /*expected_horizontal_margin*/,
+      56 /*expected_horizontal_margin*/,
       kGridVerticalInset + kGridVerticalMargin /*expected_vertical_margin*/,
       80 /*expected_item_size*/);
 }

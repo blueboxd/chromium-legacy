@@ -34,9 +34,29 @@ luci.console_view(
             short_name = 'bld',
         ),
         luci.console_view_entry(
+            builder = 'ci-stable/Mac10.10 Tests',
+            category = 'chromium.mac|release',
+            short_name = '10',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-stable/Mac10.11 Tests',
+            category = 'chromium.mac|release',
+            short_name = '11',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-stable/Mac10.12 Tests',
+            category = 'chromium.mac|release',
+            short_name = '12',
+        ),
+        luci.console_view_entry(
             builder = 'ci-stable/Mac10.13 Tests',
             category = 'chromium.mac|release',
             short_name = '13',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-stable/WebKit Mac10.13 (retina)',
+            category = 'chromium.mac|release',
+            short_name = 'ret',
         ),
         luci.console_view_entry(
             builder = 'ci-stable/ios-simulator',
@@ -46,6 +66,11 @@ luci.console_view(
         luci.console_view_entry(
             builder = 'ci-stable/Win x64 Builder',
             category = 'chromium.win|release|builder',
+            short_name = '64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-stable/Win 7 Tests x64 (1)',
+            category = 'chromium.win|release|tester',
             short_name = '64',
         ),
         luci.console_view_entry(
@@ -64,6 +89,15 @@ luci.console_view(
             builder = 'ci-stable/android-marshmallow-arm64-rel',
             category = 'chromium.android',
             short_name = 'm',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-stable/mac-osxbeta-rel',
+            category = 'chromium.fyi|mac',
+            short_name = 'osxbeta',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-stable/Win10 Tests x64 1803',
+            category = 'chromium.fyi|win10|1803',
         ),
         luci.console_view_entry(
             builder = 'ci-stable/Android Release (Nexus 5X)',

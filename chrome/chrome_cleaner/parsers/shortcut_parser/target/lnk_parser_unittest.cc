@@ -142,7 +142,7 @@ class LnkParserTest : public testing::Test {
     }
 
     // Load the shortcut into memory to modify the LinkInfoFlags.
-    base::File local_lnk(local_lnk_handle.Take());
+    base::File local_lnk(std::move(local_lnk_handle));
     std::vector<BYTE> shortcut_buffer;
     if (!LoadShortcutIntoMemory(&local_lnk, &shortcut_buffer)) {
       LOG(ERROR) << "Error loading shortcut into memory";
@@ -190,7 +190,7 @@ class LnkParserTest : public testing::Test {
     }
 
     // Load the shortcut into memory to corrupt it.
-    base::File good_lnk_file(good_lnk_handle.Take());
+    base::File good_lnk_file(std::move(good_lnk_handle));
     std::vector<BYTE> shortcut_buffer;
     if (!LoadShortcutIntoMemory(&good_lnk_file, &shortcut_buffer)) {
       LOG(ERROR) << "Error loading shortcut into memory";
@@ -220,7 +220,7 @@ class LnkParserTest : public testing::Test {
     }
 
     // Load the shortcut into memory.
-    base::File good_lnk_file(good_lnk_handle.Take());
+    base::File good_lnk_file(std::move(good_lnk_handle));
     std::vector<BYTE> shortcut_buffer;
     if (!LoadShortcutIntoMemory(&good_lnk_file, &shortcut_buffer)) {
       LOG(ERROR) << "Error loading shortcut into memory";
@@ -278,7 +278,7 @@ class LnkParserTest : public testing::Test {
     }
 
     // Load the shortcut into memory.
-    base::File good_lnk_file(good_lnk_handle.Take());
+    base::File good_lnk_file(std::move(good_lnk_handle));
     std::vector<BYTE> shortcut_buffer;
     if (!LoadShortcutIntoMemory(&good_lnk_file, &shortcut_buffer)) {
       LOG(ERROR) << "Error loading shortcut into memory";

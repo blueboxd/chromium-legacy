@@ -28,6 +28,9 @@ const char kGlobalMediaControlsOpened[] = "global_media_controls_opened";
 const char kFocusModeOpened[] = "focus_mode_opened";
 const char kFocusModeConditionsMet[] = "focus_mode_conditions_met";
 
+const char kWebUITabStripClosed[] = "webui_tab_strip_closed";
+const char kWebUITabStripOpened[] = "webui_tab_strip_opened";
+
 #if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
 const char kBookmarkAdded[] = "bookmark_added";
 const char kBookmarkSessionTimeMet[] = "bookmark_session_time_met";

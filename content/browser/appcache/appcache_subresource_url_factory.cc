@@ -27,9 +27,9 @@
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/request_mode.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace content {
 
@@ -197,20 +197,21 @@ class SubresourceLoader : public network::mojom::URLLoader,
     }
 
     did_receive_network_response_ = true;
+    auto response_head_clone = response_head.Clone();
     handler_->MaybeFallbackForSubresourceResponse(
-        network::ResourceResponseHead(response_head),
+        std::move(response_head),
         base::BindOnce(&SubresourceLoader::ContinueOnReceiveResponse,
                        weak_factory_.GetWeakPtr(),
-                       network::ResourceResponseHead(response_head)));
+                       std::move(response_head_clone)));
   }
 
   void ContinueOnReceiveResponse(
-      const network::ResourceResponseHead& response_head,
+      network::mojom::URLResponseHeadPtr response_head,
       SingleRequestURLLoaderFactory::RequestHandler handler) {
     if (handler) {
       CreateAndStartAppCacheLoader(std::move(handler));
     } else {
-      remote_client_->OnReceiveResponse(response_head);
+      remote_client_->OnReceiveResponse(std::move(response_head));
     }
   }
 

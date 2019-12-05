@@ -8,26 +8,33 @@ import android.content.Intent;
 import android.os.Build;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
+import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabBrowserControlsVisibilityDelegate;
+import org.chromium.chrome.browser.dependency_injection.ActivityScope;
+import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.fullscreen.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabContextMenuItemDelegate;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
+import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tab_activity_glue.ActivityTabWebContentsDelegateAndroid;
-import org.chromium.chrome.browser.tab_activity_glue.TabDelegateFactoryImpl;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
 import org.chromium.webapk.lib.client.WebApkNavigationClient;
+
+import javax.inject.Inject;
 
 /**
  * A {@link TabDelegateFactory} class to be used in all {@link Tab} instances owned by a
  * {@link WebappActivity}.
  */
-public class WebappDelegateFactory extends TabDelegateFactoryImpl {
+@ActivityScope
+public class WebappDelegateFactory implements TabDelegateFactory {
     private static class WebappWebContentsDelegateAndroid
             extends ActivityTabWebContentsDelegateAndroid {
         private final WebappActivity mActivity;
@@ -96,12 +103,15 @@ public class WebappDelegateFactory extends TabDelegateFactoryImpl {
     }
 
     private final WebappActivity mActivity;
+    private final CustomTabBrowserControlsVisibilityDelegate mBrowserStateVisibilityDelegate;
 
     private TabWebContentsDelegateAndroid mWebContentsDelegateAndroid;
 
-    public WebappDelegateFactory(WebappActivity activity) {
-        super(activity);
-        mActivity = activity;
+    @Inject
+    public WebappDelegateFactory(ChromeActivity activity,
+            CustomTabBrowserControlsVisibilityDelegate visibilityDelegate) {
+        mActivity = (WebappActivity) activity;
+        mBrowserStateVisibilityDelegate = visibilityDelegate;
     }
 
     @Override
@@ -117,11 +127,15 @@ public class WebappDelegateFactory extends TabDelegateFactoryImpl {
     }
 
     @Override
+    public ExternalNavigationHandler createExternalNavigationHandler(Tab tab) {
+        return new ExternalNavigationHandler(tab);
+    }
+
+    @Override
     public BrowserControlsVisibilityDelegate createBrowserControlsVisibilityDelegate(Tab tab) {
         return new ComposedBrowserControlsVisibilityDelegate(
-                new WebappBrowserControlsDelegate(mActivity, tab),
-                // Ensures browser controls hiding is delayed after activity start.
-                mActivity.getFullscreenManager().getBrowserVisibilityDelegate());
+                new TabStateBrowserControlsVisibilityDelegate(tab),
+                mBrowserStateVisibilityDelegate);
     }
 
     WebContentsDelegateAndroid getWebContentsDelegate() {

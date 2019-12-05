@@ -78,7 +78,7 @@ void SerialIoHandler::Open(const mojom::SerialConnectionOptions& options,
 void SerialIoHandler::OnPathOpened(
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
     base::ScopedFD fd) {
-  base::File file(fd.release());
+  base::File file(std::move(fd));
   io_thread_task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&SerialIoHandler::FinishOpen, this, std::move(file)));

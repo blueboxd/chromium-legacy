@@ -15,27 +15,6 @@
 
 namespace notifications {
 
-bool ToLocalHour(int hour,
-                 const base::Time& today,
-                 int day_delta,
-                 base::Time* out) {
-  DCHECK_GE(hour, 0);
-  DCHECK_LE(hour, 23);
-  DCHECK(out);
-
-  // Gets the local time at |hour| in yesterday.
-  base::Time another_day = today + base::TimeDelta::FromDays(day_delta);
-  base::Time::Exploded another_day_exploded;
-  another_day.LocalExplode(&another_day_exploded);
-  another_day_exploded.hour = hour;
-  another_day_exploded.minute = 0;
-  another_day_exploded.second = 0;
-  another_day_exploded.millisecond = 0;
-
-  // Converts local exploded time to time stamp.
-  return base::Time::FromLocalExploded(another_day_exploded, out);
-}
-
 int NotificationsShownToday(const ClientState* state, base::Clock* clock) {
   std::map<SchedulerClientType, const ClientState*> client_states;
   std::map<SchedulerClientType, int> shown_per_type;

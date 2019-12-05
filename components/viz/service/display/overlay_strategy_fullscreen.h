@@ -11,7 +11,7 @@
 
 namespace viz {
 
-class OverlayCandidateValidator;
+class OverlayCandidateValidatorStrategy;
 // Overlay strategy to promote a single full screen quad to an overlay.
 // The promoted quad should have all the property of the framebuffer and it
 // should be possible to use it as such.
@@ -19,7 +19,7 @@ class VIZ_SERVICE_EXPORT OverlayStrategyFullscreen
     : public OverlayProcessor::Strategy {
  public:
   explicit OverlayStrategyFullscreen(
-      OverlayCandidateValidator* capability_checker);
+      OverlayCandidateValidatorStrategy* capability_checker);
   ~OverlayStrategyFullscreen() override;
 
   bool Attempt(
@@ -35,7 +35,7 @@ class VIZ_SERVICE_EXPORT OverlayStrategyFullscreen
   OverlayStrategy GetUMAEnum() const override;
 
  private:
-  OverlayCandidateValidator* capability_checker_;  // Weak.
+  OverlayCandidateValidatorStrategy* capability_checker_;  // Weak.
 
   DISALLOW_COPY_AND_ASSIGN(OverlayStrategyFullscreen);
 };

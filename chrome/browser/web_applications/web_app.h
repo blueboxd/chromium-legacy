@@ -95,8 +95,12 @@ class WebApp {
 
   bool IsSynced() const;
   bool IsDefaultApp() const;
+  bool IsSystemApp() const;
   bool CanUserUninstallExternalApp() const;
   bool WasInstalledByUser() const;
+  // Returns the highest priority source. AppService assumes that every app has
+  // just one install source.
+  Source::Type GetHighestPrioritySource() const;
 
   void SetName(const std::string& name);
   void SetDescription(const std::string& description);

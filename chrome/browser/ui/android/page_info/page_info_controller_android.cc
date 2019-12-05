@@ -62,6 +62,9 @@ PageInfoControllerAndroid::PageInfoControllerAndroid(
       SecurityStateTabHelper::FromWebContents(web_contents);
   DCHECK(helper);
 
+  // When |web_contents| is not from a Tab, |web_contents| does not have a
+  // |TabSpecificContentSettings| and need to create one; otherwise, noop.
+  TabSpecificContentSettings::CreateForWebContents(web_contents);
   presenter_ = std::make_unique<PageInfo>(
       this, Profile::FromBrowserContext(web_contents->GetBrowserContext()),
       TabSpecificContentSettings::FromWebContents(web_contents), web_contents,

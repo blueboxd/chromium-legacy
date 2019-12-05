@@ -790,18 +790,24 @@ void SequenceManagerImpl::NotifyWillProcessTask(ExecutingTask* executing_task,
   if (!executing_task->task_queue->GetShouldNotifyObservers())
     return;
 
+  const bool was_blocked_or_low_priority =
+      executing_task->task_queue->WasBlockedOrLowPriority(
+          executing_task->pending_task.enqueue_order());
+
   {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                  "SequenceManager.WillProcessTaskObservers");
-    for (auto& observer : main_thread_only().task_observers)
-      observer.WillProcessTask(executing_task->pending_task);
+    for (auto& observer : main_thread_only().task_observers) {
+      observer.WillProcessTask(executing_task->pending_task,
+                               was_blocked_or_low_priority);
+    }
   }
 
   {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                  "SequenceManager.QueueNotifyWillProcessTask");
     executing_task->task_queue->NotifyWillProcessTask(
-        executing_task->pending_task);
+        executing_task->pending_task, was_blocked_or_low_priority);
   }
 
   if (recording_policy != TimeRecordingPolicy::DoRecord)

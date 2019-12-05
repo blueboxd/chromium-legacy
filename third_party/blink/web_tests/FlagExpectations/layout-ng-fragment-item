@@ -1330,7 +1330,6 @@ crbug.com/982194 virtual/controls-refresh/color-scheme/select/select-inpage-appe
 crbug.com/982194 virtual/controls-refresh/color-scheme/text/input-basic-box-appearance-basic.html [ Failure ]
 crbug.com/982194 virtual/controls-refresh/color-scheme/time/time-appearance-basic.html [ Failure ]
 crbug.com/982194 virtual/controls-refresh/color-scheme/week/week-appearance-basic.html [ Failure ]
-crbug.com/982194 virtual/disable-deferred-rendering/fast/canvas/OffscreenCanvas-copyImage.html [ Failure Pass ]
 crbug.com/982194 virtual/exotic-color-space/images/55.html [ Failure ]
 crbug.com/982194 virtual/exotic-color-space/images/png-suite/test.html [ Failure ]
 crbug.com/982194 virtual/focusless-spat-nav/fast/spatial-navigation/focusless/snav-focusless-button-negative-tabindex.html [ Failure ]

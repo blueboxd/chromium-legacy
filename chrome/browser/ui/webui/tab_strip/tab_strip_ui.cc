@@ -12,6 +12,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
@@ -347,6 +348,10 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
         "reportTabActivationDuration",
         base::Bind(&TabStripUIHandler::HandleReportTabActivationDuration,
                    base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "reportTabDataReceivedDuration",
+        base::Bind(&TabStripUIHandler::HandleReportTabDataReceivedDuration,
+                   base::Unretained(this)));
   }
 
  private:
@@ -544,6 +549,28 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
     args->GetInteger(0, &duration_ms);
     UMA_HISTOGRAM_TIMES("WebUITabStrip.TabActivation",
                         base::TimeDelta::FromMilliseconds(duration_ms));
+  }
+
+  void HandleReportTabDataReceivedDuration(const base::ListValue* args) {
+    int tab_count = 0;
+    args->GetInteger(0, &tab_count);
+    int duration_ms = 0;
+    args->GetInteger(1, &duration_ms);
+
+    if (tab_count <= 0)
+      return;
+
+    // It isn't possible to report both a number of tabs and duration datapoint
+    // together in a histogram or to correlate two histograms together. As a
+    // result the histogram is manually bucketed.
+    const char* histogram_name = "WebUITabStrip.TabDataReceived.01_05";
+    if (6 <= tab_count && tab_count <= 20) {
+      histogram_name = "WebUITabStrip.TabDataReceived.06_20";
+    } else if (20 < tab_count) {
+      histogram_name = "WebUITabStrip.TabDataReceived.21_";
+    }
+    base::UmaHistogramTimes(histogram_name,
+                            base::TimeDelta::FromMilliseconds(duration_ms));
   }
 
   // Callback passed to |thumbnail_tracker_|. Called when a tab's thumbnail

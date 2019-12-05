@@ -111,7 +111,7 @@ bool g_needs_set_up_for_test_case = true;
 - (void)launchAppForTestMethod {
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithFeaturesEnabled:{}
       disabled:{}
-      forceRestart:NO];
+      relaunchPolicy:NoForceRelaunchAndResetState];
 }
 
 #pragma mark - Private

@@ -1860,6 +1860,10 @@ void LocalFrame::EnableViewSourceMode() {
   SetInViewSourceMode(true);
 }
 
+void LocalFrame::Focus() {
+  FocusImpl();
+}
+
 void LocalFrame::BindToReceiver(
     blink::LocalFrame* frame,
     mojo::PendingAssociatedReceiver<mojom::blink::LocalFrame> receiver) {

@@ -22,3 +22,16 @@ self.addEventListener('sync', async event => {
   event.waitUntil(onSync());
 });
 
+self.addEventListener('periodicsync', event => {
+  const onPeriodicSync = async () => {
+    switch (event.tag) {
+      case 'tagSucceedsSync':
+        messagePort.postMessage('onperiodicsync: ' + event.tag);
+        return;
+      case 'tagFailsSync':
+        messagePort.postMessage('failed periodicsync: '+ event.tag);
+        throw 'Try again';
+    }
+  };
+  event.waitUntil(onPeriodicSync());
+});

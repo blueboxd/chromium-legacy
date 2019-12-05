@@ -36,6 +36,10 @@ class ThumbnailTabHelper
   friend class content::WebContentsUserData<ThumbnailTabHelper>;
   friend class ThumanailImageImpl;
 
+  // Metrics enums and helper functions:
+  enum class CaptureType;
+  static void RecordCaptureType(CaptureType type);
+
   // Describes how a thumbnail bitmap should be generated from a target surface.
   // All sizes are in pixels, not DIPs.
   struct ThumbnailCaptureInfo {
@@ -63,7 +67,9 @@ class ThumbnailTabHelper
   void StartVideoCapture();
   void StopVideoCapture();
   void CaptureThumbnailOnTabSwitch();
-  void StoreThumbnail(const SkBitmap& bitmap);
+  void StoreThumbnailForTabSwitch(base::TimeTicks start_time,
+                                  const SkBitmap& bitmap);
+  void StoreThumbnail(CaptureType type, const SkBitmap& bitmap);
 
   content::RenderWidgetHostView* GetView();
 
@@ -128,6 +134,9 @@ class ThumbnailTabHelper
   // Scoped request for video capture. Ensures we always decrement the counter
   // once per increment.
   std::unique_ptr<ScopedCapture> scoped_capture_;
+
+  // Times for computing metrics.
+  base::TimeTicks start_video_capture_time_;
 
   // The thumbnail maintained by this instance.
   scoped_refptr<ThumbnailImage> thumbnail_ =

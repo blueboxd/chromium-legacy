@@ -14,6 +14,7 @@
 class GURL;
 
 namespace chromeos {
+namespace app_time {
 
 class WebTimeLimitEnforcer {
  public:
@@ -26,10 +27,6 @@ class WebTimeLimitEnforcer {
   WebTimeLimitEnforcer(const WebTimeLimitEnforcer& enforcer) = delete;
   WebTimeLimitEnforcer& operator=(const WebTimeLimitEnforcer& enforcer) =
       delete;
-
-  // Delete move constructor and move assignment operator.
-  WebTimeLimitEnforcer(WebTimeLimitEnforcer&& enforcer) = delete;
-  WebTimeLimitEnforcer& operator=(WebTimeLimitEnforcer&& enforcer) = delete;
 
   // TODO(crbug/1015661) The following should be private observer calls once the
   // observer pattern has been set up for this.
@@ -53,6 +50,7 @@ class WebTimeLimitEnforcer {
   std::set<GURL> whitelisted_urls_;
 };
 
+}  // namespace app_time
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_TIME_LIMITS_WEB_TIME_LIMIT_ENFORCER_H_

@@ -539,6 +539,31 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, OpenNewTabAndShowBubble) {
 #endif  // defined(OS_CHROMEOS)
 }
 
+IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, NavigateDifferentOrigin) {
+  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL,
+       sync_pb::SharingSpecificFields::UNKNOWN);
+
+  base::RunLoop run_loop;
+  PageActionIconView* click_to_call_icon =
+      GetPageActionIconView(PageActionIconType::kClickToCall);
+  ClickToCallUiController::GetOrCreateFromWebContents(web_contents())
+      ->set_on_dialog_shown_closure_for_testing(run_loop.QuitClosure());
+
+  // Click on the tel link to trigger the bubble view.
+  web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::ASCIIToUTF16("document.querySelector('a').click();"),
+      base::NullCallback());
+  // Wait until the bubble is visible.
+  run_loop.Run();
+  EXPECT_NE(nullptr, click_to_call_icon->GetBubble());
+
+  // Navigate to a different origin.
+  sessions_helper::NavigateTab(/*browser_index=*/0, GURL("https://google.com"));
+
+  // Ensure that the bubble is now closed.
+  EXPECT_EQ(nullptr, click_to_call_icon->GetBubble());
+}
+
 class ClickToCallPolicyTest
     : public policy::PolicyTest,
       public testing::WithParamInterface<ClickToCallPolicy> {

@@ -156,7 +156,8 @@ std::unique_ptr<RTCVideoDecoderAdapter> RTCVideoDecoderAdapter::Create(
       media::kNoTransformation, kDefaultSize, gfx::Rect(kDefaultSize),
       kDefaultSize, media::EmptyExtraData(),
       media::EncryptionScheme::kUnencrypted);
-  if (!gpu_factories->IsDecoderConfigSupported(kImplementation, config))
+  if (gpu_factories->IsDecoderConfigSupported(kImplementation, config) ==
+      media::GpuVideoAcceleratorFactories::Supported::kFalse)
     return nullptr;
 
   // Synchronously verify that the decoder can be initialized.

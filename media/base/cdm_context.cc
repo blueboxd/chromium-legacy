@@ -25,6 +25,10 @@ int CdmContext::GetCdmId() const {
   return kInvalidCdmId;
 }
 
+bool CdmContext::RequiresMediaFoundationRenderer() {
+  return false;
+}
+
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 CdmProxyContext* CdmContext::GetCdmProxyContext() {
   return nullptr;

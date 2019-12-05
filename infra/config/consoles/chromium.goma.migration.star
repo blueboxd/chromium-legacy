@@ -816,6 +816,21 @@ luci.console_view(
             short_name = 'code',
         ),
         luci.console_view_entry(
+            builder = 'ci/Win x64 Builder (dbg)',
+            category = 'win|week1.5',
+            short_name = 'dbg',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/win-archive-dbg',
+            category = 'win|week1.5|archive',
+            short_name = 'dbg',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/win-archive-rel',
+            category = 'win|week1.5|archive',
+            short_name = 'rel',
+        ),
+        luci.console_view_entry(
             builder = 'ci/linux-chromeos-dbg',
             category = 'cros|week1',
             short_name = 'dbg',

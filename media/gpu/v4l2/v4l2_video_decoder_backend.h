@@ -8,10 +8,12 @@
 #include "base/memory/scoped_refptr.h"
 #include "media/base/decode_status.h"
 #include "media/base/video_decoder.h"
+#include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace media {
 
+class DmabufVideoFramePool;
 class V4L2Device;
 class V4L2Queue;
 class V4L2ReadableBuffer;
@@ -55,6 +57,8 @@ class V4L2VideoDecoderBackend {
     virtual void OutputFrame(scoped_refptr<VideoFrame> frame,
                              const gfx::Rect& visible_rect,
                              base::TimeDelta timestamp) = 0;
+    // Get the video frame pool without passing the ownership.
+    virtual DmabufVideoFramePool* GetVideoFramePool() const = 0;
   };
 
   virtual ~V4L2VideoDecoderBackend();

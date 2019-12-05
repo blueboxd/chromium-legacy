@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/apps/app_service/app_icon_source.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/uninstall_dialog.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/services/app_service/app_service_impl.h"
 #include "chrome/services/app_service/public/cpp/intent_filter_util.h"
 #include "chrome/services/app_service/public/cpp/intent_util.h"
@@ -130,9 +132,13 @@ void AppServiceProxy::Initialize() {
     extension_apps_ = std::make_unique<ExtensionApps>(
         app_service_, profile_, apps::mojom::AppType::kExtension,
         &instance_registry_);
-    extension_web_apps_ = std::make_unique<ExtensionApps>(
-        app_service_, profile_, apps::mojom::AppType::kWeb,
-        &instance_registry_);
+    if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
+      web_apps_ = std::make_unique<WebApps>(app_service_, profile_);
+    } else {
+      extension_web_apps_ = std::make_unique<ExtensionApps>(
+          app_service_, profile_, apps::mojom::AppType::kWeb,
+          &instance_registry_);
+    }
 
     // Asynchronously add app icon source, so we don't do too much work in the
     // constructor.
@@ -333,7 +339,11 @@ void AppServiceProxy::FlushMojoCallsForTesting() {
   built_in_chrome_os_apps_->FlushMojoCallsForTesting();
   crostini_apps_->FlushMojoCallsForTesting();
   extension_apps_->FlushMojoCallsForTesting();
-  extension_web_apps_->FlushMojoCallsForTesting();
+  if (web_apps_) {
+    web_apps_->FlushMojoCallsForTesting();
+  } else {
+    extension_web_apps_->FlushMojoCallsForTesting();
+  }
 #endif
   receivers_.FlushForTesting();
 }
@@ -384,7 +394,11 @@ void AppServiceProxy::SetArcIsRegistered() {
 
   arc_is_registered_ = true;
   extension_apps_->ObserveArc();
-  extension_web_apps_->ObserveArc();
+  if (web_apps_) {
+    web_apps_->ObserveArc();
+  } else {
+    extension_web_apps_->ObserveArc();
+  }
 #endif
 }
 
@@ -423,7 +437,11 @@ void AppServiceProxy::Shutdown() {
 #if defined(OS_CHROMEOS)
   if (app_service_.is_connected()) {
     extension_apps_->Shutdown();
-    extension_web_apps_->Shutdown();
+    if (web_apps_) {
+      web_apps_->Shutdown();
+    } else {
+      extension_web_apps_->Shutdown();
+    }
   }
 #endif  // OS_CHROMEOS
 }

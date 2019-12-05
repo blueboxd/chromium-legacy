@@ -73,7 +73,7 @@ namespace {
 
 class EndOfTaskRunner : public Thread::TaskObserver {
  public:
-  void WillProcessTask(const base::PendingTask&) override {
+  void WillProcessTask(const base::PendingTask&, bool) override {
     AnimationClock::NotifyTaskStart();
   }
 

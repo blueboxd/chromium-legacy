@@ -178,8 +178,7 @@ std::unique_ptr<net::test_server::HttpResponse> CountResponse(
 // Tests that only the selected web state is loaded Restore-after-Crash.  This
 // is only possible in EG2.
 - (void)testRestoreOneWebstateOnlyAfterCrash {
-  // Enable when EG2 supports basic restarts.
-#if 0  //#if defined(CHROME_EARL_GREY_2)
+#if defined(CHROME_EARL_GREY_2)
   // Visit the background page.
   int visitCounter = 0;
   self.testServer->RegisterRequestHandler(
@@ -198,11 +197,9 @@ std::unique_ptr<net::test_server::HttpResponse> CountResponse(
   // Clear cache, save the session and trigger a crash/activate.
   [ChromeEarlGrey removeBrowsingCache];
   [ChromeEarlGrey saveSessionImmediately];
-  // TODO(crbug.com/1018482) Add support to restart the app in it's current
-  // state.
-  AppLaunchManager* manager = [AppLaunchManager sharedManager];
-  [manager restart];
-
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithFeaturesEnabled:{}
+      disabled:{}
+      relaunchPolicy:ForceRelaunchByKilling];
   // Restore after crash and confirm the background page is not reloaded.
   [[EarlGrey selectElementWithMatcher:grey_text(@"Restore")]
       performAction:grey_tap()];
@@ -229,17 +226,11 @@ std::unique_ptr<net::test_server::HttpResponse> CountResponse(
 - (void)triggerRestore {
 #if defined(CHROME_EARL_GREY_1)
   [ChromeEarlGrey triggerRestoreViaTabGridRemoveAllUndo];
-#else
-  // For now, do the same thing EG1 does.
-  [ChromeEarlGrey triggerRestoreViaTabGridRemoveAllUndo];
-#if 0
+#elif defined(CHROME_EARL_GREY_2)
   [ChromeEarlGrey saveSessionImmediately];
-  // TODO(crbug.com/1018482) Add support to restart the app in it's current
-  // state, e.g. background and restore. Then the #if 0 can be removed as well
-  // as the legacy call to -triggerRestoreViaTabGridRemoveAllUndo.
-  AppLaunchManager* manager = [AppLaunchManager sharedManager];
-  [manager backgroundAndRestart];
-#endif
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithFeaturesEnabled:{}
+      disabled:{}
+      relaunchPolicy:ForceRelaunchByCleanShutdown];
 #endif  // defined(CHROME_EARL_GREY_2)
 }
 

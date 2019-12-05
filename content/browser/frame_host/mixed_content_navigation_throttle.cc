@@ -5,6 +5,7 @@
 #include "content/browser/frame_host/mixed_content_navigation_throttle.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -168,9 +169,25 @@ bool MixedContentNavigationThrottle::ShouldBlockNavigation(bool for_redirect) {
   blink::WebMixedContentContextType mixed_context_type =
       request->mixed_content_context_type();
 
+  // Do not treat non-webby schemes as mixed content when loaded in subframes.
+  // Navigations to non-webby schemes cannot return data to the browser, so
+  // insecure content will not be run or displayed to the user as a result of
+  // loading a non-webby scheme. It is potentially dangerous to navigate to a
+  // non-webby scheme (e.g., the page could deliver a malicious payload to a
+  // vulnerable native application), but loading a non-webby scheme is no more
+  // dangerous in this respect than navigating the main frame to the non-webby
+  // scheme directly. See https://crbug.com/621131.
+  //
+  // TODO(https://crbug.com/1030307): decide whether CORS-enabled is really the
+  // right way to draw this distinction.
   if (!ShouldTreatURLSchemeAsCorsEnabled(request->GetURL())) {
-    mixed_context_type =
-        blink::WebMixedContentContextType::kOptionallyBlockable;
+    // Record non-webby mixed content to see if it is rare enough that it can be
+    // gated behind an enterprise policy. This excludes URLs that are considered
+    // potentially-secure such as blob: and filesystem:, which are special-cased
+    // in IsUrlPotentiallySecure() and cause an early-return because of the
+    // InWhichFrameIsContentMixed() check above.
+    UMA_HISTOGRAM_BOOLEAN("SSL.NonWebbyMixedContentLoaded", true);
+    return false;
   }
 
   bool allowed = false;

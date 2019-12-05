@@ -292,6 +292,10 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // Returns the ShelfAppButton associated with |id|.
   ShelfAppButton* GetShelfAppButton(const ShelfID& id);
 
+  // Updates |first_visible_index_| and |last_visible_index_| when the
+  // scrollable shelf is enabled. Returns whether those two indices are changed.
+  bool UpdateVisibleIndices();
+
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const {
     return view_model_.get();
@@ -562,10 +566,6 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
 
   // Different from GetTitleForView, |view| here must be a child view.
   base::string16 GetTitleForChildView(const views::View* view) const;
-
-  // Update |first_visible_index_| and |last_visible_index_| when the scrollable
-  // shelf is enabled.
-  void UpdateVisibleIndice();
 
   // The model; owned by Launcher.
   ShelfModel* model_;

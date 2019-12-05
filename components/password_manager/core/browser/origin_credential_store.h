@@ -25,11 +25,16 @@ class UiCredential {
   using IsPublicSuffixMatch =
       util::StrongAlias<class IsPublicSuffixMatchTag, bool>;
 
+  using IsAffiliationBasedMatch =
+      util::StrongAlias<class IsAffiliationBasedMatchTag, bool>;
+
   UiCredential(base::string16 username,
                base::string16 password,
-               const GURL& origin_url,
-               IsPublicSuffixMatch is_public_suffix_match);
-  explicit UiCredential(const autofill::PasswordForm& form);
+               url::Origin origin,
+               IsPublicSuffixMatch is_public_suffix_match,
+               IsAffiliationBasedMatch is_affiliation_based_match);
+  UiCredential(const autofill::PasswordForm& form,
+               const url::Origin& affiliated_origin);
   UiCredential(UiCredential&&);
   UiCredential(const UiCredential&);
   UiCredential& operator=(UiCredential&&);
@@ -40,17 +45,22 @@ class UiCredential {
 
   const base::string16& password() const { return password_; }
 
-  const GURL& origin_url() const { return origin_url_; }
+  const url::Origin& origin() const { return origin_; }
 
   IsPublicSuffixMatch is_public_suffix_match() const {
     return is_public_suffix_match_;
   }
 
+  IsAffiliationBasedMatch is_affiliation_based_match() const {
+    return is_affiliation_based_match_;
+  }
+
  private:
   base::string16 username_;
   base::string16 password_;
-  GURL origin_url_;  // Could be android:// which url::Origin doesn't support.
+  url::Origin origin_;
   IsPublicSuffixMatch is_public_suffix_match_{false};
+  IsAffiliationBasedMatch is_affiliation_based_match_{false};
 };
 
 bool operator==(const UiCredential& lhs, const UiCredential& rhs);

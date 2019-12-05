@@ -59,7 +59,7 @@ class IdleTimeEstimatorTest : public testing::Test {
     base::TimeDelta non_idle_time =
         base::TimeDelta::FromMilliseconds(compositor_time);
     base::PendingTask task(FROM_HERE, base::OnceClosure());
-    estimator_->WillProcessTask(task);
+    estimator_->WillProcessTask(task, /*was_blocked_or_low_priority=*/false);
     task_environment_.FastForwardBy(non_idle_time);
     estimator_->DidCommitFrameToCompositor();
     estimator_->DidProcessTask(task);
@@ -74,11 +74,11 @@ class IdleTimeEstimatorTest : public testing::Test {
     base::TimeDelta non_idle_time2 =
         base::TimeDelta::FromMilliseconds(compositor_time2);
     base::PendingTask task(FROM_HERE, base::OnceClosure());
-    estimator_->WillProcessTask(task);
+    estimator_->WillProcessTask(task, /*was_blocked_or_low_priority=*/false);
     task_environment_.FastForwardBy(non_idle_time1);
     estimator_->DidProcessTask(task);
 
-    estimator_->WillProcessTask(task);
+    estimator_->WillProcessTask(task, /*was_blocked_or_low_priority=*/false);
     task_environment_.FastForwardBy(non_idle_time2);
     estimator_->DidCommitFrameToCompositor();
     estimator_->DidProcessTask(task);
@@ -152,7 +152,7 @@ TEST_F(IdleTimeEstimatorTest, IgnoresNestedTasks) {
   SimulateFrameWithOneCompositorTask(5);
 
   base::PendingTask task(FROM_HERE, base::OnceClosure());
-  estimator_->WillProcessTask(task);
+  estimator_->WillProcessTask(task, /*was_blocked_or_low_priority=*/false);
   SimulateFrameWithTwoCompositorTasks(4, 4);
   SimulateFrameWithTwoCompositorTasks(4, 4);
   SimulateFrameWithTwoCompositorTasks(4, 4);

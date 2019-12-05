@@ -29,7 +29,7 @@
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
-#include "components/viz/service/display/overlay_candidate_validator.h"
+#include "components/viz/service/display/overlay_candidate_validator_strategy.h"
 #include "components/viz/service/display/overlay_processor.h"
 #include "components/viz/service/display/overlay_strategy_fullscreen.h"
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
@@ -69,12 +69,10 @@ const gfx::Transform kSwapTransform =
     gfx::Transform(0, 1, 1, 0, 0, 0);  // x,y -> y,x.
 const gfx::BufferFormat kDefaultBufferFormat = gfx::BufferFormat::RGBA_8888;
 
-class TestOverlayCandidateValidator : public OverlayCandidateValidator {
+class TestOverlayCandidateValidator : public OverlayCandidateValidatorStrategy {
  public:
   size_t GetStrategyCount() const { return strategies_.size(); }
 
-  bool AllowCALayerOverlays() const override { return false; }
-  bool AllowDCLayerOverlays() const override { return false; }
   bool NeedsSurfaceOccludingDamageRect() const override { return false; }
   void CheckOverlaySupport(const PrimaryPlane* primary_plane,
                            OverlayCandidateList* surfaces) override {}
@@ -85,8 +83,6 @@ class FullscreenOverlayValidator : public TestOverlayCandidateValidator {
   void InitializeStrategies() override {
     strategies_.push_back(std::make_unique<OverlayStrategyFullscreen>(this));
   }
-  bool AllowCALayerOverlays() const override { return false; }
-  bool AllowDCLayerOverlays() const override { return false; }
   bool NeedsSurfaceOccludingDamageRect() const override { return true; }
   void CheckOverlaySupport(const PrimaryPlane* primary_plane,
                            OverlayCandidateList* surfaces) override {
@@ -102,8 +98,6 @@ class SingleOverlayValidator : public TestOverlayCandidateValidator {
     strategies_.push_back(std::make_unique<OverlayStrategySingleOnTop>(this));
     strategies_.push_back(std::make_unique<OverlayStrategyUnderlay>(this));
   }
-  bool AllowCALayerOverlays() const override { return false; }
-  bool AllowDCLayerOverlays() const override { return false; }
   bool NeedsSurfaceOccludingDamageRect() const override { return true; }
   void CheckOverlaySupport(const PrimaryPlane* primary_plane,
                            OverlayCandidateList* surfaces) override {
@@ -143,22 +137,18 @@ class SingleOverlayValidator : public TestOverlayCandidateValidator {
   std::vector<gfx::RectF> expected_rects_;
 };
 
-class CALayerValidator : public TestOverlayCandidateValidator {
+class CALayerValidator : public OverlayCandidateValidator {
  public:
   bool AllowCALayerOverlays() const override { return true; }
   bool AllowDCLayerOverlays() const override { return false; }
   bool NeedsSurfaceOccludingDamageRect() const override { return false; }
-  void CheckOverlaySupport(const PrimaryPlane* primary_plane,
-                           OverlayCandidateList* surfaces) override {}
 };
 
-class DCLayerValidator : public TestOverlayCandidateValidator {
+class DCLayerValidator : public OverlayCandidateValidator {
  public:
   bool AllowCALayerOverlays() const override { return false; }
   bool AllowDCLayerOverlays() const override { return true; }
   bool NeedsSurfaceOccludingDamageRect() const override { return true; }
-  void CheckOverlaySupport(const PrimaryPlane* primary_plane,
-                           OverlayCandidateList* surfaces) override {}
 };
 
 class SingleOnTopOverlayValidator : public SingleOverlayValidator {

@@ -87,14 +87,6 @@ void OverlayCandidateValidatorOzone::InitializeStrategies() {
   }
 }
 
-bool OverlayCandidateValidatorOzone::AllowCALayerOverlays() const {
-  return false;
-}
-
-bool OverlayCandidateValidatorOzone::AllowDCLayerOverlays() const {
-  return false;
-}
-
 bool OverlayCandidateValidatorOzone::NeedsSurfaceOccludingDamageRect() const {
   return true;
 }

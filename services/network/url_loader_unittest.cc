@@ -2293,7 +2293,7 @@ TEST_F(URLLoaderTest, RedirectSecHeadersUser) {
   request.trusted_params->has_user_activation = true;
 
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = mojom::kBrowserProcessId;
@@ -2301,8 +2301,8 @@ TEST_F(URLLoaderTest, RedirectSecHeadersUser) {
       context(), nullptr /* network_service_client */,
       nullptr /* network_context_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
-      client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      loader.InitWithNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone,
+      request, client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, 0 /* keepalive_request_size */,
       resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,
@@ -2325,7 +2325,7 @@ TEST_F(URLLoaderTest, RedirectDirectlyModifiedSecHeadersUser) {
   request.headers.SetHeader("Sec-Fetch-User", "?1");
 
   base::RunLoop delete_run_loop;
-  mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<mojom::URLLoader> loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
   params.process_id = mojom::kBrowserProcessId;
@@ -2333,8 +2333,8 @@ TEST_F(URLLoaderTest, RedirectDirectlyModifiedSecHeadersUser) {
       context(), nullptr /* network_service_client */,
       nullptr /* network_context_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
-      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
-      client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      loader.InitWithNewPipeAndPassReceiver(), mojom::kURLLoadOptionNone,
+      request, client()->CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
       0 /* request_id */, 0 /* keepalive_request_size */,
       resource_scheduler_client(), nullptr,
       nullptr /* network_usage_accumulator */, nullptr /* header_client */,

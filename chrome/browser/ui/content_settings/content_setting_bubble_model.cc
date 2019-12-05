@@ -29,10 +29,10 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/permission_bubble_media_access_handler.h"
 #include "chrome/browser/media/webrtc/system_media_capture_permissions_mac.h"
-#include "chrome/browser/permissions/permission_features.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
+#include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/profiles/profile.h"
@@ -1625,12 +1625,12 @@ ContentSettingNotificationsBubbleModel::ContentSettingNotificationsBubbleModel(
       IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_ALLOW_BUTTON));
   set_show_learn_more(false);
 
-  if (QuietNotificationsPromptConfig::UIFlavorToUse() ==
-      QuietNotificationsPromptConfig::UIFlavor::ANIMATED_ICON) {
+  if (QuietNotificationPermissionUiConfig::UiFlavorToUse() ==
+      QuietNotificationPermissionUiConfig::UiFlavor::ANIMATED_ICON) {
     base::RecordAction(
         base::UserMetricsAction("Notifications.Quiet.AnimatedIconClicked"));
-  } else if (QuietNotificationsPromptConfig::UIFlavorToUse() ==
-             QuietNotificationsPromptConfig::UIFlavor::STATIC_ICON) {
+  } else if (QuietNotificationPermissionUiConfig::UiFlavorToUse() ==
+             QuietNotificationPermissionUiConfig::UiFlavor::STATIC_ICON) {
     base::RecordAction(
         base::UserMetricsAction("Notifications.Quiet.StaticIconClicked"));
   }

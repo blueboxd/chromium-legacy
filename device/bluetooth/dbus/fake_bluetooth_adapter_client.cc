@@ -203,18 +203,18 @@ void FakeBluetoothAdapterClient::StopDiscovery(
 
 void FakeBluetoothAdapterClient::PauseDiscovery(
     const dbus::ObjectPath& object_path,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback) {
   ++pause_count_;
-  callback.Run();
+  std::move(callback).Run();
 }
 
 void FakeBluetoothAdapterClient::UnpauseDiscovery(
     const dbus::ObjectPath& object_path,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback) {
   ++unpause_count_;
-  callback.Run();
+  std::move(callback).Run();
 }
 
 void FakeBluetoothAdapterClient::RemoveDevice(

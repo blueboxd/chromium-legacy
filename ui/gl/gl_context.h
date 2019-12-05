@@ -37,7 +37,7 @@ class GLContextVirtual;
 namespace gl {
 
 struct CurrentGL;
-class DebugGLApi;
+class LogGLApi;
 struct DriverGL;
 class GLApi;
 class GLFence;
@@ -287,7 +287,7 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   std::unique_ptr<DriverGL> driver_gl_;
   std::unique_ptr<GLApi> gl_api_;
   std::unique_ptr<TraceGLApi> trace_gl_api_;
-  std::unique_ptr<DebugGLApi> debug_gl_api_;
+  std::unique_ptr<LogGLApi> log_gl_api_;
   std::unique_ptr<CurrentGL> current_gl_;
 
   // Copy of the real API (if one was created) for dynamic initialization

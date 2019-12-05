@@ -105,6 +105,9 @@ public class BottomSheetController implements Destroyable {
     /** The height of the shadow that sits above the toolbar. */
     private final int mToolbarShadowHeight;
 
+    /** The offset of the toolbar shadow from the top that remains empty. */
+    private final int mShadowTopOffset;
+
     /** The parameters that control how the scrim behaves while the sheet is open. */
     private ScrimParams mScrimParams;
 
@@ -162,6 +165,8 @@ public class BottomSheetController implements Destroyable {
         mPendingSheetObservers = new ArrayList<>();
         mToolbarShadowHeight =
                 scrim.getResources().getDimensionPixelOffset(BottomSheet.getTopShadowResourceId());
+        mShadowTopOffset = scrim.getResources().getDimensionPixelOffset(
+                BottomSheet.getShadowTopOffsetResourceId());
 
         mPendingSheetObservers.add(new EmptyBottomSheetObserver() {
             /** The token used to enable browser controls persistence. */
@@ -422,7 +427,7 @@ public class BottomSheetController implements Destroyable {
 
     /** @return The height of the shadow above the bottom sheet in px. */
     public int getTopShadowHeight() {
-        return mToolbarShadowHeight;
+        return mToolbarShadowHeight + mShadowTopOffset;
     }
 
     /**

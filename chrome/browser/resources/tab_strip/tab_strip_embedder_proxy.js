@@ -55,6 +55,14 @@ export class TabStripEmbedderProxy {
   reportTabActivationDuration(durationMs) {
     chrome.send('reportTabActivationDuration', [durationMs]);
   }
+
+  /**
+   * @param {number} tabCount Number of tabs.
+   * @param {number} durationMs Activation duration time in ms.
+   */
+  reportTabDataReceivedDuration(tabCount, durationMs) {
+    chrome.send('reportTabDataReceivedDuration', [tabCount, durationMs]);
+  }
 }
 
 addSingletonGetter(TabStripEmbedderProxy);

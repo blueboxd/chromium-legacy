@@ -102,6 +102,7 @@ component("web_engine_core") {
     "//ui/base",
     "//ui/base/ime",
     "//ui/display",
+    "//ui/gfx",
     "//ui/ozone",
     "//ui/platform_window",
     "//ui/wm",
@@ -252,6 +253,7 @@ test("web_engine_browsertests") {
     "browser/content_directory_browsertest.cc",
     "browser/context_impl_browsertest.cc",
     "browser/frame_impl_browsertest.cc",
+    "browser/headless_browsertest.cc",
     "browser/media_browsertest.cc",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
@@ -268,6 +270,7 @@ test("web_engine_browsertests") {
     "//testing/gtest",
     "//third_party/fuchsia-sdk/sdk:fuchsia-accessibility-semantics",
     "//third_party/fuchsia-sdk/sdk:scenic_cpp",
+    "//ui/gfx",
     "//ui/ozone",
   ]
 }

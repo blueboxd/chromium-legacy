@@ -249,6 +249,8 @@ OptimizationGuideKeyedService::CanApplyOptimization(
 void OptimizationGuideKeyedService::ClearData() {
   if (hints_manager_)
     hints_manager_->ClearFetchedHints();
+  if (prediction_manager_)
+    prediction_manager_->ClearHostModelFeatures();
 }
 
 void OptimizationGuideKeyedService::Shutdown() {

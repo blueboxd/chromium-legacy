@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/containers/span.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)

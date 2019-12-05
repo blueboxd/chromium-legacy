@@ -495,6 +495,9 @@
         # crbug.com/868082
         'args': [
           '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
+          # TODO(https://crbug.com/1007013): Remove this flag when it's no
+          # longer necessary to figure out why the renderer process is crashing.
+          '--no-sandbox',
         ],
       },
       'Win10 Tests x64': {
@@ -1353,6 +1356,7 @@
       'Linux Tests': {
         "args": [
           "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
+          "--fuzzy-diff",
         ],
       },
     },
@@ -1950,6 +1954,7 @@
       'devtools_frontend_linux_blink_light_rel': {
         'args': [
           'http/tests/devtools',
+          '--fuzzy-diff',
         ],
         'swarming': {
           'shards': 4,
@@ -1969,23 +1974,27 @@
           '--debug',
           '--additional-driver-flag=--enable-features=BackForwardCache',
           '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=BackForwardCache',
+          '--fuzzy-diff',
         ],
       },
       'linux-blink-animation-use-time-delta': {
         'args': [
           '--debug',
+          '--fuzzy-diff',
         ],
       },
       'linux-blink-heap-concurrent-marking-tsan-rel': {
         'args': [
           '--release',
           '--additional-driver-flag=--enable-features=BlinkHeapConcurrentMarking',
+          '--fuzzy-diff',
         ],
       },
       'linux-oor-cors-rel': {
         'args': [
           '--additional-driver-flag=--enable-features=OutOfBlinkCors',
           '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=OutOfBlinkCors'
+          '--fuzzy-diff',
         ],
       },
       'mac10.10-blink-rel-dummy': {
@@ -2016,11 +2025,13 @@
       'WebKit Linux composite_after_paint Dummy Builder': {
         'args': [
           '--additional-driver-flag=--enable-blink-features=CompositeAfterPaint',
+          '--fuzzy-diff',
         ],
       },
       'WebKit Linux layout_ng_disabled Builder': {
         'args': [
           '--additional-driver-flag=--disable-blink-features=LayoutNG',
+          '--fuzzy-diff',
         ],
       },
       # chromium.linux
@@ -2035,15 +2046,22 @@
       'Linux Tests': {
         "args": [
           "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
+          "--fuzzy-diff",
         ],
       },
       'Linux Tests (dbg)(1)': {
         'args': [
           '--debug',
+          '--fuzzy-diff',
         ],
         'swarming': {
           'shards': 20,
         },
+      },
+      'linux-trusty-rel': {
+        'args': [
+          '--fuzzy-diff',
+        ],
       },
       # chromium.mac
       'Mac10.10 Tests': {
@@ -2100,6 +2118,7 @@
           '--time-out-ms',
           '48000',
           '--enable-sanitizer',
+          '--fuzzy-diff',
         ],
         'swarming': {
           'shards': 20,
@@ -2112,6 +2131,7 @@
           '--time-out-ms',
           '48000',
           '--enable-leak-detection',
+          '--fuzzy-diff',
         ],
         'swarming': {
           'shards': 10,
@@ -2124,6 +2144,7 @@
           '--time-out-ms',
           '66000',
           '--enable-sanitizer',
+          '--fuzzy-diff',
         ],
         'swarming': {
           'expiration': 36000,
@@ -2188,22 +2209,26 @@
       'linux-layout-tests-fragment-item': {
         'args': [
           '--additional-driver-flag=--enable-blink-features=LayoutNGFragmentItem',
+          '--fuzzy-diff',
         ],
       },
       'linux-layout-tests-fragment-paint': {
         'args': [
           '--additional-driver-flag=--enable-blink-features=LayoutNGFragmentPaint',
+          '--fuzzy-diff',
         ],
       },
       # client.v8.fyi
       'V8 Blink Linux Debug': {
         'args': [
           '--debug',
+          '--fuzzy-diff',
         ],
       },
       'V8 Blink Linux Future': {
         'args': [
           '--additional-driver-flag=--js-flags=--future',
+          '--fuzzy-diff',
         ],
       },
     },

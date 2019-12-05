@@ -219,7 +219,8 @@ struct NetworkContextParams {
   // Handles PAC script execution. If not populated, will attempt to use
   // platform implementation to execute PAC scripts, if available (Only
   // available on Windows and Mac).
-  proxy_resolver.mojom.ProxyResolverFactory? proxy_resolver_factory;
+  pending_remote<proxy_resolver.mojom.ProxyResolverFactory>?
+      proxy_resolver_factory;
 
   // Retrieves the PAC script URL set via DHCP from the browser process. Only
   // used if |proxy_resolver_factory| is set. Note: optional because some tests

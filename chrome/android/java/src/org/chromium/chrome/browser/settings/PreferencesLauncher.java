@@ -12,14 +12,7 @@ import android.support.v4.app.Fragment;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.settings.autofill.AutofillPaymentMethodsFragment;
-import org.chromium.chrome.browser.settings.autofill.AutofillProfilesFragment;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.content_public.browser.WebContents;
-
-import java.lang.ref.WeakReference;
 
 /**
  * A utility class for launching Chrome Settings.
@@ -85,24 +78,5 @@ public class PreferencesLauncher {
             intent.putExtra(SettingsActivity.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
         }
         return intent;
-    }
-
-    @CalledByNative
-    private static void showAutofillProfileSettings(WebContents webContents) {
-        RecordUserAction.record("AutofillAddressesViewed");
-        showSettingSubpage(webContents, AutofillProfilesFragment.class);
-    }
-
-    @CalledByNative
-    private static void showAutofillCreditCardSettings(WebContents webContents) {
-        RecordUserAction.record("AutofillCreditCardsViewed");
-        showSettingSubpage(webContents, AutofillPaymentMethodsFragment.class);
-    }
-
-    private static void showSettingSubpage(
-            WebContents webContents, Class<? extends Fragment> fragment) {
-        WeakReference<Activity> currentActivity =
-                webContents.getTopLevelNativeWindow().getActivity();
-        launchSettingsPage(currentActivity.get(), fragment);
     }
 }

@@ -167,8 +167,8 @@ CurrentGL* GLContext::GetCurrentGL() {
     }
 
     if (GetDebugGLBindingsInitializedGL()) {
-      debug_gl_api_ = std::make_unique<DebugGLApi>(final_api);
-      final_api = debug_gl_api_.get();
+      log_gl_api_ = std::make_unique<LogGLApi>(final_api);
+      final_api = log_gl_api_.get();
     }
 
     current_gl_ = std::make_unique<CurrentGL>();

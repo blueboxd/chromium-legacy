@@ -197,7 +197,8 @@ class TaskObserver : public base::TaskObserver {
   ~TaskObserver() override = default;
 
   // TaskObserver:
-  void WillProcessTask(const base::PendingTask& pending_task) override {}
+  void WillProcessTask(const base::PendingTask& /* pending_task */,
+                       bool /* was_blocked_or_low_priority */) override {}
   void DidProcessTask(const base::PendingTask& pending_task) override {
     processed_ = true;
   }

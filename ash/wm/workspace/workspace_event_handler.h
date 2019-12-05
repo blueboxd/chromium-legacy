@@ -38,12 +38,13 @@ class ASH_EXPORT WorkspaceEventHandler : public ui::EventHandler {
  private:
   friend class WorkspaceEventHandlerTestHelper;
 
-  // Determines if |event| corresponds to a double click on either the top or
-  // bottom vertical resize edge, and if so toggles the vertical height of the
-  // window between its restored state and the full available height of the
-  // workspace.
-  void HandleVerticalResizeDoubleClick(WindowState* window_state,
-                                       ui::MouseEvent* event);
+  // Determines if |event| corresponds to a double click on a resize edge, and
+  // if so toggles the width/height of the window (width when the left or right
+  // edge is double clicked, height when the top or bottom edge is double
+  // clicked) between its restored state and the full available width/height of
+  // the workspace.
+  void HandleResizeDoubleClick(WindowState* window_state,
+                               ui::MouseEvent* event);
 
   aura::Window* workspace_window_;
 

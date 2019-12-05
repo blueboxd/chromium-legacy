@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.payments.handler;
 
+import android.os.Handler;
+
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.payments.ServiceWorkerPaymentAppBridge;
 import org.chromium.chrome.browser.payments.SslValidityChecker;
@@ -31,6 +33,7 @@ import org.chromium.ui.modelutil.PropertyModel;
     // null.
     private final WebContents mWebContentsRef;
     private final PaymentHandlerUiObserver mPaymentHandlerUiObserver;
+    private final Handler mHandler = new Handler();
 
     /**
      * Build a new mediator that handle events from outside the payment handler component.
@@ -57,7 +60,7 @@ import org.chromium.ui.modelutil.PropertyModel;
         switch (newState) {
             case BottomSheetController.SheetState.HIDDEN:
                 ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(mWebContentsRef);
-                mHider.run();
+                mHandler.post(mHider);
                 break;
         }
     }
@@ -90,7 +93,7 @@ import org.chromium.ui.modelutil.PropertyModel;
         if (!SslValidityChecker.isValidPageInPaymentHandlerWindow(mWebContentsRef)) {
             ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindowForInsecureNavigation(
                     mWebContentsRef);
-            mHider.run();
+            mHandler.post(mHider);
         }
     }
 
@@ -98,7 +101,7 @@ import org.chromium.ui.modelutil.PropertyModel;
     public void didAttachInterstitialPage() {
         ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindowForInsecureNavigation(
                 mWebContentsRef);
-        mHider.run();
+        mHandler.post(mHider);
     }
 
     @Override
@@ -106,20 +109,20 @@ import org.chromium.ui.modelutil.PropertyModel;
             boolean isMainFrame, int errorCode, String description, String failingUrl) {
         // TODO(crbug.com/1017926): Respond to service worker with the net error.
         ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(mWebContentsRef);
-        mHider.run();
+        mHandler.post(mHider);
     }
 
     // PaymentHandlerToolbarObserver:
     @Override
     public void onToolbarCloseButtonClicked() {
         ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(mWebContentsRef);
-        mHider.run();
+        mHandler.post(mHider);
     }
 
     @Override
     public void onToolbarError() {
         // TODO(maxlg): send an error message to users.
         ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(mWebContentsRef);
-        mHider.run();
+        mHandler.post(mHider);
     }
 }

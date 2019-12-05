@@ -41,7 +41,7 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
     # This has failed to repro either locally or on swarming, so dump extra
     # information if this is hit on the bots.
     if len(all_unsymbolized_paths) != 1:
-      self._browser.LogSymbolizedUnsymbolizedMinidumps(logging.ERROR)
+      self._browser.CollectDebugData(logging.ERROR)
     self.assertTrue(len(all_unsymbolized_paths) == 1)
 
     # Now symbolize that minidump and make sure there are no longer any present
@@ -77,7 +77,7 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
     # This has failed to repro either locally or on swarming, so dump extra
     # information if this is hit on the bots.
     if len(all_paths) != 1:
-      self._browser.LogSymbolizedUnsymbolizedMinidumps(logging.ERROR)
+      self._browser.CollectDebugData(logging.ERROR)
     self.assertEquals(len(all_paths), 1)
     self.assertEqual(all_paths[0], first_crash_path)
     all_unsymbolized_paths = self._browser.GetAllUnsymbolizedMinidumpPaths()

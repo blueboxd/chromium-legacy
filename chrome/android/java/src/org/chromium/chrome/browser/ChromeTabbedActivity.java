@@ -40,6 +40,7 @@ import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.ObservableSupplier;
 import org.chromium.base.ObservableSupplierImpl;
 import org.chromium.base.ObserverList;
+import org.chromium.base.Supplier;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -80,7 +81,6 @@ import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
-import org.chromium.chrome.browser.fullscreen.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.gesturenav.NavigationSheet;
 import org.chromium.chrome.browser.gesturenav.TabbedSheetDelegate;
 import org.chromium.chrome.browser.incognito.IncognitoNotificationManager;
@@ -113,14 +113,11 @@ import org.chromium.chrome.browser.snackbar.undo.UndoBarController;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporterBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.survey.ChromeSurveyController;
-import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
-import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate;
-import org.chromium.chrome.browser.tab_activity_glue.TabDelegateFactoryImpl;
 import org.chromium.chrome.browser.tabbed_mode.TabbedAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.tabbed_mode.TabbedRootUiCoordinator;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
@@ -163,7 +160,6 @@ import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.PageTransition;
-import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.widget.Toast;
 
@@ -435,51 +431,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
                 return false;
             }
             return super.isAssistSupported();
-        }
-    }
-
-    // TODO(mthiesse): Move VR control visibility handling into ChromeActivity. crbug.com/688611
-    private static class TabbedModeBrowserControlsVisibilityDelegate
-            extends TabStateBrowserControlsVisibilityDelegate {
-        public TabbedModeBrowserControlsVisibilityDelegate(Tab tab) {
-            super(tab);
-        }
-
-        @Override
-        public boolean canShowBrowserControls() {
-            if (VrModuleProvider.getDelegate().isInVr()) return false;
-            return super.canShowBrowserControls();
-        }
-
-        @Override
-        public boolean canAutoHideBrowserControls() {
-            if (VrModuleProvider.getDelegate().isInVr()) return true;
-            return super.canAutoHideBrowserControls();
-        }
-    }
-
-    private class TabbedModeTabDelegateFactory extends TabDelegateFactoryImpl {
-        private TabbedModeTabDelegateFactory() {
-            super(ChromeTabbedActivity.this);
-        }
-
-        @Override
-        public BrowserControlsVisibilityDelegate createBrowserControlsVisibilityDelegate(Tab tab) {
-            return new ComposedBrowserControlsVisibilityDelegate(
-                    new TabbedModeBrowserControlsVisibilityDelegate(tab),
-                    getFullscreenManager().getBrowserVisibilityDelegate());
-        }
-    }
-
-    private class TabbedModeTabCreator extends ChromeTabCreator {
-        public TabbedModeTabCreator(
-                ChromeTabbedActivity activity, WindowAndroid nativeWindow, boolean incognito) {
-            super(activity, nativeWindow, getStartupTabPreloader(), incognito);
-        }
-
-        @Override
-        public TabDelegateFactory createDefaultTabDelegateFactory() {
-            return new TabbedModeTabDelegateFactory();
         }
     }
 
@@ -1685,10 +1636,14 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
     }
 
     @Override
-    protected Pair<TabbedModeTabCreator, TabbedModeTabCreator> createTabCreators() {
-        return Pair.create(
-                new TabbedModeTabCreator(this, getWindowAndroid(), false),
-                new TabbedModeTabCreator(this, getWindowAndroid(), true));
+    protected Pair<ChromeTabCreator, ChromeTabCreator> createTabCreators() {
+        Supplier<TabDelegateFactory> tabDelegateFactorySupplier = () -> {
+            return new TabbedModeTabDelegateFactory(this);
+        };
+        return Pair.create(new ChromeTabCreator(this, getWindowAndroid(), getStartupTabPreloader(),
+                                   tabDelegateFactorySupplier, false),
+                new ChromeTabCreator(this, getWindowAndroid(), getStartupTabPreloader(),
+                        tabDelegateFactorySupplier, true));
     }
 
     @Override

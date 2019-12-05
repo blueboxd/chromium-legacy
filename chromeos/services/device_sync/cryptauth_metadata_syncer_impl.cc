@@ -362,7 +362,8 @@ void CryptAuthMetadataSyncerImpl::CreateGroupKey() {
 }
 
 void CryptAuthMetadataSyncerImpl::OnGroupKeyCreated(
-    const base::flat_map<CryptAuthKeyBundle::Name, CryptAuthKey>& new_keys,
+    const base::flat_map<CryptAuthKeyBundle::Name,
+                         base::Optional<CryptAuthKey>>& new_keys,
     const base::Optional<CryptAuthKey>& client_ephemeral_dh) {
   DCHECK_EQ(State::kWaitingForGroupKeyCreation, state_);
 
@@ -372,7 +373,14 @@ void CryptAuthMetadataSyncerImpl::OnGroupKeyCreated(
   const auto it = new_keys.find(
       CryptAuthKeyBundle::Name::kDeviceSyncBetterTogetherGroupKey);
   DCHECK(it != new_keys.end());
-  new_group_key_ = std::make_unique<CryptAuthKey>(it->second);
+
+  if (!it->second) {
+    FinishAttempt(
+        CryptAuthDeviceSyncResult::ResultCode::kErrorCreatingGroupKey);
+    return;
+  }
+
+  new_group_key_ = std::make_unique<CryptAuthKey>(*it->second);
 
   AttemptNextStep();
 }

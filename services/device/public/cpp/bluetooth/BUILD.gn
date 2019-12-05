@@ -27,6 +27,7 @@ source_set("bluetooth_tests") {
   deps = [
     ":bluetooth",
     "//base",
+    "//device/bluetooth/strings:strings_grit",
     "//services/device/public/mojom",
     "//testing/gtest",
     "//ui/base",

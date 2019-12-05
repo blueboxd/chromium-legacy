@@ -17,9 +17,6 @@ namespace utils = extension_function_test_utils;
 
 namespace extensions {
 
-ExtensionApiUnittest::ExtensionApiUnittest() {
-}
-
 ExtensionApiUnittest::~ExtensionApiUnittest() {
 }
 

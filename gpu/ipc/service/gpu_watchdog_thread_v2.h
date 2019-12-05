@@ -74,7 +74,8 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   void ReportProgress() override;
 
   // Implements TaskObserver.
-  void WillProcessTask(const base::PendingTask& pending_task) override;
+  void WillProcessTask(const base::PendingTask& pending_task,
+                       bool was_blocked_or_low_priority) override;
   void DidProcessTask(const base::PendingTask& pending_task) override;
 
   // Implements base::PowerObserver.

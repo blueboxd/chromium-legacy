@@ -56,8 +56,6 @@ constexpr double kMinDistance = std::numeric_limits<int>::lowest();
 
 constexpr int kFudgeFactor = 2;
 
-static void DeflateIfOverlapped(PhysicalRect&, PhysicalRect&);
-
 FocusCandidate::FocusCandidate(Node* node, SpatialNavigationDirection direction)
     : visible_node(nullptr), focusable_node(nullptr), is_offscreen(true) {
   DCHECK(node);
@@ -311,22 +309,6 @@ bool ScrollInDirection(Node* container, SpatialNavigationDirection direction) {
 
   scroller->ScrollBy(ScrollOffset(dx, dy), kUserScroll);
   return true;
-}
-
-static void DeflateIfOverlapped(PhysicalRect& a, PhysicalRect& b) {
-  if (!a.Intersects(b) || a.Contains(b) || b.Contains(a))
-    return;
-
-  LayoutUnit deflate_factor = LayoutUnit(-kFudgeFactor);
-
-  // Avoid negative width or height values.
-  if ((a.Width() + 2 * deflate_factor > 0) &&
-      (a.Height() + 2 * deflate_factor > 0))
-    a.Inflate(deflate_factor);
-
-  if ((b.Width() + 2 * deflate_factor > 0) &&
-      (b.Height() + 2 * deflate_factor > 0))
-    b.Inflate(deflate_factor);
 }
 
 bool IsScrollableNode(const Node* node) {
@@ -630,7 +612,6 @@ double ComputeDistanceDataForNode(SpatialNavigationDirection direction,
   } else if (!IsRectInDirection(direction, current_rect, node_rect)) {
     return kMaxDistance;
   } else {
-    DeflateIfOverlapped(current_rect, node_rect);
     PhysicalRect intersection_rect = Intersection(current_rect, node_rect);
     overlap =
         (intersection_rect.Width() * intersection_rect.Height()).ToDouble();

@@ -19,22 +19,22 @@ AppCacheRequest::~AppCacheRequest() {
 }
 
 bool AppCacheRequest::IsSuccess() const {
-  if (response_.headers)
+  if (response_ && response_->headers)
     return true;
   return false;
 }
 
 int AppCacheRequest::GetResponseCode() const {
-  if (response_.headers)
-    return response_.headers->response_code();
+  if (response_ && response_->headers)
+    return response_->headers->response_code();
   return 0;
 }
 
 std::string AppCacheRequest::GetResponseHeaderByName(
     const std::string& name) const {
   std::string header;
-  if (response_.headers)
-    response_.headers->GetNormalizedHeader(name, &header);
+  if (response_ && response_->headers)
+    response_->headers->GetNormalizedHeader(name, &header);
   return header;
 }
 
@@ -58,8 +58,8 @@ void AppCacheRequest::set_request(const network::ResourceRequest& request) {
 }
 
 void AppCacheRequest::set_response(
-    const network::ResourceResponseHead& response) {
-  response_ = response;
+    network::mojom::URLResponseHeadPtr response) {
+  response_ = std::move(response);
 }
 
 base::WeakPtr<AppCacheRequest> AppCacheRequest::GetWeakPtr() {

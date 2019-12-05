@@ -187,11 +187,10 @@ void TrayBluetoothHelperLegacy::StartBluetoothDiscovering() {
   }
   VLOG(1) << "Requesting new Bluetooth device discovery session.";
   should_run_discovery_ = true;
-  // TODO(crbug/1007780): This function should take OnceCallbacks.
   adapter_->StartDiscoverySession(
-      base::BindRepeating(&TrayBluetoothHelperLegacy::OnStartDiscoverySession,
-                          weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&BluetoothSetDiscoveringError));
+      base::BindOnce(&TrayBluetoothHelperLegacy::OnStartDiscoverySession,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&BluetoothSetDiscoveringError));
 }
 
 void TrayBluetoothHelperLegacy::StopBluetoothDiscovering() {
@@ -234,21 +233,19 @@ void TrayBluetoothHelperLegacy::ConnectToBluetoothDevice(
       return;
     }
 
-    // TODO(crbug/1007780): This function should take OnceCallbacks.
     device->Connect(nullptr /* pairing_delegate */,
-                    base::BindRepeating(&OnBluetoothDeviceConnect,
-                                        true /* was_device_already_paired */),
-                    base::BindRepeating(&OnBluetoothDeviceConnectError,
-                                        true /* was_device_already_paired */));
+                    base::BindOnce(&OnBluetoothDeviceConnect,
+                                   true /* was_device_already_paired */),
+                    base::BindOnce(&OnBluetoothDeviceConnectError,
+                                   true /* was_device_already_paired */));
     return;
   }
 
   // Simply connect without pairing for devices which do not support pairing.
   if (!device->IsPairable()) {
-    // TODO(crbug/1007780): This function should take OnceCallbacks.
     device->Connect(nullptr /* pairing_delegate */, base::DoNothing(),
-                    base::BindRepeating(&OnBluetoothDeviceConnectError,
-                                        false /* was_device_already_paired */));
+                    base::BindOnce(&OnBluetoothDeviceConnectError,
+                                   false /* was_device_already_paired */));
     return;
   }
 

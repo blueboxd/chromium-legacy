@@ -56,18 +56,19 @@ FakeBleSynchronizer::GetUnregisterErrorCallback(size_t index) {
   return command_queue()[index]->unregister_args->error_callback;
 }
 
-const device::BluetoothAdapter::DiscoverySessionCallback&
-FakeBleSynchronizer::GetStartDiscoveryCallback(size_t index) {
+device::BluetoothAdapter::DiscoverySessionCallback
+FakeBleSynchronizer::TakeStartDiscoveryCallback(size_t index) {
   DCHECK(command_queue().size() >= index);
   DCHECK(command_queue()[index]->command_type == CommandType::START_DISCOVERY);
-  return command_queue()[index]->start_discovery_args->callback;
+  return std::move(command_queue()[index]->start_discovery_args->callback);
 }
 
-const device::BluetoothAdapter::ErrorCallback&
-FakeBleSynchronizer::GetStartDiscoveryErrorCallback(size_t index) {
+device::BluetoothAdapter::ErrorCallback
+FakeBleSynchronizer::TakeStartDiscoveryErrorCallback(size_t index) {
   DCHECK(command_queue().size() >= index);
   DCHECK(command_queue()[index]->command_type == CommandType::START_DISCOVERY);
-  return command_queue()[index]->start_discovery_args->error_callback;
+  return std::move(
+      command_queue()[index]->start_discovery_args->error_callback);
 }
 
 const base::Closure& FakeBleSynchronizer::GetStopDiscoveryCallback(

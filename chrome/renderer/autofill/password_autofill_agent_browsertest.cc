@@ -1153,13 +1153,11 @@ TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_FormWithoutPasswords) {
   LoadHTML(kFormWithoutPasswordsHTML);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(fake_driver_.called_password_forms_parsed());
-  ASSERT_TRUE(fake_driver_.password_forms_parsed());
-  EXPECT_FALSE(fake_driver_.password_forms_parsed()->empty());
+  EXPECT_FALSE(fake_driver_.called_password_forms_parsed());
 
   EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
   ASSERT_TRUE(fake_driver_.password_forms_rendered());
-  EXPECT_FALSE(fake_driver_.password_forms_rendered()->empty());
+  EXPECT_TRUE(fake_driver_.password_forms_rendered()->empty());
 }
 
 TEST_F(PasswordAutofillAgentTest,
@@ -1172,7 +1170,7 @@ TEST_F(PasswordAutofillAgentTest,
       "document.getElementById('random_field').type = 'password';";
   ExecuteJavaScriptForTests(script.c_str());
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(fake_driver_.called_password_forms_parsed());
+  EXPECT_FALSE(fake_driver_.called_password_forms_parsed());
 
   // When the user clicks on the field, a request to the store will be sent.
   EXPECT_TRUE(SimulateElementClick("random_field"));
@@ -1183,7 +1181,7 @@ TEST_F(PasswordAutofillAgentTest,
 
   EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
   ASSERT_TRUE(fake_driver_.password_forms_rendered());
-  EXPECT_FALSE(fake_driver_.password_forms_rendered()->empty());
+  EXPECT_TRUE(fake_driver_.password_forms_rendered()->empty());
 }
 
 TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_NonDisplayedForm) {

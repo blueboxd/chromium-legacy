@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/run_loop.h"
@@ -218,7 +219,7 @@ bool HostDrmDevice::GpuAddGraphicsDeviceOnUIThread(const base::FilePath& path,
   DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   if (!IsConnected())
     return false;
-  base::File file(fd.release());
+  base::File file(std::move(fd));
 
   drm_device_->AddGraphicsDevice(path, std::move(file));
 
@@ -229,7 +230,7 @@ void HostDrmDevice::GpuAddGraphicsDeviceOnIOThread(const base::FilePath& path,
                                                    base::ScopedFD fd) {
   DCHECK_CALLED_ON_VALID_THREAD(on_io_thread_);
   DCHECK(drm_device_on_io_thread_.is_bound());
-  base::File file(fd.release());
+  base::File file(std::move(fd));
   drm_device_on_io_thread_->AddGraphicsDevice(path, std::move(file));
 }
 

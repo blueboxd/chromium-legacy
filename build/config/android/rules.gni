@@ -3706,6 +3706,9 @@ if (enable_java_templates) {
       if (defined(invoker.apk_under_test)) {
         public_deps += [ invoker.apk_under_test ]
       }
+      if (defined(invoker.additional_apks)) {
+        public_deps += invoker.additional_apks
+      }
     }
   }
 

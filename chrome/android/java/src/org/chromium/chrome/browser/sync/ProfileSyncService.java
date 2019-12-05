@@ -455,6 +455,17 @@ public class ProfileSyncService {
     }
 
     /**
+     * Checks if trusted vault encryption keys are needed to decrypt a currently-enabled data type.
+     *
+     * @return true if we need an encryption key for a type that is currently enabled.
+     */
+    public boolean isTrustedVaultKeyRequiredForPreferredDataTypes() {
+        assert isEngineInitialized();
+        return ProfileSyncServiceJni.get().isTrustedVaultKeyRequiredForPreferredDataTypes(
+                mNativeProfileSyncServiceAndroid, ProfileSyncService.this);
+    }
+
+    /**
      * Checks if encrypting all the data types is allowed.
      *
      * @return true if encrypting all data types is allowed, false if only passwords are allowed to
@@ -647,6 +658,8 @@ public class ProfileSyncService {
         void enableEncryptEverything(
                 long nativeProfileSyncServiceAndroid, ProfileSyncService caller);
         boolean isPassphraseRequiredForPreferredDataTypes(
+                long nativeProfileSyncServiceAndroid, ProfileSyncService caller);
+        boolean isTrustedVaultKeyRequiredForPreferredDataTypes(
                 long nativeProfileSyncServiceAndroid, ProfileSyncService caller);
         boolean isUsingSecondaryPassphrase(
                 long nativeProfileSyncServiceAndroid, ProfileSyncService caller);

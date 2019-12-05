@@ -27,6 +27,7 @@ class CryptAuthDeviceSyncResult {
     kFinishedWithNonFatalErrors,
     kErrorClientAppMetadataFetchFailed,
     kErrorMissingUserKeyPair,
+    kErrorCreatingGroupKey,
     kErrorEncryptingDeviceMetadata,
     kErrorEstablishingGroupPublicKey,
     kErrorNoMetadataInResponse,

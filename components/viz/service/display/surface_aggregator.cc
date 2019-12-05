@@ -36,6 +36,7 @@
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/overlay_transform_utils.h"
 
 namespace viz {
@@ -1609,7 +1610,6 @@ bool SurfaceAggregator::CanMergeRoundedCorner(
 CompositorFrame SurfaceAggregator::Aggregate(
     const SurfaceId& surface_id,
     base::TimeTicks expected_display_time,
-    gfx::OverlayTransform display_transform,
     int64_t display_trace_id) {
   DCHECK(!expected_display_time.is_null());
 
@@ -1636,7 +1636,11 @@ CompositorFrame SurfaceAggregator::Aggregate(
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
       "SurfaceAggregation", "display_trace", display_trace_id_);
 
+  const gfx::OverlayTransform display_transform =
+      root_surface_frame.metadata.display_transform_hint;
+
   CompositorFrame frame;
+  frame.metadata.display_transform_hint = display_transform;
   frame.metadata.top_controls_visible_height =
       root_surface_frame.metadata.top_controls_visible_height;
 

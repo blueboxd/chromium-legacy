@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.BrowserServicesActivityTabController;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
+import org.chromium.chrome.browser.customtabs.CloseButtonVisibilityManager;
 import org.chromium.chrome.browser.customtabs.CustomButtonParams;
 import org.chromium.chrome.browser.customtabs.CustomTabCompositorContentInitializer;
 import org.chromium.chrome.browser.customtabs.CustomTabUmaRecorder;
@@ -64,6 +65,7 @@ public class CustomTabToolbarCoordinator {
     private final BrowserServicesActivityTabController mTabController;
     private final Lazy<ChromeFullscreenManager> mFullscreenManager;
     private final CustomTabActivityNavigationController mNavigationController;
+    private final CloseButtonVisibilityManager mCloseButtonVisibilityManager;
     private final CustomTabBrowserControlsVisibilityDelegate mVisibilityDelegate;
     private final CustomTabToolbarColorController mToolbarColorController;
 
@@ -84,6 +86,7 @@ public class CustomTabToolbarCoordinator {
             BrowserServicesActivityTabController tabController,
             Lazy<ChromeFullscreenManager> fullscreenManager,
             CustomTabActivityNavigationController navigationController,
+            CloseButtonVisibilityManager closeButtonVisibilityManager,
             CustomTabBrowserControlsVisibilityDelegate visibilityDelegate,
             CustomTabCompositorContentInitializer compositorContentInitializer,
             CustomTabToolbarColorController toolbarColorController) {
@@ -96,6 +99,7 @@ public class CustomTabToolbarCoordinator {
         mTabController = tabController;
         mFullscreenManager = fullscreenManager;
         mNavigationController = navigationController;
+        mCloseButtonVisibilityManager = closeButtonVisibilityManager;
         mVisibilityDelegate = visibilityDelegate;
         mToolbarColorController = toolbarColorController;
 
@@ -111,8 +115,8 @@ public class CustomTabToolbarCoordinator {
         assert manager != null : "Toolbar manager not initialized";
         mToolbarManager = manager;
         mToolbarColorController.onToolbarInitialized(manager);
+        mCloseButtonVisibilityManager.onToolbarInitialized(manager);
 
-        manager.setCloseButtonDrawable(mIntentDataProvider.getCloseButtonDrawable());
         manager.setShowTitle(
                 mIntentDataProvider.getTitleVisibilityState() == CustomTabsIntent.SHOW_PAGE_TITLE);
         if (mConnection.shouldHideDomainForSession(mIntentDataProvider.getSession())) {

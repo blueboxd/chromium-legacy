@@ -328,15 +328,6 @@ void SimulateKeyPressWithoutChar(WebContents* web_contents,
 // Reset touch action for the embedder of a BrowserPluginGuest.
 void ResetTouchAction(RenderWidgetHost* host);
 
-// In some cases when an event is send to guest view, it gets resent to the
-// embedder.
-void ResendGestureScrollUpdateToEmbedder(WebContents* guest_web_contents,
-                                         const blink::WebInputEvent& event);
-
-// When a guest view is pre-processing a mouse/touch event, send a synthetic
-// tap gesture to its RenderWidgetHostView.
-void MaybeSendSyntheticTapGesture(WebContents* guest_web_contents);
-
 // Spins a run loop until effects of previously forwarded input are fully
 // realized.
 void RunUntilInputProcessed(RenderWidgetHost* host);

@@ -12,7 +12,6 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_request_id.h"
-#include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/render_messages.h"
@@ -23,6 +22,10 @@
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "ppapi/buildflags/buildflags.h"
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "chrome/browser/plugins/chrome_plugin_service_filter.h"
+#endif
 
 namespace extensions {
 
@@ -37,8 +40,13 @@ void CallbackWrapper(base::OnceCallback<void(bool)> callback,
 
 ChromeWebViewPermissionHelperDelegate::ChromeWebViewPermissionHelperDelegate(
     WebViewPermissionHelper* web_view_permission_helper)
-    : WebViewPermissionHelperDelegate(web_view_permission_helper),
-      plugin_auth_host_receivers_(web_contents(), this) {}
+    : WebViewPermissionHelperDelegate(web_view_permission_helper)
+#if BUILDFLAG(ENABLE_PLUGINS)
+      ,
+      plugin_auth_host_receivers_(web_contents(), this)
+#endif
+{
+}
 
 ChromeWebViewPermissionHelperDelegate::~ChromeWebViewPermissionHelperDelegate()
 {}

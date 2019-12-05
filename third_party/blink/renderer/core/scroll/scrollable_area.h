@@ -142,6 +142,9 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
     return nullptr;
   }
   virtual void SetSnapContainerData(base::Optional<cc::SnapContainerData>) {}
+  virtual bool SetTargetSnapAreaElementIds(cc::TargetSnapAreaElementIds) {
+    return false;
+  }
   void SnapAfterScrollbarScrolling(ScrollbarOrientation);
 
   // SnapAtCurrentPosition(), SnapForEndPosition(), SnapForDirection(), and

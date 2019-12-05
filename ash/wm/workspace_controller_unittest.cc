@@ -450,11 +450,13 @@ TEST_F(WorkspaceControllerTest, MinimizeResetsVisibility) {
   w1->Show();
   wm::ActivateWindow(w1.get());
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-  EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, shelf_widget()->GetBackgroundType());
+  EXPECT_EQ(ShelfBackgroundType::kMaximized,
+            shelf_widget()->GetBackgroundType());
 
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
   EXPECT_EQ(SHELF_VISIBLE, GetPrimaryShelf()->GetVisibilityState());
-  EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, shelf_widget()->GetBackgroundType());
+  EXPECT_EQ(ShelfBackgroundType::kDefaultBg,
+            shelf_widget()->GetBackgroundType());
 }
 
 // Verifies window visibility during various workspace changes.

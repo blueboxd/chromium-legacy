@@ -202,10 +202,9 @@ void BluetoothClassicDeviceMac::SetConnectionLatency(
   NOTIMPLEMENTED();
 }
 
-void BluetoothClassicDeviceMac::Connect(
-    PairingDelegate* pairing_delegate,
-    const base::Closure& callback,
-    const ConnectErrorCallback& error_callback) {
+void BluetoothClassicDeviceMac::Connect(PairingDelegate* pairing_delegate,
+                                        base::OnceClosure callback,
+                                        ConnectErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
 
@@ -257,10 +256,10 @@ void BluetoothClassicDeviceMac::ConnectToServiceInsecurely(
 }
 
 void BluetoothClassicDeviceMac::CreateGattConnection(
-    const GattConnectionCallback& callback,
-    const ConnectErrorCallback& error_callback) {
+    GattConnectionCallback callback,
+    ConnectErrorCallback error_callback) {
   // TODO(armansito): Implement.
-  error_callback.Run(ERROR_UNSUPPORTED_DEVICE);
+  std::move(error_callback).Run(ERROR_UNSUPPORTED_DEVICE);
 }
 
 base::Time BluetoothClassicDeviceMac::GetLastUpdateTime() const {

@@ -949,6 +949,11 @@ void OptimizationGuideHintsManager::OnNavigationStartOrRedirect(
         hosts, optimization_guide::proto::CONTEXT_PAGE_NAVIGATION,
         base::BindOnce(&OptimizationGuideHintsManager::OnHintsFetched,
                        ui_weak_ptr_factory_.GetWeakPtr()));
+
+    OptimizationGuideNavigationData* navigation_data =
+        OptimizationGuideNavigationData::GetFromNavigationHandle(
+            navigation_handle);
+    navigation_data->set_was_hint_for_host_attempted_to_be_fetched(true);
   }
   LoadHintForNavigation(navigation_handle, std::move(callback));
 }

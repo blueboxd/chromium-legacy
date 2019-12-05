@@ -170,6 +170,10 @@ class ASH_EXPORT UnifiedSystemTrayController
   // Return true if UnifiedSystemTray is expanded.
   bool IsExpanded() const;
 
+  // Return true if message center needs to be collapsed due to limited
+  // screen height.
+  bool IsMessageCenterCollapseRequired() const;
+
   // Starts animation to expand or collapse the bubble.
   void StartAnimation(bool expand);
 

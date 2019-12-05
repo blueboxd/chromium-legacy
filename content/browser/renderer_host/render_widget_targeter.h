@@ -188,13 +188,11 @@ class RenderWidgetTargeter {
   // |last_request_target| and |last_target_location| provide a fallback target
   // in the case that the query times out. These should be null values when
   // querying the root view, and the target's immediate parent view otherwise.
-  void QueryClientInternal(RenderWidgetHostViewBase* target,
-                           const gfx::PointF& target_location,
-                           RenderWidgetHostViewBase* last_request_target,
-                           const gfx::PointF& last_target_location,
-                           TargetingRequest request);
-
-  void QueryClient(TargetingRequest request);
+  void QueryClient(RenderWidgetHostViewBase* target,
+                   const gfx::PointF& target_location,
+                   RenderWidgetHostViewBase* last_request_target,
+                   const gfx::PointF& last_target_location,
+                   TargetingRequest request);
 
   // |target_location|, if
   // set, is the location in |target|'s coordinate space.

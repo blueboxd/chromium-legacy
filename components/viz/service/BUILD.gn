@@ -60,6 +60,8 @@ viz_component("service") {
     "display/overlay_candidate_list.h",
     "display/overlay_candidate_validator.cc",
     "display/overlay_candidate_validator.h",
+    "display/overlay_candidate_validator_strategy.cc",
+    "display/overlay_candidate_validator_strategy.h",
     "display/overlay_processor.cc",
     "display/overlay_processor.h",
     "display/overlay_strategy_fullscreen.cc",

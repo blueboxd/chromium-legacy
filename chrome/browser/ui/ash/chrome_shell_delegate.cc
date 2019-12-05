@@ -66,6 +66,12 @@ bool ChromeShellDelegate::CanGoBack(gfx::NativeWindow window) const {
   return contents->GetController().CanGoBack();
 }
 
+void ChromeShellDelegate::BindNavigableContentsFactory(
+    mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver) {
+  ProfileManager::GetActiveUserProfile()->BindNavigableContentsFactory(
+      std::move(receiver));
+}
+
 ash::AccessibilityDelegate* ChromeShellDelegate::CreateAccessibilityDelegate() {
   return new ChromeAccessibilityDelegate;
 }

@@ -762,20 +762,6 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
         kHistogramPrefix + "SafetyTip_BadReputation",
         SafetyTipInteraction::kDismissWithEsc, 1);
   }
-
-  {
-    base::HistogramTester histogram_tester;
-    auto kNavigatedUrl = GetURL("site3.com");
-    TriggerWarningFromBlocklist(browser(), kNavigatedUrl,
-                                WindowOpenDisposition::CURRENT_TAB);
-    CloseWarningIgnore(views::Widget::ClosedReason::kCancelButtonClicked);
-    histogram_tester.ExpectBucketCount(
-        kHistogramPrefix + "SafetyTip_BadReputation",
-        SafetyTipInteraction::kDismiss, 1);
-    histogram_tester.ExpectBucketCount(
-        kHistogramPrefix + "SafetyTip_BadReputation",
-        SafetyTipInteraction::kDismissWithIgnore, 1);
-  }
 }
 
 // Tests that the histograms recording how long the Safety Tip is open are
@@ -860,27 +846,6 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
     EXPECT_LE(kMinWarningTime.InMilliseconds(), base_samples.front().min);
     auto samples = histograms.GetAllSamples(
         "Security.SafetyTips.OpenTime.DismissWithEsc.SafetyTip_"
-        "BadReputation");
-    ASSERT_EQ(1u, samples.size());
-    EXPECT_LE(kMinWarningTime.InMilliseconds(), samples.front().min);
-  }
-
-  {
-    base::HistogramTester histograms;
-    auto kNavigatedUrl = GetURL("site3.com");
-    TriggerWarningFromBlocklist(browser(), kNavigatedUrl,
-                                WindowOpenDisposition::CURRENT_TAB);
-    base::RunLoop run_loop;
-    base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(), kMinWarningTime);
-    run_loop.Run();
-    CloseWarningIgnore(views::Widget::ClosedReason::kCancelButtonClicked);
-    auto base_samples = histograms.GetAllSamples(
-        "Security.SafetyTips.OpenTime.Dismiss.SafetyTip_"
-        "BadReputation");
-    ASSERT_EQ(1u, base_samples.size());
-    EXPECT_LE(kMinWarningTime.InMilliseconds(), base_samples.front().min);
-    auto samples = histograms.GetAllSamples(
-        "Security.SafetyTips.OpenTime.DismissWithIgnore.SafetyTip_"
         "BadReputation");
     ASSERT_EQ(1u, samples.size());
     EXPECT_LE(kMinWarningTime.InMilliseconds(), samples.front().min);

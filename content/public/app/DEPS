@@ -9,8 +9,3 @@ include_rules = [
   "+services/video_capture/public",
 ]
 
-specific_include_rules = {
-  "content_browser_manifest\.cc": [
-    "+services/content/public/cpp/manifest.h",
-  ],
-}

@@ -6,9 +6,7 @@ package org.chromium.weblayer;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.os.RemoteException;
-import android.util.AndroidRuntimeException;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,6 +14,7 @@ import androidx.annotation.Nullable;
 import org.chromium.weblayer_private.interfaces.APICallException;
 import org.chromium.weblayer_private.interfaces.ICrashReporterController;
 import org.chromium.weblayer_private.interfaces.ICrashReporterControllerClient;
+import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
 /**
@@ -134,18 +133,13 @@ public final class CrashReporterController {
         if (mImpl != null) {
             return this;
         }
-        ClassLoader remoteClassLoader;
         try {
-            remoteClassLoader = WebLayer.getOrCreateRemoteClassLoader(appContext);
-            Class crashReporterControllerClass = remoteClassLoader.loadClass(
-                    "org.chromium.weblayer_private.CrashReporterControllerImpl");
-            mImpl = ICrashReporterController.Stub.asInterface(
-                    (IBinder) crashReporterControllerClass.getMethod("getInstance").invoke(null));
+            mImpl = WebLayer.getIWebLayer(appContext)
+                            .getCrashReporterController(ObjectWrapper.wrap(appContext));
             mImpl.setClient(new CrashReporterControllerClientImpl());
-        } catch (Exception e) {
-            throw new AndroidRuntimeException(e);
+        } catch (RemoteException e) {
+            throw new APICallException(e);
         }
-
         return this;
     }
 

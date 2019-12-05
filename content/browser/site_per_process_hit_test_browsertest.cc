@@ -205,7 +205,7 @@ void DispatchMouseEventAndWaitUntilDispatch(
 }
 
 // Wrapper for the above method that creates a MouseDown to send.
-void DispatchMouseEventAndWaitUntilDispatch(
+void DispatchMouseDownEventAndWaitUntilDispatch(
     WebContentsImpl* web_contents,
     RenderWidgetHostViewBase* location_view,
     const gfx::PointF& location,
@@ -247,11 +247,11 @@ void SurfaceHitTestTestHelper(
 
   WaitForHitTestData(child_node->current_frame_host());
 
-  DispatchMouseEventAndWaitUntilDispatch(web_contents, rwhv_child,
-                                         gfx::PointF(5, 5), rwhv_child,
-                                         gfx::PointF(5, 5));
+  DispatchMouseDownEventAndWaitUntilDispatch(web_contents, rwhv_child,
+                                             gfx::PointF(5, 5), rwhv_child,
+                                             gfx::PointF(5, 5));
 
-  DispatchMouseEventAndWaitUntilDispatch(
+  DispatchMouseDownEventAndWaitUntilDispatch(
       web_contents, rwhv_root, gfx::PointF(2, 2), rwhv_root, gfx::PointF(2, 2));
 }
 
@@ -283,12 +283,12 @@ void OverlapSurfaceHitTestHelper(
   gfx::PointF parent_location = gfx::PointF(5, 5);
   parent_location =
       rwhv_child->TransformPointToRootCoordSpaceF(parent_location);
-  DispatchMouseEventAndWaitUntilDispatch(
+  DispatchMouseDownEventAndWaitUntilDispatch(
       web_contents, rwhv_child, gfx::PointF(5, 5), rwhv_root, parent_location);
 
-  DispatchMouseEventAndWaitUntilDispatch(web_contents, rwhv_child,
-                                         gfx::PointF(95, 95), rwhv_child,
-                                         gfx::PointF(95, 95));
+  DispatchMouseDownEventAndWaitUntilDispatch(web_contents, rwhv_child,
+                                             gfx::PointF(95, 95), rwhv_child,
+                                             gfx::PointF(95, 95));
 }
 
 void NonFlatTransformedSurfaceHitTestHelper(
@@ -313,9 +313,9 @@ void NonFlatTransformedSurfaceHitTestHelper(
 
   WaitForHitTestData(child_node->current_frame_host());
 
-  DispatchMouseEventAndWaitUntilDispatch(web_contents, rwhv_child,
-                                         gfx::PointF(5, 5), rwhv_child,
-                                         gfx::PointF(5, 5));
+  DispatchMouseDownEventAndWaitUntilDispatch(web_contents, rwhv_child,
+                                             gfx::PointF(5, 5), rwhv_child,
+                                             gfx::PointF(5, 5));
 }
 
 void PerspectiveTransformedSurfaceHitTestHelper(
@@ -348,12 +348,12 @@ void PerspectiveTransformedSurfaceHitTestHelper(
   // Without other transformations this should result in a translated point
   // of (40, 25), but the 45 degree 3-dimensional rotation of the frame about
   // a vertical axis skews it.
-  // We can't allow DispatchMouseEventAndWaitUntilDispatch to compute the
+  // We can't allow DispatchMouseDownEventAndWaitUntilDispatch to compute the
   // coordinates in the root space unless browser conversions with
   // perspective transforms are first fixed. See https://crbug.com/854257.
-  DispatchMouseEventAndWaitUntilDispatch(web_contents, rwhv_root,
-                                         gfx::PointF(90, 75), rwhv_child,
-                                         gfx::PointF(33, 23));
+  DispatchMouseDownEventAndWaitUntilDispatch(web_contents, rwhv_root,
+                                             gfx::PointF(90, 75), rwhv_child,
+                                             gfx::PointF(33, 23));
 }
 
 // Helper function that performs a surface hittest in nested frame.
@@ -392,9 +392,9 @@ void NestedSurfaceHitTestTestHelper(
 
   WaitForHitTestData(nested_iframe_node->current_frame_host());
 
-  DispatchMouseEventAndWaitUntilDispatch(web_contents, rwhv_nested,
-                                         gfx::PointF(10, 10), rwhv_nested,
-                                         gfx::PointF(10, 10));
+  DispatchMouseDownEventAndWaitUntilDispatch(web_contents, rwhv_nested,
+                                             gfx::PointF(10, 10), rwhv_nested,
+                                             gfx::PointF(10, 10));
 }
 
 void HitTestLayerSquashing(
@@ -425,25 +425,25 @@ void HitTestLayerSquashing(
   gfx::Vector2dF child_offset = rwhv_child->GetViewBounds().origin() -
                                 rwhv_root->GetViewBounds().origin();
   // Send a mouse-down on #B. The main-frame should receive it.
-  DispatchMouseEventAndWaitUntilDispatch(web_contents, rwhv_root,
-                                         gfx::PointF(195, 11), rwhv_root,
-                                         gfx::PointF(195, 11));
+  DispatchMouseDownEventAndWaitUntilDispatch(web_contents, rwhv_root,
+                                             gfx::PointF(195, 11), rwhv_root,
+                                             gfx::PointF(195, 11));
   // Send another event just below. The child-frame should receive it.
-  DispatchMouseEventAndWaitUntilDispatch(web_contents, rwhv_root,
-                                         gfx::PointF(195, 30), rwhv_child,
-                                         gfx::PointF(195, 30) - child_offset);
+  DispatchMouseDownEventAndWaitUntilDispatch(
+      web_contents, rwhv_root, gfx::PointF(195, 30), rwhv_child,
+      gfx::PointF(195, 30) - child_offset);
   // Send a mouse-down on #C.
-  DispatchMouseEventAndWaitUntilDispatch(web_contents, rwhv_root,
-                                         gfx::PointF(35, 195), rwhv_root,
-                                         gfx::PointF(35, 195));
+  DispatchMouseDownEventAndWaitUntilDispatch(web_contents, rwhv_root,
+                                             gfx::PointF(35, 195), rwhv_root,
+                                             gfx::PointF(35, 195));
   // Send a mouse-down to the right of #C so that it goes to the child frame.
-  DispatchMouseEventAndWaitUntilDispatch(web_contents, rwhv_root,
-                                         gfx::PointF(55, 195), rwhv_child,
-                                         gfx::PointF(55, 195) - child_offset);
+  DispatchMouseDownEventAndWaitUntilDispatch(
+      web_contents, rwhv_root, gfx::PointF(55, 195), rwhv_child,
+      gfx::PointF(55, 195) - child_offset);
   // Send a mouse-down to the right-bottom edge of the iframe.
-  DispatchMouseEventAndWaitUntilDispatch(web_contents, rwhv_root,
-                                         gfx::PointF(195, 235), rwhv_child,
-                                         gfx::PointF(195, 235) - child_offset);
+  DispatchMouseDownEventAndWaitUntilDispatch(
+      web_contents, rwhv_root, gfx::PointF(195, 235), rwhv_child,
+      gfx::PointF(195, 235) - child_offset);
 }
 
 void HitTestWatermark(
@@ -476,14 +476,14 @@ void HitTestWatermark(
   const gfx::PointF child_location(100, 120);
   // Send a mouse-down at the center of the iframe. This should go to the
   // main-frame (since there's a translucent div on top of it).
-  DispatchMouseEventAndWaitUntilDispatch(web_contents, rwhv_child,
-                                         child_location, rwhv_root,
-                                         child_location + child_offset);
+  DispatchMouseDownEventAndWaitUntilDispatch(web_contents, rwhv_child,
+                                             child_location, rwhv_root,
+                                             child_location + child_offset);
 
   // Set 'pointer-events: none' on the div.
   EXPECT_TRUE(ExecuteScript(web_contents, "W.style.pointerEvents = 'none';"));
 
-  DispatchMouseEventAndWaitUntilDispatch(
+  DispatchMouseDownEventAndWaitUntilDispatch(
       web_contents, rwhv_child, child_location, rwhv_child, child_location);
 }
 
@@ -521,11 +521,11 @@ void HitTestRootWindowTransform(
 
   WaitForHitTestData(child_node->current_frame_host());
 
-  DispatchMouseEventAndWaitUntilDispatch(web_contents, rwhv_child,
-                                         gfx::PointF(5, 5), rwhv_child,
-                                         gfx::PointF(5, 5));
+  DispatchMouseDownEventAndWaitUntilDispatch(web_contents, rwhv_child,
+                                             gfx::PointF(5, 5), rwhv_child,
+                                             gfx::PointF(5, 5));
 
-  DispatchMouseEventAndWaitUntilDispatch(
+  DispatchMouseDownEventAndWaitUntilDispatch(
       web_contents, rwhv_root, gfx::PointF(2, 2), rwhv_root, gfx::PointF(2, 2));
 }
 #endif  // defined(USE_AURA)
@@ -2677,7 +2677,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
       rwhv_child2->TransformPointToRootCoordSpaceF(child_location);
   // Send a mouse-down at the center of the child2. This should go to the
   // child2.
-  DispatchMouseEventAndWaitUntilDispatch(
+  DispatchMouseDownEventAndWaitUntilDispatch(
       web_contents, rwhv_parent, parent_location, rwhv_child2, child_location);
 
   // Remove the iframe from the page. Add an infinite loop at the end so that
@@ -2858,17 +2858,17 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   //     |    |-------------||
   //     ---------------------
 
-  // DispatchMouseEventAndWaitUntilDispatch will make sure the mouse event goes
-  // to the right frame. Create a listener for the grandchild to verify that it
-  // does not receive the event. No need to create one for the child because
-  // root and child are on the same process.
+  // DispatchMouseDownEventAndWaitUntilDispatch will make sure the mouse event
+  // goes to the right frame. Create a listener for the grandchild to verify
+  // that it does not receive the event. No need to create one for the child
+  // because root and child are on the same process.
   RenderWidgetHostMouseEventMonitor grandchild_frame_monitor(
       grandchild_node->current_frame_host()->GetRenderWidgetHost());
 
   // Since child has pointer-events: none, (125, 125) should be claimed by root.
-  DispatchMouseEventAndWaitUntilDispatch(web_contents(), root_view,
-                                         gfx::PointF(125, 125), root_view,
-                                         gfx::PointF(125, 125));
+  DispatchMouseDownEventAndWaitUntilDispatch(web_contents(), root_view,
+                                             gfx::PointF(125, 125), root_view,
+                                             gfx::PointF(125, 125));
   EXPECT_FALSE(grandchild_frame_monitor.EventWasReceived());
 }
 
@@ -2926,16 +2926,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   //     |    |-------------||
   //     ---------------------
 
-  // DispatchMouseEventAndWaitUntilDispatch will make sure the mouse event goes
-  // to the right frame. Create a listener for the child to verify that it does
-  // not receive the event.
+  // DispatchMouseDownEventAndWaitUntilDispatch will make sure the mouse event
+  // goes to the right frame. Create a listener for the child to verify that it
+  // does not receive the event.
   RenderWidgetHostMouseEventMonitor child_frame_monitor(
       child_node->current_frame_host()->GetRenderWidgetHost());
 
   // Since child has pointer-events: none, (125, 125) should be claimed by root.
-  DispatchMouseEventAndWaitUntilDispatch(web_contents(), root_view,
-                                         gfx::PointF(125, 125), root_view,
-                                         gfx::PointF(125, 125));
+  DispatchMouseDownEventAndWaitUntilDispatch(web_contents(), root_view,
+                                             gfx::PointF(125, 125), root_view,
+                                             gfx::PointF(125, 125));
   EXPECT_FALSE(child_frame_monitor.EventWasReceived());
 }
 
@@ -2974,9 +2974,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 
   // Target input event to the overlapping region of main frame's div and child
   // frame.
-  DispatchMouseEventAndWaitUntilDispatch(web_contents, root_view,
-                                         gfx::PointF(75, 75), root_view,
-                                         gfx::PointF(75, 75));
+  DispatchMouseDownEventAndWaitUntilDispatch(web_contents, root_view,
+                                             gfx::PointF(75, 75), root_view,
+                                             gfx::PointF(75, 75));
 
   // Target input event to the non overlapping region of child frame.
   // The div has a bound of (0, 0, 100, 100) with a border-radius of 5px, so
@@ -2985,9 +2985,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   // The parent frame and child frame both have a default offset of (2, 2) and
   // child frame's top and left properties are set to be (50, 50), so there is
   // an offset of (54, 54) in total.
-  DispatchMouseEventAndWaitUntilDispatch(web_contents, root_view,
-                                         gfx::PointF(99, 99), child_view,
-                                         gfx::PointF(45, 45));
+  DispatchMouseDownEventAndWaitUntilDispatch(web_contents, root_view,
+                                             gfx::PointF(99, 99), child_view,
+                                             gfx::PointF(45, 45));
 }
 
 // Verify that an event is properly retargeted to the main frame when an
@@ -3502,9 +3502,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
           child_node->current_frame_host()->GetRenderWidgetHost()));
 
   // Send MouseDown to child frame to initiate capture.
-  DispatchMouseEventAndWaitUntilDispatch(web_contents(), child_view,
-                                         gfx::PointF(5.0, 5.0), child_view,
-                                         gfx::PointF(5.0, 5.0));
+  DispatchMouseDownEventAndWaitUntilDispatch(web_contents(), child_view,
+                                             gfx::PointF(5.0, 5.0), child_view,
+                                             gfx::PointF(5.0, 5.0));
 
   child_interceptor->Wait();
   EXPECT_TRUE(child_interceptor->Capturing());
@@ -3527,6 +3527,93 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
   EXPECT_TRUE(main_frame_monitor.event().GetModifiers() &
               blink::WebInputEvent::Modifiers::kRelativeMotionEvent);
+}
+
+// Verify that a click gaining mouse capture and then releasing over the same
+// frame does *not* generate an extra MouseMove as if it had moved to a
+// different RenderWidgetHostView, even when there are nested cross-process
+// frames and there is an obstruction over the parent frame.
+// Regression test for https://crbug.com/1021508.
+IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
+                       NoCrossProcessMouseMoveAfterCaptureRelease) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(c))"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(web_contents())->GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B C\n"
+      "   +--Site B ------- proxies for A C\n"
+      "        +--Site C -- proxies for A B\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/\n"
+      "      C = http://c.com/",
+      DepictFrameTree(root));
+
+  // Add a colored div over the B iframe to create the preconditions for the
+  // iframe's HitTestRegion to have kHitTestAsk set.
+  std::string script =
+      "var newDiv = document.createElement('div');"
+      "newDiv.style.position = 'relative';"
+      "newDiv.style.height = '3px';"
+      "newDiv.style.width = '300px';"
+      "newDiv.style.top = '-20px';"
+      "newDiv.style.left = '10px';"
+      "newDiv.style.background = 'green';"
+      "document.body.appendChild(newDiv)";
+  EXPECT_TRUE(ExecuteScript(root, script));
+
+  // B_node corresponds to the child of the main frame in Site B, C_node
+  // corresponds to the child of the B frame.
+  FrameTreeNode* B_node = root->child_at(0);
+  FrameTreeNode* C_node = B_node->child_at(0);
+
+  RenderWidgetHostViewBase* C_view = static_cast<RenderWidgetHostViewBase*>(
+      C_node->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  WaitForHitTestData(C_node->current_frame_host());
+
+  scoped_refptr<SetMouseCaptureInterceptor> C_interceptor =
+      new SetMouseCaptureInterceptor(static_cast<RenderWidgetHostImpl*>(
+          C_node->current_frame_host()->GetRenderWidgetHost()));
+
+  // Create listeners for mouse events.
+  RenderWidgetHostMouseEventMonitor main_frame_monitor(
+      root->current_frame_host()->GetRenderWidgetHost());
+  RenderWidgetHostMouseEventMonitor B_frame_monitor(
+      B_node->current_frame_host()->GetRenderWidgetHost());
+  RenderWidgetHostMouseEventMonitor C_frame_monitor(
+      C_node->current_frame_host()->GetRenderWidgetHost());
+
+  // Send MouseDown to C frame to initiate capture.
+  DispatchMouseDownEventAndWaitUntilDispatch(web_contents(), C_view,
+                                             gfx::PointF(5.0, 5.0), C_view,
+                                             gfx::PointF(5.0, 5.0));
+
+  C_interceptor->Wait();
+  EXPECT_TRUE(C_interceptor->Capturing());
+
+  EXPECT_FALSE(main_frame_monitor.EventWasReceived());
+  EXPECT_FALSE(B_frame_monitor.EventWasReceived());
+  EXPECT_TRUE(C_frame_monitor.EventWasReceived());
+  main_frame_monitor.ResetEventReceived();
+  B_frame_monitor.ResetEventReceived();
+  C_frame_monitor.ResetEventReceived();
+
+  // Send MouseUp to same location, which should still go to the C frame and
+  // also release capture. No other frames should receive mouse events.
+  blink::WebMouseEvent mouse_event(
+      blink::WebInputEvent::kMouseUp, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  DispatchMouseEventAndWaitUntilDispatch(web_contents(), mouse_event, C_view,
+                                         gfx::PointF(5.0, 5.0), C_view,
+                                         gfx::PointF(5.0, 5.0));
+  EXPECT_FALSE(main_frame_monitor.EventWasReceived());
+  EXPECT_FALSE(B_frame_monitor.EventWasReceived());
+  EXPECT_TRUE(C_frame_monitor.EventWasReceived());
 }
 
 // Verify that mouse capture works on a RenderWidgetHostView level.
@@ -3938,8 +4025,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
       gfx::PointF(rwhv_root->GetViewBounds().width() / 2, 20);
 
   // Click on the divider bar that initiates resize.
-  DispatchMouseEventAndWaitUntilDispatch(web_contents(), rwhv_root, click_point,
-                                         rwhv_root, click_point);
+  DispatchMouseDownEventAndWaitUntilDispatch(
+      web_contents(), rwhv_root, click_point, rwhv_root, click_point);
 
   // Wait for the mouse capture message.
   interceptor->Wait();
@@ -5867,14 +5954,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   grandchild_node->current_frame_host()->GetProcess()->AddFilter(filter.get());
 
   // Target left-click event to the select element in the innermost frame.
-  DispatchMouseEventAndWaitUntilDispatch(web_contents(), rwhv_grandchild,
-                                         gfx::PointF(15, 15), rwhv_grandchild,
-                                         gfx::PointF(15, 15));
+  DispatchMouseDownEventAndWaitUntilDispatch(
+      web_contents(), rwhv_grandchild, gfx::PointF(15, 15), rwhv_grandchild,
+      gfx::PointF(15, 15));
 
   // Prompt the WebContents to dismiss the popup by clicking elsewhere.
-  DispatchMouseEventAndWaitUntilDispatch(web_contents(), rwhv_grandchild,
-                                         gfx::PointF(2, 2), rwhv_grandchild,
-                                         gfx::PointF(2, 2));
+  DispatchMouseDownEventAndWaitUntilDispatch(web_contents(), rwhv_grandchild,
+                                             gfx::PointF(2, 2), rwhv_grandchild,
+                                             gfx::PointF(2, 2));
   filter->Wait();
 
   // This test isn't verifying correctness of these coordinates, this is just
@@ -5912,9 +5999,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   // Dismiss the popup again. This time there is no need to worry about
   // compositor frame updates because it is sufficient to send the click to
   // the root frame.
-  DispatchMouseEventAndWaitUntilDispatch(web_contents(), rwhv_root,
-                                         gfx::PointF(1, 1), rwhv_root,
-                                         gfx::PointF(1, 1));
+  DispatchMouseDownEventAndWaitUntilDispatch(web_contents(), rwhv_root,
+                                             gfx::PointF(1, 1), rwhv_root,
+                                             gfx::PointF(1, 1));
   filter->Wait();
   EXPECT_EQ(unscrolled_popup_rect.y(), filter->last_initial_rect().y() + 20);
 }

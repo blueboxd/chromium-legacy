@@ -41,7 +41,7 @@ class MockTask {
 
 class MockTaskObserver : public Thread::TaskObserver {
  public:
-  MOCK_METHOD1(WillProcessTask, void(const base::PendingTask&));
+  MOCK_METHOD2(WillProcessTask, void(const base::PendingTask&, bool));
   MOCK_METHOD1(DidProcessTask, void(const base::PendingTask&));
 };
 
@@ -88,7 +88,8 @@ TEST_F(MainThreadTest, TestTaskObserver) {
 
   {
     testing::InSequence sequence;
-    EXPECT_CALL(observer, WillProcessTask(_));
+    EXPECT_CALL(observer,
+                WillProcessTask(_, /*was_blocked_or_low_priority=*/false));
     EXPECT_CALL(task, Run());
     EXPECT_CALL(observer, DidProcessTask(_));
   }
@@ -107,7 +108,8 @@ TEST_F(MainThreadTest, TestWorkBatchWithOneTask) {
   SetWorkBatchSizeForTesting(kWorkBatchSize);
   {
     testing::InSequence sequence;
-    EXPECT_CALL(observer, WillProcessTask(_));
+    EXPECT_CALL(observer,
+                WillProcessTask(_, /*was_blocked_or_low_priority=*/false));
     EXPECT_CALL(task, Run());
     EXPECT_CALL(observer, DidProcessTask(_));
   }
@@ -127,11 +129,13 @@ TEST_F(MainThreadTest, TestWorkBatchWithTwoTasks) {
   SetWorkBatchSizeForTesting(kWorkBatchSize);
   {
     testing::InSequence sequence;
-    EXPECT_CALL(observer, WillProcessTask(_));
+    EXPECT_CALL(observer,
+                WillProcessTask(_, /*was_blocked_or_low_priority=*/false));
     EXPECT_CALL(task1, Run());
     EXPECT_CALL(observer, DidProcessTask(_));
 
-    EXPECT_CALL(observer, WillProcessTask(_));
+    EXPECT_CALL(observer,
+                WillProcessTask(_, /*was_blocked_or_low_priority=*/false));
     EXPECT_CALL(task2, Run());
     EXPECT_CALL(observer, DidProcessTask(_));
   }
@@ -154,15 +158,18 @@ TEST_F(MainThreadTest, TestWorkBatchWithThreeTasks) {
   SetWorkBatchSizeForTesting(kWorkBatchSize);
   {
     testing::InSequence sequence;
-    EXPECT_CALL(observer, WillProcessTask(_));
+    EXPECT_CALL(observer,
+                WillProcessTask(_, /*was_blocked_or_low_priority=*/false));
     EXPECT_CALL(task1, Run());
     EXPECT_CALL(observer, DidProcessTask(_));
 
-    EXPECT_CALL(observer, WillProcessTask(_));
+    EXPECT_CALL(observer,
+                WillProcessTask(_, /*was_blocked_or_low_priority=*/false));
     EXPECT_CALL(task2, Run());
     EXPECT_CALL(observer, DidProcessTask(_));
 
-    EXPECT_CALL(observer, WillProcessTask(_));
+    EXPECT_CALL(observer,
+                WillProcessTask(_, /*was_blocked_or_low_priority=*/false));
     EXPECT_CALL(task3, Run());
     EXPECT_CALL(observer, DidProcessTask(_));
   }
@@ -194,10 +201,12 @@ TEST_F(MainThreadTest, TestNestedRunLoop) {
     testing::InSequence sequence;
 
     // One callback for EnterRunLoop.
-    EXPECT_CALL(observer, WillProcessTask(_));
+    EXPECT_CALL(observer,
+                WillProcessTask(_, /*was_blocked_or_low_priority=*/false));
 
     // A pair for ExitRunLoopTask.
-    EXPECT_CALL(observer, WillProcessTask(_));
+    EXPECT_CALL(observer,
+                WillProcessTask(_, /* was_blocked_or_low_priority */ false));
     EXPECT_CALL(observer, DidProcessTask(_));
 
     // A final callback for EnterRunLoop.

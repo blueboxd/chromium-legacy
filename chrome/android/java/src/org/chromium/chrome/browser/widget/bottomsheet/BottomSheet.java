@@ -196,6 +196,10 @@ class BottomSheet extends FrameLayout
         return R.dimen.bottom_sheet_toolbar_shadow_height;
     }
 
+    static @DimenRes int getShadowTopOffsetResourceId() {
+        return R.dimen.bottom_sheet_shadow_top_offset;
+    }
+
     /**
      * Called when the activity containing the {@link BottomSheet} is destroyed.
      */

@@ -783,8 +783,23 @@ void TaskEnvironment::TestTaskTracker::RunTask(internal::Task task,
     ++num_tasks_running_;
   }
 
-  internal::ThreadPoolImpl::TaskTrackerImpl::RunTask(std::move(task), sequence,
-                                                     traits);
+  {
+    // Using TimeTicksNowIgnoringOverride() because in tests that mock time,
+    // Now() can advance very far very fast, and that's not a problem. This is
+    // watching for tests that have actually long running tasks which cause our
+    // test suites to run slowly.
+    base::TimeTicks before = base::subtle::TimeTicksNowIgnoringOverride();
+    internal::ThreadPoolImpl::TaskTrackerImpl::RunTask(std::move(task),
+                                                       sequence, traits);
+    base::TimeTicks after = base::subtle::TimeTicksNowIgnoringOverride();
+
+    if ((after - before) > TestTimeouts::action_max_timeout()) {
+      ADD_FAILURE() << "TaskEnvironment: RunTask took more than "
+                    << TestTimeouts::action_max_timeout().InSeconds()
+                    << " seconds. "
+                    << "Posted from " << task.posted_from.ToString();
+    }
+  }
 
   {
     AutoLock auto_lock(lock_);

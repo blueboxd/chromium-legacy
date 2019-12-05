@@ -804,6 +804,13 @@ void BackgroundSyncManager::RegisterImpl(
 
   BackgroundSyncType sync_type = GetBackgroundSyncType(options);
 
+  if (parameters_->skip_permissions_check_for_testing) {
+    RegisterDidAskForPermission(
+        sw_registration_id, std::move(options), std::move(callback),
+        {PermissionStatus::GRANTED, PermissionStatus::GRANTED});
+    return;
+  }
+
   // TODO(crbug.com/824858): Remove the else branch after the feature is
   // enabled. Also, try to make a RunOrPostTaskOnThreadAndReplyWithResult()
   // function so the if/else isn't needed.

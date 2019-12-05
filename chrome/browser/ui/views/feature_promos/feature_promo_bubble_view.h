@@ -41,6 +41,7 @@ class FeaturePromoBubbleView : public views::BubbleDialogDelegateView {
   // * |arrow| specifies where on the border the bubble's arrow is located.
   // * |string_specifier| is a string ID that can be passed to
   // |l10n_util::GetStringUTF16()|.
+  // * |preferred_width| is an optional width for the promo bubble.
   // * |screenreader_string_specifier| is an optional alternate string to be
   // exposed to screen readers.
   // * |feature_accelerator| is an optional keyboard accelerator to be announced
@@ -53,6 +54,7 @@ class FeaturePromoBubbleView : public views::BubbleDialogDelegateView {
       views::BubbleBorder::Arrow arrow,
       ActivationAction activation_action,
       int string_specifier,
+      base::Optional<int> preferred_width = base::nullopt,
       base::Optional<int> screenreader_string_specifier = base::nullopt,
       base::Optional<ui::Accelerator> feature_accelerator = base::nullopt,
       std::unique_ptr<FeaturePromoBubbleTimeout> feature_promo_bubble_timeout =
@@ -67,6 +69,7 @@ class FeaturePromoBubbleView : public views::BubbleDialogDelegateView {
       views::BubbleBorder::Arrow arrow,
       ActivationAction activation_action,
       int string_specifier,
+      base::Optional<int> preferred_width,
       base::Optional<int> screenreader_string_specifier,
       base::Optional<ui::Accelerator> feature_accelerator,
       std::unique_ptr<FeaturePromoBubbleTimeout> feature_promo_bubble_timeout);
@@ -81,12 +84,15 @@ class FeaturePromoBubbleView : public views::BubbleDialogDelegateView {
   void UpdateHighlightedButton(bool highlighted) override {
     // Do nothing: the anchor for promo bubbles should not highlight.
   }
+  gfx::Size CalculatePreferredSize() const override;
 
   const ActivationAction activation_action_;
 
   base::string16 accessible_name_;
 
   std::unique_ptr<FeaturePromoBubbleTimeout> feature_promo_bubble_timeout_;
+
+  base::Optional<int> preferred_width_;
 
   DISALLOW_COPY_AND_ASSIGN(FeaturePromoBubbleView);
 };

@@ -16,7 +16,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/variations/proto/client_variations.pb.h"
 
 namespace variations {
@@ -153,7 +152,9 @@ void VariationsHttpHeaderProvider::ResetForTesting() {
 VariationsHttpHeaderProvider::VariationsHttpHeaderProvider()
     : variation_ids_cache_initialized_(false) {}
 
-VariationsHttpHeaderProvider::~VariationsHttpHeaderProvider() {}
+VariationsHttpHeaderProvider::~VariationsHttpHeaderProvider() {
+  base::FieldTrialList::RemoveObserver(this);
+}
 
 void VariationsHttpHeaderProvider::OnFieldTrialGroupFinalized(
     const std::string& trial_name,
@@ -196,8 +197,8 @@ void VariationsHttpHeaderProvider::InitVariationIDsCacheIfNeeded() {
 
   // Register for additional cache updates. This is done first to avoid a race
   // that could cause registered FieldTrials to be missed.
-  DCHECK(base::ThreadTaskRunnerHandle::IsSet());
-  base::FieldTrialList::AddObserver(this);
+  bool success = base::FieldTrialList::AddObserver(this);
+  DCHECK(success);
 
   base::FieldTrial::ActiveGroups initial_groups;
   base::FieldTrialList::GetActiveFieldTrialGroups(&initial_groups);

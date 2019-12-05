@@ -1098,11 +1098,11 @@ bool BrowserAccessibility::IsWebAreaForPresentationalIframe() const {
 }
 
 bool BrowserAccessibility::IsClickable() const {
-  return ui::IsClickable(GetData());
+  return GetData().IsClickable();
 }
 
 bool BrowserAccessibility::IsPlainTextField() const {
-  return ui::IsPlainTextField(GetData());
+  return GetData().IsPlainTextField();
 }
 
 bool BrowserAccessibility::IsRichTextField() const {

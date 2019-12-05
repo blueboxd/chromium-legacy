@@ -54,8 +54,6 @@ class DCLayerValidator : public OverlayCandidateValidator {
   bool AllowCALayerOverlays() const override { return false; }
   bool AllowDCLayerOverlays() const override { return true; }
   bool NeedsSurfaceOccludingDamageRect() const override { return true; }
-  void CheckOverlaySupport(const PrimaryPlane* primary_plane,
-                           OverlayCandidateList* surfaces) override {}
 };
 
 class OverlayOutputSurface : public OutputSurface {

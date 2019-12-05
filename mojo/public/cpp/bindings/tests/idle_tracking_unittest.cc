@@ -200,6 +200,51 @@ TEST_P(IdleTrackingTest, NonZeroTimeout) {
   loop.Run();
 }
 
+TEST_P(IdleTrackingTest, SubInterfacesCanIdleSeparately) {
+  // Verifies that hierarchical ConnectionGroup references work properly, such
+  // that a main interface with an idle timeout can bind a subinterface with its
+  // own idle timeout, and the subinterface (and all subinterfaces it binds
+  // transitively) will still keep the main interface from timing out.
+
+  Remote<mojom::TestService> remote;
+  TestServiceImpl impl(remote.BindNewPipeAndPassReceiver());
+
+  // First see that we can bind another receiver and that the Remote does not
+  // invoke its idle handler even though its number of unacked messages goes to
+  // zero.
+  remote.set_idle_handler(base::TimeDelta(),
+                          base::BindRepeating([] { NOTREACHED(); }));
+  Remote<mojom::KeepAlive> keepalive;
+  remote->BindKeepAlive(keepalive.BindNewPipeAndPassReceiver());
+  EXPECT_EQ(1u, remote.GetNumUnackedMessagesForTesting());
+  keepalive.FlushForTesting();
+  remote.FlushForTesting();
+
+  // We RunUntilIdle because we want to ensure that no asynchronous side-effects
+  // of the above operations result in the idle handler being invoked.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0u, remote.GetNumUnackedMessagesForTesting());
+
+  // Now we set an idle handler on the KeepAlive itself, and we expect the
+  // TestService Remote to NOT invoke its idle handler.
+  keepalive.set_idle_handler(base::TimeDelta(), base::DoNothing());
+
+  // We use RunUntilIdle() again because we want to ensure there are no
+  // asynchronous side-effects of the above operation that lead to idling on the
+  // main interface. If the main interface idles, it will hit an assertion
+  // before this call returns.
+  base::RunLoop().RunUntilIdle();
+
+  // Finally verify that the main interface does still go idle once we reset the
+  // keepalive connection.
+  base::RunLoop loop;
+  remote.set_idle_handler(base::TimeDelta(), loop.QuitClosure());
+  remote.FlushForTesting();
+  keepalive.reset();
+  loop.Run();
+}
+
 INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(IdleTrackingTest);
 
 }  // namespace idle_tracking_unittest

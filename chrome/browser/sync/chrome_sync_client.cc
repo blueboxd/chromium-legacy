@@ -115,11 +115,11 @@
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/printing/printers_model_type_controller.h"
 #include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/chromeos/sync/os_preferences_model_type_controller.h"
+#include "chrome/browser/chromeos/sync/os_sync_model_type_controller.h"
 #include "chrome/browser/sync/wifi_configuration_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
@@ -440,9 +440,19 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
           dump_stack, profile_->GetPrefs(), sync_service));
     }
     if (!disabled_types.Has(syncer::PRINTERS)) {
-      controllers.push_back(std::make_unique<PrintersModelTypeController>(
+      controllers.push_back(std::make_unique<OsSyncModelTypeController>(
+          syncer::PRINTERS,
           std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
               GetControllerDelegateForModelType(syncer::PRINTERS).get()),
+          profile_->GetPrefs(), sync_service));
+    }
+    if (!disabled_types.Has(syncer::WIFI_CONFIGURATIONS) &&
+        base::FeatureList::IsEnabled(switches::kSyncWifiConfigurations)) {
+      controllers.push_back(std::make_unique<OsSyncModelTypeController>(
+          syncer::WIFI_CONFIGURATIONS,
+          std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+              GetControllerDelegateForModelType(syncer::WIFI_CONFIGURATIONS)
+                  .get()),
           profile_->GetPrefs(), sync_service));
     }
   }

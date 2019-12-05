@@ -14,9 +14,7 @@
 #include "content/shell/browser/shell.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/content/public/cpp/navigable_contents.h"
-#include "services/content/public/mojom/constants.mojom.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
 namespace {
@@ -38,10 +36,10 @@ class ContentServiceBrowserTest : public ContentBrowserTest {
  protected:
   content::mojom::NavigableContentsFactory* GetFactory() {
     if (!factory_.is_bound()) {
-      auto* connector = BrowserContext::GetConnectorFor(
-          shell()->web_contents()->GetBrowserContext());
-      connector->Connect(content::mojom::kServiceName,
-                         factory_.BindNewPipeAndPassReceiver());
+      shell()
+          ->web_contents()
+          ->GetBrowserContext()
+          ->BindNavigableContentsFactory(factory_.BindNewPipeAndPassReceiver());
     }
     return factory_.get();
   }

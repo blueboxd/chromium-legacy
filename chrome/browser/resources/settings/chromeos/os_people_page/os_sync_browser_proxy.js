@@ -25,6 +25,9 @@ cr.exportPath('settings');
  *   printersRegistered: boolean,
  *   printersSynced: boolean,
  *   syncAllOsDataTypes: boolean,
+ *   wifiConfigurationsEnforced: boolean,
+ *   wifiConfigurationsRegistered: boolean,
+ *   wifiConfigurationsSynced: boolean,
  * }}
  */
 settings.OsSyncPrefs;

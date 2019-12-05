@@ -134,12 +134,9 @@ class Controller : public ScriptExecutorDelegate,
   void RemoveListener(ScriptExecutorDelegate::Listener* listener) override;
 
   void EnterState(AutofillAssistantState state) override;
-  void SetCollectUserDataOptions(
-      std::unique_ptr<CollectUserDataOptions> options,
-      std::unique_ptr<UserData> information) override;
-  void WriteUserData(base::OnceCallback<void(const CollectUserDataOptions*,
-                                             UserData*,
-                                             UserData::FieldChange*)>) override;
+  void SetCollectUserDataOptions(CollectUserDataOptions* options) override;
+  void WriteUserData(
+      base::OnceCallback<void(UserData*, UserData::FieldChange*)>) override;
   void OnScriptError(const std::string& error_message,
                      Metrics::DropOutReason reason);
 
@@ -366,7 +363,7 @@ class Controller : public ScriptExecutorDelegate,
 
   std::unique_ptr<OverlayColors> overlay_colors_;
 
-  std::unique_ptr<CollectUserDataOptions> collect_user_data_options_;
+  CollectUserDataOptions* collect_user_data_options_ = nullptr;
   std::unique_ptr<UserData> user_data_;
 
   std::unique_ptr<FormProto> form_;

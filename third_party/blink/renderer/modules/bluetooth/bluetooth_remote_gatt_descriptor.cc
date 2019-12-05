@@ -22,16 +22,6 @@ BluetoothRemoteGATTDescriptor::BluetoothRemoteGATTDescriptor(
     BluetoothRemoteGATTCharacteristic* characteristic)
     : descriptor_(std::move(descriptor)), characteristic_(characteristic) {}
 
-BluetoothRemoteGATTDescriptor* BluetoothRemoteGATTDescriptor::Create(
-    mojom::blink::WebBluetoothRemoteGATTDescriptorPtr descriptor,
-
-    BluetoothRemoteGATTCharacteristic* characteristic) {
-  BluetoothRemoteGATTDescriptor* result =
-      MakeGarbageCollected<BluetoothRemoteGATTDescriptor>(std::move(descriptor),
-                                                          characteristic);
-  return result;
-}
-
 void BluetoothRemoteGATTDescriptor::ReadValueCallback(
     ScriptPromiseResolver* resolver,
     mojom::blink::WebBluetoothResult result,

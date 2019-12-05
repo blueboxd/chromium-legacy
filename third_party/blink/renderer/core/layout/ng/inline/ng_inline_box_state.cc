@@ -629,8 +629,8 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
       // position to be relative to this fragment.
       LogicalOffset static_offset = child.offset - offset;
 
-      box.AddOutOfFlowChildCandidate(oof_box, static_offset,
-                                     child.container_direction);
+      box.AddOutOfFlowInlineChildCandidate(oof_box, static_offset,
+                                           child.container_direction);
       child.out_of_flow_positioned_box = nullptr;
       continue;
     }

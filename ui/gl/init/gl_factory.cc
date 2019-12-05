@@ -194,7 +194,7 @@ bool InitializeGLOneOffPlatformImplementation(bool fallback_to_software_gl,
     DVLOG(1) << "Using " << GetGLImplementationName(GetGLImplementation())
              << " GL implementation.";
     if (gpu_service_logging)
-      InitializeDebugGLBindings();
+      InitializeLogGLBindings();
     if (disable_gl_drawing)
       InitializeNullDrawGLBindings();
   }

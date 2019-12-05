@@ -16,6 +16,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
+import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.share.ShareDelegateImpl.ShareSheetDelegate;
@@ -112,14 +113,15 @@ public class ShareDelegateImplIntegrationTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ShareSheetDelegate delegate = new ShareSheetDelegate() {
                 @Override
-                void share(ShareParams params, BottomSheetController controller) {
+                void share(ShareParams params, BottomSheetController controller,
+                        ActivityTabProvider tabProvider) {
                     paramsRef.set(params);
                     helper.notifyCalled();
                 }
             };
 
-            new ShareDelegateImpl(
-                    mActivityTestRule.getActivity().getBottomSheetController(), delegate)
+            new ShareDelegateImpl(mActivityTestRule.getActivity().getBottomSheetController(),
+                    mActivityTestRule.getActivity().getActivityTabProvider(), delegate)
                     .share(mActivityTestRule.getActivity().getActivityTab(), false);
         });
         helper.waitForCallback(0);

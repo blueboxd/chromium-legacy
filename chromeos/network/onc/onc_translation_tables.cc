@@ -65,8 +65,7 @@ const FieldTranslationEntry l2tp_fields[] = {
     // doesn't support separate settings for ipsec and l2tp.
     // { ::onc::l2tp::kSaveCredentials, &kBoolSignature },
     {::onc::l2tp::kUsername, shill::kL2tpIpsecUserProperty},
-    // Setting kLcpEchoDisabled results in a Shill error: "Property
-    // L2TPIPsec.LCPEchoDisabled is not a bool" TODO(1005405): fix this.
+    // kLcpEchoDisabled is a bool in ONC and a string in Shill.
     // {::onc::l2tp::kLcpEchoDisabled,
     // shill::kL2tpIpsecLcpEchoDisabledProperty},
     {nullptr}};

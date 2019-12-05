@@ -81,24 +81,20 @@ OffscreenCanvasRenderingContext2D::OffscreenCanvasRenderingContext2D(
     OffscreenCanvas* canvas,
     const CanvasContextCreationAttributesCore& attrs)
     : CanvasRenderingContext(canvas, attrs),
-      is_deferral_enabled_(
-          base::FeatureList::IsEnabled(features::kCanvasAlwaysDeferral)),
       random_generator_((uint32_t)base::RandUint64()),
       bernoulli_distribution_(kUMASampleProbability) {
   is_valid_size_ = IsValidImageSize(Host()->Size());
 
-  if (is_deferral_enabled_) {
-    StartRecording();
+  StartRecording();
 
-    // Clear the background transparent or opaque. Similar code at
-    // CanvasResourceProvider::Clear().
-    if (IsCanvas2DBufferValid()) {
-      DCHECK(recorder_);
-      recorder_->getRecordingCanvas()->clear(
-          ColorParams().GetOpacityMode() == kOpaque ? SK_ColorBLACK
-                                                    : SK_ColorTRANSPARENT);
-      DidDraw();
-    }
+  // Clear the background transparent or opaque. Similar code at
+  // CanvasResourceProvider::Clear().
+  if (IsCanvas2DBufferValid()) {
+    DCHECK(recorder_);
+    recorder_->getRecordingCanvas()->clear(
+        ColorParams().GetOpacityMode() == kOpaque ? SK_ColorBLACK
+                                                  : SK_ColorTRANSPARENT);
+    DidDraw();
   }
 
   ExecutionContext* execution_context = canvas->GetTopExecutionContext();
@@ -130,7 +126,6 @@ void OffscreenCanvasRenderingContext2D::commit() {
 }
 
 void OffscreenCanvasRenderingContext2D::StartRecording() {
-  DCHECK(is_deferral_enabled_);
   recorder_ = std::make_unique<PaintRecorder>();
 
   cc::PaintCanvas* canvas = recorder_->beginRecording(Width(), Height());
@@ -153,8 +148,7 @@ void OffscreenCanvasRenderingContext2D::FlushRecording() {
   }
   GetCanvasResourceProvider()->ReleaseLockedImages();
 
-  if (is_deferral_enabled_)
-    StartRecording();
+  StartRecording();
   have_recorded_draw_commands_ = false;
 }
 
@@ -210,8 +204,7 @@ OffscreenCanvasRenderingContext2D::GetCanvasResourceProvider() const {
 void OffscreenCanvasRenderingContext2D::Reset() {
   Host()->DiscardResourceProvider();
   BaseRenderingContext2D::Reset();
-  if (is_deferral_enabled_)
-    StartRecording();
+  StartRecording();
   // Because the host may have changed to a zero size
   is_valid_size_ = IsValidImageSize(Host()->Size());
 }
@@ -267,8 +260,7 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::TransferToImageBitmap(
   // "Transfer" means no retained buffer. Matrix transformations need to be
   // preserved though.
   Host()->DiscardResourceProvider();
-  if (is_deferral_enabled_)
-    RestoreMatrixClipStack(recorder_->getRecordingCanvas());
+  RestoreMatrixClipStack(recorder_->getRecordingCanvas());
 
   return ImageBitmap::Create(std::move(image));
 }
@@ -298,34 +290,24 @@ bool OffscreenCanvasRenderingContext2D::ParseColorOrCurrentColor(
 cc::PaintCanvas* OffscreenCanvasRenderingContext2D::DrawingCanvas() const {
   if (!is_valid_size_)
     return nullptr;
-  if (is_deferral_enabled_)
-    return recorder_->getRecordingCanvas();
-  if (!CanCreateCanvas2dResourceProvider())
-    return nullptr;
-  return GetCanvasResourceProvider()->Canvas();
+  return recorder_->getRecordingCanvas();
 }
 
 cc::PaintCanvas* OffscreenCanvasRenderingContext2D::ExistingDrawingCanvas()
     const {
   if (!is_valid_size_)
     return nullptr;
-  if (is_deferral_enabled_)
-    return recorder_->getRecordingCanvas();
-  if (!IsPaintable())
-    return nullptr;
-  return GetCanvasResourceProvider()->Canvas();
+  return recorder_->getRecordingCanvas();
 }
 
 void OffscreenCanvasRenderingContext2D::DidDraw() {
-  if (is_deferral_enabled_)
-    have_recorded_draw_commands_ = true;
+  have_recorded_draw_commands_ = true;
   Host()->DidDraw();
   dirty_rect_for_commit_.setWH(Width(), Height());
 }
 
 void OffscreenCanvasRenderingContext2D::DidDraw(const SkIRect& dirty_rect) {
-  if (is_deferral_enabled_)
-    have_recorded_draw_commands_ = true;
+  have_recorded_draw_commands_ = true;
   dirty_rect_for_commit_.join(dirty_rect);
   Host()->DidDraw(SkRect::Make(dirty_rect_for_commit_));
 }
@@ -377,17 +359,19 @@ bool OffscreenCanvasRenderingContext2D::WritePixels(
     size_t row_bytes,
     int x,
     int y) {
-  DCHECK(IsPaintable());
+  if (!GetOrCreateCanvasResourceProvider())
+    return false;
 
+  DCHECK(IsPaintable());
   FinalizeFrame();
-  // WritePixels is not supported by deferral. Since we are directly rendering,
-  // we can't do deferral on top of the canvas. Disable deferral completely.
-  is_deferral_enabled_ = false;
   have_recorded_draw_commands_ = false;
-  recorder_.reset();
-  // install the current matrix/clip stack onto the immediate canvas
+  // Add a save to initialize the transform/clip stack and then restore it after
+  // the draw. This is needed because each recording initializes and the resets
+  // this state after every flush.
+  cc::PaintCanvas* canvas = GetCanvasResourceProvider()->Canvas();
+  PaintCanvasAutoRestore auto_restore(canvas, true);
   if (GetOrCreateCanvasResourceProvider())
-    RestoreMatrixClipStack(GetCanvasResourceProvider()->Canvas());
+    RestoreMatrixClipStack(canvas);
 
   return offscreenCanvasForBinding()->ResourceProvider()->WritePixels(
       orig_info, pixels, row_bytes, x, y);

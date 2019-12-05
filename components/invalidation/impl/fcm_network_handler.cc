@@ -275,13 +275,15 @@ void FCMNetworkHandler::SetTokenValidationTimerForTesting(
 }
 
 void FCMNetworkHandler::RequestDetailedStatus(
-    base::Callback<void(const base::DictionaryValue&)> callback) {
+    const base::RepeatingCallback<void(const base::DictionaryValue&)>&
+        callback) {
   callback.Run(diagnostic_info_.CollectDebugData());
 }
 
-FCMNetworkHandlerDiagnostic::FCMNetworkHandlerDiagnostic() {}
+FCMNetworkHandler::FCMNetworkHandlerDiagnostic::FCMNetworkHandlerDiagnostic() {}
 
-base::DictionaryValue FCMNetworkHandlerDiagnostic::CollectDebugData() const {
+base::DictionaryValue
+FCMNetworkHandler::FCMNetworkHandlerDiagnostic::CollectDebugData() const {
   base::DictionaryValue status;
   status.SetString("NetworkHandler.Registration-result-code",
                    RegistrationResultToString(registration_result));
@@ -307,7 +309,8 @@ base::DictionaryValue FCMNetworkHandlerDiagnostic::CollectDebugData() const {
   return status;
 }
 
-std::string FCMNetworkHandlerDiagnostic::RegistrationResultToString(
+std::string
+FCMNetworkHandler::FCMNetworkHandlerDiagnostic::RegistrationResultToString(
     const instance_id::InstanceID::Result result) const {
   switch (registration_result) {
     case instance_id::InstanceID::SUCCESS:

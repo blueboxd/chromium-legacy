@@ -525,4 +525,7 @@ Additional details:
   <message name="IDS_POLICY_OFFHOURS_NOT_ACTIVE" desc="Indicates the off-hours policy is not active.">
     Not active
   </message>
+  <message name="IDS_POLICY_SIGNIN_PROFILE" desc="Label to indicate that the policy is for the sign-in screen profile.">
+    sign-in screen profile
+  </message>
 </grit-part>

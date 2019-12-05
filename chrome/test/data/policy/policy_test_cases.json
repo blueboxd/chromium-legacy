@@ -6393,18 +6393,6 @@
     ]
   },
 
-  "SafeBrowsingRealTimeLookupEnabled": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "policy_pref_mapping_test": [
-      {
-        "policies": {
-          "SafeBrowsingRealTimeLookupEnabled": true
-        },
-        "prefs": { "safebrowsing.real_time_lookup_enabled": {} }
-      }
-    ]
-  },
-
   "LockScreenMediaPlaybackEnabled": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [

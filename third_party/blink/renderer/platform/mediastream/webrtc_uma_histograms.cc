@@ -29,7 +29,7 @@ void UpdateWebRTCMethodCount(WebRTCAPIName api_name) {
 }
 
 PerSessionWebRTCAPIMetrics::~PerSessionWebRTCAPIMetrics() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 // static
@@ -38,12 +38,12 @@ PerSessionWebRTCAPIMetrics* PerSessionWebRTCAPIMetrics::GetInstance() {
 }
 
 void PerSessionWebRTCAPIMetrics::IncrementStreamCounter() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   ++num_streams_;
 }
 
 void PerSessionWebRTCAPIMetrics::DecrementStreamCounter() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (--num_streams_ == 0) {
     ResetUsage();
   }
@@ -61,7 +61,7 @@ void PerSessionWebRTCAPIMetrics::LogUsage(WebRTCAPIName api_name) {
 }
 
 void PerSessionWebRTCAPIMetrics::LogUsageOnlyOnce(WebRTCAPIName api_name) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!has_used_api_[static_cast<int>(api_name)]) {
     has_used_api_[static_cast<int>(api_name)] = true;
     LogUsage(api_name);

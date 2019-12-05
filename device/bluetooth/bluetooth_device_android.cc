@@ -153,10 +153,9 @@ void BluetoothDeviceAndroid::SetConnectionLatency(
   NOTIMPLEMENTED();
 }
 
-void BluetoothDeviceAndroid::Connect(
-    PairingDelegate* pairing_delegate,
-    const base::Closure& callback,
-    const ConnectErrorCallback& error_callback) {
+void BluetoothDeviceAndroid::Connect(PairingDelegate* pairing_delegate,
+                                     base::OnceClosure callback,
+                                     ConnectErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
 

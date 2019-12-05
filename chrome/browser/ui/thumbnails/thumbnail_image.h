@@ -16,6 +16,10 @@
 #include "base/sequence_checker.h"
 #include "ui/gfx/image/image_skia.h"
 
+namespace base {
+class TimeTicks;
+}  // namespace base
+
 // Stores compressed thumbnail data for a tab and can vend that data as an
 // uncompressed image to observers.
 class ThumbnailImage : public base::RefCounted<ThumbnailImage> {
@@ -102,7 +106,8 @@ class ThumbnailImage : public base::RefCounted<ThumbnailImage> {
 
   virtual ~ThumbnailImage();
 
-  void AssignJPEGData(std::vector<uint8_t> data);
+  void AssignJPEGData(base::TimeTicks assign_sk_bitmap_time,
+                      std::vector<uint8_t> data);
   bool ConvertJPEGDataToImageSkiaAndNotifyObservers();
   void NotifyUncompressedDataObservers(gfx::ImageSkia image);
   void NotifyCompressedDataObservers(CompressedThumbnailData data);

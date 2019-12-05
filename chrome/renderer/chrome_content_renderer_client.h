@@ -19,7 +19,6 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/common/media/webrtc_logging.mojom.h"
-#include "chrome/common/plugin.mojom.h"
 #include "chrome/renderer/media/chrome_key_systems_provider.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/rappor/public/mojom/rappor_recorder.mojom.h"
@@ -40,6 +39,10 @@
 
 #if defined(OS_WIN)
 #include "chrome/common/conflicts/remote_module_watcher_win.h"
+#endif
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "chrome/common/plugin.mojom.h"
 #endif
 
 class ChromeRenderThreadObserver;

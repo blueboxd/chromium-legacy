@@ -258,11 +258,11 @@ void HIDDetectionScreen::ConnectBTDevice(device::BluetoothDevice* device) {
     keyboard_is_pairing_ = true;
   }
   device->Connect(this,
-                  base::Bind(&HIDDetectionScreen::BTConnected,
-                             weak_ptr_factory_.GetWeakPtr(), device_type),
-                  base::Bind(&HIDDetectionScreen::BTConnectError,
-                             weak_ptr_factory_.GetWeakPtr(),
-                             device->GetAddress(), device_type));
+                  base::BindOnce(&HIDDetectionScreen::BTConnected,
+                                 weak_ptr_factory_.GetWeakPtr(), device_type),
+                  base::BindOnce(&HIDDetectionScreen::BTConnectError,
+                                 weak_ptr_factory_.GetWeakPtr(),
+                                 device->GetAddress(), device_type));
 }
 
 void HIDDetectionScreen::BTConnected(device::BluetoothDeviceType device_type) {

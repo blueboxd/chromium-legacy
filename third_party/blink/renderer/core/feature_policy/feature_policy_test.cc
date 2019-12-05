@@ -976,7 +976,7 @@ const AllowlistHistogramData FeaturePolicyAllowlistHistogramTest::kCases[] = {
       FeaturePolicyAllowlistType::kOrigins}}};
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     FeaturePolicyAllowlistHistogramTest,
     ::testing::ValuesIn(FeaturePolicyAllowlistHistogramTest::kCases),
     [](const testing::TestParamInfo<AllowlistHistogramData>& param_info) {

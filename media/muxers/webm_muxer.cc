@@ -81,6 +81,13 @@ WebmMuxer::VideoParameters::VideoParameters(
   codec = kUnknownVideoCodec;
 }
 
+WebmMuxer::VideoParameters::VideoParameters(gfx::Size visible_rect_size_param,
+                                            double frame_rate_param,
+                                            VideoCodec codec)
+    : visible_rect_size(visible_rect_size_param),
+      frame_rate(frame_rate_param),
+      codec(codec) {}
+
 WebmMuxer::VideoParameters::~VideoParameters() = default;
 
 WebmMuxer::WebmMuxer(AudioCodec audio_codec,

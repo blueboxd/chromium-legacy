@@ -3341,8 +3341,8 @@ void DriverEGL::InitializeExtensionBindings() {
     file.write('%s Trace%sApi::%sFn(%s) {\n' %
         (return_type, set_name.upper(), function_name, arguments))
     argument_names = MakeArgNames(arguments)
-    file.write('  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::%s")\n' %
-               function_name)
+    file.write('  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "Trace%sAPI::%s")\n' %
+               (set_name.upper(), function_name))
     if return_type == 'void':
       file.write('  %s_api_->%sFn(%s);\n' %
           (set_name.lower(), function_name, argument_names))
@@ -3351,12 +3351,12 @@ void DriverEGL::InitializeExtensionBindings() {
           (set_name.lower(), function_name, argument_names))
     file.write('}\n')
 
-  # Write DebugGLApi functions
+  # Write LogGLApi functions
   for func in functions:
     return_type = func['return_type']
     arguments = func['arguments']
     file.write('\n')
-    file.write('%s Debug%sApi::%sFn(%s) {\n' %
+    file.write('%s Log%sApi::%sFn(%s) {\n' %
         (return_type, set_name.upper(), func['known_as'], arguments))
     # Strip pointer types.
     argument_names = re.sub(

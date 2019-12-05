@@ -21,7 +21,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -67,7 +66,7 @@ public class FeedNewTabPageCardRenderTest {
             new RenderTestRule("chrome/test/data/android/render_tests");
 
     @Rule
-    public FeedDataInjectRule mFeedDataInjector = new FeedDataInjectRule();
+    public FeedDataInjectRule mFeedDataInjector = new FeedDataInjectRule(true);
 
     @Rule
     public EmbeddedTestServerRule mTestServer = new EmbeddedTestServerRule();
@@ -96,7 +95,6 @@ public class FeedNewTabPageCardRenderTest {
         Assert.assertEquals(mSiteSuggestions.size(), mTileGridLayout.getChildCount());
     }
 
-    @DisabledTest(message = "crbug.com/1029059")
     @Test
     @MediumTest
     @Feature({"FeedNewTabPage", "RenderTest"})
@@ -110,8 +108,6 @@ public class FeedNewTabPageCardRenderTest {
         SectionHeader firstHeader = mNtp.getMediatorForTesting().getSectionHeaderForTesting();
         RecyclerView recycleView =
                 (RecyclerView) mNtp.getCoordinatorForTesting().getStream().getView();
-        RecyclerView.Adapter adapter1 =
-                ((RecyclerView) mNtp.getCoordinatorForTesting().getStream().getView()).getAdapter();
 
         // Check header is expanded.
         Assert.assertTrue(firstHeader.isExpandable() && firstHeader.isExpanded());
@@ -123,19 +119,23 @@ public class FeedNewTabPageCardRenderTest {
         // Scroll to the first feed card.
         onView(instanceOf(RecyclerView.class))
                 .perform(RecyclerViewActions.scrollToPosition(
-                        FeedDataInjectRule.FIRST_CARD_POSITION));
+                        mFeedDataInjector.getFirstCardPosition()));
+
+        RecyclerViewTestUtils.waitForStableRecyclerView(recycleView);
         mRenderTestRule.render(
                 recycleView, String.format("render_feed_cards_top_%s", scenarioName));
 
         // Scroll to the bottom.
         RecyclerViewTestUtils.scrollToBottom(recycleView);
+        RecyclerViewTestUtils.waitForStableRecyclerView(recycleView);
         mRenderTestRule.render(
                 recycleView, String.format("render_feed_cards_bottom_%s", scenarioName));
 
         // Scroll to the first feed card again.
         onView(instanceOf(RecyclerView.class))
                 .perform(RecyclerViewActions.scrollToPosition(
-                        FeedDataInjectRule.FIRST_CARD_POSITION));
+                        mFeedDataInjector.getFirstCardPosition()));
+        RecyclerViewTestUtils.waitForStableRecyclerView(recycleView);
         mRenderTestRule.render(
                 recycleView, String.format("render_feed_cards_top_again_%s", scenarioName));
     }

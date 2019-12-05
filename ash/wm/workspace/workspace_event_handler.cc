@@ -73,7 +73,7 @@ void WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
         click_component_ = HTNOWHERE;
       }
 
-      HandleVerticalResizeDoubleClick(target_state, event);
+      HandleResizeDoubleClick(target_state, event);
       break;
     }
     default:
@@ -109,9 +109,8 @@ void WorkspaceEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   click_component_ = HTNOWHERE;
 }
 
-void WorkspaceEventHandler::HandleVerticalResizeDoubleClick(
-    WindowState* target_state,
-    ui::MouseEvent* event) {
+void WorkspaceEventHandler::HandleResizeDoubleClick(WindowState* target_state,
+                                                    ui::MouseEvent* event) {
   aura::Window* target = target_state->window();
   if ((event->flags() & ui::EF_IS_DOUBLE_CLICK) != 0 && target->delegate()) {
     const int component =

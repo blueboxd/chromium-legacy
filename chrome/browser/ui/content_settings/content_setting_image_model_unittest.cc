@@ -15,12 +15,11 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/permissions/adaptive_notification_permission_ui_selector.h"
 #include "chrome/browser/permissions/mock_permission_request.h"
-#include "chrome/browser/permissions/permission_features.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
+#include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
@@ -394,10 +393,9 @@ TEST_F(ContentSettingImageModelTest, NotificationsPrompt) {
       {features::kQuietNotificationPrompts},
       {features::kBlockRepeatedNotificationPermissionPrompts});
 
-  auto* permission_ui_selector =
-      AdaptiveNotificationPermissionUiSelector::GetForProfile(
-          Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
-  permission_ui_selector->EnableQuietUi();
+  auto* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  QuietNotificationPermissionUiState::EnableQuietUiInPrefs(profile);
 
   auto content_setting_image_model =
       ContentSettingImageModel::CreateForContentType(

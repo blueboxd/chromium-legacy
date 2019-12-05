@@ -135,7 +135,8 @@ class DeviceSyncCryptAuthMetadataSyncerImplTest
             base::Unretained(this)));
   }
 
-  void RunKeyCreator(const std::string& group_public_key,
+  void RunKeyCreator(bool success,
+                     const std::string& group_public_key,
                      const std::string& group_private_key) {
     ASSERT_TRUE(key_creator()->create_keys_callback());
     ASSERT_EQ(1u, key_creator()->keys_to_create().size());
@@ -149,9 +150,11 @@ class DeviceSyncCryptAuthMetadataSyncerImplTest
 
     std::move(key_creator()->create_keys_callback())
         .Run({{CryptAuthKeyBundle::Name::kDeviceSyncBetterTogetherGroupKey,
-               CryptAuthKey(group_public_key, group_private_key,
-                            CryptAuthKey::Status::kActive,
-                            cryptauthv2::KeyType::P256)}},
+               success ? base::make_optional(
+                             CryptAuthKey(group_public_key, group_private_key,
+                                          CryptAuthKey::Status::kActive,
+                                          cryptauthv2::KeyType::P256))
+                       : base::nullopt}},
              base::nullopt /* client_ephemeral_dh_output */);
   }
 
@@ -431,7 +434,7 @@ TEST_F(DeviceSyncCryptAuthMetadataSyncerImplTest,
   std::string group_public_key = kGroupPublicKey;
   std::string group_private_key =
       GetPrivateKeyFromPublicKeyForTest(group_public_key);
-  RunKeyCreator(group_public_key, group_private_key);
+  RunKeyCreator(true /* success */, group_public_key, group_private_key);
 
   RunLocalBetterTogetherMetadataEncryptor(group_public_key, true /* succeed */);
 
@@ -531,7 +534,7 @@ TEST_F(DeviceSyncCryptAuthMetadataSyncerImplTest,
   std::string group_public_key = kGroupPublicKey;
   std::string group_private_key =
       GetPrivateKeyFromPublicKeyForTest(group_public_key);
-  RunKeyCreator(group_public_key, group_private_key);
+  RunKeyCreator(true /* success */, group_public_key, group_private_key);
 
   RunLocalBetterTogetherMetadataEncryptor(group_public_key, true /* succeed */);
 
@@ -641,6 +644,25 @@ TEST_F(DeviceSyncCryptAuthMetadataSyncerImplTest,
       CryptAuthDeviceSyncResult::ResultCode::kSuccess);
 }
 
+TEST_F(DeviceSyncCryptAuthMetadataSyncerImplTest, Failure_GroupKeyCreation) {
+  // The first device in a group does not have an initial public or private key;
+  // it is responsible for creating the group key.
+  SyncMetadata(base::nullopt /* initial_group_public_key */,
+               base::nullopt /* initial_group_private_key */);
+
+  std::string group_public_key = kGroupPublicKey;
+  std::string group_private_key =
+      GetPrivateKeyFromPublicKeyForTest(group_public_key);
+  RunKeyCreator(false /* success */, group_public_key, group_private_key);
+
+  VerifyMetadataSyncResult(
+      {} /* expected_device_metadata_packets */,
+      base::nullopt /* expected_new_group_key */,
+      base::nullopt /* expected_group_private_key */,
+      base::nullopt /* expected_new_client_directive */,
+      CryptAuthDeviceSyncResult::ResultCode::kErrorCreatingGroupKey);
+}
+
 TEST_F(DeviceSyncCryptAuthMetadataSyncerImplTest, Failure_MetadataEncryption) {
   std::string group_public_key = "corrupt_group_public_key";
   std::string group_private_key =
@@ -684,7 +706,7 @@ TEST_F(
   std::string group_public_key = kGroupPublicKey;
   std::string group_private_key =
       GetPrivateKeyFromPublicKeyForTest(group_public_key);
-  RunKeyCreator(group_public_key, group_private_key);
+  RunKeyCreator(true /* success */, group_public_key, group_private_key);
 
   RunLocalBetterTogetherMetadataEncryptor(group_public_key, true /* succeed */);
 
@@ -734,7 +756,7 @@ TEST_F(
   std::string group_public_key = kGroupPublicKey;
   std::string group_private_key =
       GetPrivateKeyFromPublicKeyForTest(group_public_key);
-  RunKeyCreator(group_public_key, group_private_key);
+  RunKeyCreator(true /* success */, group_public_key, group_private_key);
 
   RunLocalBetterTogetherMetadataEncryptor(group_public_key, true /* succeed */);
 
@@ -995,7 +1017,7 @@ TEST_F(DeviceSyncCryptAuthMetadataSyncerImplTest,
   std::string group_public_key = kGroupPublicKey;
   std::string group_private_key =
       GetPrivateKeyFromPublicKeyForTest(group_public_key);
-  RunKeyCreator(group_public_key, group_private_key);
+  RunKeyCreator(true /* success */, group_public_key, group_private_key);
 
   RunLocalBetterTogetherMetadataEncryptor(group_public_key, true /* succeed */);
 
@@ -1060,7 +1082,7 @@ TEST_F(DeviceSyncCryptAuthMetadataSyncerImplTest,
   std::string group_public_key = kGroupPublicKey;
   std::string group_private_key =
       GetPrivateKeyFromPublicKeyForTest(group_public_key);
-  RunKeyCreator(group_public_key, group_private_key);
+  RunKeyCreator(true /* success */, group_public_key, group_private_key);
 
   RunLocalBetterTogetherMetadataEncryptor(group_public_key, true /* succeed */);
 

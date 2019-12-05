@@ -24,15 +24,12 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 
 namespace net {
 class NetworkDelegate;
 class URLRequest;
 }  // namespace net
-
-namespace network {
-struct ResourceResponseHead;
-}
 
 namespace content {
 class AppCacheJob;
@@ -92,7 +89,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
       const network::ResourceRequest& resource_request,
       AppCacheLoaderCallback callback);
   void MaybeFallbackForSubresourceResponse(
-      const network::ResourceResponseHead& response,
+      network::mojom::URLResponseHeadPtr response,
       AppCacheLoaderCallback callback);
   void MaybeFallbackForSubresourceRedirect(
       const net::RedirectInfo& redirect_info,

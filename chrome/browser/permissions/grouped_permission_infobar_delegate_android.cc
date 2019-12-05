@@ -7,16 +7,18 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/permissions/adaptive_notification_permission_ui_selector.h"
-#include "chrome/browser/permissions/permission_features.h"
 #include "chrome/browser/permissions/permission_prompt_android.h"
 #include "chrome/browser/permissions/permission_request.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
+#include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
+#include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/browser/ui/android/infobars/grouped_permission_infobar.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "components/url_formatter/elide_url.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
@@ -91,14 +93,13 @@ bool GroupedPermissionInfoBarDelegate::LinkClicked(
 
 // static
 bool GroupedPermissionInfoBarDelegate::ShouldShowMiniInfobar(
-    Profile* profile,
+    content::WebContents* web_contents,
     ContentSettingsType type) {
-  auto* permission_ui_selector =
-      AdaptiveNotificationPermissionUiSelector::GetForProfile(profile);
+  auto* manager = PermissionRequestManager::FromWebContents(web_contents);
   return type == ContentSettingsType::NOTIFICATIONS &&
-         permission_ui_selector->ShouldShowQuietUi() &&
-         QuietNotificationsPromptConfig::UIFlavorToUse() ==
-             QuietNotificationsPromptConfig::UIFlavor::MINI_INFOBAR;
+         manager->ShouldCurrentRequestUseQuietUI() &&
+         QuietNotificationPermissionUiConfig::UiFlavorToUse() ==
+             QuietNotificationPermissionUiConfig::UiFlavor::MINI_INFOBAR;
 }
 
 GroupedPermissionInfoBarDelegate::GroupedPermissionInfoBarDelegate(

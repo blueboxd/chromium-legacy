@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.settings.autofill;
 
+import android.app.Activity;
+import android.support.v4.app.Fragment;
 import android.util.Pair;
 
 import androidx.annotation.IntDef;
@@ -11,9 +13,13 @@ import androidx.annotation.IntDef;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.content_public.browser.WebContents;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.ref.WeakReference;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -222,6 +228,25 @@ public class AutofillProfileBridge {
         for (int s : array) {
             list.add(s);
         }
+    }
+
+    @CalledByNative
+    private static void showAutofillProfileSettings(WebContents webContents) {
+        RecordUserAction.record("AutofillAddressesViewed");
+        showSettingSubpage(webContents, AutofillProfilesFragment.class);
+    }
+
+    @CalledByNative
+    private static void showAutofillCreditCardSettings(WebContents webContents) {
+        RecordUserAction.record("AutofillCreditCardsViewed");
+        showSettingSubpage(webContents, AutofillPaymentMethodsFragment.class);
+    }
+
+    private static void showSettingSubpage(
+            WebContents webContents, Class<? extends Fragment> fragment) {
+        WeakReference<Activity> currentActivity =
+                webContents.getTopLevelNativeWindow().getActivity();
+        PreferencesLauncher.launchSettingsPage(currentActivity.get(), fragment);
     }
 
     @NativeMethods

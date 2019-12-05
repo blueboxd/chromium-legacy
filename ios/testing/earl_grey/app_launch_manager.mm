@@ -9,6 +9,7 @@
 #include "base/feature_list.h"
 #import "base/ios/crb_protocol_observers.h"
 #include "base/strings/sys_string_conversions.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -68,8 +69,13 @@ bool LaunchArgumentsAreEqual(NSArray<NSString*>* args1,
 // fails to do so.
 // In EG1, this method is a no-op.
 - (void)ensureAppLaunchedWithArgs:(NSArray<NSString*>*)arguments
-                     forceRestart:(BOOL)forceRestart {
+                   relaunchPolicy:(RelaunchPolicy)relaunchPolicy {
 #if defined(CHROME_EARL_GREY_2)
+  BOOL forceRestart = (relaunchPolicy == ForceRelaunchByKilling) ||
+                      (relaunchPolicy == ForceRelaunchByCleanShutdown);
+  BOOL gracefullyKill = (relaunchPolicy == ForceRelaunchByCleanShutdown);
+  BOOL runResets = (relaunchPolicy == NoForceRelaunchAndResetState);
+
   bool appNeedsLaunching =
       forceRestart || !self.runningApplication ||
       !LaunchArgumentsAreEqual(arguments, self.currentLaunchArgs);
@@ -79,12 +85,20 @@ bool LaunchArgumentsAreEqual(NSArray<NSString*>* args1,
     return;
   }
 
+  if (self.runningApplication) {
+    if (gracefullyKill) {
+      GREYAssertTrue([EarlGrey backgroundApplication],
+                     @"Failed to background application.");
+    }
+    [self.runningApplication terminate];
+  }
+
   XCUIApplication* application = [[XCUIApplication alloc] init];
   application.launchArguments = arguments;
 
   [application launch];
   if (self.runningApplication) {
-    [self.observers appLaunchManagerDidRelaunchApp:self];
+    [self.observers appLaunchManagerDidRelaunchApp:self runResets:runResets];
   }
   self.runningApplication = application;
   self.currentLaunchArgs = arguments;
@@ -95,7 +109,7 @@ bool LaunchArgumentsAreEqual(NSArray<NSString*>* args1,
             (const std::vector<base::Feature>&)featuresEnabled
                                     disabled:(const std::vector<base::Feature>&)
                                                  featuresDisabled
-                                forceRestart:(BOOL)forceRestart {
+                              relaunchPolicy:(RelaunchPolicy)relaunchPolicy {
   NSMutableArray<NSString*>* namesToEnable =
       [NSMutableArray arrayWithCapacity:featuresEnabled.size()];
   NSMutableArray<NSString*>* namesToDisable =
@@ -123,7 +137,16 @@ bool LaunchArgumentsAreEqual(NSArray<NSString*>* args1,
   }
 
   NSArray<NSString*>* arguments = @[ enabledString, disabledString ];
-  [self ensureAppLaunchedWithArgs:arguments forceRestart:forceRestart];
+
+  [self ensureAppLaunchedWithArgs:arguments relaunchPolicy:relaunchPolicy];
+}
+
+- (void)backgroundAndForegroundApp {
+#if defined(CHROME_EARL_GREY_2)
+  GREYAssertTrue([EarlGrey backgroundApplication],
+                 @"Failed to background application.");
+  [self.runningApplication activate];
+#endif
 }
 
 - (void)addObserver:(id<AppLaunchManagerObserver>)observer {

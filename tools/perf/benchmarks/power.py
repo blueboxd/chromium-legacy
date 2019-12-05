@@ -25,7 +25,8 @@ class PowerDesktop(perf_benchmark.PerfBenchmark):
     options = timeline_based_measurement.Options(category_filter)
     options.config.enable_chrome_trace = True
     options.config.enable_cpu_trace = True
-    options.SetTimelineBasedMetrics(['cpuTimeMetric'])
+    options.SetTimelineBasedMetrics(['tbmv2:cpuTimeMetric',
+                                     'tbmv3:console_error_metric'])
     return options
 
   @classmethod

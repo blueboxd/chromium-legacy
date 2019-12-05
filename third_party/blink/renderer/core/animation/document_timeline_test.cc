@@ -181,7 +181,7 @@ TEST_F(AnimationDocumentTimelineTest, EffectiveTime) {
   EXPECT_EQ(2000, timeline->currentTime());
 
   auto* document_without_frame = MakeGarbageCollected<Document>();
-  DocumentTimeline* inactive_timeline = DocumentTimeline::Create(
+  auto* inactive_timeline = MakeGarbageCollected<DocumentTimeline>(
       document_without_frame, base::TimeDelta(), platform_timing);
 
   EXPECT_EQ(0, inactive_timeline->EffectiveTime());
@@ -207,8 +207,8 @@ TEST_F(AnimationDocumentTimelineTest, PlaybackRateNormal) {
 
 TEST_F(AnimationDocumentTimelineTest, PlaybackRateNormalWithOriginTime) {
   base::TimeDelta origin_time = base::TimeDelta::FromMilliseconds(-1000);
-  timeline =
-      DocumentTimeline::Create(document.Get(), origin_time, platform_timing);
+  timeline = MakeGarbageCollected<DocumentTimeline>(document.Get(), origin_time,
+                                                    platform_timing);
   timeline->ResetForTesting();
 
   EXPECT_EQ(1.0, timeline->PlaybackRate());
@@ -244,8 +244,8 @@ TEST_F(AnimationDocumentTimelineTest, PlaybackRatePause) {
 
 TEST_F(AnimationDocumentTimelineTest, PlaybackRatePauseWithOriginTime) {
   base::TimeDelta origin_time = base::TimeDelta::FromMilliseconds(-1000);
-  timeline =
-      DocumentTimeline::Create(document.Get(), origin_time, platform_timing);
+  timeline = MakeGarbageCollected<DocumentTimeline>(document.Get(), origin_time,
+                                                    platform_timing);
   timeline->ResetForTesting();
 
   EXPECT_EQ(base::TimeTicks() + origin_time, timeline->ZeroTime());
@@ -307,7 +307,7 @@ TEST_F(AnimationDocumentTimelineTest, PlaybackRateFast) {
 }
 
 TEST_F(AnimationDocumentTimelineTest, PlaybackRateFastWithOriginTime) {
-  timeline = DocumentTimeline::Create(
+  timeline = MakeGarbageCollected<DocumentTimeline>(
       document.Get(), base::TimeDelta::FromSeconds(-1000), platform_timing);
   timeline->ResetForTesting();
 
@@ -439,7 +439,8 @@ TEST_F(AnimationDocumentTimelineRealTimeTest,
       document->Loader()->GetTiming().ReferenceMonotonicTime().is_null());
 
   base::TimeDelta origin_time = base::TimeDelta::FromSeconds(1000);
-  timeline = DocumentTimeline::Create(document.Get(), origin_time);
+  timeline =
+      MakeGarbageCollected<DocumentTimeline>(document.Get(), origin_time);
   timeline->SetPlaybackRate(0.5);
   EXPECT_EQ(origin_time * 2,
             timeline->ZeroTime() - document->Timeline().ZeroTime());

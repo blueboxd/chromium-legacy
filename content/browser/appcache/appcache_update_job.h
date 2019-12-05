@@ -230,6 +230,16 @@ class CONTENT_EXPORT AppCacheUpdateJob
   AppCacheServiceImpl* service_;
   const GURL manifest_url_;  // here for easier access
 
+  // Stores the manifest parser version for the group before an update begins.
+  int64_t cached_manifest_parser_version_;
+  // Stores the manifest parser version determined during the fetch phase.
+  int64_t fetched_manifest_parser_version_;
+
+  // Stores the manifest scope for the group before an update begins.
+  std::string cached_manifest_scope_;
+  // Stores the manifest scope determined during the fetch phase.
+  std::string fetched_manifest_scope_;
+
   // Defined prior to refs to AppCaches and Groups because destruction
   // order matters, the disabled_storage_reference_ must outlive those
   // objects.

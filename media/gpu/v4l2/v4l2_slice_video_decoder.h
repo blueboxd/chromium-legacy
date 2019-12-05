@@ -13,7 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind_helpers.h"
 #include "base/callback_forward.h"
 #include "base/containers/mru_cache.h"
 #include "base/containers/queue.h"
@@ -24,7 +23,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
-#include "media/base/video_frame_layout.h"
 #include "media/base/video_types.h"
 #include "media/gpu/chromeos/gpu_buffer_layout.h"
 #include "media/gpu/chromeos/video_decoder_pipeline.h"
@@ -32,6 +30,7 @@
 #include "media/gpu/v4l2/v4l2_device.h"
 #include "media/gpu/v4l2/v4l2_video_decoder_backend.h"
 #include "media/video/supported_video_decoder_config.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace media {
 
@@ -69,6 +68,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
   void OutputFrame(scoped_refptr<VideoFrame> frame,
                    const gfx::Rect& visible_rect,
                    base::TimeDelta timestamp) override;
+  DmabufVideoFramePool* GetVideoFramePool() const override;
 
  private:
   friend class V4L2SliceVideoDecoderTest;
@@ -77,7 +77,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
       scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
       base::WeakPtr<DecoderInterface::Client> client,
       scoped_refptr<V4L2Device> device);
-
   ~V4L2SliceVideoDecoder() override;
 
   enum class State {
@@ -118,18 +117,8 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
   // Setup format for output queue. This function sets output format on output
   // queue that is supported by a v4l2 driver, can be allocatable by
   // VideoFramePool and can be composited by chrome. This also updates format
-  // in VideoFramePool. The returned VideoFrameLayout is one of VideoFrame that
-  // VideoFramePool will allocate. Returns base::nullopt on failure of if there
-  // is no format that satisfies the above conditions.
-  base::Optional<GpuBufferLayout> SetupOutputFormat(
-      const gfx::Size& size,
-      const gfx::Rect& visible_rect);
-  // Update the format of frames in |frame_pool_| with |output_format_fourcc|,
-  // |size| and |visible_rect|.
-  base::Optional<GpuBufferLayout> UpdateVideoFramePoolFormat(
-      uint32_t output_format_fourcc,
-      const gfx::Size& size,
-      const gfx::Rect& visible_rect);
+  // in VideoFramePool. Return true if the setup is successful.
+  bool SetupOutputFormat(const gfx::Size& size, const gfx::Rect& visible_rect);
 
   // Start streaming V4L2 input and output queues. Attempt to start
   // |device_poll_thread_| before starting streaming.
@@ -155,8 +144,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
 
   // V4L2 device in use.
   scoped_refptr<V4L2Device> device_;
-  // VideoFrame manager used to allocate and recycle video frame.
-  DmabufVideoFramePool* frame_pool_ = nullptr;
 
   // Callback to change resolution, called after the pipeline is flushed.
   base::OnceClosure continue_change_resolution_cb_;
@@ -164,8 +151,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
   // State of the instance.
   State state_ = State::kUninitialized;
 
-  // Parameters for generating output VideoFrame.
-  base::Optional<VideoFrameLayout> frame_layout_;
   // Number of output frames requested to |frame_pool_|.
   // The default value is only used at the first time of
   // DmabufVideoFramePool::RequestFrames() during Initialize().

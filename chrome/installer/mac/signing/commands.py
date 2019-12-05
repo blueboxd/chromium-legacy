@@ -8,6 +8,7 @@ The commands module wraps operations that have side-effects.
 import os
 import plistlib
 import shutil
+import stat
 import subprocess
 import tempfile
 
@@ -61,6 +62,22 @@ def make_dir(at):
 def write_file(path, contents):
     with open(path, 'w') as f:
         f.write(contents)
+
+
+def read_file(path):
+    with open(path, 'r') as f:
+        return f.read()
+
+
+def set_executable(path):
+    """Makes the file at the specified path executable.
+
+    Args:
+        path: The path to the file to make executable.
+    """
+    os.chmod(path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR
+             | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH
+             | stat.S_IXOTH)  # -rwxr-xr-x a.k.a. 0755
 
 
 def run_command(args, **kwargs):

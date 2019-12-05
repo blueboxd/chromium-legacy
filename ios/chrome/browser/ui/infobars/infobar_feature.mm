@@ -32,9 +32,8 @@ const base::Feature kDownloadInfobarMessagesUI{
 // Feature enabled by default since it will always be checked along
 // kInfobarUIReboot, effectively working as a kill switch. Meaning that if
 // kInfobarUIReboot is not enabled this feature won't work.
-// TODO(crbug.com/1014652): Enable by Default once feature should be tested.
 const base::Feature kSaveCardInfobarMessagesUI{
-    "SaveCardInfobarMessagesUI", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SaveCardInfobarMessagesUI", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature enabled by default since it will always be guarded with
 // |kInfobarUIReboot|, meaning that if necessary, |kInfobarUIReboot| can be used

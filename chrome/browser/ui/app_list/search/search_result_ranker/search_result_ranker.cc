@@ -620,17 +620,6 @@ void SearchResultRanker::OnFilesOpened(
   }
 }
 
-void SearchResultRanker::OnURLVisited(history::HistoryService* history_service,
-                                      ui::PageTransition transition,
-                                      const history::URLRow& row,
-                                      const history::RedirectList& redirects,
-                                      base::Time visit_time) {
-  // TODO(chareszhao): move this outside of SearchResultRanker.
-  CrOSActionRecorder::GetCrosActionRecorder()->RecordAction(
-      {base::StrCat({"URLVisited-", row.url().spec()})},
-      {{"PageTransition", static_cast<int>(transition)}});
-}
-
 void SearchResultRanker::OnURLsDeleted(
     history::HistoryService* history_service,
     const history::DeletionInfo& deletion_info) {

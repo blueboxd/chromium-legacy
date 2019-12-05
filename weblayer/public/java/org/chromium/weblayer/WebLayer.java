@@ -158,6 +158,7 @@ public final class WebLayer {
         private final boolean mAvailable;
         private final int mMajorVersion;
         private final String mVersion;
+        private boolean mIsLoadingAsync;
 
         /**
          * Creates WebLayerLoader. This does a minimal amount of loading
@@ -207,9 +208,10 @@ public final class WebLayer {
                 return;
             }
             mCallbacks.add(callback);
-            if (mIWebLayer != null) {
+            if (mIsLoadingAsync) {
                 return; // Already loading.
             }
+            mIsLoadingAsync = true;
             if (getIWebLayer(appContext) == null) {
                 // Unable to create WebLayer. This generally shouldn't happen.
                 onWebLayerReady();
@@ -341,6 +343,10 @@ public final class WebLayer {
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
+    }
+
+    /* package */ static IWebLayer getIWebLayer(Context appContext) {
+        return getWebLayerLoader(appContext).getIWebLayer(appContext);
     }
 
     @SuppressWarnings("NewApi")

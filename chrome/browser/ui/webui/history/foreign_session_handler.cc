@@ -70,10 +70,9 @@ std::string DeviceTypeToString(sync_pb::SyncEnums::DeviceType device_type) {
 }
 
 // Helper method to create JSON compatible objects from Session objects.
-std::unique_ptr<base::DictionaryValue> SessionTabToValue(
-    const ::sessions::SessionTab& tab) {
+base::Value SessionTabToValue(const ::sessions::SessionTab& tab) {
   if (tab.navigations.empty())
-    return nullptr;
+    return base::Value();
 
   int selected_index = std::min(tab.current_navigation_index,
                                 static_cast<int>(tab.navigations.size() - 1));
@@ -81,61 +80,56 @@ std::unique_ptr<base::DictionaryValue> SessionTabToValue(
       tab.navigations.at(selected_index);
   GURL tab_url = current_navigation.virtual_url();
   if (!tab_url.is_valid() || tab_url.spec() == chrome::kChromeUINewTabURL)
-    return nullptr;
+    return base::Value();
 
-  std::unique_ptr<base::DictionaryValue> dictionary(
-      new base::DictionaryValue());
-  NewTabUI::SetUrlTitleAndDirection(dictionary.get(),
-                                    current_navigation.title(), tab_url);
-  dictionary->SetString("remoteIconUrlForUma",
-                        current_navigation.favicon_url().spec());
-  dictionary->SetString("type", "tab");
-  dictionary->SetDouble("timestamp",
-                        static_cast<double>(tab.timestamp.ToInternalValue()));
+  base::Value dictionary(base::Value::Type::DICTIONARY);
+  NewTabUI::SetUrlTitleAndDirection(&dictionary, current_navigation.title(),
+                                    tab_url);
+  dictionary.SetStringKey("remoteIconUrlForUma",
+                          current_navigation.favicon_url().spec());
+  dictionary.SetStringKey("type", "tab");
+  dictionary.SetDoubleKey("timestamp",
+                          static_cast<double>(tab.timestamp.ToInternalValue()));
   // TODO(jeremycho): This should probably be renamed to tabId to avoid
   // confusion with the ID corresponding to a session.  Investigate all the
   // places (C++ and JS) where this is being used.  (http://crbug.com/154865).
-  dictionary->SetInteger("sessionId", tab.tab_id.id());
+  dictionary.SetIntKey("sessionId", tab.tab_id.id());
   return dictionary;
 }
 
 // Helper for initializing a boilerplate SessionWindow JSON compatible object.
-std::unique_ptr<base::DictionaryValue> BuildWindowData(
-    base::Time modification_time,
-    SessionID window_id) {
-  std::unique_ptr<base::DictionaryValue> dictionary(
-      new base::DictionaryValue());
+base::Value BuildWindowData(base::Time modification_time, SessionID window_id) {
+  base::Value dictionary(base::Value::Type::DICTIONARY);
   // The items which are to be written into |dictionary| are also described in
   // chrome/browser/resources/ntp4/other_sessions.js in @typedef for WindowData.
   // Please update it whenever you add or remove any keys here.
-  dictionary->SetString("type", "window");
-  dictionary->SetDouble("timestamp", modification_time.ToInternalValue());
+  dictionary.SetStringKey("type", "window");
+  dictionary.SetDoubleKey("timestamp", modification_time.ToInternalValue());
 
-  dictionary->SetInteger("sessionId", window_id.id());
+  dictionary.SetIntKey("sessionId", window_id.id());
   return dictionary;
 }
 
 // Helper method to create JSON compatible objects from SessionWindow objects.
-std::unique_ptr<base::DictionaryValue> SessionWindowToValue(
-    const ::sessions::SessionWindow& window) {
+base::Value SessionWindowToValue(const ::sessions::SessionWindow& window) {
   if (window.tabs.empty())
-    return nullptr;
-  std::unique_ptr<base::ListValue> tab_values(new base::ListValue());
+    return base::Value();
+
+  base::Value tab_values(base::Value::Type::LIST);
   // Calculate the last |modification_time| for all entries within a window.
   base::Time modification_time = window.timestamp;
   for (const std::unique_ptr<sessions::SessionTab>& tab : window.tabs) {
-    std::unique_ptr<base::DictionaryValue> tab_value(
-        SessionTabToValue(*tab.get()));
-    if (tab_value.get()) {
+    base::Value tab_value = SessionTabToValue(*tab.get());
+    if (!tab_value.is_none()) {
       modification_time = std::max(modification_time, tab->timestamp);
-      tab_values->Append(std::move(tab_value));
+      tab_values.GetList().push_back(std::move(tab_value));
     }
   }
-  if (tab_values->GetSize() == 0)
-    return nullptr;
-  std::unique_ptr<base::DictionaryValue> dictionary(
-      BuildWindowData(window.timestamp, window.window_id));
-  dictionary->Set("tabs", std::move(tab_values));
+  if (tab_values.GetList().empty())
+    return base::Value();
+
+  base::Value dictionary = BuildWindowData(window.timestamp, window.window_id);
+  dictionary.SetKey("tabs", std::move(tab_values));
   return dictionary;
 }
 
@@ -283,7 +277,7 @@ void ForeignSessionHandler::HandleGetForeignSessions(
       GetOpenTabsUIDelegate(web_ui());
   std::vector<const sync_sessions::SyncedSession*> sessions;
 
-  base::ListValue session_list;
+  base::Value session_list(base::Value::Type::LIST);
   if (open_tabs && open_tabs->GetAllForeignSessions(&sessions)) {
     if (!load_attempt_time_.is_null()) {
       UMA_HISTOGRAM_TIMES("Sync.SessionsRefreshDelay",
@@ -305,40 +299,41 @@ void ForeignSessionHandler::HandleGetForeignSessions(
     for (size_t i = 0; i < sessions.size() && i < kMaxSessionsToShow; ++i) {
       const sync_sessions::SyncedSession* session = sessions[i];
       const std::string& session_tag = session->session_tag;
-      std::unique_ptr<base::DictionaryValue> session_data(
-          new base::DictionaryValue());
+      base::Value session_data(base::Value::Type::DICTIONARY);
       // The items which are to be written into |session_data| are also
       // described in chrome/browser/resources/history/externs.js
       // @typedef for ForeignSession. Please update it whenever you add or
       // remove any keys here.
-      session_data->SetString("tag", session_tag);
-      session_data->SetString("name", session->session_name);
-      session_data->SetString("deviceType",
-                              DeviceTypeToString(session->device_type));
-      session_data->SetString("modifiedTime",
-                              FormatSessionTime(session->modified_time));
-      session_data->SetDouble("timestamp", session->modified_time.ToJsTime());
+      session_data.SetStringKey("tag", session_tag);
+      session_data.SetStringKey("name", session->session_name);
+      session_data.SetStringKey("deviceType",
+                                DeviceTypeToString(session->device_type));
+      session_data.SetStringKey("modifiedTime",
+                                FormatSessionTime(session->modified_time));
+      session_data.SetDoubleKey("timestamp", session->modified_time.ToJsTime());
 
       bool is_collapsed = collapsed_sessions->HasKey(session_tag);
-      session_data->SetBoolean("collapsed", is_collapsed);
+      session_data.SetBoolKey("collapsed", is_collapsed);
       if (is_collapsed)
         current_collapsed_sessions->SetBoolean(session_tag, true);
 
-      std::unique_ptr<base::ListValue> window_list(new base::ListValue());
+      base::Value window_list(base::Value::Type::LIST);
 
       // Order tabs by visual order within window.
       for (const auto& window_pair : session->windows) {
-        std::unique_ptr<base::DictionaryValue> window_data(
-            SessionWindowToValue(window_pair.second->wrapped_window));
-        if (window_data)
-          window_list->Append(std::move(window_data));
+        base::Value window_data =
+            SessionWindowToValue(window_pair.second->wrapped_window);
+        if (!window_data.is_none()) {
+          window_list.GetList().push_back(std::move(window_data));
+        }
       }
 
-      session_data->Set("windows", std::move(window_list));
-      session_list.Append(std::move(session_data));
+      session_data.SetKey("windows", std::move(window_list));
+      session_list.GetList().push_back(std::move(session_data));
     }
   }
-  web_ui()->CallJavascriptFunctionUnsafe("setForeignSessions", session_list);
+  web_ui()->CallJavascriptFunctionUnsafe("setForeignSessions",
+                                         std::move(session_list));
 }
 
 void ForeignSessionHandler::HandleOpenForeignSession(

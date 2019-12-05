@@ -1591,7 +1591,8 @@ TEST_P(SequenceManagerTest, WorkBatching) {
 class MockTaskObserver : public TaskObserver {
  public:
   MOCK_METHOD1(DidProcessTask, void(const PendingTask& task));
-  MOCK_METHOD1(WillProcessTask, void(const PendingTask& task));
+  MOCK_METHOD2(WillProcessTask,
+               void(const PendingTask& task, bool was_blocked_or_low_priority));
 };
 
 TEST_P(SequenceManagerTest, TaskObserverAdding) {
@@ -1605,7 +1606,9 @@ TEST_P(SequenceManagerTest, TaskObserverAdding) {
   queue->task_runner()->PostTask(FROM_HERE, BindOnce(&TestTask, 1, &run_order));
   queue->task_runner()->PostTask(FROM_HERE, BindOnce(&TestTask, 2, &run_order));
 
-  EXPECT_CALL(observer, WillProcessTask(_)).Times(2);
+  EXPECT_CALL(observer,
+              WillProcessTask(_, /*was_blocked_or_low_priority=*/false))
+      .Times(2);
   EXPECT_CALL(observer, DidProcessTask(_)).Times(2);
   RunLoop().RunUntilIdle();
 }
@@ -1620,7 +1623,7 @@ TEST_P(SequenceManagerTest, TaskObserverRemoving) {
   std::vector<EnqueueOrder> run_order;
   queue->task_runner()->PostTask(FROM_HERE, BindOnce(&TestTask, 1, &run_order));
 
-  EXPECT_CALL(observer, WillProcessTask(_)).Times(0);
+  EXPECT_CALL(observer, WillProcessTask(_, _)).Times(0);
   EXPECT_CALL(observer, DidProcessTask(_)).Times(0);
   RunLoop().RunUntilIdle();
 }
@@ -1638,7 +1641,9 @@ TEST_P(SequenceManagerTest, TaskObserverRemovingInsideTask) {
   queue->task_runner()->PostTask(
       FROM_HERE, BindOnce(&RemoveObserverTask, sequence_manager(), &observer));
 
-  EXPECT_CALL(observer, WillProcessTask(_)).Times(1);
+  EXPECT_CALL(observer,
+              WillProcessTask(_, /*was_blocked_or_low_priority=*/false))
+      .Times(1);
   EXPECT_CALL(observer, DidProcessTask(_)).Times(0);
   RunLoop().RunUntilIdle();
 }
@@ -1656,7 +1661,9 @@ TEST_P(SequenceManagerTest, QueueTaskObserverAdding) {
   queues[1]->task_runner()->PostTask(FROM_HERE,
                                      BindOnce(&TestTask, 2, &run_order));
 
-  EXPECT_CALL(observer, WillProcessTask(_)).Times(1);
+  EXPECT_CALL(observer,
+              WillProcessTask(_, /*was_blocked_or_low_priority=*/false))
+      .Times(1);
   EXPECT_CALL(observer, DidProcessTask(_)).Times(1);
   RunLoop().RunUntilIdle();
 }
@@ -1671,7 +1678,9 @@ TEST_P(SequenceManagerTest, QueueTaskObserverRemoving) {
   std::vector<EnqueueOrder> run_order;
   queue->task_runner()->PostTask(FROM_HERE, BindOnce(&TestTask, 1, &run_order));
 
-  EXPECT_CALL(observer, WillProcessTask(_)).Times(0);
+  EXPECT_CALL(observer,
+              WillProcessTask(_, /*was_blocked_or_low_priority=*/false))
+      .Times(0);
   EXPECT_CALL(observer, DidProcessTask(_)).Times(0);
 
   RunLoop().RunUntilIdle();
@@ -1690,7 +1699,9 @@ TEST_P(SequenceManagerTest, QueueTaskObserverRemovingInsideTask) {
   queue->task_runner()->PostTask(
       FROM_HERE, BindOnce(&RemoveQueueObserverTask, queue, &observer));
 
-  EXPECT_CALL(observer, WillProcessTask(_)).Times(1);
+  EXPECT_CALL(observer,
+              WillProcessTask(_, /*was_blocked_or_low_priority=*/false))
+      .Times(1);
   EXPECT_CALL(observer, DidProcessTask(_)).Times(0);
   RunLoop().RunUntilIdle();
 }
@@ -1975,7 +1986,8 @@ TEST_P(SequenceManagerTest, QuitWhileNested) {
 class SequenceNumberCapturingTaskObserver : public TaskObserver {
  public:
   // TaskObserver overrides.
-  void WillProcessTask(const PendingTask& pending_task) override {}
+  void WillProcessTask(const PendingTask& pending_task,
+                       bool was_blocked_or_low_priority) override {}
   void DidProcessTask(const PendingTask& pending_task) override {
     sequence_numbers_.push_back(pending_task.sequence_num);
   }
@@ -4173,7 +4185,8 @@ TEST_P(SequenceManagerTest, DeletePendingTasks_Complex) {
 
 class QueueTimeTaskObserver : public TaskObserver {
  public:
-  void WillProcessTask(const PendingTask& pending_task) override {
+  void WillProcessTask(const PendingTask& pending_task,
+                       bool was_blocked_or_low_priority) override {
     queue_time_ = pending_task.queue_time;
   }
   void DidProcessTask(const PendingTask& pending_task) override {}
@@ -4775,69 +4788,73 @@ EnqueueOrder RunTaskAndCaptureEnqueueOrder(scoped_refptr<TestTaskQueue> queue) {
 }  // namespace
 
 // Post a task. Install a fence at the beginning of time and remove it. The
-// task's EnqueueOrder should be less than GetLastUnblockEnqueueOrder().
+// task's EnqueueOrder should be less than
+// GetEnqueueOrderAtWhichWeBecameUnblocked().
 TEST_P(SequenceManagerTest,
-       GetLastUnblockEnqueueOrder_PostInsertFenceBeginningOfTime) {
+       GetEnqueueOrderAtWhichWeBecameUnblocked_PostInsertFenceBeginningOfTime) {
   auto queue = CreateTaskQueue();
   queue->task_runner()->PostTask(FROM_HERE, DoNothing());
   queue->InsertFence(TaskQueue::InsertFencePosition::kBeginningOfTime);
   queue->RemoveFence();
   auto enqueue_order = RunTaskAndCaptureEnqueueOrder(queue);
-  EXPECT_LT(enqueue_order, queue->GetLastUnblockEnqueueOrder());
+  EXPECT_LT(enqueue_order, queue->GetEnqueueOrderAtWhichWeBecameUnblocked());
 }
 
 // Post a 1st task. Install a now fence. Post a 2nd task. Run the first task.
 // Remove the fence. The 2nd task's EnqueueOrder should be less than
-// GetLastUnblockEnqueueOrder().
-TEST_P(SequenceManagerTest, GetLastUnblockEnqueueOrder_PostInsertNowFencePost) {
+// GetEnqueueOrderAtWhichWeBecameUnblocked().
+TEST_P(SequenceManagerTest,
+       GetEnqueueOrderAtWhichWeBecameUnblocked_PostInsertNowFencePost) {
   auto queue = CreateTaskQueue();
   queue->task_runner()->PostTask(FROM_HERE, DoNothing());
   queue->InsertFence(TaskQueue::InsertFencePosition::kNow);
   queue->task_runner()->PostTask(FROM_HERE, DoNothing());
   RunTaskAndCaptureEnqueueOrder(queue);
-  EXPECT_FALSE(queue->GetLastUnblockEnqueueOrder());
+  EXPECT_FALSE(queue->GetEnqueueOrderAtWhichWeBecameUnblocked());
   queue->RemoveFence();
   auto enqueue_order = RunTaskAndCaptureEnqueueOrder(queue);
-  EXPECT_LT(enqueue_order, queue->GetLastUnblockEnqueueOrder());
+  EXPECT_LT(enqueue_order, queue->GetEnqueueOrderAtWhichWeBecameUnblocked());
 }
 
 // Post a 1st task. Install a now fence. Post a 2nd task. Remove the fence.
-// GetLastUnblockEnqueueOrder() should indicate that the queue was never
-// blocked (front task could always run).
+// GetEnqueueOrderAtWhichWeBecameUnblocked() should indicate that the queue was
+// never blocked (front task could always run).
 TEST_P(SequenceManagerTest,
-       GetLastUnblockEnqueueOrder_PostInsertNowFencePost2) {
+       GetEnqueueOrderAtWhichWeBecameUnblocked_PostInsertNowFencePost2) {
   auto queue = CreateTaskQueue();
   queue->task_runner()->PostTask(FROM_HERE, DoNothing());
   queue->InsertFence(TaskQueue::InsertFencePosition::kNow);
   queue->task_runner()->PostTask(FROM_HERE, DoNothing());
   queue->RemoveFence();
   RunTaskAndCaptureEnqueueOrder(queue);
-  EXPECT_FALSE(queue->GetLastUnblockEnqueueOrder());
+  EXPECT_FALSE(queue->GetEnqueueOrderAtWhichWeBecameUnblocked());
   RunTaskAndCaptureEnqueueOrder(queue);
-  EXPECT_FALSE(queue->GetLastUnblockEnqueueOrder());
+  EXPECT_FALSE(queue->GetEnqueueOrderAtWhichWeBecameUnblocked());
 }
 
 // Post a 1st task. Install a now fence. Post a 2nd task. Install a now fence
-// (moves the previous fence). GetLastUnblockEnqueueOrder() should indicate
-// that the queue was never blocked (front task could always run).
-TEST_P(SequenceManagerTest,
-       GetLastUnblockEnqueueOrder_PostInsertNowFencePostInsertNowFence) {
+// (moves the previous fence). GetEnqueueOrderAtWhichWeBecameUnblocked() should
+// indicate that the queue was never blocked (front task could always run).
+TEST_P(
+    SequenceManagerTest,
+    GetEnqueueOrderAtWhichWeBecameUnblocked_PostInsertNowFencePostInsertNowFence) {
   auto queue = CreateTaskQueue();
   queue->task_runner()->PostTask(FROM_HERE, DoNothing());
   queue->InsertFence(TaskQueue::InsertFencePosition::kNow);
   queue->task_runner()->PostTask(FROM_HERE, DoNothing());
   queue->InsertFence(TaskQueue::InsertFencePosition::kNow);
   RunTaskAndCaptureEnqueueOrder(queue);
-  EXPECT_FALSE(queue->GetLastUnblockEnqueueOrder());
+  EXPECT_FALSE(queue->GetEnqueueOrderAtWhichWeBecameUnblocked());
   RunTaskAndCaptureEnqueueOrder(queue);
-  EXPECT_FALSE(queue->GetLastUnblockEnqueueOrder());
+  EXPECT_FALSE(queue->GetEnqueueOrderAtWhichWeBecameUnblocked());
 }
 
 // Post a 1st task. Install a delayed fence. Post a 2nd task that will run
 // after the fence. Run the first task. Remove the fence. The 2nd task's
-// EnqueueOrder should be less than GetLastUnblockEnqueueOrder().
-TEST_P(SequenceManagerTest,
-       GetLastUnblockEnqueueOrder_PostInsertDelayedFencePostAfterFence) {
+// EnqueueOrder should be less than GetEnqueueOrderAtWhichWeBecameUnblocked().
+TEST_P(
+    SequenceManagerTest,
+    GetEnqueueOrderAtWhichWeBecameUnblocked_PostInsertDelayedFencePostAfterFence) {
   constexpr TimeDelta kDelay = TimeDelta::FromSeconds(42);
   const TimeTicks start_time = mock_tick_clock()->NowTicks();
   auto queue =
@@ -4846,18 +4863,19 @@ TEST_P(SequenceManagerTest,
   queue->InsertFenceAt(start_time + kDelay);
   queue->task_runner()->PostDelayedTask(FROM_HERE, DoNothing(), 2 * kDelay);
   RunTaskAndCaptureEnqueueOrder(queue);
-  EXPECT_FALSE(queue->GetLastUnblockEnqueueOrder());
+  EXPECT_FALSE(queue->GetEnqueueOrderAtWhichWeBecameUnblocked());
   FastForwardBy(2 * kDelay);
   queue->RemoveFence();
   auto enqueue_order = RunTaskAndCaptureEnqueueOrder(queue);
-  EXPECT_LT(enqueue_order, queue->GetLastUnblockEnqueueOrder());
+  EXPECT_LT(enqueue_order, queue->GetEnqueueOrderAtWhichWeBecameUnblocked());
 }
 
 // Post a 1st task. Install a delayed fence. Post a 2nd task that will run
-// before the fence. GetLastUnblockEnqueueOrder() should indicate that the
-// queue was never blocked (front task could always run).
-TEST_P(SequenceManagerTest,
-       GetLastUnblockEnqueueOrder_PostInsertDelayedFencePostBeforeFence) {
+// before the fence. GetEnqueueOrderAtWhichWeBecameUnblocked() should indicate
+// that the queue was never blocked (front task could always run).
+TEST_P(
+    SequenceManagerTest,
+    GetEnqueueOrderAtWhichWeBecameUnblocked_PostInsertDelayedFencePostBeforeFence) {
   constexpr TimeDelta kDelay = TimeDelta::FromSeconds(42);
   const TimeTicks start_time = mock_tick_clock()->NowTicks();
   auto queue =
@@ -4866,39 +4884,46 @@ TEST_P(SequenceManagerTest,
   queue->InsertFenceAt(start_time + 2 * kDelay);
   queue->task_runner()->PostDelayedTask(FROM_HERE, DoNothing(), kDelay);
   RunTaskAndCaptureEnqueueOrder(queue);
-  EXPECT_FALSE(queue->GetLastUnblockEnqueueOrder());
+  EXPECT_FALSE(queue->GetEnqueueOrderAtWhichWeBecameUnblocked());
   FastForwardBy(3 * kDelay);
-  EXPECT_FALSE(queue->GetLastUnblockEnqueueOrder());
+  EXPECT_FALSE(queue->GetEnqueueOrderAtWhichWeBecameUnblocked());
   queue->RemoveFence();
 }
 
 // Post a 1st task. Disable the queue and re-enable it. Post a 2nd task. The 1st
-// task's EnqueueOrder should be less than GetLastUnblockEnqueueOrder().
-TEST_P(SequenceManagerTest, GetLastUnblockEnqueueOrder_PostDisablePostEnable) {
+// task's EnqueueOrder should be less than
+// GetEnqueueOrderAtWhichWeBecameUnblocked().
+TEST_P(SequenceManagerTest,
+       GetEnqueueOrderAtWhichWeBecameUnblocked_PostDisablePostEnable) {
   auto queue = CreateTaskQueue();
   queue->task_runner()->PostTask(FROM_HERE, DoNothing());
   queue->GetTaskQueueImpl()->SetQueueEnabled(false);
   queue->GetTaskQueueImpl()->SetQueueEnabled(true);
   queue->task_runner()->PostTask(FROM_HERE, DoNothing());
   auto first_enqueue_order = RunTaskAndCaptureEnqueueOrder(queue);
-  EXPECT_LT(first_enqueue_order, queue->GetLastUnblockEnqueueOrder());
+  EXPECT_LT(first_enqueue_order,
+            queue->GetEnqueueOrderAtWhichWeBecameUnblocked());
   auto second_enqueue_order = RunTaskAndCaptureEnqueueOrder(queue);
-  EXPECT_GT(second_enqueue_order, queue->GetLastUnblockEnqueueOrder());
+  EXPECT_GT(second_enqueue_order,
+            queue->GetEnqueueOrderAtWhichWeBecameUnblocked());
 }
 
 // Disable the queue. Post a 1st task. Re-enable the queue. Post a 2nd task.
 // The 1st task's EnqueueOrder should be less than
-// GetLastUnblockEnqueueOrder().
-TEST_P(SequenceManagerTest, GetLastUnblockEnqueueOrder_DisablePostEnablePost) {
+// GetEnqueueOrderAtWhichWeBecameUnblocked().
+TEST_P(SequenceManagerTest,
+       GetEnqueueOrderAtWhichWeBecameUnblocked_DisablePostEnablePost) {
   auto queue = CreateTaskQueue();
   queue->GetTaskQueueImpl()->SetQueueEnabled(false);
   queue->task_runner()->PostTask(FROM_HERE, DoNothing());
   queue->GetTaskQueueImpl()->SetQueueEnabled(true);
   queue->task_runner()->PostTask(FROM_HERE, DoNothing());
   auto first_enqueue_order = RunTaskAndCaptureEnqueueOrder(queue);
-  EXPECT_LT(first_enqueue_order, queue->GetLastUnblockEnqueueOrder());
+  EXPECT_LT(first_enqueue_order,
+            queue->GetEnqueueOrderAtWhichWeBecameUnblocked());
   auto second_enqueue_order = RunTaskAndCaptureEnqueueOrder(queue);
-  EXPECT_GT(second_enqueue_order, queue->GetLastUnblockEnqueueOrder());
+  EXPECT_GT(second_enqueue_order,
+            queue->GetEnqueueOrderAtWhichWeBecameUnblocked());
 }
 
 TEST_P(SequenceManagerTest, OnTaskReady) {
@@ -4916,6 +4941,238 @@ TEST_P(SequenceManagerTest, OnTaskReady) {
   EXPECT_EQ(1, task_ready_count);
   FastForwardBy(base::TimeDelta::FromHours(1));
   EXPECT_EQ(2, task_ready_count);
+}
+
+namespace {
+
+class TaskObserverExpectingNoDelayedRunTime : public TaskObserver {
+ public:
+  TaskObserverExpectingNoDelayedRunTime() = default;
+  ~TaskObserverExpectingNoDelayedRunTime() override = default;
+
+  int num_will_process_task() const { return num_will_process_task_; }
+  int num_did_process_task() const { return num_did_process_task_; }
+
+ private:
+  void WillProcessTask(const base::PendingTask& pending_task,
+                       bool was_blocked_or_low_priority) override {
+    EXPECT_TRUE(pending_task.delayed_run_time.is_null());
+    ++num_will_process_task_;
+  }
+  void DidProcessTask(const base::PendingTask& pending_task) override {
+    EXPECT_TRUE(pending_task.delayed_run_time.is_null());
+    ++num_did_process_task_;
+  }
+
+  int num_will_process_task_ = 0;
+  int num_did_process_task_ = 0;
+};
+
+}  // namespace
+
+// The |delayed_run_time| must not be set for immediate tasks as that prevents
+// external observers from correctly identifying delayed tasks.
+// https://crbug.com/1029137
+TEST_P(SequenceManagerTest, NoDelayedRunTimeForImmediateTask) {
+  TaskObserverExpectingNoDelayedRunTime task_observer;
+  sequence_manager()->SetAddQueueTimeToTasks(true);
+  sequence_manager()->AddTaskObserver(&task_observer);
+  auto queue = CreateTaskQueue();
+
+  base::RunLoop run_loop;
+  queue->task_runner()->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() { run_loop.Quit(); }));
+  run_loop.Run();
+
+  EXPECT_EQ(1, task_observer.num_will_process_task());
+  EXPECT_EQ(1, task_observer.num_did_process_task());
+
+  sequence_manager()->RemoveTaskObserver(&task_observer);
+}
+
+TEST_P(SequenceManagerTest, TaskObserverBlockedOrLowPriority_QueueDisabled) {
+  auto queue = CreateTaskQueue();
+  testing::StrictMock<MockTaskObserver> observer;
+  sequence_manager()->AddTaskObserver(&observer);
+
+  queue->task_runner()->PostTask(FROM_HERE, DoNothing());
+  queue->GetTaskQueueImpl()->SetQueueEnabled(false);
+  queue->GetTaskQueueImpl()->SetQueueEnabled(true);
+
+  EXPECT_CALL(observer,
+              WillProcessTask(_, /*was_blocked_or_low_priority=*/true));
+  EXPECT_CALL(observer, DidProcessTask(_));
+  RunLoop().RunUntilIdle();
+
+  sequence_manager()->RemoveTaskObserver(&observer);
+}
+
+TEST_P(SequenceManagerTest,
+       TaskObserverBlockedOrLowPriority_FenceBeginningOfTime) {
+  auto queue = CreateTaskQueue();
+  testing::StrictMock<MockTaskObserver> observer;
+  sequence_manager()->AddTaskObserver(&observer);
+
+  queue->task_runner()->PostTask(FROM_HERE, DoNothing());
+  queue->GetTaskQueueImpl()->InsertFence(
+      TaskQueue::InsertFencePosition::kBeginningOfTime);
+  queue->GetTaskQueueImpl()->RemoveFence();
+
+  EXPECT_CALL(observer,
+              WillProcessTask(_, /*was_blocked_or_low_priority=*/true));
+  EXPECT_CALL(observer, DidProcessTask(_));
+  RunLoop().RunUntilIdle();
+
+  sequence_manager()->RemoveTaskObserver(&observer);
+}
+
+TEST_P(SequenceManagerTest,
+       TaskObserverBlockedOrLowPriority_PostedBeforeFenceNow) {
+  auto queue = CreateTaskQueue();
+  testing::StrictMock<MockTaskObserver> observer;
+  sequence_manager()->AddTaskObserver(&observer);
+
+  queue->task_runner()->PostTask(FROM_HERE, DoNothing());
+  queue->GetTaskQueueImpl()->InsertFence(TaskQueue::InsertFencePosition::kNow);
+  queue->GetTaskQueueImpl()->RemoveFence();
+
+  EXPECT_CALL(observer,
+              WillProcessTask(_, /*was_blocked_or_low_priority=*/false));
+  EXPECT_CALL(observer, DidProcessTask(_));
+  RunLoop().RunUntilIdle();
+
+  sequence_manager()->RemoveTaskObserver(&observer);
+}
+
+TEST_P(SequenceManagerTest,
+       TaskObserverBlockedOrLowPriority_PostedAfterFenceNow) {
+  auto queue = CreateTaskQueue();
+  testing::StrictMock<MockTaskObserver> observer;
+  sequence_manager()->AddTaskObserver(&observer);
+
+  queue->GetTaskQueueImpl()->InsertFence(TaskQueue::InsertFencePosition::kNow);
+  queue->task_runner()->PostTask(FROM_HERE, DoNothing());
+  queue->GetTaskQueueImpl()->RemoveFence();
+
+  EXPECT_CALL(observer,
+              WillProcessTask(_, /*was_blocked_or_low_priority=*/true));
+  EXPECT_CALL(observer, DidProcessTask(_));
+  RunLoop().RunUntilIdle();
+
+  sequence_manager()->RemoveTaskObserver(&observer);
+}
+
+TEST_P(SequenceManagerTest,
+       TaskObserverBlockedOrLowPriority_LowerPriorityWhileQueued) {
+  auto queue = CreateTaskQueue();
+  testing::StrictMock<MockTaskObserver> observer;
+  sequence_manager()->AddTaskObserver(&observer);
+
+  queue->task_runner()->PostTask(FROM_HERE, DoNothing());
+  queue->SetQueuePriority(TaskQueue::QueuePriority::kLowPriority);
+  queue->SetQueuePriority(TaskQueue::QueuePriority::kNormalPriority);
+
+  EXPECT_CALL(observer,
+              WillProcessTask(_, /*was_blocked_or_low_priority=*/true));
+  EXPECT_CALL(observer, DidProcessTask(_));
+  RunLoop().RunUntilIdle();
+
+  sequence_manager()->RemoveTaskObserver(&observer);
+}
+
+TEST_P(SequenceManagerTest,
+       TaskObserverBlockedOrLowPriority_LowPriorityWhenQueueing) {
+  auto queue = CreateTaskQueue();
+  testing::StrictMock<MockTaskObserver> observer;
+  sequence_manager()->AddTaskObserver(&observer);
+
+  queue->SetQueuePriority(TaskQueue::QueuePriority::kLowPriority);
+  queue->task_runner()->PostTask(FROM_HERE, DoNothing());
+  queue->SetQueuePriority(TaskQueue::QueuePriority::kNormalPriority);
+
+  EXPECT_CALL(observer,
+              WillProcessTask(_, /*was_blocked_or_low_priority=*/true));
+  EXPECT_CALL(observer, DidProcessTask(_));
+  RunLoop().RunUntilIdle();
+
+  sequence_manager()->RemoveTaskObserver(&observer);
+}
+
+TEST_P(SequenceManagerTest,
+       TaskObserverBlockedOrLowPriority_LowPriorityWhenRunning) {
+  auto queue = CreateTaskQueue();
+  testing::StrictMock<MockTaskObserver> observer;
+  sequence_manager()->AddTaskObserver(&observer);
+
+  queue->task_runner()->PostTask(FROM_HERE, DoNothing());
+  queue->SetQueuePriority(TaskQueue::QueuePriority::kLowPriority);
+
+  EXPECT_CALL(observer,
+              WillProcessTask(_, /*was_blocked_or_low_priority=*/true));
+  EXPECT_CALL(observer, DidProcessTask(_));
+  RunLoop().RunUntilIdle();
+
+  sequence_manager()->RemoveTaskObserver(&observer);
+}
+
+TEST_P(SequenceManagerTest,
+       TaskObserverBlockedOrLowPriority_TaskObserverUnblockedWithBacklog) {
+  auto queue = CreateTaskQueue();
+  testing::StrictMock<MockTaskObserver> observer;
+  sequence_manager()->AddTaskObserver(&observer);
+
+  queue->SetQueuePriority(TaskQueue::QueuePriority::kLowPriority);
+  queue->task_runner()->PostTask(FROM_HERE, DoNothing());
+  queue->GetTaskQueueImpl()->InsertFence(
+      TaskQueue::InsertFencePosition::kBeginningOfTime);
+  queue->task_runner()->PostTask(FROM_HERE, DoNothing());
+  queue->GetTaskQueueImpl()->RemoveFence();
+  queue->task_runner()->PostTask(FROM_HERE, DoNothing());
+  queue->SetQueuePriority(TaskQueue::QueuePriority::kNormalPriority);
+  // Post a task while the queue is kNormalPriority and unblocked, but has a
+  // backlog of tasks that were blocked.
+  queue->task_runner()->PostTask(FROM_HERE, DoNothing());
+
+  EXPECT_CALL(observer,
+              WillProcessTask(_, /*was_blocked_or_low_priority=*/true))
+      .Times(3);
+  EXPECT_CALL(observer, DidProcessTask(_)).Times(4);
+  EXPECT_CALL(observer,
+              WillProcessTask(_, /*was_blocked_or_low_priority=*/false));
+  RunLoop().RunUntilIdle();
+  testing::Mock::VerifyAndClear(&observer);
+
+  sequence_manager()->RemoveTaskObserver(&observer);
+}
+
+TEST_P(SequenceManagerTest, TaskObserverBlockedOrLowPriority_Mix) {
+  auto queue = CreateTaskQueue();
+  testing::StrictMock<MockTaskObserver> observer;
+  sequence_manager()->AddTaskObserver(&observer);
+
+  queue->SetQueuePriority(TaskQueue::QueuePriority::kLowPriority);
+  queue->task_runner()->PostTask(FROM_HERE, DoNothing());
+  queue->GetTaskQueueImpl()->InsertFence(
+      TaskQueue::InsertFencePosition::kBeginningOfTime);
+  queue->task_runner()->PostTask(FROM_HERE, DoNothing());
+  queue->GetTaskQueueImpl()->RemoveFence();
+  queue->task_runner()->PostTask(FROM_HERE, DoNothing());
+
+  EXPECT_CALL(observer,
+              WillProcessTask(_, /*was_blocked_or_low_priority=*/true))
+      .Times(3);
+  EXPECT_CALL(observer, DidProcessTask(_)).Times(3);
+  RunLoop().RunUntilIdle();
+  testing::Mock::VerifyAndClear(&observer);
+
+  queue->SetQueuePriority(TaskQueue::QueuePriority::kNormalPriority);
+  queue->task_runner()->PostTask(FROM_HERE, DoNothing());
+  EXPECT_CALL(observer,
+              WillProcessTask(_, /*was_blocked_or_low_priority=*/false));
+  EXPECT_CALL(observer, DidProcessTask(_));
+  RunLoop().RunUntilIdle();
+
+  sequence_manager()->RemoveTaskObserver(&observer);
 }
 
 }  // namespace sequence_manager_impl_unittest

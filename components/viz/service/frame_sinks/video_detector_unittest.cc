@@ -124,8 +124,7 @@ class VideoDetectorTest : public testing::Test {
 
   void CreateDisplayFrame() {
     surface_aggregator_.Aggregate(root_frame_sink_->last_activated_surface_id(),
-                                  mock_task_runner_->NowTicks(),
-                                  gfx::OVERLAY_TRANSFORM_NONE);
+                                  mock_task_runner_->NowTicks());
   }
 
   void EmbedClient(CompositorFrameSinkSupport* frame_sink) {

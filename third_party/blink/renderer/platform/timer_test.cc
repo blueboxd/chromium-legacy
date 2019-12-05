@@ -678,7 +678,7 @@ class TaskObserver : public base::TaskObserver {
                Vector<scoped_refptr<base::SingleThreadTaskRunner>>* run_order)
       : task_runner_(std::move(task_runner)), run_order_(run_order) {}
 
-  void WillProcessTask(const base::PendingTask&) override {}
+  void WillProcessTask(const base::PendingTask&, bool) override {}
 
   void DidProcessTask(const base::PendingTask&) override {
     run_order_->push_back(task_runner_);

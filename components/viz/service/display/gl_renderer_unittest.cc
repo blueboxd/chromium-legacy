@@ -34,7 +34,7 @@
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/service/display/display_resource_provider.h"
-#include "components/viz/service/display/overlay_candidate_validator.h"
+#include "components/viz/service/display/overlay_candidate_validator_strategy.h"
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
 #include "components/viz/test/fake_output_surface.h"
@@ -2215,16 +2215,29 @@ class TestOverlayProcessor : public OverlayProcessor {
              OverlayCandidateList* candidates,
              std::vector<gfx::Rect>* content_bounds));
   };
-
+#if defined(OS_WIN) || defined(OS_MACOSX)
   class Validator : public OverlayCandidateValidator {
+   public:
+    MOCK_CONST_METHOD0(AllowCALayerOverlays, bool());
+    MOCK_CONST_METHOD0(AllowDCLayerOverlays, bool());
+    MOCK_CONST_METHOD0(NeedsSurfaceOccludingDamageRect, bool());
+  };
+
+  const Validator* GetTestValidator() const {
+    return static_cast<const Validator*>(GetOverlayCandidateValidator());
+  }
+
+  explicit TestOverlayProcessor(
+      std::unique_ptr<OverlayCandidateValidator> overlay_validator)
+      : OverlayProcessor(std::move(overlay_validator)) {}
+
+#elif defined(OS_ANDROID) || defined(USE_OZONE)
+  class Validator : public OverlayCandidateValidatorStrategy {
    public:
     void InitializeStrategies() override {
       strategies_.push_back(std::make_unique<Strategy>());
     }
 
-    // Returns true if draw quads can be represented as CALayers (Mac only).
-    MOCK_CONST_METHOD0(AllowCALayerOverlays, bool());
-    MOCK_CONST_METHOD0(AllowDCLayerOverlays, bool());
     MOCK_CONST_METHOD0(NeedsSurfaceOccludingDamageRect, bool());
 
     // A list of possible overlay candidates is presented to this function.
@@ -2242,18 +2255,20 @@ class TestOverlayProcessor : public OverlayProcessor {
     }
   };
 
-  explicit TestOverlayProcessor(
-      std::unique_ptr<OverlayCandidateValidator> overlay_validator)
-      : OverlayProcessor(std::move(overlay_validator)) {}
-  ~TestOverlayProcessor() override = default;
-
-  const Validator* GetTestValidator() const {
-    return static_cast<const Validator*>(GetOverlayCandidateValidator());
-  }
-
   Strategy& strategy() {
-    return const_cast<Validator*>(GetTestValidator())->strategy();
+    auto* validator =
+        static_cast<const Validator*>(GetOverlayCandidateValidator());
+    return const_cast<Validator*>(validator)->strategy();
   }
+
+  explicit TestOverlayProcessor(
+      std::unique_ptr<OverlayCandidateValidatorStrategy> overlay_validator)
+      : OverlayProcessor(std::move(overlay_validator)) {}
+#else  // Default to no overlay.
+  TestOverlayProcessor() : OverlayProcessor(nullptr) {}
+#endif
+
+  ~TestOverlayProcessor() override = default;
 };
 
 void MailboxReleased(const gpu::SyncToken& sync_token, bool lost_resource) {}
@@ -2315,11 +2330,18 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   renderer.Initialize();
   renderer.SetVisible(true);
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID) || \
+    defined(USE_OZONE)
   TestOverlayProcessor* processor = new TestOverlayProcessor(
       std::make_unique<TestOverlayProcessor::Validator>());
+#else  // Default to no overlay.
+  TestOverlayProcessor* processor = new TestOverlayProcessor();
+#endif
   renderer.SetOverlayProcessor(processor);
+#if defined(OS_WIN) || defined(OS_MACOSX)
   const TestOverlayProcessor::Validator* validator =
       processor->GetTestValidator();
+#endif
 
   gfx::Size viewport_size(1, 1);
   RenderPass* root_pass = cc::AddRenderPass(
@@ -2356,9 +2378,12 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   EXPECT_CALL(*validator, AllowDCLayerOverlays()).Times(0);
 #endif
   DrawFrame(&renderer, viewport_size);
+#if defined(USE_OZONE) || defined(OS_ANDROID)
   Mock::VerifyAndClearExpectations(&processor->strategy());
+#elif defined(OS_WIN) || defined(OS_MACOSX)
   Mock::VerifyAndClearExpectations(
       const_cast<TestOverlayProcessor::Validator*>(validator));
+#endif
 
   // Without a copy request Attempt() should be called once.
   root_pass = cc::AddRenderPass(&render_passes_in_draw_order_, 1,
@@ -2376,40 +2401,9 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
 #if defined(USE_OZONE) || defined(OS_ANDROID)
   EXPECT_CALL(processor->strategy(), Attempt(_, _, _, _, _, _, _)).Times(1);
 #elif defined(OS_MACOSX)
-  EXPECT_CALL(*validator, AllowCALayerOverlays())
-      .Times(1)
-      .WillOnce(::testing::Return(false));
+  EXPECT_CALL(*validator, AllowCALayerOverlays()).Times(1);
 #elif defined(OS_WIN)
-  EXPECT_CALL(*validator, AllowDCLayerOverlays())
-      .Times(1)
-      .WillOnce(::testing::Return(false));
-#endif
-  DrawFrame(&renderer, viewport_size);
-
-  // If the CALayerOverlay path is taken, then the ordinary overlay path should
-  // not be called.
-  root_pass = cc::AddRenderPass(&render_passes_in_draw_order_, 1,
-                                gfx::Rect(viewport_size), gfx::Transform(),
-                                cc::FilterOperations());
-  root_pass->has_transparent_background = false;
-
-  overlay_quad = root_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-  overlay_quad->SetNew(
-      root_pass->CreateAndAppendSharedQuadState(), gfx::Rect(viewport_size),
-      gfx::Rect(viewport_size), needs_blending, parent_resource_id,
-      premultiplied_alpha, gfx::PointF(0, 0), gfx::PointF(1, 1),
-      SK_ColorTRANSPARENT, vertex_opacity, flipped, nearest_neighbor,
-      /*secure_output_only=*/false, gfx::ProtectedVideoType::kClear);
-#if defined(OS_MACOSX)
-  EXPECT_CALL(*validator, AllowCALayerOverlays())
-      .Times(1)
-      .WillOnce(::testing::Return(true));
-#elif defined(USE_OZONE) || defined(OS_ANDROID)
-  EXPECT_CALL(processor->strategy(), Attempt(_, _, _, _, _, _, _)).Times(1);
-#elif defined(OS_WIN)
-  EXPECT_CALL(*validator, AllowDCLayerOverlays())
-      .Times(1)
-      .WillOnce(::testing::Return(true));
+  EXPECT_CALL(*validator, AllowDCLayerOverlays()).Times(1);
 #endif
   DrawFrame(&renderer, viewport_size);
 
@@ -2422,17 +2416,16 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   child_resource_provider->ShutdownAndReleaseAllResources();
 }
 
+#if defined(OS_ANDROID) || defined(USE_OZONE)
 class SingleOverlayOnTopProcessor : public OverlayProcessor {
  public:
-  class SingleOverlayValidator : public OverlayCandidateValidator {
+  class SingleOverlayValidator : public OverlayCandidateValidatorStrategy {
    public:
     void InitializeStrategies() override {
       strategies_.push_back(std::make_unique<OverlayStrategySingleOnTop>(this));
       strategies_.push_back(std::make_unique<OverlayStrategyUnderlay>(this));
     }
 
-    bool AllowCALayerOverlays() const override { return false; }
-    bool AllowDCLayerOverlays() const override { return false; }
     bool NeedsSurfaceOccludingDamageRect() const override { return true; }
 
     void CheckOverlaySupport(const PrimaryPlane* primary_plane,
@@ -2456,8 +2449,8 @@ class SingleOverlayOnTopProcessor : public OverlayProcessor {
 
   void AllowMultipleCandidates() {
     // Cast away const from the validator pointer to set on it.
-    auto* validator =
-        const_cast<OverlayCandidateValidator*>(GetOverlayCandidateValidator());
+    auto* validator = const_cast<OverlayCandidateValidatorStrategy*>(
+        GetOverlayCandidateValidator());
     static_cast<SingleOverlayValidator*>(validator)->SetAllowMultipleCandidates(
         true);
   }
@@ -2468,7 +2461,6 @@ class WaitSyncTokenCountingGLES2Interface : public TestGLES2Interface {
   MOCK_METHOD1(WaitSyncTokenCHROMIUM, void(const GLbyte* sync_token));
 };
 
-#if defined(USE_OZONE) || defined(OS_ANDROID)
 class MockOverlayScheduler {
  public:
   MOCK_METHOD7(Schedule,
@@ -2868,8 +2860,6 @@ class DCLayerValidator : public OverlayCandidateValidator {
   bool AllowCALayerOverlays() const override { return false; }
   bool AllowDCLayerOverlays() const override { return true; }
   bool NeedsSurfaceOccludingDamageRect() const override { return true; }
-  void CheckOverlaySupport(const PrimaryPlane* primary_plane,
-                           OverlayCandidateList* surfaces) override {}
 };
 
 // Test that SetEnableDCLayersCHROMIUM is properly called when enabling
@@ -3065,7 +3055,7 @@ class ContentBoundsOverlayProcessor : public OverlayProcessor {
     const std::vector<gfx::Rect> content_bounds_;
   };
 
-  class Validator : public OverlayCandidateValidator {
+  class Validator : public OverlayCandidateValidatorStrategy {
    public:
     explicit Validator(const std::vector<gfx::Rect>& content_bounds)
         : content_bounds_(content_bounds) {}
@@ -3076,8 +3066,6 @@ class ContentBoundsOverlayProcessor : public OverlayProcessor {
 
     // Empty mock methods since this test set up uses strategies, which are only
     // for ozone and android.
-    MOCK_CONST_METHOD0(AllowCALayerOverlays, bool());
-    MOCK_CONST_METHOD0(AllowDCLayerOverlays, bool());
     MOCK_CONST_METHOD0(NeedsSurfaceOccludingDamageRect, bool());
 
     // A list of possible overlay candidates is presented to this function.
@@ -3175,8 +3163,6 @@ class CALayerValidator : public OverlayCandidateValidator {
   bool AllowCALayerOverlays() const override { return true; }
   bool AllowDCLayerOverlays() const override { return false; }
   bool NeedsSurfaceOccludingDamageRect() const override { return false; }
-  void CheckOverlaySupport(const PrimaryPlane* primary_plane,
-                           OverlayCandidateList* surfaces) override {}
 };
 
 class MockCALayerGLES2Interface : public TestGLES2Interface {

@@ -493,7 +493,7 @@ bool Display::DrawAndSwap() {
     frame = aggregator_->Aggregate(
         current_surface_id_,
         scheduler_ ? scheduler_->current_frame_display_time() : now_time,
-        output_surface_->GetDisplayTransform(), ++swapped_trace_id_);
+        ++swapped_trace_id_);
   }
 
   UMA_HISTOGRAM_COUNTS_1M("Compositing.SurfaceAggregator.AggregateUs",
@@ -523,11 +523,14 @@ bool Display::DrawAndSwap() {
   bool have_damage = false;
   auto& last_render_pass = *frame.render_pass_list.back();
 
+  const gfx::OverlayTransform current_display_transform =
+      frame.metadata.display_transform_hint;
+  if (current_display_transform != output_surface_->GetDisplayTransform())
+    output_surface_->SetDisplayTransformHint(current_display_transform);
+
   // The CompositorFrame provided by the SurfaceAggregator includes the display
   // transform while |current_surface_size_| is the pre-transform size received
   // from the client.
-  const gfx::OverlayTransform current_display_transform =
-      output_surface_->GetDisplayTransform();
   const gfx::Transform display_transform = gfx::OverlayTransformToTransform(
       current_display_transform, gfx::SizeF(current_surface_size_));
   const gfx::Size current_surface_size =
@@ -535,7 +538,6 @@ bool Display::DrawAndSwap() {
           display_transform, gfx::Rect(current_surface_size_))
           .size();
   if (settings_.auto_resize_output_surface &&
-      last_display_transform_swapped_ == current_display_transform &&
       last_render_pass.output_rect.size() != current_surface_size &&
       last_render_pass.damage_rect == last_render_pass.output_rect &&
       !current_surface_size.IsEmpty()) {
@@ -620,7 +622,6 @@ bool Display::DrawAndSwap() {
                                  "Graphics.Pipeline.DrawAndSwap",
                                  swapped_trace_id_, "WaitForSwap");
     swapped_since_resize_ = true;
-    last_display_transform_swapped_ = current_display_transform;
 
     ui::LatencyInfo::TraceIntermediateFlowEvents(frame.metadata.latency_info,
                                                  "Display::DrawAndSwap");
@@ -1027,10 +1028,6 @@ base::TimeDelta Display::GetPreferredFrameIntervalForFrameSinkId(
 void Display::SetSupportedFrameIntervals(
     std::vector<base::TimeDelta> intervals) {
   frame_rate_decider_->SetSupportedFrameIntervals(std::move(intervals));
-}
-
-void Display::SetDisplayTransformHint(gfx::OverlayTransform transform) {
-  output_surface_->SetDisplayTransformHint(transform);
 }
 
 base::ScopedClosureRunner Display::GetCacheBackBufferCb() {

@@ -106,6 +106,7 @@ suite('TabList', () => {
 
   setup(() => {
     document.body.innerHTML = '';
+    document.body.style.margin = 0;
 
     testTabsApiProxy = new TestTabsApiProxy();
     testTabsApiProxy.setTabs(tabs);
@@ -373,7 +374,7 @@ suite('TabList', () => {
     // point, all 3 tabs should fit within the root and rootMargin of the
     // IntersectionObserver. Since the 3rd tab was not being tracked before,
     // it should be the only tab to become tracked.
-    document.documentElement.scrollLeft = tabElements[1].offsetLeft;
+    tabList.scrollLeft = tabElements[1].offsetLeft;
     [tabId, thumbnailTracked] =
         await testTabsApiProxy.whenCalled('setThumbnailTracked');
     assertEquals(tabId, tabElements[2].tab.id);
@@ -384,7 +385,7 @@ suite('TabList', () => {
     // Scroll such that the third tab is now the only visible tab. At this
     // point, the first tab should be outside of the rootMargin of the
     // IntersectionObserver.
-    document.documentElement.scrollLeft = tabElements[2].offsetLeft;
+    tabList.scrollLeft = tabElements[2].offsetLeft;
     [tabId, thumbnailTracked] =
         await testTabsApiProxy.whenCalled('setThumbnailTracked');
     assertEquals(tabId, tabElements[0].tab.id);
@@ -479,5 +480,49 @@ suite('TabList', () => {
         await testTabStripEmbedderProxy.whenCalled('showBackgroundContextMenu');
     assertEquals(contextMenuArgs[0], 1);
     assertEquals(contextMenuArgs[1], 2);
+  });
+
+  test('scrolls to active tabs', async () => {
+    await tabList.animationPromises;
+
+    const scrollPadding = 32;
+    const tabWidth = 200;
+    const viewportWidth = 300;
+
+    // Mock the width of each tab element.
+    tabList.style.setProperty(
+        '--tabstrip-tab-thumbnail-width', `${tabWidth}px`);
+    tabList.style.setProperty('--tabstrip-tab-spacing', '0px');
+    const tabElements = getUnpinnedTabs();
+    tabElements.forEach(tabElement => {
+      tabElement.style.width = `${tabWidth}px`;
+    });
+
+    // Mock the scroller size such that it cannot fit only 1 tab at a time.
+    tabList.style.setProperty(
+        '--tabstrip-viewport-width', `${viewportWidth}px`);
+    tabList.style.width = `${viewportWidth}px`;
+
+    // Verify the scrollLeft is currently at its default state of 0, and then
+    // send a visibilitychange event to cause a scroll.
+    assertEquals(tabList.scrollLeft, 0);
+    webUIListenerCallback('tab-active-changed', tabs[1].id);
+    testTabStripEmbedderProxy.setVisible(false);
+    document.dispatchEvent(new Event('visibilitychange'));
+
+    // The 2nd tab should be off-screen to the right, so activating it should
+    // scroll so that the element's right edge is aligned with the screen's
+    // right edge.
+    let activeTab = getUnpinnedTabs()[1];
+    assertEquals(
+        tabList.scrollLeft + tabList.offsetWidth,
+        activeTab.offsetLeft + activeTab.offsetWidth + scrollPadding);
+
+    // The 1st tab should be now off-screen to the left, so activating it should
+    // scroll so that the element's left edge is aligned with the screen's
+    // left edge.
+    webUIListenerCallback('tab-active-changed', tabs[0].id);
+    activeTab = getUnpinnedTabs()[0];
+    assertEquals(tabList.scrollLeft, 0);
   });
 });

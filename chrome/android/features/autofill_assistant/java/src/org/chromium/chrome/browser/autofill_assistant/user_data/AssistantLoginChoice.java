@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.autofill_assistant.user_data;
 
 import android.support.annotation.Nullable;
 
+import org.chromium.chrome.browser.autofill_assistant.AssistantInfoPopup;
 import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
 
 /**

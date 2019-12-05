@@ -1726,6 +1726,18 @@ void PaintLayerScrollableArea::SetSnapContainerData(
   EnsureRareData().snap_container_data_ = data;
 }
 
+bool PaintLayerScrollableArea::SetTargetSnapAreaElementIds(
+    cc::TargetSnapAreaElementIds snap_target_ids) {
+  if (!RareData() || !RareData()->snap_container_data_)
+    return false;
+  if (RareData()->snap_container_data_.value().SetTargetSnapAreaElementIds(
+          snap_target_ids)) {
+    GetLayoutBox()->SetNeedsPaintPropertyUpdate();
+    return true;
+  }
+  return false;
+}
+
 base::Optional<FloatPoint>
 PaintLayerScrollableArea::GetSnapPositionAndSetTarget(
     const cc::SnapSelectionStrategy& strategy) {

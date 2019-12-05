@@ -106,9 +106,9 @@ class GattBatteryPercentageFetcherTest : public testing::Test {
   }
 
   void ExpectGattConnection() {
-    EXPECT_CALL(*mock_device_, CreateGattConnection(_, _))
-        .WillOnce(DoAll(SaveArg<0>(&create_gatt_connection_success_callback_),
-                        SaveArg<1>(&create_gatt_connection_error_callback_)));
+    EXPECT_CALL(*mock_device_, CreateGattConnection_(_, _))
+        .WillOnce(DoAll(MoveArg<0>(&create_gatt_connection_success_callback_),
+                        MoveArg<1>(&create_gatt_connection_error_callback_)));
   }
 
   void ExpectReadCharacteristic() {
@@ -154,8 +154,8 @@ class GattBatteryPercentageFetcherTest : public testing::Test {
 TEST_F(GattBatteryPercentageFetcherTest,
        ReadBattery_GattServicesDiscoveredOnGattConnection) {
   ExpectReadCharacteristic();
-  create_gatt_connection_success_callback_.Run(
-      std::make_unique<NiceMock<device::MockBluetoothGattConnection>>(
+  std::move(create_gatt_connection_success_callback_)
+      .Run(std::make_unique<NiceMock<device::MockBluetoothGattConnection>>(
           mock_adapter_, kDeviceAddress));
 
   std::move(read_remote_characteristic_callback_).Run({kBatteryPercentage});
@@ -172,8 +172,8 @@ TEST_F(GattBatteryPercentageFetcherTest,
   EXPECT_TRUE(read_remote_characteristic_error_callback_.is_null());
   EXPECT_TRUE(read_remote_characteristic_callback_.is_null());
 
-  create_gatt_connection_success_callback_.Run(
-      std::make_unique<NiceMock<device::MockBluetoothGattConnection>>(
+  std::move(create_gatt_connection_success_callback_)
+      .Run(std::make_unique<NiceMock<device::MockBluetoothGattConnection>>(
           mock_adapter_, kDeviceAddress));
 
   mock_adapter_->NotifyGattServicesDiscovered(mock_device_.get());
@@ -192,8 +192,8 @@ TEST_F(GattBatteryPercentageFetcherTest,
 }
 
 TEST_F(GattBatteryPercentageFetcherTest, ErrorOpeningGattConnection) {
-  create_gatt_connection_error_callback_.Run(
-      BluetoothDevice::ERROR_AUTH_TIMEOUT);
+  std::move(create_gatt_connection_error_callback_)
+      .Run(BluetoothDevice::ERROR_AUTH_TIMEOUT);
   VerifyFetchResult(base::nullopt /* expected_result */);
 }
 
@@ -202,8 +202,8 @@ TEST_F(GattBatteryPercentageFetcherTest, BatteryServiceUnavailable) {
       .WillByDefault(
           Return(std::vector<device::BluetoothRemoteGattService*>()));
 
-  create_gatt_connection_success_callback_.Run(
-      std::make_unique<NiceMock<device::MockBluetoothGattConnection>>(
+  std::move(create_gatt_connection_success_callback_)
+      .Run(std::make_unique<NiceMock<device::MockBluetoothGattConnection>>(
           mock_adapter_, kDeviceAddress));
   VerifyFetchResult(base::nullopt /* expected_result */);
 }
@@ -213,16 +213,16 @@ TEST_F(GattBatteryPercentageFetcherTest, MissingBatteryLevelCharacteristic) {
       .WillByDefault(Return(std::vector<BluetoothRemoteGattCharacteristic*>()));
   EXPECT_CALL(*mock_characteristic_, ReadRemoteCharacteristic_(_, _)).Times(0);
 
-  create_gatt_connection_success_callback_.Run(
-      std::make_unique<NiceMock<device::MockBluetoothGattConnection>>(
+  std::move(create_gatt_connection_success_callback_)
+      .Run(std::make_unique<NiceMock<device::MockBluetoothGattConnection>>(
           mock_adapter_, kDeviceAddress));
   VerifyFetchResult(base::nullopt /* expected_result */);
 }
 
 TEST_F(GattBatteryPercentageFetcherTest, ErrorReadingRemoteCharacteristic) {
   ExpectReadCharacteristic();
-  create_gatt_connection_success_callback_.Run(
-      std::make_unique<NiceMock<device::MockBluetoothGattConnection>>(
+  std::move(create_gatt_connection_success_callback_)
+      .Run(std::make_unique<NiceMock<device::MockBluetoothGattConnection>>(
           mock_adapter_, kDeviceAddress));
 
   std::move(read_remote_characteristic_error_callback_)
@@ -233,8 +233,8 @@ TEST_F(GattBatteryPercentageFetcherTest, ErrorReadingRemoteCharacteristic) {
 TEST_F(GattBatteryPercentageFetcherTest,
        BadFormatForBatteryLevelValue_MadeOfMultipleBytes) {
   ExpectReadCharacteristic();
-  create_gatt_connection_success_callback_.Run(
-      std::make_unique<NiceMock<device::MockBluetoothGattConnection>>(
+  std::move(create_gatt_connection_success_callback_)
+      .Run(std::make_unique<NiceMock<device::MockBluetoothGattConnection>>(
           mock_adapter_, kDeviceAddress));
 
   // Battery value made of a multibyte vector.
@@ -246,8 +246,8 @@ TEST_F(GattBatteryPercentageFetcherTest,
 TEST_F(GattBatteryPercentageFetcherTest,
        BadFormatForBatteryLevelValue_ValueAbove100Percent) {
   ExpectReadCharacteristic();
-  create_gatt_connection_success_callback_.Run(
-      std::make_unique<NiceMock<device::MockBluetoothGattConnection>>(
+  std::move(create_gatt_connection_success_callback_)
+      .Run(std::make_unique<NiceMock<device::MockBluetoothGattConnection>>(
           mock_adapter_, kDeviceAddress));
 
   uint8_t new_battery_percentage = 101;

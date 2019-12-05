@@ -94,7 +94,7 @@ base::Value RecipeJsonToValue(const std::string& recipe_json) {
       ensureAppLaunchedWithFeaturesEnabled:
           {autofill::features::kAutofillShowTypePredictions}
                                   disabled:{}
-                              forceRestart:NO];
+                            relaunchPolicy:NoForceRelaunchAndResetState];
 }
 
 - (void)setUp {

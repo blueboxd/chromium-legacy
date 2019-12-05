@@ -5,6 +5,8 @@
 #include "components/gcm_driver/web_push_sender.h"
 
 #include "base/base64.h"
+#include "base/base64url.h"
+#include "base/json/json_reader.h"
 #include "components/gcm_driver/common/gcm_message.h"
 #include "content/public/test/browser_task_environment.h"
 #include "crypto/ec_private_key.h"
@@ -96,11 +98,36 @@ TEST_F(WebPushSenderTest, SendMessageTest) {
 
   ASSERT_TRUE(
       headers.GetHeader(net::HttpRequestHeaders::kAuthorization, &auth_header));
-  const std::string expected_header =
-      "vapid "
-      "t=([a-zA-Z0-9_-])+\\.([a-zA-Z0-9_-])+\\.([a-zA-Z0-9_-])+, "
-      "k=([a-zA-Z0-9_-])+";
-  ASSERT_TRUE(re2::RE2::FullMatch(auth_header, expected_header));
+  const std::string expected_header = "vapid t=(.*), k=(.*)";
+  std::string jwt, base64_public_key;
+  ASSERT_TRUE(re2::RE2::FullMatch(auth_header, expected_header, &jwt,
+                                  &base64_public_key));
+
+  // Make sure JWT dat can be decomposed
+  std::string::size_type dot_position = jwt.rfind(".");
+  ASSERT_NE(std::string::npos, dot_position);
+
+  std::string data = jwt.substr(0, dot_position);
+  std::string::size_type data_dot_position = data.find(".");
+  ASSERT_NE(std::string::npos, data_dot_position);
+
+  std::string payload_decoded;
+  ASSERT_TRUE(base::Base64UrlDecode(data.substr(data_dot_position + 1),
+                                    base::Base64UrlDecodePolicy::IGNORE_PADDING,
+                                    &payload_decoded));
+  base::Optional<base::Value> payload_value =
+      base::JSONReader::Read(payload_decoded);
+  ASSERT_TRUE(payload_value);
+  ASSERT_TRUE(payload_value->is_dict());
+  EXPECT_EQ(base::Value("https://fcm.googleapis.com"),
+            payload_value->ExtractKey("aud"));
+  EXPECT_TRUE(payload_value->FindKey("exp"));
+
+  // Make sure public key can be base64 url decoded
+  std::string public_key;
+  EXPECT_TRUE(base::Base64UrlDecode(base64_public_key,
+                                    base::Base64UrlDecodePolicy::IGNORE_PADDING,
+                                    &public_key));
 
   ASSERT_TRUE(headers.GetHeader("TTL", &time_to_live));
   ASSERT_EQ("3600", time_to_live);

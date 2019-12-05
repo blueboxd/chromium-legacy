@@ -79,6 +79,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       case NativeTheme::kColorId_EnabledMenuItemForegroundColor:
       case NativeTheme::kColorId_SelectedMenuItemForegroundColor:
       case NativeTheme::kColorId_HighlightedMenuItemForegroundColor:
+      case NativeTheme::kColorId_MenuDropIndicator:
         return gfx::kGoogleGrey200;
       case NativeTheme::kColorId_MenuBorderColor:
       case NativeTheme::kColorId_MenuSeparatorColor:
@@ -223,6 +224,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_EnabledMenuItemForegroundColor:
     case NativeTheme::kColorId_SelectedMenuItemForegroundColor:
     case NativeTheme::kColorId_HighlightedMenuItemForegroundColor:
+    case NativeTheme::kColorId_MenuDropIndicator:
       return kPrimaryTextColor;
     case NativeTheme::kColorId_FocusedMenuItemBackgroundColor: {
       const SkColor bg = base_theme->GetSystemColor(

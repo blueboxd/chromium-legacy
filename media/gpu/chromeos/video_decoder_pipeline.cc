@@ -3,17 +3,53 @@
 // found in the LICENSE file.
 
 #include "media/gpu/chromeos/video_decoder_pipeline.h"
+
 #include <memory>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "build/build_config.h"
 #include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
+#include "media/gpu/chromeos/image_processor.h"
+#include "media/gpu/chromeos/image_processor_factory.h"
 #include "media/gpu/chromeos/platform_video_frame_pool.h"
 #include "media/gpu/macros.h"
 
 namespace media {
+namespace {
+
+// The number of requested frames used for the image processor.
+constexpr size_t kNumFramesForImageProcessor = 4;
+
+// Pick a compositor renderable format from |candidates|.
+// Return zero if not found.
+Fourcc PickRenderableFourcc(const std::vector<Fourcc>& candidates) {
+  // Hardcode compositor renderable format now.
+  // TODO: figure out a way to pick the best one dynamically.
+  // Prefer YVU420 and NV12 because ArcGpuVideoDecodeAccelerator only supports
+  // single physical plane.
+  constexpr Fourcc::Value kPreferredFourccValues[] = {
+#if defined(ARCH_CPU_ARM_FAMILY)
+    Fourcc::NV12,
+    Fourcc::YV12,
+#endif
+    // For kepler.
+    Fourcc::AR24,
+  };
+
+  for (const auto& value : kPreferredFourccValues) {
+    if (std::find(candidates.begin(), candidates.end(), Fourcc(value)) !=
+        candidates.end()) {
+      return Fourcc(value);
+    }
+  }
+  return Fourcc();
+}
+
+}  //  namespace
 
 DecoderInterface::DecoderInterface(
     scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
@@ -280,6 +316,8 @@ void VideoDecoderPipeline::OnResetDone() {
   DCHECK(client_reset_cb_);
   DVLOGF(3);
 
+  if (image_processor_)
+    image_processor_->Reset();
   frame_converter_->AbortPendingFrames();
 
   CallFlushCbIfNeeded(DecodeStatus::ABORTED);
@@ -335,6 +373,21 @@ void VideoDecoderPipeline::OnFrameDecoded(scoped_refptr<VideoFrame> frame) {
   DCHECK(frame_converter_);
   DVLOGF(4);
 
+  if (image_processor_) {
+    image_processor_->Process(
+        std::move(frame),
+        base::BindOnce(&VideoDecoderPipeline::OnFrameProcessed,
+                       decoder_weak_this_));
+  } else {
+    frame_converter_->ConvertFrame(std::move(frame));
+  }
+}
+
+void VideoDecoderPipeline::OnFrameProcessed(scoped_refptr<VideoFrame> frame) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DCHECK(frame_converter_);
+  DVLOGF(4);
+
   frame_converter_->ConvertFrame(std::move(frame));
 }
 
@@ -371,7 +424,8 @@ bool VideoDecoderPipeline::HasPendingFrames() const {
   DVLOGF(3);
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
 
-  return frame_converter_->HasPendingFrames();
+  return frame_converter_->HasPendingFrames() ||
+         (image_processor_ && image_processor_->HasPendingFrames());
 }
 
 void VideoDecoderPipeline::OnError(const std::string& msg) {
@@ -417,7 +471,70 @@ void VideoDecoderPipeline::CallOnPipelineFlushedIfNeeded() {
 }
 
 DmabufVideoFramePool* VideoDecoderPipeline::GetVideoFramePool() const {
+  DVLOGF(3);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+
+  // |main_frame_pool_| is used by |image_processor_| in this case.
+  // |decoder_| will output native buffer allocated by itself.
+  // (e.g. V4L2 MMAP buffer in V4L2 API and VA surface in VA API.)
+  if (image_processor_)
+    return nullptr;
   return main_frame_pool_.get();
+}
+
+base::Optional<Fourcc> VideoDecoderPipeline::PickDecoderOutputFormat(
+    const std::vector<std::pair<Fourcc, gfx::Size>>& candidates,
+    const gfx::Rect& visible_rect) {
+  DVLOGF(3);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+
+  if (candidates.empty())
+    return base::nullopt;
+
+  image_processor_.reset();
+
+  // Check if any candidate format is renderable without the need of
+  // ImageProcessor.
+  std::vector<Fourcc> fourccs;
+  for (const auto& candidate : candidates)
+    fourccs.push_back(candidate.first);
+  const Fourcc renderable_fourcc = PickRenderableFourcc(fourccs);
+  if (renderable_fourcc)
+    return renderable_fourcc;
+
+  std::unique_ptr<ImageProcessor> image_processor =
+      ImageProcessorFactory::CreateWithInputCandidates(
+          candidates, visible_rect.size(), kNumFramesForImageProcessor,
+          decoder_task_runner_, base::BindRepeating(&PickRenderableFourcc),
+          base::BindRepeating(&VideoDecoderPipeline::OnImageProcessorError,
+                              decoder_weak_this_));
+  if (!image_processor) {
+    DVLOGF(2) << "Unable to find ImageProcessor to convert format";
+    return base::nullopt;
+  }
+
+  // Note that fourcc is specified in ImageProcessor's factory method.
+  auto fourcc = image_processor->input_config().fourcc;
+
+  // Setup new pipeline.
+  image_processor_ = ImageProcessorWithPool::Create(
+      std::move(image_processor), main_frame_pool_.get(),
+      kNumFramesForImageProcessor, decoder_task_runner_);
+  if (!image_processor_) {
+    DVLOGF(2) << "Unable to create ImageProcessorWithPool.";
+    return base::nullopt;
+  }
+
+  return fourcc;
+}
+
+void VideoDecoderPipeline::OnImageProcessorError() {
+  VLOGF(1);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+
+  client_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VideoDecoderPipeline::OnError,
+                                client_weak_this_, "Image processor error"));
 }
 
 }  // namespace media

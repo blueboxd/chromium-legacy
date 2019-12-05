@@ -658,6 +658,12 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                                  content::BrowserContext* browser_context);
   virtual ui::NativeTheme* GetWebTheme() const;  // For testing.
 
+  // Used by subclasses (e.g. implemented by downstream embedders) to add
+  // their own extra part objects.
+  void AddExtraPart(ChromeContentBrowserClientParts* part) {
+    extra_parts_.push_back(part);
+  }
+
  private:
   friend class DisableWebRtcEncryptionFlagTest;
   friend class InProcessBrowserTest;

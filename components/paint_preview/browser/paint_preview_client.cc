@@ -108,6 +108,7 @@ void PaintPreviewClient::CapturePaintPreview(
   auto* document_data = &all_document_data_[params.document_guid];
   document_data->root_dir = params.root_dir;
   document_data->callback = std::move(callback);
+  document_data->root_url = render_frame_host->GetLastCommittedURL();
   CapturePaintPreviewInternal(params, render_frame_host);
 }
 
@@ -266,8 +267,11 @@ mojom::PaintPreviewStatus PaintPreviewClient::RecordFrame(
     content::RenderFrameHost* render_frame_host,
     mojom::PaintPreviewCaptureResponsePtr response) {
   auto it = all_document_data_.find(guid);
-  if (!it->second.proto)
+  if (!it->second.proto) {
     it->second.proto = std::make_unique<PaintPreviewProto>();
+    it->second.proto->mutable_metadata()->set_url(
+        all_document_data_[guid].root_url.spec());
+  }
 
   PaintPreviewProto* proto_ptr = it->second.proto.get();
 

@@ -412,7 +412,7 @@ bool AXPlatformNodeBase::IsPlainTextField() const {
   // We need to check both the role and editable state, because some ARIA text
   // fields may in fact not be editable, whilst some editable fields might not
   // have the role.
-  return ui::IsPlainTextField(GetData());
+  return GetData().IsPlainTextField();
 }
 
 bool AXPlatformNodeBase::IsRichTextField() const {
@@ -743,7 +743,7 @@ bool AXPlatformNodeBase::IsChildOfLeaf() const {
 
 bool AXPlatformNodeBase::IsInvisibleOrIgnored() const {
   const AXNodeData& data = GetData();
-  return data.HasState(ax::mojom::State::kInvisible) || ui::IsIgnored(data);
+  return data.HasState(ax::mojom::State::kInvisible) || data.IsIgnored();
 }
 
 bool AXPlatformNodeBase::IsScrollable() const {
@@ -777,7 +777,7 @@ bool AXPlatformNodeBase::IsVerticallyScrollable() const {
 
 base::string16 AXPlatformNodeBase::GetValue() const {
   // Expose slider value.
-  if (IsRangeValueSupported(GetData()))
+  if (GetData().IsRangeValueSupported())
     return GetRangeValueText();
 
   // On Windows, the value of a document should be its URL.
@@ -1021,7 +1021,7 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
   }
 
   // Expose slider value.
-  if (IsRangeValueSupported(GetData())) {
+  if (GetData().IsRangeValueSupported()) {
     std::string value = base::UTF16ToUTF8(GetRangeValueText());
     if (!value.empty())
       AddAttributeToList("valuetext", value, attributes);

@@ -73,12 +73,8 @@ void Watcher::WillRunTask(const base::PendingTask* task,
   }
 
   currently_running_metadata->emplace_back(task);
-
-  // For delayed tasks, record the time right before the task is run.
-  if (!task->delayed_run_time.is_null()) {
-    currently_running_metadata->back().execution_start_time =
-        base::TimeTicks::Now();
-  }
+  currently_running_metadata->back().execution_start_time =
+      base::TimeTicks::Now();
 }
 
 void Watcher::DidRunTask(const base::PendingTask* task,
@@ -113,22 +109,8 @@ void Watcher::DidRunTask(const base::PendingTask* task,
   if (UNLIKELY(caused_reentrancy))
     return;
 
-  // For delayed tasks, measure the duration of the task itself, rather than the
-  // duration from schedule time to finish time.
-  base::TimeTicks schedule_time;
-  if (execution_start_time.is_null()) {
-    // Tasks which were posted before the MessageLoopObserver was created will
-    // not have a queue_time, and should be ignored. This doesn't affect delayed
-    // tasks.
-    if (UNLIKELY(task->queue_time.is_null()))
-      return;
-
-    schedule_time = task->queue_time;
-  } else {
-    schedule_time = execution_start_time;
-  }
-
-  std::move(callback).Run(schedule_time, base::TimeTicks::Now());
+  DCHECK(!execution_start_time.is_null());
+  std::move(callback).Run(execution_start_time, base::TimeTicks::Now());
 }
 
 void Watcher::WillRunEventOnUIThread(const void* opaque_identifier) {

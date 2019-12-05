@@ -17,14 +17,18 @@
         --tabstrip-background-color: $i18n{frameColor};
         --tabstrip-tab-border-radius: 8px;
         --tabstrip-tab-active-border-color: rgb(var(--google-blue-500-rgb));
+
+        overflow: hidden;
       }
 
       body {
         background: var(--tabstrip-background-color);
+        height: 100%;
         margin: 0;
-        overflow: overlay hidden;
+        overflow: hidden;
         padding: 0;
         touch-action: pan-x;
+        width: 100%;
       }
     </style>
   </head>

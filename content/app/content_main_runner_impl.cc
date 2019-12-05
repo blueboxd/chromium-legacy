@@ -212,7 +212,7 @@ void LoadV8SnapshotFile() {
   base::ScopedFD fd =
       file_descriptor_store.MaybeTakeFD(snapshot_data_descriptor, &region);
   if (fd.is_valid()) {
-    base::File file(fd.release());
+    base::File file(std::move(fd));
     gin::V8Initializer::LoadV8SnapshotFromFile(std::move(file), &region,
                                                kSnapshotType);
     return;

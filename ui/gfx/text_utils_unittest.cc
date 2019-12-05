@@ -77,7 +77,7 @@ const RemoveAcceleratorCharData RemoveAcceleratorCharTest::kCases[] = {
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     RemoveAcceleratorCharTest,
     testing::ValuesIn(RemoveAcceleratorCharTest::kCases),
     [](const testing::TestParamInfo<RemoveAcceleratorCharData>& param_info) {
@@ -158,7 +158,7 @@ const FindValidBoundaryData FindValidBoundaryBeforeTest::kCases[] = {
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     FindValidBoundaryBeforeTest,
     testing::ValuesIn(FindValidBoundaryBeforeTest::kCases),
     [](const testing::TestParamInfo<FindValidBoundaryData>& param_info) {
@@ -231,7 +231,7 @@ const FindValidBoundaryData FindValidBoundaryAfterTest::kCases[] = {
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     FindValidBoundaryAfterTest,
     testing::ValuesIn(FindValidBoundaryAfterTest::kCases),
     [](const testing::TestParamInfo<FindValidBoundaryData>& param_info) {

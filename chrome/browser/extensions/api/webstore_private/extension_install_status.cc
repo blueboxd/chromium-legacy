@@ -59,12 +59,9 @@ ExtensionInstallStatus GetWebstoreExtensionInstallStatus(
   if (extension_management->IsInstallationExplicitlyBlocked(extension_id))
     return kBlockedByPolicy;
 
-  const auto pending_list =
-      profile->GetPrefs()->GetList(prefs::kCloudExtensionRequestIds)->GetList();
-  if (std::any_of(pending_list.begin(), pending_list.end(),
-                  [&extension_id](const base::Value& pending_id) {
-                    return pending_id.GetString() == extension_id;
-                  })) {
+  if (profile->GetPrefs()
+          ->GetDictionary(prefs::kCloudExtensionRequestIds)
+          ->FindKey(extension_id)) {
     return kRequestPending;
   }
 

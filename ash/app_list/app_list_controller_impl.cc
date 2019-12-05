@@ -925,10 +925,14 @@ bool AppListControllerImpl::IsShowingEmbeddedAssistantUI() const {
 void AppListControllerImpl::UpdateExpandArrowVisibility() {
   bool should_show = false;
 
-  // Hide the expand arrow view when in tablet mode and there is no activatable
-  // window on the current active desk.
+  // Hide the expand arrow view when in tablet mode and an activatable window
+  // cannot be dragged from top of the screen. This will be the case if:
+  // *   there is no activatable window on the current active desk, or
+  // *   kDragFromShelfToHomeOrOverview feature is enabled, in which app window
+  //     drag from top of home screen is disabled.
   if (IsTabletMode()) {
-    should_show = !ash::Shell::Get()
+    should_show = !features::IsDragFromShelfToHomeOrOverviewEnabled() &&
+                  !ash::Shell::Get()
                        ->mru_window_tracker()
                        ->BuildWindowForCycleList(kActiveDesk)
                        .empty();

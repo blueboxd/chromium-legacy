@@ -18,6 +18,7 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
 import org.chromium.chrome.browser.feed.library.hostimpl.storage.testing.InMemoryContentStorage;
 import org.chromium.chrome.browser.feed.library.hostimpl.storage.testing.InMemoryJournalStorage;
+import org.chromium.chrome.browser.ntp.cards.SignInPromo;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.io.IOException;
@@ -65,10 +66,27 @@ import java.util.concurrent.TimeoutException;
  */
 final class FeedDataInjectRule extends TestWatcher {
     private static final String TAG = "FeedDataInjectRule";
-    public static final int FIRST_CARD_POSITION = 3;
+    private static final int FIRST_CARD_BASE_POSITION = 2;
 
     private TestNetworkClient mClient;
     private boolean mTestCaseDataFileInjected;
+    private int mFirstCardIndexOffset;
+
+    public FeedDataInjectRule(boolean disableSigninPromo) {
+        // Disable Signin Promo to disable flakiness due to uncertainty in Signin Promo loading.
+        // More context see crbug/1028997.
+        if (disableSigninPromo) {
+            SignInPromo.setDisablePromoForTests(true);
+            mFirstCardIndexOffset = 0;
+        } else {
+            // Once we enable Signin Promo, the FIRST_CARD_POSITION becomes 3.
+            mFirstCardIndexOffset = 1;
+        }
+    }
+
+    public int getFirstCardPosition() {
+        return FIRST_CARD_BASE_POSITION + mFirstCardIndexOffset;
+    }
 
     @Override
     protected void starting(Description desc) {
@@ -124,7 +142,7 @@ final class FeedDataInjectRule extends TestWatcher {
 
         @Override
         public void onContentChanged() {
-            if (mRecyclerViewAdapter.getItemViewType(FIRST_CARD_POSITION) == TYPE_CARD) {
+            if (mRecyclerViewAdapter.getItemViewType(getFirstCardPosition()) == TYPE_CARD) {
                 firstCardShownCallback.notifyCalled();
             }
         }

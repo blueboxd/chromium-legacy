@@ -109,7 +109,7 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   bool IsInspectorLayer(const cc::Layer*) override;
 
   // Thread::TaskObserver implementation.
-  void WillProcessTask(const base::PendingTask&) override;
+  void WillProcessTask(const base::PendingTask&, bool) override;
   void DidProcessTask(const base::PendingTask&) override;
 
   Member<DevToolsAgent> agent_;

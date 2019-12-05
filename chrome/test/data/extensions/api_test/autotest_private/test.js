@@ -842,7 +842,8 @@ var policyTests = [
                  "value":true}
               },
             "deviceLocalAccountPolicies":{},
-            "extensionPolicies":{}
+            "extensionPolicies":{},
+            "loginScreenExtensionPolicies":{}
           }
         chrome.test.assertEq(expectedPolicy, policydata);
         chrome.test.succeed();

@@ -49,6 +49,7 @@
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/overlay_transform.h"
 
 namespace gfx {
 struct PresentationFeedback;
@@ -402,6 +403,13 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   void set_background_color(SkColor color) { background_color_ = color; }
   SkColor background_color() const { return background_color_; }
+
+  void set_display_transform_hint(gfx::OverlayTransform hint) {
+    display_transform_hint_ = hint;
+  }
+  gfx::OverlayTransform display_transform_hint() const {
+    return display_transform_hint_;
+  }
 
   void StartPageScaleAnimation(const gfx::Vector2d& target_offset,
                                bool use_anchor,
@@ -805,6 +813,9 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   uint32_t defer_main_frame_update_count_ = 0;
 
   SkColor background_color_ = SK_ColorWHITE;
+
+  // Display transform hint to tag generated compositor frames.
+  gfx::OverlayTransform display_transform_hint_ = gfx::OVERLAY_TRANSFORM_NONE;
 
   LayerSelection selection_;
 

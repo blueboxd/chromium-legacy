@@ -4,8 +4,11 @@
 
 #include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder.h"
 
+#include <utility>
+
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/command_line.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
@@ -13,6 +16,7 @@
 #include "base/metrics/metrics_hashes.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -94,6 +98,45 @@ void SaveToDiskOnWorkerThread(const CrOSActionHistoryProto actions,
   }
 }
 
+// Redact all URLs in saved protos within |proto_dir| if the urls_redacted file
+// doesn't exist.
+void RedactURLsInExistingLogs(const base::FilePath proto_dir) {
+  // If |proto_dir| doesn't exist, no redaction is needed.
+  if (!base::DirectoryExists(proto_dir))
+    return;
+
+  // Use {proto_dir}/urls_deleted as a flag to indicate whether we've already
+  // done the redaction.
+  if (base::PathExists(proto_dir.Append("urls_deleted")))
+    return;
+
+  base::FileEnumerator protos(proto_dir, false, base::FileEnumerator::FILES);
+  for (base::FilePath proto_path = protos.Next(); !proto_path.empty();
+       proto_path = protos.Next()) {
+    std::string proto_str;
+    if (!base::ReadFileToString(proto_path, &proto_str))
+      continue;
+
+    CrOSActionHistoryProto proto;
+    if (!proto.ParseFromString(proto_str))
+      continue;
+
+    for (auto& action : *proto.mutable_actions()) {
+      if (base::StartsWith(action.action_name(), "URLVisited-",
+                           base::CompareCase::SENSITIVE)) {
+        action.set_action_name("URLVisited-deleted");
+      }
+    }
+
+    const std::string proto_str_to_write = proto.SerializeAsString();
+    base::ImportantFileWriter::WriteFileAtomically(
+        proto_path, proto.SerializeAsString(), "CrOSActionHistory");
+  }
+
+  base::ImportantFileWriter::WriteFileAtomically(
+      proto_dir.Append("urls_deleted"), "done", "CrOSActionHistory");
+}
+
 }  // namespace
 
 constexpr char CrOSActionRecorder::kActionHistoryDir[];
@@ -118,6 +161,11 @@ CrOSActionRecorder::CrOSActionRecorder()
   task_runner_ = base::CreateSequencedTaskRunner(
       {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&RedactURLsInExistingLogs,
+                                profile_path_.Append(
+                                    CrOSActionRecorder::kActionHistoryDir)));
 }
 
 CrOSActionRecorder::~CrOSActionRecorder() = default;

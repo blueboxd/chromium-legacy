@@ -85,7 +85,15 @@ class MakoRenderer(object):
         return text
 
     @property
-    def callers(self):
+    def callers_from_first_to_last(self):
+        """
+        Returns the callers of this renderer in the order from the first caller
+        to the last caller.
+        """
+        return iter(self._caller_stack)
+
+    @property
+    def callers_from_last_to_first(self):
         """
         Returns the callers of this renderer in the order from the last caller
         to the first caller.

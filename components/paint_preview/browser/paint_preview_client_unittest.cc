@@ -141,11 +141,13 @@ TEST_F(PaintPreviewClientRenderViewHostTest, CaptureMainFrameMock) {
 
   content::RenderFrameHost* rfh = main_rfh();
   uint64_t frame_guid = FrameGuid(rfh);
+  GURL expected_url = rfh->GetLastCommittedURL();
 
   auto response = mojom::PaintPreviewCaptureResponse::New();
   response->id = rfh->GetRoutingID();
 
   PaintPreviewProto expected_proto;
+  expected_proto.mutable_metadata()->set_url(expected_url.spec());
   PaintPreviewFrameProto* main_frame = expected_proto.mutable_root_frame();
   main_frame->set_is_main_frame(true);
   main_frame->set_id(frame_guid);

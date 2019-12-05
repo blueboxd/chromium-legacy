@@ -10,6 +10,7 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -19,21 +20,6 @@
 namespace extensions {
 
 namespace {
-
-// Returns true if Chrome can potentially withhold permissions from the
-// extension.
-bool CanWithholdFromExtension(const Extension& extension) {
-  // Some extensions must retain privilege to all requested host permissions.
-  // Specifically, extensions that don't show up in chrome:extensions (where
-  // withheld permissions couldn't be granted), extensions that are part of
-  // chrome or corporate policy, and extensions that are whitelisted to script
-  // everywhere must always have permission to run on a page.
-  return extension.ShouldDisplayInExtensionSettings() &&
-         !Manifest::IsPolicyLocation(extension.location()) &&
-         !Manifest::IsComponentLocation(extension.location()) &&
-         !PermissionsData::CanExecuteScriptEverywhere(extension.id(),
-                                                      extension.location());
-}
 
 // Iterates over |requested_permissions| and returns a permission set of any
 // permissions that should be  granted. These include any non-host
@@ -87,7 +73,7 @@ std::unique_ptr<const PermissionSet> PartitionHostPermissions(
 // by the runtime host permissions experiment.
 bool ShouldConsiderExtension(const Extension& extension) {
   // Certain extensions are always exempt from having permissions withheld.
-  if (!CanWithholdFromExtension(extension))
+  if (!util::CanWithholdPermissionsFromExtension(extension))
     return false;
 
   return true;
@@ -186,8 +172,8 @@ void ScriptingPermissionsModifier::SetWithholdHostPermissions(
 
   // Set the pref first, so that listeners for permission changes get the proper
   // value if they query HasWithheldHostPermissions().
-  extension_prefs_->SetShouldWithholdPermissions(extension_->id(),
-                                                 should_withhold);
+  extension_prefs_->SetWithholdingPermissions(extension_->id(),
+                                              should_withhold);
 
   if (should_withhold)
     WithholdHostPermissions();
@@ -198,7 +184,7 @@ void ScriptingPermissionsModifier::SetWithholdHostPermissions(
 bool ScriptingPermissionsModifier::HasWithheldHostPermissions() const {
   DCHECK(CanAffectExtension());
 
-  return extension_prefs_->GetShouldWithholdPermissions(extension_->id());
+  return extension_prefs_->GetWithholdingPermissions(extension_->id());
 }
 
 bool ScriptingPermissionsModifier::CanAffectExtension() const {
@@ -367,8 +353,7 @@ ScriptingPermissionsModifier::WithholdPermissionsIfNecessary(
   if (extension.creation_flags() & Extension::WITHHOLD_PERMISSIONS) {
     should_withhold = true;
   } else {
-    should_withhold =
-        extension_prefs.GetShouldWithholdPermissions(extension.id());
+    should_withhold = extension_prefs.GetWithholdingPermissions(extension.id());
   }
 
   if (!should_withhold)

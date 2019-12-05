@@ -25,6 +25,7 @@ jumbo_component("animation") {
     "animation_container_element.h",
     "animation_container_observer.h",
     "animation_delegate.h",
+    "animation_delegate_notifier.h",
     "animation_export.h",
     "animation_runner.cc",
     "animation_runner.h",

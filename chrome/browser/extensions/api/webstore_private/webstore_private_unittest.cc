@@ -8,8 +8,10 @@
 
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/util/values/values_util.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "extensions/browser/extension_registry.h"
@@ -19,12 +21,20 @@ namespace extensions {
 namespace {
 constexpr char kInvalidId[] = "Invalid id";
 constexpr char kExtensionId[] = "abcdefghijklmnopabcdefghijklmnop";
+constexpr int kFakeTime = 12345;
+
+base::Time GetFaketime() {
+  return base::Time::FromJavaTime(kFakeTime);
+}
+
 }  // namespace
 
 class WebstorePrivateExtensionInstallRequestBase : public ExtensionApiUnittest {
  public:
   using ExtensionInstallStatus = api::webstore_private::ExtensionInstallStatus;
-  WebstorePrivateExtensionInstallRequestBase() = default;
+  WebstorePrivateExtensionInstallRequestBase()
+      : ExtensionApiUnittest(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   std::string GenerateArgs(const char* id) {
     return base::StringPrintf(R"(["%s"])", id);
@@ -71,6 +81,8 @@ TEST_F(WebstorePrivateGetExtensionStatusTest, ExtensionEnabled) {
 class WebstorePrivateRequestExtensionTest
     : public WebstorePrivateExtensionInstallRequestBase {
  public:
+  WebstorePrivateRequestExtensionTest() = default;
+
   void SetUp() override {
     WebstorePrivateExtensionInstallRequestBase::SetUp();
     profile()->GetTestingPrefService()->SetManagedPref(
@@ -80,24 +92,29 @@ class WebstorePrivateRequestExtensionTest
   }
 
   void SetPendingList(const std::vector<ExtensionId>& ids) {
-    base::Value::ListStorage id_values;
-    for (const auto& id : ids)
-      id_values.push_back(base::Value(id));
+    std::unique_ptr<base::Value> id_values =
+        std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
+    for (const auto& id : ids) {
+      base::Value request_data(base::Value::Type::DICTIONARY);
+      request_data.SetKey(extension_misc::kExtensionRequestTimestamp,
+                          ::util::TimeToValue(GetFaketime()));
+      id_values->SetKey(id, std::move(request_data));
+    }
     profile()->GetTestingPrefService()->SetUserPref(
-        prefs::kCloudExtensionRequestIds,
-        std::make_unique<base::Value>(std::move(id_values)));
+        prefs::kCloudExtensionRequestIds, std::move(id_values));
   }
 
   void VerifyPendingList(
-      const std::vector<ExtensionId>& expected_pending_list) {
-    const base::span<const base::Value> actual_pending_list =
-        profile()
-            ->GetPrefs()
-            ->GetList(prefs::kCloudExtensionRequestIds)
-            ->GetList();
-    ASSERT_EQ(expected_pending_list.size(), actual_pending_list.size());
-    for (unsigned int i = 0; i < expected_pending_list.size(); i++)
-      EXPECT_EQ(expected_pending_list[i], actual_pending_list[i].GetString());
+      const std::map<ExtensionId, base::Time>& expected_pending_requests) {
+    const base::DictionaryValue* actual_pending_requests =
+        profile()->GetPrefs()->GetDictionary(prefs::kCloudExtensionRequestIds);
+    ASSERT_EQ(expected_pending_requests.size(),
+              actual_pending_requests->size());
+    for (const auto& expected_request : expected_pending_requests) {
+      EXPECT_EQ(::util::TimeToValue(expected_request.second),
+                *actual_pending_requests->FindKey(expected_request.first)
+                     ->FindKey(extension_misc::kExtensionRequestTimestamp));
+    }
   }
 };
 
@@ -123,7 +140,7 @@ TEST_F(WebstorePrivateRequestExtensionTest, UnrequestableExtension) {
 
 TEST_F(WebstorePrivateRequestExtensionTest, AlreadyPendingExtension) {
   SetPendingList({kExtensionId});
-  VerifyPendingList({kExtensionId});
+  VerifyPendingList({{kExtensionId, GetFaketime()}});
   auto function =
       base::MakeRefCounted<WebstorePrivateRequestExtensionFunction>();
   std::unique_ptr<base::Value> response =
@@ -131,7 +148,7 @@ TEST_F(WebstorePrivateRequestExtensionTest, AlreadyPendingExtension) {
   VerifyResponse(
       ExtensionInstallStatus::EXTENSION_INSTALL_STATUS_REQUEST_PENDING,
       response.get());
-  VerifyPendingList({kExtensionId});
+  VerifyPendingList({{kExtensionId, GetFaketime()}});
 }
 
 TEST_F(WebstorePrivateRequestExtensionTest, RequestExtension) {
@@ -142,7 +159,7 @@ TEST_F(WebstorePrivateRequestExtensionTest, RequestExtension) {
   VerifyResponse(
       ExtensionInstallStatus::EXTENSION_INSTALL_STATUS_REQUEST_PENDING,
       response.get());
-  VerifyPendingList({kExtensionId});
+  VerifyPendingList({{kExtensionId, base::Time::Now()}});
 }
 
 }  // namespace extensions

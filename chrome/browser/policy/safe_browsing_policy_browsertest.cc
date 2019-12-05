@@ -16,7 +16,6 @@
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/features.h"
-#include "components/safe_browsing/realtime/policy_engine.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
@@ -364,31 +363,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionWarningTriggerGSuite) {
   EXPECT_EQ(safe_browsing::PHISHING_REUSE,
             mock_service.GetPasswordProtectionWarningTriggerPref(
                 ReusedPasswordAccountType()));
-}
-
-class PolicyTestWithRealTimeUrlLookupFetchAllowList : public PolicyTest {
- public:
-  PolicyTestWithRealTimeUrlLookupFetchAllowList() {
-    feature_list_.InitWithFeatures({safe_browsing::kRealTimeUrlLookupEnabled},
-                                   {});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(PolicyTestWithRealTimeUrlLookupFetchAllowList,
-                       CheckURLsInRealTime) {
-  EXPECT_FALSE(safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookup(
-      browser()->profile()));
-
-  PolicyMap policies;
-  SetPolicy(&policies, key::kSafeBrowsingRealTimeLookupEnabled,
-            std::make_unique<base::Value>(true));
-  UpdateProviderPolicy(policies);
-
-  EXPECT_TRUE(safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookup(
-      browser()->profile()));
 }
 
 }  // namespace policy

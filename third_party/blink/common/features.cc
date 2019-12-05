@@ -332,9 +332,6 @@ const base::FeatureParam<int> kForceDarkTextLightnessThresholdParam{
 const base::FeatureParam<int> kForceDarkBackgroundLightnessThresholdParam{
     &kForceWebContentsDarkMode, "background_lightness_threshold", -1};
 
-const base::Feature kCanvasAlwaysDeferral{"CanvasAlwaysDeferral",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Instructs WebRTC to honor the Min/Max Video Encode Accelerator dimensions.
 const base::Feature kWebRtcUseMinMaxVEADimensions{
     "WebRtcUseMinMaxVEADimensions", base::FEATURE_ENABLED_BY_DEFAULT};

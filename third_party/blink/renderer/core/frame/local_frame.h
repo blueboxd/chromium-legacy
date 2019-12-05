@@ -462,8 +462,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
                            const WTF::String& message,
                            bool discard_duplicates) final;
   void Collapse(bool collapsed) final;
-
   void EnableViewSourceMode() final;
+  void Focus() final;
 
  private:
   friend class FrameNavigationDisabler;

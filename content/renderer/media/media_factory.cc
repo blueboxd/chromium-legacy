@@ -431,7 +431,7 @@ MediaFactory::CreateRendererFactorySelector(
     media::DecoderFactory* decoder_factory,
     std::unique_ptr<media::RemotePlaybackClientWrapper> client_wrapper,
     base::WeakPtr<media::MediaObserver>* out_media_observer) {
-  using FactoryType = media::RendererFactorySelector::FactoryType;
+  using FactoryType = media::RendererFactoryType;
 
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   // Render thread may not exist in tests, returning nullptr if it does not.
@@ -454,12 +454,12 @@ MediaFactory::CreateRendererFactorySelector(
               render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia)));
 
   if (use_media_player) {
-    factory_selector->AddBaseFactory(FactoryType::MEDIA_PLAYER,
+    factory_selector->AddBaseFactory(FactoryType::kMediaPlayer,
                                      std::move(media_player_factory));
   } else {
     // Always give |factory_selector| a MediaPlayerRendererClient factory. WMPI
     // might fallback to it if the final redirected URL is an HLS url.
-    factory_selector->AddFactory(FactoryType::MEDIA_PLAYER,
+    factory_selector->AddFactory(FactoryType::kMediaPlayer,
                                  std::move(media_player_factory));
   }
 
@@ -479,7 +479,7 @@ MediaFactory::CreateRendererFactorySelector(
       base::BindRepeating(&FlingingRendererClientFactory::IsFlingingActive,
                           base::Unretained(flinging_factory.get()));
   factory_selector->AddConditionalFactory(
-      FactoryType::FLINGING, std::move(flinging_factory), is_flinging_cb);
+      FactoryType::kFlinging, std::move(flinging_factory), is_flinging_cb);
 #endif  // defined(OS_ANDROID)
 
   bool use_mojo_renderer_factory = false;
@@ -488,23 +488,23 @@ MediaFactory::CreateRendererFactorySelector(
   if (use_mojo_renderer_factory) {
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
     factory_selector->AddBaseFactory(
-        FactoryType::CAST, std::make_unique<CastRendererClientFactory>(
-                               media_log, CreateMojoRendererFactory()));
+        FactoryType::kCast, std::make_unique<CastRendererClientFactory>(
+                                media_log, CreateMojoRendererFactory()));
 #else
     // The "default" MojoRendererFactory can be wrapped by a
     // DecryptingRendererFactory without changing any behavior.
     // TODO(tguilbert/xhwang): Add "FactoryType::DECRYPTING" if ever we need to
     // distinguish between a "pure" and "decrypting" MojoRenderer.
     factory_selector->AddBaseFactory(
-        FactoryType::MOJO, std::make_unique<media::DecryptingRendererFactory>(
-                               media_log, CreateMojoRendererFactory()));
+        FactoryType::kMojo, std::make_unique<media::DecryptingRendererFactory>(
+                                media_log, CreateMojoRendererFactory()));
 #endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
   }
 #endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
 
   if (!use_mojo_renderer_factory) {
     factory_selector->AddBaseFactory(
-        FactoryType::DEFAULT,
+        FactoryType::kDefault,
         std::make_unique<media::DefaultRendererFactory>(
             media_log, decoder_factory,
             base::BindRepeating(&RenderThreadImpl::GetGpuFactories,
@@ -533,7 +533,7 @@ MediaFactory::CreateRendererFactorySelector(
       &media::remoting::CourierRendererFactory::IsRemotingActive,
       base::Unretained(courier_factory.get()));
   factory_selector->AddConditionalFactory(
-      FactoryType::COURIER, std::move(courier_factory), is_remoting_cb);
+      FactoryType::kCourier, std::move(courier_factory), is_remoting_cb);
 #endif
 
   return factory_selector;

@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
@@ -55,7 +56,7 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const extensions::Extension* extension,
                            extensions::UnloadedExtensionReason reason) override;
-#endif
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
   // policy::PolicyService::Observer implementation.
   void OnPolicyUpdated(const policy::PolicyNamespace& ns,
@@ -75,6 +76,9 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
  private:
   base::Value GetPolicyNames() const;
   base::Value GetPolicyValues() const;
+
+  void AddExtensionPolicyNames(base::DictionaryValue* names,
+                               policy::PolicyDomain policy_domain) const;
 
   void HandleExportPoliciesJson(const base::ListValue* args);
   void HandleListenPoliciesUpdates(const base::ListValue* args);

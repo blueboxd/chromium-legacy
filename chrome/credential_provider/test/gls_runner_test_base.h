@@ -157,10 +157,19 @@ class GlsRunnerTestBase : public ::testing::Test {
   HRESULT FinishLogonProcess(bool expected_success,
                              bool expected_credentials_change_fired,
                              int expected_error_message);
+  HRESULT FinishLogonProcess(bool expected_success,
+                             bool expected_credentials_change_fired,
+                             const base::string16& expected_error_message);
   HRESULT FinishLogonProcessWithCred(
       bool expected_success,
       bool expected_credentials_change_fired,
       int expected_error_message,
+      const Microsoft::WRL::ComPtr<ICredentialProviderCredential>&
+          local_testing_cred);
+  HRESULT FinishLogonProcessWithCred(
+      bool expected_success,
+      bool expected_credentials_change_fired,
+      const base::string16& expected_error_message,
       const Microsoft::WRL::ComPtr<ICredentialProviderCredential>&
           local_testing_cred);
   HRESULT ReportLogonProcessResult(

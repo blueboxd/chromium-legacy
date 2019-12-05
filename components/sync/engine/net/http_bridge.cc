@@ -19,6 +19,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_cache.h"
@@ -253,6 +254,10 @@ void HttpBridge::MakeAsynchronousPost() {
   resource_request->headers.SetHeader("Content-Encoding", "gzip");
   resource_request->headers.SetHeader(net::HttpRequestHeaders::kUserAgent,
                                       user_agent_);
+
+  variations::AppendVariationsHeader(
+      url_for_request_, variations::InIncognito::kNo,
+      variations::SignedIn::kYes, resource_request.get());
 
   fetch_state_.url_loader = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);

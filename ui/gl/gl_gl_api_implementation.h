@@ -23,7 +23,7 @@ GL_EXPORT GLenum GetInternalFormat(const GLVersionInfo* version,
 GL_EXPORT void InitializeStaticGLBindingsGL();
 GL_EXPORT void ClearBindingsGL();
 
-GL_EXPORT void InitializeDebugGLBindingsGL();
+GL_EXPORT void InitializeLogGLBindingsGL();
 bool GetDebugGLBindingsInitializedGL();
 
 bool SetNullDrawGLBindingsEnabled(bool enabled);
@@ -158,10 +158,10 @@ class TraceGLApi : public GLApi {
 };
 
 // Logs debug information for every GL call.
-class DebugGLApi : public GLApi {
+class LogGLApi : public GLApi {
  public:
-  DebugGLApi(GLApi* gl_api);
-  ~DebugGLApi() override;
+  LogGLApi(GLApi* gl_api);
+  ~LogGLApi() override;
 
   // Include the auto-generated part of this class. We split this because
   // it means we can easily edit the non-auto generated parts right here in

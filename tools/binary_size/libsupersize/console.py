@@ -76,7 +76,8 @@ class _Session(object):
         'Print': self._PrintFunc,
         'Csv': self._CsvFunc,
         'Diff': self._DiffFunc,
-        'SaveNdjson': self._SaveNdjsonFunc,
+        'SaveSizeInfo': self._SaveSizeInfo,
+        'SaveDeltaSizeInfo': self._SaveDeltaSizeInfo,
         'ReadStringLiterals': self._ReadStringLiterals,
         'Disassemble': self._DisassembleFunc,
         'ExpandRegex': match_util.ExpandRegexIdentifierPlaceholder,
@@ -141,21 +142,44 @@ class _Session(object):
     after = after if after is not None else self._size_infos[1]
     return diff.Diff(before, after, sort=sort)
 
-  def _SaveNdjsonFunc(self, filtered_symbols, size_info=None, to_file=None):
-    """Saves a .ndjson file containing only filtered_symbols into to_file.
+  def _SaveSizeInfo(self, filtered_symbols=None, size_info=None, to_file=None):
+    """Saves a .size file containing only filtered_symbols into to_file.
 
     Args:
-      filtered_symbols: Which symbols to include
+      filtered_symbols: Which symbols to include. Defaults to all.
       size_info: The size_info to filter. Defaults to size_infos[0].
-      to_file: Defaults to default.ndjson
+      to_file: Defaults to default.size
     """
     size_info = size_info or self._size_infos[0]
-    to_file = to_file or 'default.ndjson'
+    to_file = to_file or 'default.size'
+    assert to_file.endswith('.size'), 'to_file should end with .size'
 
-    old_raw_symbols = size_info.raw_symbols
-    size_info.raw_symbols = filtered_symbols
-    html_report.BuildReportFromSizeInfo(to_file, size_info)
-    size_info.raw_symbols = old_raw_symbols
+    file_format.SaveSizeInfo(
+        size_info,
+        to_file,
+        include_padding=filtered_symbols is not None,
+        sparse_symbols=filtered_symbols)
+
+    shortname = os.path.basename(os.path.normpath(to_file))
+    msg = (
+        'Saved locally to {local}. To share, run:\n'
+        '> gsutil.py cp {local} gs://chrome-supersize/oneoffs && gsutil.py -m '
+        'acl ch -u AllUsers:R gs://chrome-supersize/oneoffs/{shortname}\n'
+        '  Then view it at https://storage.googleapis.com/chrome-supersize'
+        '/viewer.html?load_url=oneoffs%2F{shortname}')
+    print(msg.format(local=to_file, shortname=shortname))
+
+  def _SaveDeltaSizeInfo(self, size_info, to_file=None):
+    """Saves a .sizediff file containing only filtered_symbols into to_file.
+
+    Args:
+      delta_size_info: The delta_size_info to filter.
+      to_file: Defaults to default.sizediff
+    """
+    to_file = to_file or 'default.sizediff'
+    assert to_file.endswith('.sizediff'), 'to_file should end with .sizediff'
+
+    file_format.SaveDeltaSizeInfo(size_info, to_file)
 
     shortname = os.path.basename(os.path.normpath(to_file))
     msg = (
@@ -356,9 +380,9 @@ class _Session(object):
         '# Diff two .size files and save result to a file:',
         'Print(Diff(size_info1, size_info2), to_file="output.txt")',
         '',
-        '# Save a .ndjson containing only the filtered symbols',
+        '# Save a .size containing only the filtered symbols',
         'filtered_symbols = size_info.raw_symbols.Filter(lambda l: l.IsPak())',
-        'SaveNdjson(filtered_symbols, size_info, to_file="oneoff_paks.ndjson")',
+        'SaveSizeInfo(filtered_symbols, size_info, to_file="oneoff_paks.size")',
         '',
         '# View per-component breakdowns, then drill into the last entry.',
         'c = canned_queries.CategorizeByChromeComponent()',

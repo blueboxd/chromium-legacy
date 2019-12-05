@@ -33,6 +33,7 @@ namespace viz {
 class OutputSurface;
 class OverlayCandidateList;
 class OverlayCandidateValidator;
+class OverlayCandidateValidatorStrategy;
 class RendererSettings;
 
 class VIZ_SERVICE_EXPORT OverlayProcessor {
@@ -48,6 +49,14 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
 #else
   // Default.
   using CandidateList = OverlayCandidateList;
+#endif
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  using OverlayValidator = OverlayCandidateValidator;
+#elif defined(OS_ANDROID) || defined(USE_OZONE)
+  using OverlayValidator = OverlayCandidateValidatorStrategy;
+#else  // Default
+  using OverlayValidator = OverlayCandidateValidatorStrategy;
 #endif
 
   using FilterOperationsMap =
@@ -124,7 +133,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
   gfx::Rect GetAndResetOverlayDamage();
   void SetSoftwareMirrorMode(bool software_mirror_mode);
 
-  const OverlayCandidateValidator* GetOverlayCandidateValidator() const {
+  const OverlayValidator* GetOverlayCandidateValidator() const {
     return overlay_validator_.get();
   }
 
@@ -160,7 +169,10 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
 
   // For Mac, if we successfully generated a candidate list for CALayerOverlay,
   // we no longer need the |output_surface_plane|. This function takes a pointer
-  // to the base::Optional instance so the instance can be reset.
+  // to the base::Optional instance so the instance can be reset. This is also
+  // used to remove |output_surface_plane| when the successful overlay strategy
+  // doesn't need the |output_surface_plane|. SurfaceControl also overrides this
+  // function to adjust the rotation.
   // TODO(weiliangc): Internalize the |output_surface_plane| inside the overlay
   // processor.
   void AdjustOutputSurfaceOverlay(
@@ -169,19 +181,18 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
  protected:
   // For testing.
   explicit OverlayProcessor(
-      std::unique_ptr<OverlayCandidateValidator> overlay_validator);
+      std::unique_ptr<OverlayValidator> overlay_validator);
 
   StrategyList strategies_;
-  std::unique_ptr<OverlayCandidateValidator> overlay_validator_;
+  std::unique_ptr<OverlayValidator> overlay_validator_;
 
   gfx::Rect overlay_damage_rect_;
   gfx::Rect previous_frame_underlay_rect_;
   bool previous_frame_underlay_was_unoccluded_ = false;
 
  private:
-  OverlayProcessor(
-      SkiaOutputSurface* skia_output_surface,
-      std::unique_ptr<OverlayCandidateValidator> overlay_validator);
+  OverlayProcessor(SkiaOutputSurface* skia_output_surface,
+                   std::unique_ptr<OverlayValidator> overlay_validator);
 
 #if defined(OS_WIN)
   void InitializeDCOverlayProcessor(
@@ -202,12 +213,14 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
       const FilterOperationsMap& render_pass_backdrop_filters,
       CandidateList* overlay_candidates,
       gfx::Rect* damage_rect);
+#if defined(OS_ANDROID) || defined(USE_OZONE)
   // Update |damage_rect| by removing damage casued by |candidates|.
   void UpdateDamageRect(OverlayCandidateList* candidates,
                         const gfx::Rect& previous_frame_underlay_rect,
                         bool previous_frame_underlay_was_unoccluded,
                         const QuadList* quad_list,
                         gfx::Rect* damage_rect);
+#endif
 
 #if defined(OS_WIN)
   std::unique_ptr<DCLayerOverlayProcessor> dc_layer_overlay_processor_;

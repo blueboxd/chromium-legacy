@@ -49,6 +49,10 @@ class TestFCMSyncNetworkChannel : public syncer::FCMSyncNetworkChannel {
  public:
   void StartListening() override {}
   void StopListening() override {}
+
+  void RequestDetailedStatus(
+      const base::RepeatingCallback<void(const base::DictionaryValue&)>&
+          callback) override {}
 };
 
 // TODO: Make FCMInvalidationListener class abstract and explicitly make all the

@@ -280,6 +280,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
 
     popup_->SetVisibilityAnimationTransition(views::Widget::ANIMATE_NONE);
     popup_->SetPopupContentsView(this);
+    popup_->AddObserver(this);
     popup_->StackAbove(omnibox_view_->GetRelativeWindowForPopup());
     // For some IMEs GetRelativeWindowForPopup triggers the omnibox to lose
     // focus, thereby closing (and destroying) the popup. TODO(sky): this won't
@@ -347,6 +348,15 @@ void OmniboxPopupContentsView::OnGestureEvent(ui::GestureEvent* event) {
       return;
   }
   event->SetHandled();
+}
+
+void OmniboxPopupContentsView::OnWidgetBoundsChanged(
+    views::Widget* widget,
+    const gfx::Rect& new_bounds) {
+  // This is called on rotation or device scale change. We have to re-align to
+  // the new location bar location.
+  DCHECK_EQ(popup_.get(), widget);
+  UpdatePopupAppearance();
 }
 
 gfx::Rect OmniboxPopupContentsView::GetTargetBounds() {

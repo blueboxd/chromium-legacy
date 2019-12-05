@@ -44,9 +44,6 @@ namespace {
 // opacity changes from 0 to 1.
 constexpr float kExpandArrowOpacityStartProgress = 0.61;
 constexpr float kExpandArrowOpacityEndProgress = 1;
-constexpr int kHorizontalMarginRatio = 16;
-constexpr int kHorizontalMarginRatioForSmallWidth = 12;
-constexpr int kSmallContentWidthThreshold = 600;
 constexpr int kSearchBarMinWidth = 440;
 
 bool ShouldShowDenseLayout(int height,
@@ -288,14 +285,12 @@ gfx::Size ContentsView::AdjustSearchBoxSizeToFitMargins(
     const gfx::Size& preferred_size) const {
   if (!app_list_features::IsScalableAppListEnabled())
     return preferred_size;
-  const int content_bounds_width = GetContentsBounds().width();
-  const int margin_ratio = content_bounds_width <= kSmallContentWidthThreshold
-                               ? kHorizontalMarginRatioForSmallWidth
-                               : kHorizontalMarginRatio;
-  const int width_upper_bound =
-      content_bounds_width - 2 * (content_bounds_width / margin_ratio);
-  return gfx::Size(base::ClampToRange(preferred_size.width(),
-                                      kSearchBarMinWidth, width_upper_bound),
+  const int padded_width =
+      GetContentsBounds().width() -
+      2 * app_list_view_->GetAppListConfig().GetIdealHorizontalMargin(
+              GetContentsBounds());
+  return gfx::Size(base::ClampToRange(padded_width, kSearchBarMinWidth,
+                                      preferred_size.width()),
                    preferred_size.height());
 }
 

@@ -23,7 +23,7 @@
       "xcode parallelization": true,
       "include": "eg2_tests.json",
       "device type": "iPhone X",
-      "os": "13.2",
+      "os": "13.2.2",
       "xcode build version": "11b53",
       "pool":"chromium.tests",
       "host os": "Mac-10.14.6"
@@ -32,7 +32,7 @@
       "xcode parallelization": true,
       "include": "eg2_tests.json",
       "device type": "iPhone 7",
-      "os": "13.2",
+      "os": "13.2.2",
       "xcode build version": "11b53",
       "pool":"chromium.tests",
       "host os": "Mac-10.14.6"
@@ -41,7 +41,7 @@
       "xcode parallelization": true,
       "include": "eg2_tests.json",
       "device type": "iPad (6th generation)",
-      "os": "13.2",
+      "os": "13.2.2",
       "xcode build version": "11b53",
       "pool":"chromium.tests",
       "host os": "Mac-10.14.6"
@@ -67,7 +67,7 @@
     {
       "include": "common_tests.json",
       "device type": "iPhone X",
-      "os": "13.2",
+      "os": "13.2.2",
       "xcode build version": "11b53",
       "host os": "Mac-10.14.6",
       "pool":"chromium.tests"
@@ -75,7 +75,7 @@
     {
       "include": "eg_cq_tests.json",
       "device type": "iPhone X",
-      "os": "13.2",
+      "os": "13.2.2",
       "xcode build version": "11b53",
       "host os": "Mac-10.14.6",
       "pool":"chromium.tests"
@@ -83,7 +83,7 @@
     {
       "include": "eg_cq_tests.json",
       "device type": "iPad Pro (12.9-inch)",
-      "os": "13.2",
+      "os": "13.2.2",
       "xcode build version": "11b53",
       "host os": "Mac-10.14.6",
       "pool":"chromium.tests"
@@ -91,7 +91,7 @@
     {
       "include": "eg_tests.json",
       "device type": "iPhone X",
-      "os": "13.2",
+      "os": "13.2.2",
       "xcode build version": "11b53",
       "host os": "Mac-10.14.6",
       "pool":"chromium.tests"
@@ -99,7 +99,7 @@
     {
       "include": "eg_tests.json",
       "device type": "iPad Air (3rd generation)",
-      "os": "13.2",
+      "os": "13.2.2",
       "xcode build version": "11b53",
       "host os": "Mac-10.14.6",
       "pool":"chromium.tests"
@@ -107,7 +107,7 @@
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPhone 6s Plus",
-      "os": "13.2",
+      "os": "13.2.2",
       "xcode build version": "11b53",
       "host os": "Mac-10.14.6",
       "pool":"chromium.tests"
@@ -115,7 +115,7 @@
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPhone X",
-      "os": "13.2",
+      "os": "13.2.2",
       "xcode build version": "11b53",
       "host os": "Mac-10.14.6",
       "pool":"chromium.tests"
@@ -123,7 +123,7 @@
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPad Air 2",
-      "os": "13.2",
+      "os": "13.2.2",
       "xcode build version": "11b53",
       "host os": "Mac-10.14.6",
       "pool":"chromium.tests"
@@ -134,7 +134,7 @@
       "os": "12.4",
       "xcode build version": "11b53",
       "host os": "Mac-10.14.6",
-      "pool":"chromium.tests"	
+      "pool":"chromium.tests"
     }
   ]
 }

@@ -138,11 +138,7 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
 
 scoped_refptr<Extension> TestExtensionPrefs::AddExtension(
     const std::string& name) {
-  base::DictionaryValue dictionary;
-  dictionary.SetString(manifest_keys::kName, name);
-  dictionary.SetString(manifest_keys::kVersion, "0.1");
-  dictionary.SetInteger(manifest_keys::kManifestVersion, 2);
-  return AddExtensionWithManifest(dictionary, Manifest::INTERNAL);
+  return AddExtensionWithLocation(name, Manifest::INTERNAL);
 }
 
 scoped_refptr<Extension> TestExtensionPrefs::AddApp(const std::string& name) {
@@ -153,6 +149,16 @@ scoped_refptr<Extension> TestExtensionPrefs::AddApp(const std::string& name) {
   dictionary.SetString(manifest_keys::kLaunchWebURL, "http://example.com");
   return AddExtensionWithManifest(dictionary, Manifest::INTERNAL);
 
+}
+
+scoped_refptr<Extension> TestExtensionPrefs::AddExtensionWithLocation(
+    const std::string& name,
+    Manifest::Location location) {
+  base::DictionaryValue dictionary;
+  dictionary.SetString(manifest_keys::kName, name);
+  dictionary.SetString(manifest_keys::kVersion, "0.1");
+  dictionary.SetInteger(manifest_keys::kManifestVersion, 2);
+  return AddExtensionWithManifest(dictionary, location);
 }
 
 scoped_refptr<Extension> TestExtensionPrefs::AddExtensionWithManifest(

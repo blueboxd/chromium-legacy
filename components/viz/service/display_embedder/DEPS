@@ -14,6 +14,7 @@ include_rules = [
   "+components/viz/service/display/overlay_candidate.h",
   "+components/viz/service/display/overlay_candidate_list.h",
   "+components/viz/service/display/overlay_candidate_validator.h",
+  "+components/viz/service/display/overlay_candidate_validator_strategy.h",
   "+components/viz/service/display/renderer_utils.h",
   "+components/viz/service/display/resource_metadata.h",
   "+components/viz/service/display/shared_bitmap_manager.h",

@@ -38,6 +38,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
@@ -267,6 +268,7 @@ public class TabModalPresenterTest {
     @SmallTest
     @Feature({"ModalDialog"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @DisabledTest(message = "Flaky. crbug.com/1030683")
     public void testSuspend_TabClosed() throws Exception {
         PropertyModel dialog1 = createDialog(mActivity, "1", null);
         PropertyModel dialog2 = createDialog(mActivity, "2", null);
@@ -320,6 +322,7 @@ public class TabModalPresenterTest {
     @Test
     @SmallTest
     @Feature({"ModalDialog"})
+    @DisabledTest(message = "Flaky. crbug.com/1030903")
     public void testDismiss_SwitchTab() throws Exception {
         PropertyModel dialog1 = createDialog(mActivity, "1", null);
         PropertyModel dialog2 = createDialog(mActivity, "2", null);

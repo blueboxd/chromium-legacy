@@ -196,7 +196,8 @@ void GpuWatchdogThreadImplV2::ReportProgress() {
 }
 
 void GpuWatchdogThreadImplV2::WillProcessTask(
-    const base::PendingTask& pending_task) {
+    const base::PendingTask& pending_task,
+    bool was_blocked_or_low_priority) {
   DCHECK(watched_gpu_task_runner_->BelongsToCurrentThread());
 
   // The watchdog is armed at the beginning of the gpu process teardown.

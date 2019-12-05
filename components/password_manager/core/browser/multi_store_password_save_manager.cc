@@ -75,9 +75,13 @@ void MultiStorePasswordSaveManager::UpdateInternal(
 void MultiStorePasswordSaveManager::PermanentlyBlacklist(
     const PasswordStore::FormDigest& form_digest) {
   DCHECK(!client_->IsIncognito());
-  PasswordSaveManagerImpl::PermanentlyBlacklist(form_digest);
-  // TODO(crbug.com/1012203): Implement this using the the stored pref
-  // indicating the default store selected by the user.
+  if (account_store_form_saver_ && IsAccountStoreActive() &&
+      client_->GetPasswordFeatureManager()->GetDefaultPasswordStore() ==
+          PasswordForm::Store::kAccountStore) {
+    account_store_form_saver_->PermanentlyBlacklist(form_digest);
+  } else {
+    form_saver_->PermanentlyBlacklist(form_digest);
+  }
 }
 
 void MultiStorePasswordSaveManager::Unblacklist(

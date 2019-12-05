@@ -141,7 +141,9 @@ class CORE_EXPORT ScrollingCoordinator final
       const CompositorElementId&);
 
   // ScrollCallbacks implementation
-  void DidScroll(CompositorElementId, const gfx::ScrollOffset&) override;
+  void DidScroll(CompositorElementId,
+                 const gfx::ScrollOffset&,
+                 const base::Optional<cc::TargetSnapAreaElementIds>&) override;
   void DidChangeScrollbarsHidden(CompositorElementId, bool hidden) override;
 
   base::WeakPtr<ScrollingCoordinator> GetWeakPtr() {

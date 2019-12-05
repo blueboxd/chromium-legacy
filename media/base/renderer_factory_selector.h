@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_RENDERER_FACTORY_SELECTOR_H_
 #define MEDIA_BASE_RENDERER_FACTORY_SELECTOR_H_
 
+#include <map>
+
 #include "base/callback.h"
 #include "base/optional.h"
 #include "build/build_config.h"
@@ -33,43 +35,45 @@ namespace media {
 //   one conditional factory for any factory type. If multiple conditions are
 //   met, it's up to the implementation detail which factory will be returned.
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class RendererFactoryType {
+  kDefault = 0,          // DefaultRendererFactory
+  kMojo = 1,             // MojoRendererFactory
+  kMediaPlayer = 2,      // MediaPlayerRendererClientFactory
+  kCourier = 3,          // CourierRendererFactory
+  kFlinging = 4,         // FlingingRendererClientFactory
+  kCast = 5,             // CastRendererClientFactory
+  kMediaFoundation = 6,  // MediaFoundationRendererClientFactory
+  kMaxValue = kMediaFoundation,
+};
+
 class MEDIA_EXPORT RendererFactorySelector {
  public:
   using ConditionalFactoryCB = base::RepeatingCallback<bool()>;
-
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum FactoryType {
-    DEFAULT = 0,       // DefaultRendererFactory.
-    MOJO = 1,          // MojoRendererFactory.
-    MEDIA_PLAYER = 2,  // MediaPlayerRendererClientFactory.
-    COURIER = 3,       // CourierRendererFactory.
-    FLINGING = 4,      // FlingingRendererClientFactory.
-    CAST = 5,          // CastRendererClientFactory.
-    FACTORY_TYPE_MAX = CAST,
-  };
 
   RendererFactorySelector();
   ~RendererFactorySelector();
 
   // See file level comments above.
-  void AddBaseFactory(FactoryType type,
+  void AddBaseFactory(RendererFactoryType type,
                       std::unique_ptr<RendererFactory> factory);
-  void AddConditionalFactory(FactoryType type,
+  void AddConditionalFactory(RendererFactoryType type,
                              std::unique_ptr<RendererFactory> factory,
                              ConditionalFactoryCB callback);
-  void AddFactory(FactoryType type, std::unique_ptr<RendererFactory> factory);
+  void AddFactory(RendererFactoryType type,
+                  std::unique_ptr<RendererFactory> factory);
 
   // Sets the base factory to be returned, when there are no signals telling us
   // to select any specific factory.
-  // NOTE: |type| can be different than FactoryType::DEFAULT. DEFAULT is used to
-  // identify the DefaultRendererFactory, not to indicate that a factory should
-  // be used by default.
-  void SetBaseFactoryType(FactoryType type);
+  // NOTE: |type| can be different than FactoryType::kDefault. kDefault is used
+  // to identify the DefaultRendererFactory, not to indicate that a factory
+  // should be used by default.
+  void SetBaseFactoryType(RendererFactoryType type);
 
   // Returns the type of the factory that GetCurrentFactory() would return.
   // NOTE: SetBaseFactoryType() must be called before calling this method.
-  FactoryType GetCurrentFactoryType();
+  RendererFactoryType GetCurrentFactoryType();
 
   // Updates |current_factory_| if necessary, and returns its value.
   // NOTE: SetBaseFactoryType() must be called before calling this method.
@@ -88,14 +92,16 @@ class MEDIA_EXPORT RendererFactorySelector {
 #endif
 
  private:
-  base::Optional<FactoryType> base_factory_type_;
+  base::Optional<RendererFactoryType> base_factory_type_;
 
   // Use a map to avoid duplicate entires for the same FactoryType.
-  std::map<FactoryType, ConditionalFactoryCB> conditional_factory_types_;
+  std::map<RendererFactoryType, ConditionalFactoryCB>
+      conditional_factory_types_;
 
   RequestRemotePlayStateChangeCB remote_play_state_change_cb_request_;
 
-  std::unique_ptr<RendererFactory> factories_[FACTORY_TYPE_MAX + 1];
+  std::map<RendererFactoryType, std::unique_ptr<RendererFactory>> factories_;
+
   DISALLOW_COPY_AND_ASSIGN(RendererFactorySelector);
 };
 

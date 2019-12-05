@@ -395,6 +395,26 @@
             ]
         }
     ],
+    "AndroidInProductHelpQuietNotificationPrompts": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "availability": "any",
+                        "event_trigger": "name:tabgroups_dummy;comparator:any;window:1;storage:1",
+                        "event_used": "name:tabgroups_dummy;comparator:any;window:1;storage:1"
+                    },
+                    "enable_features": [
+                        "IPH_QuietNotificationPrompts"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidInlineUpdateFlowStudy": [
         {
             "platforms": [
@@ -1812,6 +1832,21 @@
                     },
                     "enable_features": [
                         "CrOSSystemAECDeactivatedGroups"
+                    ]
+                }
+            ]
+        }
+    ],
+    "CryptAuthV2Enrollment": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CryptAuthV2Enrollment"
                     ]
                 }
             ]

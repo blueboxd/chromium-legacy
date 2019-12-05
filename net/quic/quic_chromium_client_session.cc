@@ -1556,43 +1556,26 @@ void QuicChromiumClientSession::OnCryptoHandshakeEvent(
     std::move(callback_).Run(OK);
   }
   if (event == HANDSHAKE_CONFIRMED) {
-    if (stream_factory_)
-      stream_factory_->set_is_quic_known_to_work_on_current_network(true);
-
-    // Update |connect_end| only when handshake is confirmed. This should also
-    // take care of any failed 0-RTT request.
-    connect_timing_.connect_end = tick_clock_->NowTicks();
-    DCHECK_LE(connect_timing_.connect_start, connect_timing_.connect_end);
-    UMA_HISTOGRAM_TIMES(
-        "Net.QuicSession.HandshakeConfirmedTime",
-        connect_timing_.connect_end - connect_timing_.connect_start);
-    // Track how long it has taken to finish handshake after we have finished
-    // DNS host resolution.
-    if (!connect_timing_.dns_end.is_null()) {
-      UMA_HISTOGRAM_TIMES(
-          "Net.QuicSession.HostResolution.HandshakeConfirmedTime",
-          tick_clock_->NowTicks() - connect_timing_.dns_end);
-    }
-
-    auto it = handles_.begin();
-    while (it != handles_.end()) {
-      Handle* handle = *it;
-      ++it;
-      handle->OnCryptoHandshakeConfirmed();
-    }
-
-    NotifyRequestsOfConfirmation(OK);
-    // Attempt to migrate back to the default network after handshake has been
-    // confirmed if the session is not created on the default network.
-    if (migrate_session_on_network_change_v2_ &&
-        default_network_ != NetworkChangeNotifier::kInvalidNetworkHandle &&
-        GetDefaultSocket()->GetBoundNetwork() != default_network_) {
-      current_migration_cause_ = ON_MIGRATE_BACK_TO_DEFAULT_NETWORK;
-      StartMigrateBackToDefaultNetworkTimer(
-          base::TimeDelta::FromSeconds(kMinRetryTimeForDefaultNetworkSecs));
-    }
+    OnCryptoHandshakeComplete();
   }
   quic::QuicSpdySession::OnCryptoHandshakeEvent(event);
+}
+
+void QuicChromiumClientSession::SetDefaultEncryptionLevel(
+    quic::EncryptionLevel level) {
+  if (!callback_.is_null() &&
+      (!require_confirmation_ || level == quic::ENCRYPTION_FORWARD_SECURE ||
+       level == quic::ENCRYPTION_ZERO_RTT)) {
+    // TODO(rtenneti): Currently for all CryptoHandshakeEvent events, callback_
+    // could be called because there are no error events in CryptoHandshakeEvent
+    // enum. If error events are added to CryptoHandshakeEvent, then the
+    // following code needs to changed.
+    std::move(callback_).Run(OK);
+  }
+  if (level == quic::ENCRYPTION_FORWARD_SECURE) {
+    OnCryptoHandshakeComplete();
+  }
+  quic::QuicSpdySession::SetDefaultEncryptionLevel(level);
 }
 
 void QuicChromiumClientSession::OnCryptoHandshakeMessageSent(
@@ -2986,6 +2969,43 @@ void QuicChromiumClientSession::NotifyFactoryOfSessionClosed() {
   // Will delete |this|.
   if (stream_factory_)
     stream_factory_->OnSessionClosed(this);
+}
+
+void QuicChromiumClientSession::OnCryptoHandshakeComplete() {
+  if (stream_factory_)
+    stream_factory_->set_is_quic_known_to_work_on_current_network(true);
+
+  // Update |connect_end| only when handshake is confirmed. This should also
+  // take care of any failed 0-RTT request.
+  connect_timing_.connect_end = tick_clock_->NowTicks();
+  DCHECK_LE(connect_timing_.connect_start, connect_timing_.connect_end);
+  UMA_HISTOGRAM_TIMES(
+      "Net.QuicSession.HandshakeConfirmedTime",
+      connect_timing_.connect_end - connect_timing_.connect_start);
+  // Track how long it has taken to finish handshake after we have finished
+  // DNS host resolution.
+  if (!connect_timing_.dns_end.is_null()) {
+    UMA_HISTOGRAM_TIMES("Net.QuicSession.HostResolution.HandshakeConfirmedTime",
+                        tick_clock_->NowTicks() - connect_timing_.dns_end);
+  }
+
+  auto it = handles_.begin();
+  while (it != handles_.end()) {
+    Handle* handle = *it;
+    ++it;
+    handle->OnCryptoHandshakeConfirmed();
+  }
+
+  NotifyRequestsOfConfirmation(OK);
+  // Attempt to migrate back to the default network after handshake has been
+  // confirmed if the session is not created on the default network.
+  if (migrate_session_on_network_change_v2_ &&
+      default_network_ != NetworkChangeNotifier::kInvalidNetworkHandle &&
+      GetDefaultSocket()->GetBoundNetwork() != default_network_) {
+    current_migration_cause_ = ON_MIGRATE_BACK_TO_DEFAULT_NETWORK;
+    StartMigrateBackToDefaultNetworkTimer(
+        base::TimeDelta::FromSeconds(kMinRetryTimeForDefaultNetworkSecs));
+  }
 }
 
 MigrationResult QuicChromiumClientSession::Migrate(

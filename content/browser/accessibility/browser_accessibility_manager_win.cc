@@ -99,7 +99,7 @@ void BrowserAccessibilityManagerWin::FireBlinkEvent(
   BrowserAccessibilityManager::FireBlinkEvent(event_type, node);
   switch (event_type) {
     case ax::mojom::Event::kClicked:
-      if (ui::IsInvokable(node->GetData()))
+      if (node->GetData().IsInvocable())
         FireUiaAccessibilityEvent(UIA_Invoke_InvokedEventId, node);
       break;
     case ax::mojom::Event::kEndOfTest: {
@@ -331,7 +331,7 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       aria_properties_events_.insert(node);
       break;
     case ui::AXEventGenerator::Event::READONLY_CHANGED:
-      if (ui::IsRangeValueSupported(node->GetData()))
+      if (node->GetData().IsRangeValueSupported())
         FireUiaPropertyChangedEvent(UIA_RangeValueIsReadOnlyPropertyId, node);
       else if (ui::IsValuePatternSupported(node))
         FireUiaPropertyChangedEvent(UIA_ValueIsReadOnlyPropertyId, node);
@@ -378,7 +378,7 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       break;
     case ui::AXEventGenerator::Event::VALUE_CHANGED:
       FireWinAccessibilityEvent(EVENT_OBJECT_VALUECHANGE, node);
-      if (ui::IsRangeValueSupported(node->GetData())) {
+      if (node->GetData().IsRangeValueSupported()) {
         FireUiaPropertyChangedEvent(UIA_RangeValueValuePropertyId, node);
         aria_properties_events_.insert(node);
       } else if (ui::IsValuePatternSupported(node)) {
@@ -386,19 +386,19 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       }
       break;
     case ui::AXEventGenerator::Event::VALUE_MAX_CHANGED:
-      if (IsRangeValueSupported(node->GetData())) {
+      if (node->GetData().IsRangeValueSupported()) {
         FireUiaPropertyChangedEvent(UIA_RangeValueMaximumPropertyId, node);
         aria_properties_events_.insert(node);
       }
       break;
     case ui::AXEventGenerator::Event::VALUE_MIN_CHANGED:
-      if (IsRangeValueSupported(node->GetData())) {
+      if (node->GetData().IsRangeValueSupported()) {
         FireUiaPropertyChangedEvent(UIA_RangeValueMinimumPropertyId, node);
         aria_properties_events_.insert(node);
       }
       break;
     case ui::AXEventGenerator::Event::VALUE_STEP_CHANGED:
-      if (IsRangeValueSupported(node->GetData())) {
+      if (node->GetData().IsRangeValueSupported()) {
         FireUiaPropertyChangedEvent(UIA_RangeValueSmallChangePropertyId, node);
         FireUiaPropertyChangedEvent(UIA_RangeValueLargeChangePropertyId, node);
       }

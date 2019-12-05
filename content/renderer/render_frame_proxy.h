@@ -244,8 +244,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnEnforceInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
   void OnSetFrameOwnerProperties(const FrameOwnerProperties& properties);
   void OnSetPageFocus(bool is_focused);
-  void OnSetFocusedFrame();
-  void OnWillEnterFullscreen();
   void OnUpdateUserActivationState(blink::UserActivationUpdateType update_type);
   void OnTransferUserActivationFrom(int32_t source_routing_id);
   void OnScrollRectToVisible(const gfx::Rect& rect_to_scroll,

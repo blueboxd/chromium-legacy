@@ -101,8 +101,8 @@ bool NativeProcessLauncher::LaunchNativeProcess(
   read_pipe_write_fd.reset();
 
   *process = std::move(local_process);
-  *read_file = base::File(read_pipe_read_fd.release());
-  *write_file = base::File(write_pipe_write_fd.release());
+  *read_file = base::File(std::move(read_pipe_read_fd));
+  *write_file = base::File(std::move(write_pipe_write_fd));
 
   return true;
 }

@@ -83,35 +83,39 @@ RangeAutomationHandler.prototype = {
       return;
     }
 
-    var prevTarget = this.lastAttributeTarget_;
+    // TODO: we need more fine grained filters for attribute changes.
+    if (prev.contentEquals(cursors.Range.fromNode(evt.target)) ||
+        evt.target.state.focused) {
+      var prevTarget = this.lastAttributeTarget_;
 
-    // Re-target to active descendant if it exists.
-    var prevOutput = this.lastAttributeOutput_;
-    this.lastAttributeTarget_ = evt.target.activeDescendant || evt.target;
-    this.lastAttributeOutput_ = new Output().withRichSpeechAndBraille(
-        cursors.Range.fromNode(this.lastAttributeTarget_), prev,
-        Output.EventType.NAVIGATE);
-    if (this.lastAttributeTarget_ == prevTarget && prevOutput &&
-        prevOutput.equals(this.lastAttributeOutput_)) {
-      return;
-    }
-
-    // If the target or an ancestor is controlled by another control, we may
-    // want to delay the output.
-    var maybeControlledBy = evt.target;
-    while (maybeControlledBy) {
-      if (maybeControlledBy.controlledBy.length &&
-          maybeControlledBy.controlledBy.find((n) => !!n.autoComplete)) {
-        clearTimeout(this.delayedAttributeOutputId_);
-        this.delayedAttributeOutputId_ = setTimeout(() => {
-          this.lastAttributeOutput_.go();
-        }, DesktopAutomationHandler.ATTRIBUTE_DELAY_MS);
+      // Re-target to active descendant if it exists.
+      var prevOutput = this.lastAttributeOutput_;
+      this.lastAttributeTarget_ = evt.target.activeDescendant || evt.target;
+      this.lastAttributeOutput_ = new Output().withRichSpeechAndBraille(
+          cursors.Range.fromNode(this.lastAttributeTarget_), prev,
+          Output.EventType.NAVIGATE);
+      if (this.lastAttributeTarget_ == prevTarget && prevOutput &&
+          prevOutput.equals(this.lastAttributeOutput_)) {
         return;
       }
-      maybeControlledBy = maybeControlledBy.parent;
-    }
 
-    this.lastAttributeOutput_.go();
+      // If the target or an ancestor is controlled by another control, we may
+      // want to delay the output.
+      var maybeControlledBy = evt.target;
+      while (maybeControlledBy) {
+        if (maybeControlledBy.controlledBy.length &&
+            maybeControlledBy.controlledBy.find((n) => !!n.autoComplete)) {
+          clearTimeout(this.delayedAttributeOutputId_);
+          this.delayedAttributeOutputId_ = setTimeout(() => {
+            this.lastAttributeOutput_.go();
+          }, DesktopAutomationHandler.ATTRIBUTE_DELAY_MS);
+          return;
+        }
+        maybeControlledBy = maybeControlledBy.parent;
+      }
+
+      this.lastAttributeOutput_.go();
+    }
   },
 
   /**

@@ -53,6 +53,11 @@ const base::Feature kAutofillEnableLocalCardMigrationForNonSyncUser{
 const base::Feature kAutofillEnableToolbarStatusChip{
     "AutofillEnableToolbarStatusChip", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, the option of using cloud token virtual card will be offered
+// when all requirements are met.
+const base::Feature kAutofillEnableVirtualCard{
+    "AutofillEnableVirtualCard", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, will remove the option to save unmasked server cards as
 // FULL_SERVER_CARDs upon successful unmask.
 const base::Feature kAutofillNoLocalSaveOnUnmaskSuccess{
@@ -67,10 +72,6 @@ const base::Feature kAutofillNoLocalSaveOnUploadSuccess{
 // navigation other than one caused by submitted form.
 const base::Feature kAutofillSaveCardDismissOnNavigation{
     "AutofillSaveCardDismissOnNavigation", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Controls whether to show updated UI for the card unmask prompt.
-const base::Feature kAutofillUpdatedCardUnmaskPromptUi{
-    "AutofillUpdatedCardUnmaskPromptUi", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls offering credit card upload to Google Payments. Cannot ever be
 // ENABLED_BY_DEFAULT because it's a country-specific whitelist. There are

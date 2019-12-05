@@ -6,7 +6,8 @@ package org.chromium.chrome.browser.autofill_assistant.form;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.ui.modelutil.ListModel;
+import org.chromium.chrome.browser.autofill_assistant.AssistantInfoPopup;
+import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,21 +15,48 @@ import java.util.List;
 
 /** A model for the assistant form. */
 @JNINamespace("autofill_assistant")
-public class AssistantFormModel {
-    private final ListModel<AssistantFormInput> mInputsModel = new ListModel<>();
+public class AssistantFormModel extends PropertyModel {
+    public static final WritableObjectPropertyKey<String> INFO_LABEL =
+            new WritableObjectPropertyKey<>();
 
-    public ListModel<AssistantFormInput> getInputsModel() {
-        return mInputsModel;
+    public static final WritableObjectPropertyKey<AssistantInfoPopup> INFO_POPUP =
+            new WritableObjectPropertyKey<>();
+
+    public static final WritableObjectPropertyKey<List<AssistantFormInput>> INPUTS =
+            new WritableObjectPropertyKey<>();
+
+    public AssistantFormModel() {
+        super(INFO_LABEL, INFO_POPUP, INPUTS);
     }
 
     @CalledByNative
     private void setInputs(List<AssistantFormInput> inputs) {
-        mInputsModel.set(inputs);
+        set(INPUTS, inputs);
+    }
+
+    @CalledByNative
+    private void setInfoPopup(AssistantInfoPopup infoPopup) {
+        set(INFO_POPUP, infoPopup);
+    }
+
+    @CalledByNative
+    private void clearInfoPopup() {
+        set(INFO_POPUP, null);
+    }
+
+    @CalledByNative
+    private void setInfoLabel(String label) {
+        set(INFO_LABEL, label);
+    }
+
+    @CalledByNative
+    private void clearInfoLabel() {
+        set(INFO_LABEL, null);
     }
 
     @CalledByNative
     private void clearInputs() {
-        mInputsModel.set(Arrays.asList());
+        set(INPUTS, Arrays.asList());
     }
 
     @CalledByNative

@@ -343,11 +343,11 @@ TEST_F(PromoServiceTest, ServeExtensionsPromo) {
   SetUpExtensionTest();
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeatureWithParameters(
-      extensions_features::kExtensionsCheckupTool,
-      {{extensions_features::kExtensionsCheckupToolEntryPointParameter,
-        "promo"},
-       {extensions_features::kExtensionsCheckupToolBannerMessageParameter,
-        "0"}});
+      extensions_features::kExtensionsCheckup,
+      {{extensions_features::kExtensionsCheckupEntryPointParameter,
+        extensions_features::kNtpPromoEntryPoint},
+       {extensions_features::kExtensionsCheckupBannerMessageParameter,
+        extensions_features::kPerformanceMessage}});
 
   service()->Refresh();
   base::RunLoop().RunUntilIdle();

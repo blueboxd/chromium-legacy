@@ -40,6 +40,21 @@ cast_source_set("prefs") {
   }
 }
 
+cast_source_set("feature_list") {
+  sources = [
+    "cast_feature_list_creator.cc",
+    "cast_feature_list_creator.h",
+  ]
+  deps = [
+    ":prefs",
+    "//base",
+    "//chromecast/base",
+    "//chromecast/browser/metrics",
+    "//components/prefs",
+    "//components/proxy_config",
+  ]
+}
+
 cast_source_set("browser") {
   sources = [
     "application_media_capabilities.cc",
@@ -61,8 +76,6 @@ cast_source_set("browser") {
     "cast_content_gesture_handler.h",
     "cast_download_manager_delegate.cc",
     "cast_download_manager_delegate.h",
-    "cast_feature_list_creator.cc",
-    "cast_feature_list_creator.h",
     "cast_http_user_agent_settings.cc",
     "cast_http_user_agent_settings.h",
     "cast_media_blocker.cc",
@@ -137,6 +150,7 @@ cast_source_set("browser") {
   }
 
   public_deps = [
+    ":feature_list",
     ":prefs",
     ":public",
     "//chromecast/browser/metrics",

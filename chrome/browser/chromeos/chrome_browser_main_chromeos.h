@@ -39,6 +39,7 @@ class CrosvmMetrics;
 namespace chromeos {
 
 class ArcKioskAppManager;
+class BulkPrintersCalculatorFactory;
 class CrosUsbDetector;
 class DemoModeResourcesRemover;
 class DiscoverManager;
@@ -172,6 +173,9 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
   std::unique_ptr<chromeos::system::DarkResumeController>
       dark_resume_controller_;
+
+  std::unique_ptr<chromeos::BulkPrintersCalculatorFactory>
+      bulk_printers_calculator_factory_;
 
   std::unique_ptr<SessionTerminationManager> session_termination_manager_;
 

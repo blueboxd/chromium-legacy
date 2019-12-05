@@ -32,6 +32,7 @@ bool StructTraits<viz::mojom::RendererSettingsDataView, viz::RendererSettings>::
   out->use_skia_renderer = data.use_skia_renderer();
   out->record_sk_picture = data.record_sk_picture();
   out->allow_overlays = data.allow_overlays();
+  out->auto_resize_output_surface = data.auto_resize_output_surface();
   out->requires_alpha_channel = data.requires_alpha_channel();
   out->show_dc_layer_debug_borders = data.show_dc_layer_debug_borders();
 

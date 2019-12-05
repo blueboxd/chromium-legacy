@@ -10,6 +10,7 @@
 #include "ash/assistant/ui/assistant_container_view.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/assistant/util/deep_link_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
@@ -22,6 +23,10 @@
 namespace ash {
 
 namespace {
+
+using assistant::util::DeepLinkParam;
+using assistant::util::DeepLinkType;
+using assistant::util::ProactiveSuggestionsAction;
 
 // Helpers ---------------------------------------------------------------------
 
@@ -170,10 +175,27 @@ void AssistantCardElementView::DidSuppressNavigation(
     const GURL& url,
     WindowOpenDisposition disposition,
     bool from_user_gesture) {
+  // Proactive suggestion deep links may be invoked without a user gesture to
+  // log view impressions. Those are (currently) the only deep links we allow to
+  // be processed without originating from a user event.
+  if (!from_user_gesture) {
+    DeepLinkType deep_link_type = assistant::util::GetDeepLinkType(url);
+    if (deep_link_type != DeepLinkType::kProactiveSuggestions) {
+      NOTREACHED();
+      return;
+    }
+
+    const base::Optional<ProactiveSuggestionsAction> action =
+        assistant::util::GetDeepLinkParamAsProactiveSuggestionsAction(
+            assistant::util::GetDeepLinkParams(url), DeepLinkParam::kAction);
+    if (action != ProactiveSuggestionsAction::kViewImpression) {
+      NOTREACHED();
+      return;
+    }
+  }
   // We delegate navigation to the AssistantController so that it can apply
   // special handling to deep links.
-  if (from_user_gesture)
-    delegate_->OpenUrlFromView(url);
+  delegate_->OpenUrlFromView(url);
 }
 
 void AssistantCardElementView::FocusedNodeChanged(

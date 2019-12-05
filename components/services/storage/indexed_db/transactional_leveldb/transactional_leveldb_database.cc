@@ -268,7 +268,7 @@ bool TransactionalLevelDBDatabase::OnMemoryDump(
     return true;
   }
 
-  db_dump->AddString("file_name", "", file_name_for_tracing);
+  db_dump->AddString("file_name", "", level_db_state_->name_for_tracing());
 
   return true;
 }

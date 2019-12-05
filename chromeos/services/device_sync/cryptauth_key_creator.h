@@ -75,9 +75,10 @@ class CryptAuthKeyCreator {
   CryptAuthKeyCreator();
   virtual ~CryptAuthKeyCreator();
 
+  // A new key is null if key creation fails.
   using CreateKeysCallback = base::OnceCallback<void(
       const base::flat_map<CryptAuthKeyBundle::Name,
-                           CryptAuthKey>& /* new_keys */,
+                           base::Optional<CryptAuthKey>>& /* new_keys */,
       const base::Optional<CryptAuthKey>& /* client_ephemeral_dh */)>;
   virtual void CreateKeys(
       const base::flat_map<CryptAuthKeyBundle::Name, CreateKeyData>&

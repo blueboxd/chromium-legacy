@@ -283,7 +283,7 @@ TEST(VideoFrame, WrapVideoFrame) {
     frame = media::VideoFrame::WrapVideoFrame(
         wrapped_frame, wrapped_frame->format(), visible_rect, natural_size);
     wrapped_frame->AddDestructionObserver(
-        base::Bind(&FrameNoLongerNeededCallback, &done_callback_was_run));
+        base::BindOnce(&FrameNoLongerNeededCallback, &done_callback_was_run));
     EXPECT_EQ(wrapped_frame->coded_size(), frame->coded_size());
     EXPECT_EQ(wrapped_frame->data(media::VideoFrame::kYPlane),
               frame->data(media::VideoFrame::kYPlane));
@@ -492,7 +492,7 @@ TEST(VideoFrame, TextureNoLongerNeededCallbackIsCalled) {
         gpu::MailboxHolder(gpu::Mailbox::Generate(), gpu::SyncToken(), 5)};
     scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTextures(
         PIXEL_FORMAT_ARGB, holders,
-        base::Bind(&TextureCallback, &called_sync_token),
+        base::BindOnce(&TextureCallback, &called_sync_token),
         gfx::Size(10, 10),   // coded_size
         gfx::Rect(10, 10),   // visible_rect
         gfx::Size(10, 10),   // natural_size
@@ -536,7 +536,7 @@ TEST(VideoFrame,
     };
     scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTextures(
         PIXEL_FORMAT_I420, holders,
-        base::Bind(&TextureCallback, &called_sync_token),
+        base::BindOnce(&TextureCallback, &called_sync_token),
         gfx::Size(10, 10),   // coded_size
         gfx::Rect(10, 10),   // visible_rect
         gfx::Size(10, 10),   // natural_size

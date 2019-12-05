@@ -6,6 +6,7 @@
 
 #include "base/numerics/ranges.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
@@ -131,6 +132,17 @@ void ExtensionsToolbarContainer::PopOutAction(
   ReorderViews();
   static_cast<views::AnimatingLayoutManager*>(GetLayoutManager())
       ->RunOrQueueAction(closure);
+}
+
+bool ExtensionsToolbarContainer::ShowToolbarActionPopup(
+    const std::string& action_id,
+    bool grant_active_tab) {
+  // Don't override another popup, and only show in the active window.
+  if (popped_out_action_ || !browser_->window()->IsActive())
+    return false;
+
+  ToolbarActionViewController* action = GetActionForId(action_id);
+  return action && action->ExecuteAction(grant_active_tab);
 }
 
 void ExtensionsToolbarContainer::ShowToolbarActionBubble(

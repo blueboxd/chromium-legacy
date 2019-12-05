@@ -118,7 +118,8 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
     EXPECT_CALL(gpu_factories_, GetTaskRunner()).Times(AtLeast(0));
 
     ON_CALL(gpu_factories_, IsDecoderConfigSupported(_, _))
-        .WillByDefault(Return(true));
+        .WillByDefault(
+            Return(media::GpuVideoAcceleratorFactories::Supported::kTrue));
     EXPECT_CALL(gpu_factories_, IsDecoderConfigSupported(_, _))
         .Times(AtLeast(0));
 
@@ -267,7 +268,7 @@ TEST_F(RTCVideoDecoderAdapterTest, Create_UnknownFormat) {
 
 TEST_F(RTCVideoDecoderAdapterTest, Create_UnsupportedFormat) {
   EXPECT_CALL(gpu_factories_, IsDecoderConfigSupported(_, _))
-      .WillOnce(Return(false));
+      .WillOnce(Return(media::GpuVideoAcceleratorFactories::Supported::kFalse));
   rtc_video_decoder_adapter_ = RTCVideoDecoderAdapter::Create(
       &gpu_factories_, webrtc::SdpVideoFormat(webrtc::CodecTypeToPayloadString(
                            webrtc::kVideoCodecVP9)));

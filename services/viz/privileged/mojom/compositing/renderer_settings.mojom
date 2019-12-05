@@ -23,6 +23,7 @@ struct RendererSettings {
   bool use_skia_renderer;
   bool record_sk_picture;
   bool allow_overlays;
+  bool auto_resize_output_surface;
   bool requires_alpha_channel;
   bool show_dc_layer_debug_borders;
 

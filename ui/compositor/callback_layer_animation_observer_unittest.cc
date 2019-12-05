@@ -641,5 +641,42 @@ TEST_F(CallbackLayerAnimationObserverTest,
   EXPECT_EQ(4, observer_->successful_count());
 }
 
+TEST_F(CallbackLayerAnimationObserverTest, DetachBeforeActive) {
+  LayerAnimationSequence* sequence_1 = CreateLayerAnimationSequence();
+  LayerAnimationSequence* sequence_2 = CreateLayerAnimationSequence();
+
+  observer_test_api_->AttachedToSequence(sequence_1);
+  observer_test_api_->AttachedToSequence(sequence_2);
+  observer_->OnLayerAnimationStarted(sequence_1);
+  observer_->OnLayerAnimationEnded(sequence_1);
+  observer_test_api_->DetachedFromSequence(sequence_1, true);
+  observer_test_api_->DetachedFromSequence(sequence_2, true);
+
+  observer_->SetActive();
+
+  EXPECT_FALSE(observer_->active());
+  EXPECT_TRUE(callbacks_->animations_started());
+  EXPECT_TRUE(callbacks_->animations_ended());
+}
+
+TEST_F(CallbackLayerAnimationObserverTest, DetachAfterActive) {
+  LayerAnimationSequence* sequence_1 = CreateLayerAnimationSequence();
+  LayerAnimationSequence* sequence_2 = CreateLayerAnimationSequence();
+
+  observer_test_api_->AttachedToSequence(sequence_1);
+  observer_test_api_->AttachedToSequence(sequence_2);
+
+  observer_->SetActive();
+
+  observer_->OnLayerAnimationStarted(sequence_1);
+  observer_->OnLayerAnimationEnded(sequence_1);
+  observer_test_api_->DetachedFromSequence(sequence_1, true);
+  observer_test_api_->DetachedFromSequence(sequence_2, true);
+
+  EXPECT_FALSE(observer_->active());
+  EXPECT_TRUE(callbacks_->animations_started());
+  EXPECT_TRUE(callbacks_->animations_ended());
+}
+
 }  // namespace test
 }  // namespace ui

@@ -28,7 +28,8 @@ class BrowserIOThreadDelegate::TLSMultiplexer : public base::TaskObserver {
     io_task_executor_ = io_task_executor;
   }
 
-  void WillProcessTask(const base::PendingTask& pending_task) override {
+  void WillProcessTask(const base::PendingTask& pending_task,
+                       bool was_blocked_or_low_priority) override {
     base::TaskExecutor* previous_executor =
         base::GetTaskExecutorForCurrentThread();
     if (previous_executor) {

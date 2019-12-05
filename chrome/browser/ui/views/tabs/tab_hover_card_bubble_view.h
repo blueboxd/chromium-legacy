@@ -89,6 +89,7 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
 
   // views::BubbleDialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
+  void OnThemeChanged() override;
 
   void RecordTimeSinceLastSeenMetric(base::TimeDelta elapsed_time);
 

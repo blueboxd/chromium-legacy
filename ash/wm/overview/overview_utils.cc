@@ -75,7 +75,8 @@ void FadeInWidgetAndMaybeSlideOnEnter(views::Widget* widget,
     }
     window->SetTransform(new_transform);
   }
-  window->layer()->SetOpacity(0.0f);
+
+  // Fade in the widget from its current opacity.
   ScopedOverviewAnimationSettings scoped_overview_animation_settings(
       animation_type, window);
   window->layer()->SetOpacity(1.0f);
@@ -100,9 +101,8 @@ void FadeOutWidgetAndMaybeSlideOnExit(std::unique_ptr<views::Widget> widget,
     return;
   }
 
-  widget->SetOpacity(1.f);
-  // Fade out the widget. This animation continues past the lifetime of overview
-  // mode items.
+  // Fade out the widget from its current opacity. This animation continues past
+  // the lifetime of overview mode items.
   ScopedOverviewAnimationSettings animation_settings(animation_type,
                                                      widget->GetNativeWindow());
   // CleanupAnimationObserver will delete itself (and the widget) when the

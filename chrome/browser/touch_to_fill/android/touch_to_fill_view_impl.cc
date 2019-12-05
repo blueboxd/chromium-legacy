@@ -21,6 +21,7 @@
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
@@ -39,10 +40,12 @@ UiCredential ConvertJavaCredential(JNIEnv* env,
                                Java_Credential_getUsername(env, credential)),
       ConvertJavaStringToUTF16(env,
                                Java_Credential_getPassword(env, credential)),
-      GURL(ConvertJavaStringToUTF8(
-          env, Java_Credential_getOriginUrl(env, credential))),
+      url::Origin::Create(GURL(ConvertJavaStringToUTF8(
+          env, Java_Credential_getOriginUrl(env, credential)))),
       UiCredential::IsPublicSuffixMatch(
-          Java_Credential_isPublicSuffixMatch(env, credential)));
+          Java_Credential_isPublicSuffixMatch(env, credential)),
+      UiCredential::IsAffiliationBasedMatch(
+          Java_Credential_isAffiliationBasedMatch(env, credential)));
 }
 
 void OnFaviconFetched(
@@ -83,8 +86,9 @@ void TouchToFillViewImpl::Show(
         ConvertUTF16ToJavaString(env, credential.username()),
         ConvertUTF16ToJavaString(env, credential.password()),
         ConvertUTF16ToJavaString(env, GetDisplayUsername(credential)),
-        ConvertUTF8ToJavaString(env, credential.origin_url().spec()),
-        credential.is_public_suffix_match().value());
+        ConvertUTF8ToJavaString(env, credential.origin().Serialize()),
+        credential.is_public_suffix_match().value(),
+        credential.is_affiliation_based_match().value());
   }
 
   Java_TouchToFillBridge_showCredentials(

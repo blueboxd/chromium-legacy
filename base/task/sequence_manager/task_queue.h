@@ -329,7 +329,7 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
   // queue is unblocked when it is enabled and no fence prevents the front task
   // from running. If the EnqueueOrder of a task is greater than this when it
   // starts running, it means that is was never blocked.
-  EnqueueOrder GetLastUnblockEnqueueOrder() const;
+  EnqueueOrder GetEnqueueOrderAtWhichWeBecameUnblocked() const;
 
   void SetObserver(Observer* observer);
 

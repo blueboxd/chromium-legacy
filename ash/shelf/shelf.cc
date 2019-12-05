@@ -302,7 +302,7 @@ void Shelf::UpdateAutoHideState() {
 
 ShelfBackgroundType Shelf::GetBackgroundType() const {
   return shelf_widget_ ? shelf_widget_->GetBackgroundType()
-                       : SHELF_BACKGROUND_DEFAULT;
+                       : ShelfBackgroundType::kDefaultBg;
 }
 
 void Shelf::UpdateVisibilityState() {

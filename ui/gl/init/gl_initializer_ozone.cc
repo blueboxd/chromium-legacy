@@ -51,13 +51,13 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
   return false;
 }
 
-void InitializeDebugGLBindings() {
+void InitializeLogGLBindings() {
   if (HasGLOzone()) {
-    GetGLOzone()->InitializeDebugGLBindings();
+    GetGLOzone()->InitializeLogGLBindings();
     return;
   }
 
-  InitializeDebugGLBindingsGL();
+  InitializeLogGLBindingsGL();
 }
 
 void ShutdownGLPlatform() {

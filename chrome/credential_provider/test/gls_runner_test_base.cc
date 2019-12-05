@@ -527,6 +527,15 @@ HRESULT GlsRunnerTestBase::FinishLogonProcess(
     bool expected_success,
     bool expected_credentials_change_fired,
     int expected_error_message) {
+  return FinishLogonProcess(
+      expected_success, expected_credentials_change_fired,
+      expected_error_message ? GetStringResource(expected_error_message) : L"");
+}
+
+HRESULT GlsRunnerTestBase::FinishLogonProcess(
+    bool expected_success,
+    bool expected_credentials_change_fired,
+    const base::string16& expected_error_message) {
   // If no logon process was started, there is nothing to finish.
   if (!logon_process_started_successfully_)
     return S_OK;
@@ -559,6 +568,18 @@ HRESULT GlsRunnerTestBase::FinishLogonProcessWithCred(
     int expected_error_message,
     const Microsoft::WRL::ComPtr<ICredentialProviderCredential>&
         local_testing_cred) {
+  return FinishLogonProcessWithCred(
+      expected_success, expected_credentials_change_fired,
+      expected_error_message ? GetStringResource(expected_error_message) : L"",
+      local_testing_cred);
+}
+
+HRESULT GlsRunnerTestBase::FinishLogonProcessWithCred(
+    bool expected_success,
+    bool expected_credentials_change_fired,
+    const base::string16& expected_error_message,
+    const Microsoft::WRL::ComPtr<ICredentialProviderCredential>&
+        local_testing_cred) {
   // If no logon process was started, there is nothing to finish.
   if (!logon_process_started_successfully_)
     return S_OK;
@@ -585,9 +606,8 @@ HRESULT GlsRunnerTestBase::FinishLogonProcessWithCred(
     EXPECT_EQ(0u, test_provider->password().Length());
     EXPECT_EQ(0u, test_provider->sid().Length());
 
-    if (expected_error_message) {
-      EXPECT_STREQ(test_cred->GetErrorText(),
-                   GetStringResource(expected_error_message).c_str());
+    if (!expected_error_message.empty()) {
+      EXPECT_STREQ(test_cred->GetErrorText(), expected_error_message.c_str());
     } else {
       EXPECT_EQ(test_cred->GetErrorText(), nullptr);
     }

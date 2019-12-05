@@ -274,7 +274,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void RequestUpdateForSynchronousInputHandler() override;
   void SetSynchronousInputHandlerRootScrollOffset(
       const gfx::ScrollOffset& root_content_offset) override;
-  void ScrollEnd(ScrollState* scroll_state, bool should_snap = false) override;
+  void ScrollEnd(bool should_snap = false) override;
 
   InputHandlerPointerResult MouseDown(const gfx::PointF& viewport_point,
                                       bool shift_modifier) override;
@@ -956,7 +956,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
                                    const gfx::Vector2dF& scroll_delta,
                                    base::TimeDelta delayed_by);
 
-  void ScrollEndImpl(ScrollState* scroll_state);
+  void ScrollEndImpl();
 
   // Creates an animation curve and returns true if we need to update the
   // scroll position to a snap point. Otherwise returns false.
@@ -1271,10 +1271,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   ElementId last_scroller_element_id_;
 
   // Scroll animation can finish either before or after GSE arrival.
-  // deferred_scroll_end_state_ is set when the GSE has arrvied before scroll
-  // animation completion. ScrollEnd will get called with this deferred state
-  // once the animation is over.
-  base::Optional<ScrollState> deferred_scroll_end_state_;
+  // deferred_scroll_end_ is set when the GSE has arrvied before scroll
+  // animation completion. ScrollEnd will get called once the animation is
+  // over.
+  bool deferred_scroll_end_ = false;
 
   // PaintWorklet painting is controlled from the LayerTreeHostImpl, dispatched
   // to the worklet thread via |paint_worklet_painter_|.

@@ -267,6 +267,10 @@ extern const char kAppStateReadyToRun[];
 
 // The path part of the file system url used for media file systems.
 extern const char kMediaFileSystemPathPart[];
+
+// The key name of extension request timestamp used by the
+// prefs::kCloudExtensionRequestIds preference.
+extern const char kExtensionRequestTimestamp[];
 }  // namespace extension_misc
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_CONSTANTS_H_

@@ -181,13 +181,13 @@ class SecureChannelBleScannerImplTest : public testing::Test {
 
   void InvokeStartDiscoveryCallback(bool success, size_t command_index) {
     if (!success) {
-      fake_ble_synchronizer_->GetStartDiscoveryErrorCallback(command_index)
+      fake_ble_synchronizer_->TakeStartDiscoveryErrorCallback(command_index)
           .Run();
       return;
     }
 
     StartDiscoverySession();
-    fake_ble_synchronizer_->GetStartDiscoveryCallback(command_index)
+    fake_ble_synchronizer_->TakeStartDiscoveryCallback(command_index)
         .Run(std::move(discovery_session_));
   }
 

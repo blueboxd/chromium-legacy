@@ -23,13 +23,17 @@ SystemWebAppIntegrationTest::SystemWebAppIntegrationTest()
 
 SystemWebAppIntegrationTest::~SystemWebAppIntegrationTest() = default;
 
+Profile* SystemWebAppIntegrationTest::profile() {
+  return browser()->profile();
+}
+
 void SystemWebAppIntegrationTest::ExpectSystemWebAppValid(
     web_app::SystemAppType app_type,
     const GURL& url,
     const std::string& title) {
   Browser* app_browser = WaitForSystemAppInstallAndLaunch(app_type);
   const extensions::Extension* installed_app =
-      extensions::util::GetInstalledPwaForUrl(browser()->profile(), url);
+      extensions::util::GetInstalledPwaForUrl(profile(), url);
 
   EXPECT_TRUE(GetManager().IsSystemWebApp(installed_app->id()));
   EXPECT_TRUE(installed_app->from_bookmark());

@@ -173,8 +173,8 @@ void PromoService::Refresh() {
 
 void PromoService::ServeExtensionCheckupPromo() {
   const int checkup_message = base::GetFieldTrialParamByFeatureAsInt(
-      extensions_features::kExtensionsCheckupTool,
-      extensions_features::kExtensionsCheckupToolBannerMessageParameter, 2);
+      extensions_features::kExtensionsCheckup,
+      extensions_features::kExtensionsCheckupBannerMessageParameter, 2);
   PromoData checkup_promo;
   int promo_idr = -1;
   switch (static_cast<extensions::CheckupMessage>(checkup_message)) {

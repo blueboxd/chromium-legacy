@@ -41,7 +41,7 @@ class INVALIDATION_EXPORT UnackedInvalidationSet {
  public:
   static const size_t kMaxBufferedInvalidations;
 
-  UnackedInvalidationSet(invalidation::ObjectId id);
+  explicit UnackedInvalidationSet(invalidation::ObjectId id);
   UnackedInvalidationSet(const UnackedInvalidationSet& other);
   ~UnackedInvalidationSet();
 

@@ -317,6 +317,17 @@ void Frame::Initialize() {
     page_->SetMainFrame(this);
 }
 
+void Frame::FocusImpl() {
+  // This uses FocusDocumentView rather than SetFocusedFrame so that blur
+  // events are properly dispatched on any currently focused elements.
+  // It is currently only used when replicating focus changes for
+  // cross-process frames so |notify_embedder| is false to avoid sending
+  // DidFocus updates from FocusController to the browser process,
+  // which already knows the latest focused frame.
+  GetPage()->GetFocusController().FocusDocumentView(
+      this, false /* notify_embedder */);
+}
+
 STATIC_ASSERT_ENUM(FrameDetachType::kRemove,
                    WebLocalFrameClient::DetachType::kRemove);
 STATIC_ASSERT_ENUM(FrameDetachType::kSwap,

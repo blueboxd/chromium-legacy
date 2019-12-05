@@ -14,6 +14,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
+#include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/webui_tab_counter_button.h"
@@ -32,6 +34,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/feature_engagement/public/event_constants.h"
+#include "components/feature_engagement/public/feature_constants.h"
+#include "components/feature_engagement/public/tracker.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/animation/tween.h"
@@ -104,6 +109,8 @@ WebUITabStripContainerView::WebUITabStripContainerView(
       web_view_(
           AddChildView(std::make_unique<views::WebView>(browser->profile()))),
       tab_contents_container_(tab_contents_container),
+      iph_tracker_(feature_engagement::TrackerFactory::GetForBrowserContext(
+          browser_->profile())),
       auto_closer_(std::make_unique<AutoCloser>(
           base::Bind(&WebUITabStripContainerView::EventShouldPropagate,
                      base::Unretained(this)),
@@ -168,6 +175,10 @@ WebUITabStripContainerView::CreateNewTabButton() {
   new_tab_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_TOOLTIP_NEW_TAB));
 
+  const int button_height = GetLayoutConstant(TOOLBAR_BUTTON_HEIGHT);
+  new_tab_button->SetPreferredSize(gfx::Size(button_height, button_height));
+  new_tab_button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+
   new_tab_button_ = new_tab_button.get();
   view_observer_.Add(new_tab_button_);
 
@@ -195,6 +206,12 @@ void WebUITabStripContainerView::UpdateButtons() {
   }
 }
 
+void WebUITabStripContainerView::UpdatePromoBubbleBounds() {
+  if (!tab_counter_promo_)
+    return;
+  tab_counter_promo_->OnAnchorBoundsChanged();
+}
+
 void WebUITabStripContainerView::SetVisibleForTesting(bool visible) {
   SetContainerTargetVisibility(visible);
   animation_.SetCurrentValue(visible ? 1.0 : 0.0);
@@ -219,6 +236,16 @@ void WebUITabStripContainerView::SetContainerTargetVisibility(
     animation_.Show();
     web_view_->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
     time_at_open_ = base::TimeTicks::Now();
+
+    iph_tracker_->NotifyEvent(feature_engagement::events::kWebUITabStripOpened);
+    // If we're opening, end IPH if it's showing.
+    if (tab_counter_promo_) {
+      widget_observer_.Remove(tab_counter_promo_->GetWidget());
+      tab_counter_promo_->GetWidget()->CloseWithReason(
+          views::Widget::ClosedReason::kUnspecified);
+      tab_counter_promo_ = nullptr;
+      iph_tracker_->Dismissed(feature_engagement::kIPHWebUITabStripFeature);
+    }
   } else {
     if (time_at_open_) {
       RecordTabStripUIOpenDurationHistogram(base::TimeTicks::Now() -
@@ -285,8 +312,20 @@ void WebUITabStripContainerView::AnimationEnded(
     const gfx::Animation* animation) {
   DCHECK_EQ(&animation_, animation);
   PreferredSizeChanged();
-  if (animation_.GetCurrentValue() == 0.0)
+  if (animation_.GetCurrentValue() == 0.0) {
     SetVisible(false);
+    iph_tracker_->NotifyEvent(feature_engagement::events::kWebUITabStripClosed);
+    if (iph_tracker_->ShouldTriggerHelpUI(
+            feature_engagement::kIPHWebUITabStripFeature)) {
+      DCHECK(tab_counter_);
+      tab_counter_promo_ = FeaturePromoBubbleView::CreateOwned(
+          tab_counter_, views::BubbleBorder::TOP_RIGHT,
+          FeaturePromoBubbleView::ActivationAction::DO_NOT_ACTIVATE,
+          IDS_WEBUI_TAB_STRIP_PROMO);
+      tab_counter_promo_->set_close_on_deactivate(false);
+      widget_observer_.Add(tab_counter_promo_->GetWidget());
+    }
+  }
 }
 
 void WebUITabStripContainerView::AnimationProgressed(
@@ -385,6 +424,15 @@ void WebUITabStripContainerView::OnViewIsDeleting(View* observed_view) {
     tab_contents_container_ = nullptr;
   else
     NOTREACHED();
+}
+
+void WebUITabStripContainerView::OnWidgetDestroying(views::Widget* widget) {
+  // This call should only happen at the end of IPH.
+  DCHECK_EQ(widget, tab_counter_promo_->GetWidget());
+  tab_counter_promo_ = nullptr;
+  widget_observer_.Remove(widget);
+
+  iph_tracker_->Dismissed(feature_engagement::kIPHWebUITabStripFeature);
 }
 
 bool WebUITabStripContainerView::SetPaneFocusAndFocusDefault() {

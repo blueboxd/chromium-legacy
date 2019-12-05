@@ -320,11 +320,11 @@ bool TaskQueue::BlockedByFence() const {
   return impl_->BlockedByFence();
 }
 
-EnqueueOrder TaskQueue::GetLastUnblockEnqueueOrder() const {
+EnqueueOrder TaskQueue::GetEnqueueOrderAtWhichWeBecameUnblocked() const {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   if (!impl_)
     return EnqueueOrder();
-  return impl_->GetLastUnblockEnqueueOrder();
+  return impl_->GetEnqueueOrderAtWhichWeBecameUnblocked();
 }
 
 const char* TaskQueue::GetName() const {

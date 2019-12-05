@@ -384,3 +384,7 @@ QUIC_FLAG(
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_delete_send_rst_stream_inner,
           false)
+
+// If true, QUIC crypto handshaker uses handshaker delegate to notify session
+// about handshake events.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_handshaker_delegate, true)

@@ -19,6 +19,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/policy/profile_policy_connector_builder.h"
 #include "chrome/browser/policy/schema_registry_service.h"
@@ -40,6 +41,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/features/simple_feature.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -47,6 +49,10 @@
 #include "ui/shell_dialogs/select_file_dialog_factory.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 #include "url/gurl.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#endif  // defined(OS_CHROMEOS)
 
 using testing::_;
 using testing::Return;
@@ -281,7 +287,7 @@ void PolicyUITest::UpdateProviderPolicyForNamespace(
 
 void PolicyUITest::VerifyPolicies(
     const std::vector<std::vector<std::string>>& expected_policies) {
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome://policy"));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIPolicyURL));
 
   // Retrieve the text contents of the policy table cells for all policies.
   const std::string javascript =
@@ -333,7 +339,7 @@ void PolicyUITest::VerifyExportingPolicies(
   ui::SelectFileDialog::SetFactory(new TestSelectFileDialogFactory());
 
   // Navigate to the about:policy page.
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome://policy"));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIPolicyURL));
 
   // Click on 'save policies' button.
   const std::string javascript =
@@ -425,6 +431,8 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, WritePoliciesToJSONFile) {
   expected_values.SetDictionary("extensionPolicies",
                                 std::make_unique<base::DictionaryValue>());
 #if defined(OS_CHROMEOS)
+  expected_values.SetDictionary("loginScreenExtensionPolicies",
+                                std::make_unique<base::DictionaryValue>());
   expected_values.SetDictionary("deviceLocalAccountPolicies",
                                 std::make_unique<base::DictionaryValue>());
 #endif  // defined(OS_CHROMEOS)
@@ -571,6 +579,25 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, SendPolicyValues) {
   VerifyPolicies(expected_policies);
 }
 
+// TODO(https://crbug.com/1027135) Add tests to verify extension policies are
+// exported correctly.
+class ExtensionPolicyUITest : public PolicyUITest,
+                              public ::testing::WithParamInterface<bool> {
+ public:
+  ExtensionPolicyUITest() {}
+
+  bool UseSigninProfile() const { return GetParam(); }
+
+  Profile* extension_profile() const {
+#if defined(OS_CHROMEOS)
+    if (UseSigninProfile()) {
+      return chromeos::ProfileHelper::GetSigninProfile();
+    }
+#endif  // defined(OS_CHROMEOS)
+    return browser()->profile();
+  }
+};
+
 // TODO(https://crbug.com/911661) Flaky time outs on Linux Chromium OS ASan
 // LSan bot.
 #if defined(ADDRESS_SANITIZER)
@@ -578,8 +605,8 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, SendPolicyValues) {
 #else
 #define MAYBE_ExtensionLoadAndSendPolicy ExtensionLoadAndSendPolicy
 #endif
-IN_PROC_BROWSER_TEST_F(PolicyUITest, MAYBE_ExtensionLoadAndSendPolicy) {
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIPolicyURL));
+IN_PROC_BROWSER_TEST_P(ExtensionPolicyUITest,
+                       MAYBE_ExtensionLoadAndSendPolicy) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir_;
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -647,16 +674,29 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, MAYBE_ExtensionLoadAndSendPolicy) {
   extensions::ExtensionBuilder builder;
   builder.SetPath(temp_dir_.GetPath());
   builder.SetManifest(manifest.Build());
+  builder.SetLocation(extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD);
 
   // Install extension.
   extensions::ExtensionService* service =
-      extensions::ExtensionSystem::Get(browser()->profile())
+      extensions::ExtensionSystem::Get(extension_profile())
           ->extension_service();
   scoped_refptr<const extensions::Extension> extension = builder.Build();
+
+  // Bypass "signin_screen" feature only enabled for whitelisted extensions.
+  extensions::SimpleFeature::ScopedThreadUnsafeAllowlistForTest allowlist(
+      extension->id());
+  // Disable extension install verification.
+  extensions::ScopedInstallVerifierBypassForTest ignore_install_verification_;
+
   service->OnExtensionInstalled(extension.get(), syncer::StringOrdinal(), 0);
-  const policy::PolicyNamespace extension_policy_namespace(
-      policy::POLICY_DOMAIN_EXTENSIONS, extension->id());
-  PolicySchemaAvailableWaiter(browser()->profile(), extension_policy_namespace)
+
+  policy::PolicyDomain policy_domain =
+      UseSigninProfile() ? policy::POLICY_DOMAIN_SIGNIN_EXTENSIONS
+                         : policy::POLICY_DOMAIN_EXTENSIONS;
+  const policy::PolicyNamespace extension_policy_namespace(policy_domain,
+                                                           extension->id());
+  PolicySchemaAvailableWaiter(extension_profile()->GetOriginalProfile(),
+                              extension_policy_namespace)
       .Wait();
 
   std::vector<std::vector<std::string>> expected_chrome_policies;
@@ -746,3 +786,13 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, MAYBE_ExtensionLoadAndSendPolicy) {
                              values.Get(kSensitiveStringPolicy), false));
   VerifyPolicies(expected_policies_with_values);
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         ExtensionPolicyUITest,
+#if defined(OS_CHROMEOS)
+                         ::testing::Values(false, true)
+#else   // defined(OS_CHROMEOS)
+                         ::testing::Values(false)
+#endif  // defined(OS_CHROMEOS)
+
+);

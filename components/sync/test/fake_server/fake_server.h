@@ -184,6 +184,10 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   // triggered error alternating was successful.
   bool EnableAlternatingTriggeredErrors();
 
+  // If called, all subsequent GetUpdatesResponses won't contain
+  // encryption_keys.
+  void DisallowSendingEncryptionKeys();
+
   // Adds |observer| to FakeServer's observer list. This should be called
   // before the Profile associated with |observer| is connected to the server.
   void AddObserver(Observer* observer);
@@ -272,6 +276,10 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   // lifetime.
   bool alternate_triggered_errors_;
   int request_counter_;
+
+  // If set to true all |this| will clear |encryption_keys| in all
+  // GetUpdateResponse's.
+  bool disallow_sending_encryption_keys_;
 
   // Client command to be included in every response.
   sync_pb::ClientCommand client_command_;

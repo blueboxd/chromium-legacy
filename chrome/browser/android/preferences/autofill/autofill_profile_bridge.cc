@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/android/preferences/autofill/autofill_profile_bridge.h"
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -10,6 +12,7 @@
 #include "chrome/android/chrome_jni_headers/AutofillProfileBridge_jni.h"
 #include "chrome/browser/browser_process.h"
 #include "components/autofill/core/browser/geo/autofill_country.h"
+#include "content/public/browser/web_contents.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_field.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_metadata.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui.h"
@@ -134,6 +137,16 @@ JNI_AutofillProfileBridge_GetAddressUiComponents(
       env, ToJavaIntArray(env, component_length), j_length_list);
 
   return ConvertUTF8ToJavaString(env, best_language_tag);
+}
+
+void ShowAutofillProfileSettings(content::WebContents* web_contents) {
+  Java_AutofillProfileBridge_showAutofillProfileSettings(
+      base::android::AttachCurrentThread(), web_contents->GetJavaWebContents());
+}
+
+void ShowAutofillCreditCardSettings(content::WebContents* web_contents) {
+  Java_AutofillProfileBridge_showAutofillCreditCardSettings(
+      base::android::AttachCurrentThread(), web_contents->GetJavaWebContents());
 }
 
 }  // namespace autofill

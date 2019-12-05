@@ -311,6 +311,8 @@ static_library("test_support") {
       "../browser/extensions/policy_test_utils.h",
       "../browser/ui/ash/accessibility/fake_accessibility_controller.cc",
       "../browser/ui/ash/accessibility/fake_accessibility_controller.h",
+      "../browser/ui/webui/chromeos/login/fake_app_launch_splash_screen_handler.cc",
+      "../browser/ui/webui/chromeos/login/fake_app_launch_splash_screen_handler.h",
       "base/browser_process_platform_part_test_api_chromeos.cc",
       "base/browser_process_platform_part_test_api_chromeos.h",
 
@@ -2276,6 +2278,7 @@ if (!is_android) {
         "../browser/chromeos/login/users/remove_supervised_users_browsertest.cc",
         "../browser/chromeos/login/users/user_manager_hide_supervised_users_browsertest.cc",
         "../browser/chromeos/login/users/wallpaper_policy_browsertest.cc",
+        "../browser/chromeos/login/web_kiosk_controller_browsertest.cc",
         "../browser/chromeos/login/webview_login_browsertest.cc",
         "../browser/chromeos/login/wizard_controller_browsertest.cc",
         "../browser/chromeos/net/network_portal_detector_impl_browsertest.cc",
@@ -2527,6 +2530,7 @@ if (!is_android) {
         "../browser/ui/cocoa/touchbar/browser_window_touch_bar_controller_browsertest.mm",
         "../browser/ui/views/certificate_viewer_mac_browsertest.mm",
         "../browser/ui/views/ssl_client_certificate_selector_mac_browsertest.mm",
+        "../common/profiler/stack_sampling_browsertest.cc",
 
         # TODO(crbug/845389): Re-Enable the following, which were temporarily
         # omitted from the build, but are still in use.
@@ -2561,6 +2565,10 @@ if (!is_android) {
         "../browser/ui/views/settings_reset_prompt_dialog_browsertest.cc",
         "../browser/ui/views/uninstall_view_browsertest.cc",
       ]
+
+      if (target_cpu == "x64") {
+        sources += [ "../common/profiler/stack_sampling_browsertest.cc" ]
+      }
 
       configs += [ "//build/config/win:delayloads" ]
 

@@ -94,6 +94,11 @@ std::unique_ptr<base::DictionaryValue> GetDictionaryValueForAppCacheInfo(
   dict_value->SetString("groupId",
                         base::NumberToString(appcache_info.group_id));
 
+  dict_value->SetString(
+      "manifestParserVersion",
+      base::NumberToString(appcache_info.manifest_parser_version));
+  dict_value->SetString("manifestScope", appcache_info.manifest_scope);
+
   return dict_value;
 }
 

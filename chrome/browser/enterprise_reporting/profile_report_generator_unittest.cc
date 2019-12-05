@@ -6,8 +6,10 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/util/values/values_util.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -22,6 +24,7 @@ namespace {
 constexpr char kProfile[] = "Profile";
 constexpr char kIdleProfile[] = "IdleProfile";
 constexpr char kExtensionId[] = "abcdefghijklmnopabcdefghijklmnop";
+constexpr int kFakeTime = 123456;
 
 }  // namespace
 
@@ -59,12 +62,17 @@ class ProfileReportGeneratorTest : public ::testing::Test {
   }
 
   void SetExtensionToPendingList(const std::vector<std::string>& ids) {
-    base::Value::ListStorage id_values;
-    for (auto id : ids)
-      id_values.push_back(base::Value(id));
+    std::unique_ptr<base::Value> id_values =
+        std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
+    for (const auto& id : ids) {
+      base::Value request_data(base::Value::Type::DICTIONARY);
+      request_data.SetKey(
+          extension_misc::kExtensionRequestTimestamp,
+          ::util::TimeToValue(base::Time::FromJavaTime(kFakeTime)));
+      id_values->SetKey(id, std::move(request_data));
+    }
     profile()->GetTestingPrefService()->SetUserPref(
-        prefs::kCloudExtensionRequestIds,
-        std::make_unique<base::Value>(std::move(id_values)));
+        prefs::kCloudExtensionRequestIds, std::move(id_values));
   }
 
   TestingProfile* profile() { return profile_; }
@@ -114,8 +122,9 @@ TEST_F(ProfileReportGeneratorTest, PendingRequest) {
   SetExtensionToPendingList(ids);
 
   auto report = GenerateReport();
-  EXPECT_EQ(1, report->extension_requests_size());
+  ASSERT_EQ(1, report->extension_requests_size());
   EXPECT_EQ(kExtensionId, report->extension_requests(0).id());
+  EXPECT_EQ(kFakeTime, report->extension_requests(0).request_timestamp());
 }
 
 TEST_F(ProfileReportGeneratorTest, NoPendingRequestWhenItsDisabled) {

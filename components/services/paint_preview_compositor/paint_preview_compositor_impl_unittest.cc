@@ -175,6 +175,7 @@ TEST(PaintPreviewCompositorTest, TestBeginComposite) {
   gfx::Rect subframe_1_clip_rect(0, 0, 1, 1);
 
   PaintPreviewProto proto;
+  proto.mutable_metadata()->set_url(url.spec());
   base::flat_map<uint64_t, base::File> file_map;
   base::flat_map<uint64_t, mojom::FrameDataPtr> expected_data;
   PopulateFrameProto(proto.mutable_root_frame(), kRootFrameID, true,
@@ -223,6 +224,7 @@ TEST(PaintPreviewCompositorTest, TestBeginCompositeDuplicate) {
   PaintPreviewCompositorImpl compositor(mojo::NullReceiver(),
                                         base::BindOnce([]() {}));
 
+  GURL url("https://www.chromium.org");
   const uint64_t kRootFrameID = 1;
   gfx::Size root_frame_scroll_extent(100, 200);
   const uint64_t kSubframe_0_ID = 2;
@@ -230,6 +232,7 @@ TEST(PaintPreviewCompositorTest, TestBeginCompositeDuplicate) {
   gfx::Rect subframe_0_clip_rect(10, 20, 30, 40);
 
   PaintPreviewProto proto;
+  proto.mutable_metadata()->set_url(url.spec());
   base::flat_map<uint64_t, base::File> file_map;
   base::flat_map<uint64_t, mojom::FrameDataPtr> expected_data;
   PopulateFrameProto(proto.mutable_root_frame(), kRootFrameID, true,
@@ -262,6 +265,7 @@ TEST(PaintPreviewCompositorTest, TestBeginCompositeLoop) {
   PaintPreviewCompositorImpl compositor(mojo::NullReceiver(),
                                         base::BindOnce([]() {}));
 
+  GURL url("https://www.chromium.org");
   const uint64_t kRootFrameID = 1;
   gfx::Size root_frame_scroll_extent(100, 200);
   const uint64_t kSubframe_0_ID = 2;
@@ -269,6 +273,7 @@ TEST(PaintPreviewCompositorTest, TestBeginCompositeLoop) {
   gfx::Rect subframe_0_clip_rect(10, 20, 30, 40);
 
   PaintPreviewProto proto;
+  proto.mutable_metadata()->set_url(url.spec());
   base::flat_map<uint64_t, base::File> file_map;
   base::flat_map<uint64_t, mojom::FrameDataPtr> expected_data;
   PopulateFrameProto(
@@ -301,11 +306,13 @@ TEST(PaintPreviewCompositorTest, TestBeginCompositeSelfReference) {
   PaintPreviewCompositorImpl compositor(mojo::NullReceiver(),
                                         base::BindOnce([]() {}));
 
+  GURL url("https://www.chromium.org");
   const uint64_t kRootFrameID = 1;
   gfx::Size root_frame_scroll_extent(100, 200);
   gfx::Rect root_frame_clip_rect(10, 20, 30, 40);
 
   PaintPreviewProto proto;
+  proto.mutable_metadata()->set_url(url.spec());
   base::flat_map<uint64_t, base::File> file_map;
   base::flat_map<uint64_t, mojom::FrameDataPtr> expected_data;
   PopulateFrameProto(
@@ -377,8 +384,10 @@ TEST(PaintPreviewCompositorTest, TestInvalidRootFrame) {
 
   mojom::PaintPreviewBeginCompositeRequestPtr request =
       mojom::PaintPreviewBeginCompositeRequest::New();
-  PaintPreviewProto proto;
+  GURL url("https://www.chromium.org");
   const uint64_t kRootFrameID = 1;
+  PaintPreviewProto proto;
+  proto.mutable_metadata()->set_url(url.spec());
   base::flat_map<uint64_t, base::File> file_map;
   base::flat_map<uint64_t, mojom::FrameDataPtr> expected_data;
   PopulateFrameProto(proto.mutable_root_frame(), kRootFrameID, true,
@@ -399,9 +408,11 @@ TEST(PaintPreviewCompositorTest, TestComposite) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   PaintPreviewCompositorImpl compositor(mojo::NullReceiver(),
                                         base::BindOnce([]() {}));
+  GURL url("https://www.chromium.org");
   const uint64_t kRootFrameID = 1;
   gfx::Size root_frame_scroll_extent(100, 200);
   PaintPreviewProto proto;
+  proto.mutable_metadata()->set_url(url.spec());
   base::flat_map<uint64_t, base::File> file_map;
   base::flat_map<uint64_t, mojom::FrameDataPtr> expected_data;
   PopulateFrameProto(proto.mutable_root_frame(), kRootFrameID, true,

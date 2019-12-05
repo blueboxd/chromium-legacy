@@ -94,8 +94,10 @@ bool TestBrowserDialog::VerifyUi() {
   });
   widgets_ = added;
 
-  if (added.size() != 1)
+  if (added.size() != 1) {
+    DLOG(INFO) << "VerifyUi(): Expected 1 added widget; got " << added.size();
     return false;
+  }
 
   views::Widget* dialog_widget = *(added.begin());
 // TODO(https://crbug.com/958242) support Mac for pixel tests.
@@ -114,8 +116,10 @@ bool TestBrowserDialog::VerifyUi() {
     const std::string test_name =
         base::StrCat({test_info->test_case_name(), "_", test_info->name()});
     if (!pixel_diff_->CompareScreenshot(test_name,
-                                        dialog_widget->GetContentsView()))
+                                        dialog_widget->GetContentsView())) {
+      DLOG(INFO) << "VerifyUi(): Pixel compare failed.";
       return false;
+    }
   }
 #endif  // OS_MACOSX
 
@@ -132,7 +136,11 @@ bool TestBrowserDialog::VerifyUi() {
   const gfx::Rect display_work_area =
       screen->GetDisplayNearestWindow(native_window).work_area();
 
-  return display_work_area.Contains(dialog_bounds);
+  const bool dialog_in_bounds = display_work_area.Contains(dialog_bounds);
+  DLOG_IF(INFO, !dialog_in_bounds)
+      << "VerifyUi(): Dialog bounds " << dialog_bounds.ToString()
+      << " outside of display work area " << display_work_area.ToString();
+  return dialog_in_bounds;
 #else
   NOTIMPLEMENTED();
   return false;

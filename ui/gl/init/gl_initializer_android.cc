@@ -126,9 +126,9 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
   return false;
 }
 
-void InitializeDebugGLBindings() {
-  InitializeDebugGLBindingsEGL();
-  InitializeDebugGLBindingsGL();
+void InitializeLogGLBindings() {
+  InitializeLogGLBindingsEGL();
+  InitializeLogGLBindingsGL();
 }
 
 void ShutdownGLPlatform() {

@@ -245,7 +245,10 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
     DCHECK(wire_serializer_);
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("gpu.dawn"),
                  "WebGPUDecoderImpl::PerformPollingWork");
-    dawn_procs_.deviceTick(wgpu_device_);
+    // TODO(jiawei.shao@intel.com): support multiple Dawn devices.
+    if (wgpu_device_) {
+      dawn_procs_.deviceTick(wgpu_device_);
+    }
     wire_serializer_->Flush();
   }
 

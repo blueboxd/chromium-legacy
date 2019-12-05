@@ -174,6 +174,10 @@ void ChooserContextBase::RevokeObjectPermission(
   NotifyPermissionRevoked(requesting_origin, embedding_origin);
 }
 
+bool ChooserContextBase::IsOffTheRecord() {
+  return host_content_settings_map_->IsOffTheRecord();
+}
+
 void ChooserContextBase::NotifyPermissionChanged() {
   for (auto& observer : permission_observer_list_) {
     observer.OnChooserObjectPermissionChanged(guard_content_settings_type_,

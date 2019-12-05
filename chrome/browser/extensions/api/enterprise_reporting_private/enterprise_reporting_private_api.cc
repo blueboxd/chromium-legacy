@@ -10,6 +10,8 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "base/location.h"
+#include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/enterprise_reporting_private/chrome_desktop_report_request_helper.h"
@@ -40,6 +42,12 @@ const char kInvalidInputErrorMessage[] = "The report is not valid.";
 const char kUploadFailed[] = "Failed to upload the report.";
 const char kDeviceNotEnrolled[] = "This device has not been enrolled yet.";
 const char kDeviceIdNotFound[] = "Failed to retrieve the device id.";
+const char kEndpointVerificationRetrievalFailed[] =
+    "Failed to retrieve the endpoint verification data.";
+const char kEndpointVerificationStoreFailed[] =
+    "Failed to store the endpoint verification data.";
+// const char kEndpointVerificationSecretRetrievalFailed[] = "Failed to retrieve
+// the endpoint verification secret.";
 
 }  // namespace enterprise_reporting
 
@@ -162,5 +170,116 @@ EnterpriseReportingPrivateGetDeviceIdFunction::Run() {
 
 EnterpriseReportingPrivateGetDeviceIdFunction::
     ~EnterpriseReportingPrivateGetDeviceIdFunction() = default;
+
+// getPersistentSecret
+
+EnterpriseReportingPrivateGetPersistentSecretFunction::
+    EnterpriseReportingPrivateGetPersistentSecretFunction() = default;
+EnterpriseReportingPrivateGetPersistentSecretFunction::
+    ~EnterpriseReportingPrivateGetPersistentSecretFunction() = default;
+
+ExtensionFunction::ResponseAction
+EnterpriseReportingPrivateGetPersistentSecretFunction::Run() {
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(),
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(
+          &RetrieveDeviceSecret,
+          base::BindOnce(
+              &EnterpriseReportingPrivateGetPersistentSecretFunction::
+                  OnDataRetrieved,
+              this)));
+  return RespondLater();
+}
+
+void EnterpriseReportingPrivateGetPersistentSecretFunction::OnDataRetrieved(
+    const std::string& data,
+    bool status) {
+  if (status) {
+    VLOG(1) << "The Endpoint Verification secret was retrieved.";
+    Respond(OneArgument(std::make_unique<base::Value>(base::Value::BlobStorage(
+        reinterpret_cast<const uint8_t*>(data.data()),
+        reinterpret_cast<const uint8_t*>(data.data() + data.size())))));
+  } else {
+    LogReportError("Endpoint Verification secret retrieval error.");
+    Respond(Error(enterprise_reporting::kEndpointVerificationRetrievalFailed));
+  }
+}
+
+// getDeviceData
+
+EnterpriseReportingPrivateGetDeviceDataFunction::
+    EnterpriseReportingPrivateGetDeviceDataFunction() = default;
+EnterpriseReportingPrivateGetDeviceDataFunction::
+    ~EnterpriseReportingPrivateGetDeviceDataFunction() = default;
+
+ExtensionFunction::ResponseAction
+EnterpriseReportingPrivateGetDeviceDataFunction::Run() {
+  std::unique_ptr<api::enterprise_reporting_private::GetDeviceData::Params>
+      params(api::enterprise_reporting_private::GetDeviceData::Params::Create(
+          *args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(),
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(
+          &RetrieveDeviceData, params->id,
+          base::BindOnce(
+              &EnterpriseReportingPrivateGetDeviceDataFunction::OnDataRetrieved,
+              this)));
+  return RespondLater();
+}
+
+void EnterpriseReportingPrivateGetDeviceDataFunction::OnDataRetrieved(
+    const std::string& data,
+    bool status) {
+  if (status) {
+    VLOG(1) << "The Endpoint Verification data was retrieved.";
+    Respond(OneArgument(std::make_unique<base::Value>(base::Value::BlobStorage(
+        reinterpret_cast<const uint8_t*>(data.data()),
+        reinterpret_cast<const uint8_t*>(data.data() + data.size())))));
+  } else {
+    LogReportError("Endpoint Verification data retrieval error.");
+    Respond(Error(enterprise_reporting::kEndpointVerificationRetrievalFailed));
+  }
+}
+
+// setDeviceData
+
+EnterpriseReportingPrivateSetDeviceDataFunction::
+    EnterpriseReportingPrivateSetDeviceDataFunction() = default;
+EnterpriseReportingPrivateSetDeviceDataFunction::
+    ~EnterpriseReportingPrivateSetDeviceDataFunction() = default;
+
+ExtensionFunction::ResponseAction
+EnterpriseReportingPrivateSetDeviceDataFunction::Run() {
+  std::unique_ptr<api::enterprise_reporting_private::SetDeviceData::Params>
+      params(api::enterprise_reporting_private::SetDeviceData::Params::Create(
+          *args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(),
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(
+          &StoreDeviceData, params->id, params->data,
+          base::BindOnce(
+              &EnterpriseReportingPrivateSetDeviceDataFunction::OnDataStored,
+              this)));
+  return RespondLater();
+}
+
+void EnterpriseReportingPrivateSetDeviceDataFunction::OnDataStored(
+    bool status) {
+  if (status) {
+    VLOG(1) << "The Endpoint Verification data was stored.";
+    Respond(NoArguments());
+  } else {
+    LogReportError("Endpoint Verification data storage error.");
+    Respond(Error(enterprise_reporting::kEndpointVerificationStoreFailed));
+  }
+}
 
 }  // namespace extensions

@@ -81,6 +81,7 @@ constexpr HistogramValue kHistogramValue[] = {
     {ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD, 57},
     {ContentSettingsType::INSTALLED_WEB_APP_METADATA, 58},
     {ContentSettingsType::NFC, 59},
+    {ContentSettingsType::BLUETOOTH_CHOOSER_DATA, 60},
 };
 
 }  // namespace

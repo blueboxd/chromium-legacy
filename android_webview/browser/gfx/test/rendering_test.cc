@@ -13,7 +13,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
@@ -47,7 +47,9 @@ class TestBrowserViewRenderer : public BrowserViewRenderer {
 };
 }  // namespace
 
-RenderingTest::RenderingTest() : message_loop_(new base::MessageLoop) {
+RenderingTest::RenderingTest()
+    : task_environment_(
+          std::make_unique<base::test::SingleThreadTaskEnvironment>()) {
   ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
 

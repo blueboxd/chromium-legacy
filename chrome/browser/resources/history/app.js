@@ -328,13 +328,6 @@ Polymer({
   },
 
   /**
-   * Called when browsing data is cleared.
-   */
-  historyDeleted: function() {
-    this.$.history.historyDeleted();
-  },
-
-  /**
    * Update sign in state of synced device manager after user logs in or out.
    * @param {boolean} isUserSignedIn
    * @private

@@ -113,6 +113,9 @@ class ChooserContextBase : public KeyedService {
   virtual bool IsValidObject(const base::Value& object) = 0;
 
  protected:
+  // TODO(odejesush): Use this method in all derived classes instead of using a
+  // member variable to store this state.
+  bool IsOffTheRecord();
   void NotifyPermissionChanged();
   void NotifyPermissionRevoked(const url::Origin& requesting_origin,
                                const url::Origin& embedding_origin);

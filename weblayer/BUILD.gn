@@ -8,6 +8,7 @@ import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/config/win/console_app.gni")
 import("//build/config/win/manifest.gni")
+import("//components/spellcheck/spellcheck_build_features.gni")
 import("//gpu/vulkan/features.gni")
 import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
@@ -185,6 +186,7 @@ jumbo_static_library("weblayer_lib") {
     "//components/security_interstitials/content:security_interstitial_page",
     "//components/security_interstitials/content/renderer:security_interstitial_page_controller",
     "//components/security_interstitials/core",
+    "//components/spellcheck:buildflags",
     "//components/startup_metric_utils/browser:lib",
     "//components/user_prefs",
     "//components/version_info",
@@ -226,6 +228,13 @@ jumbo_static_library("weblayer_lib") {
     "//weblayer:resources",
     "//weblayer/browser/webui:mojo_bindings",
   ]
+
+  if (use_browser_spellchecker) {
+    deps += [
+      "//components/spellcheck/browser",
+      "//components/spellcheck/renderer",
+    ]
+  }
 
   if (is_android) {
     sources += [

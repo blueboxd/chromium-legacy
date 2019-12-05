@@ -14,10 +14,9 @@ import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.provider.Settings;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
+import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 
 import org.junit.Assert;
@@ -25,7 +24,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
@@ -33,7 +31,6 @@ import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -48,14 +45,11 @@ import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.components.search_engines.TemplateUrlService.LoadListener;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.content_public.browser.test.util.UiUtils;
 import org.chromium.policy.test.annotations.Policies;
 
-import java.text.NumberFormat;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -181,7 +175,7 @@ public class SettingsActivityTest {
         final MainPreferences mainPreferences =
                 ActivityUtils.waitForFragmentToAttach(settingsActivity, MainPreferences.class);
 
-        final android.support.v7.preference.Preference searchEnginePref =
+        final Preference searchEnginePref =
                 waitForPreference(mainPreferences, MainPreferences.PREF_SEARCH_ENGINE);
 
         CriteriaHelper.pollUiThread(Criteria.equals(null, new Callable<Object>() {
@@ -285,84 +279,6 @@ public class SettingsActivityTest {
         return locationPermission;
     }
 
-    /**
-     * Tests setting FontScaleFactor and ForceEnableZoom in AccessibilityPreferences and ensures
-     * that ForceEnableZoom changes corresponding to FontScaleFactor.
-     */
-    @Test
-    @SmallTest
-    @Feature({"Accessibility"})
-    public void testAccessibilityPreferences() throws Exception {
-        String accessibilityPrefClassname = AccessibilityPreferences.class.getName();
-        AccessibilityPreferences accessibilityPref =
-                (AccessibilityPreferences) startSettingsActivity(
-                        InstrumentationRegistry.getInstrumentation(), accessibilityPrefClassname)
-                        .getMainFragment();
-        SeekBarPreference textScalePref = (SeekBarPreference) accessibilityPref.findPreference(
-                AccessibilityPreferences.PREF_TEXT_SCALE);
-        ChromeBaseCheckBoxPreference forceEnableZoomPref =
-                (ChromeBaseCheckBoxPreference) accessibilityPref.findPreference(
-                        AccessibilityPreferences.PREF_FORCE_ENABLE_ZOOM);
-        NumberFormat percentFormat = NumberFormat.getPercentInstance();
-        // Arbitrary value 0.4f to be larger and smaller than threshold.
-        float fontSmallerThanThreshold =
-                FontSizePrefs.FORCE_ENABLE_ZOOM_THRESHOLD_MULTIPLIER - 0.4f;
-        float fontBiggerThanThreshold = FontSizePrefs.FORCE_ENABLE_ZOOM_THRESHOLD_MULTIPLIER + 0.4f;
-
-        // Set the textScaleFactor above the threshold.
-        userSetTextScale(accessibilityPref, textScalePref, fontBiggerThanThreshold);
-        UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
-        // Since above the threshold, this will check the force enable zoom button.
-        Assert.assertEquals(
-                percentFormat.format(fontBiggerThanThreshold), textScalePref.getSummary());
-        Assert.assertTrue(forceEnableZoomPref.isChecked());
-        assertFontSizePrefs(true, fontBiggerThanThreshold);
-
-        // Set the textScaleFactor below the threshold.
-        userSetTextScale(accessibilityPref, textScalePref, fontSmallerThanThreshold);
-        UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
-        // Since below the threshold and userSetForceEnableZoom is false, this will uncheck
-        // the force enable zoom button.
-        Assert.assertEquals(
-                percentFormat.format(fontSmallerThanThreshold), textScalePref.getSummary());
-        Assert.assertFalse(forceEnableZoomPref.isChecked());
-        assertFontSizePrefs(false, fontSmallerThanThreshold);
-
-        userSetTextScale(accessibilityPref, textScalePref, fontBiggerThanThreshold);
-        // Sets onUserSetForceEnableZoom to be true.
-        userSetForceEnableZoom(accessibilityPref, forceEnableZoomPref, true);
-        UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
-        // Since userSetForceEnableZoom is true, when the text scale is moved below the threshold
-        // ForceEnableZoom should remain checked.
-        userSetTextScale(accessibilityPref, textScalePref, fontSmallerThanThreshold);
-        Assert.assertTrue(forceEnableZoomPref.isChecked());
-        assertFontSizePrefs(true, fontSmallerThanThreshold);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"Accessibility"})
-    public void testCaptionPreferences() {
-        String accessibilityPrefClassname = AccessibilityPreferences.class.getName();
-        AccessibilityPreferences accessibilityPref =
-                (AccessibilityPreferences) startSettingsActivity(
-                        InstrumentationRegistry.getInstrumentation(), accessibilityPrefClassname)
-                        .getMainFragment();
-        android.support.v7.preference.Preference captionsPref =
-                accessibilityPref.findPreference(AccessibilityPreferences.PREF_CAPTIONS);
-        Assert.assertNotNull(captionsPref);
-        Assert.assertNotNull(captionsPref.getOnPreferenceClickListener());
-
-        Instrumentation.ActivityMonitor monitor =
-                InstrumentationRegistry.getInstrumentation().addMonitor(
-                        new IntentFilter(Settings.ACTION_CAPTIONING_SETTINGS), null, false);
-
-        onView(withText(R.string.accessibility_captions_title)).perform(click());
-        monitor.waitForActivityWithTimeout(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
-        Assert.assertEquals("Monitor for has not been called", 1, monitor.getHits());
-        InstrumentationRegistry.getInstrumentation().removeMonitor(monitor);
-    }
-
     @Test
     @SmallTest
     @Policies.Add({ @Policies.Item(key = "PasswordManagerEnabled", string = "false") })
@@ -385,31 +301,8 @@ public class SettingsActivityTest {
         onView(withText(R.string.prefs_saved_passwords)).check(matches(isDisplayed()));
     }
 
-    private void assertFontSizePrefs(
-            final boolean expectedForceEnableZoom, final float expectedFontScale) {
-        final Context targetContext = InstrumentationRegistry.getTargetContext();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            FontSizePrefs fontSizePrefs = FontSizePrefs.getInstance();
-            Assert.assertEquals(expectedForceEnableZoom, fontSizePrefs.getForceEnableZoom());
-            Assert.assertEquals(expectedFontScale, fontSizePrefs.getFontScaleFactor(), 0.001f);
-        });
-    }
-
-    private static void userSetTextScale(final AccessibilityPreferences accessibilityPref,
-            final SeekBarPreference textScalePref, final float textScale) {
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                () -> { accessibilityPref.onPreferenceChange(textScalePref, textScale); });
-    }
-
-    private static void userSetForceEnableZoom(final AccessibilityPreferences accessibilityPref,
-            final ChromeBaseCheckBoxPreference forceEnableZoomPref, final boolean enabled) {
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                () -> { accessibilityPref.onPreferenceChange(forceEnableZoomPref, enabled); });
-    }
-
-    private static android.support.v7.preference.Preference waitForPreference(
-            final PreferenceFragmentCompat prefFragment, final String preferenceKey)
-            throws ExecutionException {
+    private static Preference waitForPreference(final PreferenceFragmentCompat prefFragment,
+            final String preferenceKey) throws ExecutionException {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -418,11 +311,6 @@ public class SettingsActivityTest {
         });
 
         return TestThreadUtils.runOnUiThreadBlocking(
-                new Callable<android.support.v7.preference.Preference>() {
-                    @Override
-                    public android.support.v7.preference.Preference call() {
-                        return prefFragment.findPreference(preferenceKey);
-                    }
-                });
+                () -> prefFragment.findPreference(preferenceKey));
     }
 }

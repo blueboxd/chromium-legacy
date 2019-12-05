@@ -524,9 +524,10 @@ void OptimizationGuideStore::ClearFetchedHintsFromDatabase() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!data_update_in_flight_);
 
-  if (!IsAvailable()) {
+  base::UmaHistogramBoolean(
+      "OptimizationGuide.ClearFetchedHints.StoreAvailable", IsAvailable());
+  if (!IsAvailable())
     return;
-  }
 
   data_update_in_flight_ = true;
   auto entries_to_save = std::make_unique<EntryVector>();
@@ -1059,6 +1060,31 @@ void OptimizationGuideStore::OnLoadAllHostModelFeatures(
     loaded_host_model_features->emplace_back(entry.host_model_features());
   }
   std::move(callback).Run(std::move(loaded_host_model_features));
+}
+
+void OptimizationGuideStore::ClearHostModelFeaturesFromDatabase() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!data_update_in_flight_);
+
+  base::UmaHistogramBoolean(
+      "OptimizationGuide.ClearHostModelFeatures.StoreAvailable", IsAvailable());
+  if (!IsAvailable())
+    return;
+
+  data_update_in_flight_ = true;
+  auto entries_to_save = std::make_unique<EntryVector>();
+
+  entry_keys_.reset();
+
+  // Removes all |kHostModelFeatures| store entries. OnUpdateStore will handle
+  // updating status and re-filling entry_keys with the entries still in the
+  // store.
+  database_->UpdateEntriesWithRemoveFilter(
+      std::move(entries_to_save),  // this should be empty.
+      base::BindRepeating(&DatabasePrefixFilter,
+                          GetHostModelFeaturesEntryKeyPrefix()),
+      base::BindOnce(&OptimizationGuideStore::OnUpdateStore,
+                     weak_ptr_factory_.GetWeakPtr(), base::DoNothing::Once()));
 }
 
 }  // namespace optimization_guide

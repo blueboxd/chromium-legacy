@@ -268,6 +268,7 @@ jumbo_static_library("browser") {
     "//components/password_manager/core/common",
     "//components/pref_registry",
     "//components/prefs",
+    "//components/safe_browsing:features",
     "//components/security_state/core",
     "//components/signin/public/identity_manager",
     "//components/strings",
@@ -297,10 +298,7 @@ jumbo_static_library("browser") {
       "http_credentials_cleaner.cc",
       "http_credentials_cleaner.h",
     ]
-    deps += [
-      "//components/safe_browsing:features",
-      "//components/safe_browsing/common:safe_browsing_prefs",
-    ]
+    deps += [ "//components/safe_browsing/common:safe_browsing_prefs" ]
   }
 
   if ((is_posix && !is_mac && !is_ios) || is_fuchsia) {
@@ -629,6 +627,7 @@ source_set("unit_tests") {
     "//components/password_manager/core/browser/leak_detection:unit_tests",
     "//components/password_manager/core/common",
     "//components/prefs:test_support",
+    "//components/safe_browsing:features",
     "//components/security_state/core",
     "//components/signin/public/identity_manager:test_support",
     "//components/strings",
@@ -652,10 +651,7 @@ source_set("unit_tests") {
   ]
 
   if (password_reuse_detection_support) {
-    deps += [
-      "//components/safe_browsing:features",
-      "//components/safe_browsing/common:safe_browsing_prefs",
-    ]
+    deps += [ "//components/safe_browsing/common:safe_browsing_prefs" ]
   }
 }
 

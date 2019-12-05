@@ -1796,11 +1796,12 @@
       'owners': ['jamiewalch@chromium.org', 'rkjnsn@chromium.org'],
       'type': 'string',
       'schema': { 'type': 'string' },
-      'supported_on': ['chrome.*:22-', 'chrome_os:41-'],
+      'supported_on': ['chrome.*:22-75', 'chrome_os:41-75'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'deprecated': True,
       'example_value': 'chromoting-host',
       'id': 156,
       'caption': '''Configure the TalkGadget prefix for remote access hosts''',
@@ -7072,7 +7073,7 @@
 
       If this setting is disabled, users cannot print to <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> from the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> print dialog.
 
-      In order to keep <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> destinations discoverable, this policy must be set to true and 'cloud' must not be included in the 'PrinterTypeDenyList' policy.''',
+      In order to keep <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> destinations discoverable, this policy must be set to true and <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD">cloud</ph> must not be included in the <ph name="POLICY_PRINTERTYPEDENYLIST">PrinterTypeDenyList</ph> policy.''',
     },
     {
       'name': 'EnterpriseWebStoreURL',
@@ -18134,27 +18135,6 @@
       ''',
     },
     {
-      'name': 'SafeBrowsingRealTimeLookupEnabled',
-      'owners': ['drubery@chromium.org', 'nparker@chromium.org'],
-      'type': 'main',
-      'schema': {
-        'type': 'boolean',
-      },
-      'example_value': True,
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': True,
-      },
-      'id': 578,
-      'supported_on': ['chrome.*:80-','chrome_os:80-'],
-      'future': True,
-      'caption': '''Check Safe Browsing status of visited URLs in real time''',
-      'tags': ['google-sharing'],
-      'desc': '''When this policy is set to enabled, all visited URLs will be checked with Safe Browsing in real time.
-
-      When this policy is set to disabled, or not set, the consumer Safe Browsing checks will be applied. Consumer Safe Browsing checks can still include real time lookups, depending on the "Make searches and browsing better" preference. To forcibly disable real time lookups, see the <ph name="URL_KEYED_ANONYMIZED_DATA_COLLECTION_ENABLED_POLICY">UrlKeyedAnonymizedDataCollectionEnabled</ph> policy.'''
-    },
-    {
       'name': 'CACertificateManagementAllowed',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'int-enum',
@@ -19155,7 +19135,7 @@
 
       Placing all printer types on the deny list effectively disables printing, as there would be no available destinations to send a document for printing.
 
-      Including 'cloud' on the deny list has the same effect as setting the 'CloudPrintSubmitEnabled' policy to false. In order to keep <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> destinations discoverable, the 'CloudPrintSubmitEnabled' policy must be set to true and 'cloud' must not be on the deny list.
+      Including <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD">cloud</ph> on the deny list has the same effect as setting the <ph name="POLICY_CLOUDPRINTSUBMITENABLED">CloudPrintSubmitEnabled</ph> policy to false. In order to keep <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> destinations discoverable, the <ph name="POLICY_CLOUDPRINTSUBMITENABLED">CloudPrintSubmitEnabled</ph> policy must be set to true and <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD">cloud</ph> must not be on the deny list.
 
       If the policy is not set, or is set to an empty list, all printer types will be available for discovery.
 
@@ -20061,7 +20041,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     },
   ],
   'placeholders': [],
-  'deleted_policy_ids': [412, 546, 562, 569],
+  'deleted_policy_ids': [412, 546, 562, 569, 578],
   'highest_id_currently_used': 651,
   'highest_atomic_group_id_currently_used': 38
 }

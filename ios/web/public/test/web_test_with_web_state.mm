@@ -253,7 +253,7 @@ const web::WebState* WebTestWithWebState::web_state() const {
   return web_state_.get();
 }
 
-void WebTestWithWebState::WillProcessTask(const base::PendingTask&) {
+void WebTestWithWebState::WillProcessTask(const base::PendingTask&, bool) {
   // Nothing to do.
 }
 

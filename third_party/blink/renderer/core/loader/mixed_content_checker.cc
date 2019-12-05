@@ -380,6 +380,25 @@ bool MixedContentChecker::ShouldBlockFetch(
   if (!mixed_frame)
     return false;
 
+  // Exempt non-webby schemes from mixed content treatment. For subresources,
+  // these will be blocked anyway as net::ERR_UNKNOWN_URL_SCHEME, so there's no
+  // need to present a security warning. Non-webby main resources (including
+  // subframes) are handled in the browser process's mixed content checking,
+  // where the URL will be allowed to load, but not treated as mixed content
+  // because it can't return data to the browser. See https://crbug.com/621131.
+  //
+  // TODO(https://crbug.com/1030307): decide whether CORS-enabled is really the
+  // right way to draw this distinction.
+  if (!SchemeRegistry::ShouldTreatURLSchemeAsCorsEnabled(url.Protocol())) {
+    // Record non-webby mixed content to see if it is rare enough that it can be
+    // gated behind an enterprise policy. This excludes URLs that are considered
+    // potentially-secure such as blob: and filesystem:, which are special-cased
+    // in IsInsecureUrl() and cause an early-return because of the
+    // InWhichFrameIsContentMixed() check above.
+    UseCounter::Count(frame->GetDocument(), WebFeature::kNonWebbyMixedContent);
+    return false;
+  }
+
   MixedContentChecker::Count(mixed_frame, request_context, frame);
   if (ContentSecurityPolicy* policy =
           frame->GetSecurityContext()->GetContentSecurityPolicy())
@@ -408,10 +427,6 @@ bool MixedContentChecker::ShouldBlockFetch(
       WebMixedContent::ContextTypeFromRequestContext(
           request_context, settings->GetStrictMixedContentCheckingForPlugin());
 
-  // If we're loading the main resource of a subframe, we need to take a close
-  // look at the loaded URL. If we're dealing with a CORS-enabled scheme, then
-  // block mixed frames as active content. Otherwise, treat frames as passive
-  // content.
   switch (context_type) {
     case WebMixedContentContextType::kOptionallyBlockable:
       allowed = !strict_mode;

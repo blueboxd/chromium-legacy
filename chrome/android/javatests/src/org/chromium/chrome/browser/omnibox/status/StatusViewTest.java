@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.toolbar.LocationBarModel;
 import org.chromium.chrome.browser.ui.widget.CompositeTouchDelegate;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.test.util.UiRestriction;
@@ -131,7 +132,7 @@ public class StatusViewTest extends DummyUiActivityTestCase {
         onView(withId(R.id.location_bar_incognito_badge)).check(matches(isCompletelyDisplayed()));
 
         runOnUiThreadBlocking(() -> {
-            mStatusModel.set(StatusProperties.STATUS_ICON_RES, R.drawable.ic_logo_googleg_24dp);
+            mStatusModel.set(StatusProperties.STATUS_ICON_RES, R.drawable.ic_logo_googleg_20dp);
         });
         onView(withId(R.id.location_bar_status_icon))
                 .check((view, e) -> assertNotNull(mStatusView.getTouchDelegateForTesting()));
@@ -141,6 +142,7 @@ public class StatusViewTest extends DummyUiActivityTestCase {
     @MediumTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @Feature({"Omnibox"})
+    @EnableFeatures("OmniboxSearchEngineLogo")
     public void testSearchEngineLogo_noIncognitoPadding() {
         // Set incognito badge visible.
         runOnUiThreadBlocking(
@@ -148,7 +150,7 @@ public class StatusViewTest extends DummyUiActivityTestCase {
         onView(withId(R.id.location_bar_incognito_badge)).check(matches(isCompletelyDisplayed()));
 
         runOnUiThreadBlocking(() -> {
-            mStatusModel.set(StatusProperties.STATUS_ICON_RES, R.drawable.ic_logo_googleg_24dp);
+            mStatusModel.set(StatusProperties.STATUS_ICON_RES, R.drawable.ic_logo_googleg_20dp);
         });
         onView(withId(R.id.location_bar_incognito_badge)).check((view, e) -> {
             ViewGroup.MarginLayoutParams params =

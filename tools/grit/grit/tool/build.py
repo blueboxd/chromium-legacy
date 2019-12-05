@@ -10,7 +10,6 @@ from __future__ import print_function
 import codecs
 import filecmp
 import getopt
-import gzip
 import os
 import shutil
 import sys
@@ -35,7 +34,6 @@ _format_modules = {
   'android': 'android_xml',
   'c_format': 'c_format',
   'chrome_messages_json': 'chrome_messages_json',
-  'chrome_messages_json_gzip': 'chrome_messages_json',
   'data_package': 'data_pack',
   'policy_templates': 'policy_templates_json',
   'rc_all': 'rc',
@@ -361,7 +359,7 @@ are exported to translation interchange files (e.g. XMB files), etc.
       return 'cp1252'
     if output_type in ('android', 'c_format',  'plist', 'plist_strings', 'doc',
                        'json', 'android_policy', 'chrome_messages_json',
-                       'chrome_messages_json_gzip', 'policy_templates'):
+                       'policy_templates'):
       return 'utf_8'
     # TODO(gfeher) modify here to set utf-8 encoding for admx/adml
     return 'utf_16'
@@ -394,34 +392,24 @@ are exported to translation interchange files (e.g. XMB files), etc.
 
       # Write the results to a temporary file and only overwrite the original
       # if the file changed.  This avoids unnecessary rebuilds.
-      out_filename = output.GetOutputFilename()
-      tmp_filename = out_filename + '.tmp'
-      tmpfile = self.fo_create(tmp_filename, 'wb')
+      outfile = self.fo_create(output.GetOutputFilename() + '.tmp', 'wb')
 
-      output_type = output.GetType()
-      if output_type != 'data_package':
-        encoding = self._EncodingForOutputType(output_type)
-        tmpfile = util.WrapOutputStream(tmpfile, encoding)
+      if output.GetType() != 'data_package':
+        encoding = self._EncodingForOutputType(output.GetType())
+        outfile = util.WrapOutputStream(outfile, encoding)
 
       # Iterate in-order through entire resource tree, calling formatters on
       # the entry into a node and on exit out of it.
-      with tmpfile:
-        self.ProcessNode(self.res, output, tmpfile)
-
-      if output_type == 'chrome_messages_json_gzip':
-        gz_filename = tmp_filename + '.gz'
-        with open(tmp_filename, 'rb') as tmpfile, open(gz_filename, 'wb') as f:
-          with gzip.GzipFile(filename='', mode='wb', fileobj=f, mtime=0) as fgz:
-            shutil.copyfileobj(tmpfile, fgz)
-        os.remove(tmp_filename)
-        tmp_filename = gz_filename
+      with outfile:
+        self.ProcessNode(self.res, output, outfile)
 
       # Now copy from the temp file back to the real output, but on Windows,
       # only if the real output doesn't exist or the contents of the file
       # changed.  This prevents identical headers from being written and .cc
       # files from recompiling (which is painful on Windows).
-      if not os.path.exists(out_filename):
-        os.rename(tmp_filename, out_filename)
+      if not os.path.exists(output.GetOutputFilename()):
+        os.rename(output.GetOutputFilename() + '.tmp',
+                  output.GetOutputFilename())
       else:
         # CHROMIUM SPECIFIC CHANGE.
         # This clashes with gyp + vstudio, which expect the output timestamp
@@ -430,11 +418,13 @@ are exported to translation interchange files (e.g. XMB files), etc.
         if not self.write_only_new:
           write_file = True
         else:
-          files_match = filecmp.cmp(out_filename, tmp_filename)
+          files_match = filecmp.cmp(output.GetOutputFilename(),
+              output.GetOutputFilename() + '.tmp')
           write_file = not files_match
         if write_file:
-          shutil.copy2(tmp_filename, out_filename)
-        os.remove(tmp_filename)
+          shutil.copy2(output.GetOutputFilename() + '.tmp',
+                       output.GetOutputFilename())
+        os.remove(output.GetOutputFilename() + '.tmp')
 
       self.VerboseOut(' done.\n')
 

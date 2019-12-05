@@ -26,7 +26,8 @@
 
 namespace ios_web_view {
 
-WebViewWebMainParts::WebViewWebMainParts() {}
+WebViewWebMainParts::WebViewWebMainParts()
+    : field_trial_list_(/*entropy_provider=*/nullptr) {}
 
 WebViewWebMainParts::~WebViewWebMainParts() = default;
 

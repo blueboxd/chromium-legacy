@@ -114,6 +114,7 @@ Controller::Controller(content::WebContents* web_contents,
       service_(service ? std::move(service)
                        : ServiceImpl::Create(web_contents->GetBrowserContext(),
                                              client_)),
+      user_data_(std::make_unique<UserData>()),
       navigating_to_new_document_(web_contents->IsWaitingForResponse()) {}
 
 Controller::~Controller() = default;
@@ -518,7 +519,7 @@ void Controller::EnterStoppedState() {
   ClearInfoBox();
   SetDetails(nullptr);
   SetUserActions(nullptr);
-  SetCollectUserDataOptions(nullptr, nullptr);
+  SetCollectUserDataOptions(nullptr);
   SetForm(nullptr, base::DoNothing(), base::DoNothing());
   EnterState(AutofillAssistantState::STOPPED);
 }
@@ -955,7 +956,7 @@ std::string Controller::GetDebugContext() {
 }
 
 const CollectUserDataOptions* Controller::GetCollectUserDataOptions() const {
-  return collect_user_data_options_.get();
+  return collect_user_data_options_;
 }
 
 const UserData* Controller::GetUserData() const {
@@ -967,15 +968,14 @@ void Controller::OnCollectUserDataContinueButtonClicked() {
     return;
 
   auto callback = std::move(collect_user_data_options_->confirm_callback);
-  auto user_data = std::move(user_data_);
 
   // TODO(crbug.com/806868): succeed is currently always true, but we might want
   // to set it to false and propagate the result to CollectUserDataAction
   // when the user clicks "Cancel" during that action.
-  user_data->succeed = true;
+  user_data_->succeed = true;
 
-  SetCollectUserDataOptions(nullptr, nullptr);
-  std::move(callback).Run(std::move(user_data));
+  SetCollectUserDataOptions(nullptr);
+  std::move(callback).Run(user_data_.get());
 }
 
 void Controller::OnCollectUserDataAdditionalActionTriggered(int index) {
@@ -984,7 +984,7 @@ void Controller::OnCollectUserDataAdditionalActionTriggered(int index) {
 
   auto callback =
       std::move(collect_user_data_options_->additional_actions_callback);
-  SetCollectUserDataOptions(nullptr, nullptr);
+  SetCollectUserDataOptions(nullptr);
   std::move(callback).Run(index);
 }
 
@@ -993,7 +993,7 @@ void Controller::OnTermsAndConditionsLinkClicked(int link) {
     return;
 
   auto callback = std::move(collect_user_data_options_->terms_link_callback);
-  SetCollectUserDataOptions(nullptr, nullptr);
+  SetCollectUserDataOptions(nullptr);
   std::move(callback).Run(link);
 }
 
@@ -1431,9 +1431,7 @@ void Controller::OnTouchableAreaChanged(
   }
 }
 
-void Controller::SetCollectUserDataOptions(
-    std::unique_ptr<CollectUserDataOptions> options,
-    std::unique_ptr<UserData> information) {
+void Controller::SetCollectUserDataOptions(CollectUserDataOptions* options) {
   DCHECK(!options ||
          (options->confirm_callback && options->additional_actions_callback &&
           options->terms_link_callback));
@@ -1441,22 +1439,19 @@ void Controller::SetCollectUserDataOptions(
   if (collect_user_data_options_ == nullptr && options == nullptr)
     return;
 
-  collect_user_data_options_ = std::move(options);
-  user_data_ = std::move(information);
+  collect_user_data_options_ = options;
   UpdateCollectUserDataActions();
   for (ControllerObserver& observer : observers_) {
-    observer.OnCollectUserDataOptionsChanged(collect_user_data_options_.get());
+    observer.OnCollectUserDataOptionsChanged(collect_user_data_options_);
     observer.OnUserDataChanged(user_data_.get(), UserData::FieldChange::ALL);
   }
 }
 
 void Controller::WriteUserData(
-    base::OnceCallback<void(const CollectUserDataOptions*,
-                            UserData*,
-                            UserData::FieldChange*)> write_callback) {
+    base::OnceCallback<void(UserData*, UserData::FieldChange*)>
+        write_callback) {
   UserData::FieldChange field_change = UserData::FieldChange::NONE;
-  std::move(write_callback)
-      .Run(collect_user_data_options_.get(), user_data_.get(), &field_change);
+  std::move(write_callback).Run(user_data_.get(), &field_change);
   if (field_change == UserData::FieldChange::NONE) {
     return;
   }

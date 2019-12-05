@@ -231,6 +231,10 @@ AppCacheUpdateJob::AppCacheUpdateJob(AppCacheServiceImpl* service,
                                      AppCacheGroup* group)
     : service_(service),
       manifest_url_(group->manifest_url()),
+      cached_manifest_parser_version_(-1),
+      fetched_manifest_parser_version_(-1),
+      cached_manifest_scope_(""),
+      fetched_manifest_scope_(""),
       group_(group),
       update_type_(UNKNOWN_TYPE),
       internal_state_(FETCH_MANIFEST),
@@ -315,6 +319,9 @@ void AppCacheUpdateJob::StartUpdate(AppCacheHost* host,
   if (group_->HasCache()) {
     base::TimeDelta kFullUpdateInterval = base::TimeDelta::FromHours(24);
     update_type_ = UPGRADE_ATTEMPT;
+    AppCache* cache = group_->newest_complete_cache();
+    cached_manifest_parser_version_ = cache->manifest_parser_version();
+    cached_manifest_scope_ = cache->manifest_scope();
     base::TimeDelta time_since_last_check =
         base::Time::Now() - group_->last_full_update_check_time();
     doing_full_update_check_ = time_since_last_check > kFullUpdateInterval;
@@ -434,6 +441,8 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(URLFetcher* url_fetcher,
   UpdateURLLoaderRequest* request = manifest_fetcher->request();
   int response_code = -1;
   bool is_valid_response_code = false;
+  fetched_manifest_scope_ =
+      AppCache::GetManifestScope(base::Optional<std::string>(), manifest_url_);
   if (net_error == net::OK) {
     response_code = request->GetResponseCode();
     is_valid_response_code = (response_code / 100 == 2);
@@ -501,6 +510,11 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
     DCHECK_EQ(update_type_, UPGRADE_ATTEMPT);
     internal_state_ = NO_UPDATE;
 
+    // No manifest update is planned.  Set the fetched manifest parser version
+    // and scope to match their initial values.
+    fetched_manifest_parser_version_ = cached_manifest_parser_version_;
+    fetched_manifest_scope_ = cached_manifest_scope_;
+
     // Wait for pending master entries to download.
     FetchMasterEntries();
     MaybeCompleteUpdate();  // if not done, run async 7.9.4 step 7 substeps
@@ -508,8 +522,8 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
   }
 
   AppCacheManifest manifest;
-  if (!ParseManifest(manifest_url_, manifest_data_.data(),
-                     manifest_data_.length(),
+  if (!ParseManifest(manifest_url_, fetched_manifest_scope_,
+                     manifest_data_.data(), manifest_data_.length(),
                      manifest_has_valid_mime_type_
                          ? PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES
                          : PARSE_MANIFEST_PER_STANDARD,
@@ -526,6 +540,13 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
     VLOG(1) << message;
     return;
   }
+
+  // Ensure the manifest parser version matches what we configured.
+  DCHECK_EQ(manifest.parser_version, 0);
+  fetched_manifest_parser_version_ = manifest.parser_version;
+
+  // Ensure the manifest scope matches what we configured.
+  DCHECK_EQ(manifest.scope, fetched_manifest_scope_);
 
   // Proceed with update process. Section 7.9.4 steps 8-20.
   internal_state_ = DOWNLOADING;
@@ -889,6 +910,29 @@ void AppCacheUpdateJob::StoreGroupAndCache() {
   else
     newest_cache = group_->newest_complete_cache();
   newest_cache->set_update_time(base::Time::Now());
+
+  // Verify that cache contains the associated manifest parser version and
+  // scope values.
+  DCHECK_EQ(fetched_manifest_parser_version_,
+            newest_cache->manifest_parser_version());
+  DCHECK_EQ(fetched_manifest_scope_, newest_cache->manifest_scope());
+
+  // Verify fetched manifest parser version and scope:
+  // TODO(cmp) -- Enable (1) when values are persisted since at that time we
+  // will be initializing values from the DB that will get version 0.
+  // 1. Values must be initialized and valid:
+  //    - For parser version, the version must not be -1.
+  //    - For scope, the the value must not be the empty string.
+  // DCHECK_NE(fetched_manifest_parser_version_, -1);
+  // DCHECK_NE(fetched_manifest_scope_, "");
+
+  // 2. Check that the UpdateJob value state is correct:
+  //    - For parser version, the newly fetched parser version must be greater
+  //      than or equal to the version we began with.
+  //    - For scope, the fetched manifest scope must be valid.
+  DCHECK_GE(fetched_manifest_parser_version_, cached_manifest_parser_version_);
+  DCHECK(AppCache::CheckValidManifestScope(manifest_url_,
+                                           fetched_manifest_scope_));
 
   group_->set_first_evictable_error_time(base::Time());
   if (doing_full_update_check_)

@@ -155,7 +155,6 @@ class PolicyWatcherTest : public testing::Test {
     curtain_false_.SetBoolean(key::kRemoteAccessHostRequireCurtain, false);
     username_true_.SetBoolean(key::kRemoteAccessHostMatchUsername, true);
     username_false_.SetBoolean(key::kRemoteAccessHostMatchUsername, false);
-    talk_gadget_blah_.SetString(key::kRemoteAccessHostTalkGadgetPrefix, "blah");
     third_party_auth_partial_.SetString(key::kRemoteAccessHostTokenUrl,
                                         "https://token.com");
     third_party_auth_partial_.SetString(
@@ -290,7 +289,6 @@ class PolicyWatcherTest : public testing::Test {
   base::DictionaryValue curtain_false_;
   base::DictionaryValue username_true_;
   base::DictionaryValue username_false_;
-  base::DictionaryValue talk_gadget_blah_;
   base::DictionaryValue third_party_auth_full_;
   base::DictionaryValue third_party_auth_partial_;
   base::DictionaryValue third_party_auth_cert_empty_;
@@ -312,7 +310,6 @@ class PolicyWatcherTest : public testing::Test {
     dict.Set(key::kRemoteAccessHostDomainList,
              std::make_unique<base::ListValue>());
     dict.SetBoolean(key::kRemoteAccessHostMatchUsername, false);
-    dict.SetString(key::kRemoteAccessHostTalkGadgetPrefix, "");
     dict.SetBoolean(key::kRemoteAccessHostRequireCurtain, false);
     dict.SetString(key::kRemoteAccessHostTokenUrl, "");
     dict.SetString(key::kRemoteAccessHostTokenValidationUrl, "");
@@ -631,18 +628,6 @@ TEST_F(PolicyWatcherTest, MatchUsername) {
   StartWatching();
   SetPolicies(username_true_);
   SetPolicies(username_false_);
-}
-
-TEST_F(PolicyWatcherTest, TalkGadgetPrefix) {
-  testing::InSequence sequence;
-  EXPECT_CALL(mock_policy_callback_,
-              OnPolicyUpdatePtr(IsPolicies(&nat_true_others_default_)));
-  EXPECT_CALL(mock_policy_callback_,
-              OnPolicyUpdatePtr(IsPolicies(&talk_gadget_blah_)));
-
-  SetPolicies(empty_);
-  StartWatching();
-  SetPolicies(talk_gadget_blah_);
 }
 
 TEST_F(PolicyWatcherTest, ThirdPartyAuthFull) {

@@ -14,11 +14,9 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/content/navigable_contents_delegate.h"
-#include "services/content/public/mojom/constants.mojom.h"
 #include "services/content/public/mojom/navigable_contents.mojom.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom.h"
 #include "services/content/service_delegate.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -117,23 +115,16 @@ class TestServiceDelegate : public ServiceDelegate {
 
 class ContentServiceTest : public testing::Test {
  public:
-  ContentServiceTest()
-      : service_(&delegate_,
-                 connector_factory_.RegisterInstance(mojom::kServiceName)) {}
+  ContentServiceTest() : service_(&delegate_) {}
   ~ContentServiceTest() override = default;
 
  protected:
   TestServiceDelegate& delegate() { return delegate_; }
 
-  template <typename T>
-  void ConnectReceiver(mojo::PendingReceiver<T> receiver) {
-    connector_factory_.GetDefaultConnector()->Connect(
-        content::mojom::kServiceName, std::move(receiver));
-  }
+  Service& service() { return service_; }
 
  private:
   base::test::TaskEnvironment task_environment_;
-  service_manager::TestConnectorFactory connector_factory_;
   TestServiceDelegate delegate_;
   Service service_;
 
@@ -142,7 +133,7 @@ class ContentServiceTest : public testing::Test {
 
 TEST_F(ContentServiceTest, NavigableContentsCreation) {
   mojo::Remote<mojom::NavigableContentsFactory> factory;
-  ConnectReceiver(factory.BindNewPipeAndPassReceiver());
+  service().BindNavigableContentsFactory(factory.BindNewPipeAndPassReceiver());
 
   base::RunLoop loop;
 

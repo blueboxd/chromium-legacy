@@ -5,30 +5,29 @@
 package org.chromium.chrome.browser.password_manager;
 
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModel.ReadableIntPropertyKey;
+import org.chromium.ui.modelutil.PropertyModel.ReadableObjectPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
-import org.chromium.ui.modelutil.PropertyModel.WritableIntPropertyKey;
-import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
 /**
  * Data properties for the password manager illustration modal dialog.
  */
 class PasswordManagerDialogProperties {
     // Callback handling clicks on the help button. If present, the button will be shown.
-    static final WritableObjectPropertyKey<Runnable> HELP_BUTTON_CALLBACK =
-            new WritableObjectPropertyKey<>();
+    static final ReadableObjectPropertyKey<Runnable> HELP_BUTTON_CALLBACK =
+            new ReadableObjectPropertyKey<>();
 
     // Illustration drawable resource id for the password manager.
-    static final WritableIntPropertyKey ILLUSTRATION = new WritableIntPropertyKey();
+    static final ReadableIntPropertyKey ILLUSTRATION = new ReadableIntPropertyKey();
 
     // Boolean indicating whether there is enough space for the illustration to be shown.
     static final WritableBooleanPropertyKey ILLUSTRATION_VISIBLE = new WritableBooleanPropertyKey();
 
     // Title that appears below the illustration.
-    static final WritableObjectPropertyKey<String> TITLE = new WritableObjectPropertyKey<>();
+    static final ReadableObjectPropertyKey<String> TITLE = new ReadableObjectPropertyKey<>();
 
     // Multiline explanation text displayed under the illustration.
-    static final WritableObjectPropertyKey<CharSequence> DETAILS =
-            new WritableObjectPropertyKey<>();
+    static final ReadableObjectPropertyKey<String> DETAILS = new ReadableObjectPropertyKey<>();
 
     private PasswordManagerDialogProperties() {}
 

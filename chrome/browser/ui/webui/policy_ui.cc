@@ -64,6 +64,7 @@ content::WebUIDataSource* CreatePolicyUIHtmlSource() {
       {"showLess", IDS_POLICY_SHOW_LESS},
       {"showMore", IDS_POLICY_SHOW_MORE},
       {"showUnset", IDS_POLICY_SHOW_UNSET},
+      {"signinProfile", IDS_POLICY_SIGNIN_PROFILE},
       {"status", IDS_POLICY_STATUS},
       {"statusDevice", IDS_POLICY_STATUS_DEVICE},
       {"statusMachine", IDS_POLICY_STATUS_MACHINE},

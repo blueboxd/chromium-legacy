@@ -63,7 +63,7 @@ enum class BookmarkGUIDSource {
 };
 
 inline void LogGUIDSource(BookmarkGUIDSource source) {
-  base::UmaHistogramEnumeration("Sync.BookmarkGUIDSource", source);
+  base::UmaHistogramEnumeration("Sync.BookmarkGUIDSource2", source);
 }
 
 void AdaptUniquePositionForBookmarks(const sync_pb::SyncEntity& update_entity,
@@ -135,7 +135,9 @@ void AdaptTitleForBookmarks(const sync_pb::SyncEntity& update_entity,
 void AdaptGuidForBookmarks(const sync_pb::SyncEntity& update_entity,
                            sync_pb::EntitySpecifics* specifics) {
   DCHECK(specifics);
-  if (update_entity.deleted()) {
+  // Tombstones and permanent entities don't have a GUID.
+  if (update_entity.deleted() ||
+      !update_entity.server_defined_unique_tag().empty()) {
     return;
   }
   // Legacy clients don't populate the guid field in the BookmarkSpecifics, so
@@ -641,7 +643,8 @@ void ModelTypeWorker::DecryptStoredEntities() {
     decrypted_update->entity = std::move(it->second->entity);
     decrypted_update->entity->specifics = std::move(specifics);
     // TODO(crbug.com/1007199): Reconcile with AdaptGuidForBookmarks().
-    if (decrypted_update->entity->specifics.has_bookmark()) {
+    if (decrypted_update->entity->specifics.has_bookmark() &&
+        decrypted_update->entity->server_defined_unique_tag.empty()) {
       if (decrypted_update->entity->specifics.bookmark().has_guid()) {
         LogGUIDSource(BookmarkGUIDSource::kSpecifics);
       } else if (base::IsValidGUID(

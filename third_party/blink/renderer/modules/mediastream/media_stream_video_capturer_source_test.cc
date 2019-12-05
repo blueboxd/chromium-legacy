@@ -70,10 +70,10 @@ class FakeMediaStreamVideoSink : public MediaStreamVideoSink {
  public:
   FakeMediaStreamVideoSink(base::TimeTicks* capture_time,
                            media::VideoFrameMetadata* metadata,
-                           base::Closure got_frame_cb)
+                           base::OnceClosure got_frame_cb)
       : capture_time_(capture_time),
         metadata_(metadata),
-        got_frame_cb_(got_frame_cb) {}
+        got_frame_cb_(std::move(got_frame_cb)) {}
 
   void ConnectToTrack(const WebMediaStreamTrack& track) {
     MediaStreamVideoSink::ConnectToTrack(
@@ -97,7 +97,7 @@ class FakeMediaStreamVideoSink : public MediaStreamVideoSink {
  private:
   base::TimeTicks* const capture_time_;
   media::VideoFrameMetadata* const metadata_;
-  base::Closure got_frame_cb_;
+  base::OnceClosure got_frame_cb_;
 };
 
 }  // namespace

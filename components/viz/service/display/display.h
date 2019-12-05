@@ -171,7 +171,6 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   void RemoveOverdrawQuads(CompositorFrame* frame);
 
   void SetSupportedFrameIntervals(std::vector<base::TimeDelta> intervals);
-  void SetDisplayTransformHint(gfx::OverlayTransform transform);
 
   base::ScopedClosureRunner GetCacheBackBufferCb();
 
@@ -265,9 +264,6 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
 
   // The height of the top-controls in the previously drawn frame.
   float last_top_controls_visible_height_ = 0.f;
-
-  gfx::OverlayTransform last_display_transform_swapped_ =
-      gfx::OVERLAY_TRANSFORM_NONE;
 
   DISALLOW_COPY_AND_ASSIGN(Display);
 };

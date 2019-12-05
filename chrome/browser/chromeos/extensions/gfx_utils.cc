@@ -171,6 +171,12 @@ bool GetEquivalentInstalledArcApps(content::BrowserContext* context,
   return !arc_apps->empty();
 }
 
+const std::vector<std::string> GetEquivalentInstalledAppIds(
+    const std::string& arc_package_name) {
+  return g_dual_badge_map.Get().GetExtensionIdsForArcPackageName(
+      arc_package_name);
+}
+
 const std::vector<std::string> GetEquivalentInstalledExtensions(
     content::BrowserContext* context,
     const std::string& arc_package_name) {
@@ -205,6 +211,23 @@ bool ShouldApplyChromeBadge(content::BrowserContext* context,
     return false;
 
   if (!HasEquivalentInstalledArcApp(context, extension_id))
+    return false;
+
+  return true;
+}
+
+bool ShouldApplyChromeBadgeToWebApp(content::BrowserContext* context,
+                                    const std::string& web_app_id) {
+  DCHECK(context);
+
+  Profile* profile = Profile::FromBrowserContext(context);
+  // Only apply Chrome badge for the primary profile.
+  if (!chromeos::ProfileHelper::IsPrimaryProfile(profile) ||
+      !multi_user_util::IsProfileFromActiveUser(profile)) {
+    return false;
+  }
+
+  if (!HasEquivalentInstalledArcApp(context, web_app_id))
     return false;
 
   return true;

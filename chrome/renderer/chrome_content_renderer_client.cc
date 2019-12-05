@@ -32,7 +32,6 @@
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/pdf_util.h"
 #include "chrome/common/pepper_permission_util.h"
-#include "chrome/common/plugin.mojom.h"
 #include "chrome/common/prerender_types.h"
 #include "chrome/common/prerender_url_loader_throttle.h"
 #include "chrome/common/profiler/thread_profiler.h"
@@ -634,7 +633,7 @@ bool ChromeContentRendererClient::IsPluginHandledExternally(
     const blink::WebElement& plugin_element,
     const GURL& original_url,
     const std::string& mime_type) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS) && BUILDFLAG(ENABLE_PLUGINS)
   DCHECK(plugin_element.HasHTMLTagName("object") ||
          plugin_element.HasHTMLTagName("embed"));
   // Blink will next try to load a WebPlugin which would end up in

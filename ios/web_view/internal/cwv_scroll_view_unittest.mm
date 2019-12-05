@@ -42,27 +42,28 @@ TEST_F(CWVScrollViewTest, DelegateCallbacks) {
   scroll_view_.delegate = delegate;
 
   [[delegate expect] scrollViewWillBeginDragging:scroll_view_];
-  [scroll_view_proxy_ scrollViewWillBeginDragging:ui_scroll_view_];
+  [ui_scroll_view_.delegate scrollViewWillBeginDragging:ui_scroll_view_];
 
   CGPoint targetContentOffset;
   [[delegate expect] scrollViewWillEndDragging:scroll_view_
                                   withVelocity:CGPointZero
                            targetContentOffset:&targetContentOffset];
-  [scroll_view_proxy_ scrollViewWillEndDragging:ui_scroll_view_
-                                   withVelocity:CGPointZero
-                            targetContentOffset:&targetContentOffset];
+  [ui_scroll_view_.delegate scrollViewWillEndDragging:ui_scroll_view_
+                                         withVelocity:CGPointZero
+                                  targetContentOffset:&targetContentOffset];
 
   [[delegate expect] scrollViewDidScroll:scroll_view_];
-  [scroll_view_proxy_ scrollViewDidScroll:ui_scroll_view_];
+  [ui_scroll_view_.delegate scrollViewDidScroll:ui_scroll_view_];
 
   [[delegate expect] scrollViewDidEndDecelerating:scroll_view_];
-  [scroll_view_proxy_ scrollViewDidEndDecelerating:ui_scroll_view_];
+  [ui_scroll_view_.delegate scrollViewDidEndDecelerating:ui_scroll_view_];
 
   [[delegate expect] scrollViewShouldScrollToTop:scroll_view_];
-  [scroll_view_proxy_ scrollViewShouldScrollToTop:ui_scroll_view_];
+  [ui_scroll_view_.delegate scrollViewShouldScrollToTop:ui_scroll_view_];
 
   [[delegate expect] scrollViewWillBeginZooming:scroll_view_];
-  [scroll_view_proxy_ scrollViewWillBeginZooming:ui_scroll_view_ withView:nil];
+  [ui_scroll_view_.delegate scrollViewWillBeginZooming:ui_scroll_view_
+                                              withView:nil];
 
   [delegate verify];
 }

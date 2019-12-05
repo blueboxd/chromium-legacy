@@ -5636,6 +5636,15 @@ be describing additional metrics about the same event.
       applied on the page load.
     </summary>
   </metric>
+  <metric name="NavigationHostCovered"
+      enum="OptimizationGuideNavigationHostCoveredStatus">
+    <summary>
+      An enum value representing whether Chrome had a hint cached for the
+      navigation or had attempted to fetch a hint from the remote Optimization
+      Guide Service in the last 7 days. The enum is defined in
+      |optimization_guide::NavigationHostCoveredStatus|.
+    </summary>
+  </metric>
   <metric name="PainfulPageLoadModelPredictionScore">
     <summary>
       The score output after evaluating the painful page load model. If

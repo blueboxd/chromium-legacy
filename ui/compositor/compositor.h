@@ -157,11 +157,6 @@ class COMPOSITOR_EXPORT ContextFactoryPrivate {
   virtual void AddVSyncParameterObserver(
       Compositor* compositor,
       mojo::PendingRemote<viz::mojom::VSyncParameterObserver> observer) = 0;
-
-  // Set the transform/rotation info for the display output surface that this
-  // compositor represents.
-  virtual void SetDisplayTransformHint(Compositor* compositor,
-                                       gfx::OverlayTransform transform) = 0;
 };
 
 // This class abstracts the creation of the 3D context for the compositor. It is
@@ -295,8 +290,10 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
       float sdr_white_level = gfx::ColorSpace::kDefaultSDRWhiteLevel);
 
   // Set the transform/rotation info for the display output surface.
-  void SetDisplayTransformHint(gfx::OverlayTransform transform);
-  gfx::OverlayTransform display_transform() const { return display_transform_; }
+  void SetDisplayTransformHint(gfx::OverlayTransform hint);
+  gfx::OverlayTransform display_transform_hint() const {
+    return host_->display_transform_hint();
+  }
 
   // Returns the size of the widget that is being drawn to in pixel coordinates.
   const gfx::Size& size() const { return size_; }
@@ -520,8 +517,6 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   bool disabled_swap_until_resize_ = false;
 
   const char* trace_environment_name_;
-
-  gfx::OverlayTransform display_transform_ = gfx::OVERLAY_TRANSFORM_NONE;
 
   base::WeakPtrFactory<Compositor> context_creation_weak_ptr_factory_{this};
 

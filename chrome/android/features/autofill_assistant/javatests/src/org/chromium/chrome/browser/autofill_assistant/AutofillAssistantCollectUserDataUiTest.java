@@ -45,6 +45,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.LocaleUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.CardType;
@@ -54,7 +55,6 @@ import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollect
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataModel;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantDateChoiceOptions;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantDateTime;
-import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantInfoPopup;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantLoginChoice;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantTermsAndConditionsState;
 import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantAdditionalSectionFactory;
@@ -552,6 +552,7 @@ public class AutofillAssistantCollectUserDataUiTest {
      */
     @Test
     @MediumTest
+    @DisabledTest(message = "Flaky. crbug.com/1030217")
     public void testNonEmptyPaymentRequest() throws Exception {
         /* Add complete profile and credit card to the personal data manager. */
         PersonalDataManager.AutofillProfile profile =
@@ -1224,8 +1225,8 @@ public class AutofillAssistantCollectUserDataUiTest {
         AutofillAssistantCollectUserDataTestHelper.MockDelegate delegate =
                 new AutofillAssistantCollectUserDataTestHelper.MockDelegate();
 
-        AssistantInfoPopup infoPopup =
-                new AssistantInfoPopup("Guest checkout", "Text explanation.");
+        AssistantInfoPopup infoPopup = new AssistantInfoPopup("Guest checkout", "Text explanation.",
+                new AssistantDialogButton("Close", null), null, null);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             model.set(AssistantCollectUserDataModel.DELEGATE, delegate);
             model.set(AssistantCollectUserDataModel.VISIBLE, true);

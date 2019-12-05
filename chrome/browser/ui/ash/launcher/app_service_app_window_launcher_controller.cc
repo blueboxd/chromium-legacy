@@ -49,12 +49,34 @@ void AppServiceAppWindowLauncherController::ActiveUserChanged(
   if (proxy_)
     Observe(nullptr);
 
-  // TODO(crbug.com/1011235): Inactive the running app windows in
-  // InstanceRegistry for the inactive user, and active the app windows for the
-  // active user.
+  auto* new_proxy =
+      apps::AppServiceProxyFactory::GetForProfile(owner()->profile());
+  DCHECK(new_proxy);
 
-  proxy_ = apps::AppServiceProxyFactory::GetForProfile(owner()->profile());
-  DCHECK(proxy_);
+  // Deactivates the running app windows in InstanceRegistry for the inactive
+  // user, and activates the app windows for the active user.
+  for (const auto& window_item : aura_window_to_app_window_) {
+    AppWindowBase* app_window = window_item.second.get();
+    const std::string app_id = app_window->shelf_id().app_id;
+    // Skips ARC apps, because task id is used for ARC apps.
+    if (app_id == ash::kInternalAppIdKeyboardShortcutViewer ||
+        proxy_->AppRegistryCache().GetAppType(app_id) ==
+            apps::mojom::AppType::kArc ||
+        new_proxy->AppRegistryCache().GetAppType(app_id) ==
+            apps::mojom::AppType::kArc) {
+      continue;
+    }
+
+    if (!new_proxy->InstanceRegistry()
+             .GetWindows(app_window->shelf_id().app_id)
+             .empty()) {
+      AddToShelf(app_window);
+    } else {
+      RemoveFromShelf(app_window);
+    }
+  }
+
+  proxy_ = new_proxy;
   Observe(&proxy_->InstanceRegistry());
 
   app_service_instance_helper_->ActiveUserChanged();

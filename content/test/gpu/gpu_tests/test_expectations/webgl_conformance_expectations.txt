@@ -323,10 +323,6 @@ crbug.com/948218 [ mac debug nvidia-0xfe9 ] conformance/glsl/misc/shader-with-no
 
 # Mac / Passthrough command decoder
 crbug.com/989194 [ mac passthrough ] conformance/extensions/oes-texture-half-float.html [ Failure ]
-crbug.com/angleproject/3768 [ mac passthrough ] conformance/glsl/bugs/sequence-operator-evaluation-order.html [ Failure ]
-crbug.com/angleproject/3769 [ mac passthrough ] conformance/glsl/misc/shader-struct-scope.html [ Failure ]
-crbug.com/angleproject/3769 [ mac passthrough ] conformance/glsl/misc/shader-with-short-circuiting-operators.html [ Failure ]
-crbug.com/angleproject/3771 [ mac passthrough ] conformance/glsl/samplers/glsl-function-texture2dprojlod.html [ Failure ]
 crbug.com/angleproject/3766 [ mac passthrough ] conformance/textures/misc/gl-teximage.html [ Failure ]
 
 # Mac / Passthrough command decoder / AMD

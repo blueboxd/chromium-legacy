@@ -340,6 +340,11 @@ TEST_F(DeepLinkUtilTest, GetDeepLinkParamAsProactiveSuggestionsAction) {
   AssertDeepLinkParamEq(ProactiveSuggestionsAction::kEntryPointClose,
                         DeepLinkParam::kAction);
 
+  // Case: Deep link parameter present, well formed "viewImpression".
+  params["action"] = "viewImpression";
+  AssertDeepLinkParamEq(ProactiveSuggestionsAction::kViewImpression,
+                        DeepLinkParam::kAction);
+
   // Case: Deep link parameter present, incorrect parameter.
   params["action"] = "invalid";
   AssertDeepLinkParamEq(base::nullopt, DeepLinkParam::kAction);

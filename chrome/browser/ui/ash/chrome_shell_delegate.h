@@ -19,6 +19,9 @@ class ChromeShellDelegate : public ash::ShellDelegate {
   ash::AccessibilityDelegate* CreateAccessibilityDelegate() override;
   void OpenKeyboardShortcutHelpPage() const override;
   bool CanGoBack(gfx::NativeWindow window) const override;
+  void BindNavigableContentsFactory(
+      mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)
+      override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeShellDelegate);

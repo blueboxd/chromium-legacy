@@ -19,7 +19,6 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "content/browser/compositor/surface_utils.h"
-#include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/renderer_host/cursor_manager.h"
 #include "content/browser/renderer_host/input/touch_emulator.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -584,7 +583,7 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
   auto* view = FindViewFromFrameSinkId(frame_sink_id);
   // Send the event to |root_view| if |view| is not in |root_view|'s sub-tree
   // anymore.
-  if (!view || (RenderWidgetHostViewGuest::GetRootView(view) != root_view)) {
+  if (!view) {
     view = root_view;
     *transformed_point = point;
   }
@@ -627,16 +626,21 @@ void RenderWidgetHostInputEventRouter::DispatchMouseEvent(
     // CursorManager might need to be notified that the view underneath the
     // cursor has changed, which could cause the display cursor to update.
     gfx::PointF transformed_point;
-    auto* hit_test_result =
+    auto hit_test_result =
         FindViewAtLocation(root_view, mouse_event.PositionInWidget(),
-                           viz::EventSource::MOUSE, &transformed_point)
-            .view;
-    if (hit_test_result != target) {
+                           viz::EventSource::MOUSE, &transformed_point);
+    // TODO(kenrb, yigu): This is skipped if the HitTestResult is requiring an
+    // asynchronous hit test to the renderer process, because it might mean
+    // sending extra MouseMoves to renderers that don't need the event updates
+    // which is a worse outcome than the cursor being delayed in updating.
+    // An asynchronous hit test can be added here to fix the problem.
+    if (hit_test_result.view != target && !hit_test_result.should_query_view) {
       SendMouseEnterOrLeaveEvents(
-          mouse_event, hit_test_result, root_view,
+          mouse_event, hit_test_result.view, root_view,
           blink::WebInputEvent::Modifiers::kRelativeMotionEvent, true);
       if (root_view->GetCursorManager())
-        root_view->GetCursorManager()->UpdateViewUnderCursor(hit_test_result);
+        root_view->GetCursorManager()->UpdateViewUnderCursor(
+            hit_test_result.view);
     }
   }
 

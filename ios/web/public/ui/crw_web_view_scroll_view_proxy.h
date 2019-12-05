@@ -21,7 +21,7 @@
 // The class forwards some of the methods onto the UIScrollView. For more
 // information look at the UIScrollView documentation.
 // TODO(crbug.com/546152): rename class to CRWContentViewScrollViewProxy.
-@interface CRWWebViewScrollViewProxy : NSObject <UIScrollViewDelegate>
+@interface CRWWebViewScrollViewProxy : NSObject
 @property(nonatomic, assign) CGPoint contentOffset;
 @property(nonatomic, assign) UIEdgeInsets contentInset;
 @property(nonatomic, readonly, getter=isDecelerating) BOOL decelerating;
@@ -59,6 +59,20 @@
 
 // Removes |observer| as a subscriber for change notifications.
 - (void)removeObserver:(id<CRWWebViewScrollViewProxyObserver>)observer;
+
+// Returns a scroll view proxy which can be accessed as UIScrollView.
+//
+// Note: This method is introduced because CRWWebViewScrollViewProxy cannot
+// simply be a subclass of UIScrollView. Its implementation relies on
+// -forwardInvocation: which only works for methods not implemented in the class
+// (including those implemented in its superclass). So -forwardInvocation:
+// cannot forward methods in UIScrollView if CRWWebViewScrollViewProxy is a
+// subclass of UIScrollView.
+//
+// TODO(crbug.com/1023250): Support KVO and delegate of this scroll view.
+// TODO(crbug.com/1023250): Restore properties of the scroll view when the
+// scroll view is reset.
+- (UIScrollView*)asUIScrollView;
 
 @end
 

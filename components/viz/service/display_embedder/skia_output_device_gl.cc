@@ -53,8 +53,6 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
   // only update this for Android.
   // This output device is never offscreen.
   capabilities_.supports_surfaceless = gl_surface_->IsSurfaceless();
-  if (gl_surface_->SupportsSwapTimestamps())
-    gl_surface_->SetEnableSwapTimestamps();
 #endif
 }
 
@@ -65,6 +63,14 @@ void SkiaOutputDeviceGL::Initialize(GrContext* gr_context,
   DCHECK(gr_context);
   DCHECK(gl_context);
   gr_context_ = gr_context;
+
+  if (gl_surface_->SupportsSwapTimestamps()) {
+    gl_surface_->SetEnableSwapTimestamps();
+
+    // Changes to swap timestamp queries are only picked up when making current.
+    gl_context->ReleaseCurrent(nullptr);
+    gl_context->MakeCurrent(gl_surface_.get());
+  }
 
   gl::CurrentGL* current_gl = gl_context->GetCurrentGL();
   DCHECK(current_gl);

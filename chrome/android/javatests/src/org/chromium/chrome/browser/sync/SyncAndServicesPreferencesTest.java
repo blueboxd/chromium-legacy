@@ -244,6 +244,31 @@ public class SyncAndServicesPreferencesTest {
         Assert.assertNull("Sync error card should not be shown", getSyncErrorCard(fragment));
     }
 
+    @Test
+    @SmallTest
+    @Feature({"Sync"})
+    public void testTrustedVaultKeyRequiredShowsSyncErrorCard() throws Exception {
+        final FakeProfileSyncService pss = overrideProfileSyncService();
+        mSyncTestRule.setUpTestAccountAndSignIn();
+        SyncTestUtil.waitForSyncActive();
+        pss.setEngineInitialized(true);
+        pss.setTrustedVaultKeyRequiredForPreferredDataTypes(true);
+
+        SyncAndServicesPreferences fragment = startSyncAndServicesPreferences();
+
+        Assert.assertNotNull("Sync error card should be shown", getSyncErrorCard(fragment));
+    }
+
+    // TODO(crbug.com/1030725): SyncTestRule should support overriding ProfileSyncService.
+    private FakeProfileSyncService overrideProfileSyncService() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            // PSS has to be constructed on the UI thread.
+            FakeProfileSyncService fakeProfileSyncService = new FakeProfileSyncService();
+            ProfileSyncService.overrideForTests(fakeProfileSyncService);
+            return fakeProfileSyncService;
+        });
+    }
+
     /**
      * Start SyncAndServicesPreferences signin screen and dissmiss it without pressing confirm or
      * cancel.

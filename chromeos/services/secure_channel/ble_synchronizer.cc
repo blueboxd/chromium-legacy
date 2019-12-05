@@ -115,10 +115,10 @@ void BleSynchronizer::ProcessQueue() {
       bluetooth_adapter_->StartDiscoverySessionWithFilter(
           std::make_unique<device::BluetoothDiscoveryFilter>(
               device::BLUETOOTH_TRANSPORT_LE),
-          base::Bind(&BleSynchronizer::OnDiscoverySessionStarted,
-                     weak_ptr_factory_.GetWeakPtr()),
-          base::Bind(&BleSynchronizer::OnErrorStartingDiscoverySession,
-                     weak_ptr_factory_.GetWeakPtr()));
+          base::BindOnce(&BleSynchronizer::OnDiscoverySessionStarted,
+                         weak_ptr_factory_.GetWeakPtr()),
+          base::BindOnce(&BleSynchronizer::OnErrorStartingDiscoverySession,
+                         weak_ptr_factory_.GetWeakPtr()));
       break;
     }
     case CommandType::STOP_DISCOVERY: {
@@ -213,7 +213,7 @@ void BleSynchronizer::OnDiscoverySessionStarted(
   StartDiscoveryArgs* start_discovery_args =
       current_command_->start_discovery_args.get();
   DCHECK(start_discovery_args);
-  start_discovery_args->callback.Run(std::move(discovery_session));
+  std::move(start_discovery_args->callback).Run(std::move(discovery_session));
 }
 
 void BleSynchronizer::OnErrorStartingDiscoverySession() {
@@ -222,7 +222,7 @@ void BleSynchronizer::OnErrorStartingDiscoverySession() {
   StartDiscoveryArgs* start_discovery_args =
       current_command_->start_discovery_args.get();
   DCHECK(start_discovery_args);
-  start_discovery_args->error_callback.Run();
+  std::move(start_discovery_args->error_callback).Run();
 }
 
 void BleSynchronizer::OnDiscoverySessionStopped() {

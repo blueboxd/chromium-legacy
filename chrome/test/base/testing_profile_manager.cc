@@ -78,7 +78,8 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
     int avatar_id,
     const std::string& supervised_user_id,
     TestingProfile::TestingFactories testing_factories,
-    base::Optional<bool> override_new_profile) {
+    base::Optional<bool> override_new_profile,
+    base::Optional<std::unique_ptr<policy::PolicyService>> policy_service) {
   DCHECK(called_set_up_);
 
   // Create a path for the profile based on the name.
@@ -105,6 +106,8 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
   builder.SetProfileName(profile_name);
   if (override_new_profile)
     builder.OverrideIsNewProfile(*override_new_profile);
+  if (policy_service)
+    builder.SetPolicyService(std::move(*policy_service));
 
   for (TestingProfile::TestingFactories::value_type& pair : testing_factories)
     builder.AddTestingFactory(pair.first, std::move(pair.second));

@@ -32,6 +32,8 @@ source_set("public") {
     "notification_scheduler_types.h",
     "schedule_params.cc",
     "schedule_params.h",
+    "schedule_service_utils.cc",
+    "schedule_service_utils.h",
     "user_action_handler.h",
   ]
 
@@ -48,4 +50,18 @@ if (is_android) {
       "notification_scheduler_types.h",
     ]
   }
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "schedule_service_utils_unittest.cc",
+  ]
+
+  deps = [
+    "//chrome/browser/notifications/scheduler/public",
+    "//chrome/browser/notifications/scheduler/test:test_lib",
+    "//chrome/browser/notifications/scheduler/test:test_support",
+    "//testing/gtest",
+  ]
 }

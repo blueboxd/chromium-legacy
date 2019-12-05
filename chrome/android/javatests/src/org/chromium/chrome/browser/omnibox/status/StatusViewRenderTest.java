@@ -110,7 +110,7 @@ public class StatusViewRenderTest extends DummyUiActivityTestCase {
             mStatusModel.set(StatusProperties.STATUS_ALPHA, 1f);
             mStatusModel.set(StatusProperties.SHOW_STATUS_ICON, true);
             mStatusModel.set(StatusProperties.STATUS_ICON_RES,
-                    org.chromium.chrome.R.drawable.ic_logo_googleg_24dp);
+                    org.chromium.chrome.R.drawable.ic_logo_googleg_20dp);
             mStatusModel.set(StatusProperties.STATUS_ICON_TINT_RES, 0);
         });
 

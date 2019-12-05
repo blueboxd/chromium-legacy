@@ -28,6 +28,18 @@ buildflag_header("buildflags") {
   }
 }
 
+static_library("features") {
+  sources = [
+    "features.cc",
+    "features.h",
+  ]
+
+  deps = [
+    "//base:base",
+    "//components/safe_browsing:buildflags",
+  ]
+}
+
 # safe_browsing/ pulls in content/, which doesn't work on iOS.
 # TODO(thakis): This should be `safe_browsing_mode != 0`, but chromecast builds
 # set safe_browsing_mode to 0 and build chrome/, and chrome/ currently
@@ -125,18 +137,6 @@ if (!is_ios) {
       "//net:net",
       "//net:test_support",
       "//testing/gtest",
-    ]
-  }
-
-  static_library("features") {
-    sources = [
-      "features.cc",
-      "features.h",
-    ]
-
-    deps = [
-      "//base:base",
-      "//components/safe_browsing:buildflags",
     ]
   }
 

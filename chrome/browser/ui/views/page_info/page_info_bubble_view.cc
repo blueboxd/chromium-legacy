@@ -507,6 +507,9 @@ PageInfoBubbleView::PageInfoBubbleView(
   // before PageInfo updates trigger child layouts.
   SetSize(GetPreferredSize());
 
+  // When |web_contents| is not from a Tab, |web_contents| does not have a
+  // |TabSpecificContentSettings| and need to create one; otherwise, noop.
+  TabSpecificContentSettings::CreateForWebContents(web_contents);
   presenter_ = std::make_unique<PageInfo>(
       this, profile, TabSpecificContentSettings::FromWebContents(web_contents),
       web_contents, url, security_level, visible_security_state);

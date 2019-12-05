@@ -13,7 +13,7 @@ RendererFactorySelector::RendererFactorySelector() = default;
 RendererFactorySelector::~RendererFactorySelector() = default;
 
 void RendererFactorySelector::AddBaseFactory(
-    FactoryType type,
+    RendererFactoryType type,
     std::unique_ptr<RendererFactory> factory) {
   DCHECK(!base_factory_type_) << "At most one base factory!";
 
@@ -22,7 +22,7 @@ void RendererFactorySelector::AddBaseFactory(
 }
 
 void RendererFactorySelector::AddConditionalFactory(
-    FactoryType type,
+    RendererFactoryType type,
     std::unique_ptr<RendererFactory> factory,
     ConditionalFactoryCB callback) {
   DCHECK(factory);
@@ -35,20 +35,19 @@ void RendererFactorySelector::AddConditionalFactory(
 }
 
 void RendererFactorySelector::AddFactory(
-    FactoryType type,
+    RendererFactoryType type,
     std::unique_ptr<RendererFactory> factory) {
   DCHECK(factory);
-  DCHECK(!factories_[type]);
+  DCHECK(!factories_.count(type));
   factories_[type] = std::move(factory);
 }
 
-void RendererFactorySelector::SetBaseFactoryType(FactoryType type) {
-  DCHECK(factories_[type]);
+void RendererFactorySelector::SetBaseFactoryType(RendererFactoryType type) {
+  DCHECK(factories_.count(type));
   base_factory_type_ = type;
 }
 
-RendererFactorySelector::FactoryType
-RendererFactorySelector::GetCurrentFactoryType() {
+RendererFactoryType RendererFactorySelector::GetCurrentFactoryType() {
   for (const auto& entry : conditional_factory_types_) {
     if (entry.second.Run())
       return entry.first;
@@ -58,9 +57,10 @@ RendererFactorySelector::GetCurrentFactoryType() {
 }
 
 RendererFactory* RendererFactorySelector::GetCurrentFactory() {
-  FactoryType current_factory_type = GetCurrentFactoryType();
+  RendererFactoryType current_factory_type = GetCurrentFactoryType();
 
-  DVLOG(1) << __func__ << " Selecting factory type: " << current_factory_type;
+  DVLOG(1) << __func__ << " Selecting factory type: "
+           << static_cast<int>(current_factory_type);
   auto* current_factory = factories_[current_factory_type].get();
   DCHECK(current_factory);
 

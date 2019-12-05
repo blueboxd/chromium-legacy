@@ -29,13 +29,13 @@ namespace {
 base::queue<VideoDecoderPipeline::CreateVDFunc> GetCreateVDFunctions(
     VideoDecoderPipeline::CreateVDFunc cur_create_vd_func) {
   static constexpr VideoDecoderPipeline::CreateVDFunc kCreateVDFuncs[] = {
-#if BUILDFLAG(USE_V4L2_CODEC)
-    &V4L2SliceVideoDecoder::Create,
-#endif  // BUILDFLAG(USE_V4L2_CODEC)
-
 #if BUILDFLAG(USE_VAAPI)
     &VaapiVideoDecoder::Create,
 #endif  // BUILDFLAG(USE_VAAPI)
+
+#if BUILDFLAG(USE_V4L2_CODEC)
+    &V4L2SliceVideoDecoder::Create,
+#endif  // BUILDFLAG(USE_V4L2_CODEC)
   };
 
   base::queue<VideoDecoderPipeline::CreateVDFunc> ret;

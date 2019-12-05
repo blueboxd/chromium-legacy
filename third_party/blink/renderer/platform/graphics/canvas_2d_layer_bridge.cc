@@ -62,8 +62,6 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
     : logger_(std::make_unique<Logger>()),
       have_recorded_draw_commands_(false),
       is_hidden_(false),
-      is_deferral_enabled_(
-          base::FeatureList::IsEnabled(features::kCanvasAlwaysDeferral)),
       software_rendering_while_hidden_(false),
       acceleration_mode_(acceleration_mode),
       color_params_(color_params),
@@ -76,25 +74,20 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
   // Used by browser tests to detect the use of a Canvas2DLayerBridge.
   TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation",
                        TRACE_EVENT_SCOPE_GLOBAL);
-  if (is_deferral_enabled_) {
-    StartRecording();
+  StartRecording();
 
-    // Clear the background transparent or opaque. Similar code at
-    // CanvasResourceProvider::Clear().
-    if (IsValid()) {
-      DCHECK(recorder_);
-      recorder_->getRecordingCanvas()->clear(
-          color_params_.GetOpacityMode() == kOpaque ? SK_ColorBLACK
-                                                    : SK_ColorTRANSPARENT);
-      DidDraw(FloatRect(0.f, 0.f, size_.Width(), size_.Height()));
-    }
+  // Clear the background transparent or opaque. Similar code at
+  // CanvasResourceProvider::Clear().
+  if (IsValid()) {
+    DCHECK(recorder_);
+    recorder_->getRecordingCanvas()->clear(
+        color_params_.GetOpacityMode() == kOpaque ? SK_ColorBLACK
+                                                  : SK_ColorTRANSPARENT);
+    DidDraw(FloatRect(0.f, 0.f, size_.Width(), size_.Height()));
   }
 }
 
 Canvas2DLayerBridge::~Canvas2DLayerBridge() {
-  UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.2DLayerBridgeIsDeferred",
-                        is_deferral_enabled_);
-
   ClearPendingRasterTimers();
   if (IsHibernating())
     logger_->ReportHibernationEvent(kHibernationEndedWithTeardown);
@@ -116,7 +109,6 @@ Canvas2DLayerBridge::~Canvas2DLayerBridge() {
 }
 
 void Canvas2DLayerBridge::StartRecording() {
-  DCHECK(is_deferral_enabled_);
   recorder_ = std::make_unique<PaintRecorder>();
   cc::PaintCanvas* canvas =
       recorder_->beginRecording(size_.Width(), size_.Height());
@@ -342,11 +334,6 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
   hibernation_image_.reset();
 
   if (resource_host_) {
-    // If deferral is enabled the recorder will play back the transform, so we
-    // should not do it here or else it will be applied twice
-    if (!is_deferral_enabled_)
-      resource_host_->RestoreCanvasMatrixClipStack(resource_provider->Canvas());
-
     // shouldBeDirectComposited() may have changed.
     resource_host_->SetNeedsCompositingUpdate();
   }
@@ -355,11 +342,7 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
 
 cc::PaintCanvas* Canvas2DLayerBridge::DrawingCanvas() {
   DCHECK(resource_host_);
-  if (is_deferral_enabled_)
-    return recorder_->getRecordingCanvas();
-  if (GetOrCreateResourceProvider())
-    return ResourceProvider()->Canvas();
-  return nullptr;
+  return recorder_->getRecordingCanvas();
 }
 
 void Canvas2DLayerBridge::UpdateFilterQuality() {
@@ -411,10 +394,6 @@ void Canvas2DLayerBridge::SetIsHidden(bool hidden) {
             old_resource_provider->Snapshot()->PaintImageForCurrentFrame();
         ResourceProvider()->Canvas()->drawImage(snapshot, 0, 0, &copy_paint);
       }
-      if (resource_host_ && !is_deferral_enabled_) {
-        resource_host_->RestoreCanvasMatrixClipStack(
-            ResourceProvider()->Canvas());
-      }
     } else {
       // New resource provider could not be created. Stay with old one.
       resource_host_->ReplaceResourceProvider(std::move(old_resource_provider));
@@ -445,23 +424,18 @@ bool Canvas2DLayerBridge::WritePixels(const SkImageInfo& orig_info,
       return false;
   }
 
-  if (is_deferral_enabled_) {
-    // WritePixels is not supported by deferral. Since we are directly
-    // rendering, we can't do deferral on top of the canvas. Disable deferral
-    // completely.
-    last_recording_ = nullptr;
-    is_deferral_enabled_ = false;
-    have_recorded_draw_commands_ = false;
-    recorder_.reset();
-    // install the current matrix/clip stack onto the immediate canvas
-    if (GetOrCreateResourceProvider()) {
-      resource_host_->RestoreCanvasMatrixClipStack(
-          ResourceProvider()->Canvas());
-    }
+  last_record_tainted_by_write_pixels_ = true;
+  have_recorded_draw_commands_ = false;
+  // Add a save to initialize the transform/clip stack and then restore it after
+  // the draw. This is needed because each recording initializes and the resets
+  // this state after every flush.
+  cc::PaintCanvas* canvas = ResourceProvider()->Canvas();
+  PaintCanvasAutoRestore auto_restore(canvas, true);
+  if (GetOrCreateResourceProvider()) {
+    resource_host_->RestoreCanvasMatrixClipStack(canvas);
   }
 
   ResourceProvider()->WritePixels(orig_info, pixels, row_bytes, x, y);
-  DidDraw(FloatRect(x, y, orig_info.width(), orig_info.height()));
   return true;
 }
 
@@ -472,7 +446,7 @@ void Canvas2DLayerBridge::SkipQueuedDrawCommands() {
     have_recorded_draw_commands_ = false;
   }
 
-  if (is_deferral_enabled_ && rate_limiter_)
+  if (rate_limiter_)
     rate_limiter_->Reset();
 }
 
@@ -557,10 +531,8 @@ void Canvas2DLayerBridge::FlushRecording() {
   }
 
   // Sample one out of every kRasterMetricProbability frames to time
-  // This measurement only makes sense if deferral is enabled
-  // If the canvas is accelerated, we also need access to the gl_interface
+  // If the canvas is accelerated, we also need access to the raster_interface
   bool measure_raster_metric = (raster_interface || !IsAccelerated()) &&
-                               is_deferral_enabled_ &&
                                bernoulli_distribution_(random_generator_);
   RasterTimer rasterTimer;
   base::Optional<base::ElapsedTimer> timer;
@@ -579,8 +551,8 @@ void Canvas2DLayerBridge::FlushRecording() {
     cc::PaintCanvas* canvas = ResourceProvider()->Canvas();
     last_recording_ = recorder_->finishRecordingAsPicture();
     canvas->drawPicture(last_recording_);
-    if (!clear_frame_ || !resource_host_ || !resource_host_->IsPrinting() ||
-        !is_deferral_enabled_) {
+    last_record_tainted_by_write_pixels_ = false;
+    if (!clear_frame_ || !resource_host_ || !resource_host_->IsPrinting()) {
       last_recording_ = nullptr;
       clear_frame_ = false;
     }
@@ -608,8 +580,7 @@ void Canvas2DLayerBridge::FlushRecording() {
   if (GetOrCreateResourceProvider())
     ResourceProvider()->ReleaseLockedImages();
 
-  if (is_deferral_enabled_)
-    StartRecording();
+  StartRecording();
   have_recorded_draw_commands_ = false;
 }
 
@@ -727,8 +698,7 @@ cc::Layer* Canvas2DLayerBridge::Layer() {
 }
 
 void Canvas2DLayerBridge::DidDraw(const FloatRect& /* rect */) {
-  if (is_deferral_enabled_)
-    have_recorded_draw_commands_ = true;
+  have_recorded_draw_commands_ = true;
 }
 
 void Canvas2DLayerBridge::FinalizeFrame() {

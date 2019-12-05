@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "components/viz/common/display/overlay_strategy.h"
-#include "components/viz/service/display/overlay_candidate_validator.h"
+#include "components/viz/service/display/overlay_candidate_validator_strategy.h"
 #include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
@@ -18,7 +18,7 @@
 namespace viz {
 
 class VIZ_SERVICE_EXPORT OverlayCandidateValidatorOzone
-    : public OverlayCandidateValidator {
+    : public OverlayCandidateValidatorStrategy {
  public:
   OverlayCandidateValidatorOzone(
       std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates,
@@ -27,8 +27,6 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidatorOzone
 
   // OverlayCandidateValidator implementation.
   void InitializeStrategies() override;
-  bool AllowCALayerOverlays() const override;
-  bool AllowDCLayerOverlays() const override;
   bool NeedsSurfaceOccludingDamageRect() const override;
   void CheckOverlaySupport(const PrimaryPlane* primary_plane,
                            OverlayCandidateList* surfaces) override;

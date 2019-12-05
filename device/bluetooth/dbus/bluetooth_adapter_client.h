@@ -152,9 +152,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterClient : public BluezDBusClient {
   // The ErrorCallback is used by adapter methods to indicate failure.
   // It receives two arguments: the name of the error in |error_name| and
   // an optional message in |error_message|.
-  typedef base::OnceCallback<void(const std::string& error_name,
-                                  const std::string& error_message)>
-      ErrorCallback;
+  using ErrorCallback =
+      base::OnceCallback<void(const std::string& error_name,
+                              const std::string& error_message)>;
 
   // Callback used by adapter methods to indicate that a response was
   // received with an optional Error in case an error occurred.
@@ -166,7 +166,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterClient : public BluezDBusClient {
                               ResponseCallback callback) = 0;
   // DEPRECATED: Use StartDiscovery() above.
   void StartDiscovery(const dbus::ObjectPath& object_path,
-                      const base::Closure& callback,
+                      base::OnceClosure callback,
                       ErrorCallback error_callback);
 
   // Cancels any previous device discovery on the adapter with object path
@@ -175,17 +175,17 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterClient : public BluezDBusClient {
                              ResponseCallback callback) = 0;
   // DEPRECATED: Use StopDiscovery() above.
   void StopDiscovery(const dbus::ObjectPath& object_path,
-                     const base::Closure& callback,
+                     base::OnceClosure callback,
                      ErrorCallback error_callback);
 
   // Pauses all discovery sessions.
   virtual void PauseDiscovery(const dbus::ObjectPath& object_path,
-                              const base::Closure& callback,
+                              base::OnceClosure callback,
                               ErrorCallback error_callback) = 0;
 
   // Unpauses all discovery sessions.
   virtual void UnpauseDiscovery(const dbus::ObjectPath& object_path,
-                                const base::Closure& callback,
+                                base::OnceClosure callback,
                                 ErrorCallback error_callback) = 0;
 
   // Removes from the adapter with object path |object_path| the remote

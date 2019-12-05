@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
@@ -15,17 +16,32 @@
 
 namespace password_manager {
 
+namespace {
+
 using autofill::PasswordForm;
-using base::ASCIIToUTF16;
 using url::Origin;
 
 using IsPublicSuffixMatch = UiCredential::IsPublicSuffixMatch;
+using IsAffiliationBasedMatch = UiCredential::IsAffiliationBasedMatch;
 
-constexpr char kExampleSiteAndroidApp[] = "android://3x4mpl3@com.example.app/";
-constexpr char kExampleSite[] = "https://example.com";
-constexpr char kExampleSite2[] = "https://example.two.com";
-constexpr char kExampleSiteMobile[] = "https://m.example.com";
-constexpr char kExampleSiteSubdomain[] = "https://accounts.example.com";
+constexpr char kExampleSite[] = "https://example.com/";
+constexpr char kExampleSite2[] = "https://example.two.com/";
+constexpr char kExampleSiteMobile[] = "https://m.example.com/";
+constexpr char kExampleSiteSubdomain[] = "https://accounts.example.com/";
+
+UiCredential MakeUiCredential(
+    base::StringPiece username,
+    base::StringPiece password,
+    base::StringPiece origin = kExampleSite,
+    IsPublicSuffixMatch is_public_suffix_match = IsPublicSuffixMatch(false),
+    IsAffiliationBasedMatch is_affiliation_based_match =
+        IsAffiliationBasedMatch(false)) {
+  return UiCredential(base::UTF8ToUTF16(username), base::UTF8ToUTF16(password),
+                      Origin::Create(GURL(origin)), is_public_suffix_match,
+                      is_affiliation_based_match);
+}
+
+}  // namespace
 
 class CredentialCacheTest : public testing::Test {
  public:
@@ -46,16 +62,20 @@ TEST_F(CredentialCacheTest, ReturnsSameStoreForSameOriginOnly) {
 TEST_F(CredentialCacheTest, StoresCredentialsSortedByAplhabetAndOrigins) {
   Origin origin = Origin::Create(GURL(kExampleSite));
   cache()->SaveCredentialsForOrigin(
-      {CreateEntry("Berta", "30948", GURL(kExampleSite), false).first,
-       CreateEntry("Adam", "Pas83B", GURL(kExampleSite), false).first,
-       CreateEntry("Dora", "PakudC", GURL(kExampleSite), false).first,
-       CreateEntry("Carl", "P1238C", GURL(kExampleSite), false).first,
+      {CreateEntry("Berta", "30948", GURL(kExampleSite), false, false).get(),
+       CreateEntry("Adam", "Pas83B", GURL(kExampleSite), false, false).get(),
+       CreateEntry("Dora", "PakudC", GURL(kExampleSite), false, false).get(),
+       CreateEntry("Carl", "P1238C", GURL(kExampleSite), false, false).get(),
        // These entries need to be ordered but come after the examples above.
-       CreateEntry("Cesar", "V3V1V", GURL(kExampleSiteAndroidApp), false).first,
-       CreateEntry("Rolf", "A4nd0m", GURL(kExampleSiteMobile), true).first,
-       CreateEntry("Greg", "5fnd1m", GURL(kExampleSiteSubdomain), true).first,
-       CreateEntry("Elfi", "a65ddm", GURL(kExampleSiteSubdomain), true).first,
-       CreateEntry("Alf", "R4nd50m", GURL(kExampleSiteMobile), true).first},
+       CreateEntry("Cesar", "V3V1V", GURL(kExampleSite), false, true).get(),
+       CreateEntry("Rolf", "A4nd0m", GURL(kExampleSiteMobile), true, false)
+           .get(),
+       CreateEntry("Greg", "5fnd1m", GURL(kExampleSiteSubdomain), true, false)
+           .get(),
+       CreateEntry("Elfi", "a65ddm", GURL(kExampleSiteSubdomain), true, false)
+           .get(),
+       CreateEntry("Alf", "R4nd50m", GURL(kExampleSiteMobile), true, false)
+           .get()},
       origin);
 
   EXPECT_THAT(
@@ -63,31 +83,27 @@ TEST_F(CredentialCacheTest, StoresCredentialsSortedByAplhabetAndOrigins) {
       testing::ElementsAre(
 
           // Alphabetical entries of the exactly matching https://example.com:
-          UiCredential(ASCIIToUTF16("Adam"), ASCIIToUTF16("Pas83B"),
-                       GURL(kExampleSite), IsPublicSuffixMatch(false)),
-          UiCredential(ASCIIToUTF16("Berta"), ASCIIToUTF16("30948"),
-                       GURL(kExampleSite), IsPublicSuffixMatch(false)),
-          UiCredential(ASCIIToUTF16("Carl"), ASCIIToUTF16("P1238C"),
-                       GURL(kExampleSite), IsPublicSuffixMatch(false)),
-          UiCredential(ASCIIToUTF16("Dora"), ASCIIToUTF16("PakudC"),
-                       GURL(kExampleSite), IsPublicSuffixMatch(false)),
-
-          // Entry for PSL-match android://3x4mpl3@com.example.app:
-          UiCredential(ASCIIToUTF16("Cesar"), ASCIIToUTF16("V3V1V"),
-                       GURL(kExampleSiteAndroidApp),
-                       IsPublicSuffixMatch(false)),
+          MakeUiCredential("Adam", "Pas83B"),
+          MakeUiCredential("Berta", "30948"),
+          MakeUiCredential("Carl", "P1238C"),
+          // Affiliation based matches are first class citizens and should be
+          // treated as a first-party credential.
+          MakeUiCredential("Cesar", "V3V1V", kExampleSite,
+                           IsPublicSuffixMatch(false),
+                           IsAffiliationBasedMatch(true)),
+          MakeUiCredential("Dora", "PakudC"),
 
           // Alphabetical entries of PSL-match https://accounts.example.com:
-          UiCredential(ASCIIToUTF16("Elfi"), ASCIIToUTF16("a65ddm"),
-                       GURL(kExampleSiteSubdomain), IsPublicSuffixMatch(true)),
-          UiCredential(ASCIIToUTF16("Greg"), ASCIIToUTF16("5fnd1m"),
-                       GURL(kExampleSiteSubdomain), IsPublicSuffixMatch(true)),
+          MakeUiCredential("Elfi", "a65ddm", kExampleSiteSubdomain,
+                           IsPublicSuffixMatch(true)),
+          MakeUiCredential("Greg", "5fnd1m", kExampleSiteSubdomain,
+                           IsPublicSuffixMatch(true)),
 
           // Alphabetical entries of PSL-match https://m.example.com:
-          UiCredential(ASCIIToUTF16("Alf"), ASCIIToUTF16("R4nd50m"),
-                       GURL(kExampleSiteMobile), IsPublicSuffixMatch(true)),
-          UiCredential(ASCIIToUTF16("Rolf"), ASCIIToUTF16("A4nd0m"),
-                       GURL(kExampleSiteMobile), IsPublicSuffixMatch(true))));
+          MakeUiCredential("Alf", "R4nd50m", kExampleSiteMobile,
+                           IsPublicSuffixMatch(true)),
+          MakeUiCredential("Rolf", "A4nd0m", kExampleSiteMobile,
+                           IsPublicSuffixMatch(true))));
 }
 
 TEST_F(CredentialCacheTest, StoredCredentialsForIndependentOrigins) {
@@ -95,29 +111,26 @@ TEST_F(CredentialCacheTest, StoredCredentialsForIndependentOrigins) {
   Origin origin2 = Origin::Create(GURL(kExampleSite2));
 
   cache()->SaveCredentialsForOrigin(
-      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false).first}, origin);
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
+      origin);
   cache()->SaveCredentialsForOrigin(
-      {CreateEntry("Abe", "B4dPW", GURL(kExampleSite2), false).first}, origin2);
+      {CreateEntry("Abe", "B4dPW", GURL(kExampleSite2), false, false).get()},
+      origin2);
 
   EXPECT_THAT(cache()->GetCredentialStore(origin).GetCredentials(),
-              testing::ElementsAre(UiCredential(
-                  ASCIIToUTF16("Ben"), ASCIIToUTF16("S3cur3"),
-                  GURL(kExampleSite), IsPublicSuffixMatch(false))));
-  EXPECT_THAT(cache()->GetCredentialStore(origin2).GetCredentials(),
-              testing::ElementsAre(UiCredential(
-                  ASCIIToUTF16("Abe"), ASCIIToUTF16("B4dPW"),
-                  GURL(kExampleSite2), IsPublicSuffixMatch(false))));
+              testing::ElementsAre(MakeUiCredential("Ben", "S3cur3")));
+  EXPECT_THAT(
+      cache()->GetCredentialStore(origin2).GetCredentials(),
+      testing::ElementsAre(MakeUiCredential("Abe", "B4dPW", kExampleSite2)));
 }
 
 TEST_F(CredentialCacheTest, ClearsCredentials) {
   Origin origin = Origin::Create(GURL(kExampleSite));
   cache()->SaveCredentialsForOrigin(
-      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false).first},
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
       Origin::Create(GURL(kExampleSite)));
   ASSERT_THAT(cache()->GetCredentialStore(origin).GetCredentials(),
-              testing::ElementsAre(UiCredential(
-                  ASCIIToUTF16("Ben"), ASCIIToUTF16("S3cur3"),
-                  GURL(kExampleSite), IsPublicSuffixMatch(false))));
+              testing::ElementsAre(MakeUiCredential("Ben", "S3cur3")));
 
   cache()->ClearCredentials();
   EXPECT_EQ(cache()->GetCredentialStore(origin).GetCredentials().size(), 0u);

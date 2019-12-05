@@ -37,7 +37,8 @@ class DummyTaskObserver : public TaskObserver {
 
   ~DummyTaskObserver() override = default;
 
-  void WillProcessTask(const PendingTask& pending_task) override {
+  void WillProcessTask(const PendingTask& /* pending_task */,
+                       bool /* was_blocked_or_low_priority */) override {
     num_tasks_started_++;
     EXPECT_LE(num_tasks_started_, num_tasks_);
     EXPECT_EQ(num_tasks_started_, num_tasks_processed_ + 1);

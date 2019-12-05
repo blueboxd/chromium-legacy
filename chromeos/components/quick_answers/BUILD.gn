@@ -18,7 +18,28 @@ source_set("quick_answers") {
   ]
   deps = [
     "//base",
+    "//net:net",
     "//services/data_decoder/public/cpp",
+    "//services/network/public/cpp:cpp",
     "//third_party/re2",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "search_result_parsers/result_parser_unittest.cc",
+    "search_result_parsers/search_response_parser_unittest.cc",
+    "search_result_parsers/unit_conversion_result_parser_unittest.cc",
+  ]
+
+  deps = [
+    ":quick_answers",
+    "//base",
+    "//base/test:test_support",
+    "//services/data_decoder/public/cpp:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }

@@ -23,3 +23,9 @@ avd_package {
   dest_path: ".android"
 }
 avd_name: "android_23_google_apis_x86"
+
+avd_settings {
+  sdcard {
+    size: "1G"
+  }
+}

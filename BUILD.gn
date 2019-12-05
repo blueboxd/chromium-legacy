@@ -1010,24 +1010,6 @@ if (!is_ios) {
   }
 
   # https://www.chromium.org/developers/testing/webkit-layout-tests
-
-  # The _exparchive at the end of the name indicates to the isolate recipe
-  # that the isolate should be archived separately using the `exparchive`
-  # command, rather than as part of the normal `batcharchive` command.
-  group("blink_web_tests_exparchive") {
-    testonly = true
-    deps = [
-      ":blink_web_tests",
-    ]
-    data_deps = [
-      ":blink_web_tests",
-    ]
-  }
-
-  # This target contains only a small subset of the web tests,
-  # and is useful for testing with the regular isolate mechanism.
-  # To run the full web test suite you need to use
-  # :blink_web_tests_exparchive, above, instead.
   generate_wrapper("blink_web_tests") {
     testonly = true
     wrapper_script = "${root_build_dir}/bin/run_blink_web_tests"

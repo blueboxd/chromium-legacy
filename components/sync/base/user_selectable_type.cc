@@ -34,7 +34,6 @@ constexpr char kExtensionsTypeName[] = "extensions";
 constexpr char kAppsTypeName[] = "apps";
 constexpr char kReadingListTypeName[] = "readingList";
 constexpr char kTabsTypeName[] = "tabs";
-constexpr char kWifiConfigurationsTypeName[] = "wifiConfigurations";
 
 UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
   // UserSelectableTypeInfo::type_name is used in js code and shouldn't be
@@ -87,10 +86,6 @@ UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
               PROXY_TABS,
               {PROXY_TABS, SESSIONS, FAVICON_IMAGES, FAVICON_TRACKING,
                SEND_TAB_TO_SELF}};
-    case UserSelectableType::kWifiConfigurations:
-      return {kWifiConfigurationsTypeName,
-              WIFI_CONFIGURATIONS,
-              {WIFI_CONFIGURATIONS}};
   }
   NOTREACHED();
   return {nullptr, UNSPECIFIED};
@@ -110,6 +105,8 @@ UserSelectableTypeInfo GetUserSelectableOsTypeInfo(UserSelectableOsType type) {
               {OS_PREFERENCES, OS_PRIORITY_PREFERENCES}};
     case UserSelectableOsType::kPrinters:
       return {"printers", PRINTERS, {PRINTERS}};
+    case UserSelectableOsType::kWifiConfigurations:
+      return {"wifiConfigurations", WIFI_CONFIGURATIONS, {WIFI_CONFIGURATIONS}};
   }
 }
 #endif
@@ -150,9 +147,6 @@ UserSelectableType GetUserSelectableTypeFromString(const std::string& type) {
   }
   if (type == kTabsTypeName) {
     return UserSelectableType::kTabs;
-  }
-  if (type == kWifiConfigurationsTypeName) {
-    return UserSelectableType::kWifiConfigurations;
   }
   NOTREACHED();
   return UserSelectableType::kLastType;

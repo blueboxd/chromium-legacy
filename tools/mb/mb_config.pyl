@@ -665,6 +665,7 @@
     },
 
     'tryserver.chromium.android': {
+      'android-asan': 'android_clang_asan_release_trybot',
       'android-bfcache-debug': 'android_debug_static_bot',
       'android-opus-kitkat-arm-rel': 'android_release_trybot',
       # TODO(crbug/597596): Switch this back to debug_trybot when cronet's
@@ -1017,6 +1018,10 @@
 
     'android_clang_asan_release_bot': [
       'android', 'clang', 'asan', 'release_bot', 'strip_debug_info', 'minimal_symbols',
+    ],
+
+    'android_clang_asan_release_trybot': [
+      'android', 'clang', 'asan', 'release_trybot', 'strip_debug_info', 'minimal_symbols',
     ],
 
     'android_clang_tot_asan': [

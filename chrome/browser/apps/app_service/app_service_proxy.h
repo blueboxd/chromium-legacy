@@ -27,6 +27,7 @@
 #include "chrome/browser/apps/app_service/built_in_chromeos_apps.h"
 #include "chrome/browser/apps/app_service/crostini_apps.h"
 #include "chrome/browser/apps/app_service/extension_apps.h"
+#include "chrome/browser/apps/app_service/web_apps.h"
 #include "chrome/services/app_service/public/cpp/instance_registry.h"
 #endif  // OS_CHROMEOS
 
@@ -268,7 +269,10 @@ class AppServiceProxy : public KeyedService,
   std::unique_ptr<BuiltInChromeOsApps> built_in_chrome_os_apps_;
   std::unique_ptr<CrostiniApps> crostini_apps_;
   std::unique_ptr<ExtensionApps> extension_apps_;
+  // TODO(crbug.com/877898): Erase extension_web_apps_. One of these is always
+  // nullptr.
   std::unique_ptr<ExtensionApps> extension_web_apps_;
+  std::unique_ptr<WebApps> web_apps_;
 
   bool arc_is_registered_ = false;
 

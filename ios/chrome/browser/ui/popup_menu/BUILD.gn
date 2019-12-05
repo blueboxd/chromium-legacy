@@ -143,13 +143,16 @@ source_set("eg2_tests") {
   testonly = true
   sources = [
     "popup_menu_egtest.mm",
+    "request_desktop_mobile_site_egtest.mm",
   ]
   deps = [
     ":constants",
+    "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
+    "//ios/web/common:user_agent",
     "//ios/web/public/test/http_server:http_server",
     "//net",
     "//ui/base",

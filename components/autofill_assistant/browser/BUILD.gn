@@ -142,6 +142,8 @@ jumbo_static_library("browser") {
     "user_action.h",
     "user_data.cc",
     "user_data.h",
+    "user_data_util.cc",
+    "user_data_util.h",
     "viewport_mode.h",
     "web/element_finder.cc",
     "web/element_finder.h",
@@ -215,6 +217,7 @@ source_set("unit_tests") {
     "selector_unittest.cc",
     "string_conversions_util_unittest.cc",
     "trigger_context_unittest.cc",
+    "user_data_util_unittest.cc",
     "web/mock_web_controller.cc",
     "web/mock_web_controller.h",
   ]

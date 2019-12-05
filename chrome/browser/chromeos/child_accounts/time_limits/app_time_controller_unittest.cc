@@ -9,6 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
+namespace app_time {
 
 class AppTimeControllerTest : public testing::Test {
  protected:
@@ -30,4 +31,5 @@ TEST_F(AppTimeControllerTest, EnableFeature) {
   EXPECT_TRUE(AppTimeController::ArePerAppTimeLimitsEnabled());
 }
 
+}  // namespace app_time
 }  // namespace chromeos

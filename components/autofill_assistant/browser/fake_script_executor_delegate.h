@@ -50,12 +50,9 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   void SetProgressVisible(bool visible) override;
   void SetUserActions(
       std::unique_ptr<std::vector<UserAction>> user_actions) override;
-  void SetCollectUserDataOptions(
-      std::unique_ptr<CollectUserDataOptions> options,
-      std::unique_ptr<UserData> information) override;
-  void WriteUserData(base::OnceCallback<void(const CollectUserDataOptions*,
-                                             UserData*,
-                                             UserData::FieldChange*)>) override;
+  void SetCollectUserDataOptions(CollectUserDataOptions* options) override;
+  void WriteUserData(
+      base::OnceCallback<void(UserData*, UserData::FieldChange*)>) override;
   void SetViewportMode(ViewportMode mode) override;
   ViewportMode GetViewportMode() override;
   void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) override;
@@ -92,9 +89,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
 
   std::vector<UserAction>* GetUserActions() { return user_actions_.get(); }
 
-  CollectUserDataOptions* GetOptions() {
-    return payment_request_options_.get();
-  }
+  CollectUserDataOptions* GetOptions() { return payment_request_options_; }
 
   void UpdateNavigationState(bool navigating, bool error) {
     navigating_to_new_document_ = navigating;
@@ -121,7 +116,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   std::unique_ptr<Details> details_;
   std::unique_ptr<InfoBox> info_box_;
   std::unique_ptr<std::vector<UserAction>> user_actions_;
-  std::unique_ptr<CollectUserDataOptions> payment_request_options_;
+  CollectUserDataOptions* payment_request_options_;
   std::unique_ptr<UserData> payment_request_info_;
   bool navigating_to_new_document_ = false;
   bool navigation_error_ = false;

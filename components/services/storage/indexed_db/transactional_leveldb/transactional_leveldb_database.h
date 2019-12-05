@@ -170,8 +170,6 @@ class TransactionalLevelDBDatabase
   uint32_t num_iterators_ = 0;
   uint32_t max_iterators_ = 0;
 
-  std::string file_name_for_tracing;
-
   base::WeakPtrFactory<TransactionalLevelDBDatabase>
       weak_factory_for_iterators_{this};
 };

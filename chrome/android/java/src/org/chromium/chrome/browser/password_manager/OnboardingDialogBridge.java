@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.password_manager;
 import static org.chromium.chrome.browser.ChromeFeatureList.PASSWORD_MANAGER_ONBOARDING_ANDROID;
 import static org.chromium.chrome.browser.ChromeFeatureList.getFieldTrialParamByFeature;
 
-import android.content.res.Resources;
+import android.content.Context;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
@@ -17,11 +17,14 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 
+import java.lang.ref.WeakReference;
+
 /** JNI call glue between the native password manager onboarding class and Java objects. */
 public class OnboardingDialogBridge {
     private long mNativeOnboardingDialogView;
     private final PasswordManagerDialogCoordinator mOnboardingDialog;
-    private final Resources mResources;
+    private final WeakReference<Context> mContext;
+
     /** Experiment parameter. */
     private static final String EXPERIMENT_PARAMETER = "story";
     /** Story centered on password safety and leak detection. */
@@ -33,11 +36,10 @@ public class OnboardingDialogBridge {
         mNativeOnboardingDialogView = nativeOnboardingDialogView;
         // TODO(crbug.com/983445): Get rid of this in favor of passing in direct dependencies.
         ChromeActivity activity = (ChromeActivity) windowAndroid.getActivity().get();
-        mOnboardingDialog = new PasswordManagerDialogCoordinator(windowAndroid.getContext().get(),
-                activity.getModalDialogManager(), activity.findViewById(android.R.id.content),
-                activity.getFullscreenManager(), activity.getControlContainerHeightResource(),
-                false);
-        mResources = activity.getResources();
+        mOnboardingDialog = new PasswordManagerDialogCoordinator(activity.getModalDialogManager(),
+                activity.findViewById(android.R.id.content), activity.getFullscreenManager(),
+                activity.getControlContainerHeightResource());
+        mContext = new WeakReference<>(activity);
     }
 
     @CalledByNative
@@ -64,10 +66,16 @@ public class OnboardingDialogBridge {
 
     @CalledByNative
     public void showDialog(String onboardingTitle, String onboardingDetails) {
-        mOnboardingDialog.showDialog(onboardingTitle, onboardingDetails,
-                getDrawableResourceFromFeature(), mResources.getString(R.string.continue_button),
-                mResources.getString(R.string.not_now), this::onClick, true,
-                ModalDialogManager.ModalDialogType.TAB);
+        if (mContext.get() == null) return;
+
+        PasswordManagerDialogContents contents = new PasswordManagerDialogContents(onboardingTitle,
+                onboardingDetails, getDrawableResourceFromFeature(),
+                mContext.get().getResources().getString(R.string.continue_button),
+                mContext.get().getResources().getString(R.string.not_now), this::onClick);
+        contents.setDialogType(ModalDialogManager.ModalDialogType.TAB);
+
+        mOnboardingDialog.initialize(mContext.get(), contents);
+        mOnboardingDialog.showDialog();
     }
 
     @CalledByNative

@@ -639,6 +639,8 @@ const char* const kChromeDebugURLs[] = {
     content::kChromeUIGpuCrashURL,
     content::kChromeUIGpuHangURL,
     content::kChromeUIMemoryExhaustURL,
+    content::kChromeUIMemoryPressureCriticalURL,
+    content::kChromeUIMemoryPressureModerateURL,
     content::kChromeUIPpapiFlashCrashURL,
     content::kChromeUIPpapiFlashHangURL,
 #if defined(OS_WIN)

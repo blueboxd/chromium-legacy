@@ -24,7 +24,6 @@ enum class UserSelectableType {
   kExtensions,
   kApps,
   kReadingList,
-  kWifiConfigurations,
   kTabs,
   kLastType = kTabs
 };
@@ -53,7 +52,8 @@ enum class UserSelectableOsType {
 
   kOsPreferences,
   kPrinters,
-  kLastType = kPrinters
+  kWifiConfigurations,
+  kLastType = kWifiConfigurations
 };
 
 using UserSelectableOsTypeSet = EnumSet<UserSelectableOsType,

@@ -101,10 +101,10 @@ constexpr int kFingerprintFailedAnimationNumFrames = 45;
 
 constexpr base::TimeDelta kChallengeResponseResetAfterFailureDelay =
     base::TimeDelta::FromSeconds(5);
-constexpr int kChallengeResponseArrowSizeDp = 40;
-constexpr int kSpacingBetweenChallengeResponseArrowAndIconDp = 64;
+constexpr int kChallengeResponseArrowSizeDp = 48;
+constexpr int kSpacingBetweenChallengeResponseArrowAndIconDp = 100;
 constexpr int kSpacingBetweenChallengeResponseIconAndLabelDp = 15;
-constexpr int kChallengeResponseIconSizeDp = 32;
+constexpr int kChallengeResponseIconSizeDp = 28;
 constexpr int kDistanceBetweenPasswordFieldAndChallengeResponseViewDp = 0;
 
 constexpr int kDisabledAuthMessageVerticalBorderDp = 16;

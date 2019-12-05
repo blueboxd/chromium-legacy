@@ -1,0 +1,4 @@
+<FilesMatch "\.js$">
+  # Allow scripts to be fetched via CORS.
+  Header set Access-Control-Allow-Origin "*"
+</FilesMatch>

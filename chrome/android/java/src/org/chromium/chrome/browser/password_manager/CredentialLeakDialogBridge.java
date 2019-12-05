@@ -11,7 +11,6 @@ import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
-import org.chromium.ui.modaldialog.ModalDialogManager;
 
 import java.lang.ref.WeakReference;
 
@@ -27,9 +26,8 @@ public class CredentialLeakDialogBridge {
         ChromeActivity activity = (ChromeActivity) windowAndroid.getActivity().get();
         mActivity = new WeakReference<>(activity);
         mCredentialLeakDialog = new PasswordManagerDialogCoordinator(
-                windowAndroid.getContext().get(), activity.getModalDialogManager(),
-                activity.findViewById(android.R.id.content), activity.getFullscreenManager(),
-                activity.getControlContainerHeightResource(), true);
+                activity.getModalDialogManager(), activity.findViewById(android.R.id.content),
+                activity.getFullscreenManager(), activity.getControlContainerHeightResource());
     }
 
     @CalledByNative
@@ -41,11 +39,16 @@ public class CredentialLeakDialogBridge {
     @CalledByNative
     public void showDialog(String credentialLeakTitle, String credentialLeakDetails,
             String positiveButton, String negativeButton) {
-        boolean primaryButtonFilled = negativeButton != null;
-        mCredentialLeakDialog.addHelpButton(this::showHelpArticle);
-        mCredentialLeakDialog.showDialog(credentialLeakTitle, credentialLeakDetails,
-                R.drawable.password_check_warning, positiveButton, negativeButton, this::onClick,
-                primaryButtonFilled, ModalDialogManager.ModalDialogType.APP);
+        if (mActivity.get() == null) return;
+
+        PasswordManagerDialogContents contents = new PasswordManagerDialogContents(
+                credentialLeakTitle, credentialLeakDetails, R.drawable.password_check_warning,
+                positiveButton, negativeButton, this::onClick);
+        contents.setPrimaryButtonFilled(negativeButton != null);
+        contents.setHelpButtonCallback(this::showHelpArticle);
+
+        mCredentialLeakDialog.initialize(mActivity.get(), contents);
+        mCredentialLeakDialog.showDialog();
     }
 
     @CalledByNative

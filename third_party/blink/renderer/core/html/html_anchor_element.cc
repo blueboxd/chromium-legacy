@@ -459,8 +459,10 @@ bool IsEnterKeyKeydownEvent(Event& event) {
 Event* GetClickEventOrNull(Event& event) {
   // HTMLElement embedded in anchor tag dispatches a DOMActivate event when
   // clicked on. The original click event is set as underlying event.
-  bool use_underlying_event =
-      event.type() == event_type_names::kDOMActivate && event.UnderlyingEvent();
+  bool use_underlying_event = event.type() == event_type_names::kDOMActivate &&
+                              event.UnderlyingEvent() &&
+                              !event.UnderlyingEvent()->DefaultHandled() &&
+                              event.UnderlyingEvent()->target();
   Event* process_event =
       use_underlying_event ? event.UnderlyingEvent() : &event;
   if ((process_event->type() != event_type_names::kClick &&

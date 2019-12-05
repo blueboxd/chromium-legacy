@@ -9,6 +9,7 @@
 #include "chrome/common/chrome_features.h"
 
 namespace chromeos {
+namespace app_time {
 
 // static
 bool AppTimeController::ArePerAppTimeLimitsEnabled() {
@@ -22,4 +23,5 @@ AppTimeController::AppTimeController() {
 
 AppTimeController::~AppTimeController() = default;
 
+}  // namespace app_time
 }  // namespace chromeos

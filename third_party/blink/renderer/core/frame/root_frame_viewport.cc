@@ -614,6 +614,11 @@ void RootFrameViewport::SetSnapContainerData(
   LayoutViewport().SetSnapContainerData(data);
 }
 
+bool RootFrameViewport::SetTargetSnapAreaElementIds(
+    cc::TargetSnapAreaElementIds snap_target_ids) {
+  return LayoutViewport().SetTargetSnapAreaElementIds(snap_target_ids);
+}
+
 base::Optional<FloatPoint> RootFrameViewport::GetSnapPositionAndSetTarget(
     const cc::SnapSelectionStrategy& strategy) {
   return LayoutViewport().GetSnapPositionAndSetTarget(strategy);

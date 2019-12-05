@@ -514,6 +514,22 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
   return sk_color_space;
 }
 
+ColorSpace::PrimaryID ColorSpace::GetPrimaryID() const {
+  return primaries_;
+}
+
+ColorSpace::TransferID ColorSpace::GetTransferID() const {
+  return transfer_;
+}
+
+ColorSpace::MatrixID ColorSpace::GetMatrixID() const {
+  return matrix_;
+}
+
+ColorSpace::RangeID ColorSpace::GetRangeID() const {
+  return range_;
+}
+
 // static
 void ColorSpace::GetPrimaryMatrix(PrimaryID primary_id,
                                   skcms_Matrix3x3* to_XYZD50) {

@@ -10,10 +10,12 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline.h"
 #include "media/base/renderer.h"
+#include "media/base/renderer_factory_selector.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -23,10 +25,14 @@ namespace media {
 
 class MediaLog;
 
-// Callbacks used for Renderer creation.
-using CreateRendererCB = base::RepeatingCallback<std::unique_ptr<Renderer>()>;
+// Callbacks used for Renderer creation. When the FactoryType is nullopt, the
+// current base one will be created.
+using CreateRendererCB = base::RepeatingCallback<std::unique_ptr<Renderer>(
+    base::Optional<RendererFactoryType>)>;
 using RendererCreatedCB = base::OnceCallback<void(std::unique_ptr<Renderer>)>;
-using AsyncCreateRendererCB = base::RepeatingCallback<void(RendererCreatedCB)>;
+using AsyncCreateRendererCB =
+    base::RepeatingCallback<void(base::Optional<RendererFactoryType>,
+                                 RendererCreatedCB)>;
 
 // Pipeline runs the media pipeline.  Filters are created and called on the
 // task runner injected into this object. Pipeline works like a state
@@ -138,7 +144,8 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
 
   // Create a Renderer asynchronously. Must be called on the main task runner
   // and the callback will be called on the main task runner as well.
-  void AsyncCreateRenderer(RendererCreatedCB renderer_created_cb);
+  void AsyncCreateRenderer(base::Optional<RendererFactoryType> factory_type,
+                           RendererCreatedCB renderer_created_cb);
 
   // Notifications from RendererWrapper.
   void OnError(PipelineStatus error);

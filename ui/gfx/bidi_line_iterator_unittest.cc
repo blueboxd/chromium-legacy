@@ -142,7 +142,7 @@ TEST_P(BiDiLineIteratorTest, RTLPunctuationNoCustomBehavior) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     BiDiLineIteratorTest,
     ::testing::Values(base::i18n::TextDirection::LEFT_TO_RIGHT,
                       base::i18n::TextDirection::RIGHT_TO_LEFT));

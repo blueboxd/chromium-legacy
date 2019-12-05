@@ -58,11 +58,4 @@ bool FCMSyncNetworkChannel::DeliverToken(const std::string& token) {
   return true;
 }
 
-int FCMSyncNetworkChannel::GetReceivedMessagesCount() const {
-  return received_messages_count_;
-}
-
-void FCMSyncNetworkChannel::RequestDetailedStatus(
-    base::Callback<void(const base::DictionaryValue&)> callback) {}
-
 }  // namespace syncer

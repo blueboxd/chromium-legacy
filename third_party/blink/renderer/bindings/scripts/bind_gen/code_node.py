@@ -64,6 +64,33 @@ class CodeNode(object):
             # SymbolDefinitionNodes at SymbolScopeNode.
             self.undefined_code_symbols = []
 
+            # Dict from a SymbolNode to a set of tuples of SymbolScopeNodes
+            # where the symbol was used.
+            #
+            # For example, given a code symbol |x|, the following code
+            # structure:
+            #   {  // Scope1
+            #     {  // Scope2A
+            #       {  // Scope3
+            #         x;          // [1]
+            #       }
+            #       x;            // [2]
+            #     }
+            #     x;              // [3]
+            #     {  // Scope2B
+            #       x;            // [4]
+            #     }
+            #     x;              // [5]
+            #   }
+            # is translated into an entry of the dict below:
+            #   set([
+            #     (Scope1),                   # [3], [5]
+            #     (Scope1, Scope2A),          # [2]
+            #     (Scope1, Scope2A, Scope3),  # [1]
+            #     (Scope1, Scope2B),          # [4]
+            #   ])
+            self.undefined_code_symbols_scope_chains = {}
+
     _gensym_seq_id = 0
 
     @classmethod
@@ -309,25 +336,17 @@ class CodeNode(object):
             return self.outer.is_code_symbol_registered(symbol_node)
         return False
 
-    def on_undefined_code_symbol_found(self, symbol_node):
+    def on_undefined_code_symbol_found(self, symbol_node, symbol_scope_chain):
         """Receives a report of use of an undefined symbol node."""
         assert isinstance(symbol_node, SymbolNode)
+        assert isinstance(symbol_scope_chain, tuple)
+        assert all(
+            isinstance(scope, SymbolScopeNode) for scope in symbol_scope_chain)
         state = self.current_render_state
         if symbol_node not in state.undefined_code_symbols:
             state.undefined_code_symbols.append(symbol_node)
-
-    def likeliness_of_undefined_code_symbol_usage(self, symbol_node):
-        """
-        Returns how much likely the given |symbol_node| will be used inside this
-        code node.  The likeliness is relative to the closest outer
-        SymbolScopeNode.
-        """
-        assert isinstance(symbol_node, SymbolNode)
-        state = self.last_render_state
-        if symbol_node in state.undefined_code_symbols:
-            return Likeliness.ALWAYS
-        else:
-            return Likeliness.NEVER
+        state.undefined_code_symbols_scope_chains.setdefault(
+            symbol_node, set()).add(symbol_scope_chain)
 
 
 class LiteralNode(CodeNode):
@@ -500,77 +519,73 @@ class SymbolScopeNode(SequenceNode):
             separator=separator,
             separator_last=separator_last)
 
+        self._likeliness = Likeliness.ALWAYS
         self._registered_code_symbols = set()
 
     def _render(self, renderer, last_render_state):
         for symbol_node in last_render_state.undefined_code_symbols:
             if (self.is_code_symbol_registered(symbol_node)
                     and not self.is_code_symbol_defined(symbol_node)):
-                self._insert_symbol_definition(symbol_node)
+                self._insert_symbol_definition(symbol_node, last_render_state)
 
         return super(SymbolScopeNode, self)._render(
             renderer=renderer, last_render_state=last_render_state)
 
-    def _insert_symbol_definition(self, symbol_node):
-        def likeliness_at(code_node):
-            return code_node.likeliness_of_undefined_code_symbol_usage(
-                symbol_node)
+    def _insert_symbol_definition(self, symbol_node, last_render_state):
+        def count_by_likeliness(render_state):
+            counts = {
+                Likeliness.UNLIKELY: 0,
+                Likeliness.LIKELY: 0,
+                Likeliness.ALWAYS: 0,
+            }
 
-        def count_by_likeliness(symbol_scope_node, likeliness_cap, counts):
-            for node in symbol_scope_node:
-                if isinstance(node, SymbolScopeNode):
-                    likeliness_cap = count_by_likeliness(
-                        node, likeliness_cap, counts)
-                    continue
+            scope_chains = (render_state.undefined_code_symbols_scope_chains.
+                            get(symbol_node))
+            if not scope_chains:
+                return counts
 
-                likeliness = min(likeliness_cap, likeliness_at(node))
-                counts.setdefault(likeliness, 0)
-                counts[likeliness] += 1
+            self_index = iter(scope_chains).next().index(self)
+            scope_chains = map(
+                lambda scope_chain: scope_chain[self_index + 1:], scope_chains)
+            for scope_chain in scope_chains:
+                if not scope_chain:
+                    counts[Likeliness.ALWAYS] += 1
+                else:
+                    likeliness = min(
+                        map(lambda scope: scope.likeliness, scope_chain))
+                    counts[likeliness] += 1
+            return counts
 
-                # Count conditional use in exit branches.  We'll delegate the
-                # symbol definition to the exit branches if appropriate.
-                if (isinstance(node, ConditionalExitNode)
-                        and Likeliness.NEVER < likeliness_at(node)
-                        and likeliness_at(node) < Likeliness.ALWAYS):
-                    counts.setdefault(EXIT_BRANCH_COUNT_KEY, 0)
-                    counts[EXIT_BRANCH_COUNT_KEY] += 1
+        def likeliness_at(render_state):
+            counts = count_by_likeliness(render_state)
+            for likeliness in (Likeliness.ALWAYS, Likeliness.LIKELY,
+                               Likeliness.UNLIKELY):
+                if counts[likeliness] > 0:
+                    return likeliness
+            return Likeliness.NEVER
 
-                if isinstance(node, LikelyExitNode):
-                    likeliness_cap = min(likeliness_cap, Likeliness.UNLIKELY)
-                if isinstance(node, UnlikelyExitNode):
-                    likeliness_cap = min(likeliness_cap, Likeliness.LIKELY)
-
-            return likeliness_cap
-
-        def insert_right_before_first_use(symbol_scope_node):
-            for index, node in enumerate(symbol_scope_node):
-                if isinstance(node, SequenceNode):
-                    did_insert = insert_right_before_first_use(node)
+        def insert_before_threshold(sequence_node, threshold):
+            for index, node in enumerate(sequence_node):
+                if (isinstance(node, SequenceNode)
+                        and not isinstance(node, SymbolScopeNode)):
+                    did_insert = insert_before_threshold(node, threshold)
                     if did_insert:
                         return True
-                elif Likeliness.NEVER < likeliness_at(node):
-                    symbol_scope_node.insert(
-                        index, symbol_node.create_definition_node())
+                elif likeliness_at(node.last_render_state) >= threshold:
+                    sequence_node.insert(index,
+                                         symbol_node.create_definition_node())
                     return True
             return False
 
-        counts = {}
-        EXIT_BRANCH_COUNT_KEY = "exit_branch"
-        count_by_likeliness(self, Likeliness.ALWAYS, counts)
-        non_exit_uses = sum([
-            counts.get(Likeliness.UNLIKELY, 0),
-            counts.get(Likeliness.LIKELY, 0),
-            counts.get(Likeliness.ALWAYS, 0),
-            -counts.get(EXIT_BRANCH_COUNT_KEY, 0)
-        ])
-        assert non_exit_uses >= 0
-
-        if non_exit_uses == 0:
-            # Do nothing and let descendant SymbolScopeNodes do the work.
-            return
-
-        did_insert = insert_right_before_first_use(self)
-        assert did_insert
+        counts = count_by_likeliness(last_render_state)
+        if counts[Likeliness.ALWAYS] >= 1:
+            did_insert = insert_before_threshold(self, Likeliness.UNLIKELY)
+            assert did_insert
+        elif counts[Likeliness.LIKELY] >= 2:
+            did_insert = insert_before_threshold(self, Likeliness.LIKELY)
+            assert did_insert
+        else:
+            pass  # Do nothing and let descendant SymbolScopeNodes do the work.
 
     def is_code_symbol_registered(self, symbol_node):
         if symbol_node in self._registered_code_symbols:
@@ -587,6 +602,19 @@ class SymbolScopeNode(SequenceNode):
     def register_code_symbols(self, symbol_nodes):
         for symbol_node in symbol_nodes:
             self.register_code_symbol(symbol_node)
+
+    @property
+    def likeliness(self):
+        """
+        Returns how much likely that this SymbolScopeNode will be executed in
+        runtime.  The likeliness is relative to the closest outer
+        SymbolScopeNode.
+        """
+        return self._likeliness
+
+    def set_likeliness(self, likeliness):
+        assert isinstance(likeliness, Likeliness.Level)
+        self._likeliness = likeliness
 
 
 class SymbolNode(CodeNode):
@@ -633,11 +661,14 @@ class SymbolNode(CodeNode):
             self._definition_constructor = definition_constructor
 
     def _render(self, renderer, last_render_state):
-        for caller in renderer.callers:
-            assert isinstance(caller, CodeNode)
+        symbol_scope_chain = tuple(
+            filter(lambda node: isinstance(node, SymbolScopeNode),
+                   renderer.callers_from_first_to_last))
+
+        for caller in renderer.callers_from_last_to_first:
             if caller.is_code_symbol_defined(self):
                 break
-            caller.on_undefined_code_symbol_found(self)
+            caller.on_undefined_code_symbol_found(self, symbol_scope_chain)
 
         return self.name
 
@@ -745,18 +776,7 @@ if (${{{conditional}}}) {{
 
         self._cond_node = cond
         self._body_node = body
-        self._body_likeliness = body_likeliness
-
-    def likeliness_of_undefined_code_symbol_usage(self, symbol_node):
-        assert isinstance(symbol_node, SymbolNode)
-
-        def likeliness_at(code_node):
-            return code_node.likeliness_of_undefined_code_symbol_usage(
-                symbol_node)
-
-        return max(
-            likeliness_at(self._cond_node),
-            min(self._body_likeliness, likeliness_at(self._body_node)))
+        self._body_node.set_likeliness(body_likeliness)
 
 
 class LikelyExitNode(ConditionalExitNode):

@@ -82,6 +82,10 @@ std::string CreateLibAssistantConfig() {
   // the startup sequence when the version of LibAssistant has been upgraded.
   internal.SetKey("override_ready_message", Value(true));
 
+  // Set DeviceProperties.visibility to Visibility::PRIVATE.
+  // See //libassistant/shared/proto/device_properties.proto.
+  internal.SetKey("visibility", Value(1));
+
   if (base::SysInfo::IsRunningOnChromeOS()) {
     Value logging(Type::DICTIONARY);
     // Redirect libassistant logging to /var/log/chrome/ if has the switch,

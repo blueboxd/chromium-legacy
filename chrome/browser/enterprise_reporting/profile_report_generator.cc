@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/util/values/values_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise_reporting/extension_info.h"
 #include "chrome/browser/enterprise_reporting/policy_info.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -101,11 +103,21 @@ void ProfileReportGenerator::GetPolicyFetchTimestampInfo() {
 void ProfileReportGenerator::GetExtensionRequest() {
   if (!extension_request_enabled_)
     return;
-  const auto pending_list = profile_->GetPrefs()
-                                ->GetList(prefs::kCloudExtensionRequestIds)
-                                ->GetList();
-  for (const base::Value& pending_request : pending_list)
-    report_->add_extension_requests()->set_id(pending_request.GetString());
+  const base::DictionaryValue* pending_requests =
+      profile_->GetPrefs()->GetDictionary(prefs::kCloudExtensionRequestIds);
+
+  // In case a corrupted profile prefs causing |pending_requests| to be null.
+  if (!pending_requests)
+    return;
+
+  for (const auto& it : *pending_requests) {
+    auto* request = report_->add_extension_requests();
+    request->set_id(it.first);
+    base::Optional<base::Time> timestamp = ::util::ValueToTime(
+        it.second->FindKey(extension_misc::kExtensionRequestTimestamp));
+    if (timestamp)
+      request->set_request_timestamp(timestamp->ToJavaTime());
+  }
 }
 
 }  // namespace enterprise_reporting

@@ -26,8 +26,8 @@
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
 
-using device::mojom::BluetoothSystem;
 using device::mojom::BluetoothDeviceInfo;
+using device::mojom::BluetoothSystem;
 
 namespace ash {
 namespace tray {
@@ -237,6 +237,8 @@ void BluetoothDetailedView::AppendSameTypeDevicesToScrollList(
         GetBluetoothDeviceIcon(device->device_type, device->connection_state);
     HoverHighlightView* container = AddScrollListItem(
         icon, device::GetBluetoothDeviceNameForDisplay(device));
+    container->SetAccessibleName(
+        device::GetBluetoothDeviceLabelForAccessibility(device));
     switch (device->connection_state) {
       case BluetoothDeviceInfo::ConnectionState::kNotConnected:
         break;

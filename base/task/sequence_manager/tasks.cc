@@ -8,13 +8,13 @@ namespace base {
 namespace sequence_manager {
 
 Task::Task(internal::PostedTask posted_task,
-           TimeTicks desired_run_time,
+           TimeTicks delayed_run_time,
            EnqueueOrder sequence_order,
            EnqueueOrder enqueue_order,
            internal::WakeUpResolution resolution)
     : PendingTask(posted_task.location,
                   std::move(posted_task.callback),
-                  desired_run_time,
+                  delayed_run_time,
                   posted_task.nestable),
       task_type(posted_task.task_type),
       task_runner(std::move(posted_task.task_runner)),

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/public/ui/crw_web_view_scroll_view_proxy.h"
+#import "ios/web/web_state/ui/crw_web_view_scroll_view_proxy+internal.h"
 
 #import <objc/runtime.h>
 
@@ -11,18 +11,25 @@
 #include "base/auto_reset.h"
 #import "base/ios/crb_protocol_observers.h"
 #include "base/mac/foundation_util.h"
+#import "ios/web/web_state/ui/crw_web_view_scroll_view_delegate_proxy.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 @interface CRWWebViewScrollViewProxy () {
-  __weak UIScrollView* _scrollView;
-  id _observers;
   std::unique_ptr<UIScrollViewContentInsetAdjustmentBehavior>
       _storedContentInsetAdjustmentBehavior API_AVAILABLE(ios(11.0));
   std::unique_ptr<BOOL> _storedClipsToBounds;
 }
+
+// A delegate object of the UIScrollView managed by this class.
+@property(nonatomic, strong, readonly)
+    CRWWebViewScrollViewDelegateProxy* delegateProxy;
+
+@property(nonatomic, strong)
+    CRBProtocolObservers<CRWWebViewScrollViewProxyObserver>* observers;
+@property(nonatomic, weak) UIScrollView* underlyingScrollView;
 
 // Returns the key paths that need to be observed for UIScrollView.
 + (NSArray*)scrollViewObserverKeyPaths;
@@ -34,27 +41,38 @@
 
 @end
 
+// Note: An instance of this class must be safely casted to UIScrollView. See
+// -asUIScrollView. To make it happen:
+//   - When this class defines a method with the same selector as in a method of
+//     UIScrollView (or its ancestor classes), its API and the behavior should
+//     be consistent with the UIScrollView one's.
+//   - Calls to UIScrollView methods not implemented in this class are forwarded
+//     to the underlying UIScrollView by -methodSignatureForSelector: and
+//     -forwardInvocation:.
 @implementation CRWWebViewScrollViewProxy
 
 - (instancetype)init {
-  self = [super init];
   if (self) {
     Protocol* protocol = @protocol(CRWWebViewScrollViewProxyObserver);
-    _observers = [CRBProtocolObservers observersWithProtocol:protocol];
+    _observers =
+        static_cast<CRBProtocolObservers<CRWWebViewScrollViewProxyObserver>*>(
+            [CRBProtocolObservers observersWithProtocol:protocol]);
+    _delegateProxy = [[CRWWebViewScrollViewDelegateProxy alloc]
+        initWithScrollViewProxy:self];
   }
   return self;
 }
 
 - (void)dealloc {
-  [self stopObservingScrollView:_scrollView];
+  [self stopObservingScrollView:self.underlyingScrollView];
 }
 
 - (void)addGestureRecognizer:(UIGestureRecognizer*)gestureRecognizer {
-  [_scrollView addGestureRecognizer:gestureRecognizer];
+  [self.underlyingScrollView addGestureRecognizer:gestureRecognizer];
 }
 
 - (void)removeGestureRecognizer:(UIGestureRecognizer*)gestureRecognizer {
-  [_scrollView removeGestureRecognizer:gestureRecognizer];
+  [self.underlyingScrollView removeGestureRecognizer:gestureRecognizer];
 }
 
 - (void)addObserver:(id<CRWWebViewScrollViewProxyObserver>)observer {
@@ -66,14 +84,14 @@
 }
 
 - (void)setScrollView:(UIScrollView*)scrollView {
-  if (_scrollView == scrollView)
+  if (self.underlyingScrollView == scrollView)
     return;
-  [_scrollView setDelegate:nil];
-  [self stopObservingScrollView:_scrollView];
+  [self.underlyingScrollView setDelegate:nil];
+  [self stopObservingScrollView:self.underlyingScrollView];
   DCHECK(!scrollView.delegate);
-  scrollView.delegate = self;
+  scrollView.delegate = self.delegateProxy;
   [self startObservingScrollView:scrollView];
-  _scrollView = scrollView;
+  self.underlyingScrollView = scrollView;
   if (_storedClipsToBounds) {
     scrollView.clipsToBounds = *_storedClipsToBounds;
   }
@@ -81,7 +99,7 @@
   // Assigns |contentInsetAdjustmentBehavior| which was set before setting the
   // scroll view.
   if (_storedContentInsetAdjustmentBehavior) {
-    _scrollView.contentInsetAdjustmentBehavior =
+    self.underlyingScrollView.contentInsetAdjustmentBehavior =
         *_storedContentInsetAdjustmentBehavior;
   }
 
@@ -89,105 +107,111 @@
 }
 
 - (CGRect)frame {
-  return _scrollView ? [_scrollView frame] : CGRectZero;
+  return self.underlyingScrollView ? [self.underlyingScrollView frame]
+                                   : CGRectZero;
 }
 
 - (BOOL)isScrollEnabled {
-  return [_scrollView isScrollEnabled];
+  return [self.underlyingScrollView isScrollEnabled];
 }
 
 - (void)setScrollEnabled:(BOOL)scrollEnabled {
-  [_scrollView setScrollEnabled:scrollEnabled];
+  [self.underlyingScrollView setScrollEnabled:scrollEnabled];
 }
 
 - (BOOL)bounces {
-  return [_scrollView bounces];
+  return [self.underlyingScrollView bounces];
 }
 
 - (void)setBounces:(BOOL)bounces {
-  [_scrollView setBounces:bounces];
+  [self.underlyingScrollView setBounces:bounces];
 }
 
 - (BOOL)clipsToBounds {
-  if (!_scrollView && _storedClipsToBounds) {
+  if (!self.underlyingScrollView && _storedClipsToBounds) {
     return *_storedClipsToBounds;
   }
-  return _scrollView.clipsToBounds;
+  return self.underlyingScrollView.clipsToBounds;
 }
 
 - (void)setClipsToBounds:(BOOL)clipsToBounds {
   _storedClipsToBounds = std::make_unique<BOOL>(clipsToBounds);
-  _scrollView.clipsToBounds = clipsToBounds;
+  self.underlyingScrollView.clipsToBounds = clipsToBounds;
 }
 
 - (BOOL)isDecelerating {
-  return [_scrollView isDecelerating];
+  return [self.underlyingScrollView isDecelerating];
 }
 
 - (BOOL)isDragging {
-  return [_scrollView isDragging];
+  return [self.underlyingScrollView isDragging];
 }
 
 - (BOOL)isTracking {
-  return [_scrollView isTracking];
+  return [self.underlyingScrollView isTracking];
 }
 
 - (BOOL)isZooming {
-  return [_scrollView isZooming];
+  return [self.underlyingScrollView isZooming];
 }
 
 - (CGFloat)zoomScale {
-  return [_scrollView zoomScale];
+  return [self.underlyingScrollView zoomScale];
 }
 
 - (void)setContentOffset:(CGPoint)contentOffset {
-  [_scrollView setContentOffset:contentOffset];
+  [self.underlyingScrollView setContentOffset:contentOffset];
 }
 
 - (CGPoint)contentOffset {
-  return _scrollView ? [_scrollView contentOffset] : CGPointZero;
+  return self.underlyingScrollView ? [self.underlyingScrollView contentOffset]
+                                   : CGPointZero;
 }
 
 - (void)setContentInset:(UIEdgeInsets)contentInset {
-  [_scrollView setContentInset:contentInset];
+  [self.underlyingScrollView setContentInset:contentInset];
 }
 
 - (UIEdgeInsets)contentInset {
-  return _scrollView ? [_scrollView contentInset] : UIEdgeInsetsZero;
+  return self.underlyingScrollView ? [self.underlyingScrollView contentInset]
+                                   : UIEdgeInsetsZero;
 }
 
 - (void)setScrollIndicatorInsets:(UIEdgeInsets)scrollIndicatorInsets {
-  [_scrollView setScrollIndicatorInsets:scrollIndicatorInsets];
+  [self.underlyingScrollView setScrollIndicatorInsets:scrollIndicatorInsets];
 }
 
 - (UIEdgeInsets)scrollIndicatorInsets {
-  return _scrollView ? [_scrollView scrollIndicatorInsets] : UIEdgeInsetsZero;
+  return self.underlyingScrollView
+             ? [self.underlyingScrollView scrollIndicatorInsets]
+             : UIEdgeInsetsZero;
 }
 
 - (void)setContentSize:(CGSize)contentSize {
-  [_scrollView setContentSize:contentSize];
+  [self.underlyingScrollView setContentSize:contentSize];
 }
 
 - (CGSize)contentSize {
-  return _scrollView ? [_scrollView contentSize] : CGSizeZero;
+  return self.underlyingScrollView ? [self.underlyingScrollView contentSize]
+                                   : CGSizeZero;
 }
 
 - (void)setContentOffset:(CGPoint)contentOffset animated:(BOOL)animated {
-  [_scrollView setContentOffset:contentOffset animated:animated];
+  [self.underlyingScrollView setContentOffset:contentOffset animated:animated];
 }
 
 - (BOOL)scrollsToTop {
-  return [_scrollView scrollsToTop];
+  return [self.underlyingScrollView scrollsToTop];
 }
 
 - (void)setScrollsToTop:(BOOL)scrollsToTop {
-  [_scrollView setScrollsToTop:scrollsToTop];
+  [self.underlyingScrollView setScrollsToTop:scrollsToTop];
 }
 
 - (UIScrollViewContentInsetAdjustmentBehavior)contentInsetAdjustmentBehavior
     API_AVAILABLE(ios(11.0)) {
-  if (_scrollView) {
-    return [_scrollView contentInsetAdjustmentBehavior];
+  if (self.underlyingScrollView) {
+    return [self.underlyingScrollView contentInsetAdjustmentBehavior];
   } else if (_storedContentInsetAdjustmentBehavior) {
     return *_storedContentInsetAdjustmentBehavior;
   } else {
@@ -196,13 +220,13 @@
 }
 
 - (UIEdgeInsets)adjustedContentInset API_AVAILABLE(ios(11.0)) {
-  return [_scrollView adjustedContentInset];
+  return [self.underlyingScrollView adjustedContentInset];
 }
 
 - (void)setContentInsetAdjustmentBehavior:
     (UIScrollViewContentInsetAdjustmentBehavior)contentInsetAdjustmentBehavior
     API_AVAILABLE(ios(11.0)) {
-  [_scrollView
+  [self.underlyingScrollView
       setContentInsetAdjustmentBehavior:contentInsetAdjustmentBehavior];
   _storedContentInsetAdjustmentBehavior =
       std::make_unique<UIScrollViewContentInsetAdjustmentBehavior>(
@@ -210,84 +234,15 @@
 }
 
 - (UIPanGestureRecognizer*)panGestureRecognizer {
-  return [_scrollView panGestureRecognizer];
+  return [self.underlyingScrollView panGestureRecognizer];
 }
 
 - (NSArray*)gestureRecognizers {
-  return [_scrollView gestureRecognizers];
+  return [self.underlyingScrollView gestureRecognizers];
 }
 
 - (NSArray<__kindof UIView*>*)subviews {
-  return _scrollView ? [_scrollView subviews] : @[];
-}
-
-#pragma mark -
-#pragma mark UIScrollViewDelegate callbacks
-
-- (void)scrollViewDidScroll:(UIScrollView*)scrollView {
-  DCHECK_EQ(_scrollView, scrollView);
-  [_observers webViewScrollViewDidScroll:self];
-}
-
-- (void)scrollViewWillBeginDragging:(UIScrollView*)scrollView {
-  DCHECK_EQ(_scrollView, scrollView);
-  [_observers webViewScrollViewWillBeginDragging:self];
-}
-
-- (void)scrollViewWillEndDragging:(UIScrollView*)scrollView
-                     withVelocity:(CGPoint)velocity
-              targetContentOffset:(inout CGPoint*)targetContentOffset {
-  DCHECK_EQ(_scrollView, scrollView);
-  [_observers webViewScrollViewWillEndDragging:self
-                                  withVelocity:velocity
-                           targetContentOffset:targetContentOffset];
-}
-
-- (void)scrollViewDidEndDragging:(UIScrollView*)scrollView
-                  willDecelerate:(BOOL)decelerate {
-  DCHECK_EQ(_scrollView, scrollView);
-  [_observers webViewScrollViewDidEndDragging:self willDecelerate:decelerate];
-}
-
-- (void)scrollViewDidEndDecelerating:(UIScrollView*)scrollView {
-  DCHECK_EQ(_scrollView, scrollView);
-  [_observers webViewScrollViewDidEndDecelerating:self];
-}
-
-- (void)scrollViewDidEndScrollingAnimation:(UIScrollView*)scrollView {
-  DCHECK_EQ(_scrollView, scrollView);
-  [_observers webViewScrollViewDidEndScrollingAnimation:self];
-}
-
-- (BOOL)scrollViewShouldScrollToTop:(UIScrollView*)scrollView {
-  DCHECK_EQ(_scrollView, scrollView);
-  __block BOOL shouldScrollToTop = YES;
-  [_observers executeOnObservers:^(id observer) {
-    if ([observer respondsToSelector:@selector
-                  (webViewScrollViewShouldScrollToTop:)]) {
-      shouldScrollToTop = shouldScrollToTop &&
-                          [observer webViewScrollViewShouldScrollToTop:self];
-    }
-  }];
-  return shouldScrollToTop;
-}
-
-- (void)scrollViewDidZoom:(UIScrollView*)scrollView {
-  DCHECK_EQ(_scrollView, scrollView);
-  [_observers webViewScrollViewDidZoom:self];
-}
-
-- (void)scrollViewWillBeginZooming:(UIScrollView*)scrollView
-                          withView:(UIView*)view {
-  DCHECK_EQ(_scrollView, scrollView);
-  [_observers webViewScrollViewWillBeginZooming:self];
-}
-
-- (void)scrollViewDidEndZooming:(UIScrollView*)scrollView
-                       withView:(UIView*)view
-                        atScale:(CGFloat)scale {
-  DCHECK_EQ(_scrollView, scrollView);
-  [_observers webViewScrollViewDidEndZooming:self atScale:scale];
+  return self.underlyingScrollView ? [self.underlyingScrollView subviews] : @[];
 }
 
 #pragma mark -
@@ -310,13 +265,50 @@
                       ofObject:(id)object
                         change:(NSDictionary*)change
                        context:(void*)context {
-  DCHECK_EQ(object, _scrollView);
+  DCHECK_EQ(object, self.underlyingScrollView);
   if ([keyPath isEqualToString:@"frame"])
     [_observers webViewScrollViewFrameDidChange:self];
   if ([keyPath isEqualToString:@"contentSize"])
     [_observers webViewScrollViewDidResetContentSize:self];
   if ([keyPath isEqualToString:@"contentInset"])
     [_observers webViewScrollViewDidResetContentInset:self];
+}
+
+- (UIScrollView*)asUIScrollView {
+  // See the comment of @implementation of this class for why this should be
+  // safe.
+  return (UIScrollView*)self;
+}
+
+#pragma mark - Forwards unimplemented UIScrollView methods
+
+- (nullable NSMethodSignature*)methodSignatureForSelector:(SEL)sel {
+  // Called when this proxy is accessed through -asUIScrollView and the method
+  // is not implemented in this class. Do not call [self.underlyingScrollView
+  // methodSignatureForSelector:] here instead because self.underlyingScrollView
+  // may be nil.
+  return [UIScrollView instanceMethodSignatureForSelector:sel];
+}
+
+- (void)forwardInvocation:(NSInvocation*)invocation {
+  // Called when this proxy is accessed through -asUIScrollView and the method
+  // is not implemented in this class. self.underlyingScrollView may be nil, but
+  // it is safe. nil can respond to any invocation (and does nothing).
+  [invocation invokeWithTarget:self.underlyingScrollView];
+}
+
+#pragma mark - NSObject
+
+- (BOOL)isKindOfClass:(Class)aClass {
+  // Pretend self to be a kind of UIScrollView.
+  return
+      [UIScrollView isSubclassOfClass:aClass] || [super isKindOfClass:aClass];
+}
+
+- (BOOL)respondsToSelector:(SEL)aSelector {
+  // Respond to both of UIScrollView methods and its own methods.
+  return [UIScrollView instancesRespondToSelector:aSelector] ||
+         [super respondsToSelector:aSelector];
 }
 
 @end

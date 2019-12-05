@@ -25,6 +25,7 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/password_manager/core/browser/field_info_manager.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory.h"
@@ -60,6 +61,7 @@ using autofill::FormFieldData;
 using autofill::FormStructure;
 using autofill::PasswordForm;
 using autofill::PasswordFormFillData;
+using autofill::ServerFieldType;
 using autofill::mojom::PasswordFormFieldPredictionType;
 using base::ASCIIToUTF16;
 using base::Feature;
@@ -161,6 +163,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_METHOD0(GetMetricsRecorder, PasswordManagerMetricsRecorder*());
   MOCK_CONST_METHOD0(IsNewTabPage, bool());
   MOCK_CONST_METHOD0(GetPasswordSyncState, SyncState());
+  MOCK_CONST_METHOD0(GetFieldInfoManager, FieldInfoManager*());
 
   // Workaround for std::unique_ptr<> lacking a copy constructor.
   bool PromptUserToSaveOrUpdatePassword(
@@ -286,6 +289,12 @@ void SetUniqueIdIfNeeded(FormData* form) {
     f.unique_id = f.id_attribute;
 #endif
 }
+
+class MockFieldInfoManager : public FieldInfoManager {
+ public:
+  MOCK_METHOD3(AddFieldType, void(uint64_t, uint32_t, ServerFieldType));
+  MOCK_CONST_METHOD2(GetFieldType, ServerFieldType(uint64_t, uint32_t));
+};
 
 }  // namespace
 
@@ -3306,7 +3315,7 @@ TEST_F(PasswordManagerTest, UsernameFirstFlow) {
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
 
-  // Simlates successful submission.
+  // Simulates successful submission.
   manager()->OnPasswordFormsRendered(&driver_, {} /* observed */, true);
 
   // Simulate saving the form, as if the info bar was accepted.
@@ -3317,6 +3326,37 @@ TEST_F(PasswordManagerTest, UsernameFirstFlow) {
 
   EXPECT_EQ(username, saved_form.username_value);
   EXPECT_EQ(password, saved_form.password_value);
+}
+
+//  Checks that username is saved on username first flow.
+TEST_F(PasswordManagerTest, UsernameFirstFlowFillingLocalPredictions) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kUsernameFirstFlow);
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeConsumer(MakeSavedForm())));
+
+  manager()->OnPasswordFormsParsed(&driver_, {} /* observed */);
+
+  EXPECT_CALL(client_, IsSavingAndFillingEnabled).WillRepeatedly(Return(true));
+
+  constexpr uint32_t kFieldRendererId = 1;
+
+  FormData non_password_form;
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.unique_renderer_id = kFieldRendererId;
+  non_password_form.fields.push_back(field);
+
+  FormStructure form_structure(non_password_form);
+
+  MockFieldInfoManager mock_field_manager;
+  ON_CALL(client_, GetFieldInfoManager())
+      .WillByDefault(Return(&mock_field_manager));
+  EXPECT_CALL(mock_field_manager, GetFieldType(_, _))
+      .WillOnce(Return(autofill::SINGLE_USERNAME));
+
+  EXPECT_CALL(driver_, FillPasswordForm(_));
+  manager()->ProcessAutofillPredictions(&driver_, {&form_structure});
 }
 
 TEST_F(PasswordManagerTest, FormSubmittedOnMainFrame) {

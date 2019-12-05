@@ -24,9 +24,7 @@
 #include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "services/content/public/mojom/constants.mojom.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace ash {
 
@@ -258,24 +256,7 @@ void AssistantController::OpenUrl(const GURL& url,
 
 void AssistantController::GetNavigableContentsFactory(
     mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver) {
-  const UserSession* user_session =
-      Shell::Get()->session_controller()->GetUserSession(0);
-
-  if (!user_session) {
-    LOG(WARNING) << "Unable to retrieve active user session.";
-    return;
-  }
-
-  const base::Optional<base::Token>& service_instance_group =
-      user_session->user_info.service_instance_group;
-  if (!service_instance_group) {
-    LOG(ERROR) << "Unable to retrieve service instance group.";
-    return;
-  }
-
-  Shell::Get()->connector()->Connect(
-      service_manager::ServiceFilter::ByNameInGroup(
-          content::mojom::kServiceName, *service_instance_group),
+  Shell::Get()->shell_delegate()->BindNavigableContentsFactory(
       std::move(receiver));
 }
 

@@ -50,11 +50,13 @@ autofill::UserInfo TranslateCredentials(bool current_field_is_password,
                                         const GURL& origin_url,
                                         const UiCredential& credential) {
   std::string user_info_origin;
-  // Use the origin only when it differs from the site origin. Android origins
-  // have a path but empty hosts. Since they are treated as first-party
-  // credentials, they will have an empty origin.
-  if (credential.is_public_suffix_match())
-    user_info_origin = credential.origin_url().spec();
+  // Use the origin only when it differs from the site origin. Android
+  // credentials are always first party credentials and thus are not public
+  // suffix matches.
+  if (credential.is_public_suffix_match()) {
+    DCHECK(!credential.origin().opaque());
+    user_info_origin = credential.origin().Serialize();
+  }
   UserInfo user_info(user_info_origin);
 
   base::string16 username = GetDisplayUsername(credential);

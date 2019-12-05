@@ -99,6 +99,27 @@ base::string16 GetEmailDomains() {
   return base::string16(&email_domains[0]);
 }
 
+// Get a pretty-printed string of the list of email domains that we can display
+// to the end-user.
+base::string16 GetEmailDomainsPrintableString() {
+  base::string16 email_domains_reg = GetEmailDomains();
+  if (email_domains_reg.empty())
+    return email_domains_reg;
+
+  std::vector<base::string16> domains =
+      base::SplitString(base::ToLowerASCII(email_domains_reg),
+                        base::ASCIIToUTF16(kEmailDomainsSeparator),
+                        base::WhitespaceHandling::TRIM_WHITESPACE,
+                        base::SplitResult::SPLIT_WANT_NONEMPTY);
+  base::string16 email_domains_str;
+  for (size_t i = 0; i < domains.size(); ++i) {
+    email_domains_str += domains[i];
+    if (i < domains.size() - 1)
+      email_domains_str += L", ";
+  }
+  return email_domains_str;
+}
+
 // Use WinHttpUrlFetcher to communicate with the admin sdk and fetch the active
 // directory UPN from the admin configured custom attributes.
 HRESULT GetAdUpnFromCloudDirectory(const base::string16& email,
@@ -478,7 +499,7 @@ HRESULT ValidateResult(const base::Value& result, BSTR* status_text) {
         break;
       case kUiecInvalidEmailDomain:
         *status_text = CGaiaCredentialBase::AllocErrorString(
-            IDS_INVALID_EMAIL_DOMAIN_BASE);
+            IDS_INVALID_EMAIL_DOMAIN_BASE, {GetEmailDomainsPrintableString()});
         break;
       case kUiecMissingSigninData:
         *status_text =
@@ -1149,6 +1170,14 @@ void CGaiaCredentialBase::PreventDenyAccessUpdate() {
 // static
 BSTR CGaiaCredentialBase::AllocErrorString(UINT id) {
   CComBSTR str(GetStringResource(id).c_str());
+  return str.Detach();
+}
+
+// static
+BSTR CGaiaCredentialBase::AllocErrorString(
+    UINT id,
+    const std::vector<base::string16>& replacements) {
+  CComBSTR str(GetStringResource(id, replacements).c_str());
   return str.Detach();
 }
 

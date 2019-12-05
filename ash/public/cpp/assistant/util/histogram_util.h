@@ -77,6 +77,13 @@ ASH_PUBLIC_EXPORT void RecordProactiveSuggestionsShowResult(
     int category,
     ProactiveSuggestionsShowResult result);
 
+// Records an impression of a proactive suggestions view. If provided, the
+// opaque |category| of the associated content (e.g. news, shopping, etc.) as
+// well as the |veId| associated w/ the type of view are also recorded.
+ASH_PUBLIC_EXPORT void RecordProactiveSuggestionsViewImpression(
+    base::Optional<int> category,
+    base::Optional<int> veId);
+
 }  // namespace metrics
 }  // namespace assistant
 }  // namespace ash

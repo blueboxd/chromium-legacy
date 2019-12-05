@@ -12,15 +12,13 @@
       "type": "image/png"
     }
   ],
-  "file_handler": {
-    "action": ".",
-    "files": [
-      {
-        "name": "Image File",
-        "accept": [
-          "image/*"
-        ]
+  "file_handlers": [
+    {
+      "action": ".",
+      "name": "Image File",
+      "accept": {
+        "image/*": [ ]
       }
-    ]
-  }
+    }
+  ]
 }

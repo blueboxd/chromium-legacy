@@ -344,8 +344,7 @@ class RenderWidgetHostViewAura::WindowAncestorObserver
 // RenderWidgetHostViewAura, public:
 
 RenderWidgetHostViewAura::RenderWidgetHostViewAura(
-    RenderWidgetHost* widget_host,
-    bool is_guest_view_hack)
+    RenderWidgetHost* widget_host)
     : RenderWidgetHostViewBase(widget_host),
       window_(nullptr),
       in_shutdown_(false),
@@ -361,15 +360,12 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(
       legacy_render_widget_host_HWND_(nullptr),
       legacy_window_destroyed_(false),
 #endif
-      is_guest_view_hack_(is_guest_view_hack),
       device_scale_factor_(0.0f),
       event_handler_(new RenderWidgetHostViewEventHandler(host(), this, this)),
-      frame_sink_id_(is_guest_view_hack_ ? AllocateFrameSinkIdForGuestViewHack()
-                                         : host()->GetFrameSinkId()) {
+      frame_sink_id_(host()->GetFrameSinkId()) {
   CreateDelegatedFrameHostClient();
 
-  if (!is_guest_view_hack_)
-    host()->SetView(this);
+  host()->SetView(this);
 
   // We should start observing the TextInputManager for IME-related events as
   // well as monitoring its lifetime.
@@ -1117,14 +1113,6 @@ InputEventAckState RenderWidgetHostViewAura::FilterInputEvent(
 
   return consumed ? INPUT_EVENT_ACK_STATE_CONSUMED
                   : INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
-}
-
-InputEventAckState RenderWidgetHostViewAura::FilterChildGestureEvent(
-    const blink::WebGestureEvent& gesture_event) {
-  if (overscroll_controller_ &&
-      overscroll_controller_->WillHandleEvent(gesture_event))
-    return INPUT_EVENT_ACK_STATE_CONSUMED;
-  return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 }
 
 BrowserAccessibilityManager*
@@ -1949,8 +1937,7 @@ void RenderWidgetHostViewAura::OnRenderFrameMetadataChangedAfterActivation() {
 
 RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
   // Ask the RWH to drop reference to us.
-  if (!is_guest_view_hack_)
-    host()->ViewDestroyed();
+  host()->ViewDestroyed();
 
   selection_controller_.reset();
   selection_controller_client_.reset();
@@ -2151,13 +2138,8 @@ ui::InputMethod* RenderWidgetHostViewAura::GetInputMethod() const {
 RenderWidgetHostViewBase*
 RenderWidgetHostViewAura::GetFocusedViewForTextSelection() {
   // We obtain the TextSelection from focused RWH which is obtained from the
-  // frame tree. BrowserPlugin-based guests' RWH is not part of the frame tree
-  // and the focused RWH will be that of the embedder which is incorrect. In
-  // this case we should use TextSelection for |this| since RWHV for guest
-  // forwards text selection information to its platform view.
-  return is_guest_view_hack_
-             ? this
-             : GetFocusedWidget() ? GetFocusedWidget()->GetView() : nullptr;
+  // frame tree.
+  return GetFocusedWidget() ? GetFocusedWidget()->GetView() : nullptr;
 }
 
 void RenderWidgetHostViewAura::Shutdown() {
@@ -2479,14 +2461,9 @@ void RenderWidgetHostViewAura::OnTextSelectionChanged(
     return;
 
   // We obtain the TextSelection from focused RWH which is obtained from the
-  // frame tree. BrowserPlugin-based guests' RWH is not part of the frame tree
-  // and the focused RWH will be that of the embedder which is incorrect. In
-  // this case we should use TextSelection for |this| since RWHV for guest
-  // forwards text selection information to its platform view.
+  // frame tree.
   RenderWidgetHostViewBase* focused_view =
-      is_guest_view_hack_
-          ? this
-          : GetFocusedWidget() ? GetFocusedWidget()->GetView() : nullptr;
+      GetFocusedWidget() ? GetFocusedWidget()->GetView() : nullptr;
 
   if (!focused_view)
     return;
@@ -2573,14 +2550,6 @@ void RenderWidgetHostViewAura::DidNavigate() {
   is_first_navigation_ = false;
 }
 
-// static
-viz::FrameSinkId
-RenderWidgetHostViewAura::AllocateFrameSinkIdForGuestViewHack() {
-  return ImageTransportFactory::GetInstance()
-      ->GetContextFactoryPrivate()
-      ->AllocateFrameSinkId();
-}
-
 MouseWheelPhaseHandler* RenderWidgetHostViewAura::GetMouseWheelPhaseHandler() {
   return &event_handler_->mouse_wheel_phase_handler();
 }
@@ -2589,8 +2558,6 @@ void RenderWidgetHostViewAura::TakeFallbackContentFrom(
     RenderWidgetHostView* view) {
   DCHECK(!static_cast<RenderWidgetHostViewBase*>(view)
               ->IsRenderWidgetHostViewChildFrame());
-  DCHECK(!static_cast<RenderWidgetHostViewBase*>(view)
-              ->IsRenderWidgetHostViewGuest());
   RenderWidgetHostViewAura* view_aura =
       static_cast<RenderWidgetHostViewAura*>(view);
   base::Optional<SkColor> color = view_aura->GetBackgroundColor();

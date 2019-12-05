@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityBrowserControlsVisibilityManager;
 import org.chromium.chrome.browser.customtabs.BaseCustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
@@ -58,7 +59,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController;
-import org.chromium.chrome.browser.ui.widget.TintedDrawable;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.util.AndroidTaskUtils;
 import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityComponent;
@@ -93,9 +93,11 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     private WebappInfo mWebappInfo;
 
     private BrowserServicesIntentDataProvider mIntentDataProvider;
+    private TrustedWebActivityBrowserControlsVisibilityManager mBrowserControlsVisibilityManager;
     private WebappActivityTabController mTabController;
     private SplashController mSplashController;
     private TabObserverRegistrar mTabObserverRegistrar;
+    private WebappDelegateFactory mDelegateFactory;
 
     private WebappDisclosureSnackbarController mDisclosureSnackbarController;
 
@@ -103,8 +105,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     private Integer mBrandColor;
 
     private static Integer sOverrideCoreCountForTesting;
-
-    private WebappDelegateFactory mWebappDelegateFactory;
 
     /** Initialization-on-demand holder. This exists for thread-safe lazy initialization. */
     private static class Holder {
@@ -359,15 +359,16 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         onComponentCreated(component);
 
         mTabController = component.resolveTabController();
+        mBrowserControlsVisibilityManager = component.resolveBrowserControlsVisibilityManager();
+        mSplashController = component.resolveSplashController();
+        mTabObserverRegistrar = component.resolveTabObserverRegistrar();
+        mDelegateFactory = component.resolveWebappDelegateFactory();
 
         mStatusBarColorProvider.setUseTabThemeColor(true /* useTabThemeColor */);
 
         mNavigationController.setFinishHandler((reason) -> { handleFinishAndClose(); });
         mNavigationController.setLandingPageOnCloseCriterion(
                 url -> WebappScopePolicy.isUrlInScope(scopePolicy(), getWebappInfo(), url));
-
-        mTabObserverRegistrar = component.resolveTabObserverRegistrar();
-        mSplashController = component.resolveSplashController();
 
         return component;
     }
@@ -511,8 +512,8 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     }
 
     WebContentsDelegateAndroid getWebContentsDelegate() {
-        assert mWebappDelegateFactory != null;
-        return mWebappDelegateFactory.getWebContentsDelegate();
+        assert mDelegateFactory != null;
+        return mDelegateFactory.getWebContentsDelegate();
     }
 
     public static void addWebappInfo(String id, WebappInfo info) {
@@ -568,10 +569,9 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
                     RecordHistogram.recordBooleanHistogram(
                             HISTOGRAM_NAVIGATION_STATUS, !navigation.isErrorPage());
 
-                    updateToolbarCloseButtonVisibility();
-
                     boolean isNavigationInScope = WebappScopePolicy.isUrlInScope(
                             scopePolicy(), mWebappInfo, navigation.getUrl());
+                    mBrowserControlsVisibilityManager.updateIsInTwaMode(isNavigationInScope);
                     if (!isNavigationInScope) {
                         // Briefly show the toolbar for off-scope navigations.
                         mToolbarCoordinator.showToolbarTemporarily();
@@ -637,17 +637,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
      */
     public @Nullable String getWebApkPackageName() {
         return null;
-    }
-
-    private void updateToolbarCloseButtonVisibility() {
-        if (WebappBrowserControlsDelegate.shouldShowToolbarCloseButton(this)) {
-            getToolbarManager().setCloseButtonDrawable(
-                    TintedDrawable.constructTintedDrawable(this, R.drawable.btn_close));
-            // Applies light or dark tint to icons depending on the theme color.
-            getToolbarManager().updateLocationBarVisualsForState();
-        } else {
-            getToolbarManager().setCloseButtonDrawable(null);
-        }
     }
 
     private void updateToolbarColor() {
@@ -739,8 +728,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
      * @return {@link TabDelegateFactory} to be used while creating the associated {@link Tab}.
      */
     private TabDelegateFactory createTabDelegateFactory() {
-        mWebappDelegateFactory = new WebappDelegateFactory(this);
-        return mWebappDelegateFactory;
+        return mDelegateFactory;
     }
 
     private TabCreator createNormalTabCreator() {

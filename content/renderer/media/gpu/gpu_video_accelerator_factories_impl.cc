@@ -200,13 +200,14 @@ int32_t GpuVideoAcceleratorFactoriesImpl::GetCommandBufferRouteId() {
   return context_provider_->GetCommandBufferProxy()->route_id();
 }
 
-bool GpuVideoAcceleratorFactoriesImpl::IsDecoderConfigSupported(
+media::GpuVideoAcceleratorFactories::Supported
+GpuVideoAcceleratorFactoriesImpl::IsDecoderConfigSupported(
     media::VideoDecoderImplementation implementation,
     const media::VideoDecoderConfig& config) {
   // There is no support for alpha channel hardware decoding yet.
   if (config.alpha_mode() == media::VideoDecoderConfig::AlphaMode::kHasAlpha) {
     DVLOG(1) << "Alpha transparency formats are not supported.";
-    return false;
+    return Supported::kFalse;
   }
 
   base::AutoLock lock(supported_decoder_configs_lock_);
@@ -215,20 +216,20 @@ bool GpuVideoAcceleratorFactoriesImpl::IsDecoderConfigSupported(
   // that all configs are supported. Clients will find out that configs are not
   // supported when VideoDecoder::Initialize() fails.
   if (!supported_decoder_configs_)
-    return true;
+    return Supported::kUnknown;
 
   auto iter = supported_decoder_configs_->find(implementation);
   // If the decoder implementation wasn't listed, then fail.  This means that
   // there is no such decoder implementation.
   if (iter == supported_decoder_configs_->end())
-    return false;
+    return Supported::kFalse;
 
   // Iterate over the supported configs for |impl|.
   for (const auto& supported : iter->second) {
     if (supported.Matches(config))
-      return true;
+      return Supported::kTrue;
   }
-  return false;
+  return Supported::kFalse;
 }
 
 std::unique_ptr<media::VideoDecoder>

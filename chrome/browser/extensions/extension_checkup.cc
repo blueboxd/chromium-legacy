@@ -19,8 +19,7 @@ namespace {
 
 bool ShouldShowExtensionsCheckup(content::BrowserContext* context) {
   // Don't show the promo if the extensions checkup experiment isn't enabled.
-  if (!base::FeatureList::IsEnabled(
-          extensions_features::kExtensionsCheckupTool)) {
+  if (!base::FeatureList::IsEnabled(extensions_features::kExtensionsCheckup)) {
     return false;
   }
 
@@ -56,16 +55,13 @@ bool ShouldShowExtensionsCheckup(content::BrowserContext* context) {
 
 namespace extensions {
 
-const char kNtpPromoExperiment[] = "promo";
-const char kStartupExperiment[] = "startup";
-
 bool ShouldShowExtensionsCheckupOnStartup(content::BrowserContext* context) {
   ExtensionPrefs* prefs = ExtensionPrefs::Get(context);
   if (ShouldShowExtensionsCheckup(context) &&
       base::GetFieldTrialParamValueByFeature(
-          extensions_features::kExtensionsCheckupTool,
-          extensions_features::kExtensionsCheckupToolEntryPointParameter) ==
-          "startup" &&
+          extensions_features::kExtensionsCheckup,
+          extensions_features::kExtensionsCheckupEntryPointParameter) ==
+          extensions_features::kStartupEntryPoint &&
       !prefs->HasUserSeenExtensionsCheckupOnStartup()) {
     return true;
   }
@@ -75,9 +71,9 @@ bool ShouldShowExtensionsCheckupOnStartup(content::BrowserContext* context) {
 bool ShouldShowExtensionsCheckupPromo(content::BrowserContext* context) {
   return ShouldShowExtensionsCheckup(context) &&
          base::GetFieldTrialParamValueByFeature(
-             extensions_features::kExtensionsCheckupTool,
-             extensions_features::kExtensionsCheckupToolEntryPointParameter) ==
-             "promo";
+             extensions_features::kExtensionsCheckup,
+             extensions_features::kExtensionsCheckupEntryPointParameter) ==
+             extensions_features::kNtpPromoEntryPoint;
 }
 
 }  // namespace extensions

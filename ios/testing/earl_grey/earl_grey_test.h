@@ -22,6 +22,7 @@ id<GREYMatcher> grey_kindOfClassName(NSString* name);
 #elif defined(CHROME_EARL_GREY_2)
 
 #import "ios/third_party/earl_grey2/src/TestLib/EarlGreyImpl/EarlGrey.h"  // nogncheck
+#import "ios/third_party/earl_grey2/src/TestLib/EarlGreyImpl/EarlGreyImpl+XCUIApplication.h"  // nogncheck
 
 #else
 #error Must define either CHROME_EARL_GREY_1 or CHROME_EARL_GREY_2.

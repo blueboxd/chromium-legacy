@@ -8,12 +8,12 @@
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/overlay_candidate_list.h"
-#include "components/viz/service/display/overlay_candidate_validator.h"
+#include "components/viz/service/display/overlay_candidate_validator_strategy.h"
 
 namespace viz {
 
 OverlayStrategyUnderlay::OverlayStrategyUnderlay(
-    OverlayCandidateValidator* capability_checker,
+    OverlayCandidateValidatorStrategy* capability_checker,
     OpaqueMode opaque_mode)
     : capability_checker_(capability_checker), opaque_mode_(opaque_mode) {
   DCHECK(capability_checker);

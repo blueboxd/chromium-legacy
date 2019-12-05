@@ -16,6 +16,7 @@
 #include "media/base/video_codecs.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/accelerated_video_decoder.h"
+#include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/v4l2_device.h"
 #include "media/gpu/v4l2/v4l2_h264_accelerator.h"
@@ -98,11 +99,9 @@ V4L2StatelessVideoDecoderBackend::DecodeRequest::~DecodeRequest() = default;
 V4L2StatelessVideoDecoderBackend::V4L2StatelessVideoDecoderBackend(
     Client* const client,
     scoped_refptr<V4L2Device> device,
-    DmabufVideoFramePool* const frame_pool,
     VideoCodecProfile profile,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : V4L2VideoDecoderBackend(client, std::move(device)),
-      frame_pool_(frame_pool),
       profile_(profile),
       bitstream_id_to_timestamp_(kTimestampCacheSize),
       task_runner_(task_runner) {
@@ -177,6 +176,26 @@ bool V4L2StatelessVideoDecoderBackend::Initialize() {
   return true;
 }
 
+// static
+void V4L2StatelessVideoDecoderBackend::ReuseOutputBufferThunk(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    base::Optional<base::WeakPtr<V4L2StatelessVideoDecoderBackend>> weak_this,
+    V4L2ReadableBufferRef buffer) {
+  DVLOGF(3);
+  DCHECK(weak_this);
+
+  if (task_runner->RunsTasksInCurrentSequence()) {
+    if (*weak_this) {
+      (*weak_this)->ReuseOutputBuffer(std::move(buffer));
+    }
+  } else {
+    task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(&V4L2StatelessVideoDecoderBackend::ReuseOutputBuffer,
+                       *weak_this, std::move(buffer)));
+  }
+}
+
 void V4L2StatelessVideoDecoderBackend::ReuseOutputBuffer(
     V4L2ReadableBufferRef buffer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -205,15 +224,22 @@ void V4L2StatelessVideoDecoderBackend::OnOutputBufferDequeued(
 
   surface->SetDecoded();
 
-  // Keep a reference to the V4L2 buffer until the buffer is reused. The
-  // reason for this is that the config store uses V4L2 buffer IDs to
-  // reference frames, therefore we cannot reuse the same V4L2 buffer ID for
-  // another decode operation until all references to that frame are gone.
-  // Request API does not have this limitation, so we can probably remove this
-  // after config store is gone.
-  surface->SetReleaseCallback(
-      base::BindOnce(&V4L2StatelessVideoDecoderBackend::ReuseOutputBuffer,
-                     weak_this_, std::move(dequeued_buffer)));
+  auto reuse_buffer_cb =
+      base::BindOnce(&V4L2StatelessVideoDecoderBackend::ReuseOutputBufferThunk,
+                     task_runner_, weak_this_, std::move(dequeued_buffer));
+  if (output_queue_->GetMemoryType() == V4L2_MEMORY_MMAP) {
+    // Keep a reference to the V4L2 buffer until the frame is reused, because
+    // the frame is backed up by the V4L2 buffer's memory.
+    surface->video_frame()->AddDestructionObserver(std::move(reuse_buffer_cb));
+  } else {
+    // Keep a reference to the V4L2 buffer until the buffer is reused. The
+    // reason for this is that the config store uses V4L2 buffer IDs to
+    // reference frames, therefore we cannot reuse the same V4L2 buffer ID for
+    // another decode operation until all references to that frame are gone.
+    // Request API does not have this limitation, so we can probably remove this
+    // after config store is gone.
+    surface->SetReleaseCallback(std::move(reuse_buffer_cb));
+  }
 
   PumpOutputSurfaces();
 
@@ -233,28 +259,41 @@ V4L2StatelessVideoDecoderBackend::CreateSurface() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOGF(4);
 
-  // Request VideoFrame.
-  scoped_refptr<VideoFrame> frame = frame_pool_->GetFrame();
-  if (!frame) {
-    // We allocate the same number of output buffer slot in V4L2 device and the
-    // output VideoFrame. If there is free output buffer slot but no free
-    // VideoFrame, surface_it means the VideoFrame is not released at client
-    // side. Post DoDecodeWork when the pool has available frames.
-    DVLOGF(3) << "There is no available VideoFrame.";
-    frame_pool_->NotifyWhenFrameAvailable(base::BindOnce(
-        base::IgnoreResult(&base::SequencedTaskRunner::PostTask), task_runner_,
-        FROM_HERE,
-        base::BindOnce(&V4L2StatelessVideoDecoderBackend::DoDecodeWork,
-                       weak_this_)));
-    return nullptr;
-  }
-
   // Request V4L2 input and output buffers.
   V4L2WritableBufferRef input_buf = input_queue_->GetFreeBuffer();
   V4L2WritableBufferRef output_buf = output_queue_->GetFreeBuffer();
   if (!input_buf.IsValid() || !output_buf.IsValid()) {
     DVLOGF(3) << "There is no free V4L2 buffer.";
     return nullptr;
+  }
+
+  DmabufVideoFramePool* pool = client_->GetVideoFramePool();
+  scoped_refptr<VideoFrame> frame;
+  if (!pool) {
+    // Get VideoFrame from the V4L2 buffer because now we allocate from V4L2
+    // driver via MMAP. The VideoFrame received from V4L2 buffer will remain
+    // until deallocating V4L2Queue. But we need to know when the buffer is not
+    // used by the client. So we wrap the frame here.
+    scoped_refptr<VideoFrame> origin_frame = output_buf.GetVideoFrame();
+    frame = VideoFrame::WrapVideoFrame(origin_frame, origin_frame->format(),
+                                       origin_frame->visible_rect(),
+                                       origin_frame->natural_size());
+  } else {
+    // Try to get VideoFrame from the pool.
+    frame = pool->GetFrame();
+    if (!frame) {
+      // We allocate the same number of output buffer slot in V4L2 device and
+      // the output VideoFrame. If there is free output buffer slot but no free
+      // VideoFrame, it means the VideoFrame is not released at client
+      // side. Post DoDecodeWork when the pool has available frames.
+      DVLOGF(3) << "There is no available VideoFrame.";
+      pool->NotifyWhenFrameAvailable(base::BindOnce(
+          base::IgnoreResult(&base::SequencedTaskRunner::PostTask),
+          task_runner_, FROM_HERE,
+          base::BindOnce(&V4L2StatelessVideoDecoderBackend::DoDecodeWork,
+                         weak_this_)));
+      return nullptr;
+    }
   }
 
   scoped_refptr<V4L2DecodeSurface> dec_surface;
@@ -313,8 +352,19 @@ void V4L2StatelessVideoDecoderBackend::DecodeSurface(
     return;
   }
 
-  if (!std::move(dec_surface->output_buffer())
-           .QueueDMABuf(dec_surface->video_frame()->DmabufFds())) {
+  bool result = false;
+  switch (output_queue_->GetMemoryType()) {
+    case V4L2_MEMORY_MMAP:
+      result = std::move(dec_surface->output_buffer()).QueueMMap();
+      break;
+    case V4L2_MEMORY_DMABUF:
+      result = std::move(dec_surface->output_buffer())
+                   .QueueDMABuf(dec_surface->video_frame()->DmabufFds());
+      break;
+    default:
+      NOTREACHED() << "We should only use MMAP or DMABUF.";
+  }
+  if (!result) {
     client_->OnBackendError();
     return;
   }

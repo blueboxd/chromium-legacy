@@ -247,6 +247,9 @@ class OptimizationGuideStore {
   // If |this| is not available, base::Time() is returned.
   base::Time GetHostModelFeaturesUpdateTime() const;
 
+  // Clears all host model features from the database and resets the entry keys.
+  void ClearHostModelFeaturesFromDatabase();
+
  private:
   friend class OptimizationGuideStoreTest;
   friend class StoreUpdateData;

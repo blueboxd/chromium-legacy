@@ -35,5 +35,6 @@ group("unit_tests") {
   testonly = true
   deps = [
     "//chrome/browser/notifications/scheduler/internal:unit_tests",
+    "//chrome/browser/notifications/scheduler/public:unit_tests",
   ]
 }

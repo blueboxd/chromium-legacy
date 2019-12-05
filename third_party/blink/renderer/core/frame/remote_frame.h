@@ -92,6 +92,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
       bool is_potentially_trustworthy_unique_origin) override;
   void DispatchLoadEventForFrameOwner() override;
   void Collapse(bool collapsed) final;
+  void Focus() override;
 
  private:
   // Frame protected overrides:

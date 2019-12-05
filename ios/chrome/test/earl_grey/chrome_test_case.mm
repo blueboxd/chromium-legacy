@@ -420,9 +420,20 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
 
 #pragma mark AppLaunchManagerObserver method
 
-- (void)appLaunchManagerDidRelaunchApp:(AppLaunchManager*)appLaunchManager {
-  // Do not call +[ChromeTestCase setUpHelper] if the app was relaunched before
-  // +setUpForTestCase. +setUpForTestCase will call +setUpHelper, and
+- (void)appLaunchManagerDidRelaunchApp:(AppLaunchManager*)appLaunchManager
+                             runResets:(BOOL)runResets {
+  if (!runResets) {
+    // Check stored flags and restore to app status before relaunch.
+    if (!_isHTTPServerStopped) {
+      [[self class] startHTTPServer];
+    }
+    if (!_isMockAuthenticationDisabled) {
+      [[self class] enableMockAuthentication];
+    }
+    return;
+  }
+  // Do not call +[ChromeTestCase setUpHelper] if the app was relaunched
+  // before +setUpForTestCase. +setUpForTestCase will call +setUpHelper, and
   // +setUpHelper can not be called twice during setup process.
   if (gExecutedSetUpForTestCase) {
     [ChromeTestCase setUpHelper];

@@ -26,6 +26,7 @@ class BulkPrintersCalculatorFactory {
   static BulkPrintersCalculatorFactory* Get();
 
   BulkPrintersCalculatorFactory();
+  ~BulkPrintersCalculatorFactory();
 
   // Returns a WeakPtr to the BulkPrintersCalculator registered for
   // |account_id|.
@@ -35,10 +36,10 @@ class BulkPrintersCalculatorFactory {
   base::WeakPtr<BulkPrintersCalculator> GetForAccountId(
       const AccountId& account_id);
 
-  // Returns a WeakPtr to the BulkPrintersCalculator registered for the device.
+  // Returns a pointer to the BulkPrintersCalculator registered for the device.
   // If requested BulkPrintersCalculator does not exist, the object is
   // created and registered. The returned object remains valid until Shutdown is
-  // called. It never returns nullptr.
+  // called. Returns nullptr if called after Shutdown or during unit tests.
   base::WeakPtr<BulkPrintersCalculator> GetForDevice();
 
   // Deletes the BulkPrintersCalculator registered for |account_id|.
@@ -48,8 +49,7 @@ class BulkPrintersCalculatorFactory {
   void Shutdown();
 
  private:
-  ~BulkPrintersCalculatorFactory();
-
+  bool shutdown_ = false;
   std::map<AccountId, std::unique_ptr<BulkPrintersCalculator>>
       printers_by_user_;
   std::unique_ptr<BulkPrintersCalculator> device_printers_;

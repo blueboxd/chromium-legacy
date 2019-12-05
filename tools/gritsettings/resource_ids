@@ -116,77 +116,77 @@
   },
   "chrome/browser/resources/chromeos/camera/camera_resources.grd": {
     "includes": [9980],
-    "structures": [10030],
+    "structures": [10040],
   },
   "chrome/browser/resources/chromeos/camera/src/strings/camera_strings.grd": {
-    "messages": [10090],
+    "messages": [10100],
   },
   "chrome/browser/resources/chromeos/cellular_setup/cellular_setup_resources.grd": {
-    "structures": [10180],
-  },
-  "chrome/browser/resources/chromeos/multidevice_setup/multidevice_setup_resources.grd": {
     "structures": [10190],
   },
+  "chrome/browser/resources/chromeos/multidevice_setup/multidevice_setup_resources.grd": {
+    "structures": [10200],
+  },
   "chrome/browser/resources/component_extension_resources.grd": {
-    "includes": [10200],
-    "structures": [10340],
+    "includes": [10210],
+    "structures": [10350],
   },
   "chrome/browser/resources/downloads/downloads_resources_vulcanized.grd": {
-    "includes": [10350],
+    "includes": [10360],
   },
   "chrome/browser/resources/downloads/downloads_resources.grd": {
-    "includes": [10360],
-    "structures": [10370],
+    "includes": [10370],
+    "structures": [10380],
   },
   "chrome/browser/resources/extensions/extensions_resources_vulcanized.grd": {
-    "includes": [10380],
+    "includes": [10390],
   },
   "chrome/browser/resources/extensions/extensions_resources.grd": {
-    "includes": [10390],
-    "structures": [10430],
+    "includes": [10400],
+    "structures": [10440],
   },
   "chrome/browser/resources/history/history_resources_vulcanized.grd": {
-    "includes": [10450],
+    "includes": [10460],
   },
   "chrome/browser/resources/history/history_resources.grd": {
-    "includes": [10470],
+    "includes": [10480],
   },
   "chrome/browser/resources/local_ntp/local_ntp_resources.grd": {
-    "includes": [10510],
+    "includes": [10520],
   },
  "chrome/browser/resources/new_tab_page/new_tab_page_resources.grd": {
-    "includes": [10550],
-    "structures": [10560],
+    "includes": [10560],
+    "structures": [10570],
   },
   "chrome/browser/resources/print_preview/print_preview_resources_vulcanized.grd": {
-    "includes": [10570],
+    "includes": [10580],
   },
   "chrome/browser/resources/print_preview/print_preview_resources.grd": {
-    "includes": [10580],
-    "structures": [10630],
+    "includes": [10590],
+    "structures": [10640],
   },
   "chrome/browser/resources/settings/os_settings_resources_vulcanized.grd": {
-    "includes": [10670],
+    "includes": [10680],
   },
   "chrome/browser/resources/settings/os_settings_resources.grd": {
-    "structures": [10680],
+    "structures": [10690],
   },
   "chrome/browser/resources/settings/settings_resources_vulcanized.grd": {
-    "includes": [11220],
+    "includes": [11230],
   },
   "chrome/browser/resources/settings/settings_resources.grd": {
-    "structures": [11230],
+    "structures": [11240],
   },
   "chrome/browser/resources/tab_strip/tab_strip_resources.grd": {
-    "structures": [11820],
-    "includes": [11840],
+    "structures": [11830],
+    "includes": [11850],
   },
   "chrome/browser/resources/welcome/welcome_resources.grd": {
-    "includes": [11860],
-    "structures": [11890],
+    "includes": [11870],
+    "structures": [11900],
   },
   "chrome/browser/vr/testapp/vr_testapp_resources.grd": {
-    "includes": [11910],
+    "includes": [11920],
   },
   # END chrome/browser section.
 
@@ -199,7 +199,7 @@
   "chrome/browser/resources/bluetooth_internals/resources.grd": {
     "includes": [12010],
   },
-  "chrome/browser/resources/invalidations_resources.grd": {
+  "chrome/browser/resources/invalidations/invalidations_resources.grd": {
     "includes": [12050],
   },
   "chrome/browser/resources/media/webrtc_logs_resources.grd": {
@@ -460,16 +460,16 @@
   },
 
   "cloud_print/virtual_driver/win/install/virtual_driver_setup_resources.grd": {
-    "includes": [16330],
-    "messages": [16340],
+    "includes": [16230],
+    "messages": [16235],
   },
 
   "device/bluetooth/bluetooth_strings.grd": {
-    "messages": [16350],
+    "messages": [16240],
   },
 
   "device/fido/fido_strings.grd": {
-    "messages": [16370],
+    "messages": [16275],
   },
 
   "extensions/browser/resources/extensions_browser_resources.grd": {

@@ -326,7 +326,7 @@ void WebContentsViewMac::CreateView(gfx::NativeView context) {
 }
 
 RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForWidget(
-    RenderWidgetHost* render_widget_host, bool is_guest_view_hack) {
+    RenderWidgetHost* render_widget_host) {
   if (render_widget_host->GetView()) {
     // During testing, the view will already be set up in most cases to the
     // test view, so we don't want to clobber it with a real one. To verify that
@@ -340,9 +340,8 @@ RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForWidget(
 
   RenderWidgetHostViewMac* view =
       g_create_render_widget_host_view
-          ? g_create_render_widget_host_view(render_widget_host,
-                                             is_guest_view_hack)
-          : new RenderWidgetHostViewMac(render_widget_host, is_guest_view_hack);
+          ? g_create_render_widget_host_view(render_widget_host)
+          : new RenderWidgetHostViewMac(render_widget_host);
   if (delegate()) {
     base::scoped_nsobject<NSObject<RenderWidgetHostViewMacDelegate>>
         rw_delegate(delegate()->CreateRenderWidgetHostViewDelegate(
@@ -385,7 +384,7 @@ RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForWidget(
 RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForChildWidget(
     RenderWidgetHost* render_widget_host) {
   RenderWidgetHostViewMac* view =
-      new RenderWidgetHostViewMac(render_widget_host, false);
+      new RenderWidgetHostViewMac(render_widget_host);
   if (delegate()) {
     base::scoped_nsobject<NSObject<RenderWidgetHostViewMacDelegate>>
         rw_delegate(delegate()->CreateRenderWidgetHostViewDelegate(

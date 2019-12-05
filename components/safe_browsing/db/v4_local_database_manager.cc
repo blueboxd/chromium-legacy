@@ -335,7 +335,10 @@ bool V4LocalDatabaseManager::CheckBrowseUrl(const GURL& url,
       CreateStoresToCheckFromSBThreatTypeSet(threat_types),
       std::vector<GURL>(1, url));
 
-  return HandleCheck(std::move(check));
+  bool safe_synchronously = HandleCheck(std::move(check));
+  UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.CheckBrowseUrl.HasLocalMatch",
+                        !safe_synchronously);
+  return safe_synchronously;
 }
 
 bool V4LocalDatabaseManager::CheckDownloadUrl(

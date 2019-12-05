@@ -135,6 +135,29 @@ void RecordProactiveSuggestionsShowResult(
   }
 }
 
+void RecordProactiveSuggestionsViewImpression(base::Optional<int> category,
+                                              base::Optional<int> veId) {
+  constexpr char kViewImpressionHistogram[] =
+      "Assistant.ProactiveSuggestions.ViewImpression";
+
+  // Record the top level histogram for every impression event.
+  base::UmaHistogramBoolean(kViewImpressionHistogram, true);
+
+  // If possible, record by |category| so we can slice during analysis.
+  if (category.has_value()) {
+    base::UmaHistogramSparse(
+        base::StringPrintf("%s.ByCategory", kViewImpressionHistogram),
+        category.value());
+  }
+
+  // If possible, record by |veId| so we can slice during analysis.
+  if (veId.has_value()) {
+    base::UmaHistogramSparse(
+        base::StringPrintf("%s.ByVeId", kViewImpressionHistogram),
+        veId.value());
+  }
+}
+
 }  // namespace metrics
 }  // namespace assistant
 }  // namespace ash

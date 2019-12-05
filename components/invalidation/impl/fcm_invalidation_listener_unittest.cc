@@ -41,6 +41,12 @@ class TestFCMSyncNetworkChannel : public FCMSyncNetworkChannel {
  public:
   void StartListening() override {}
   void StopListening() override {}
+
+  void RequestDetailedStatus(
+      const base::RepeatingCallback<void(const base::DictionaryValue&)>&
+          callback) override {}
+
+  using FCMSyncNetworkChannel::NotifyChannelStateChange;
 };
 
 // Fake delegate that keeps track of invalidation counts, payloads,
@@ -249,7 +255,7 @@ class FCMInvalidationListenerTest : public testing::Test {
   }
 
   Topics GetRegisteredTopics() const {
-    return listener_.GetRegisteredIdsForTest();
+    return listener_.GetRegisteredTopicsForTest();
   }
 
   void RegisterAndFireInvalidate(const Topic& topic,
@@ -284,7 +290,7 @@ class FCMInvalidationListenerTest : public testing::Test {
  private:
   base::test::SingleThreadTaskEnvironment task_environment_;
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
-  FCMSyncNetworkChannel* fcm_sync_network_channel_;
+  TestFCMSyncNetworkChannel* fcm_sync_network_channel_;
   MockRegistrationManager* registration_manager_;
 
  protected:

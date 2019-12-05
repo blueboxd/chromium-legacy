@@ -5,8 +5,11 @@
 #include "chrome/browser/extensions/api/enterprise_reporting_private/enterprise_reporting_private_api.h"
 
 #include "base/bind.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/path_service.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/policy/fake_browser_dm_token_storage.h"
@@ -14,6 +17,10 @@
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+#if defined(OS_WIN)
+#include "base/test/test_reg_util_win.h"
+#endif
 
 using ::testing::_;
 using ::testing::Invoke;
@@ -149,5 +156,135 @@ TEST_F(EnterpriseReportingPrivateGetDeviceIdTest, DeviceIdNotExist) {
   ASSERT_EQ(enterprise_reporting::kDeviceIdNotFound,
             RunFunctionAndReturnError(function.get(), "[]"));
 }
+
+// Test for API enterprise.reportingPrivate.getDeviceId
+class EnterpriseReportingPrivateDeviceDataFunctionsTest
+    : public ExtensionApiUnittest {
+ public:
+  EnterpriseReportingPrivateDeviceDataFunctionsTest() = default;
+
+  void SetUp() override {
+    ExtensionApiUnittest::SetUp();
+    ASSERT_TRUE(fake_appdata_dir_.CreateUniqueTempDir());
+#if defined(OS_WIN)
+    base::PathService::Override(base::DIR_LOCAL_APP_DATA,
+                                fake_appdata_dir_.GetPath());
+#elif defined(OS_LINUX)
+    base::PathService::Override(base::DIR_CACHE, fake_appdata_dir_.GetPath());
+#elif defined(OS_MACOSX)
+    base::PathService::Override(base::DIR_APP_DATA,
+                                fake_appdata_dir_.GetPath());
+#endif
+  }
+
+ private:
+  base::ScopedTempDir fake_appdata_dir_;
+
+  DISALLOW_COPY_AND_ASSIGN(EnterpriseReportingPrivateDeviceDataFunctionsTest);
+};
+
+TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, StoreDeviceData) {
+  auto function =
+      base::MakeRefCounted<EnterpriseReportingPrivateSetDeviceDataFunction>();
+  std::unique_ptr<base::ListValue> values = std::make_unique<base::ListValue>();
+  values->AppendString("a");
+  values->Append(
+      std::make_unique<base::Value>(base::Value::BlobStorage({1, 2, 3})));
+  extension_function_test_utils::RunFunction(function.get(), std::move(values),
+                                             browser(),
+                                             extensions::api_test_utils::NONE);
+  ASSERT_TRUE(function->GetResultList());
+  EXPECT_EQ(0u, function->GetResultList()->GetSize());
+  EXPECT_TRUE(function->GetError().empty());
+}
+
+TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, DeviceDataMissing) {
+  auto function =
+      base::MakeRefCounted<EnterpriseReportingPrivateGetDeviceDataFunction>();
+  std::unique_ptr<base::ListValue> values = std::make_unique<base::ListValue>();
+  values->AppendString("b");
+  extension_function_test_utils::RunFunction(function.get(), std::move(values),
+                                             browser(),
+                                             extensions::api_test_utils::NONE);
+  ASSERT_TRUE(function->GetResultList());
+  EXPECT_EQ(0u, function->GetResultList()->GetSize());
+  EXPECT_FALSE(function->GetError().empty());
+}
+
+TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, RetrieveDeviceData) {
+  auto set_function =
+      base::MakeRefCounted<EnterpriseReportingPrivateSetDeviceDataFunction>();
+  std::unique_ptr<base::ListValue> set_values =
+      std::make_unique<base::ListValue>();
+  set_values->AppendString("c");
+  set_values->Append(
+      std::make_unique<base::Value>(base::Value::BlobStorage({1, 2, 3})));
+  extension_function_test_utils::RunFunction(set_function.get(),
+                                             std::move(set_values), browser(),
+                                             extensions::api_test_utils::NONE);
+  ASSERT_TRUE(set_function->GetError().empty());
+
+  auto get_function =
+      base::MakeRefCounted<EnterpriseReportingPrivateGetDeviceDataFunction>();
+  std::unique_ptr<base::ListValue> values = std::make_unique<base::ListValue>();
+  values->AppendString("c");
+  extension_function_test_utils::RunFunction(get_function.get(),
+                                             std::move(values), browser(),
+                                             extensions::api_test_utils::NONE);
+  const base::Value* single_result = nullptr;
+  ASSERT_TRUE(get_function->GetResultList());
+  EXPECT_TRUE(get_function->GetResultList()->Get(0, &single_result));
+  EXPECT_TRUE(get_function->GetError().empty());
+  ASSERT_TRUE(single_result);
+  ASSERT_TRUE(single_result->is_blob());
+  EXPECT_EQ(base::Value::BlobStorage({1, 2, 3}), single_result->GetBlob());
+}
+
+// TODO(pastarmovj): Remove once implementation for the other platform exists.
+#if defined(OS_WIN)
+
+// Test for API enterprise.reportingPrivate.getDeviceId
+class EnterpriseReportingPrivateGetPersistentSecretFunctionTest
+    : public ExtensionApiUnittest {
+ public:
+  EnterpriseReportingPrivateGetPersistentSecretFunctionTest() = default;
+
+  void SetUp() override {
+    ExtensionApiUnittest::SetUp();
+#if defined(OS_WIN)
+    ASSERT_NO_FATAL_FAILURE(
+        registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
+#endif
+  }
+
+ private:
+#if defined(OS_WIN)
+  registry_util::RegistryOverrideManager registry_override_manager_;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(
+      EnterpriseReportingPrivateGetPersistentSecretFunctionTest);
+};
+
+TEST_F(EnterpriseReportingPrivateGetPersistentSecretFunctionTest, GetSecret) {
+  auto function = base::MakeRefCounted<
+      EnterpriseReportingPrivateGetPersistentSecretFunction>();
+  std::unique_ptr<base::Value> result1 =
+      RunFunctionAndReturnValue(function.get(), "[]");
+  ASSERT_TRUE(result1);
+  ASSERT_TRUE(result1->is_blob());
+  auto generated_blob = result1->GetBlob();
+
+  // Re=running should not change the secret.
+  auto function2 = base::MakeRefCounted<
+      EnterpriseReportingPrivateGetPersistentSecretFunction>();
+  std::unique_ptr<base::Value> result2 =
+      RunFunctionAndReturnValue(function2.get(), "[]");
+  ASSERT_TRUE(result2);
+  ASSERT_TRUE(result2->is_blob());
+  ASSERT_EQ(generated_blob, result2->GetBlob());
+}
+
+#endif  // defined(OS_WIN)
 
 }  // namespace extensions

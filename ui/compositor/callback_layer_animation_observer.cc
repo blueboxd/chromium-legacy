@@ -92,6 +92,8 @@ void CallbackLayerAnimationObserver::OnDetachedFromSequence(
     ui::LayerAnimationSequence* sequence) {
   CHECK_LT(detached_sequence_count_, attached_sequence_count_);
   ++detached_sequence_count_;
+  CheckAllSequencesStarted();
+  CheckAllSequencesCompleted();
 }
 
 int CallbackLayerAnimationObserver::GetNumSequencesCompleted() {
@@ -99,12 +101,14 @@ int CallbackLayerAnimationObserver::GetNumSequencesCompleted() {
 }
 
 void CallbackLayerAnimationObserver::CheckAllSequencesStarted() {
-  if (active_ && attached_sequence_count_ == started_count_)
+  if (active_ && (attached_sequence_count_ == started_count_ ||
+                  detached_sequence_count_ == attached_sequence_count_))
     animation_started_callback_.Run(*this);
 }
 
 void CallbackLayerAnimationObserver::CheckAllSequencesCompleted() {
-  if (active_ && GetNumSequencesCompleted() == attached_sequence_count_) {
+  if (active_ && (GetNumSequencesCompleted() == attached_sequence_count_ ||
+                  detached_sequence_count_ == attached_sequence_count_)) {
     active_ = false;
     base::WeakPtr<CallbackLayerAnimationObserver> weak_this =
         weak_factory_.GetWeakPtr();

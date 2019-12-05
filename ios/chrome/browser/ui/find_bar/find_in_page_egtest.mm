@@ -4,6 +4,7 @@
 
 #import <XCTest/XCTest.h>
 
+#include "base/ios/ios_util.h"
 #include "base/strings/string_number_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/strings/grit/components_strings.h"
@@ -102,6 +103,13 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
 // Tests that find in page allows iteration between search results and displays
 // correct number of results.
 - (void)testFindInPage {
+// TODO(crbug.com/1030701): Test fails on iOS 12 when run as EG2 test.
+#if defined(CHROME_EARL_GREY_2)
+  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
+    EARL_GREY_TEST_DISABLED(@"Fails on iOS 12.0.");
+  }
+#endif
+
   // Type "find".
   [self typeFindInPageText:@"find"];
   // Should be highlighting result 1 of 2.
@@ -160,6 +168,13 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
 
 // Tests accessibility of the Find in Page screen.
 - (void)testAccessibilityOnFindInPage {
+// TODO(crbug.com/1030701): Test fails on iOS 12 when run as EG2 test.
+#if defined(CHROME_EARL_GREY_2)
+  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
+    EARL_GREY_TEST_DISABLED(@"Fails on iOS 12.0.");
+  }
+#endif
+
   [self typeFindInPageText:@"find"];
 
   // Wait for UI to finish loading screen, before programatically verifying

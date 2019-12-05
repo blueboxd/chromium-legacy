@@ -2429,6 +2429,11 @@ void BrowserView::Layout() {
   WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
   if (contents && PermissionRequestManager::FromWebContents(contents))
     PermissionRequestManager::FromWebContents(contents)->UpdateAnchorPosition();
+
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+  if (webui_tab_strip_)
+    webui_tab_strip_->UpdatePromoBubbleBounds();
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 }
 
 void BrowserView::OnGestureEvent(ui::GestureEvent* event) {

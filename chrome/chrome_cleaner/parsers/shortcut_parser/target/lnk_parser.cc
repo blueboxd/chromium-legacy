@@ -7,6 +7,7 @@
 #include <windows.h>
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/files/file.h"
@@ -358,12 +359,13 @@ mojom::LnkParsingResult ParseLnk(base::win::ScopedHandle file_handle,
     return mojom::LnkParsingResult::INVALID_HANDLE;
   }
 
-  base::File lnk_file(file_handle.Take());
+  base::File lnk_file(std::move(file_handle));
   int64_t lnk_file_size = lnk_file.GetLength();
   if (lnk_file_size <= 0) {
     LOG(ERROR) << "Error getting file size";
     return mojom::LnkParsingResult::INVALID_LNK_FILE_SIZE;
-  } else if (lnk_file_size >= kMaximumFileSize) {
+  }
+  if (lnk_file_size >= kMaximumFileSize) {
     LOG(ERROR) << "Unexpectedly large file size: " << lnk_file_size;
     return mojom::LnkParsingResult::INVALID_LNK_FILE_SIZE;
   }

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
-
 #include <memory>
 
 #include "base/mac/foundation_util.h"
@@ -14,11 +12,11 @@
 #import "base/test/ios/wait_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/web/progress_indicator_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #include "ios/web/public/test/http_server/html_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #import "ios/web/public/test/http_server/http_server_util.h"
@@ -27,6 +25,16 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+#if defined(CHROME_EARL_GREY_2)
+// TODO(crbug.com/1015113) The EG2 macro is breaking indexing for some reason
+// without the trailing semicolon.  For now, disable the extra semi warning
+// so Xcode indexing works for the egtest.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc++98-compat-extra-semi"
+GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ProgressIndicatorAppInterface);
+#pragma clang diagnostic pop
+#endif  // defined(CHROME_EARL_GREY_2)
 
 namespace {
 
@@ -50,24 +58,7 @@ const char kSimplePageURL[] = "http://simplepage";
 
 // Matcher for progress view.
 id<GREYMatcher> ProgressView() {
-  return grey_kindOfClass([MDCProgressView class]);
-}
-
-// Matcher for the progress view with |progress|.
-id<GREYMatcher> ProgressViewWithProgress(CGFloat progress) {
-  MatchesBlock matches = ^BOOL(UIView* view) {
-    MDCProgressView* progressView = base::mac::ObjCCast<MDCProgressView>(view);
-    return progressView && progressView.progress == progress;
-  };
-
-  DescribeToBlock describe = ^(id<GREYDescription> description) {
-    [description
-        appendText:[NSString stringWithFormat:@"progress view with progress:%f",
-                                              progress]];
-  };
-
-  return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                              descriptionBlock:describe];
+  return grey_kindOfClassName(@"MDCProgressView");
 }
 
 // Response provider that serves the page which never finishes loading.
@@ -191,7 +182,8 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   [ChromeEarlGrey waitForWebStateContainingText:kPageText];
 
   // Verify progress view visible and halfway progress.
-  [[EarlGrey selectElementWithMatcher:ProgressViewWithProgress(0.5)]
+  [[EarlGrey selectElementWithMatcher:[ProgressIndicatorAppInterface
+                                          progressViewWithProgress:0.5]]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   [ChromeEarlGreyUI waitForToolbarVisible:YES];
@@ -231,7 +223,8 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   [ChromeEarlGrey waitForWebStateContainingText:kPageText];
 
   // Verify progress view visible and halfway progress.
-  [[EarlGrey selectElementWithMatcher:ProgressViewWithProgress(0.5)]
+  [[EarlGrey selectElementWithMatcher:[ProgressIndicatorAppInterface
+                                          progressViewWithProgress:0.5]]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   [ChromeEarlGreyUI waitForToolbarVisible:YES];
@@ -288,7 +281,7 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   [ChromeEarlGrey submitWebStateFormWithID:kFormID];
 
   // Verify progress view is not visible.
-  [[EarlGrey selectElementWithMatcher:grey_kindOfClass([MDCProgressView class])]
+  [[EarlGrey selectElementWithMatcher:grey_kindOfClassName(@"MDCProgressView")]
       assertWithMatcher:grey_notVisible()];
 }
 

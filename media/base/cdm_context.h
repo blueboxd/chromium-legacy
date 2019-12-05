@@ -76,6 +76,10 @@ class MEDIA_EXPORT CdmContext {
   // occurs implicitly along with decoding).
   virtual Decryptor* GetDecryptor();
 
+  // Returns whether the CDM requires Media Foundation-based media Renderer.
+  // Should only return true on Windows.
+  virtual bool RequiresMediaFoundationRenderer();
+
   // Returns an ID that can be used to find a remote CDM, in which case this CDM
   // serves as a proxy to the remote one. Returns kInvalidCdmId when remote CDM
   // is not supported (e.g. this CDM is a local CDM).

@@ -11,10 +11,16 @@
 
 namespace chromeos {
 
+namespace {
+
+// This class is owned by ChromeBrowserMainPartsChromeos.
+static BulkPrintersCalculatorFactory* g_bulk_printers_factory = nullptr;
+
+}  // namespace
+
 // static
 BulkPrintersCalculatorFactory* BulkPrintersCalculatorFactory::Get() {
-  static base::NoDestructor<BulkPrintersCalculatorFactory> instance;
-  return instance.get();
+  return g_bulk_printers_factory;
 }
 
 base::WeakPtr<BulkPrintersCalculator>
@@ -36,19 +42,33 @@ void BulkPrintersCalculatorFactory::RemoveForUserId(
 base::WeakPtr<BulkPrintersCalculator>
 BulkPrintersCalculatorFactory::GetForDevice() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (device_printers_)
-    return device_printers_->AsWeakPtr();
-  device_printers_ = BulkPrintersCalculator::Create();
+  if (shutdown_) {
+    return nullptr;
+  }
+
+  if (!device_printers_)
+    device_printers_ = BulkPrintersCalculator::Create();
   return device_printers_->AsWeakPtr();
 }
 
 void BulkPrintersCalculatorFactory::Shutdown() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!shutdown_);
+  shutdown_ = true;
   printers_by_user_.clear();
   device_printers_.reset();
 }
 
-BulkPrintersCalculatorFactory::BulkPrintersCalculatorFactory() = default;
-BulkPrintersCalculatorFactory::~BulkPrintersCalculatorFactory() = default;
+BulkPrintersCalculatorFactory::BulkPrintersCalculatorFactory() {
+  // Only one factory should exist.
+  DCHECK(!g_bulk_printers_factory);
+  g_bulk_printers_factory = this;
+}
+
+BulkPrintersCalculatorFactory::~BulkPrintersCalculatorFactory() {
+  // Ensure that an instance was created sometime in the past.
+  DCHECK(g_bulk_printers_factory);
+  g_bulk_printers_factory = nullptr;
+}
 
 }  // namespace chromeos

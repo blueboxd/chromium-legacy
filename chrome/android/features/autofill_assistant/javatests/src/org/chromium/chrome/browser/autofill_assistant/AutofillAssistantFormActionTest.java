@@ -6,6 +6,13 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.intent.Intents.intended;
+import static android.support.test.espresso.intent.Intents.intending;
+import static android.support.test.espresso.intent.matcher.IntentMatchers.anyIntent;
+import static android.support.test.espresso.intent.matcher.IntentMatchers.hasAction;
+import static android.support.test.espresso.intent.matcher.IntentMatchers.hasData;
 import static android.support.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static android.support.test.espresso.matcher.ViewMatchers.hasSibling;
 import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
@@ -15,11 +22,17 @@ import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.not;
 
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.startAutofillAssistant;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
+import android.app.Activity;
+import android.app.Instrumentation.ActivityResult;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.intent.Intents;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Before;
@@ -35,8 +48,12 @@ import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipType;
 import org.chromium.chrome.browser.autofill_assistant.proto.CounterInputProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.CounterInputProto.Counter;
 import org.chromium.chrome.browser.autofill_assistant.proto.FormInputProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.FormProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.InfoPopupProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.InfoPopupProto.DialogButton;
+import org.chromium.chrome.browser.autofill_assistant.proto.InfoPopupProto.DialogButton.OpenUrlInCCT;
 import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto.Choice;
 import org.chromium.chrome.browser.autofill_assistant.proto.SelectionInputProto;
@@ -233,5 +250,183 @@ public class AutofillAssistantFormActionTest {
         // TODO(b/144978160) Check that the correct link number was written to the action response.
 
         waitUntilViewMatchesCondition(withText("End"), isCompletelyDisplayed());
+    }
+
+    @Test
+    @MediumTest
+    @DisableIf.Build(sdk_is_less_than = 21)
+    public void testInfoPopup() {
+        ArrayList<ActionProto> list = new ArrayList<>();
+        // FromProto.Builder, extracted to avoid excessive line widths.
+        FormProto.Builder formProto =
+                FormProto.newBuilder()
+                        .addInputs(FormInputProto.newBuilder().setCounter(
+                                CounterInputProto.newBuilder().addCounters(
+                                        Counter.newBuilder()
+                                                .setLabel("Counter 1")
+                                                .setDescriptionLine1("$20.00 per tick")
+                                                .setDescriptionLine2("<link1>Details</link1>"))))
+                        .addInputs(FormInputProto.newBuilder().setCounter(
+                                CounterInputProto.newBuilder().addCounters(
+                                        Counter.newBuilder()
+                                                .setLabel("Counter 2")
+                                                .setDescriptionLine1("$20.00 per tick")
+                                                .setDescriptionLine2("<link1>Details</link1>"))))
+                        .setInfoLabel("Info label")
+                        .setInfoPopup(
+                                InfoPopupProto.newBuilder()
+                                        .setTitle("Prompt title")
+                                        .setText("Prompt text")
+                                        .setNeutralButton(
+                                                DialogButton.newBuilder()
+                                                        .setLabel("Go to url")
+                                                        .setOpenUrlInCct(
+                                                                OpenUrlInCCT.newBuilder().setUrl(
+                                                                        "https://www.google.com"))));
+        // FormAction.
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setShowForm(ShowFormProto.newBuilder()
+                                              .setChip(ChipProto.newBuilder()
+                                                               .setType(ChipType.HIGHLIGHTED_ACTION)
+                                                               .setText("Continue"))
+                                              .setForm(formProto))
+                         .build());
+
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("autofill_assistant_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Autostart")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("Continue"), isCompletelyDisplayed());
+        onView(withId(R.id.info_button)).perform(click());
+        waitUntilViewMatchesCondition(withText("Prompt title"), isCompletelyDisplayed());
+        waitUntilViewMatchesCondition(withText("Prompt text"), isCompletelyDisplayed());
+
+        Intent intent = new Intent();
+        ActivityResult intentResult = new ActivityResult(Activity.RESULT_OK, intent);
+
+        Intents.init();
+        intending(anyIntent()).respondWith(intentResult);
+
+        onView(withText("Go to url")).perform(click());
+
+        intended(
+                allOf(hasAction(Intent.ACTION_VIEW), hasData(Uri.parse("https://www.google.com"))));
+        Intents.release();
+    }
+
+    @Test
+    @MediumTest
+    @DisableIf.Build(sdk_is_less_than = 21)
+    public void testInfoPopupNoButtons() {
+        ArrayList<ActionProto> list = new ArrayList<>();
+        // FromProto.Builder, extracted to avoid excessive line widths.
+        FormProto.Builder formProto =
+                FormProto.newBuilder()
+                        .addInputs(FormInputProto.newBuilder().setCounter(
+                                CounterInputProto.newBuilder().addCounters(
+                                        Counter.newBuilder()
+                                                .setLabel("Counter")
+                                                .setDescriptionLine1("$20.00 per tick")
+                                                .setDescriptionLine2("<link1>Details</link1>"))))
+                        .setInfoLabel("Info label")
+                        .setInfoPopup(InfoPopupProto.newBuilder()
+                                              .setTitle("Prompt title")
+                                              .setText("Prompt text"));
+        // FormAction.
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setShowForm(ShowFormProto.newBuilder()
+                                              .setChip(ChipProto.newBuilder()
+                                                               .setType(ChipType.HIGHLIGHTED_ACTION)
+                                                               .setText("Continue"))
+                                              .setForm(formProto))
+                         .build());
+
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("autofill_assistant_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Autostart")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("Continue"), isCompletelyDisplayed());
+        onView(withId(R.id.info_button)).perform(click());
+        waitUntilViewMatchesCondition(withText("Prompt title"), isCompletelyDisplayed());
+        // If no button is set in the proto a "Close" button should be added by default.
+        onView(withText("Close")).perform(click());
+        onView(withText("Prompt title")).check(doesNotExist());
+    }
+
+    @Test
+    @MediumTest
+    @DisableIf.Build(sdk_is_less_than = 21)
+    public void testMultipleForms() {
+        ArrayList<ActionProto> list = new ArrayList<>();
+        // FromProto.Builder, extracted to avoid excessive line widths.
+        FormProto.Builder formProtoWithInfo =
+                FormProto.newBuilder()
+                        .addInputs(FormInputProto.newBuilder().setCounter(
+                                CounterInputProto.newBuilder().addCounters(
+                                        Counter.newBuilder()
+                                                .setLabel("Counter 1")
+                                                .setDescriptionLine1("$20.00 per tick")
+                                                .setDescriptionLine2("<link1>Details</link1>"))))
+                        .setInfoLabel("Info label");
+        // FormAction.
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setShowForm(ShowFormProto.newBuilder()
+                                              .setChip(ChipProto.newBuilder()
+                                                               .setType(ChipType.HIGHLIGHTED_ACTION)
+                                                               .setText("Continue"))
+                                              .setForm(formProtoWithInfo))
+                         .build());
+
+        FormProto.Builder formProto = FormProto.newBuilder().addInputs(
+                FormInputProto.newBuilder().setCounter(CounterInputProto.newBuilder().addCounters(
+                        Counter.newBuilder()
+                                .setLabel("Counter 1")
+                                .setDescriptionLine1("$20.00 per tick")
+                                .setDescriptionLine2("<link1>Details</link1>"))));
+
+        // FormAction.
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setShowForm(ShowFormProto.newBuilder()
+                                              .setChip(ChipProto.newBuilder()
+                                                               .setType(ChipType.HIGHLIGHTED_ACTION)
+                                                               .setText("Finish"))
+                                              .setForm(formProto))
+                         .build());
+
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("autofill_assistant_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Autostart")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("Continue"), isCompletelyDisplayed());
+        onView(withText("Info label")).check(matches(isCompletelyDisplayed()));
+        onView(withId(R.id.info_button)).check(matches(not(isDisplayed())));
+        onView(withText("Continue")).perform(click());
+        waitUntilViewMatchesCondition(withText("Finish"), isCompletelyDisplayed());
+        onView(withText("Info label")).check(matches(not(isDisplayed())));
+        onView(withId(R.id.info_button)).check(matches(not(isDisplayed())));
     }
 }

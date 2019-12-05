@@ -472,6 +472,11 @@ autofillManagerFromWebState:(web::WebState*)webState
     autofillManager->OnDidFillAutofillFormData(form, base::TimeTicks::Now());
 }
 
+- (void)handleParsedForms:(const std::vector<autofill::FormStructure*>&)forms
+                  inFrame:(web::WebFrame*)frame {
+  // No op.
+}
+
 - (void)fillFormDataPredictions:
             (const std::vector<autofill::FormDataPredictions>&)forms
                         inFrame:(web::WebFrame*)frame {

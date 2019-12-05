@@ -1147,8 +1147,8 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_NOTIFICATIONS_QUIET_SUMMARY_DISABLED" desc="A summary explaining how quiet notifications work, when the setting is disabled.">
         Enable to automatically block sites from asking to show you notifications. If a site requests notifications, an infobar will appear at the bottom of the page.
       </message>
-      <message name="IDS_NOTIFICATIONS_IPH" desc="A message that explains to the users that notification permission requests will appear as an infobar from now on.">
-        Got it. By default new notification requests will appear here.
+      <message name="IDS_NOTIFICATIONS_IPH" desc="A message that explains to the users that notification permission requests will appear as an infobar from now on because the user repeatedly denied the notification permission in the past.">
+        You usually block notifications. To allow, tap Details.
       </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_CAMERA_ASK" desc="Summary text explaining that sites need to ask for permission before accessing the camera and that it is the recommended setting.">
         Ask first before allowing sites to use your camera (recommended)
@@ -1831,6 +1831,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_SYNC_ERROR_CARD_TITLE" desc="Title of the Sync Error Card. [CHAR-LIMIT=32]">
         Sync isn't working
       </message>
+      <message name="IDS_SYNC_PASSWORDS_ERROR_CARD_TITLE" desc="Title of the Sync Error Card when it affects passwords only. [CHAR-LIMIT=32]">
+        Error syncing passwords
+      </message>
       <message name="IDS_SYNC_SETTINGS_NOT_CONFIRMED_TITLE" desc="Title of the error message shown when sync setup was not complete. [CHAR-LIMIT=60]">
         Initial sync setup not finished
       </message>
@@ -1839,6 +1842,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_HINT_SYNC_AUTH_ERROR" desc="Hint message to resolve sync auth error.">
         Sign in again to start sync
+      </message>
+      <message name="IDS_HINT_SYNC_RETRIEVE_KEYS" desc="Hint message to resolve sync encryption error.">
+        Fix now
       </message>
       <message name="IDS_HINT_PASSPHRASE_REQUIRED" desc="Hint message to resolve passphrase required error.">
         Enter your passphrase to start sync

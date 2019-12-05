@@ -21,7 +21,7 @@ struct TrackedPersistentPrefStoreConfiguration {
   string legacy_device_id;
   string registry_seed;
   mojo_base.mojom.String16 registry_path;
-  TrackedPreferenceValidationDelegate? validation_delegate;
+  pending_remote<TrackedPreferenceValidationDelegate>? validation_delegate;
   pending_remote<ResetOnLoadObserver>? reset_on_load_observer;
 };
 

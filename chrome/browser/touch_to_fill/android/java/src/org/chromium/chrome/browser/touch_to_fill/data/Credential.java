@@ -15,21 +15,25 @@ public class Credential {
     private final String mFormattedUsername;
     private final String mOriginUrl;
     private final boolean mIsPublicSuffixMatch;
+    private final boolean mIsAffiliationBasedMatch;
 
     /**
      * @param username Username shown to the user.
      * @param password Password shown to the user.
      * @param originUrl Origin URL shown to the user in case this credential is a PSL match.
      * @param isPublicSuffixMatch Indicating whether the credential is a PSL match.
+     * @param isAffiliationBasedMatch Indicating whether the credential is an affiliation based
+     * match (i.e. whether it is an Android credential).
      */
     public Credential(String username, String password, String formattedUsername, String originUrl,
-            boolean isPublicSuffixMatch) {
+            boolean isPublicSuffixMatch, boolean isAffiliationBasedMatch) {
         assert originUrl != null : "Credential origin is null! Pass an empty one instead.";
         mUsername = username;
         mPassword = password;
         mFormattedUsername = formattedUsername;
         mOriginUrl = originUrl;
         mIsPublicSuffixMatch = isPublicSuffixMatch;
+        mIsAffiliationBasedMatch = isAffiliationBasedMatch;
     }
 
     @CalledByNative
@@ -54,5 +58,10 @@ public class Credential {
     @CalledByNative
     public boolean isPublicSuffixMatch() {
         return mIsPublicSuffixMatch;
+    }
+
+    @CalledByNative
+    public boolean isAffiliationBasedMatch() {
+        return mIsAffiliationBasedMatch;
     }
 }

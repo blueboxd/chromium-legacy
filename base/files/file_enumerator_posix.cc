@@ -17,10 +17,10 @@
 namespace base {
 namespace {
 
-void GetStat(const FilePath& path, bool show_links, struct stat* st) {
+void GetStat(const FilePath& path, bool show_links, stat_wrapper_t* st) {
   DCHECK(st);
-  const int res = show_links ? lstat(path.value().c_str(), st)
-                             : stat(path.value().c_str(), st);
+  const int res = show_links ? File::Lstat(path.value().c_str(), st)
+                             : File::Stat(path.value().c_str(), st);
   if (res < 0) {
     // Print the stat() error message unless it was ENOENT and we're following
     // symlinks.
@@ -90,7 +90,7 @@ FileEnumerator::FileEnumerator(const FilePath& root_path,
   DCHECK(!(recursive && (INCLUDE_DOT_DOT & file_type_)));
 
   if (recursive && !(file_type & SHOW_SYM_LINKS)) {
-    struct stat st;
+    stat_wrapper_t st;
     GetStat(root_path, false, &st);
     visited_directories_.insert(st.st_ino);
   }

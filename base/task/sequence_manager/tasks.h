@@ -76,7 +76,7 @@ struct DelayedWakeUp {
 // PendingTask with extra metadata for SequenceManager.
 struct BASE_EXPORT Task : public PendingTask {
   Task(internal::PostedTask posted_task,
-       TimeTicks desired_run_time,
+       TimeTicks delayed_run_time,
        EnqueueOrder sequence_order,
        EnqueueOrder enqueue_order = EnqueueOrder(),
        internal::WakeUpResolution wake_up_resolution =

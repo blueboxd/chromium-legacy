@@ -469,7 +469,7 @@ TEST_P(TabManagerStatsCollectorParameterizedTest, HistogramsTabCount) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     TabManagerStatsCollectorTabSwitchTest,
     ::testing::Values(std::make_pair(false,   // Session restore
                                      false),  // Background tab opening
@@ -477,7 +477,7 @@ INSTANTIATE_TEST_SUITE_P(
                       std::make_pair(false, true),
                       std::make_pair(true, true)));
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     TabManagerStatsCollectorParameterizedTest,
     ::testing::Values(std::make_pair(false,   // Session restore
                                      false),  // Background tab opening

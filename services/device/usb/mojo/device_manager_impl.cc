@@ -145,7 +145,7 @@ void DeviceManagerImpl::OpenFileDescriptor(
 void DeviceManagerImpl::OnOpenFileDescriptor(
     OpenFileDescriptorCallback callback,
     base::ScopedFD fd) {
-  std::move(callback).Run(base::File(fd.release()));
+  std::move(callback).Run(base::File(std::move(fd)));
 }
 
 void DeviceManagerImpl::OnOpenFileDescriptorError(

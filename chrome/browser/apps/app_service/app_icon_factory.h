@@ -17,6 +17,10 @@ namespace content {
 class BrowserContext;
 }
 
+namespace web_app {
+class AppIconManager;
+}
+
 namespace apps {
 
 // A bitwise-or of icon post-processing effects.
@@ -50,6 +54,14 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
                            const std::string& extension_id,
                            IconEffects icon_effects,
                            apps::mojom::Publisher::LoadIconCallback callback);
+
+// Loads an icon from a web app.
+void LoadIconFromWebApp(const web_app::AppIconManager& icon_manager,
+                        apps::mojom::IconCompression icon_compression,
+                        int size_hint_in_dip,
+                        const std::string& web_app_id,
+                        IconEffects icon_effects,
+                        apps::mojom::Publisher::LoadIconCallback callback);
 
 // Loads an icon from a FilePath. If that fails, it calls the fallback.
 //

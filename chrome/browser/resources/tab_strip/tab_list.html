@@ -8,7 +8,8 @@
     background: var(--tabstrip-background-color);
     box-sizing: border-box;
     display: flex;
-    min-width: fit-content;
+    height: 100%;
+    overflow: overlay hidden;
     width: 100%;
   }
 
@@ -33,6 +34,7 @@
 
   #tabsContainer {
     display: flex;
+    min-width: fit-content;
     overflow: hidden;
     padding: var(--tabstrip-tab-spacing);
     padding-inline-end: 0;

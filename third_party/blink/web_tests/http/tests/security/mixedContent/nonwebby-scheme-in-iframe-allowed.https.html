@@ -2,9 +2,10 @@
 <html>
 <body>
 <p>
-    This tests that non-webby URLs are not blocked as mixed content. The test passes if a mixed
-    content warning is displayed and the load proceeds. The test fails if a mixed content error
-    is displayed, and the load is blocked.
+    This tests that non-webby URLs are not blocked as mixed
+    content. The test passes if the load proceeds without warning. The
+    test fails if a mixed content error or warning is displayed,
+    and/or the load is blocked.
 </p>
 <script>
 if (window.testRunner) {

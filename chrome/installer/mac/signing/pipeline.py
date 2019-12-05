@@ -118,6 +118,44 @@ def _staple_chrome(paths, dist_config):
         notarize.staple(os.path.join(paths.work, part_path))
 
 
+def _create_pkgbuild_scripts(paths, dist_config):
+    """Creates a directory filled with scripts for use by `pkgbuild`, and copies
+    the postinstall script into this directory, customizing it along the way.
+
+    Args:
+        paths: A |model.Paths| object.
+        dist_config: The |config.CodeSignConfig| object.
+
+    Returns:
+        The path to the scripts directory.
+    """
+    scripts_path = os.path.join(paths.work, 'scripts')
+    commands.make_dir(scripts_path)
+
+    packaging_dir = paths.packaging_dir(dist_config)
+
+    def do_substitutions(script):
+        substitutions = {
+            '@APP_DIR@': dist_config.app_dir,
+            '@APP_PRODUCT@': dist_config.app_product,
+            '@FRAMEWORK_DIR@': dist_config.framework_dir
+        }
+        for key, value in substitutions.items():
+            script = script.replace(key, value)
+
+        return script
+
+    postinstall_src_path = os.path.join(packaging_dir, 'pkg_postinstall.in')
+    postinstall_dest_path = os.path.join(scripts_path, 'postinstall')
+
+    postinstall = commands.read_file(postinstall_src_path)
+    postinstall = do_substitutions(postinstall)
+    commands.write_file(postinstall_dest_path, postinstall)
+    commands.set_executable(postinstall_dest_path)
+
+    return scripts_path
+
+
 def _productbuild_distribution_path(paths, dist_config, component_pkg_path):
     """Creates a distribution XML file for use by `productbuild`. This specifies
     that an x64 machine is required, and copies the OS requirement from the copy
@@ -137,12 +175,15 @@ def _productbuild_distribution_path(paths, dist_config, component_pkg_path):
     app_plist_path = os.path.join(paths.work, dist_config.app_dir, 'Contents',
                                   'Info.plist')
     with commands.PlistContext(app_plist_path) as app_plist:
+        # For now, restrict installation to only the boot volume (the <domains/>
+        # tag) to simplify the Keystone installation.
         distribution_xml = """<?xml version="1.0" encoding="utf-8"?>
 <installer-gui-script minSpecVersion="2">
 
     <!-- Top-level info about the distribution. -->
     <title>{app_product}</title>
     <options customize="never" require-scripts="false" hostArchitectures="x86_64"/>
+    <domains enable_anywhere="false" enable_currentUserHome="false" enable_localSystem="true"/>
     <volume-check>
         <allowed-os-versions>
             <os-version min="{minimum_system}"/>
@@ -206,10 +247,12 @@ def _package_and_sign_pkg(paths, dist_config):
     component_pkg_path = os.path.join(paths.work, component_pkg_name)
     app_path = os.path.join(paths.work, dist_config.app_dir)
 
+    scripts_path = _create_pkgbuild_scripts(paths, dist_config)
+
     commands.run_command([
         'pkgbuild', '--identifier', dist_config.base_bundle_id, '--version',
         dist_config.version, '--component', app_path, '--install-location',
-        '/Applications', component_pkg_path
+        '/Applications', '--scripts', scripts_path, component_pkg_path
     ])
 
     ## The product archive.

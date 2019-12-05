@@ -6,7 +6,6 @@
 
 #include "base/no_destructor.h"
 #include "content/public/common/service_names.mojom.h"
-#include "services/content/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
 namespace content {
@@ -172,7 +171,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.Portal",
                   "discardable_memory.mojom.DiscardableSharedMemoryManager",
                   "viz.mojom.Gpu"})
-          .PackageService(content::GetManifest())
           .Build()};
   return *manifest;
   // clang-format on

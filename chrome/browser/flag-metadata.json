@@ -278,6 +278,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "autofill-enable-virtual-card",
+    "owners": [ "siyua", "jsaul@google.com" ],
+    "expiry_milestone": 87
+  },
+  {
     "name": "autofill-enforce-min-required-fields-for-heuristics",
     "owners": [ "rogerm" ],
     "expiry_milestone": 73
@@ -1059,11 +1064,6 @@
     "name": "enable-autofill-save-card-show-no-thanks",
     "owners": ["siashah", "jsaul@google.com"],
     "expiry_milestone": 82
-  },
-  {
-    "name": "enable-autofill-updated-card-unmask-prompt-ui",
-    "owners": ["siyua", "payments-autofill-team@google.com"],
-    "expiry_milestone": 87
   },
   {
     "name": "enable-autofill-upi-vpa",

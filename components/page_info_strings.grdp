@@ -42,9 +42,6 @@
   <message name="IDS_PAGE_INFO_SAFETY_TIP_MORE_INFO_LINK" desc="Text of link to Help Center page on safety tip page info bubble.">
     Learn more
   </message>
-  <message name="IDS_PAGE_INFO_SAFETY_TIP_IGNORE_BUTTON" desc="Text of button to ignore a safety tip page info bubble.">
-    Ignore
-  </message>
   <message name="IDS_PAGE_INFO_SAFETY_TIP_LEAVE_BUTTON" desc="Text of button to leave a suspicious page shown on the safety tip page info bubble.">
     Leave site
   </message>

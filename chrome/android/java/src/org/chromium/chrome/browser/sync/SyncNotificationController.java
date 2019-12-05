@@ -63,6 +63,8 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
                     createSettingsIntent());
         } else if (mProfileSyncService.isEngineInitialized()
                 && mProfileSyncService.isPassphraseRequiredForPreferredDataTypes()) {
+            assert (!mProfileSyncService.isTrustedVaultKeyRequiredForPreferredDataTypes());
+
             if (mProfileSyncService.isPassphrasePrompted()) {
                 return;
             }
@@ -72,10 +74,22 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
                 case PassphraseType.CUSTOM_PASSPHRASE:
                     showSyncNotification(R.string.sync_need_passphrase, createPasswordIntent());
                     break;
+                case PassphraseType.TRUSTED_VAULT_PASSPHRASE:
+                    assert false : "Passphrase cannot be required with trusted vault passphrase";
+                    return;
                 case PassphraseType.KEYSTORE_PASSPHRASE: // Falling through intentionally.
                 default:
                     mNotificationManager.cancel(NotificationConstants.NOTIFICATION_ID_SYNC);
                     return;
+            }
+        } else if (mProfileSyncService.isEngineInitialized()
+                && mProfileSyncService.isTrustedVaultKeyRequiredForPreferredDataTypes()) {
+            Intent intent = TrustedVaultClient.createKeyRetrievalIntent();
+            if (intent != null) {
+                showSyncNotification(mProfileSyncService.isEncryptEverythingEnabled()
+                                ? R.string.sync_error_card_title
+                                : R.string.sync_passwords_error_card_title,
+                        intent);
             }
         } else {
             mNotificationManager.cancel(NotificationConstants.NOTIFICATION_ID_SYNC);

@@ -15,6 +15,7 @@
 #include "base/scoped_observer.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/printing/bulk_printers_calculator_factory.h"
 #include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 #include "chrome/common/pref_names.h"
@@ -107,6 +108,9 @@ class SyncedPrintersManagerTest : public testing::Test {
   // Must outlive |manager_|.
   TestingProfile profile_;
 
+  // TODO(https://crbug.com/1030127): Remove this dependency after enterprise
+  // printers are removed from this class.
+  BulkPrintersCalculatorFactory bulk_factory_;
   std::unique_ptr<SyncedPrintersManager> manager_;
 };
 

@@ -51,7 +51,7 @@ class FCMInvalidationListener : public InvalidationListener,
       std::unique_ptr<PerUserTopicRegistrationManager>
           per_user_topic_registration_manager);
 
-  // Update the set of object IDs that we're interested in getting
+  // Update the set of topics that we're interested in getting
   // notifications for. May be called at any time.
   void UpdateRegisteredTopics(const Topics& topics);
 
@@ -75,8 +75,6 @@ class FCMInvalidationListener : public InvalidationListener,
   void OnSubscriptionChannelStateChanged(
       SubscriptionChannelState state) override;
 
-  void DoRegistrationUpdate();
-
   virtual void RequestDetailedStatus(
       const base::RepeatingCallback<void(const base::DictionaryValue&)>&
           callback) const;
@@ -86,11 +84,11 @@ class FCMInvalidationListener : public InvalidationListener,
   void EmitStateChangeForTest(InvalidatorState state);
   void EmitSavedInvalidationsForTest(const TopicInvalidationMap& to_emit);
 
-  Topics GetRegisteredIdsForTest() const;
-
-  base::WeakPtr<FCMInvalidationListener> AsWeakPtr();
+  Topics GetRegisteredTopicsForTest() const;
 
  private:
+  void DoRegistrationUpdate();
+
   void Stop();
 
   InvalidatorState GetState() const;
@@ -120,7 +118,7 @@ class FCMInvalidationListener : public InvalidationListener,
 
   std::unique_ptr<FCMSyncNetworkChannel> network_channel_;
   UnackedInvalidationsMap unacked_invalidations_map_;
-  Delegate* delegate_;
+  Delegate* delegate_ = nullptr;
 
   // Stores all topics which are registered (or subscribed?).
   // TODO(crbug.com/1029698,crbug.com/1020117): We should get this information
@@ -137,12 +135,12 @@ class FCMInvalidationListener : public InvalidationListener,
 
   std::unique_ptr<PerUserTopicRegistrationManager>
       per_user_topic_registration_manager_;
-  std::string token_;
+  std::string instance_id_token_;
   // Prevents call to DoRegistrationUpdate in cases when
   // UpdateRegisteredTopics wasn't called. For example, InformTokenReceived
   // can trigger DoRegistrationUpdate before any invalidation handler has
   // requested registration for topics.
-  bool ids_update_requested_ = false;
+  bool topics_update_requested_ = false;
 
   base::WeakPtrFactory<FCMInvalidationListener> weak_factory_{this};
 

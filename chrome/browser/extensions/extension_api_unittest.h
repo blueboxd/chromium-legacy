@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/memory/ref_counted.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -35,7 +36,10 @@ namespace extensions {
 // in extensions/browser/api_unittest.h.
 class ExtensionApiUnittest : public BrowserWithTestWindowTest {
  public:
-  ExtensionApiUnittest();
+  template <typename... TaskEnvironmentTraits>
+  explicit ExtensionApiUnittest(TaskEnvironmentTraits&&... traits)
+      : BrowserWithTestWindowTest(
+            std::forward<TaskEnvironmentTraits>(traits)...) {}
   ~ExtensionApiUnittest() override;
 
   const Extension* extension() const { return extension_.get(); }

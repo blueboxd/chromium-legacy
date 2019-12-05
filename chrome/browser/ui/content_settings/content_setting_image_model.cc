@@ -18,9 +18,9 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/download/download_request_limiter.h"
-#include "chrome/browser/permissions/adaptive_notification_permission_ui_selector.h"
-#include "chrome/browser/permissions/permission_features.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
+#include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
+#include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
@@ -869,8 +869,8 @@ ContentSettingNotificationsImageModel::ContentSettingNotificationsImageModel()
   set_icon(vector_icons::kNotificationsOffIcon, gfx::kNoneIcon);
   set_tooltip(
       l10n_util::GetStringUTF16(IDS_NOTIFICATIONS_OFF_EXPLANATORY_TEXT));
-  if (QuietNotificationsPromptConfig::UIFlavorToUse() ==
-      QuietNotificationsPromptConfig::UIFlavor::ANIMATED_ICON) {
+  if (QuietNotificationPermissionUiConfig::UiFlavorToUse() ==
+      QuietNotificationPermissionUiConfig::UiFlavor::ANIMATED_ICON) {
     set_explanatory_string_id(IDS_NOTIFICATIONS_OFF_EXPLANATORY_TEXT);
   }
 }
@@ -880,15 +880,13 @@ bool ContentSettingNotificationsImageModel::UpdateAndGetVisibility(
   auto* manager = PermissionRequestManager::FromWebContents(web_contents);
   auto* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  auto* adaptive_notification_permission_ui_selector =
-      AdaptiveNotificationPermissionUiSelector::GetForProfile(profile);
 
   // |manager| may be null in tests.
   // Show promo the first time a quiet prompt is shown to the user.
   // TODO(hkamila) Check that this is only shown the first time the promo is
   // shown.
   if (manager && manager->ShouldCurrentRequestUseQuietUI() &&
-      adaptive_notification_permission_ui_selector->ShouldShowPromo()) {
+      QuietNotificationPermissionUiState::ShouldShowPromo(profile)) {
     set_should_show_promo(true);
   }
   return manager ? manager->ShouldCurrentRequestUseQuietUI() : false;
@@ -898,9 +896,7 @@ void ContentSettingNotificationsImageModel::SetPromoWasShown(
     content::WebContents* contents) {
   DCHECK(contents);
   auto* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  auto* adaptive_notification_permission_ui_selector =
-      AdaptiveNotificationPermissionUiSelector::GetForProfile(profile);
-  adaptive_notification_permission_ui_selector->PromoWasShown();
+  QuietNotificationPermissionUiState::PromoWasShown(profile);
 
   ContentSettingImageModel::SetPromoWasShown(contents);
 }

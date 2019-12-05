@@ -603,8 +603,9 @@ void WindowCycleList::InitWindowCycleView() {
         widget->GetNativeWindow()->GetRootWindow(),
         std::make_unique<CustomWindowTargeter>(widget->GetNativeWindow()));
   }
-  // Close the app list, if it's open.
-  Shell::Get()->app_list_controller()->DismissAppList();
+  // Close the app list, if it's open in clamshell mode.
+  if (!Shell::Get()->tablet_mode_controller()->InTabletMode())
+    Shell::Get()->app_list_controller()->DismissAppList();
 }
 
 void WindowCycleList::SelectWindow(aura::Window* window) {

@@ -49,10 +49,7 @@
 #include "third_party/re2/src/re2/re2.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
-
-#if !defined(OS_IOS)
 #include "components/safe_browsing/features.h"
-#endif
 
 using autofill::PasswordForm;
 
@@ -829,14 +826,9 @@ bool LoginDatabase::Init() {
     }
   }
 
-  bool password_protection_show_domains_for_saved_password_is_on = true;
-#if !defined(OS_IOS)
-  password_protection_show_domains_for_saved_password_is_on =
-      base::FeatureList::IsEnabled(
-          safe_browsing::kPasswordProtectionShowDomainsForSavedPasswords);
-#endif
   if (base::FeatureList::IsEnabled(password_manager::features::kLeakHistory) ||
-      password_protection_show_domains_for_saved_password_is_on) {
+      base::FeatureList::IsEnabled(
+          safe_browsing::kPasswordProtectionShowDomainsForSavedPasswords)) {
     if (!compromised_credentials_table_.CreateTableIfNecessary()) {
       LogDatabaseInitError(INIT_COMPROMISED_CREDENTIALS_ERROR);
       LOG(ERROR) << "Unable to create the compromised credentials table.";

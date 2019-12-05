@@ -162,9 +162,8 @@ void Blob::PopulateBlobData(
     } else if (item.IsArrayBufferView()) {
       DOMArrayBufferView* array_buffer_view =
           item.GetAsArrayBufferView().View();
-      blob_data->AppendBytes(
-          array_buffer_view->BaseAddress(),
-          array_buffer_view->deprecatedByteLengthAsUnsigned());
+      blob_data->AppendBytes(array_buffer_view->BaseAddress(),
+                             array_buffer_view->byteLengthAsSizeT());
     } else if (item.IsBlob()) {
       item.GetAsBlob()->AppendTo(*blob_data);
     } else if (item.IsUSVString()) {

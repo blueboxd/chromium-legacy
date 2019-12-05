@@ -158,12 +158,6 @@ class WebView {
   virtual WebLocalFrame* FocusedFrame() = 0;
   virtual void SetFocusedFrame(WebFrame*) = 0;
 
-  // Sets the provided frame as focused and fires blur/focus events on any
-  // currently focused elements in old/new focused documents.  Note that this
-  // is different from setFocusedFrame, which does not fire events on focused
-  // elements.
-  virtual void FocusDocumentView(WebFrame*) = 0;
-
   // Focus the first (last if reverse is true) focusable node.
   virtual void SetInitialFocus(bool reverse) = 0;
 

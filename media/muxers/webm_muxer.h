@@ -53,6 +53,9 @@ class MEDIA_EXPORT WebmMuxer : public mkvmuxer::IMkvWriter {
   // media::VideoFrame.
   struct MEDIA_EXPORT VideoParameters {
     VideoParameters(scoped_refptr<media::VideoFrame> frame);
+    VideoParameters(gfx::Size visible_rect_size_param,
+                    double frame_rate_param,
+                    VideoCodec codec);
     ~VideoParameters();
     gfx::Size visible_rect_size;
     double frame_rate;

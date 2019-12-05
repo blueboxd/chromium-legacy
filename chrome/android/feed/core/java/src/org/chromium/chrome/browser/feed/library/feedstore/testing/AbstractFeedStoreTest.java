@@ -28,7 +28,6 @@ import org.chromium.components.feed.core.proto.libraries.api.internal.StreamData
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamFeature;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamLocalAction;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamPayload;
-import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamPayload.Builder;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamSharedState;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamStructure;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamStructure.Operation;
@@ -56,10 +55,11 @@ public abstract class AbstractFeedStoreTest {
             sIdGenerators.createFeatureContentId(PAYLOAD_ID);
     private static final String OPERATION_CONTENT_ID =
             sIdGenerators.createFeatureContentId(OPERATION_ID);
-    private static final Builder STREAM_PAYLOAD = StreamPayload.newBuilder().setStreamFeature(
-            StreamFeature.newBuilder()
-                    .setContentId(PAYLOAD_CONTENT_ID)
-                    .setParentId(sIdGenerators.createRootContentId(0)));
+    private static final StreamPayload.Builder STREAM_PAYLOAD =
+            StreamPayload.newBuilder().setStreamFeature(
+                    StreamFeature.newBuilder()
+                            .setContentId(PAYLOAD_CONTENT_ID)
+                            .setParentId(sIdGenerators.createRootContentId(0)));
     private static final StreamStructure STREAM_STRUCTURE =
             StreamStructure.newBuilder()
                     .setContentId(OPERATION_CONTENT_ID)

@@ -7,6 +7,7 @@
 #include <lib/fdio/directory.h>
 #include <lib/fdio/fdio.h>
 
+#include <algorithm>
 #include <map>
 #include <memory>
 #include <utility>
@@ -181,7 +182,7 @@ class ContentDirectoryURLLoader : public network::mojom::URLLoader {
     }
 
     // Map the file into memory.
-    if (!mmap->Initialize(base::File(fd.release()),
+    if (!mmap->Initialize(base::File(std::move(fd)),
                           base::MemoryMappedFile::READ_ONLY)) {
       return false;
     }

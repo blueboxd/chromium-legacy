@@ -1599,7 +1599,7 @@ STDMETHODIMP BrowserAccessibilityComWin::InternalQueryInterface(
       return E_NOINTERFACE;
     }
   } else if (iid == IID_IAccessibleValue) {
-    if (!IsRangeValueSupported(accessibility->GetData())) {
+    if (!accessibility->GetData().IsRangeValueSupported()) {
       *object = nullptr;
       return E_NOINTERFACE;
     }

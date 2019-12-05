@@ -10,9 +10,6 @@ class BrowserContext;
 }
 
 namespace extensions {
-extern const char kNtpPromoExperiment[];
-extern const char kStartupExperiment[];
-
 // The type of message the extensions checkup banner will convey.
 enum class CheckupMessage {
   // A performance focused message.

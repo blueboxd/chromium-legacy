@@ -491,6 +491,8 @@ class MockCdmContext : public CdmContext {
   ~MockCdmContext() override;
 
   MOCK_METHOD0(GetDecryptor, Decryptor*());
+  MOCK_METHOD0(RequiresMediaFoundationRenderer, bool());
+
   int GetCdmId() const override;
 
   void set_cdm_id(int cdm_id);

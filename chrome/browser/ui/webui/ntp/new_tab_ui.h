@@ -16,6 +16,7 @@ class Profile;
 
 namespace base {
 class DictionaryValue;
+class Value;
 }
 
 namespace user_prefs {
@@ -39,7 +40,7 @@ class NewTabUI : public content::WebUIController {
 
   // Adds "url", "title", and "direction" keys on incoming dictionary, setting
   // title as the url as a fallback on empty title.
-  static void SetUrlTitleAndDirection(base::DictionaryValue* dictionary,
+  static void SetUrlTitleAndDirection(base::Value* dictionary,
                                       const base::string16& title,
                                       const GURL& gurl);
 

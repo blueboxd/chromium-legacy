@@ -26,7 +26,6 @@ class SafetyTipInfoBarDelegate : public ConfirmInfoBarDelegate {
   int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
-  bool Cancel() override;
 
   // infobars::InfoBarDelegate
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;

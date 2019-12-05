@@ -26,8 +26,6 @@
 
 namespace base {
 
-class FilePath;
-
 // Clear a specific file from the system cache like EvictFileFromSystemCache,
 // but on failure it will sleep and retry. On the Windows buildbots, eviction
 // can fail if the file is marked in use, and this will throw off timings that

@@ -25,8 +25,9 @@ java_cpp_enum("generated_enums") {
 
 android_library("java") {
   java_files = [
-    "org/chromium/weblayer_private/BrowserImpl.java",
+    "org/chromium/weblayer_private/ActionModeCallback.java",
     "org/chromium/weblayer_private/BrowserFragmentImpl.java",
+    "org/chromium/weblayer_private/BrowserImpl.java",
     "org/chromium/weblayer_private/BrowserViewController.java",
     "org/chromium/weblayer_private/ChildProcessServiceImpl.java",
     "org/chromium/weblayer_private/ContentView.java",
@@ -35,7 +36,8 @@ android_library("java") {
     "org/chromium/weblayer_private/DownloadCallbackProxy.java",
     "org/chromium/weblayer_private/ErrorPageCallbackProxy.java",
     "org/chromium/weblayer_private/ExternalNavigationHandler.java",
-    "org/chromium/weblayer_private/ActionModeCallback.java",
+    "org/chromium/weblayer_private/FragmentAndroidPermissionDelegate.java",
+    "org/chromium/weblayer_private/FragmentWindowAndroid.java",
     "org/chromium/weblayer_private/FullscreenCallbackProxy.java",
     "org/chromium/weblayer_private/LocaleChangedBroadcastReceiver.java",
     "org/chromium/weblayer_private/MinidumpUploader.java",
@@ -43,8 +45,6 @@ android_library("java") {
     "org/chromium/weblayer_private/NavigationImpl.java",
     "org/chromium/weblayer_private/NewTabCallbackProxy.java",
     "org/chromium/weblayer_private/ProfileImpl.java",
-    "org/chromium/weblayer_private/FragmentAndroidPermissionDelegate.java",
-    "org/chromium/weblayer_private/FragmentWindowAndroid.java",
     "org/chromium/weblayer_private/ProfileManager.java",
     "org/chromium/weblayer_private/RemoteFragmentImpl.java",
     "org/chromium/weblayer_private/TabCallbackProxy.java",
@@ -67,6 +67,7 @@ android_library("java") {
     "//components/embedder_support/android:application_java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/minidump_uploader:minidump_uploader_java",
+    "//components/spellcheck/browser/android:java",
     "//components/version_info/android:version_constants_java",
     "//content/public/android:content_java",
     "//third_party/android_deps:com_android_support_support_compat_java",

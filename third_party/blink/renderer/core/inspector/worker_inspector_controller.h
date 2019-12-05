@@ -80,7 +80,7 @@ class WorkerInspectorController final
 
  private:
   // Thread::TaskObserver implementation.
-  void WillProcessTask(const base::PendingTask&) override;
+  void WillProcessTask(const base::PendingTask&, bool) override;
   void DidProcessTask(const base::PendingTask&) override;
 
   // blink::trace_event::EnabledStateObserver implementation:

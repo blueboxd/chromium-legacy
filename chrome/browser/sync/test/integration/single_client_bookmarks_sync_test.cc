@@ -798,6 +798,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
       entity_builder_factory.NewBookmarkEntityBuilder("Seattle Sounders FC");
 
   // Issue remote creation with a valid GUID.
+  base::HistogramTester histogram_tester;
   std::unique_ptr<syncer::LoopbackServerEntity> folder =
       bookmark_builder.BuildFolder(/*is_legacy=*/false);
   const std::string guid = folder.get()->GetSpecifics().bookmark().guid();
@@ -811,6 +812,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
   EXPECT_EQ(
       guid,
       GetBookmarkBarNode(kSingleProfileIndex)->children()[0].get()->guid());
+  EXPECT_EQ(1, histogram_tester.GetBucketCount("Sync.BookmarkGUIDSource2",
+                                               /*kSpecifics=*/0));
 }
 
 IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
@@ -831,6 +834,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
 
   // Issue remote creation without a valid GUID but with a valid
   // originator_client_item_id.
+  base::HistogramTester histogram_tester;
   std::unique_ptr<syncer::LoopbackServerEntity> folder =
       bookmark_builder.BuildFolder(/*is_legacy=*/true);
   ASSERT_TRUE(folder.get()->GetSpecifics().bookmark().guid().empty());
@@ -845,6 +849,9 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
   EXPECT_EQ(
       originator_client_item_id,
       GetBookmarkBarNode(kSingleProfileIndex)->children()[0].get()->guid());
+
+  EXPECT_EQ(1, histogram_tester.GetBucketCount("Sync.BookmarkGUIDSource2",
+                                               /*kValidOCII=*/1));
 }
 
 IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
@@ -864,6 +871,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
 
   // Issue remote creation without a valid GUID or a valid
   // originator_client_item_id.
+  base::HistogramTester histogram_tester;
   std::unique_ptr<syncer::LoopbackServerEntity> bookmark =
       bookmark_builder.BuildBookmark(url, /*is_legacy=*/true);
   ASSERT_TRUE(bookmark.get()->GetSpecifics().bookmark().guid().empty());
@@ -876,6 +884,9 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
       GetBookmarkBarNode(kSingleProfileIndex)->children()[0].get()->guid()));
   EXPECT_FALSE(ContainsBookmarkNodeWithGUID(kSingleProfileIndex,
                                             originator_client_item_id));
+
+  EXPECT_EQ(1, histogram_tester.GetBucketCount("Sync.BookmarkGUIDSource2",
+                                               /*kLeftEmpty=*/2));
 }
 
 IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
@@ -893,6 +904,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
   fake_server_->InjectEntity(std::move(bookmark));
 
   // Start syncing.
+  base::HistogramTester histogram_tester;
   DisableVerifier();
   ASSERT_TRUE(SetupClients());
   ASSERT_EQ(0u, GetBookmarkBarNode(kSingleProfileIndex)->children().size());
@@ -902,6 +914,13 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
   EXPECT_TRUE(BookmarksUrlChecker(kSingleProfileIndex, url, 1).Wait());
   EXPECT_EQ(1u, GetBookmarkBarNode(kSingleProfileIndex)->children().size());
   EXPECT_TRUE(ContainsBookmarkNodeWithGUID(kSingleProfileIndex, guid));
+
+  EXPECT_EQ(1, histogram_tester.GetBucketCount("Sync.BookmarkGUIDSource2",
+                                               /*kSpecifics=*/0));
+  EXPECT_EQ(0, histogram_tester.GetBucketCount("Sync.BookmarkGUIDSource2",
+                                               /*kValidOCII=*/1));
+  EXPECT_EQ(0, histogram_tester.GetBucketCount("Sync.BookmarkGUIDSource2",
+                                               /*kLeftEmpty=*/2));
 }
 
 IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
@@ -921,6 +940,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
   fake_server_->InjectEntity(std::move(bookmark));
 
   // Start syncing.
+  base::HistogramTester histogram_tester;
   DisableVerifier();
   ASSERT_TRUE(SetupClients());
   ASSERT_EQ(0u, GetBookmarkBarNode(kSingleProfileIndex)->children().size());
@@ -932,6 +952,13 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
   EXPECT_EQ(1u, GetBookmarkBarNode(kSingleProfileIndex)->children().size());
   EXPECT_TRUE(ContainsBookmarkNodeWithGUID(kSingleProfileIndex,
                                            originator_client_item_id));
+
+  EXPECT_EQ(0, histogram_tester.GetBucketCount("Sync.BookmarkGUIDSource2",
+                                               /*kSpecifics=*/0));
+  EXPECT_EQ(1, histogram_tester.GetBucketCount("Sync.BookmarkGUIDSource2",
+                                               /*kValidOCII=*/1));
+  EXPECT_EQ(0, histogram_tester.GetBucketCount("Sync.BookmarkGUIDSource2",
+                                               /*kLeftEmpty=*/2));
 }
 
 IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
@@ -951,6 +978,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
   fake_server_->InjectEntity(std::move(bookmark));
 
   // Start syncing.
+  base::HistogramTester histogram_tester;
   DisableVerifier();
   ASSERT_TRUE(SetupClients());
   ASSERT_EQ(0u, GetBookmarkBarNode(kSingleProfileIndex)->children().size());
@@ -963,6 +991,13 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
       GetBookmarkBarNode(kSingleProfileIndex)->children()[0].get()->guid()));
   EXPECT_FALSE(ContainsBookmarkNodeWithGUID(kSingleProfileIndex,
                                             originator_client_item_id));
+
+  EXPECT_EQ(0, histogram_tester.GetBucketCount("Sync.BookmarkGUIDSource2",
+                                               /*kSpecifics=*/0));
+  EXPECT_EQ(0, histogram_tester.GetBucketCount("Sync.BookmarkGUIDSource2",
+                                               /*kValidOCII=*/1));
+  EXPECT_EQ(1, histogram_tester.GetBucketCount("Sync.BookmarkGUIDSource2",
+                                               /*kLeftEmpty=*/2));
 }
 
 IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,

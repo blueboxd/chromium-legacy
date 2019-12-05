@@ -608,6 +608,7 @@ class BluetoothTestBase : public testing::Test {
 
   // Accessors to get callbacks bound to this fixture:
   base::Closure GetCallback(Call expected);
+  base::OnceClosure GetOnceCallback(Call expected);
   BluetoothAdapter::CreateAdvertisementCallback GetCreateAdvertisementCallback(
       Call expected);
   BluetoothAdapter::DiscoverySessionCallback GetDiscoverySessionCallback(
@@ -623,6 +624,7 @@ class BluetoothTestBase : public testing::Test {
   BluetoothRemoteGattCharacteristic::ValueCallback GetReadValueCallback(
       Call expected);
   BluetoothAdapter::ErrorCallback GetErrorCallback(Call expected);
+  BluetoothAdapter::ErrorOnceCallback GetErrorOnceCallback(Call expected);
   BluetoothAdapter::AdvertisementErrorCallback GetAdvertisementErrorCallback(
       Call expected);
   BluetoothDevice::ConnectErrorCallback GetConnectErrorCallback(Call expected);

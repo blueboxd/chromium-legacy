@@ -16,7 +16,7 @@
 namespace gl {
 
 RealGLXApi* g_real_glx;
-DebugGLXApi* g_debug_glx;
+LogGLXApi* g_log_glx;
 
 void InitializeStaticGLBindingsGLX() {
   g_driver_glx.InitializeStaticBindings();
@@ -27,23 +27,23 @@ void InitializeStaticGLBindingsGLX() {
   g_current_glx_context = g_real_glx;
 }
 
-void InitializeDebugGLBindingsGLX() {
-  if (!g_debug_glx) {
-    g_debug_glx = new DebugGLXApi(g_real_glx);
+void InitializeLogGLBindingsGLX() {
+  if (!g_log_glx) {
+    g_log_glx = new LogGLXApi(g_real_glx);
   }
-  g_current_glx_context = g_debug_glx;
+  g_current_glx_context = g_log_glx;
 }
 
 void ClearBindingsGLX() {
-  if (g_debug_glx) {
-    delete g_debug_glx;
-    g_debug_glx = NULL;
+  if (g_log_glx) {
+    delete g_log_glx;
+    g_log_glx = nullptr;
   }
   if (g_real_glx) {
     delete g_real_glx;
-    g_real_glx = NULL;
+    g_real_glx = nullptr;
   }
-  g_current_glx_context = NULL;
+  g_current_glx_context = nullptr;
   g_driver_glx.ClearBindings();
 }
 
@@ -53,9 +53,7 @@ GLXApi::GLXApi() {
 GLXApi::~GLXApi() {
 }
 
-GLXApiBase::GLXApiBase()
-    : driver_(NULL) {
-}
+GLXApiBase::GLXApiBase() : driver_(nullptr) {}
 
 GLXApiBase::~GLXApiBase() {
 }
@@ -91,22 +89,21 @@ const char* RealGLXApi::glXQueryExtensionsStringFn(Display* dpy,
     return filtered_exts_.c_str();
 
   if (!driver_->fn.glXQueryExtensionsStringFn)
-    return NULL;
+    return nullptr;
 
   const char* str = GLXApiBase::glXQueryExtensionsStringFn(dpy, screen);
   if (!str)
-    return NULL;
+    return nullptr;
 
   filtered_exts_ = FilterGLExtensionList(str, disabled_exts_);
   return filtered_exts_.c_str();
 }
 
-DebugGLXApi::DebugGLXApi(GLXApi* glx_api) : glx_api_(glx_api) {}
+LogGLXApi::LogGLXApi(GLXApi* glx_api) : glx_api_(glx_api) {}
 
-DebugGLXApi::~DebugGLXApi() {}
+LogGLXApi::~LogGLXApi() {}
 
-void DebugGLXApi::SetDisabledExtensions(
-    const std::string& disabled_extensions) {
+void LogGLXApi::SetDisabledExtensions(const std::string& disabled_extensions) {
   if (glx_api_) {
     glx_api_->SetDisabledExtensions(disabled_extensions);
   }

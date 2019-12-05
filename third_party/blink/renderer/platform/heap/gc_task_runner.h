@@ -51,7 +51,7 @@ class GCTaskObserver final : public Thread::TaskObserver {
     DCHECK(!nesting_ || nesting_ == 1);
   }
 
-  void WillProcessTask(const base::PendingTask&) override { nesting_++; }
+  void WillProcessTask(const base::PendingTask&, bool) override { nesting_++; }
 
   void DidProcessTask(const base::PendingTask&) override {
     // In the production code WebKit::initialize is called from inside the

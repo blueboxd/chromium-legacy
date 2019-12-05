@@ -49,6 +49,12 @@ if (public_android_sdk) {
     deps = upstream_only_webview_deps
     apk_name = "TrichromeWebView"
     use_trichrome_library = true
+
+    if (android_64bit_target_cpu) {
+      is_64_bit_browser = false
+      include_64_bit_webview = true
+    }
+
     uncompress_dex = true
     if (trichrome_synchronized_proguard) {
       static_library_provider = "//chrome/android:trichrome_library_apk"
@@ -60,12 +66,14 @@ if (public_android_sdk) {
       android_manifest = trichrome_webview_64_32_android_manifest
       android_manifest_dep =
           "//android_webview/nonembedded:trichrome_webview_64_32_manifest"
+      use_trichrome_library = true
       is_64_bit_browser = true
+      include_32_bit_webview = true
+
       min_sdk_version = 29
 
       deps = upstream_only_webview_deps
       apk_name = "TrichromeWebView6432"
-      use_trichrome_library = true
       uncompress_dex = true
       if (trichrome_synchronized_proguard) {
         static_library_provider = "//chrome/android:trichrome_library_apk"

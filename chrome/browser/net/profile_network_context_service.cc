@@ -174,12 +174,41 @@ void InitializeCorsExtraSafelistedRequestHeaderNamesForProfile(
   }
 }
 
-enum class AmbientAuthAllowedProfileTypes {
-  REGULAR_ONLY = 0,
-  INCOGNITO_AND_REGULAR = 1,
-  GUEST_AND_REGULAR = 2,
-  ALL = 3,
-};
+// Tests allowing ambient authentication with default credentials based on the
+// profile type.
+// TODO(https://crbug.com/458508): Currently, this is determined by OR of the
+// feature flag and policy. Next steps would be changing the feature value to
+// false after enough heads up and then removing the feature.
+bool IsAmbientAuthAllowedForProfile(const Profile* profile) {
+  if (profile->IsRegularProfile())
+    return true;
+
+  PrefService* local_state = g_browser_process->local_state();
+  DCHECK(local_state);
+  DCHECK(local_state->FindPreference(
+      prefs::kAmbientAuthenticationInPrivateModesEnabled));
+
+  net::AmbientAuthAllowedProfileTypes type =
+      static_cast<net::AmbientAuthAllowedProfileTypes>(local_state->GetInteger(
+          prefs::kAmbientAuthenticationInPrivateModesEnabled));
+
+  if (profile->IsGuestSession()) {
+    return base::FeatureList::IsEnabled(
+               features::kEnableAmbientAuthenticationInGuestSession) ||
+           type == net::AmbientAuthAllowedProfileTypes::GUEST_AND_REGULAR ||
+           type == net::AmbientAuthAllowedProfileTypes::ALL;
+  } else if (profile->IsIncognitoProfile()) {
+    return base::FeatureList::IsEnabled(
+               features::kEnableAmbientAuthenticationInIncognito) ||
+           type == net::AmbientAuthAllowedProfileTypes::INCOGNITO_AND_REGULAR ||
+           type == net::AmbientAuthAllowedProfileTypes::ALL;
+  }
+
+  // Profile type not yet supported.
+  NOTREACHED();
+
+  return false;
+}
 
 }  // namespace
 
@@ -314,7 +343,7 @@ void ProfileNetworkContextService::RegisterLocalStatePrefs(
   registry->RegisterListPref(prefs::kHSTSPolicyBypassList);
   registry->RegisterIntegerPref(
       prefs::kAmbientAuthenticationInPrivateModesEnabled,
-      static_cast<int>(AmbientAuthAllowedProfileTypes::REGULAR_ONLY));
+      static_cast<int>(net::AmbientAuthAllowedProfileTypes::REGULAR_ONLY));
 }
 
 void ProfileNetworkContextService::DisableQuicIfNotAllowed() {
@@ -600,28 +629,14 @@ ProfileNetworkContextService::CreateNetworkContextParams(
   network_context_params->http_auth_static_network_context_params =
       network::mojom::HttpAuthStaticNetworkContextParams::New();
 
-  // Allow/disallow ambient authentication with default credentials based on the
-  // profile type.
-  // TODO(https://crbug.com/458508): Allow this behavior to be controllable by
-  // policy.
-  if (profile_->IsGuestSession()) {
-    network_context_params->http_auth_static_network_context_params
-        ->allow_default_credentials =
-        base::FeatureList::IsEnabled(
-            features::kEnableAmbientAuthenticationInGuestSession)
-            ? net::HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS
-            : net::HttpAuthPreferences::DISALLOW_DEFAULT_CREDENTIALS;
-  } else if (profile_->IsIncognitoProfile()) {
-    network_context_params->http_auth_static_network_context_params
-        ->allow_default_credentials =
-        base::FeatureList::IsEnabled(
-            features::kEnableAmbientAuthenticationInIncognito)
-            ? net::HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS
-            : net::HttpAuthPreferences::DISALLOW_DEFAULT_CREDENTIALS;
-  } else {
+  if (IsAmbientAuthAllowedForProfile(profile_)) {
     network_context_params->http_auth_static_network_context_params
         ->allow_default_credentials =
         net::HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS;
+  } else {
+    network_context_params->http_auth_static_network_context_params
+        ->allow_default_credentials =
+        net::HttpAuthPreferences::DISALLOW_DEFAULT_CREDENTIALS;
   }
 
   network_context_params->cookie_manager_params =

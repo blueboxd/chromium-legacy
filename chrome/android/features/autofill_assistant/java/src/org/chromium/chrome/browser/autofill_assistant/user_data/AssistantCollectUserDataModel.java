@@ -10,6 +10,7 @@ import android.view.View;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
+import org.chromium.chrome.browser.autofill_assistant.AssistantInfoPopup;
 import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantAdditionalSectionFactory;
 import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantStaticTextSection;
 import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantTextInputSection;
@@ -271,12 +272,6 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     @CalledByNative
     private void setDelegate(AssistantCollectUserDataDelegate delegate) {
         set(DELEGATE, delegate);
-    }
-
-    /** Creates a simple info popup with a title and some text. */
-    @CalledByNative
-    private static AssistantInfoPopup createInfoPopup(String title, String text) {
-        return new AssistantInfoPopup(title, text);
     }
 
     /** Creates an empty list of login options. */

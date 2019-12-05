@@ -122,6 +122,7 @@ if (is_android) {
       "test_destruction_observable.h",
     ]
     deps = [
+      "//base/test:test_support",
       "//media/base:test_support",
       "//testing/gmock",
       "//testing/gtest",

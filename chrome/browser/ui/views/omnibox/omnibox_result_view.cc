@@ -75,9 +75,12 @@ OmniboxResultView::OmniboxResultView(
       AddChildView(views::CreateVectorImageButton(this));
   views::InstallCircleHighlightPathGenerator(remove_suggestion_button_);
   // TODO(tommycli): We may need to update the color for theme changes.
+  int icon_size = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
   views::SetImageFromVectorIcon(remove_suggestion_button_,
-                                vector_icons::kCloseRoundedIcon,
+                                vector_icons::kCloseRoundedIcon, icon_size,
                                 GetColor(OmniboxPart::RESULTS_ICON));
+  remove_suggestion_button_->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_OMNIBOX_REMOVE_SUGGESTION));
   remove_suggestion_focus_ring_ =
       views::FocusRing::Install(remove_suggestion_button_);
   remove_suggestion_focus_ring_->SetHasFocusPredicate([&](View* view) {
@@ -87,9 +90,9 @@ OmniboxResultView::OmniboxResultView(
 
   keyword_view_ = AddChildView(std::make_unique<OmniboxMatchCellView>(this));
   keyword_view_->icon()->EnableCanvasFlippingForRTLUI(true);
-  keyword_view_->icon()->SetImage(gfx::CreateVectorIcon(
-      omnibox::kKeywordSearchIcon, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
-      GetColor(OmniboxPart::RESULTS_ICON)));
+  keyword_view_->icon()->SetImage(
+      gfx::CreateVectorIcon(omnibox::kKeywordSearchIcon, icon_size,
+                            GetColor(OmniboxPart::RESULTS_ICON)));
   keyword_view_->icon()->SizeToPreferredSize();
 
   // Calling SetMatch() will result in the child OmniboxMatchCellViews
@@ -460,7 +463,12 @@ void OmniboxResultView::OnThemeChanged() {
 }
 
 void OmniboxResultView::ProvideButtonFocusHint() {
-  suggestion_tab_switch_button_->ProvideFocusHint();
+  if (suggestion_tab_switch_button_->GetVisible()) {
+    suggestion_tab_switch_button_->ProvideFocusHint();
+  } else if (remove_suggestion_button_->GetVisible()) {
+    remove_suggestion_button_->NotifyAccessibilityEvent(
+        ax::mojom::Event::kSelection, true);
+  }
 }
 
 void OmniboxResultView::RemoveSuggestion() const {

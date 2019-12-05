@@ -44,12 +44,14 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(
     views::BubbleBorder::Arrow arrow,
     ActivationAction activation_action,
     int string_specifier,
+    base::Optional<int> preferred_width,
     base::Optional<int> screenreader_string_specifier,
     base::Optional<ui::Accelerator> feature_accelerator,
     std::unique_ptr<FeaturePromoBubbleTimeout> feature_promo_bubble_timeout)
     : BubbleDialogDelegateView(anchor_view, arrow),
       activation_action_(activation_action),
-      feature_promo_bubble_timeout_(std::move(feature_promo_bubble_timeout)) {
+      feature_promo_bubble_timeout_(std::move(feature_promo_bubble_timeout)),
+      preferred_width_(preferred_width) {
   DCHECK(anchor_view);
   UseCompactMargins();
 
@@ -97,6 +99,12 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(
   auto* label = new views::Label(body_text);
   label->SetBackgroundColor(background_color);
   label->SetEnabledColor(text_color);
+
+  if (preferred_width.has_value()) {
+    label->SetMultiLine(true);
+    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  }
+
   AddChildView(label);
 
   if (activation_action == ActivationAction::DO_NOT_ACTIVATE) {
@@ -127,11 +135,12 @@ FeaturePromoBubbleView* FeaturePromoBubbleView::CreateOwned(
     views::BubbleBorder::Arrow arrow,
     ActivationAction activation_action,
     int string_specifier,
+    base::Optional<int> preferred_width,
     base::Optional<int> screenreader_string_specifier,
     base::Optional<ui::Accelerator> feature_accelerator,
     std::unique_ptr<FeaturePromoBubbleTimeout> feature_promo_bubble_timeout) {
   return new FeaturePromoBubbleView(
-      anchor_view, arrow, activation_action, string_specifier,
+      anchor_view, arrow, activation_action, string_specifier, preferred_width,
       screenreader_string_specifier, feature_accelerator,
       std::move(feature_promo_bubble_timeout));
 }
@@ -173,4 +182,13 @@ ax::mojom::Role FeaturePromoBubbleView::GetAccessibleWindowRole() {
 
 base::string16 FeaturePromoBubbleView::GetAccessibleWindowTitle() const {
   return accessible_name_;
+}
+
+gfx::Size FeaturePromoBubbleView::CalculatePreferredSize() const {
+  if (preferred_width_.has_value()) {
+    return gfx::Size(preferred_width_.value(),
+                     GetHeightForWidth(preferred_width_.value()));
+  } else {
+    return View::CalculatePreferredSize();
+  }
 }

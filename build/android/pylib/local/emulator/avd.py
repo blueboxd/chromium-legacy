@@ -23,8 +23,21 @@ from pylib import constants
 from pylib.local.emulator.proto import avd_pb2
 
 _ALL_PACKAGES = object()
+_CONFIG_INI_CONTENTS = textwrap.dedent("""\
+    disk.dataPartition.size=4G
+    hw.lcd.density={density}
+    hw.lcd.height={height}
+    hw.lcd.width={width}
+    """)
 _DEFAULT_AVDMANAGER_PATH = os.path.join(constants.ANDROID_SDK_ROOT, 'tools',
                                         'bin', 'avdmanager')
+# Default to a 480dp mdpi screen (a relatively large phone).
+# See https://developer.android.com/training/multiscreen/screensizes
+# and https://developer.android.com/training/multiscreen/screendensities
+# for more information.
+_DEFAULT_SCREEN_DENSITY = 160
+_DEFAULT_SCREEN_HEIGHT = 960
+_DEFAULT_SCREEN_WIDTH = 480
 
 
 class AvdException(Exception):
@@ -85,7 +98,7 @@ class _AvdManagerAgent(object):
         '-Dcom.android.sdkmanager.toolsdir=%s' % fake_tools_dir,
     })
 
-  def Create(self, avd_name, system_image, force=False):
+  def Create(self, avd_name, system_image, force=False, sdcard=None):
     """Call `avdmanager create`.
 
     Args:
@@ -106,6 +119,8 @@ class _AvdManagerAgent(object):
     ]
     if force:
       create_cmd += ['--force']
+    if sdcard:
+      create_cmd += ['--sdcard', sdcard]
 
     create_proc = cmd_helper.Popen(
         create_cmd,
@@ -213,7 +228,8 @@ class AvdConfig(object):
     avd_manager.Create(
         avd_name=self._config.avd_name,
         system_image=self._config.system_image_name,
-        force=force)
+        force=force,
+        sdcard=self._config.avd_settings.sdcard.size)
 
     try:
       logging.info('Modifying AVD configuration.')
@@ -227,14 +243,16 @@ class AvdConfig(object):
       with open(root_ini, 'a') as root_ini_file:
         root_ini_file.write('path.rel=avd/%s.avd\n' % self._config.avd_name)
 
+      height = (self._config.avd_settings.screen.height
+                or _DEFAULT_SCREEN_HEIGHT)
+      width = (self._config.avd_settings.screen.width or _DEFAULT_SCREEN_WIDTH)
+      density = (self._config.avd_settings.screen.density
+                 or _DEFAULT_SCREEN_DENSITY)
+
       with open(config_ini, 'a') as config_ini_file:
-        config_ini_file.write(
-            textwrap.dedent("""\
-                disk.dataPartition.size=4G
-                hw.lcd.density=160
-                hw.lcd.height=960
-                hw.lcd.width=480
-                """))
+        config_ini_contents = _CONFIG_INI_CONTENTS.format(
+            density=density, height=height, width=width)
+        config_ini_file.write(config_ini_contents)
 
       # Start & stop the AVD.
       self._Initialize()

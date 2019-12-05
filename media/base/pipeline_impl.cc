@@ -545,23 +545,27 @@ void PipelineImpl::RendererWrapper::CreateRendererInternal(
   DCHECK(cdm_context_ || !HasEncryptedStream())
       << "CDM should be available now if has encrypted stream";
 
-  // If the |default_renderer_| is available, just use it.
-  // TODO(crbug.com/1018372): When the CDM requires a different Renderer, also
-  // use PipelineImpl::AsyncCreateRenderer() to create a new one.
-  if (default_renderer_) {
-    OnRendererCreated(std::move(done_cb), std::move(default_renderer_));
+  base::Optional<RendererFactoryType> factory_type;
+  if (cdm_context_ && cdm_context_->RequiresMediaFoundationRenderer())
+    factory_type = RendererFactoryType::kMediaFoundation;
+
+  // TODO(xhwang): During Resume(), the |default_renderer_| might already match
+  // the |factory_type|, in which case we shouldn't need to create a new one.
+  if (!default_renderer_ || factory_type) {
+    // Create the Renderer asynchronously on the main task runner. Use
+    // BindToCurrentLoop to call OnRendererCreated() on the media task runner.
+    auto renderer_created_cb = BindToCurrentLoop(
+        base::BindOnce(&RendererWrapper::OnRendererCreated,
+                       weak_factory_.GetWeakPtr(), std::move(done_cb)));
+    main_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&PipelineImpl::AsyncCreateRenderer, weak_pipeline_,
+                       factory_type, std::move(renderer_created_cb)));
     return;
   }
 
-  // Create the Renderer asynchronously on the main task runner.
-  // Use BindToCurrentLoop to call OnRendererCreated() on the media task runner.
-  auto renderer_created_cb = BindToCurrentLoop(
-      base::BindOnce(&RendererWrapper::OnRendererCreated,
-                     weak_factory_.GetWeakPtr(), std::move(done_cb)));
-  main_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&PipelineImpl::AsyncCreateRenderer, weak_pipeline_,
-                     std::move(renderer_created_cb)));
+  // Just use the default one.
+  OnRendererCreated(std::move(done_cb), std::move(default_renderer_));
 }
 
 void PipelineImpl::RendererWrapper::OnBufferedTimeRangesChanged(
@@ -1167,7 +1171,7 @@ void PipelineImpl::Start(StartType start_type,
   // play. In this case, not creating a default renderer to reduce memory usage.
   std::unique_ptr<Renderer> default_renderer;
   if (start_type != StartType::kSuspendAfterMetadata)
-    default_renderer = create_renderer_cb_.Run();
+    default_renderer = create_renderer_cb_.Run(base::nullopt);
 
   media_task_runner_->PostTask(
       FROM_HERE,
@@ -1255,7 +1259,7 @@ void PipelineImpl::Resume(base::TimeDelta time,
   last_media_time_ = base::TimeDelta();
 
   // Always create a default renderer for Resume().
-  auto default_renderer = create_renderer_cb_.Run();
+  auto default_renderer = create_renderer_cb_.Run(base::nullopt);
 
   media_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&RendererWrapper::Resume,
@@ -1426,11 +1430,13 @@ const char* PipelineImpl::GetStateString(State state) {
 
 #undef RETURN_STRING
 
-void PipelineImpl::AsyncCreateRenderer(RendererCreatedCB renderer_created_cb) {
+void PipelineImpl::AsyncCreateRenderer(
+    base::Optional<RendererFactoryType> factory_type,
+    RendererCreatedCB renderer_created_cb) {
   DVLOG(2) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  std::move(renderer_created_cb).Run(create_renderer_cb_.Run());
+  std::move(renderer_created_cb).Run(create_renderer_cb_.Run(factory_type));
 }
 
 void PipelineImpl::OnError(PipelineStatus error) {

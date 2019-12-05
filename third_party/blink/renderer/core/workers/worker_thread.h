@@ -151,7 +151,7 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   static void TerminateAllWorkersForTesting();
 
   // Thread::TaskObserver.
-  void WillProcessTask(const base::PendingTask&) override;
+  void WillProcessTask(const base::PendingTask&, bool) override;
   void DidProcessTask(const base::PendingTask&) override;
 
   virtual WorkerBackingThread& GetWorkerBackingThread() = 0;

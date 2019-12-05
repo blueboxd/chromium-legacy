@@ -28,20 +28,18 @@ namespace onc {
 
 namespace {
 
-// Converts |str| to a base::Value of the given |type|. If the conversion fails,
-// returns NULL.
-std::unique_ptr<base::Value> ConvertStringToValue(const std::string& str,
-                                                  base::Value::Type type) {
-  std::unique_ptr<base::Value> value;
-  if (type == base::Value::Type::STRING) {
-    value.reset(new base::Value(str));
-  } else {
-    value = base::JSONReader::ReadDeprecated(str);
-  }
-  if (value && value->type() != type)
-    return nullptr;
+// Converts a VPN string to a base::Value of the given |type|. If the conversion
+// fails, returns a default value for |type|.
+base::Value ConvertVpnStringToValue(const std::string& str,
+                                    base::Value::Type type) {
+  if (type == base::Value::Type::STRING)
+    return base::Value(str);
 
-  return value;
+  base::Optional<base::Value> value = base::JSONReader::Read(str);
+  if (!value || value->type() != type)
+    return base::Value(type);
+
+  return std::move(*value);
 }
 
 // If the network is configured with an installed certificate, a PKCS11 id will
@@ -111,6 +109,7 @@ class ShillToONCTranslator {
   void TranslateEthernet();
   void TranslateOpenVPN();
   void TranslateIPsec();
+  void TranslateL2TP();
   void TranslateThirdPartyVPN();
   void TranslateVPN();
   void TranslateWiFiWithState();
@@ -195,6 +194,8 @@ ShillToONCTranslator::CreateTranslatedONCObject() {
     TranslateOpenVPN();
   } else if (onc_signature_ == &kIPsecSignature) {
     TranslateIPsec();
+  } else if (onc_signature_ == &kL2TPSignature) {
+    TranslateL2TP();
   } else if (onc_signature_ == &kThirdPartyVPNSignature) {
     TranslateThirdPartyVPN();
   } else if (onc_signature_ == &kWiFiWithStateSignature) {
@@ -268,23 +269,21 @@ void ShillToONCTranslator::TranslateOpenVPN() {
       continue;
     }
 
-    std::unique_ptr<base::Value> translated;
     std::string shill_str;
     if (shill_value->GetAsString(&shill_str)) {
       // Shill wants all Provider/VPN fields to be strings. Translates these
       // strings back to the correct ONC type.
-      translated = ConvertStringToValue(
+      base::Value translated = ConvertVpnStringToValue(
           shill_str, field_signature->value_signature->onc_type);
 
-      if (translated.get() == NULL) {
+      if (translated.is_none()) {
         LOG(ERROR) << "Shill property '" << shill_property_name
                    << "' with value " << *shill_value
                    << " couldn't be converted to base::Value::Type "
                    << field_signature->value_signature->onc_type << ": "
                    << GetName();
       } else {
-        onc_object_->SetWithoutPathExpansion(onc_field_name,
-                                             std::move(translated));
+        onc_object_->SetKey(onc_field_name, std::move(translated));
       }
     } else {
       LOG(ERROR) << "Shill property '" << shill_property_name << "' has value "
@@ -307,6 +306,19 @@ void ShillToONCTranslator::TranslateIPsec() {
   }
   onc_object_->SetKey(::onc::ipsec::kAuthenticationType,
                       base::Value(authentication_type));
+}
+
+void ShillToONCTranslator::TranslateL2TP() {
+  CopyPropertiesAccordingToSignature();
+
+  const base::Value* lcp_echo_disabled =
+      shill_dictionary_->FindKey(shill::kL2tpIpsecLcpEchoDisabledProperty);
+  if (lcp_echo_disabled && lcp_echo_disabled->is_string()) {
+    base::Value lcp_echo_disabled_value = ConvertVpnStringToValue(
+        lcp_echo_disabled->GetString(), base::Value::Type::BOOLEAN);
+    onc_object_->SetKey(::onc::l2tp::kLcpEchoDisabled,
+                        std::move(lcp_echo_disabled_value));
+  }
 }
 
 void ShillToONCTranslator::TranslateThirdPartyVPN() {

@@ -81,6 +81,7 @@ copy("copies") {
     "dmgdiffer.sh",
     "notarize_thing.py",
     "pkg-dmg",
+    "pkg_postinstall.in",
     "sign_chrome.py",
   ]
 

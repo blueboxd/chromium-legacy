@@ -52,6 +52,7 @@ static_library("test_support") {
     "copy_only_int.cc",
     "copy_only_int.h",
     "gmock_callback_support.h",
+    "gmock_move_support.h",
     "gtest_util.cc",
     "gtest_util.h",
     "gtest_xml_unittest_result_printer.cc",

@@ -19,6 +19,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
+#include "ui/gfx/overlay_transform.h"
 #include "ui/latency/latency_info.h"
 
 #if defined(OS_ANDROID)
@@ -143,6 +144,10 @@ class VIZ_COMMON_EXPORT CompositorFrameMetadata {
   base::TimeTicks local_surface_id_allocation_time;
 
   base::Optional<base::TimeDelta> preferred_frame_interval;
+
+  // Display transform hint when the frame is generated. Note this is only
+  // applicable to frames of the root surface.
+  gfx::OverlayTransform display_transform_hint = gfx::OVERLAY_TRANSFORM_NONE;
 
  private:
   CompositorFrameMetadata(const CompositorFrameMetadata& other);

@@ -54,6 +54,12 @@ bool ConnectionGroup::Ref::HasZeroRefs() const {
   return group_->num_refs_ == 0;
 }
 
+void ConnectionGroup::Ref::SetParentGroup(Ref parent_group) {
+  group_->notification_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&ConnectionGroup::SetParentGroup, group_,
+                                std::move(parent_group)));
+}
+
 ConnectionGroup::Ref::Ref(scoped_refptr<ConnectionGroup> group)
     : group_(std::move(group)) {}
 
@@ -88,6 +94,12 @@ void ConnectionGroup::ReleaseGroupRef() {
     notification_task_runner_->PostTask(FROM_HERE,
                                         base::BindOnce(notification_callback_));
   }
+}
+
+void ConnectionGroup::SetParentGroup(Ref parent_group) {
+  DCHECK(notification_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(!parent_group_);
+  parent_group_ = std::move(parent_group);
 }
 
 }  // namespace mojo

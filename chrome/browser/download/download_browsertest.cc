@@ -1132,6 +1132,7 @@ class DownloadTest : public InProcessBrowserTest {
     base::FilePath destination_folder = GetDownloadDirectory(browser());
     DVLOG(1) << " " << __FUNCTION__ << "()"
              << " folder = '" << destination_folder.value() << "'";
+    base::ScopedAllowBlockingForTesting allow_blocking;
     base::FilePermissionRestorer permission_restorer(destination_folder);
     EXPECT_TRUE(base::MakeFileUnwritable(destination_folder));
 

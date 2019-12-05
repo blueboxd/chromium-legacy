@@ -29,12 +29,12 @@ apps::AppLaunchParams CreateAppLaunchParamsUserContainer(
   return apps::AppLaunchParams(extension->id(), container, disposition, source);
 }
 
-apps::AppLaunchParams CreateAppLaunchParamsWithEventFlags(
-    Profile* profile,
-    const extensions::Extension* extension,
+apps::AppLaunchParams CreateAppIdLaunchParamsWithEventFlags(
+    const std::string& app_id,
     int event_flags,
     apps::mojom::AppLaunchSource source,
-    int64_t display_id) {
+    int64_t display_id,
+    apps::mojom::LaunchContainer fallback_container) {
   WindowOpenDisposition raw_disposition =
       ui::DispositionFromEventFlags(event_flags);
 
@@ -50,10 +50,21 @@ apps::AppLaunchParams CreateAppLaunchParamsWithEventFlags(
   } else {
     // Look at preference to find the right launch container.  If no preference
     // is set, launch as a regular tab.
-    container =
-        extensions::GetLaunchContainer(ExtensionPrefs::Get(profile), extension);
+    container = fallback_container;
     disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   }
-  return apps::AppLaunchParams(extension->id(), container, disposition, source,
+  return apps::AppLaunchParams(app_id, container, disposition, source,
                                display_id);
+}
+
+apps::AppLaunchParams CreateAppLaunchParamsWithEventFlags(
+    Profile* profile,
+    const extensions::Extension* extension,
+    int event_flags,
+    apps::mojom::AppLaunchSource source,
+    int64_t display_id) {
+  apps::mojom::LaunchContainer fallback_container =
+      extensions::GetLaunchContainer(ExtensionPrefs::Get(profile), extension);
+  return CreateAppIdLaunchParamsWithEventFlags(
+      extension->id(), event_flags, source, display_id, fallback_container);
 }

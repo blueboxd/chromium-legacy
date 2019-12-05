@@ -168,32 +168,37 @@ void ShelfBackgroundAnimatorTest::WaitForAnimationCompletion() {
 // Verify the |previous_background_type_| and |target_background_type_| values
 // when animating to the same target type multiple times.
 TEST_F(ShelfBackgroundAnimatorTest, BackgroundTypesWhenAnimatingToSameTarget) {
-  PaintBackground(SHELF_BACKGROUND_MAXIMIZED);
-  EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, animator_->target_background_type());
+  PaintBackground(ShelfBackgroundType::kMaximized);
+  EXPECT_EQ(ShelfBackgroundType::kMaximized,
+            animator_->target_background_type());
 
-  PaintBackground(SHELF_BACKGROUND_DEFAULT);
-  EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, animator_->target_background_type());
-  EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, test_api_->previous_background_type());
+  PaintBackground(ShelfBackgroundType::kDefaultBg);
+  EXPECT_EQ(ShelfBackgroundType::kDefaultBg,
+            animator_->target_background_type());
+  EXPECT_EQ(ShelfBackgroundType::kMaximized,
+            test_api_->previous_background_type());
 
-  PaintBackground(SHELF_BACKGROUND_DEFAULT);
-  EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, animator_->target_background_type());
-  EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, test_api_->previous_background_type());
+  PaintBackground(ShelfBackgroundType::kDefaultBg);
+  EXPECT_EQ(ShelfBackgroundType::kDefaultBg,
+            animator_->target_background_type());
+  EXPECT_EQ(ShelfBackgroundType::kMaximized,
+            test_api_->previous_background_type());
 }
 
 // Verify subsequent calls to PaintBackground() using the
 // AnimationChangeType::ANIMATE change type are ignored.
 TEST_F(ShelfBackgroundAnimatorTest,
        MultipleAnimateCallsToSameTargetAreIgnored) {
-  PaintBackground(SHELF_BACKGROUND_MAXIMIZED);
+  PaintBackground(ShelfBackgroundType::kMaximized);
   SetColorValuesOnObserver(kDummyColor);
-  animator_->PaintBackground(SHELF_BACKGROUND_DEFAULT,
+  animator_->PaintBackground(ShelfBackgroundType::kDefaultBg,
                              AnimationChangeType::ANIMATE);
   WaitForAnimationCompletion();
 
   EXPECT_NE(observer_.background_color(), kDummyColor);
 
   SetColorValuesOnObserver(kDummyColor);
-  animator_->PaintBackground(SHELF_BACKGROUND_DEFAULT,
+  animator_->PaintBackground(ShelfBackgroundType::kDefaultBg,
                              AnimationChangeType::ANIMATE);
 
   EXPECT_EQ(observer_.background_color(), kDummyColor);
@@ -209,36 +214,39 @@ TEST_F(ShelfBackgroundAnimatorTest, ObserversUpdatedWhenAdded) {
   EXPECT_NE(observer_.background_color(), kDummyColor);
 }
 
-// Verify the alpha values for the SHELF_BACKGROUND_DEFAULT state.
+// Verify the alpha values for the ShelfBackgroundType::kDefaultBg state.
 TEST_F(ShelfBackgroundAnimatorTest, DefaultBackground) {
-  PaintBackground(SHELF_BACKGROUND_DEFAULT);
+  PaintBackground(ShelfBackgroundType::kDefaultBg);
 
-  EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, animator_->target_background_type());
+  EXPECT_EQ(ShelfBackgroundType::kDefaultBg,
+            animator_->target_background_type());
   EXPECT_EQ((int)SkColorGetA(ShelfConfig::Get()->GetDefaultShelfColor()),
             observer_.GetBackgroundAlpha());
 }
 
-// Verify the alpha values for the SHELF_BACKGROUND_MAXIMIZED state.
+// Verify the alpha values for the ShelfBackgroundType::kMaximized state.
 TEST_F(ShelfBackgroundAnimatorTest, MaximizedBackground) {
-  PaintBackground(SHELF_BACKGROUND_MAXIMIZED);
+  PaintBackground(ShelfBackgroundType::kMaximized);
 
-  EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, animator_->target_background_type());
+  EXPECT_EQ(ShelfBackgroundType::kMaximized,
+            animator_->target_background_type());
   EXPECT_EQ((int)SkColorGetA(ShelfConfig::Get()->GetMaximizedShelfColor()),
             observer_.GetBackgroundAlpha());
 }
 
-// Verify the alpha values for the SHELF_BACKGROUND_APP_LIST state.
+// Verify the alpha values for the ShelfBackgroundType::kAppList state.
 TEST_F(ShelfBackgroundAnimatorTest, FullscreenAppListBackground) {
-  PaintBackground(SHELF_BACKGROUND_APP_LIST);
+  PaintBackground(ShelfBackgroundType::kAppList);
 
-  EXPECT_EQ(SHELF_BACKGROUND_APP_LIST, animator_->target_background_type());
+  EXPECT_EQ(ShelfBackgroundType::kAppList, animator_->target_background_type());
   EXPECT_EQ((int)SkColorGetA(ShelfConfig::Get()->GetShelfWithAppListColor()),
             observer_.GetBackgroundAlpha());
 }
 
 TEST_F(ShelfBackgroundAnimatorTest,
        AnimatorIsDetroyedWhenCompletingSuccessfully) {
-  PaintBackground(SHELF_BACKGROUND_MAXIMIZED, AnimationChangeType::ANIMATE);
+  PaintBackground(ShelfBackgroundType::kMaximized,
+                  AnimationChangeType::ANIMATE);
   EXPECT_TRUE(test_api_->animator());
   WaitForAnimationCompletion();
 
@@ -247,10 +255,12 @@ TEST_F(ShelfBackgroundAnimatorTest,
 
 TEST_F(ShelfBackgroundAnimatorTest,
        AnimatorDestroyedWhenChangingBackgroundImmediately) {
-  PaintBackground(SHELF_BACKGROUND_MAXIMIZED, AnimationChangeType::ANIMATE);
+  PaintBackground(ShelfBackgroundType::kMaximized,
+                  AnimationChangeType::ANIMATE);
   EXPECT_TRUE(test_api_->animator());
 
-  PaintBackground(SHELF_BACKGROUND_DEFAULT, AnimationChangeType::IMMEDIATE);
+  PaintBackground(ShelfBackgroundType::kDefaultBg,
+                  AnimationChangeType::IMMEDIATE);
   EXPECT_FALSE(test_api_->animator());
 }
 
@@ -259,13 +269,16 @@ TEST_F(ShelfBackgroundAnimatorTest,
        ExistingAnimatorIsReusedWhenAnimatingToPreviousState) {
   // First PaintBackground() must be immediate so that the
   // ShelfBackgroundAnimator has its color set correctly.
-  PaintBackground(SHELF_BACKGROUND_DEFAULT, AnimationChangeType::IMMEDIATE);
-  PaintBackground(SHELF_BACKGROUND_MAXIMIZED, AnimationChangeType::ANIMATE);
+  PaintBackground(ShelfBackgroundType::kDefaultBg,
+                  AnimationChangeType::IMMEDIATE);
+  PaintBackground(ShelfBackgroundType::kMaximized,
+                  AnimationChangeType::ANIMATE);
 
   const gfx::SlideAnimation* animator = test_api_->animator();
   EXPECT_TRUE(animator);
 
-  PaintBackground(SHELF_BACKGROUND_DEFAULT, AnimationChangeType::ANIMATE);
+  PaintBackground(ShelfBackgroundType::kDefaultBg,
+                  AnimationChangeType::ANIMATE);
 
   EXPECT_EQ(animator, test_api_->animator());
 }
@@ -274,13 +287,15 @@ TEST_F(ShelfBackgroundAnimatorTest,
 // the same as the previous background.
 TEST_F(ShelfBackgroundAnimatorTest,
        ExistingAnimatorNotReusedWhenTargetBackgroundNotPreviousBackground) {
-  PaintBackground(SHELF_BACKGROUND_APP_LIST, AnimationChangeType::ANIMATE);
+  PaintBackground(ShelfBackgroundType::kAppList, AnimationChangeType::ANIMATE);
 
   const gfx::SlideAnimation* animator = test_api_->animator();
   EXPECT_TRUE(animator);
 
-  EXPECT_NE(SHELF_BACKGROUND_MAXIMIZED, test_api_->previous_background_type());
-  PaintBackground(SHELF_BACKGROUND_MAXIMIZED, AnimationChangeType::ANIMATE);
+  EXPECT_NE(ShelfBackgroundType::kMaximized,
+            test_api_->previous_background_type());
+  PaintBackground(ShelfBackgroundType::kMaximized,
+                  AnimationChangeType::ANIMATE);
 
   EXPECT_NE(animator, test_api_->animator());
 }
@@ -288,9 +303,9 @@ TEST_F(ShelfBackgroundAnimatorTest,
 // Verify observers are always notified, even when alpha values don't change.
 TEST_F(ShelfBackgroundAnimatorTest,
        ObserversAreNotifiedWhenSnappingToSameTargetBackground) {
-  PaintBackground(SHELF_BACKGROUND_DEFAULT);
+  PaintBackground(ShelfBackgroundType::kDefaultBg);
   SetColorValuesOnObserver(kDummyColor);
-  PaintBackground(SHELF_BACKGROUND_DEFAULT);
+  PaintBackground(ShelfBackgroundType::kDefaultBg);
 
   EXPECT_NE(observer_.background_color(), kDummyColor);
 }

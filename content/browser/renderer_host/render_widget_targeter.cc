@@ -230,18 +230,21 @@ void RenderWidgetTargeter::ResolveTargetingRequest(TargetingRequest request) {
   }
 
   RenderWidgetTargetResult result;
+  auto* request_target = request.GetRootView();
+  auto request_target_location = request.GetLocation();
+
   if (request.IsWebInputEventRequest()) {
     result = is_autoscroll_in_progress_
                  ? middle_click_result_
-                 : delegate_->FindTargetSynchronously(request.GetRootView(),
+                 : delegate_->FindTargetSynchronously(request_target,
                                                       request.GetEvent());
     if (!is_autoscroll_in_progress_ && IsMouseMiddleClick(request.GetEvent())) {
       if (!result.should_query_view)
         middle_click_result_ = result;
     }
   } else {
-    result = delegate_->FindTargetSynchronouslyAtPoint(request.GetRootView(),
-                                                       request.GetLocation());
+    result = delegate_->FindTargetSynchronouslyAtPoint(request_target,
+                                                       request_target_location);
   }
   RenderWidgetHostViewBase* target = result.view;
   async_depth_ = 0;
@@ -259,7 +262,8 @@ void RenderWidgetTargeter::ResolveTargetingRequest(TargetingRequest request) {
     // root_view and the original event location for the initial query.
     // Do not compare hit test results if we are forced to do async hit testing
     // by HitTestQuery.
-    QueryClient(std::move(request));
+    QueryClient(request_target, request_target_location, nullptr, gfx::PointF(),
+                std::move(request));
   } else {
     FoundTarget(target, result.target_location, result.latched_target,
                 &request);
@@ -287,7 +291,7 @@ void RenderWidgetTargeter::SetIsAutoScrollInProgress(
     middle_click_result_ = RenderWidgetTargetResult();
 }
 
-void RenderWidgetTargeter::QueryClientInternal(
+void RenderWidgetTargeter::QueryClient(
     RenderWidgetHostViewBase* target,
     const gfx::PointF& target_location,
     RenderWidgetHostViewBase* last_request_target,
@@ -302,8 +306,8 @@ void RenderWidgetTargeter::QueryClientInternal(
     return;
   }
 
-    request_in_flight_ = std::move(request);
-    async_depth_++;
+  request_in_flight_ = std::move(request);
+  async_depth_++;
 
   TracingUmaTracker tracker("Event.AsyncTargeting.ResponseTime");
   async_hit_test_timeout_.reset(new OneShotTimeoutMonitor(
@@ -324,13 +328,6 @@ void RenderWidgetTargeter::QueryClientInternal(
       base::BindOnce(&RenderWidgetTargeter::FoundFrameSinkId,
                      weak_ptr_factory_.GetWeakPtr(), target->GetWeakPtr(),
                      ++last_request_id_, target_location, std::move(tracker)));
-}
-
-void RenderWidgetTargeter::QueryClient(TargetingRequest request) {
-  auto* target = request.GetRootView();
-  auto target_location = request.GetLocation();
-  QueryClientInternal(target, target_location, nullptr, gfx::PointF(),
-                      std::move(request));
 }
 
 void RenderWidgetTargeter::FlushEventQueue() {
@@ -408,8 +405,8 @@ void RenderWidgetTargeter::FoundFrameSinkId(
 
     FoundTarget(view, transformed_location, false, &request);
   } else {
-    QueryClientInternal(view, transformed_location, target.get(),
-                        target_location, std::move(request));
+    QueryClient(view, transformed_location, target.get(), target_location,
+                std::move(request));
   }
 }
 

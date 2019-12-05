@@ -86,11 +86,11 @@ std::vector<VEAFactoryFunction> GetVEAFactoryFunctions(
   if (!vea_factory_functions.empty())
     return vea_factory_functions;
 
-#if BUILDFLAG(USE_V4L2_CODEC)
-  vea_factory_functions.push_back(base::BindRepeating(&CreateV4L2VEA));
-#endif
 #if BUILDFLAG(USE_VAAPI)
   vea_factory_functions.push_back(base::BindRepeating(&CreateVaapiVEA));
+#endif
+#if BUILDFLAG(USE_V4L2_CODEC)
+  vea_factory_functions.push_back(base::BindRepeating(&CreateV4L2VEA));
 #endif
 #if defined(OS_ANDROID)
   vea_factory_functions.push_back(base::BindRepeating(&CreateAndroidVEA));

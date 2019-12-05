@@ -2309,19 +2309,26 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
     const base::Optional<gfx::RRectF> backdrop_filter_bounds =
         BackdropFilterBoundsForPass(quad->render_pass_id);
     if (backdrop_filter_bounds) {
-      rpdq_params.backdrop_filter_bounds = *backdrop_filter_bounds;
-      // Scale by the filter's scale, but don't apply filter origin
-      rpdq_params.backdrop_filter_bounds->Scale(quad->filters_scale.x(),
-                                                quad->filters_scale.y());
+      // The backdrop filters effect will be cropped by these bounds. If the
+      // bounds are empty, discard the backdrop filter now since none of it
+      // would have been visible anyways.
+      if (backdrop_filter_bounds->IsEmpty()) {
+        rpdq_params.backdrop_filter = nullptr;
+      } else {
+        rpdq_params.backdrop_filter_bounds = *backdrop_filter_bounds;
+        // Scale by the filter's scale, but don't apply filter origin
+        rpdq_params.backdrop_filter_bounds->Scale(quad->filters_scale.x(),
+                                                  quad->filters_scale.y());
 
-      // If there are also regular image filters, they apply to the area of
-      // the backdrop_filter_bounds too, so expand the backdrop bounds and join
-      // it with the main filter bounds.
-      if (rpdq_params.image_filter) {
-        gfx::Rect backdrop_rect =
-            gfx::ToEnclosingRect(rpdq_params.backdrop_filter_bounds->rect());
-        rpdq_params.filter_bounds.Union(
-            filters->MapRect(backdrop_rect, local_matrix));
+        // If there are also regular image filters, they apply to the area of
+        // the backdrop_filter_bounds too, so expand the backdrop bounds and
+        // join it with the main filter bounds.
+        if (rpdq_params.image_filter) {
+          gfx::Rect backdrop_rect =
+              gfx::ToEnclosingRect(rpdq_params.backdrop_filter_bounds->rect());
+          rpdq_params.filter_bounds.Union(
+              filters->MapRect(backdrop_rect, local_matrix));
+        }
       }
     }
   }

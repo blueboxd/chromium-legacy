@@ -151,10 +151,9 @@ void BluetoothLowEnergyDeviceMac::SetConnectionLatency(
   NOTIMPLEMENTED();
 }
 
-void BluetoothLowEnergyDeviceMac::Connect(
-    PairingDelegate* pairing_delegate,
-    const base::Closure& callback,
-    const ConnectErrorCallback& error_callback) {
+void BluetoothLowEnergyDeviceMac::Connect(PairingDelegate* pairing_delegate,
+                                          base::OnceClosure callback,
+                                          ConnectErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
 

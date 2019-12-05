@@ -23,6 +23,7 @@
 #include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -302,7 +303,10 @@ void DevToolsDataSource::StartFileRequest(const std::string& path,
   base::FilePath base_path;
   GURL custom_devtools_frontend = GetCustomDevToolsFrontendURL();
   if (custom_devtools_frontend.SchemeIsFile()) {
-    base_path = base_path.AppendASCII(custom_devtools_frontend.GetContent());
+    if (!net::FileURLToFilePath(custom_devtools_frontend, &base_path)) {
+      std::move(callback).Run(CreateNotFoundResponse());
+      return;
+    }
   } else {
 #if BUILDFLAG(DEBUG_DEVTOOLS)
     // Use default path for unbundled files when debug_devtools=true

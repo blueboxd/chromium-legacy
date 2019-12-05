@@ -319,8 +319,8 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
 
   // Show rounded corners except in maximized (which includes split view) mode,
   // or whenever we are "in app".
-  if (background_type == SHELF_BACKGROUND_MAXIMIZED ||
-      background_type == SHELF_BACKGROUND_IN_APP ||
+  if (background_type == ShelfBackgroundType::kMaximized ||
+      background_type == ShelfBackgroundType::kInApp ||
       (tablet_mode && in_app && chromeos::switches::ShouldShowShelfHotseat())) {
     opaque_background_.SetRoundedCornerRadius({0, 0, 0, 0});
   } else {
@@ -501,7 +501,7 @@ void ShelfWidget::Initialize(aura::Window* shelf_container) {
   shelf_layout_manager_->AddObserver(this);
   shelf_container->SetLayoutManager(shelf_layout_manager_);
   shelf_layout_manager_->InitObservers();
-  background_animator_.Init(SHELF_BACKGROUND_DEFAULT);
+  background_animator_.Init(ShelfBackgroundType::kDefaultBg);
   background_animator_.PaintBackground(
       shelf_layout_manager_->GetShelfBackgroundType(),
       AnimationChangeType::IMMEDIATE);

@@ -7503,6 +7503,7 @@ Unknown properties are collapsed to zero. -->
   <int value="24" label="Unsupported rounded corner rect."/>
   <int value="25" label="Rounded rect doesn't match clip rect."/>
   <int value="26" label="Rounded rect doesn't have uniform corner radii."/>
+  <int value="27" label="Too many quads."/>
 </enum>
 
 <enum name="CanMakePaymentUsage">
@@ -9846,6 +9847,13 @@ Called by update_net_error_codes.py.-->
 <enum name="CompressionStreamsFormat">
   <int value="0" label="gzip"/>
   <int value="1" label="deflate"/>
+</enum>
+
+<enum name="CompromiseType">
+  <int value="0"
+      label="Leaked - If the credentials was leaked by a data breach."/>
+  <int value="1"
+      label="Phished - If the credentials was reused on a phishing site."/>
 </enum>
 
 <enum name="ComputeCurrentSigninStatus">
@@ -12478,6 +12486,10 @@ Called by update_net_error_codes.py.-->
   <int value="32" label="Error: ClientAppMetadata fetch failed"/>
   <int value="33" label="Error: Timeout waiting for GCM registration"/>
   <int value="34" label="Error: Timeout waiting for ClientAppMetadata"/>
+  <int value="35" label="Error: Failed to create user key pair"/>
+  <int value="36" label="Error: Failed to create legacy master key"/>
+  <int value="37"
+      label="Error: Failed to create DeviceSync:BetterTogether key"/>
 </enum>
 
 <enum name="CryptAuthV2EnrollmentUserKeyPairState">
@@ -18798,7 +18810,6 @@ Called by update_net_error_codes.py.-->
   <int value="575" label="BuiltinCertificateVerifierEnabled"/>
   <int value="576" label="CrostiniRootAccessAllowed"/>
   <int value="577" label="VmManagementCliAllowed"/>
-  <int value="578" label="SafeBrowsingRealTimeLookupEnabled"/>
   <int value="579" label="CACertificateManagementAllowed"/>
   <int value="580" label="PasswordLeakDetectionEnabled"/>
   <int value="581" label="LockScreenMediaPlaybackEnabled"/>
@@ -21466,6 +21477,9 @@ Called by update_net_error_codes.py.-->
   <int value="1418" label="AUTOTESTPRIVATE_INSTALLPLUGINVM"/>
   <int value="1419" label="CRASHREPORTPRIVATE_REPORTERROR"/>
   <int value="1420" label="AUTOTESTPRIVATE_SETMETRICSENABLED"/>
+  <int value="1421" label="ENTERPRISEREPORTINGPRIVATE_GETPERSISTENTSECRET"/>
+  <int value="1422" label="ENTERPRISEREPORTINGPRIVATE_GETDEVICEDATA"/>
+  <int value="1423" label="ENTERPRISEREPORTINGPRIVATE_SETDEVICEDATA"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -25634,6 +25648,7 @@ Called by update_net_error_codes.py.-->
   <int value="3110" label="InputElementValueAsDateGetter"/>
   <int value="3111" label="InputElementValueAsDateSetter"/>
   <int value="3112" label="HTMLMetaElementReferrerPolicy"/>
+  <int value="3113" label="NonWebbyMixedContent"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -38450,6 +38465,7 @@ from previous Chrome versions.
   <int value="1155923106" label="NTPOfflinePages:enabled"/>
   <int value="1163255347" label="ash-enable-touch-view-touch-feedback"/>
   <int value="1164377197" label="SwipingFromLeftEdgeToGoBack:enabled"/>
+  <int value="1164460660" label="AutofillEnableVirtualCard:enabled"/>
   <int value="1165682330" label="AutofillSaveAndFillVPA:disabled"/>
   <int value="1166169237" label="disable-delay-agnostic-aec"/>
   <int value="1166789664" label="SyncPseudoUSSAppList:disabled"/>
@@ -39053,6 +39069,7 @@ from previous Chrome versions.
   <int value="1913263516" label="OculusVR:enabled"/>
   <int value="1913298816" label="OverlayScrollbar:enabled"/>
   <int value="1913926782" label="ChromeModernAlternateCardLayout:disabled"/>
+  <int value="1914347357" label="AutofillEnableVirtualCard:disabled"/>
   <int value="1915028326" label="BuiltInModuleKvStorage:disabled"/>
   <int value="1915178511" label="disable-blink-features"/>
   <int value="1918984253"
@@ -46875,6 +46892,22 @@ Called by update_net_trust_anchors.py.-->
   </int>
   <int value="5" label="No Hosts to Fetch">
     Request not sent because no hosts left after filtering.
+  </int>
+</enum>
+
+<enum name="OptimizationGuideNavigationHostCoveredStatus">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Covered">
+    The main frame host of the navigation was covered by a hint or was attempted
+    to be fetched from the remote Optimization Guide Service in the last 7 days.
+  </int>
+  <int value="2" label="Fetch Not Attempted">
+    A fetch for information from the remote Optimization Guide Service about the
+    main frame host of the navigation was not attempted.
+  </int>
+  <int value="3" label="Fetch Not Successful">
+    A fetch for information from the remote Optimization Guide Service about the
+    main frame host of the navigation was attempted but not successful.
   </int>
 </enum>
 
@@ -54849,6 +54882,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Last redirect in URL chain"/>
 </enum>
 
+<enum name="SafeBrowsingAllowlistAsyncMatch">
+  <int value="0" label="ASYNC"/>
+  <int value="1" label="MATCH"/>
+  <int value="2" label="NO_MATCH"/>
+</enum>
+
 <enum name="SafeBrowsingAppOptIn">
   <int value="0" label="No opt-in preference in manifest"/>
   <int value="1" label="Explicit opt-in via manifest"/>
@@ -61434,6 +61473,11 @@ would be helpful to identify which type is being sent.
     The ExamplePreprocessor returned an error other than, or in addition to, the
     kNoFeatureIndexFound error.
   </int>
+</enum>
+
+<enum name="TabPreviewCaptureType">
+  <int value="0" label="Copy from visible RenderWidgetHostView"/>
+  <int value="1" label="Streamed from background tab"/>
 </enum>
 
 <enum name="TabRendererCrashStatus">

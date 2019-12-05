@@ -307,7 +307,8 @@ void WorkerThread::TerminateAllWorkersForTesting() {
   TerminateThreadsInSet(WorkerThreads());
 }
 
-void WorkerThread::WillProcessTask(const base::PendingTask& pending_task) {
+void WorkerThread::WillProcessTask(const base::PendingTask& pending_task,
+                                   bool was_blocked_or_low_priority) {
   DCHECK(IsCurrentThread());
 
   // No tasks should get executed after we have closed.

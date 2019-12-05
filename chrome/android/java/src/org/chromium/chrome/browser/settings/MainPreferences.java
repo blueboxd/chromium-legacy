@@ -28,7 +28,7 @@ import org.chromium.chrome.browser.password_manager.PasswordManagerLauncher;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.settings.autofill_assistant.AutofillAssistantPreferences;
 import org.chromium.chrome.browser.settings.datareduction.DataReductionPreferenceFragment;
-import org.chromium.chrome.browser.settings.developer.DeveloperPreferences;
+import org.chromium.chrome.browser.settings.developer.DeveloperSettings;
 import org.chromium.chrome.browser.settings.sync.SignInPreference;
 import org.chromium.chrome.browser.settings.sync.SyncPreferenceUtils;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
@@ -217,7 +217,7 @@ public class MainPreferences extends PreferenceFragmentCompat
             removePreferenceIfPresent(PREF_UI_THEME);
         }
 
-        if (DeveloperPreferences.shouldShowDeveloperPreferences()) {
+        if (DeveloperSettings.shouldShowDeveloperSettings()) {
             addPreferenceIfAbsent(PREF_DEVELOPER);
         } else {
             removePreferenceIfPresent(PREF_DEVELOPER);

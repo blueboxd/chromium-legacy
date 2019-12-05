@@ -324,6 +324,10 @@ void RemoteFrame::Collapse(bool collapsed) {
   To<HTMLFrameOwnerElement>(owner)->SetCollapsed(collapsed);
 }
 
+void RemoteFrame::Focus() {
+  FocusImpl();
+}
+
 bool RemoteFrame::IsIgnoredForHitTest() const {
   HTMLFrameOwnerElement* owner = DeprecatedLocalOwner();
   if (!owner || !owner->GetLayoutObject())

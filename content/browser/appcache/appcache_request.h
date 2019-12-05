@@ -11,7 +11,7 @@
 #include "base/sequence_checker.h"
 #include "content/common/content_export.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -70,7 +70,7 @@ class CONTENT_EXPORT AppCacheRequest {
   void UpdateWithRedirectInfo(const net::RedirectInfo& redirect_info);
 
   void set_request(const network::ResourceRequest& request);
-  void set_response(const network::ResourceResponseHead& response);
+  void set_response(network::mojom::URLResponseHeadPtr response);
 
   base::WeakPtr<AppCacheRequest> GetWeakPtr();
 
@@ -88,7 +88,7 @@ class CONTENT_EXPORT AppCacheRequest {
 
  private:
   network::ResourceRequest request_;
-  network::ResourceResponseHead response_;
+  network::mojom::URLResponseHeadPtr response_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -698,6 +698,15 @@ base::string16 GetStringResource(int base_message_id) {
   return localized_string;
 }
 
+base::string16 GetStringResource(int base_message_id,
+                                 const std::vector<base::string16>& subst) {
+  base::string16 format_string = GetStringResource(base_message_id);
+  base::string16 formatted =
+      base::ReplaceStringPlaceholders(format_string, subst, nullptr);
+
+  return formatted;
+}
+
 base::string16 GetSelectedLanguage() {
   return GetLanguageSelector().matched_candidate();
 }

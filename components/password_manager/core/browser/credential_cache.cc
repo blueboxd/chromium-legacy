@@ -13,6 +13,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/origin_credential_store.h"
+#include "url/origin.h"
 
 using autofill::PasswordForm;
 
@@ -27,19 +28,18 @@ void CredentialCache::SaveCredentialsForOrigin(
   std::vector<UiCredential> credentials;
   credentials.reserve(best_matches.size());
   for (const PasswordForm* form : best_matches)
-    credentials.emplace_back(*form);
+    credentials.emplace_back(*form, origin);
 
   // Sort by origin, then username.
   std::sort(credentials.begin(), credentials.end(),
             [](const UiCredential& lhs, const UiCredential& rhs) {
-              return std::tie(lhs.origin_url(), lhs.username()) <
-                     std::tie(rhs.origin_url(), rhs.username());
+              return std::tie(lhs.origin(), lhs.username()) <
+                     std::tie(rhs.origin(), rhs.username());
             });
   // Move credentials with exactly matching origins to the top.
-  const GURL url = origin.GetURL();
   std::stable_partition(credentials.begin(), credentials.end(),
-                        [&url](const UiCredential& credential) {
-                          return credential.origin_url() == url;
+                        [&origin](const UiCredential& credential) {
+                          return credential.origin() == origin;
                         });
   GetOrCreateCredentialStore(origin).SaveCredentials(std::move(credentials));
 }

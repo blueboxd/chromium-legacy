@@ -495,7 +495,8 @@ void WebDevToolsAgentImpl::FlushProtocolNotifications() {
 }
 
 void WebDevToolsAgentImpl::WillProcessTask(
-    const base::PendingTask& pending_task) {
+    const base::PendingTask& pending_task,
+    bool was_blocked_or_low_priority) {
   if (network_agents_.IsEmpty())
     return;
   ThreadDebugger::IdleFinished(V8PerIsolateData::MainThreadIsolate());

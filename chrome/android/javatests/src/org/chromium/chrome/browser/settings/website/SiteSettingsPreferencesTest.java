@@ -451,6 +451,7 @@ public class SiteSettingsPreferencesTest {
     @SmallTest
     @Feature({"Preferences"})
     @EnableFeatures("QuietNotificationPrompts")
+    @DisabledTest(message = "Flaky. crbug.com/1030218")
     public void testOnlyExpectedPreferencesShown() {
         // If you add a category in the SiteSettings UI, please add a test for it below.
         Assert.assertEquals(19, SiteSettingsCategory.Type.NUM_ENTRIES);

@@ -63,7 +63,6 @@ class SafetyTipPageInfoBubbleView : public PageInfoBubbleViewBase,
   friend class SafetyTipPageInfoBubbleViewBrowserTest;
 
   views::StyledLabel* GetLearnMoreLinkForTesting() { return info_button_; }
-  views::Button* GetIgnoreButtonForTesting() { return ignore_button_; }
   views::Button* GetLeaveButtonForTesting() { return leave_button_; }
 
   const security_state::SafetyTipStatus safety_tip_status_;

@@ -14,8 +14,11 @@
 #include "base/sequence_checker.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
+#include "media/gpu/chromeos/fourcc.h"
+#include "media/gpu/chromeos/image_processor_with_pool.h"
 #include "media/gpu/chromeos/video_frame_converter.h"
 #include "media/gpu/media_gpu_export.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -51,13 +54,21 @@ class MEDIA_GPU_EXPORT DecoderInterface {
     Client() = default;
     virtual ~Client() = default;
 
-    // Get the video frame pool without passing the ownership.
+    // Get the video frame pool without passing the ownership. Return nullptr if
+    // the decoder is responsible for allocating its own frames.
     virtual DmabufVideoFramePool* GetVideoFramePool() const = 0;
 
     // After this method is called from |decoder_|, the client needs to call
     // DecoderInterface::OnPipelineFlushed() when all pending frames are
     // flushed.
     virtual void PrepareChangeResolution() = 0;
+
+    // Return a valid format for |decoder_| output from given |candidates| and
+    // the visible rect.
+    // Return base::nullopt if no valid format is found.
+    virtual base::Optional<Fourcc> PickDecoderOutputFormat(
+        const std::vector<std::pair<Fourcc, gfx::Size>>& candidates,
+        const gfx::Rect& visible_rect) = 0;
   };
 
   DecoderInterface(scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
@@ -154,9 +165,16 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
   // DecoderInterface::Client implementation.
   DmabufVideoFramePool* GetVideoFramePool() const override;
   void PrepareChangeResolution() override;
+  // After picking a format, it instantiates an |image_processor_| if none of
+  // format in |candidates| is renderable and an ImageProcessor can convert a
+  // candidate to renderable format.
+  base::Optional<Fourcc> PickDecoderOutputFormat(
+      const std::vector<std::pair<Fourcc, gfx::Size>>& candidates,
+      const gfx::Rect& visible_rect) override;
 
  private:
-  // Get a list of the available functions for creating VideoDeocoder.
+  // Get a list of the available functions for creating VideoDeocoder except
+  // |current_func| one.
   static base::queue<CreateVDFunc> GetCreateVDFunctions(
       CreateVDFunc current_func);
 
@@ -183,11 +201,18 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
 
   void OnDecodeDone(bool eos_buffer, DecodeCB decode_cb, DecodeStatus status);
   void OnResetDone();
-  void OnFrameConverted(scoped_refptr<VideoFrame> frame);
   void OnError(const std::string& msg);
 
+  // Called when |decoder_| finishes decoding a frame.
   void OnFrameDecoded(scoped_refptr<VideoFrame> frame);
+  // Called when |image_processor_| finishes processing a frame.
+  void OnFrameProcessed(scoped_refptr<VideoFrame> frame);
+  // Called when |frame_converter_| finishes converting a frame.
+  void OnFrameConverted(scoped_refptr<VideoFrame> frame);
 
+  // Return true if the pipeline has pending frames that are returned from
+  // |decoder_| but haven't been passed to the client.
+  // i.e. |image_processor_| or |frame_converter_| has pending frames.
   bool HasPendingFrames() const;
 
   // Call DecoderInterface::OnPipelineFlushed() when we need to.
@@ -195,6 +220,9 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
 
   // Call |client_flush_cb_| with |status|.
   void CallFlushCbIfNeeded(DecodeStatus status);
+
+  // Handle ImageProcessor error callback.
+  void OnImageProcessorError();
 
   // The client task runner and its sequence checker. All public methods should
   // run on this task runner.
@@ -215,6 +243,10 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
   // required. The instance is indirectly owned by GpuChildThread, therefore
   // alive as long as the GPU process is.
   gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
+
+  // The image processor is only created when the decoder cannot output frames
+  // with renderable format.
+  std::unique_ptr<ImageProcessorWithPool> image_processor_;
 
   // The frame converter passed from the client. Destroyed on
   // |client_task_runner_|.

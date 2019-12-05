@@ -66,6 +66,11 @@ class TestExtensionPrefs {
   // As above, but the extension is an app.
   scoped_refptr<Extension> AddApp(const std::string& name);
 
+  // Similar to AddExtension, but with a specified location.
+  scoped_refptr<Extension> AddExtensionWithLocation(
+      const std::string& name,
+      Manifest::Location location);
+
   // Similar to AddExtension, but takes a dictionary with manifest values.
   scoped_refptr<Extension> AddExtensionWithManifest(
       const base::DictionaryValue& manifest,

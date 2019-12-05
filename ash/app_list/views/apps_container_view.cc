@@ -39,22 +39,13 @@ namespace ash {
 
 namespace {
 
-// Suggestion chip container top margin (from the search box view).
-constexpr int kSuggestionChipContainerTopMarginForSmallScreens = 8;
+// The apps container height at which suggestion chips container margin from the
+// search box should be reduced to preserve available vertical space.
+constexpr int kDenseSuggestionChipsTopMarginThreshold = 600;
 
-// The ratio of allowed bounds for apps grid view to its maximum margin.
-constexpr int kAppsGridMarginRatio = 16;
-constexpr int kAppsGridMarginRatioForSmallWidth = 12;
-
-// The width threshold under which kAppsGridMarginRatioForSmallWidth should be
-// used to calculate apps grid horizontal margins.
-constexpr int kAppsGridMarginSmallWidthThreshold = 600;
-
-// The minimum margin of apps grid view.
-constexpr int kAppsGridMinimumMargin = 8;
-
-// The horizontal spacing between apps grid view and page switcher.
-constexpr int kAppsGridPageSwitcherSpacing = 8;
+// Suggestion chip container top margin (from the search box view) when apps
+// container height is below |kDenseSuggestionChipsTopMarginThreshold|.
+constexpr int kDenseSuggestionChipContainerTopMargin = 8;
 
 // The range of app list transition progress in which the suggestion chips'
 // opacity changes from 0 to 1.
@@ -64,29 +55,7 @@ constexpr float kSuggestionChipOpacityEndProgress = 1;
 // The app list transition progress value for fullscreen state.
 constexpr float kAppListFullscreenProgressValue = 2.0;
 
-// Returns ideal horizontal padding for apps container with provided contents
-// bounds.
-int GetContainerHorizontalPaddingForBounds(const gfx::Rect& bounds) {
-  const int horizontal_margin_ratio =
-      (app_list_features::IsScalableAppListEnabled() &&
-       bounds.width() <= kAppsGridMarginSmallWidthThreshold)
-          ? kAppsGridMarginRatioForSmallWidth
-          : kAppsGridMarginRatio;
-  return bounds.width() / horizontal_margin_ratio;
-}
-
 }  // namespace
-
-// static
-int AppsContainerView::GetMinimumGridHorizontalMargin() {
-  // If ScalableAppList feature is enabled, there is no extra horizontal margin
-  // between grid view and the page switcher.
-  return kAppsGridPageSwitcherSpacing +
-         PageSwitcher::kMaxButtonRadiusForRootGrid * 2 +
-         (app_list_features::IsScalableAppListEnabled()
-              ? 0
-              : kAppsGridMinimumMargin);
-}
 
 AppsContainerView::AppsContainerView(ContentsView* contents_view,
                                      AppListModel* model)
@@ -318,8 +287,8 @@ void AppsContainerView::Layout() {
       chip_container_rect.set_height(
           GetAppListConfig().suggestion_chip_container_height());
       if (app_list_features::IsScalableAppListEnabled()) {
-        chip_container_rect.Inset(GetContainerHorizontalPaddingForBounds(rect),
-                                  0);
+        chip_container_rect.Inset(
+            GetAppListConfig().GetIdealHorizontalMargin(rect), 0);
       }
       suggestion_chip_container_view_->SetBoundsRect(chip_container_rect);
 
@@ -337,8 +306,9 @@ void AppsContainerView::Layout() {
       // With scalable app list feature enabled, the margins are calculated from
       // the edge of the apps container, instead of container bounds inset by
       // page switcher area.
-      if (!app_list_features::IsScalableAppListEnabled())
-        rect.Inset(kAppsGridPageSwitcherSpacing + page_switcher_width, 0);
+      if (!app_list_features::IsScalableAppListEnabled()) {
+        rect.Inset(GetAppListConfig().GetMinGridHorizontalPadding(), 0);
+      }
 
       const GridLayout grid_layout = CalculateGridLayout();
       apps_grid_view_->SetLayout(grid_layout.columns, grid_layout.rows);
@@ -379,9 +349,9 @@ void AppsContainerView::Layout() {
           apps_grid_view_->y() - suggestion_chip_container_view_->y();
 
       // Layout page switcher.
-      page_switcher_->SetBoundsRect(
-          gfx::Rect(grid_rect.right() + kAppsGridPageSwitcherSpacing,
-                    grid_rect.y(), page_switcher_width, grid_rect.height()));
+      page_switcher_->SetBoundsRect(gfx::Rect(
+          grid_rect.right() + GetAppListConfig().grid_to_page_switcher_margin(),
+          grid_rect.y(), page_switcher_width, grid_rect.height()));
       break;
     }
     case SHOW_ACTIVE_FOLDER: {
@@ -517,22 +487,21 @@ const gfx::Insets& AppsContainerView::CalculateMarginsForAvailableBounds(
   };
 
   const int ideal_vertical_margin =
-      available_bounds.height() / kAppsGridMarginRatio;
+      GetAppListConfig().GetIdealVerticalMargin(available_bounds);
   const int vertical_margin =
       calculate_margin(ideal_vertical_margin, available_height,
                        min_grid_size.height(), max_grid_size.height());
 
   const int ideal_horizontal_margin =
-      GetContainerHorizontalPaddingForBounds(available_bounds);
+      GetAppListConfig().GetIdealHorizontalMargin(available_bounds);
   const int horizontal_margin =
       calculate_margin(ideal_horizontal_margin, available_bounds.width(),
                        min_grid_size.width(), max_grid_size.width());
 
   const int min_horizontal_margin =
       app_list_features::IsScalableAppListEnabled()
-          ? kAppsGridPageSwitcherSpacing +
-                page_switcher_->GetPreferredSize().width()
-          : kAppsGridMinimumMargin;
+          ? GetAppListConfig().GetMinGridHorizontalPadding()
+          : 0;
 
   cached_container_margins_.margins = gfx::Insets(
       std::max(vertical_margin, GetAppListConfig().grid_fadeout_zone_height()),
@@ -609,11 +578,11 @@ int AppsContainerView::GetSuggestionChipContainerTopMargin(
   // For small screen sizes in fullscreen state, reduce the margin between the
   // search box and suggestion chips to reclaim as much of the vertical space as
   // possible.
-  if (GetContentsBounds().height() < kAppsGridMarginSmallWidthThreshold &&
+  if (GetContentsBounds().height() < kDenseSuggestionChipsTopMarginThreshold &&
       !app_list_features::IsScalableAppListEnabled() && progress > 1.0) {
     return gfx::Tween::IntValueBetween(
         progress - 1, GetAppListConfig().suggestion_chip_container_top_margin(),
-        kSuggestionChipContainerTopMarginForSmallScreens);
+        kDenseSuggestionChipContainerTopMargin);
   }
   return GetAppListConfig().suggestion_chip_container_top_margin();
 }

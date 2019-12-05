@@ -22,8 +22,8 @@ SpdySessionTestTaskObserver::~SpdySessionTestTaskObserver() {
 }
 
 void SpdySessionTestTaskObserver::WillProcessTask(
-    const base::PendingTask& pending_task) {
-}
+    const base::PendingTask& pending_task,
+    bool was_blocked_or_low_priority) {}
 
 void SpdySessionTestTaskObserver::DidProcessTask(
     const base::PendingTask& pending_task) {

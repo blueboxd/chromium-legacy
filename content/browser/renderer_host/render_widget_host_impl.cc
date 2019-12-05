@@ -826,8 +826,7 @@ VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   visual_properties.compositor_viewport_pixel_rect =
       gfx::Rect(view_->GetCompositorViewportPixelSize());
 
-  const bool is_child_frame = view_->IsRenderWidgetHostViewChildFrame() &&
-                              !view_->IsRenderWidgetHostViewGuest();
+  const bool is_child_frame = view_->IsRenderWidgetHostViewChildFrame();
   // These properties come from the main frame RenderWidget and flow down the
   // tree of RenderWidgets. Each child frame RenderWidgetHost gets its values
   // from their parent RenderWidget in the renderer process. It gives them to

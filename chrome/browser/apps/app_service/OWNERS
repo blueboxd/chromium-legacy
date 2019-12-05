@@ -1,1 +1,4 @@
 file://components/services/app_service/OWNERS
+
+# For Web Applications system:
+per-file web_app*=loyso@chromium.org

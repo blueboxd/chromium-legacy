@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chrome/common/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
+import("//tools/grit/grit_rule.gni")
 
 js_type_check("closure_compile") {
   deps = [
@@ -24,4 +26,14 @@ js_library("message_dispatcher") {
   deps = [
     "//ui/webui/resources/js:cr",
   ]
+}
+
+grit("quota_internals_resources") {
+  source = "quota_internals_resources.grd"
+  defines = chrome_grit_defines
+  outputs = [
+    "grit/quota_internals_resources.h",
+    "quota_internals_resources.pak",
+  ]
+  output_dir = "$root_gen_dir/chrome"
 }

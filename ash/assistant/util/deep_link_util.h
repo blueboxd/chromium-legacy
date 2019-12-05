@@ -64,6 +64,7 @@ enum class ProactiveSuggestionsAction {
   kCardClick,
   kEntryPointClick,
   kEntryPointClose,
+  kViewImpression,
 };
 
 // Enumeration of reminder deep link actions.

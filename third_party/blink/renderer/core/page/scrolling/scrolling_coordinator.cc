@@ -31,6 +31,7 @@
 #include "build/build_config.h"
 #include "cc/animation/animation_host.h"
 #include "cc/input/main_thread_scrolling_reason.h"
+#include "cc/input/scroll_snap_data.h"
 #include "cc/layers/painted_overlay_scrollbar_layer.h"
 #include "cc/layers/painted_scrollbar_layer.h"
 #include "cc/layers/picture_layer.h"
@@ -98,18 +99,22 @@ ScrollingCoordinator::ScrollableAreaWithElementIdInAllLocalFrames(
   return nullptr;
 }
 
-void ScrollingCoordinator::DidScroll(CompositorElementId element_id,
-                                     const gfx::ScrollOffset& offset) {
+void ScrollingCoordinator::DidScroll(
+    CompositorElementId element_id,
+    const gfx::ScrollOffset& offset,
+    const base::Optional<cc::TargetSnapAreaElementIds>& snap_target_ids) {
   // Find the associated scrollable area using the element id and notify it of
   // the compositor-side scroll. We explicitly do not check the VisualViewport
   // which handles scroll offset differently (see: VisualViewport::didScroll).
   // Remote frames will receive DidScroll callbacks from their own compositor.
   // The ScrollableArea with matching ElementId may have been deleted and we can
   // safely ignore the DidScroll callback.
-  if (auto* scrollable =
-          ScrollableAreaWithElementIdInAllLocalFrames(element_id)) {
-    scrollable->DidScroll(FloatPoint(offset.x(), offset.y()));
-  }
+  auto* scrollable = ScrollableAreaWithElementIdInAllLocalFrames(element_id);
+  if (!scrollable)
+    return;
+  scrollable->DidScroll(FloatPoint(offset.x(), offset.y()));
+  if (snap_target_ids)
+    scrollable->SetTargetSnapAreaElementIds(snap_target_ids.value());
 }
 
 void ScrollingCoordinator::DidChangeScrollbarsHidden(

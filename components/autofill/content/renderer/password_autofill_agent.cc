@@ -374,7 +374,16 @@ bool IsInCrossOriginIframe(const WebInputElement& element) {
   return false;
 }
 
-// Whether any of the fields in |form) is a non-empty password field.
+// Whether any of the fields in |form| is a password field.
+bool FormHasPasswordField(const FormData& form) {
+  for (const auto& field : form.fields) {
+    if (field.IsPasswordInputElement())
+      return true;
+  }
+  return false;
+}
+
+// Whether any of the fields in |form| is a non-empty password field.
 bool FormHasNonEmptyPasswordField(const FormData& form) {
   for (const auto& field : form.fields) {
     if (field.IsPasswordInputElement()) {
@@ -957,9 +966,8 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
 
   // Checks whether the webpage is a redirect page or an empty page.
   if (form_util::IsWebpageEmpty(frame)) {
-    if (logger) {
+    if (logger)
       logger->LogMessage(Logger::STRING_WEBPAGE_EMPTY);
-    }
     return;
   }
 
@@ -988,7 +996,7 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
 
     std::unique_ptr<PasswordForm> password_form(
         GetPasswordFormFromWebForm(form));
-    if (!password_form)
+    if (!password_form || !FormHasPasswordField(password_form->form_data))
       continue;
 
     if (logger)
@@ -1484,7 +1492,6 @@ void PasswordAutofillAgent::ProvisionallySavePassword(
     const WebInputElement& element,
     ProvisionallySaveRestriction restriction) {
   DCHECK(!form.IsNull() || !element.IsNull());
-
   SetLastUpdatedFormAndField(form, element);
   std::unique_ptr<PasswordForm> password_form;
   if (form.IsNull()) {

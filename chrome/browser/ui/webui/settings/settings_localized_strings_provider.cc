@@ -103,6 +103,7 @@
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
+#include "device/bluetooth/strings/grit/bluetooth_strings.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/chromeos/events/keyboard_layout_util.h"
 #include "ui/display/display_features.h"
@@ -808,33 +809,33 @@ void AddBluetoothStrings(content::WebUIDataSource* html_source) {
       {"bluetoothPrimaryUserControlled",
        IDS_SETTINGS_BLUETOOTH_PRIMARY_USER_CONTROLLED},
       {"bluetoothDeviceType_computer",
-       IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_COMPUTER},
-      {"bluetoothDeviceType_chone",
-       IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_PHONE},
+       IDS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_COMPUTER},
+      {"bluetoothDeviceType_phone",
+       IDS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_PHONE},
       {"bluetoothDeviceType_modem",
-       IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_MODEM},
+       IDS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_MODEM},
       {"bluetoothDeviceType_audio",
-       IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_AUDIO},
+       IDS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_AUDIO},
       {"bluetoothDeviceType_carAudio",
-       IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_CAR_AUDIO},
+       IDS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_CAR_AUDIO},
       {"bluetoothDeviceType_video",
-       IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_VIDEO},
+       IDS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_VIDEO},
       {"bluetoothDeviceType_peripheral",
-       IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_PERIPHERAL},
+       IDS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_PERIPHERAL},
       {"bluetoothDeviceType_joystick",
-       IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_JOYSTICK},
+       IDS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_JOYSTICK},
       {"bluetoothDeviceType_gamepad",
-       IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_GAMEPAD},
+       IDS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_GAMEPAD},
       {"bluetoothDeviceType_keyboard",
-       IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_KEYBOARD},
+       IDS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_KEYBOARD},
       {"bluetoothDeviceType_mouse",
-       IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_MOUSE},
+       IDS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_MOUSE},
       {"bluetoothDeviceType_tablet",
-       IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_TABLET},
+       IDS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_TABLET},
       {"bluetoothDeviceType_keyboardMouseCombo",
-       IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_KEYBOARD_MOUSE_COMBO},
+       IDS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_KEYBOARD_MOUSE_COMBO},
       {"bluetoothDeviceType_unknown",
-       IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_UNKNOWN},
+       IDS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_UNKNOWN},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
   chromeos::bluetooth_dialog::AddLocalizedStrings(html_source);

@@ -223,8 +223,8 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
   return false;
 }
 
-void InitializeDebugGLBindings() {
-  InitializeDebugGLBindingsGL();
+void InitializeLogGLBindings() {
+  InitializeLogGLBindingsGL();
 }
 
 void ShutdownGLPlatform() {

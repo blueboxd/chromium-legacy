@@ -50,9 +50,9 @@ class TouchToFillBridge implements TouchToFillComponent.Delegate {
     @CalledByNative
     private static void insertCredential(Credential[] credentials, int index, String username,
             String password, String formattedUsername, String originUrl,
-            boolean isPublicSuffixMatch) {
-        credentials[index] = new Credential(
-                username, password, formattedUsername, originUrl, isPublicSuffixMatch);
+            boolean isPublicSuffixMatch, boolean isAffiliationBasedMatch) {
+        credentials[index] = new Credential(username, password, formattedUsername, originUrl,
+                isPublicSuffixMatch, isAffiliationBasedMatch);
     }
 
     @CalledByNative

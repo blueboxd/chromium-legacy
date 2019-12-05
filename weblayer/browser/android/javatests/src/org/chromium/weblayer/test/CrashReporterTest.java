@@ -79,7 +79,9 @@ public class CrashReporterTest {
         BundleCallbackHelper callbackHelper = new BundleCallbackHelper();
         CallbackHelper deleteHelper = new CallbackHelper();
 
-        InstrumentationActivity activity = mActivityTestRule.launchShell(new Bundle());
+        Bundle extras = new Bundle();
+        extras.putBoolean(InstrumentationActivity.EXTRA_CREATE_WEBLAYER, false);
+        InstrumentationActivity activity = mActivityTestRule.launchShell(extras);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             CrashReporterController crashReporterController =
                     CrashReporterController.getInstance(activity);

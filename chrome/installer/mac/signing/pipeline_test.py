@@ -23,8 +23,21 @@ def _productbuild_distribution_path(p, d, c):
     return '$W/App Product.dist'
 
 
+def _create_pkgbuild_scripts(p, d):
+    return '$W/scripts'
+
+
 def _read_plist(p):
     return {'LSMinimumSystemVersion': '10.19.7'}
+
+
+def _read_file(p):
+    if p == '$I/Product Packaging/pkg_postinstall.in':
+        return """app dir is '@APP_DIR@'
+app product is '@APP_PRODUCT@'
+framework dir is '@FRAMEWORK_DIR@'"""
+
+    raise
 
 
 def _get_adjacent_item(l, o):
@@ -40,7 +53,7 @@ def _get_adjacent_item(l, o):
         m: mock.DEFAULT
         for m in ('move_file', 'copy_files',
                   'copy_dir_overwrite_and_count_changes', 'run_command',
-                  'make_dir', 'shutil', 'write_file')
+                  'make_dir', 'shutil', 'write_file', 'set_executable')
     })
 @mock.patch.multiple(
     'signing.signing',
@@ -250,6 +263,32 @@ class TestPipelineHelpers(unittest.TestCase):
             mock.call('$W/App Product Canary.app')
         ])
 
+    @mock.patch('signing.commands.read_file', _read_file)
+    def test_create_pkgbuild_scripts(self, **kwargs):
+        manager = mock.Mock()
+        for attr in kwargs:
+            manager.attach_mock(kwargs[attr], attr)
+
+        dist = model.Distribution()
+        dist_config = dist.to_config(test_config.TestConfig())
+        paths = self.paths.replace_work('$W')
+
+        self.assertEqual('$W/scripts',
+                         pipeline._create_pkgbuild_scripts(paths, dist_config))
+
+        manager.assert_has_calls([
+            mock.call.make_dir('$W/scripts'),
+            mock.call.write_file('$W/scripts/postinstall', mock.ANY),
+            mock.call.set_executable('$W/scripts/postinstall')
+        ])
+
+        postinstall_string = manager.mock_calls[1][1][1]
+        self.assertEqual(
+            postinstall_string, """app dir is 'App Product.app'
+app product is 'App Product'
+framework dir is 'App Product.app/Contents/Frameworks/Product Framework.framework'"""
+        )
+
     @mock.patch('signing.commands.plistlib.readPlist', _read_plist)
     def test_productbuild_distribution_path(self, **kwargs):
         manager = mock.Mock()
@@ -316,6 +355,8 @@ class TestPipelineHelpers(unittest.TestCase):
 
     @mock.patch('signing.pipeline._productbuild_distribution_path',
                 _productbuild_distribution_path)
+    @mock.patch('signing.pipeline._create_pkgbuild_scripts',
+                _create_pkgbuild_scripts)
     def test_package_and_sign_pkg_no_branding(self, **kwargs):
         manager = mock.Mock()
         for attr in kwargs:
@@ -344,6 +385,10 @@ class TestPipelineHelpers(unittest.TestCase):
                          _get_adjacent_item(pkgbuild_args, '--identifier'))
         self.assertEqual('99.0.9999.99',
                          _get_adjacent_item(pkgbuild_args, '--version'))
+        self.assertEqual('$W/App Product.app',
+                         _get_adjacent_item(pkgbuild_args, '--component'))
+        self.assertEqual('$W/scripts',
+                         _get_adjacent_item(pkgbuild_args, '--scripts'))
 
         self.assertEqual(
             '$W/App Product.dist',
@@ -391,6 +436,8 @@ class TestPipelineHelpers(unittest.TestCase):
 
     @mock.patch('signing.pipeline._productbuild_distribution_path',
                 _productbuild_distribution_path)
+    @mock.patch('signing.pipeline._create_pkgbuild_scripts',
+                _create_pkgbuild_scripts)
     def test_package_and_sign_pkg_branding(self, **kwargs):
         manager = mock.Mock()
         for attr in kwargs:
@@ -423,6 +470,10 @@ class TestPipelineHelpers(unittest.TestCase):
                          _get_adjacent_item(pkgbuild_args, '--identifier'))
         self.assertEqual('99.0.9999.99',
                          _get_adjacent_item(pkgbuild_args, '--version'))
+        self.assertEqual('$W/App Product.app',
+                         _get_adjacent_item(pkgbuild_args, '--component'))
+        self.assertEqual('$W/scripts',
+                         _get_adjacent_item(pkgbuild_args, '--scripts'))
 
         self.assertEqual(
             '$W/App Product.dist',

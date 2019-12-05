@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "extensions/common/manifest.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -60,6 +61,12 @@ bool MapUrlToLocalFilePath(const ExtensionSet* extensions,
                            bool use_blocking_api,
                            base::FilePath* file_path);
 
+// Returns true if the browser can potentially withhold permissions from the
+// extension.
+bool CanWithholdPermissionsFromExtension(const Extension& extension);
+bool CanWithholdPermissionsFromExtension(const std::string& extension_id,
+                                         const Manifest::Type type,
+                                         const Manifest::Location location);
 }  // namespace util
 }  // namespace extensions
 

@@ -495,6 +495,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
                      quic::QuicRstStreamErrorCode error,
                      quic::QuicStreamOffset bytes_written) override;
   void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) override;
+  void SetDefaultEncryptionLevel(quic::EncryptionLevel level) override;
   void OnCryptoHandshakeMessageSent(
       const quic::CryptoHandshakeMessage& message) override;
   void OnCryptoHandshakeMessageReceived(
@@ -771,6 +772,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // Notifies the factory that this session has been closed which will
   // delete |this|.
   void NotifyFactoryOfSessionClosed();
+
+  // Called when default encryption level switches to forward secure.
+  void OnCryptoHandshakeComplete();
 
   QuicSessionKey session_key_;
   bool require_confirmation_;

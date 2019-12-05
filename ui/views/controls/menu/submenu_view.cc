@@ -28,9 +28,6 @@ namespace {
 // Height of the drop indicator. This should be an even number.
 constexpr int kDropIndicatorHeight = 2;
 
-// Color of the drop indicator.
-constexpr SkColor kDropIndicatorColor = SK_ColorBLACK;
-
 }  // namespace
 
 namespace views {
@@ -228,7 +225,9 @@ void SubmenuView::PaintChildren(const PaintInfo& paint_info) {
   if (paint_drop_indicator) {
     gfx::Rect bounds = CalculateDropIndicatorBounds(drop_item_, drop_position_);
     ui::PaintRecorder recorder(paint_info.context(), size());
-    recorder.canvas()->FillRect(bounds, kDropIndicatorColor);
+    const SkColor drop_indicator_color = GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_MenuDropIndicator);
+    recorder.canvas()->FillRect(bounds, drop_indicator_color);
   }
 }
 

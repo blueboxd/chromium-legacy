@@ -19,6 +19,10 @@
 #if defined(OS_ANDROID)
 #include "android_webview/grit/aw_resources.h"
 #include "android_webview/grit/aw_strings.h"
+#include "components/spellcheck/renderer/spellcheck.h"           // nogncheck
+#include "components/spellcheck/renderer/spellcheck_provider.h"  // nogncheck
+#include "content/public/renderer/render_thread.h"
+#include "services/service_manager/public/cpp/local_interface_provider.h"
 #include "weblayer/renderer/url_loader_throttle_provider.h"
 #endif
 
@@ -80,14 +84,55 @@ void PopulateErrorPageHTML(const blink::WebURLError& error,
 }
 #endif  // OS_ANDROID
 
+#if defined(OS_ANDROID)
+class SpellcheckInterfaceProvider
+    : public service_manager::LocalInterfaceProvider {
+ public:
+  SpellcheckInterfaceProvider() = default;
+  ~SpellcheckInterfaceProvider() override = default;
+
+  // service_manager::LocalInterfaceProvider:
+  void GetInterface(const std::string& interface_name,
+                    mojo::ScopedMessagePipeHandle interface_pipe) override {
+    // A dirty hack to make SpellCheckHost requests work on WebLayer.
+    // TODO(crbug.com/806394): Use a WebView-specific service for SpellCheckHost
+    // and SafeBrowsing, instead of |content_browser|.
+    content::RenderThread::Get()->BindHostReceiver(mojo::GenericPendingReceiver(
+        interface_name, std::move(interface_pipe)));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SpellcheckInterfaceProvider);
+};
+#endif  // defined(OS_ANDROID)
+
 }  // namespace
 
 ContentRendererClientImpl::ContentRendererClientImpl() = default;
 ContentRendererClientImpl::~ContentRendererClientImpl() = default;
 
+void ContentRendererClientImpl::RenderThreadStarted() {
+#if defined(OS_ANDROID)
+  if (!spellcheck_) {
+    local_interface_provider_ = std::make_unique<SpellcheckInterfaceProvider>();
+    spellcheck_ = std::make_unique<SpellCheck>(local_interface_provider_.get());
+  }
+#endif
+
+  browser_interface_broker_ =
+      blink::Platform::Current()->GetBrowserInterfaceBroker();
+}
+
 void ContentRendererClientImpl::RenderFrameCreated(
     content::RenderFrame* render_frame) {
   SSLErrorHelper::Create(render_frame);
+
+#if defined(OS_ANDROID)
+  // |SpellCheckProvider| manages its own lifetime (and destroys itself when the
+  // RenderFrame is destroyed).
+  new SpellCheckProvider(render_frame, spellcheck_.get(),
+                         local_interface_provider_.get());
+#endif
 }
 
 bool ContentRendererClientImpl::HasErrorPage(int http_status_code) {
@@ -106,11 +151,6 @@ void ContentRendererClientImpl::PrepareErrorPage(
 #if defined(OS_ANDROID)
   PopulateErrorPageHTML(error, error_html);
 #endif
-}
-
-void ContentRendererClientImpl::RenderThreadStarted() {
-  browser_interface_broker_ =
-      blink::Platform::Current()->GetBrowserInterfaceBroker();
 }
 
 std::unique_ptr<content::URLLoaderThrottleProvider>

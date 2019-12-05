@@ -379,13 +379,13 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothAdapterClient
   }
 
   void PauseDiscovery(const dbus::ObjectPath& object_path,
-                      const base::Closure& callback,
+                      base::OnceClosure callback,
                       ErrorCallback error_callback) override {
     NOTIMPLEMENTED();
   }
 
   void UnpauseDiscovery(const dbus::ObjectPath& object_path,
-                        const base::Closure& callback,
+                        base::OnceClosure callback,
                         ErrorCallback error_callback) override {
     NOTIMPLEMENTED();
   }

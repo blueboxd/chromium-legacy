@@ -18,7 +18,11 @@ namespace {
 
 base::WeakPtr<chromeos::BulkPrintersCalculator> GetBulkPrintersCalculator(
     const std::string& user_id) {
-  return chromeos::BulkPrintersCalculatorFactory::Get()->GetForAccountId(
+  auto* factory = chromeos::BulkPrintersCalculatorFactory::Get();
+  if (!factory) {
+    return nullptr;
+  }
+  return factory->GetForAccountId(
       CloudExternalDataPolicyHandler::GetAccountId(user_id));
 }
 
@@ -40,13 +44,19 @@ NativePrintersExternalDataHandler::~NativePrintersExternalDataHandler() =
 void NativePrintersExternalDataHandler::OnExternalDataSet(
     const std::string& policy,
     const std::string& user_id) {
-  GetBulkPrintersCalculator(user_id)->ClearData();
+  auto calculator = GetBulkPrintersCalculator(user_id);
+  if (calculator) {
+    calculator->ClearData();
+  }
 }
 
 void NativePrintersExternalDataHandler::OnExternalDataCleared(
     const std::string& policy,
     const std::string& user_id) {
-  GetBulkPrintersCalculator(user_id)->ClearData();
+  auto calculator = GetBulkPrintersCalculator(user_id);
+  if (calculator) {
+    calculator->ClearData();
+  }
 }
 
 void NativePrintersExternalDataHandler::OnExternalDataFetched(
@@ -54,12 +64,18 @@ void NativePrintersExternalDataHandler::OnExternalDataFetched(
     const std::string& user_id,
     std::unique_ptr<std::string> data,
     const base::FilePath& file_path) {
-  GetBulkPrintersCalculator(user_id)->SetData(std::move(data));
+  auto calculator = GetBulkPrintersCalculator(user_id);
+  if (calculator) {
+    calculator->SetData(std::move(data));
+  }
 }
 
 void NativePrintersExternalDataHandler::RemoveForAccountId(
     const AccountId& account_id) {
-  chromeos::BulkPrintersCalculatorFactory::Get()->RemoveForUserId(account_id);
+  auto* factory = chromeos::BulkPrintersCalculatorFactory::Get();
+  if (factory) {
+    factory->RemoveForUserId(account_id);
+  }
 }
 
 }  // namespace policy

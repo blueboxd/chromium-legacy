@@ -409,8 +409,8 @@ class HeadlessWebContentsPDFStreamTest
     EXPECT_EQ(std::ceil(kDocHeight / kPaperHeight), num_pages);
 
     base::Optional<bool> tagged = chrome_pdf::IsPDFDocTagged(pdf_span);
-    EXPECT_TRUE(tagged.has_value());
-    EXPECT_FALSE(*tagged);
+    ASSERT_TRUE(tagged.has_value());
+    EXPECT_FALSE(tagged.value());
 
     FinishAsynchronousTest();
   }

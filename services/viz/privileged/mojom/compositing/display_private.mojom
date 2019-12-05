@@ -73,9 +73,6 @@ interface DisplayPrivate {
   // support multiple observers.
   AddVSyncParameterObserver(
     pending_remote<VSyncParameterObserver> observer);
-
-  // Notifies the Display of the current screen rotation.
-  SetDisplayTransformHint(gfx.mojom.OverlayTransform transform);
 };
 
 interface DisplayClient {

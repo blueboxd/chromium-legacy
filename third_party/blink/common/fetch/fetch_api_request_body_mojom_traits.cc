@@ -36,8 +36,8 @@ bool StructTraits<
       return false;
   }
   out->type_ = data.type();
-  out->data_pipe_getter_ =
-      data.TakeDataPipeGetter<network::mojom::DataPipeGetterPtrInfo>();
+  out->data_pipe_getter_ = data.TakeDataPipeGetter<
+      mojo::PendingRemote<network::mojom::DataPipeGetter>>();
   out->chunked_data_pipe_getter_ = data.TakeChunkedDataPipeGetter<
       mojo::PendingRemote<network::mojom::ChunkedDataPipeGetter>>();
   out->offset_ = data.offset();

@@ -36,6 +36,12 @@ ScriptPromise SMSReceiver::receive(ScriptState* script_state,
   DCHECK(context->IsContextThread());
 
   LocalFrame* frame = GetFrame();
+  if (!frame) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      "Script context has shut down.");
+    return ScriptPromise();
+  }
+
   if (!frame->IsMainFrame() && frame->IsCrossOriginSubframe()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotAllowedError,

@@ -7,10 +7,18 @@ namespace enterprise.reportingPrivate {
 
   // Invoked by <code>UploadChromeDesktopReport</code> when the upload is
   // finished.
+  // Also Invoked by <code>setDeviceData</code> when data is stored.
   callback DoneCallback = void();
 
   // Invoked by <code>getDeviceId</code> to return the ID.
   callback GetDeviceIdCallback = void(DOMString id);
+
+  // Invoked by <code>getPersistentSecret</code> to return the secret.
+  callback GetPersistentSecretCallback = void(ArrayBuffer secret);
+
+  // Invokde by <code>getDeviceDataCallback</code> to return the device data.
+  callback GetDeviceDataCallback = void(ArrayBuffer data);
+
   interface Functions {
 
     // Uploads the status of Chrome browser to the admin console by sending
@@ -22,6 +30,19 @@ namespace enterprise.reportingPrivate {
     // Gets the identity of device that Chrome browser is running on. The ID is
     // retrieved from the local device and used by the Google admin console.
     static void getDeviceId(optional GetDeviceIdCallback callback);
+
+    // Gets a randomly generated persistent secret (symmetric key) that
+    // can be used to encrypt the data stored with |setDeviceData|.
+    static void getPersistentSecret(GetPersistentSecretCallback callback);
+
+    // Gets the device data for |id|. Sets runtime.lastError on failure.
+    static void getDeviceData(DOMString id, GetDeviceDataCallback callback);
+
+    // Sets the device data for |id|. Sets runtime.lastError on failure.
+    static void setDeviceData(DOMString id,
+             ArrayBuffer data,
+             optional DoneCallback callback);
+
   };
 
 };

@@ -39,18 +39,6 @@ class InterpolationType;
 // function.
 class CORE_EXPORT TransitionInterpolation : public Interpolation {
  public:
-  static TransitionInterpolation* Create(
-      const PropertyHandle& property,
-      const InterpolationType& type,
-      InterpolationValue&& start,
-      InterpolationValue&& end,
-      CompositorKeyframeValue* compositor_start,
-      CompositorKeyframeValue* compositor_end) {
-    return MakeGarbageCollected<TransitionInterpolation>(
-        property, type, std::move(start), std::move(end), compositor_start,
-        compositor_end);
-  }
-
   TransitionInterpolation(const PropertyHandle& property,
                           const InterpolationType& type,
                           InterpolationValue&& start,

@@ -175,8 +175,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   InputEventAckState FilterInputEvent(
       const blink::WebInputEvent& input_event) override;
-  InputEventAckState FilterChildGestureEvent(
-      const blink::WebGestureEvent& gesture_event) override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate,
       bool for_root_frame) override;

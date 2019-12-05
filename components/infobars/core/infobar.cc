@@ -5,6 +5,7 @@
 #include "components/infobars/core/infobar.h"
 
 #include <cmath>
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
@@ -19,7 +20,8 @@ InfoBar::InfoBar(std::unique_ptr<InfoBarDelegate> delegate)
     : owner_(nullptr),
       delegate_(std::move(delegate)),
       container_(nullptr),
-      animation_(this),
+      notifier_(std::make_unique<gfx::AnimationDelegateNotifier<>>(this)),
+      animation_(notifier_.get()),
       height_(0),
       target_height_(0) {
   DCHECK(delegate_ != nullptr);
@@ -40,6 +42,11 @@ void InfoBar::SetOwner(InfoBarManager* owner) {
   owner_ = owner;
   delegate_->set_nav_entry_id(owner->GetActiveEntryID());
   PlatformSpecificSetOwner();
+}
+
+void InfoBar::SetNotifier(std::unique_ptr<gfx::AnimationDelegate> notifier) {
+  notifier_ = std::move(notifier);
+  animation_.set_delegate(notifier_.get());
 }
 
 void InfoBar::Show(bool animate) {

@@ -218,6 +218,9 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
     void setCloseButtonImageResource(Drawable drawable) {
         mCloseButton.setVisibility(drawable != null ? View.VISIBLE : View.GONE);
         mCloseButton.setImageDrawable(drawable);
+        if (drawable != null) {
+            updateButtonTint(mCloseButton);
+        }
     }
 
     @Override

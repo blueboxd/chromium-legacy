@@ -40,7 +40,8 @@ FakeServer::FakeServer()
     : commit_error_type_(sync_pb::SyncEnums::SUCCESS),
       error_type_(sync_pb::SyncEnums::SUCCESS),
       alternate_triggered_errors_(false),
-      request_counter_(0) {
+      request_counter_(0),
+      disallow_sending_encryption_keys_(false) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   loopback_server_storage_ = std::make_unique<base::ScopedTempDir>();
   if (!loopback_server_storage_->CreateUniqueTempDir()) {
@@ -55,7 +56,8 @@ FakeServer::FakeServer(const base::FilePath& user_data_dir)
     : commit_error_type_(sync_pb::SyncEnums::SUCCESS),
       error_type_(sync_pb::SyncEnums::SUCCESS),
       alternate_triggered_errors_(false),
-      request_counter_(0) {
+      request_counter_(0),
+      disallow_sending_encryption_keys_(false) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath loopback_server_path =
       user_data_dir.AppendASCII("FakeSyncServer");
@@ -291,6 +293,10 @@ net::HttpStatusCode FakeServer::HandleParsedCommand(
   net::HttpStatusCode http_status_code =
       SendToLoopbackServer(message_without_wallet, response);
 
+  if (response->has_get_updates() && disallow_sending_encryption_keys_) {
+    response->mutable_get_updates()->clear_encryption_keys();
+  }
+
   if (wallet_marker != nullptr && http_status_code == net::HTTP_OK &&
       message.message_contents() ==
           sync_pb::ClientToServerMessage::GET_UPDATES) {
@@ -524,6 +530,10 @@ bool FakeServer::EnableAlternatingTriggeredErrors() {
   // Reset the counter so that the the first request yields a triggered error.
   request_counter_ = 0;
   return true;
+}
+
+void FakeServer::DisallowSendingEncryptionKeys() {
+  disallow_sending_encryption_keys_ = true;
 }
 
 bool FakeServer::ShouldSendTriggeredError() const {

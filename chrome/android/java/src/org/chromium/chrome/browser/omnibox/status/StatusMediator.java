@@ -518,7 +518,7 @@ class StatusMediator {
         } else if (mIsSearchEngineGoogle) {
             int icon = mDelegate.shouldShowSearchLoupeEverywhere(isIncognito)
                     ? R.drawable.ic_search
-                    : R.drawable.ic_logo_googleg_24dp;
+                    : R.drawable.ic_logo_googleg_20dp;
             mModel.set(StatusProperties.STATUS_ICON_RES, icon);
             callback.onResult(icon);
         } else {
@@ -542,7 +542,7 @@ class StatusMediator {
     @VisibleForTesting
     int getSecurityIconTintForSearchEngineIcon(int icon) {
         int tint;
-        if (icon == 0 || icon == R.drawable.ic_logo_googleg_24dp) {
+        if (icon == 0 || icon == R.drawable.ic_logo_googleg_20dp) {
             tint = 0;
         } else {
             tint = mDarkTheme ? R.color.default_icon_color_secondary_list

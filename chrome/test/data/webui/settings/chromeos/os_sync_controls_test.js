@@ -44,6 +44,9 @@ function getSyncAllOsPrefs() {
     printersRegistered: true,
     printersSynced: true,
     syncAllOsTypes: true,
+    wifiConfigurationsEnforced: false,
+    wifiConfigurationsRegistered: true,
+    wifiConfigurationsSynced: true,
   };
 }
 

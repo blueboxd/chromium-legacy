@@ -17,6 +17,13 @@ namespace ash {
 
 namespace {
 
+// The ratio of allowed bounds for apps grid view to its maximum margin.
+constexpr int kAppsGridMarginRatio = 16;
+constexpr int kAppsGridMarginRatioForSmallWidth = 12;
+
+// The expected page switcher width.
+constexpr int kPageSwitcherWidth = 32;
+
 // Scales |value| using the smaller one of |scale_1| and |scale_2|.
 int MinScale(int value, float scale_1, float scale_2) {
   return std::round(value * std::min(scale_1, scale_2));
@@ -149,6 +156,17 @@ int GridFadeoutMaskHeightForType(ash::AppListConfigType type) {
   }
 }
 
+int PageSwitcherEndMarginForType(AppListConfigType type) {
+  switch (type) {
+    case ash::AppListConfigType::kShared:
+      return 8;
+    case ash::AppListConfigType::kLarge:
+    case ash::AppListConfigType::kMedium:
+    case ash::AppListConfigType::kSmall:
+      return 16;
+  }
+}
+
 int AppTitleMaxLineHeightForType(ash::AppListConfigType type) {
   switch (type) {
     case ash::AppListConfigType::kShared:
@@ -255,6 +273,8 @@ AppListConfig::AppListConfig(ash::AppListConfigType type)
       grid_focus_corner_radius_(GridFocusCornerRadiusForType(type)),
       grid_fadeout_zone_height_(24),
       grid_fadeout_mask_height_(GridFadeoutMaskHeightForType(type)),
+      grid_to_page_switcher_margin_(8),
+      page_switcher_end_margin_(PageSwitcherEndMarginForType(type)),
       search_tile_icon_dimension_(48),
       search_tile_badge_icon_dimension_(22),
       search_tile_badge_icon_offset_(5),
@@ -363,6 +383,8 @@ AppListConfig::AppListConfig(const AppListConfig& base_config,
           min_y_scale
               ? 8
               : MinScale(base_config.grid_fadeout_mask_height_, scale_y, 1)),
+      grid_to_page_switcher_margin_(base_config.grid_to_page_switcher_margin_),
+      page_switcher_end_margin_(base_config.page_switcher_end_margin_),
       search_tile_icon_dimension_(base_config.search_tile_icon_dimension_),
       search_tile_badge_icon_dimension_(
           base_config.search_tile_badge_icon_dimension_),
@@ -484,6 +506,27 @@ int AppListConfig::GetMaxNumOfItemsPerPage(int /* page */) const {
   // In new style launcher, the first row of first page is no longger suggestion
   // apps.
   return preferred_cols_ * preferred_rows_;
+}
+
+int AppListConfig::GetMinGridHorizontalPadding() const {
+  return page_switcher_end_margin_ + grid_to_page_switcher_margin_ +
+         kPageSwitcherWidth;
+}
+
+int AppListConfig::GetIdealHorizontalMargin(
+    const gfx::Rect& available_bounds) const {
+  const int available_width = available_bounds.width();
+  if (type_ == AppListConfigType::kShared)
+    return available_width / kAppsGridMarginRatio;
+
+  if (available_width >= kAppsGridMarginRatio * GetMinGridHorizontalPadding())
+    return available_width / kAppsGridMarginRatio;
+  return available_width / kAppsGridMarginRatioForSmallWidth;
+}
+
+int AppListConfig::GetIdealVerticalMargin(
+    const gfx::Rect& available_bounds) const {
+  return available_bounds.height() / kAppsGridMarginRatio;
 }
 
 }  // namespace ash

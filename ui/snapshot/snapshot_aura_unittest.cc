@@ -194,7 +194,7 @@ class SnapshotAuraTest : public testing::TestWithParam<bool> {
   DISALLOW_COPY_AND_ASSIGN(SnapshotAuraTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(, SnapshotAuraTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, SnapshotAuraTest, ::testing::Bool());
 
 #if defined(OS_WIN) && !defined(NDEBUG)
 // https://crbug.com/852512

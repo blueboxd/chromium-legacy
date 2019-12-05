@@ -57,6 +57,9 @@ void TestAutofillDriver::PropagateAutofillPredictions(
     const std::vector<FormStructure*>& forms) {
 }
 
+void TestAutofillDriver::HandleParsedForms(
+    const std::vector<FormStructure*>& forms) {}
+
 void TestAutofillDriver::SendAutofillTypePredictionsToRenderer(
     const std::vector<FormStructure*>& forms) {
 }

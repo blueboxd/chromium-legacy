@@ -55,17 +55,17 @@ bool IsSideShelf(Shelf* shelf) {
 bool IsShelfBackgroundTypeWithRoundedCorners(
     ShelfBackgroundType background_type) {
   switch (background_type) {
-    case SHELF_BACKGROUND_DEFAULT:
-    case SHELF_BACKGROUND_APP_LIST:
-    case SHELF_BACKGROUND_OVERVIEW:
+    case ShelfBackgroundType::kDefaultBg:
+    case ShelfBackgroundType::kAppList:
+    case ShelfBackgroundType::kOverview:
       return true;
-    case SHELF_BACKGROUND_MAXIMIZED:
-    case SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST:
-    case SHELF_BACKGROUND_OOBE:
-    case SHELF_BACKGROUND_HOME_LAUNCHER:
-    case SHELF_BACKGROUND_LOGIN:
-    case SHELF_BACKGROUND_LOGIN_NONBLURRED_WALLPAPER:
-    case SHELF_BACKGROUND_IN_APP:
+    case ShelfBackgroundType::kMaximized:
+    case ShelfBackgroundType::kMaximizedWithAppList:
+    case ShelfBackgroundType::kOobe:
+    case ShelfBackgroundType::kHomeLauncher:
+    case ShelfBackgroundType::kLogin:
+    case ShelfBackgroundType::kLoginNonBlurredWallpaper:
+    case ShelfBackgroundType::kInApp:
       return false;
   }
 }

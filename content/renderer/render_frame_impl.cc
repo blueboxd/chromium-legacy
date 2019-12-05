@@ -2216,7 +2216,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnSetFrameOwnerProperties)
     IPC_MESSAGE_HANDLER(FrameMsg_AdvanceFocus, OnAdvanceFocus)
     IPC_MESSAGE_HANDLER(FrameMsg_AdvanceFocusInForm, OnAdvanceFocusInForm)
-    IPC_MESSAGE_HANDLER(FrameMsg_SetFocusedFrame, OnSetFocusedFrame)
     IPC_MESSAGE_HANDLER(FrameMsg_SetTextTrackSettings,
                         OnTextTrackSettingsChanged)
     IPC_MESSAGE_HANDLER(FrameMsg_GetSavableResourceLinks,
@@ -2790,12 +2789,6 @@ void RenderFrameImpl::OnAdvanceFocusInForm(blink::WebFocusType focus_type) {
   if (render_view_->webview()->FocusedFrame() != frame_)
     return;
   frame_->AdvanceFocusInForm(focus_type);
-}
-
-void RenderFrameImpl::OnSetFocusedFrame() {
-  // This uses focusDocumentView rather than setFocusedFrame so that focus/blur
-  // events are properly dispatched on any currently focused elements.
-  render_view_->webview()->FocusDocumentView(frame_);
 }
 
 void RenderFrameImpl::OnTextTrackSettingsChanged(

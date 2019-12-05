@@ -153,7 +153,8 @@ void WorkerInspectorController::WaitForDebuggerIfNeeded() {
 }
 
 void WorkerInspectorController::WillProcessTask(
-    const base::PendingTask& pending_task) {}
+    const base::PendingTask& pending_task,
+    bool was_blocked_or_low_priority) {}
 
 void WorkerInspectorController::DidProcessTask(
     const base::PendingTask& pending_task) {

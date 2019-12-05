@@ -100,7 +100,7 @@ void NGLineBoxFragmentBuilder::AddChildren(ChildList& children) {
       AddChild(std::move(child.fragment), child.offset);
       DCHECK(!child.fragment);
     } else if (child.out_of_flow_positioned_box) {
-      AddOutOfFlowChildCandidate(
+      AddOutOfFlowInlineChildCandidate(
           NGBlockNode(ToLayoutBox(child.out_of_flow_positioned_box)),
           child.offset, child.container_direction);
       child.out_of_flow_positioned_box = nullptr;
@@ -127,7 +127,7 @@ void NGLineBoxFragmentBuilder::PropagateChildrenData(ChildList& children) {
       continue;
     }
     if (child.out_of_flow_positioned_box) {
-      AddOutOfFlowChildCandidate(
+      AddOutOfFlowInlineChildCandidate(
           NGBlockNode(ToLayoutBox(child.out_of_flow_positioned_box)),
           child.offset, child.container_direction);
       child.out_of_flow_positioned_box = nullptr;

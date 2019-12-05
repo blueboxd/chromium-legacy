@@ -397,9 +397,9 @@ class ExtensionPrefs : public KeyedService {
   // Sets/Gets the value indicating if an extension should be granted all the
   // requested host permissions without requiring explicit runtime-granted
   // permissions from the user.
-  void SetShouldWithholdPermissions(const ExtensionId& extension_id,
-                                    bool should_withhold);
-  bool GetShouldWithholdPermissions(const ExtensionId& extension_id) const;
+  void SetWithholdingPermissions(const ExtensionId& extension_id,
+                                 bool should_withhold);
+  bool GetWithholdingPermissions(const ExtensionId& extension_id) const;
 
   // Returns the set of runtime-granted permissions. These are permissions that
   // the user explicitly approved at runtime, rather than install time (such
@@ -615,6 +615,11 @@ class ExtensionPrefs : public KeyedService {
   // extension's dictionary, which is keyed on the extension ID.
   void MigrateObsoleteExtensionPrefs();
 
+  // Updates an extension to use the new withholding pref key if it doesn't have
+  // it yet, removing the old key in the process.
+  // TODO(tjudkins): Remove this and the obsolete key in M83.
+  void MigrateToNewWithholdingPref();
+
   // When called before the ExtensionService is created, alerts that are
   // normally suppressed in first run will still trigger.
   static void SetRunAlertsInFirstRunForTest();
@@ -782,8 +787,7 @@ class ExtensionPrefs : public KeyedService {
 
   // Returns true if the prefs have any permission withholding setting stored
   // for a given extension.
-  bool HasShouldWithholdPermissionsSetting(
-      const ExtensionId& extension_id) const;
+  bool HasWithholdingPermissionsSetting(const ExtensionId& extension_id) const;
 
   content::BrowserContext* browser_context_;
 

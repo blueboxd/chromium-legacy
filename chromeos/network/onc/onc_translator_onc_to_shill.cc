@@ -35,11 +35,15 @@ namespace onc {
 
 namespace {
 
-std::unique_ptr<base::Value> ConvertValueToString(const base::Value& value) {
+// Converts values to JSON strings. This will turn booleans into "true" or
+// "false" which is what Shill expects for VPN values (including L2TP).
+base::Value ConvertVpnValueToString(const base::Value& value) {
+  if (value.is_string())
+    return value.Clone();
   std::string str;
-  if (!value.GetAsString(&str))
-    base::JSONWriter::Write(value, &str);
-  return std::make_unique<base::Value>(str);
+  if (!base::JSONWriter::Write(value, &str))
+    NOTREACHED();
+  return base::Value(str);
 }
 
 // Sets any client cert properties when ClientCertType is PKCS11Id.
@@ -110,9 +114,9 @@ class LocalTranslator {
 
   // Adds |value| to |shill_dictionary| at the field shill_property_name given
   // by the associated signature. Takes ownership of |value|. Does nothing if
-  // |value| is NULL or the property name cannot be read from the signature.
+  // |value| is none or the property name cannot be read from the signature.
   void AddValueAccordingToSignature(const std::string& onc_field_name,
-                                    std::unique_ptr<base::Value> value);
+                                    const base::Value& value);
 
   // Translates the value |onc_value| using |table|. It is an error if no
   // matching table entry is found. Writes the result as entry at
@@ -211,16 +215,17 @@ void LocalTranslator::TranslateOpenVPN() {
   for (base::DictionaryValue::Iterator it(*onc_object_); !it.IsAtEnd();
        it.Advance()) {
     std::string key = it.key();
-    std::unique_ptr<base::Value> translated;
+    base::Value translated;
     if (key == ::onc::openvpn::kRemoteCertKU ||
         key == ::onc::openvpn::kServerCAPEMs ||
         key == ::onc::openvpn::kExtraHosts) {
-      translated.reset(it.value().DeepCopy());
+      translated = it.value().Clone();
     } else {
       // Shill wants all Provider/VPN fields to be strings.
-      translated = ConvertValueToString(it.value());
+      translated = ConvertVpnValueToString(it.value());
     }
-    AddValueAccordingToSignature(key, std::move(translated));
+    if (!translated.is_none())
+      AddValueAccordingToSignature(key, translated);
   }
 }
 
@@ -241,6 +246,15 @@ void LocalTranslator::TranslateL2TP() {
   // so handle it explicitly here.
   CopyFieldFromONCToShill(::onc::vpn::kSaveCredentials,
                           shill::kSaveCredentialsProperty);
+
+  const base::Value* lcp_echo_disabled =
+      onc_object_->FindKey(::onc::l2tp::kLcpEchoDisabled);
+  if (lcp_echo_disabled) {
+    base::Value lcp_echo_disabled_value =
+        ConvertVpnValueToString(*lcp_echo_disabled);
+    shill_dictionary_->SetKey(shill::kL2tpIpsecLcpEchoDisabledProperty,
+                              std::move(lcp_echo_disabled_value));
+  }
 
   CopyFieldsAccordingToSignature();
 }
@@ -405,8 +419,7 @@ void LocalTranslator::TranslateNetworkConfiguration() {
 void LocalTranslator::CopyFieldsAccordingToSignature() {
   for (base::DictionaryValue::Iterator it(*onc_object_); !it.IsAtEnd();
        it.Advance()) {
-    AddValueAccordingToSignature(it.key(),
-                                 base::WrapUnique(it.value().DeepCopy()));
+    AddValueAccordingToSignature(it.key(), it.value());
   }
 }
 
@@ -435,19 +448,16 @@ void LocalTranslator::CopyFieldFromONCToShill(
   shill_dictionary_->SetKey(shill_property_name, value->Clone());
 }
 
-void LocalTranslator::AddValueAccordingToSignature(
-    const std::string& onc_name,
-    std::unique_ptr<base::Value> value) {
-  if (!value || !field_translation_table_)
+void LocalTranslator::AddValueAccordingToSignature(const std::string& onc_name,
+                                                   const base::Value& value) {
+  if (value.is_none() || !field_translation_table_)
     return;
   std::string shill_property_name;
   if (!GetShillPropertyName(onc_name, field_translation_table_,
                             &shill_property_name)) {
     return;
   }
-
-  shill_dictionary_->SetWithoutPathExpansion(shill_property_name,
-                                             std::move(value));
+  shill_dictionary_->SetKey(shill_property_name, value.Clone());
 }
 
 void LocalTranslator::TranslateWithTableAndSet(

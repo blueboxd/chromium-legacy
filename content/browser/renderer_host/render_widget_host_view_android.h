@@ -138,8 +138,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                               InputEventAckState ack_result) override;
   InputEventAckState FilterInputEvent(
       const blink::WebInputEvent& input_event) override;
-  InputEventAckState FilterChildGestureEvent(
-      const blink::WebGestureEvent& gesture_event) override;
   void GestureEventAck(const blink::WebGestureEvent& event,
                        InputEventAckState ack_result) override;
   bool OnUnconsumedKeyboardEventAck(

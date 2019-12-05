@@ -2161,7 +2161,7 @@ int AXPlatformNodeAuraLinux::GetGTypeInterfaceMask() {
 
   // Value Interface
   AtkRole role = GetAtkRole();
-  if (IsRangeValueSupported(GetData())) {
+  if (GetData().IsRangeValueSupported()) {
     interface_mask |= 1 << ATK_VALUE_INTERFACE;
   }
 
@@ -3520,7 +3520,7 @@ void AXPlatformNodeAuraLinux::OnValueChanged() {
   if (IsPlainTextField() && !GetDelegate()->IsWebContent())
     UpdateHypertext();
 
-  if (!IsRangeValueSupported(GetData()))
+  if (!GetData().IsRangeValueSupported())
     return;
 
   float float_val;
@@ -3564,7 +3564,7 @@ void AXPlatformNodeAuraLinux::OnDocumentTitleChanged() {
 void AXPlatformNodeAuraLinux::OnSubtreeCreated() {
   // We might not have a parent, in that case we don't need to send the event.
   // We also don't want to notify if this is an ignored node
-  if (!GetParent() || ui::IsIgnored(GetData()))
+  if (!GetParent() || GetData().IsIgnored())
     return;
   g_signal_emit_by_name(GetParent(), "children-changed::add",
                         GetIndexInParent(), GetOrCreateAtkObject());
@@ -3573,7 +3573,7 @@ void AXPlatformNodeAuraLinux::OnSubtreeCreated() {
 void AXPlatformNodeAuraLinux::OnSubtreeWillBeDeleted() {
   // There is a chance there won't be a parent as we're in the deletion process.
   // We also don't want to notify if this is an ignored node
-  if (!GetParent() || ui::IsIgnored(GetData()))
+  if (!GetParent() || GetData().IsIgnored())
     return;
 
   g_signal_emit_by_name(GetParent(), "children-changed::remove",

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_CHILD_USER_SERVICE_H_
 
 #include <memory>
+#include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_interface.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace base {
@@ -19,17 +20,38 @@ class BrowserContext;
 class GURL;
 
 namespace chromeos {
+namespace app_time {
 class AppTimeController;
+class WebTimeLimitEnforcer;
+}  // namespace app_time
 
 // Facade that exposes child user related functionality on Chrome OS.
 // TODO(crbug.com/1022231): Migrate ConsumerStatusReportingService,
 // EventBasedStatusReporting and ScreenTimeController to ChildUserService.
-class ChildUserService : public KeyedService {
+class ChildUserService : public KeyedService,
+                         public app_time::WebTimeLimitInterface {
  public:
+  // Used for tests to get internal implementation details.
+  class TestApi {
+   public:
+    explicit TestApi(ChildUserService* service);
+    ~TestApi();
+
+    app_time::WebTimeLimitEnforcer* web_time_enforcer();
+    app_time::AppTimeController* app_time_controller();
+
+   private:
+    ChildUserService* const service_;
+  };
+
   explicit ChildUserService(content::BrowserContext* context);
   ChildUserService(const ChildUserService&) = delete;
   ChildUserService& operator=(const ChildUserService&) = delete;
   ~ChildUserService() override;
+
+  // WebTimeLimitInterface:
+  void PauseWebActivity() override;
+  void ResumeWebActivity() override;
 
   // Returns whether web time limit was reached for child user.
   // Always returns false if per-app times limits feature is disabled.
@@ -45,19 +67,11 @@ class ChildUserService : public KeyedService {
   // |features::kWebTimeLimits| features are enabled.
   base::TimeDelta GetWebTimeLimit() const;
 
-  const AppTimeController* app_time_controller() const {
-    return app_time_controller_.get();
-  }
-
-  AppTimeController* app_time_controller() {
-    return app_time_controller_.get();
-  }
-
  private:
   // KeyedService:
   void Shutdown() override;
 
-  std::unique_ptr<AppTimeController> app_time_controller_;
+  std::unique_ptr<app_time::AppTimeController> app_time_controller_;
 };
 
 }  // namespace chromeos

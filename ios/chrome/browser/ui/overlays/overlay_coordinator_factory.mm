@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/overlays/overlay_coordinator_factory.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/overlays/infobar_banner/infobar_banner_supported_overlay_coordinator_classes.h"
+#import "ios/chrome/browser/ui/overlays/infobar_modal/infobar_modal_supported_overlay_coordinator_classes.h"
 #import "ios/chrome/browser/ui/overlays/overlay_coordinator_factory+initialization.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_coordinator.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/web_content_area_supported_overlay_coordinator_classes.h"
@@ -32,6 +34,14 @@
     case OverlayModality::kWebContentArea:
       supportedCoordinatorClasses =
           web_content_area::GetSupportedOverlayCoordinatorClasses();
+      break;
+    case OverlayModality::kInfobarBanner:
+      supportedCoordinatorClasses =
+          infobar_banner::GetSupportedOverlayCoordinatorClasses();
+      break;
+    case OverlayModality::kInfobarModal:
+      supportedCoordinatorClasses =
+          infobar_modal::GetSupportedOverlayCoordinatorClasses();
       break;
   }
   return [[self alloc] initWithBrowser:browser

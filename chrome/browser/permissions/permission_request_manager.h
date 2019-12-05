@@ -12,7 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/permissions/permission_request_auto_blocker.h"
+#include "chrome/browser/permissions/notification_permission_ui_selector.h"
 #include "chrome/browser/ui/permission_bubble/permission_prompt.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -57,6 +57,9 @@ class PermissionRequestManager
     DISMISS
   };
 
+  using UiToUse = NotificationPermissionUiSelector::UiToUse;
+  using QuietUiReason = NotificationPermissionUiSelector::QuietUiReason;
+
   ~PermissionRequestManager() override;
 
   // Adds a new request to the permission bubble. Ownership of the request
@@ -80,6 +83,7 @@ class PermissionRequestManager
   void RemoveObserver(Observer* observer);
 
   bool ShouldCurrentRequestUseQuietUI();
+  QuietUiReason ReasonForUsingQuietUi();
 
   bool IsRequestInProgress();
 
@@ -108,15 +112,10 @@ class PermissionRequestManager
   void Deny() override;
   void Closing() override;
 
-  // For testing only, used to override the default autoblocker.
-  void set_autoblocker_for_testing(
-      std::unique_ptr<PermissionRequestAutoBlocker> blocker) {
-    blocker_ = std::move(blocker);
-  }
-
-  PermissionRequestAutoBlocker::Response
-  current_request_autoblocker_response_for_testing() {
-    return current_request_autoblocker_response_.value();
+  // For testing only, used to override the default UI selector.
+  void set_notification_permission_ui_selector_for_testing(
+      std::unique_ptr<NotificationPermissionUiSelector> selector) {
+    notification_permission_ui_selector_ = std::move(selector);
   }
 
  private:
@@ -182,12 +181,9 @@ class PermissionRequestManager
   void NotifyBubbleAdded();
   void NotifyBubbleRemoved();
 
-  // Will query crowd deny data and make a decision on whether to show or reject
-  // a request.
-  void QueryAutoBlockerAndShowOrReject();
-
-  // Autoblocker callback.
-  void AutoBlockerDecisionMade(PermissionRequestAutoBlocker::Response response);
+  void OnSelectedUiToUseForNotifications(
+      UiToUse ui_to_use,
+      base::Optional<QuietUiReason> quiet_ui_reason);
 
   PermissionPromptDisposition DetermineCurrentRequestUIDispositionForUMA();
 
@@ -221,18 +217,24 @@ class PermissionRequestManager
   // origin requesting the permission.
   bool is_notification_prompt_cooldown_active_ = false;
 
-  // The permission request auto blocker to be used for deciding whether to
-  // block the request or not.
-  std::unique_ptr<PermissionRequestAutoBlocker> blocker_;
+  // Decides if the quiet prompt UI should be used to display notification
+  // permission requests.
+  std::unique_ptr<NotificationPermissionUiSelector>
+      notification_permission_ui_selector_;
 
   // Whether the view for the current |requests_| has been shown to the user at
   // least once.
   bool current_request_view_shown_to_user_ = false;
 
-  // The autoblocker response for the current |requests_|, or nullopt if we are
-  // still waiting for the response.
-  base::Optional<PermissionRequestAutoBlocker::Response>
-      current_request_autoblocker_response_;
+  // Whether to use the normal or quiet UI to display the current permission
+  // |requests_|, or nullopt if  we are still waiting on the result from the
+  // |notification_permission_ui_selector_|.
+  base::Optional<UiToUse> current_request_ui_to_use_;
+
+  // The reason for using the quiet UI to display the current permission
+  // |requests_|, or nullopt if we are still waiting for the response from the
+  // |notification_permission_ui_selector_| or we are using the normal UI.
+  base::Optional<QuietUiReason> current_request_quiet_ui_reason_;
 
   base::WeakPtrFactory<PermissionRequestManager> weak_factory_{this};
   WEB_CONTENTS_USER_DATA_KEY_DECL();

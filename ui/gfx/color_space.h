@@ -270,6 +270,21 @@ class COLOR_SPACE_EXPORT ColorSpace {
   void GetTransferMatrix(SkMatrix44* matrix) const;
   void GetRangeAdjustMatrix(SkMatrix44* matrix) const;
 
+  // Returns the current primary ID.
+  // Note: if SetCustomPrimaries() has been used, the primary ID returned
+  // may have been set to PrimaryID::CUSTOM, or been coerced to another
+  // PrimaryID if it was very close.
+  PrimaryID GetPrimaryID() const;
+
+  // Returns the current transfer ID.
+  TransferID GetTransferID() const;
+
+  // Returns the current matrix ID.
+  MatrixID GetMatrixID() const;
+
+  // Returns the current range ID.
+  RangeID GetRangeID() const;
+
  private:
   static void GetPrimaryMatrix(PrimaryID, skcms_Matrix3x3* to_XYZD50);
   static bool GetTransferFunction(TransferID, skcms_TransferFunction* fn);

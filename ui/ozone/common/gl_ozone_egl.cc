@@ -35,9 +35,9 @@ bool GLOzoneEGL::InitializeStaticGLBindings(
   return true;
 }
 
-void GLOzoneEGL::InitializeDebugGLBindings() {
-  gl::InitializeDebugGLBindingsGL();
-  gl::InitializeDebugGLBindingsEGL();
+void GLOzoneEGL::InitializeLogGLBindings() {
+  gl::InitializeLogGLBindingsGL();
+  gl::InitializeLogGLBindingsEGL();
 }
 
 void GLOzoneEGL::SetDisabledExtensionsPlatform(

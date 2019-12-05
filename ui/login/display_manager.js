@@ -411,6 +411,7 @@ cr.define('cr.ui.login', function() {
       } else if (name == ACCELERATOR_ENROLLMENT) {
         if (attributes.startEnrollmentAllowed ||
             currentStepId == SCREEN_GAIA_SIGNIN ||
+            currentStepId == SCREEN_PACKAGED_LICENSE ||
             currentStepId == SCREEN_ACCOUNT_PICKER) {
           chrome.send('toggleEnrollmentScreen');
         } else if (attributes.postponeEnrollmentAllowed ||

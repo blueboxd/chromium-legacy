@@ -43,16 +43,3 @@ component("cpp") {
     deps += [ "//ui/aura" ]
   }
 }
-
-source_set("manifest") {
-  sources = [
-    "manifest.cc",
-    "manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//services/content/public/mojom",
-    "//services/service_manager/public/cpp",
-  ]
-}

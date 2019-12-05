@@ -727,15 +727,17 @@ void WebBluetoothServiceImpl::RemoteServerConnect(
       web_bluetooth_server_client(std::move(client));
 
   // TODO(crbug.com/730593): Remove AdaptCallbackForRepeating() by updating
-  // the callee interface.
+  // the callee interface. The |callback| will only be called once, but it is
+  // passed to both the success and error callbacks.
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   query_result.device->CreateGattConnection(
-      base::Bind(&WebBluetoothServiceImpl::OnCreateGATTConnectionSuccess,
-                 weak_ptr_factory_.GetWeakPtr(), device_id, start_time,
-                 base::Passed(&web_bluetooth_server_client), copyable_callback),
-      base::Bind(&WebBluetoothServiceImpl::OnCreateGATTConnectionFailed,
-                 weak_ptr_factory_.GetWeakPtr(), start_time,
-                 copyable_callback));
+      base::BindOnce(&WebBluetoothServiceImpl::OnCreateGATTConnectionSuccess,
+                     weak_ptr_factory_.GetWeakPtr(), device_id, start_time,
+                     base::Passed(&web_bluetooth_server_client),
+                     copyable_callback),
+      base::BindOnce(&WebBluetoothServiceImpl::OnCreateGATTConnectionFailed,
+                     weak_ptr_factory_.GetWeakPtr(), start_time,
+                     copyable_callback));
 }
 
 void WebBluetoothServiceImpl::RemoteServerDisconnect(
@@ -992,10 +994,10 @@ void WebBluetoothServiceImpl::RemoteCharacteristicReadValue(
   // the callee interface.
   auto copyable_callback = AdaptCallbackForRepeating(std::move(callback));
   query_result.characteristic->ReadRemoteCharacteristic(
-      base::Bind(&WebBluetoothServiceImpl::OnCharacteristicReadValueSuccess,
-                 weak_ptr_factory_.GetWeakPtr(), copyable_callback),
-      base::Bind(&WebBluetoothServiceImpl::OnCharacteristicReadValueFailed,
-                 weak_ptr_factory_.GetWeakPtr(), copyable_callback));
+      base::BindOnce(&WebBluetoothServiceImpl::OnCharacteristicReadValueSuccess,
+                     weak_ptr_factory_.GetWeakPtr(), copyable_callback),
+      base::BindOnce(&WebBluetoothServiceImpl::OnCharacteristicReadValueFailed,
+                     weak_ptr_factory_.GetWeakPtr(), copyable_callback));
 }
 
 void WebBluetoothServiceImpl::RemoteCharacteristicWriteValue(
@@ -1038,10 +1040,11 @@ void WebBluetoothServiceImpl::RemoteCharacteristicWriteValue(
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   query_result.characteristic->WriteRemoteCharacteristic(
       value,
-      base::Bind(&WebBluetoothServiceImpl::OnCharacteristicWriteValueSuccess,
-                 weak_ptr_factory_.GetWeakPtr(), copyable_callback),
-      base::Bind(&WebBluetoothServiceImpl::OnCharacteristicWriteValueFailed,
-                 weak_ptr_factory_.GetWeakPtr(), copyable_callback));
+      base::BindOnce(
+          &WebBluetoothServiceImpl::OnCharacteristicWriteValueSuccess,
+          weak_ptr_factory_.GetWeakPtr(), copyable_callback),
+      base::BindOnce(&WebBluetoothServiceImpl::OnCharacteristicWriteValueFailed,
+                     weak_ptr_factory_.GetWeakPtr(), copyable_callback));
 }
 
 void WebBluetoothServiceImpl::RemoteCharacteristicStartNotifications(
@@ -1091,11 +1094,11 @@ void WebBluetoothServiceImpl::RemoteCharacteristicStartNotifications(
   // the callee interface.
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   query_result.characteristic->StartNotifySession(
-      base::Bind(&WebBluetoothServiceImpl::OnStartNotifySessionSuccess,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&characteristic_client), copyable_callback),
-      base::Bind(&WebBluetoothServiceImpl::OnStartNotifySessionFailed,
-                 weak_ptr_factory_.GetWeakPtr(), copyable_callback));
+      base::BindOnce(&WebBluetoothServiceImpl::OnStartNotifySessionSuccess,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::Passed(&characteristic_client), copyable_callback),
+      base::BindOnce(&WebBluetoothServiceImpl::OnStartNotifySessionFailed,
+                     weak_ptr_factory_.GetWeakPtr(), copyable_callback));
 }
 
 void WebBluetoothServiceImpl::RemoteCharacteristicStopNotifications(
@@ -1119,9 +1122,9 @@ void WebBluetoothServiceImpl::RemoteCharacteristicStopNotifications(
     return;
   }
   notify_session_iter->second->gatt_notify_session->Stop(
-      base::Bind(&WebBluetoothServiceImpl::OnStopNotifySessionComplete,
-                 weak_ptr_factory_.GetWeakPtr(), characteristic_instance_id,
-                 base::Passed(&callback)));
+      base::BindOnce(&WebBluetoothServiceImpl::OnStopNotifySessionComplete,
+                     weak_ptr_factory_.GetWeakPtr(), characteristic_instance_id,
+                     base::Passed(&callback)));
 }
 
 void WebBluetoothServiceImpl::RemoteDescriptorReadValue(
@@ -1155,10 +1158,10 @@ void WebBluetoothServiceImpl::RemoteDescriptorReadValue(
   // the callee interface.
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   query_result.descriptor->ReadRemoteDescriptor(
-      base::Bind(&WebBluetoothServiceImpl::OnDescriptorReadValueSuccess,
-                 weak_ptr_factory_.GetWeakPtr(), copyable_callback),
-      base::Bind(&WebBluetoothServiceImpl::OnDescriptorReadValueFailed,
-                 weak_ptr_factory_.GetWeakPtr(), copyable_callback));
+      base::BindOnce(&WebBluetoothServiceImpl::OnDescriptorReadValueSuccess,
+                     weak_ptr_factory_.GetWeakPtr(), copyable_callback),
+      base::BindOnce(&WebBluetoothServiceImpl::OnDescriptorReadValueFailed,
+                     weak_ptr_factory_.GetWeakPtr(), copyable_callback));
 }
 
 void WebBluetoothServiceImpl::RemoteDescriptorWriteValue(
@@ -1201,10 +1204,10 @@ void WebBluetoothServiceImpl::RemoteDescriptorWriteValue(
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   query_result.descriptor->WriteRemoteDescriptor(
       value,
-      base::Bind(&WebBluetoothServiceImpl::OnDescriptorWriteValueSuccess,
-                 weak_ptr_factory_.GetWeakPtr(), copyable_callback),
-      base::Bind(&WebBluetoothServiceImpl::OnDescriptorWriteValueFailed,
-                 weak_ptr_factory_.GetWeakPtr(), copyable_callback));
+      base::BindOnce(&WebBluetoothServiceImpl::OnDescriptorWriteValueSuccess,
+                     weak_ptr_factory_.GetWeakPtr(), copyable_callback),
+      base::BindOnce(&WebBluetoothServiceImpl::OnDescriptorWriteValueFailed,
+                     weak_ptr_factory_.GetWeakPtr(), copyable_callback));
 }
 
 void WebBluetoothServiceImpl::RequestScanningStart(
@@ -1308,11 +1311,11 @@ void WebBluetoothServiceImpl::RequestScanningStartImpl(
   // resources, we need use StartDiscoverySessionWithFilter() instead of
   // StartDiscoverySession() here.
   adapter->StartDiscoverySession(
-      base::Bind(&WebBluetoothServiceImpl::OnStartDiscoverySession,
-                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&client),
-                 base::Passed(&options)),
-      base::Bind(&WebBluetoothServiceImpl::OnDiscoverySessionError,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&WebBluetoothServiceImpl::OnStartDiscoverySession,
+                     weak_ptr_factory_.GetWeakPtr(), base::Passed(&client),
+                     base::Passed(&options)),
+      base::BindOnce(&WebBluetoothServiceImpl::OnDiscoverySessionError,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebBluetoothServiceImpl::OnStartDiscoverySession(
@@ -1381,10 +1384,10 @@ void WebBluetoothServiceImpl::RequestDeviceImpl(
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   device_chooser_controller_->GetDevice(
       std::move(options),
-      base::Bind(&WebBluetoothServiceImpl::OnGetDeviceSuccess,
-                 weak_ptr_factory_.GetWeakPtr(), copyable_callback),
-      base::Bind(&WebBluetoothServiceImpl::OnGetDeviceFailed,
-                 weak_ptr_factory_.GetWeakPtr(), copyable_callback));
+      base::BindOnce(&WebBluetoothServiceImpl::OnGetDeviceSuccess,
+                     weak_ptr_factory_.GetWeakPtr(), copyable_callback),
+      base::BindOnce(&WebBluetoothServiceImpl::OnGetDeviceFailed,
+                     weak_ptr_factory_.GetWeakPtr(), copyable_callback));
 }
 
 void WebBluetoothServiceImpl::RemoteServerGetPrimaryServicesImpl(

@@ -10,11 +10,6 @@
     "args": ["--enable-accelerated-2d-canvas"]
   },
   {
-    "prefix": "disable-deferred-rendering",
-    "bases": ["fast/canvas"],
-    "args": ["--disable-features=CanvasAlwaysDeferral"]
-  },
-  {
     "prefix": "isolated_world_csp",
     "bases": ["http/tests/security/isolatedWorld"],
     "args": ["--enable-blink-features=IsolatedWorldCSP"]

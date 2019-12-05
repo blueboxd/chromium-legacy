@@ -44,7 +44,6 @@
 #include "components/viz/test/test_latest_local_surface_id_lookup_delegate.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/compositor/test/test_image_transport_factory.h"
-#include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
 #include "content/browser/renderer_host/delegated_frame_host_client_aura.h"
@@ -243,10 +242,8 @@ class FakeDelegatedFrameHostClientAura : public DelegatedFrameHostClientAura {
 
 class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
  public:
-  FakeRenderWidgetHostViewAura(RenderWidgetHost* widget,
-                               bool is_guest_view_hack)
-      : RenderWidgetHostViewAura(widget, is_guest_view_hack),
-        is_guest_view_hack_(is_guest_view_hack),
+  FakeRenderWidgetHostViewAura(RenderWidgetHost* widget)
+      : RenderWidgetHostViewAura(widget),
         delegated_frame_host_client_(
             new FakeDelegatedFrameHostClientAura(this)) {
     InstallDelegatedFrameHostClient(
@@ -310,15 +307,12 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
         metadata);
   }
 
-  bool is_guest_view_hack() { return is_guest_view_hack_; }
-
   gfx::Size last_frame_size_;
   FakeWindowEventDispatcher* dispatcher_;
   std::unique_ptr<FakeRendererCompositorFrameSink>
       renderer_compositor_frame_sink_;
 
  private:
-  bool is_guest_view_hack_;
   FakeDelegatedFrameHostClientAura* delegated_frame_host_client_;
   mojo::Remote<viz::mojom::CompositorFrameSinkClient>
       renderer_compositor_frame_sink_remote_;
@@ -487,8 +481,7 @@ void TestScopedKeyboardHook::LockSpecificKey(ui::DomCode dom_code) {
 class RenderWidgetHostViewAuraTest : public testing::Test {
  public:
   RenderWidgetHostViewAuraTest()
-      : widget_host_uses_shutdown_to_destroy_(false),
-        is_guest_view_hack_(false) {
+      : widget_host_uses_shutdown_to_destroy_(false) {
     ui::GestureConfiguration::GetInstance()->set_scroll_debounce_interval_in_ms(
         0);
   }
@@ -508,25 +501,22 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
         false /* should_register_frame_sink_id */);
   }
 
-  FakeRenderWidgetHostViewAura* CreateView(bool is_guest_view_hack) {
+  FakeRenderWidgetHostViewAura* CreateView() {
     int32_t routing_id = process_host_->GetNextRoutingID();
     delegates_.push_back(base::WrapUnique(new MockRenderWidgetHostDelegate));
     auto* widget_host = MockRenderWidgetHostImpl::Create(
         delegates_.back().get(), process_host_, routing_id);
     delegates_.back()->set_widget_host(widget_host);
     widget_host->Init();
-    return new FakeRenderWidgetHostViewAura(widget_host, is_guest_view_hack);
+    return new FakeRenderWidgetHostViewAura(widget_host);
   }
 
   void DestroyView(FakeRenderWidgetHostViewAura* view) {
     // For guest-views, |view_| is not the view used by |widget_host_|.
-    bool is_guest_view_hack = view->is_guest_view_hack();
     RenderWidgetHostImpl* host = view->host();
-    if (!is_guest_view_hack)
-      EXPECT_EQ(view, host->GetView());
+    EXPECT_EQ(view, host->GetView());
     view->Destroy();
-    if (!is_guest_view_hack)
-      EXPECT_EQ(nullptr, host->GetView());
+    EXPECT_EQ(nullptr, host->GetView());
 
     if (widget_host_uses_shutdown_to_destroy_)
       host->ShutdownAndDestroyWidget(true);
@@ -554,13 +544,12 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     parent_host_ = MockRenderWidgetHostImpl::Create(delegates_.back().get(),
                                                     process_host_, routing_id);
     delegates_.back()->set_widget_host(parent_host_);
-    parent_view_ =
-        new RenderWidgetHostViewAura(parent_host_, is_guest_view_hack_);
+    parent_view_ = new RenderWidgetHostViewAura(parent_host_);
     parent_view_->InitAsChild(nullptr);
     aura::client::ParentWindowWithContext(parent_view_->GetNativeView(),
                                           aura_test_helper_->root_window(),
                                           gfx::Rect());
-    view_ = CreateView(is_guest_view_hack_);
+    view_ = CreateView();
     widget_host_ = static_cast<MockRenderWidgetHostImpl*>(view_->host());
     // Set the mouse_wheel_phase_handler_ timer timeout to 100ms.
     view_->event_handler()->set_mouse_wheel_wheel_phase_handler_timeout(
@@ -670,8 +659,6 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   // If true, then calls RWH::Shutdown() instead of deleting RWH.
   bool widget_host_uses_shutdown_to_destroy_;
 
-  bool is_guest_view_hack_;
-
   BrowserTaskEnvironment task_environment_;
   std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
   std::unique_ptr<BrowserContext> browser_context_;
@@ -716,24 +703,10 @@ class RenderWidgetHostViewGuestAuraTest : public RenderWidgetHostViewAuraTest {
     set_widget_host_uses_shutdown_to_destroy(true);
   }
 
-  // We explicitly invoke SetUp to allow gesture debounce customization.
-  void SetUp() override {
-    is_guest_view_hack_ = true;
-
-    RenderWidgetHostViewAuraTest::SetUp();
-
-    guest_view_weak_ = (RenderWidgetHostViewGuest::Create(widget_host_, nullptr,
-                                                          view_->GetWeakPtr()))
-                           ->GetWeakPtr();
-  }
-
   void TearDown() override {
     // Internal override to do nothing, we clean up ourselves in the test body.
     // This helps us test that |guest_view_weak_| does not leak.
   }
-
- protected:
-  base::WeakPtr<RenderWidgetHostViewBase> guest_view_weak_;
 
  private:
 
@@ -3528,7 +3501,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
                                                 process_host_, routing_id);
     delegates_.back()->set_widget_host(hosts[i]);
     hosts[i]->Init();
-    views[i] = new FakeRenderWidgetHostViewAura(hosts[i], false);
+    views[i] = new FakeRenderWidgetHostViewAura(hosts[i]);
     // Prevent frames from being skipped due to resize, this test does not
     // run a UI compositor so the DelegatedFrameHost doesn't get the chance
     // to release its resize lock once it receives a frame of the expected
@@ -3642,7 +3615,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
                                                 process_host_, routing_id);
     delegates_.back()->set_widget_host(hosts[i]);
     hosts[i]->Init();
-    views[i] = new FakeRenderWidgetHostViewAura(hosts[i], false);
+    views[i] = new FakeRenderWidgetHostViewAura(hosts[i]);
     views[i]->InitAsChild(nullptr);
     aura::client::ParentWindowWithContext(
         views[i]->GetNativeView(),
@@ -5259,14 +5232,6 @@ TEST_F(RenderWidgetHostViewAuraTest, VirtualKeyboardFocusEnsureCaretInRect) {
 }
 #endif  // defined(OS_CHROMEOS)
 
-// Tests that when view initiated shutdown happens (i.e. RWHView is deleted
-// before RWH), we clean up properly and don't leak the RWHVGuest.
-TEST_F(RenderWidgetHostViewGuestAuraTest, GuestViewDoesNotLeak) {
-  view_->InitAsChild(nullptr);
-  TearDownEnvironment();
-  ASSERT_FALSE(guest_view_weak_.get());
-}
-
 // Tests that invalid touch events are consumed and handled
 // synchronously.
 TEST_F(RenderWidgetHostViewAuraTest,
@@ -5900,7 +5865,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TakeFallbackContent) {
   view_->Show();
 
   // Create and initialize the second view.
-  FakeRenderWidgetHostViewAura* view2 = CreateView(false);
+  FakeRenderWidgetHostViewAura* view2 = CreateView();
   view2->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
       view2->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
@@ -5933,7 +5898,7 @@ class RenderWidgetHostViewAuraWithViewHarnessTest
     delete contents()->GetRenderViewHost()->GetWidget()->GetView();
     // This instance is destroyed in the TearDown method below.
     view_ = new RenderWidgetHostViewAura(
-        contents()->GetRenderViewHost()->GetWidget(), false);
+        contents()->GetRenderViewHost()->GetWidget());
   }
 
   void TearDown() override {

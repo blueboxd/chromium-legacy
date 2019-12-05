@@ -49,21 +49,34 @@ template("chrome_bundle") {
     _package_id -= 1
   }
 
+  # TODO(https://crbug.com/1027573): Remove this when all targets are explicit
+  # about their configuration.
+  if (defined(invoker.include_32_bit_webview)) {
+    not_needed(invoker, [ "include_32_bit_webview" ])
+  }
+  if (android_64bit_target_cpu) {
+    _is_64_bit_browser =
+        defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser
+    if (_is_64_bit_browser) {
+      _include_32_bit_webview = defined(invoker.include_32_bit_webview) &&
+                                invoker.include_32_bit_webview
+    } else {
+      _include_64_bit_webview = !defined(invoker.include_64_bit_webview) ||
+                                invoker.include_64_bit_webview
+    }
+  }
+
   # Determine whether the bundle has native libraries for both the primary and
   # the secondary ABI. This is the case if we package WebView with the
   # complementary ABI of the browser.
-  _is_64_bit_browser =
-      defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser
-  _include_32_bit_webview =
-      defined(invoker.include_32_bit_webview) && invoker.include_32_bit_webview
-  _is_multi_abi = false
-  if (_is_64_bit_browser) {
-    _is_multi_abi = _include_32_bit_webview
+  if (android_64bit_target_cpu) {
+    if (_is_64_bit_browser) {
+      _is_multi_abi = _include_32_bit_webview
+    } else {
+      _is_multi_abi = _include_64_bit_webview
+    }
   } else {
-    assert(!_include_32_bit_webview)
-
-    # WebView is included with 64bit ABI if |android_64bit_target_cpu| is true.
-    _is_multi_abi = android_64bit_target_cpu
+    _is_multi_abi = false
   }
 
   android_app_bundle(target_name) {

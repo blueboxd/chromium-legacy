@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/debug/asan_invalid_access.h"
 #include "base/debug/profiler.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/sanitizer_buildflags.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -216,6 +217,18 @@ bool HandleDebugURL(const GURL& url,
   if (url == kChromeUIPpapiFlashCrashURL || url == kChromeUIPpapiFlashHangURL) {
     base::PostTask(FROM_HERE, {BrowserThread::IO},
                    base::BindOnce(&HandlePpapiFlashDebugURL, url));
+    return true;
+  }
+
+  if (url == kChromeUIMemoryPressureCriticalURL) {
+    base::MemoryPressureListener::NotifyMemoryPressure(
+        base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+    return true;
+  }
+
+  if (url == kChromeUIMemoryPressureModerateURL) {
+    base::MemoryPressureListener::NotifyMemoryPressure(
+        base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
     return true;
   }
 

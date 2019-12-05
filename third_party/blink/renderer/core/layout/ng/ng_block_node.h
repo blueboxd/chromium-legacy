@@ -26,7 +26,6 @@ class NGPhysicalContainerFragment;
 struct MinMaxSize;
 struct NGBoxStrut;
 struct NGLayoutAlgorithmParams;
-struct LogicalOffset;
 
 // Represents a node to be laid out.
 class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
@@ -134,10 +133,6 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   // Called if this is an out-of-flow block which needs to be
   // positioned with legacy layout.
   void UseLegacyOutOfFlowPositioning() const;
-
-  // Save static position for legacy AbsPos layout.
-  void SaveStaticOffsetForLegacy(const LogicalOffset&,
-                                 const LayoutObject* offset_container);
 
   // Write back resolved margins to legacy.
   void StoreMargins(const NGConstraintSpace&, const NGBoxStrut& margins);

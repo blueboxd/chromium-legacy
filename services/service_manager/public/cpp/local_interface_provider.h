@@ -16,6 +16,8 @@ namespace service_manager {
 
 class LocalInterfaceProvider {
  public:
+  virtual ~LocalInterfaceProvider() = default;
+
   // Binds |ptr| to an implementation of Interface in the remote application.
   // |ptr| can immediately be used to start sending requests to the remote
   // interface.

@@ -259,6 +259,9 @@ class ShelfView::FadeOutAnimationDelegate : public gfx::AnimationDelegate {
     view_->layer()->ScheduleDraw();
   }
   void AnimationEnded(const Animation* animation) override {
+    // Remove the view which has been faded away.
+    view_.reset();
+
     shelf_view_->OnFadeOutAnimationEnded();
   }
   void AnimationCanceled(const Animation* animation) override {}
@@ -381,7 +384,6 @@ void ShelfView::Init() {
   // We'll layout when our bounds change.
 
   if (chromeos::switches::ShouldShowScrollableShelf()) {
-    UpdateVisibleIndice();
     overflow_button_->SetVisible(false);
   } else if (!is_overflow_mode()) {
     // Add the main shelf view as ShelfTooltipDelegate when scrollable shelf
@@ -2213,16 +2215,6 @@ void ShelfView::ShelfItemAdded(int model_index) {
   // Add child view so it has the same ordering as in the |view_model_|.
   AddChildViewAt(view, model_index);
 
-  // When the scrollable shelf is enabled, |last_visible_index_| is always the
-  // index to the last shelf item.
-  if (chromeos::switches::ShouldShowScrollableShelf()) {
-    UpdateVisibleIndice();
-
-    // Call PreferredSizeChanged() to notify container to re-layout before
-    // starting the animation of the shelf item addition.
-    PreferredSizeChanged();
-  }
-
   // Give the button its ideal bounds. That way if we end up animating the
   // button before this animation completes it doesn't appear at some random
   // spot (because it was in the middle of animating from 0,0 0x0 to its
@@ -2256,11 +2248,6 @@ void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
   // If not moved, |view| will be deleted once out of scope.
   std::unique_ptr<views::View> view(view_model_->view_at(model_index));
   view_model_->Remove(model_index);
-
-  // When the scrollable shelf is enabled, |last_visible_index_| is always the
-  // index to the last shelf item.
-  if (chromeos::switches::ShouldShowScrollableShelf())
-    UpdateVisibleIndice();
 
   {
     base::AutoReset<bool> cancelling_drag(&cancelling_drag_model_changed_,
@@ -2628,10 +2615,16 @@ base::string16 ShelfView::GetTitleForChildView(const views::View* view) const {
   return item ? item->title : base::string16();
 }
 
-void ShelfView::UpdateVisibleIndice() {
+bool ShelfView::UpdateVisibleIndices() {
   DCHECK_EQ(true, chromeos::switches::ShouldShowScrollableShelf());
+  const int previous_first_visible_index = first_visible_index_;
+  const int previous_last_visible_index = last_visible_index_;
+
   first_visible_index_ = view_model()->view_size() == 0 ? -1 : 0;
   last_visible_index_ = model_->item_count() - 1;
+
+  return (first_visible_index_ != previous_first_visible_index) ||
+         (last_visible_index_ != previous_last_visible_index);
 }
 
 }  // namespace ash

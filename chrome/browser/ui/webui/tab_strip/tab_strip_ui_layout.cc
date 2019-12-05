@@ -18,6 +18,7 @@ TabStripUILayout TabStripUILayout::CalculateForWebViewportSize(
   TabStripUILayout layout;
   layout.padding_around_tab_list = 16;
   layout.tab_title_height = 40;
+  layout.viewport_width = viewport_size.width();
 
   if (viewport_size.IsEmpty()) {
     layout.tab_thumbnail_size =
@@ -51,6 +52,8 @@ base::Value TabStripUILayout::AsDictionary() const {
                     base::NumberToString(tab_thumbnail_size.width()) + "px");
   dict.SetStringKey("--tabstrip-tab-thumbnail-height",
                     base::NumberToString(tab_thumbnail_size.height()) + "px");
+  dict.SetStringKey("--tabstrip-viewport-width",
+                    base::NumberToString(viewport_width) + "px");
   return dict;
 }
 

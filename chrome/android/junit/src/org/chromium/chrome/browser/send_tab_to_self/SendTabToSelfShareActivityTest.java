@@ -62,14 +62,6 @@ public class SendTabToSelfShareActivityTest {
 
     private Profile mProfile;
 
-    private class SendTabToSelfShareActivityForTest extends SendTabToSelfShareActivity {
-        @Override
-        BottomSheetContent createBottomSheetContent(
-                ChromeActivity activity, NavigationEntry entry) {
-            return mBottomSheetContent;
-        }
-    }
-
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -109,7 +101,8 @@ public class SendTabToSelfShareActivityTest {
         // Setup the mocked object chain to get the bottom controller.
         when(mChromeActivity.getBottomSheetController()).thenReturn(mBottomSheetController);
 
-        SendTabToSelfShareActivityForTest shareActivity = new SendTabToSelfShareActivityForTest();
+        SendTabToSelfShareActivity shareActivity = new SendTabToSelfShareActivity();
+        SendTabToSelfShareActivity.setBottomSheetContentForTesting(mBottomSheetContent);
         shareActivity.handleShareAction(mChromeActivity);
         verify(mBottomSheetController).requestShowContent(any(BottomSheetContent.class), eq(true));
     }

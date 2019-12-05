@@ -92,9 +92,6 @@ template("chrome_extra_paks") {
       "$root_gen_dir/chrome/browser_resources.pak",
       "$root_gen_dir/chrome/chrome_unscaled_resources.pak",
       "$root_gen_dir/chrome/common_resources.pak",
-      "$root_gen_dir/chrome/invalidations_resources.pak",
-      "$root_gen_dir/chrome/net_internals_resources.pak",
-      "$root_gen_dir/chrome/quota_internals_resources.pak",
       "$root_gen_dir/components/autofill/core/browser/autofill_address_rewriter_resources.pak",
       "$root_gen_dir/components/components_resources.pak",
       "$root_gen_dir/content/browser/tracing/tracing_resources.pak",
@@ -107,9 +104,6 @@ template("chrome_extra_paks") {
     deps = [
       "//chrome/app/theme:chrome_unscaled_resources",
       "//chrome/browser:resources",
-      "//chrome/browser/resources:invalidations_resources",
-      "//chrome/browser/resources:net_internals_resources",
-      "//chrome/browser/resources:quota_internals_resources",
       "//chrome/common:resources",
       "//components/autofill/core/browser:autofill_address_rewriter_resources",
       "//components/resources",
@@ -127,10 +121,7 @@ template("chrome_extra_paks") {
       sources += invoker.additional_paks
     }
 
-    if (is_android) {
-      sources += [ "$root_gen_dir/chrome/webapks_ui_resources.pak" ]
-      deps += [ "//chrome/browser/resources:webapks_ui_resources" ]
-    } else {
+    if (!is_android) {
       # New paks should be added here by default.
       sources += [
         "$root_gen_dir/chrome/bookmarks_resources.pak",

@@ -151,6 +151,15 @@ std::ostream& operator<<(
     case ResultCode::kErrorTimeoutWaitingForClientAppMetadata:
       stream << "[Error: Timeout waiting for ClientAppMetadata]";
       break;
+    case ResultCode::kErrorUserKeyPairCreationFailed:
+      stream << "[Error: Failed to create user key pair]";
+      break;
+    case ResultCode::kErrorLegacyMasterKeyCreationFailed:
+      stream << "[Error: Failed to create legacy master key]";
+      break;
+    case ResultCode::kErrorDeviceSyncBetterTogetherKeyCreationFailed:
+      stream << "[Error: Failed to create DeviceSync:BetterTogether key pair]";
+      break;
   }
 
   return stream;

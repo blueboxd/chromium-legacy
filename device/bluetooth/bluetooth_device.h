@@ -371,7 +371,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // The ConnectErrorCallback is used for methods that can fail with an error,
   // passed back as an error code argument to this callback.
   // In the success case this callback is not called.
-  typedef base::Callback<void(enum ConnectErrorCode)> ConnectErrorCallback;
+  using ConnectErrorCallback = base::OnceCallback<void(enum ConnectErrorCode)>;
 
   typedef base::Callback<void(const ConnectionInfo&)> ConnectionInfoCallback;
 
@@ -423,8 +423,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // process and release the pairing delegate if user cancels the pairing and
   // closes the pairing UI.
   virtual void Connect(PairingDelegate* pairing_delegate,
-                       const base::Closure& callback,
-                       const ConnectErrorCallback& error_callback) = 0;
+                       base::OnceClosure callback,
+                       ConnectErrorCallback error_callback) = 0;
 
   // Pairs the device. This method triggers pairing unconditially, i.e. it
   // ignores the |IsPaired()| value.
@@ -433,8 +433,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // implemented on ChromeOS, Linux and Windows 10. On Windows, only pairing
   // with a pin code is currently supported.
   virtual void Pair(PairingDelegate* pairing_delegate,
-                    const base::Closure& callback,
-                    const ConnectErrorCallback& error_callback);
+                    base::OnceClosure callback,
+                    ConnectErrorCallback error_callback);
 
   // Sends the PIN code |pincode| to the remote device during pairing.
   //
@@ -516,10 +516,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // returned BluetoothGattConnection will be automatically marked as inactive.
   // To monitor the state of the connection, observe the
   // BluetoothAdapter::Observer::DeviceChanged method.
-  typedef base::Callback<void(std::unique_ptr<BluetoothGattConnection>)>
-      GattConnectionCallback;
-  virtual void CreateGattConnection(const GattConnectionCallback& callback,
-                                    const ConnectErrorCallback& error_callback);
+  using GattConnectionCallback =
+      base::OnceCallback<void(std::unique_ptr<BluetoothGattConnection>)>;
+  virtual void CreateGattConnection(GattConnectionCallback callback,
+                                    ConnectErrorCallback error_callback);
 
   // Set the gatt services discovery complete flag for this device.
   virtual void SetGattServicesDiscoveryComplete(bool complete);

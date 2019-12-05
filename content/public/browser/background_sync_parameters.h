@@ -32,6 +32,9 @@ struct CONTENT_EXPORT BackgroundSyncParameters {
   // (periodic)sync events have been fired.
   bool keep_browser_awake_till_events_complete;
 
+  // True if the manager should skip checking for permissions.
+  bool skip_permissions_check_for_testing;
+
   // The number of attempts the BackgroundSyncManager will make to fire an
   // event before giving up.
   int max_sync_attempts;

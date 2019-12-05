@@ -913,6 +913,7 @@ void OverviewGrid::OnDisplayMetricsChanged() {
   if (split_view_drag_indicators_)
     split_view_drag_indicators_->OnDisplayBoundsChanged();
 
+  UpdateCannotSnapWarningVisibility();
   // In case of split view mode, the grid bounds and item positions will be
   // updated in |OnSplitViewDividerPositionChanged|.
   if (SplitViewController::Get(root_window_)->InSplitViewMode())
@@ -955,11 +956,11 @@ void OverviewGrid::OnSplitViewStateChanged(
     return;
   }
 
-  // Adjust the grid bounds and update the cannot snap warnings.
+  // Update the cannot snap warnings and adjust the grid bounds.
+  UpdateCannotSnapWarningVisibility();
   SetBoundsAndUpdatePositions(
       GetGridBoundsInScreen(root_window_, /*divider_changed=*/false),
       /*ignored_items=*/{}, /*animate=*/false);
-  UpdateCannotSnapWarningVisibility();
 
   // Activate the overview focus window, to match the behavior of entering
   // overview mode in the beginning.

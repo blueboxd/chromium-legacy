@@ -516,7 +516,13 @@ cr.define('policy', function() {
                 },
                 value.policies[name]));
 
-        return {name: value.name, id: value.id, policies};
+        return {
+          name: value.forSigninScreen ?
+              `${value.name} [${loadTimeData.getString('signinProfile')}]` :
+              value.name,
+          id: value.id,
+          policies
+        };
       });
 
       policyGroups.forEach(group => this.createOrUpdatePolicyTable(group));

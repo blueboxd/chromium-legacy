@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "components/infobars/core/infobar_delegate.h"
-#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/animation_delegate_notifier.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -47,6 +47,8 @@ class InfoBar : public gfx::AnimationDelegate {
   // only be called once as there's no way to extract an infobar from its owner
   // without deleting it, for reparenting in another tab.
   void SetOwner(InfoBarManager* owner);
+
+  void SetNotifier(std::unique_ptr<gfx::AnimationDelegate> notifier);
 
   // Makes the infobar visible.  If |animate| is true, the infobar is then
   // animated to full size.
@@ -107,6 +109,8 @@ class InfoBar : public gfx::AnimationDelegate {
   InfoBarManager* owner_;
   std::unique_ptr<InfoBarDelegate> delegate_;
   InfoBarContainer* container_;
+
+  std::unique_ptr<gfx::AnimationDelegate> notifier_;
   gfx::SlideAnimation animation_;
 
   // The current and target heights.

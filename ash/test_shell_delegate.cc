@@ -33,6 +33,9 @@ bool TestShellDelegate::CanGoBack(gfx::NativeWindow window) const {
   return can_go_back_;
 }
 
+void TestShellDelegate::BindNavigableContentsFactory(
+    mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver) {}
+
 void TestShellDelegate::SetCanGoBack(bool can_go_back) {
   can_go_back_ = can_go_back;
 }

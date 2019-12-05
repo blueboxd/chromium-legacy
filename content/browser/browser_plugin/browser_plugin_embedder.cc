@@ -155,17 +155,6 @@ void BrowserPluginEmbedder::OnAttach(
         bad_message::BPE_UNEXPECTED_MESSAGE_BEFORE_BPGM_CREATION);
     return;
   }
-  WebContents* guest_web_contents =
-      GetBrowserPluginGuestManager()->GetGuestByInstanceID(
-          render_frame_host->GetProcess()->GetID(),
-          browser_plugin_instance_id);
-  if (!guest_web_contents)
-    return;
-  BrowserPluginGuest* guest = static_cast<WebContentsImpl*>(guest_web_contents)
-                                  ->GetBrowserPluginGuest();
-  guest->Attach(browser_plugin_instance_id,
-                static_cast<WebContentsImpl*>(web_contents()),
-                params);
 }
 
 bool BrowserPluginEmbedder::HandleKeyboardEvent(

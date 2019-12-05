@@ -18,7 +18,6 @@
 #include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
 #include "chrome/browser/permissions/mock_permission_request.h"
 #include "chrome/browser/permissions/permission_context_base.h"
-#include "chrome/browser/permissions/permission_features.h"
 #include "chrome/browser/permissions/permission_request_impl.h"
 #include "chrome/browser/permissions/permission_request_manager_test_api.h"
 #include "chrome/browser/permissions/permission_util.h"

@@ -18,8 +18,8 @@
 #include "net/base/io_buffer.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace net {
 class HttpResponseInfo;
@@ -127,7 +127,7 @@ class AppCacheUpdateJob::UpdateURLLoaderRequest
   base::WeakPtr<StoragePartitionImpl> partition_;
 
   network::ResourceRequest request_;
-  network::ResourceResponseHead response_;
+  network::mojom::URLResponseHeadPtr response_;
   network::URLLoaderCompletionStatus response_status_;
   // Response details.
   std::unique_ptr<net::HttpResponseInfo> http_response_info_;

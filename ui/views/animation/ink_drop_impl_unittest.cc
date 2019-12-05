@@ -324,7 +324,7 @@ using InkDropImplCommonAutoHighlightTest = InkDropImplAutoHighlightTest;
 // Note: First argument is optional and intentionally left blank.
 // (it's a prefix for the generated test cases)
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     InkDropImplCommonAutoHighlightTest,
     testing::Values(InkDropImpl::AutoHighlightMode::NONE,
                     InkDropImpl::AutoHighlightMode::HIDE_ON_RIPPLE,
@@ -371,7 +371,7 @@ TEST_P(InkDropImplCommonAutoHighlightTest,
 using InkDropImplNoAutoHighlightTest = InkDropImplAutoHighlightTest;
 // Note: First argument is optional and intentionally left blank.
 // (it's a prefix for the generated test cases)
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          InkDropImplNoAutoHighlightTest,
                          testing::Values(InkDropImpl::AutoHighlightMode::NONE));
 
@@ -408,7 +408,7 @@ using InkDropImplHideAutoHighlightTest = InkDropImplAutoHighlightTest;
 // Note: First argument is optional and intentionally left blank.
 // (it's a prefix for the generated test cases)
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     InkDropImplHideAutoHighlightTest,
     testing::Values(InkDropImpl::AutoHighlightMode::HIDE_ON_RIPPLE));
 
@@ -568,7 +568,7 @@ using InkDropImplShowAutoHighlightTest = InkDropImplAutoHighlightTest;
 // Note: First argument is optional and intentionally left blank.
 // (it's a prefix for the generated test cases)
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     InkDropImplShowAutoHighlightTest,
     testing::Values(InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE));
 

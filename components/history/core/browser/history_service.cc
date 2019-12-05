@@ -491,10 +491,8 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFaviconsForURL(
     favicon_base::FaviconResultsCallback callback,
     base::CancelableTaskTracker* tracker) {
   TRACE_EVENT0("browser", "HistoryService::GetFaviconsForURL");
-  // TODO(crbug.com/1009795): Return the CHECKs to DCHECKs after the bug is
-  // fixed.
-  CHECK(thread_checker_.CalledOnValidThread());
-  CHECK(backend_task_runner_) << "History service being called after cleanup";
+  DCHECK(backend_task_runner_) << "History service being called after cleanup";
+  DCHECK(thread_checker_.CalledOnValidThread());
   return tracker->PostTaskAndReplyWithResult(
       backend_task_runner_.get(), FROM_HERE,
       base::BindOnce(&HistoryBackend::GetFaviconsForURL, history_backend_,
@@ -642,10 +640,8 @@ void HistoryService::SetOnDemandFavicons(
     const GURL& icon_url,
     const std::vector<SkBitmap>& bitmaps,
     base::OnceCallback<void(bool)> callback) {
-  // TODO(crbug.com/1009795): Return the CHECKs to DCHECKs after the bug is
-  // fixed.
-  CHECK(thread_checker_.CalledOnValidThread());
-  CHECK(backend_task_runner_) << "History service being called after cleanup";
+  DCHECK(backend_task_runner_) << "History service being called after cleanup";
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (history_client_ && !history_client_->CanAddURL(page_url)) {
     std::move(callback).Run(false);
     return;

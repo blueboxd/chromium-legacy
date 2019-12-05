@@ -42,13 +42,13 @@ function fillYouTubePlaceholders() {
 }
 
 function showLoadingIndicator(isLastPage) {
-  document.getElementById('loadingIndicator').className =
+  document.getElementById('loading-indicator').className =
       isLastPage ? 'hidden' : 'visible';
 }
 
 // Sets the title.
 function setTitle(title) {
-  const holder = document.getElementById('titleHolder');
+  const holder = document.getElementById('title-holder');
 
   holder.textContent = title;
   document.title = title;
@@ -143,17 +143,18 @@ function updateSlider(position) {
   document.documentElement.style.setProperty(
       '--fontSizePercent', (position / 9 * 100) + '%');
   for (let i = 0; i < supportedTextSizes.length; i++) {
-    const option = document.querySelector('.tickmarks option[value="' + i + '"]');
+    const option =
+        document.querySelector('.tickmarks option[value="' + i + '"]');
     if (!option) {
       continue;
     }
 
     const optionClasses = option.classList;
-    removeAll(optionClasses, ['beforeThumb', 'afterThumb']);
+    removeAll(optionClasses, ['before-thumb', 'after-thumb']);
     if (i < position) {
-      optionClasses.add('beforeThumb');
+      optionClasses.add('before-thumb');
     } else {
-      optionClasses.add('afterThumb');
+      optionClasses.add('after-thumb');
     }
   }
 }
@@ -166,7 +167,7 @@ function updateSliderFromElement(element) {
 
 updateToolbarColor();
 maybeSetWebFont();
-updateSliderFromElement(document.querySelector('#fontSizeSelection'));
+updateSliderFromElement(document.querySelector('#font-size-selection'));
 
 const pincher = (function() {
   'use strict';
@@ -414,9 +415,9 @@ window.addEventListener('touchend', pincher.handleTouchEnd, {passive: false});
 window.addEventListener(
     'touchcancel', pincher.handleTouchCancel, {passive: false});
 
-document.querySelector('#settingsToggle').addEventListener('click', (e) => {
-  const dialog = document.querySelector('#settingsDialog');
-  const toggle = document.querySelector('#settingsToggle');
+document.querySelector('#settings-toggle').addEventListener('click', (e) => {
+  const dialog = document.querySelector('#settings-dialog');
+  const toggle = document.querySelector('#settings-toggle');
   if (dialog.open) {
     toggle.classList.remove('activated');
     dialog.close();
@@ -426,26 +427,28 @@ document.querySelector('#settingsToggle').addEventListener('click', (e) => {
   }
 });
 
-document.querySelector('#closeSettingsButton')
+document.querySelector('#close-settings-button')
     .addEventListener('click', (e) => {
-      document.querySelector('#settingsToggle').classList.remove('activated');
-      document.querySelector('#settingsDialog').close();
+      document.querySelector('#settings-toggle').classList.remove('activated');
+      document.querySelector('#settings-dialog').close();
     });
 
-document.querySelector('#themeSelection').addEventListener('change', (e) => {
+document.querySelector('#theme-selection').addEventListener('change', (e) => {
   useTheme(e.target.value);
 });
 
-document.querySelector('#fontSizeSelection').addEventListener('change', (e) => {
-  document.body.style.fontSize = supportedTextSizes[e.target.value] + 'px';
-  updateSlider(e.target.value);
-});
+document.querySelector('#font-size-selection')
+    .addEventListener('change', (e) => {
+      document.body.style.fontSize = supportedTextSizes[e.target.value] + 'px';
+      updateSlider(e.target.value);
+    });
 
-document.querySelector('#fontSizeSelection').addEventListener('input', (e) => {
-  updateSlider(e.target.value);
-});
+document.querySelector('#font-size-selection')
+    .addEventListener('input', (e) => {
+      updateSlider(e.target.value);
+    });
 
-document.querySelector('#fontFamilySelection')
+document.querySelector('#font-family-selection')
     .addEventListener('change', (e) => {
       useFontFamily(e.target.value);
     });

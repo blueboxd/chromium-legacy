@@ -9,6 +9,7 @@ import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.base.Supplier;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -24,7 +25,6 @@ import org.chromium.chrome.browser.tab.TabParentIntent;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tab_activity_glue.ReparentingTask;
-import org.chromium.chrome.browser.tab_activity_glue.TabDelegateFactoryImpl;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -45,12 +45,15 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
     private WindowAndroid mNativeWindow;
     private TabModel mTabModel;
     private TabModelOrderController mOrderController;
+    private Supplier<TabDelegateFactory> mTabDelegateFactorySupplier;
 
     public ChromeTabCreator(ChromeActivity activity, WindowAndroid nativeWindow,
-            StartupTabPreloader startupTabPreloader, boolean incognito) {
+            StartupTabPreloader startupTabPreloader,
+            Supplier<TabDelegateFactory> tabDelegateFactory, boolean incognito) {
         mActivity = activity;
         mStartupTabPreloader = startupTabPreloader;
         mNativeWindow = nativeWindow;
+        mTabDelegateFactorySupplier = tabDelegateFactory;
         mIncognito = incognito;
     }
 
@@ -383,7 +386,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
      * @return The default tab delegate factory to be used if creating new tabs w/o parents.
      */
     public TabDelegateFactory createDefaultTabDelegateFactory() {
-        return new TabDelegateFactoryImpl(mActivity);
+        return mTabDelegateFactorySupplier != null ? mTabDelegateFactorySupplier.get() : null;
     }
 
     /**

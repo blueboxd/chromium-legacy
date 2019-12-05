@@ -33,7 +33,17 @@ class TrialComparisonCertVerifierController;
 
 namespace net {
 class ClientCertStore;
-}
+
+// Enum that specifies which profiles are allowed to do
+// ambient authentication.
+enum class AmbientAuthAllowedProfileTypes {
+  REGULAR_ONLY = 0,
+  INCOGNITO_AND_REGULAR = 1,
+  GUEST_AND_REGULAR = 2,
+  ALL = 3,
+};
+
+}  // namespace net
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -94,7 +104,7 @@ class ProfileNetworkContextService
       ProfileNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest,
       Test);
 
-  friend class AmbientAuthenticationTest;
+  friend class AmbientAuthenticationTestWithPolicy;
 
   // Checks |quic_allowed_|, and disables QUIC if needed.
   void DisableQuicIfNotAllowed();

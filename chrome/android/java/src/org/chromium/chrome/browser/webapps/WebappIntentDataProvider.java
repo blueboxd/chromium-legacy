@@ -5,11 +5,15 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 
 import androidx.annotation.Nullable;
 import androidx.browser.customtabs.CustomTabsIntent;
 
+import org.chromium.base.ContextUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.ui.widget.TintedDrawable;
 
 /**
  * Stores info about a web app.
@@ -17,6 +21,7 @@ import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProv
 public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider {
     private int mToolbarColor;
     private boolean mHasCustomToolbarColor;
+    private Drawable mCloseButtonIcon;
     private WebappExtras mWebappExtras;
     private WebApkExtras mWebApkExtras;
 
@@ -31,6 +36,8 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
             WebappExtras webappExtras, WebApkExtras webApkExtras) {
         mToolbarColor = toolbarColor;
         mHasCustomToolbarColor = hasCustomToolbarColor;
+        mCloseButtonIcon = TintedDrawable.constructTintedDrawable(
+                ContextUtils.getApplicationContext(), R.drawable.btn_close);
         mWebappExtras = webappExtras;
         mWebApkExtras = webApkExtras;
     }
@@ -43,6 +50,11 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
     @Override
     public boolean hasCustomToolbarColor() {
         return mHasCustomToolbarColor;
+    }
+
+    @Override
+    public Drawable getCloseButtonDrawable() {
+        return mCloseButtonIcon;
     }
 
     @Override

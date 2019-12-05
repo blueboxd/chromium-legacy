@@ -64,8 +64,14 @@ Status EvaluateScriptAndIgnoreResult(Session* session, std::string expression) {
   Status status = session->GetTargetWindow(&web_view);
   if (status.IsError())
     return status;
-  if (web_view->GetJavaScriptDialogManager()->IsDialogOpen())
-    return Status(kUnexpectedAlertOpen);
+  if (web_view->GetJavaScriptDialogManager()->IsDialogOpen()) {
+    std::string alert_text;
+    status =
+        web_view->GetJavaScriptDialogManager()->GetDialogMessage(&alert_text);
+    if (status.IsError())
+      return Status(kUnexpectedAlertOpen);
+    return Status(kUnexpectedAlertOpen, "{Alert text : " + alert_text + "}");
+  }
   std::string frame_id = session->GetCurrentFrameId();
   std::unique_ptr<base::Value> result;
   return web_view->EvaluateScript(frame_id, expression, &result);

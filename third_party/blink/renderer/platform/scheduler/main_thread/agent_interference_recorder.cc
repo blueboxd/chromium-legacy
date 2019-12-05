@@ -199,7 +199,7 @@ void AgentInterferenceRecorder::RecordHistogramForReadyTask(
   // Record the histogram if the task is associated with an agent and wasn't
   // blocked by a fence or by the TaskQueue being disabled.
   if (agent_cluster_id.is_empty() ||
-      enqueue_order < queue->GetLastUnblockEnqueueOrder()) {
+      enqueue_order < queue->GetEnqueueOrderAtWhichWeBecameUnblocked()) {
     return;
   }
 

@@ -36,7 +36,8 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.TAB_GROUPS_TAP_TO_SEE_ANOTHER_TAB_FEATURE,
         FeatureConstants.TAB_GROUPS_YOUR_TABS_ARE_TOGETHER_FEATURE,
         FeatureConstants.FEED_CARD_MENU_FEATURE, FeatureConstants.IDENTITY_DISC_FEATURE,
-        FeatureConstants.TAB_GROUPS_DRAG_AND_DROP_FEATURE})
+        FeatureConstants.TAB_GROUPS_DRAG_AND_DROP_FEATURE,
+        FeatureConstants.QUIET_NOTIFICATION_PROMPTS_FEATURE})
 @Retention(RetentionPolicy.SOURCE)
 public @interface FeatureConstants {
     String DOWNLOAD_PAGE_FEATURE = "IPH_DownloadPage";
@@ -126,4 +127,10 @@ public @interface FeatureConstants {
      * services" preferences.
      */
     String IDENTITY_DISC_FEATURE = "IPH_IdentityDisc";
+
+    /**
+     * An IPH feature showing up the first time the user is presented with the quieter version of
+     * the permission prompt (for notifications).
+     */
+    String QUIET_NOTIFICATION_PROMPTS_FEATURE = "IPH_QuietNotificationPrompts";
 }

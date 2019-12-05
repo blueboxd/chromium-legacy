@@ -5,11 +5,16 @@
 #include "chrome/browser/enterprise_reporting/policy_info.h"
 
 #include "base/files/file_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/policy/policy_conversions.h"
+#include "chrome/common/chrome_constants.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "components/policy/core/common/mock_policy_service.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_builder.h"
@@ -33,9 +38,17 @@ using ::testing::Eq;
 class PolicyInfoTest : public ::testing::Test {
  public:
   void SetUp() override {
-    TestingProfile::Builder builder;
-    builder.SetPolicyService(GetPolicyService());
-    profile_ = builder.Build();
+    profile_manager_ = std::make_unique<TestingProfileManager>(
+        TestingBrowserProcess::GetGlobal());
+    ASSERT_TRUE(profile_manager_->SetUp());
+    std::string test_profile_name = "test_profile";
+    profile_ = profile_manager_->CreateTestingProfile(
+        test_profile_name,
+        std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
+        base::UTF8ToUTF16(test_profile_name), 0, std::string(),
+        TestingProfile::TestingFactories(), base::Optional<bool>(),
+        GetPolicyService());
+    profile_manager_->CreateTestingProfile(chrome::kInitialProfile);
   }
 
   std::unique_ptr<policy::MockPolicyService> GetPolicyService() {
@@ -57,14 +70,15 @@ class PolicyInfoTest : public ::testing::Test {
     return policy_service;
   }
 
-  TestingProfile* profile() { return profile_.get(); }
+  TestingProfile* profile() { return profile_; }
   policy::PolicyMap* policy_map() { return &policy_map_; }
   policy::PolicyMap* extension_policy_map() { return &extension_policy_map_; }
   policy::MockPolicyService* policy_service() { return policy_service_; }
 
  private:
   content::BrowserTaskEnvironment task_environment_;
-  std::unique_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
+  TestingProfile* profile_ = nullptr;
   policy::PolicyMap policy_map_;
   policy::PolicyMap extension_policy_map_;
   policy::PolicyMap empty_policy_map_;

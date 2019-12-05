@@ -217,7 +217,8 @@ void IdleHelper::EndIdlePeriod() {
                      base::TimeTicks());
 }
 
-void IdleHelper::WillProcessTask(const base::PendingTask& pending_task) {
+void IdleHelper::WillProcessTask(const base::PendingTask& pending_task,
+                                 bool was_blocked_or_low_priority) {
   DCHECK(!is_shutdown_);
 }
 

@@ -149,7 +149,8 @@ GpuWatchdogThreadImplV1::GpuWatchdogTaskObserver::~GpuWatchdogTaskObserver() =
     default;
 
 void GpuWatchdogThreadImplV1::GpuWatchdogTaskObserver::WillProcessTask(
-    const base::PendingTask& pending_task) {
+    const base::PendingTask& pending_task,
+    bool was_blocked_or_low_priority) {
   watchdog_->CheckArmed();
 }
 

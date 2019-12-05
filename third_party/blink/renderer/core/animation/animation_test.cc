@@ -99,7 +99,7 @@ class AnimationAnimationTestNoCompositing : public RenderingTest {
   KeyframeEffectModelBase* MakeSimpleEffectModel() {
     PropertyHandle PropertyHandleOpacity(GetCSSPropertyOpacity());
     TransitionKeyframe* start_keyframe =
-        TransitionKeyframe::Create(PropertyHandleOpacity);
+        MakeGarbageCollected<TransitionKeyframe>(PropertyHandleOpacity);
     start_keyframe->SetValue(std::make_unique<TypedInterpolationValue>(
         CSSNumberInterpolationType(PropertyHandleOpacity),
         std::make_unique<InterpolableNumber>(1.0)));
@@ -110,7 +110,7 @@ class AnimationAnimationTestNoCompositing : public RenderingTest {
     start_keyframe->SetCompositorValue(
         MakeGarbageCollected<CompositorKeyframeDouble>(1.0));
     TransitionKeyframe* end_keyframe =
-        TransitionKeyframe::Create(PropertyHandleOpacity);
+        MakeGarbageCollected<TransitionKeyframe>(PropertyHandleOpacity);
     end_keyframe->SetValue(std::make_unique<TypedInterpolationValue>(
         CSSNumberInterpolationType(PropertyHandleOpacity),
         std::make_unique<InterpolableNumber>(0.0)));

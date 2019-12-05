@@ -12,7 +12,6 @@ mojom_component("mojom") {
   disable_variants = true
 
   sources = [
-    "constants.mojom",
     "navigable_contents.mojom",
     "navigable_contents_factory.mojom",
   ]

@@ -20,13 +20,13 @@ static void CopyVar(int var1, int* var2) {
 }
 
 TEST(CallbackHolderTest, SetAfterHold_Closure) {
-  CallbackHolder<base::Closure> cb;
+  CallbackHolder<base::OnceClosure> cb;
   EXPECT_TRUE(cb.IsNull());
 
   cb.HoldCallback();
 
   bool closure_called = false;
-  cb.SetCallback(base::Bind(&SetBool, &closure_called));
+  cb.SetCallback(base::BindOnce(&SetBool, &closure_called));
   EXPECT_FALSE(cb.IsNull());
 
   cb.RunOrHold();
@@ -39,11 +39,11 @@ TEST(CallbackHolderTest, SetAfterHold_Closure) {
 }
 
 TEST(CallbackHolderTest, HoldAfterSet_Closure) {
-  CallbackHolder<base::Closure> cb;
+  CallbackHolder<base::OnceClosure> cb;
   EXPECT_TRUE(cb.IsNull());
 
   bool closure_called = false;
-  cb.SetCallback(base::Bind(&SetBool, &closure_called));
+  cb.SetCallback(base::BindOnce(&SetBool, &closure_called));
   EXPECT_FALSE(cb.IsNull());
 
   cb.HoldCallback();
@@ -57,11 +57,11 @@ TEST(CallbackHolderTest, HoldAfterSet_Closure) {
 }
 
 TEST(CallbackHolderTest, NotHold_Closure) {
-  CallbackHolder<base::Closure> cb;
+  CallbackHolder<base::OnceClosure> cb;
   EXPECT_TRUE(cb.IsNull());
 
   bool closure_called = false;
-  cb.SetCallback(base::Bind(&SetBool, &closure_called));
+  cb.SetCallback(base::BindOnce(&SetBool, &closure_called));
   EXPECT_FALSE(cb.IsNull());
 
   cb.RunOrHold();
@@ -70,12 +70,12 @@ TEST(CallbackHolderTest, NotHold_Closure) {
 }
 
 TEST(CallbackHolderTest, SetAfterHold_Callback) {
-  CallbackHolder<base::Callback<void(int, int*)> > cb;
+  CallbackHolder<base::OnceCallback<void(int, int*)>> cb;
   EXPECT_TRUE(cb.IsNull());
 
   cb.HoldCallback();
 
-  cb.SetCallback(base::Bind(&CopyVar));
+  cb.SetCallback(base::BindOnce(&CopyVar));
   EXPECT_FALSE(cb.IsNull());
 
   int var1 = 100;
@@ -90,10 +90,10 @@ TEST(CallbackHolderTest, SetAfterHold_Callback) {
 }
 
 TEST(CallbackHolderTest, HoldAfterSet_Callback) {
-  CallbackHolder<base::Callback<void(int, int*)> > cb;
+  CallbackHolder<base::OnceCallback<void(int, int*)>> cb;
   EXPECT_TRUE(cb.IsNull());
 
-  cb.SetCallback(base::Bind(&CopyVar));
+  cb.SetCallback(base::BindOnce(&CopyVar));
   EXPECT_FALSE(cb.IsNull());
 
   cb.HoldCallback();
@@ -110,10 +110,10 @@ TEST(CallbackHolderTest, HoldAfterSet_Callback) {
 }
 
 TEST(CallbackHolderTest, NotHold_Callback) {
-  CallbackHolder<base::Callback<void(int, int*)> > cb;
+  CallbackHolder<base::OnceCallback<void(int, int*)>> cb;
   EXPECT_TRUE(cb.IsNull());
 
-  cb.SetCallback(base::Bind(&CopyVar));
+  cb.SetCallback(base::BindOnce(&CopyVar));
   EXPECT_FALSE(cb.IsNull());
 
   int var1 = 100;

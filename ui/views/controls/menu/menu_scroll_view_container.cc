@@ -302,8 +302,9 @@ void MenuScrollViewContainer::CreateDefaultBorder() {
 }
 
 void MenuScrollViewContainer::CreateBubbleBorder() {
-  bubble_border_ =
-      new BubbleBorder(arrow_, BubbleBorder::SMALL_SHADOW, SK_ColorWHITE);
+  const SkColor color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_MenuBorderColor);
+  bubble_border_ = new BubbleBorder(arrow_, BubbleBorder::SMALL_SHADOW, color);
   if (content_view_->GetMenuItem()
           ->GetMenuController()
           ->use_touchable_layout()) {

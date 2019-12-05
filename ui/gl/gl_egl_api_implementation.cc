@@ -14,7 +14,7 @@
 namespace gl {
 
 RealEGLApi* g_real_egl = nullptr;
-DebugEGLApi* g_debug_egl = nullptr;
+LogEGLApi* g_log_egl = nullptr;
 
 void InitializeStaticGLBindingsEGL() {
   g_driver_egl.InitializeStaticBindings();
@@ -25,21 +25,21 @@ void InitializeStaticGLBindingsEGL() {
   g_current_egl_context = g_real_egl;
 }
 
-void InitializeDebugGLBindingsEGL() {
-  if (!g_debug_egl) {
-    g_debug_egl = new DebugEGLApi(g_real_egl);
+void InitializeLogGLBindingsEGL() {
+  if (!g_log_egl) {
+    g_log_egl = new LogEGLApi(g_real_egl);
   }
-  g_current_egl_context = g_debug_egl;
+  g_current_egl_context = g_log_egl;
 }
 
 void ClearBindingsEGL() {
-  if (g_debug_egl) {
-    delete g_debug_egl;
-    g_debug_egl = NULL;
+  if (g_log_egl) {
+    delete g_log_egl;
+    g_log_egl = nullptr;
   }
   if (g_real_egl) {
     delete g_real_egl;
-    g_real_egl = NULL;
+    g_real_egl = nullptr;
   }
   g_current_egl_context = nullptr;
   g_driver_egl.ClearBindings();
@@ -51,9 +51,7 @@ EGLApi::EGLApi() {
 EGLApi::~EGLApi() {
 }
 
-EGLApiBase::EGLApiBase()
-    : driver_(NULL) {
-}
+EGLApiBase::EGLApiBase() : driver_(nullptr) {}
 
 EGLApiBase::~EGLApiBase() {
 }
@@ -106,12 +104,11 @@ const char* RealEGLApi::eglQueryStringFn(EGLDisplay dpy, EGLint name) {
   return EGLApiBase::eglQueryStringFn(dpy, name);
 }
 
-DebugEGLApi::DebugEGLApi(EGLApi* egl_api) : egl_api_(egl_api) {}
+LogEGLApi::LogEGLApi(EGLApi* egl_api) : egl_api_(egl_api) {}
 
-DebugEGLApi::~DebugEGLApi() {}
+LogEGLApi::~LogEGLApi() {}
 
-void DebugEGLApi::SetDisabledExtensions(
-    const std::string& disabled_extensions) {
+void LogEGLApi::SetDisabledExtensions(const std::string& disabled_extensions) {
   if (egl_api_) {
     egl_api_->SetDisabledExtensions(disabled_extensions);
   }

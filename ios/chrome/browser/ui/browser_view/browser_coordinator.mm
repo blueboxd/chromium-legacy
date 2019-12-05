@@ -287,8 +287,7 @@
 
   self.ARQuickLookCoordinator = [[ARQuickLookCoordinator alloc]
       initWithBaseViewController:self.viewController
-                    browserState:self.browserState
-                    webStateList:self.browser->GetWebStateList()];
+                         browser:self.browser];
   [self.ARQuickLookCoordinator start];
 
   self.injectionHandler = [[ManualFillInjectionHandler alloc]

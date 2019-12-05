@@ -264,31 +264,31 @@ void AppCacheURLLoaderJob::SendResponseInfo() {
 
   const net::HttpResponseInfo& http_info =
       is_range_request() ? *range_response_info_ : info_->http_response_info();
-  network::ResourceResponseHead response_head;
-  response_head.headers = http_info.headers;
-  response_head.appcache_id = cache_id_;
-  response_head.appcache_manifest_url = manifest_url_;
+  auto response_head = network::mojom::URLResponseHead::New();
+  response_head->headers = http_info.headers;
+  response_head->appcache_id = cache_id_;
+  response_head->appcache_manifest_url = manifest_url_;
 
-  http_info.headers->GetMimeType(&response_head.mime_type);
-  http_info.headers->GetCharset(&response_head.charset);
+  http_info.headers->GetMimeType(&response_head->mime_type);
+  http_info.headers->GetCharset(&response_head->charset);
 
   // TODO(ananta)
   // Verify if the times sent here are correct.
-  response_head.request_time = http_info.request_time;
-  response_head.response_time = http_info.response_time;
-  response_head.content_length =
+  response_head->request_time = http_info.request_time;
+  response_head->response_time = http_info.response_time;
+  response_head->content_length =
       is_range_request() ? range_response_info_->headers->GetContentLength()
                          : info_->response_data_size();
-  response_head.connection_info = http_info.connection_info;
-  response_head.remote_endpoint = http_info.remote_endpoint;
-  response_head.was_fetched_via_spdy = http_info.was_fetched_via_spdy;
-  response_head.was_alpn_negotiated = http_info.was_alpn_negotiated;
-  response_head.alpn_negotiated_protocol = http_info.alpn_negotiated_protocol;
+  response_head->connection_info = http_info.connection_info;
+  response_head->remote_endpoint = http_info.remote_endpoint;
+  response_head->was_fetched_via_spdy = http_info.was_fetched_via_spdy;
+  response_head->was_alpn_negotiated = http_info.was_alpn_negotiated;
+  response_head->alpn_negotiated_protocol = http_info.alpn_negotiated_protocol;
   if (http_info.ssl_info.cert)
-    response_head.ssl_info = http_info.ssl_info;
-  response_head.load_timing = load_timing_info_;
+    response_head->ssl_info = http_info.ssl_info;
+  response_head->load_timing = load_timing_info_;
 
-  client_->OnReceiveResponse(response_head);
+  client_->OnReceiveResponse(std::move(response_head));
   client_->OnStartLoadingResponseBody(std::move(data_pipe_.consumer_handle));
 }
 

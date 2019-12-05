@@ -98,7 +98,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
-  [self.infobarModalDelegate modalInfobarWasDismissed:self];
+  if ([self isMovingFromParentViewController]) {
+    // Only call delegate method if the modal is being dismissed.
+    [self.infobarModalDelegate modalInfobarWasDismissed:self];
+  }
   [super viewDidDisappear:animated];
 }
 
@@ -204,6 +207,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.isTranslatableLanguage =
       [prefs[kIsTranslatableLanguagePrefKey] boolValue];
   self.isSiteBlacklisted = [prefs[kIsSiteBlacklistedPrefKey] boolValue];
+  [self loadModel];
   [self.tableView reloadData];
 }
 
@@ -301,6 +305,19 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 #pragma mark - UITableViewDelegate
+
+- (void)tableView:(UITableView*)tableView
+    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  ItemType itemType = static_cast<ItemType>(
+      [self.tableViewModel itemTypeForIndexPath:indexPath]);
+
+  if (itemType == ItemTypeSourceLanguage) {
+    [self.infobarModalDelegate showChangeSourceLanguageOptions];
+  } else if (itemType == ItemTypeTargetLanguage) {
+    [self.infobarModalDelegate showChangeTargetLanguageOptions];
+  }
+  [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
 
 - (CGFloat)tableView:(UITableView*)tableView
     heightForFooterInSection:(NSInteger)section {

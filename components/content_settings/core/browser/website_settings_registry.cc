@@ -208,6 +208,13 @@ void WebsiteSettingsRegistry::Init() {
            WebsiteSettingsInfo::UNSYNCABLE, WebsiteSettingsInfo::LOSSY,
            WebsiteSettingsInfo::SINGLE_ORIGIN_ONLY_SCOPE, DESKTOP,
            WebsiteSettingsInfo::DONT_INHERIT_IN_INCOGNITO);
+  Register(ContentSettingsType::BLUETOOTH_CHOOSER_DATA,
+           "bluetooth-chooser-data",
+           /*initial_default_value=*/nullptr, WebsiteSettingsInfo::UNSYNCABLE,
+           WebsiteSettingsInfo::NOT_LOSSY,
+           WebsiteSettingsInfo::REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE,
+           DESKTOP | PLATFORM_ANDROID,
+           WebsiteSettingsInfo::DONT_INHERIT_IN_INCOGNITO);
 }
 
 }  // namespace content_settings

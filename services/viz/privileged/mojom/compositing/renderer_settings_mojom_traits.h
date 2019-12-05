@@ -79,6 +79,10 @@ struct StructTraits<viz::mojom::RendererSettingsDataView,
     return input.allow_overlays;
   }
 
+  static bool auto_resize_output_surface(const viz::RendererSettings& input) {
+    return input.auto_resize_output_surface;
+  }
+
   static bool requires_alpha_channel(const viz::RendererSettings& input) {
     return input.requires_alpha_channel;
   }

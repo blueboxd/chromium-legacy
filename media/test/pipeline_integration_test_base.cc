@@ -116,7 +116,7 @@ class RendererFactoryImpl final : public PipelineTestRendererFactory {
 
   // PipelineTestRendererFactory implementation.
   std::unique_ptr<Renderer> CreateRenderer() override {
-    return integration_test_->CreateRenderer();
+    return integration_test_->CreateRenderer(base::nullopt);
   }
 
  private:
@@ -464,7 +464,8 @@ void PipelineIntegrationTestBase::CreateDemuxer(
 #endif
 }
 
-std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
+std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
+    base::Optional<RendererFactoryType> /* factory_type */) {
   // Simulate a 60Hz rendering sink.
   video_sink_.reset(new NullVideoSink(
       clockless_playback_, base::TimeDelta::FromSecondsD(1.0 / 60),

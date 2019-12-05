@@ -480,9 +480,9 @@ void DeepScanningDialogDelegate::CompleteFileRequestCallback(
                      MalwareDeepScanningVerdict::MALWARE;
   }
 
-  bool file_complies =
-      (result == BinaryUploadService::Result::SUCCESS) && dlp_ok && malware_ok;
-
+  bool file_complies = (result == BinaryUploadService::Result::SUCCESS ||
+                        result == BinaryUploadService::Result::UNAUTHORIZED) &&
+                       dlp_ok && malware_ok;
   result_.paths_results[index] = file_complies;
 
   ++file_result_count_;

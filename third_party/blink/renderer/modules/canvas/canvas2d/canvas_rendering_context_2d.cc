@@ -1139,11 +1139,4 @@ bool CanvasRenderingContext2D::IsCanvas2DBufferValid() const {
   return false;
 }
 
-bool CanvasRenderingContext2D::IsDeferralEnabled() const {
-  Canvas2DLayerBridge* layer_bridge = canvas()->GetCanvas2DLayerBridge();
-  if (!layer_bridge)
-    return false;
-  return layer_bridge->IsDeferralEnabled();
-}
-
 }  // namespace blink

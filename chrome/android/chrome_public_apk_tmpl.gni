@@ -173,7 +173,9 @@ template("chrome_public_common_apk_or_module_tmpl") {
 
     short_resource_paths = true
 
-    if (defined(shared_libraries) && shared_libraries != []) {
+    if ((defined(shared_libraries) && shared_libraries != []) ||
+        (defined(secondary_abi_shared_libraries) &&
+         secondary_abi_shared_libraries != [])) {
       _native_lib_file =
           rebase_path("$root_gen_dir/CHROME_VERSION.json", root_out_dir)
       native_lib_version_arg = "@FileArg($_native_lib_file:full-quoted)"
@@ -328,6 +330,20 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       "//chrome/android:chrome_public_non_pak_assets",
     ]
 
+    # TODO(https://crbug.com/1027573): Remove this when all targets are explicit
+    # about their configuration.
+    if (android_64bit_target_cpu) {
+      _is_64_bit_browser =
+          defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser
+      if (_is_64_bit_browser) {
+        _include_32_bit_webview = defined(invoker.include_32_bit_webview) &&
+                                  invoker.include_32_bit_webview
+      } else {
+        _include_64_bit_webview = !defined(invoker.include_64_bit_webview) ||
+                                  invoker.include_64_bit_webview
+      }
+    }
+
     if (is_monochrome) {
       product_config_java_packages = [
         "org.chromium.chrome.browser",
@@ -338,24 +354,36 @@ template("monochrome_public_common_apk_or_module_tmpl") {
         product_config_java_packages += [ weblayer_product_config_java_package ]
       }
 
+      # Flag whether additional deps and libs should be included for each ABI.
+      _include_primary_support = false
+      _include_secondary_support = false
+
       if (android_64bit_target_cpu) {
         # Build //android_webview:monochrome with the opposite bitness that
         # Chrome runs in.
-        if (defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser) {
+        if (_is_64_bit_browser) {
+          _include_primary_support = true
           shared_libraries = [ "//chrome/android:libmonochrome_64" ]
-          if (build_apk_secondary_abi && invoker.include_32_bit_webview) {
+          if (_include_32_bit_webview && build_apk_secondary_abi) {
             secondary_abi_shared_libraries = [ "//android_webview:monochrome_64($android_secondary_abi_toolchain)" ]
+            _include_secondary_support = true
           }
         } else {
-          shared_libraries = [ "//android_webview:monochrome" ]
+          if (_include_64_bit_webview) {
+            shared_libraries = [ "//android_webview:monochrome" ]
+            _include_primary_support = true
+          }
           if (build_apk_secondary_abi) {
             secondary_abi_shared_libraries =
                 [ "//chrome/android:monochrome_secondary_abi_lib" ]
+            _include_secondary_support = true
           }
         }
       } else {
         shared_libraries = [ "//chrome/android:libmonochrome" ]
+        _include_primary_support = true
       }
+
       shared_library_for_unwind_asset = "monochrome"
 
       _deps += [
@@ -363,18 +391,21 @@ template("monochrome_public_common_apk_or_module_tmpl") {
         "//android_webview/nonembedded:nonembedded_java",
         "//android_webview/glue",
         "//chrome/android:monochrome_java",
-        "//third_party/crashpad/crashpad/handler:crashpad_handler_trampoline",
       ]
-      loadable_modules += [ "$root_out_dir/libcrashpad_handler_trampoline.so" ]
 
       if (webview_devui_show_icon) {
         _deps +=
             [ "//android_webview/nonembedded:devui_launcher_icon_resources" ]
       }
 
-      if (android_64bit_target_cpu && build_apk_secondary_abi &&
-          (!defined(invoker.is_64_bit_browser) || !invoker.is_64_bit_browser ||
-           invoker.include_32_bit_webview)) {
+      if (_include_primary_support) {
+        _deps += [
+          "//third_party/crashpad/crashpad/handler:crashpad_handler_trampoline",
+        ]
+        loadable_modules +=
+            [ "$root_out_dir/libcrashpad_handler_trampoline.so" ]
+      }
+      if (_include_secondary_support) {
         _trampoline = "//third_party/crashpad/crashpad/handler:crashpad_handler_trampoline($android_secondary_abi_toolchain)"
         _deps += [ _trampoline ]
         _secondary_out_dir = get_label_info(_trampoline, "root_out_dir")
@@ -391,12 +422,22 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       # bitnesses. This allows the "32-bit" and "64-bit" versions of Chrome to
       # depend on their respective versions of the shared library APK even
       # though they're functionally the same.
-      native_lib_placeholders = [ "libdummy.so" ]
-      if (android_64bit_target_cpu && build_apk_secondary_abi &&
-          (!defined(invoker.is_64_bit_browser) || !invoker.is_64_bit_browser ||
-           invoker.include_32_bit_webview)) {
-        secondary_native_lib_placeholders = [ "libdummy.so" ]
+      if (android_64bit_target_cpu) {
+        if (_is_64_bit_browser) {
+          native_lib_placeholders = [ "libdummy.so" ]
+          if (_include_32_bit_webview) {
+            secondary_native_lib_placeholders = [ "libdummy.so" ]
+          }
+        } else {
+          secondary_native_lib_placeholders = [ "libdummy.so" ]
+          if (_include_64_bit_webview) {
+            native_lib_placeholders = [ "libdummy.so" ]
+          }
+        }
+      } else {
+        native_lib_placeholders = [ "libdummy.so" ]
       }
+
       _pak_prefix = "trichrome_chrome"
     }
 
@@ -423,6 +464,7 @@ template("monochrome_public_common_apk_or_module_tmpl") {
                            "*",
                            [
                              "include_32_bit_webview",
+                             "include_64_bit_webview",
                              "is_64_bit_browser",
                            ])
 

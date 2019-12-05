@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #include "components/translate/core/browser/translate_step.h"
+#import "ios/chrome/browser/ui/infobars/modals/infobar_translate_language_selection_delegate.h"
 
 namespace translate {
 class TranslateInfoBarDelegate;
@@ -16,7 +17,8 @@ class TranslateInfoBarDelegate;
 @protocol InfobarTranslateLanguageSelectionConsumer;
 @protocol InfobarTranslateModalConsumer;
 
-@interface InfobarTranslateMediator : NSObject
+@interface InfobarTranslateMediator
+    : NSObject <InfobarTranslateLanguageSelectionDelegate>
 
 // Designated initializer. |infoBarDelegate| cannot be nil and is not retained
 - (instancetype)initWithInfoBarDelegate:

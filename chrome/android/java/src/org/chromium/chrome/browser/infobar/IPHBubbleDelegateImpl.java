@@ -9,13 +9,16 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadInfoBarController;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.infobar.IPHInfoBarSupport.PopupState;
 import org.chromium.chrome.browser.infobar.IPHInfoBarSupport.TrackerParameters;
+import org.chromium.chrome.browser.permissions.PermissionSettingsBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.widget.textbubble.TextBubble;
+import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
 
 /**
@@ -61,6 +64,14 @@ class IPHBubbleDelegateImpl implements IPHInfoBarSupport.IPHBubbleDelegate {
                         DownloadManagerService.getDownloadManagerService()
                         .getInfoBarController(Profile.getLastUsedProfile().isOffTheRecord());
                 return controller != null ? controller.getTrackerParameters() : null;
+            case InfoBarIdentifier.GROUPED_PERMISSION_INFOBAR_DELEGATE_ANDROID:
+                if (PermissionSettingsBridge.shouldShowNotificationsPromo()) {
+                    PermissionSettingsBridge.didShowNotificationsPromo();
+                    return new IPHInfoBarSupport.TrackerParameters(
+                            FeatureConstants.QUIET_NOTIFICATION_PROMPTS_FEATURE,
+                            R.string.notifications_iph, R.string.notifications_iph);
+                }
+                return null;
             default:
                 return null;
         }

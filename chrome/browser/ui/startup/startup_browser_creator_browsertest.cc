@@ -1034,9 +1034,9 @@ class StartupBrowserCreatorExtensionsCheckupExperimentTest
   void SetUp() override {
     // Enable the extensions checkup experiment.
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        extensions_features::kExtensionsCheckupTool,
-        {{extensions_features::kExtensionsCheckupToolEntryPointParameter,
-          "startup"}});
+        extensions_features::kExtensionsCheckup,
+        {{extensions_features::kExtensionsCheckupEntryPointParameter,
+          extensions_features::kStartupEntryPoint}});
     extensions::ExtensionBrowserTest::SetUp();
   }
 

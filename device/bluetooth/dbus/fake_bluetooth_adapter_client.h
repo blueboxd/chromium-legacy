@@ -57,10 +57,10 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
   void StopDiscovery(const dbus::ObjectPath& object_path,
                      ResponseCallback callback) override;
   void PauseDiscovery(const dbus::ObjectPath& object_path,
-                      const base::Closure& callback,
+                      base::OnceClosure callback,
                       ErrorCallback error_callback) override;
   void UnpauseDiscovery(const dbus::ObjectPath& object_path,
-                        const base::Closure& callback,
+                        base::OnceClosure callback,
                         ErrorCallback error_callback) override;
   void RemoveDevice(const dbus::ObjectPath& object_path,
                     const dbus::ObjectPath& device_path,

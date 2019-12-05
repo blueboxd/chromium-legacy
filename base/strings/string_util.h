@@ -486,9 +486,11 @@ BASE_EXPORT void ReplaceSubstringsAfterOffset(
 BASE_EXPORT char* WriteInto(std::string* str, size_t length_with_null);
 BASE_EXPORT char16* WriteInto(string16* str, size_t length_with_null);
 
-// Does the opposite of SplitString()/SplitStringPiece(). Joins a vector or list
-// of strings into a single string, inserting |separator| (which may be empty)
-// in between all elements.
+// Joins a vector or list of strings into a single string, inserting |separator|
+// (which may be empty) in between all elements.
+//
+// Note this is inverse of SplitString()/SplitStringPiece() defined in
+// string_split.h.
 //
 // If possible, callers should build a vector of StringPieces and use the
 // StringPiece variant, so that they do not create unnecessary copies of

@@ -32,13 +32,16 @@ const char kSyncSessions[] = "sync.sessions";
 ModelTypeSet GetUserTypes() {
   ModelTypeSet user_types = UserTypes();
 #if defined(OS_CHROMEOS)
-  // OS_PREFERENCES only exists when SplitSettingsSync is enabled.
-  if (!chromeos::features::IsSplitSettingsSyncEnabled())
-    user_types.RemoveAll({OS_PREFERENCES, OS_PRIORITY_PREFERENCES});
+  // These types only exist when SplitSettingsSync is enabled.
+  if (!chromeos::features::IsSplitSettingsSyncEnabled()) {
+    user_types.RemoveAll(
+        {OS_PREFERENCES, OS_PRIORITY_PREFERENCES, WIFI_CONFIGURATIONS});
+  }
 #else
   // Ignore all Chrome OS types on non-Chrome OS platforms.
   user_types.RemoveAll({APP_LIST, ARC_PACKAGE, OS_PREFERENCES,
-                        OS_PRIORITY_PREFERENCES, PRINTERS});
+                        OS_PRIORITY_PREFERENCES, PRINTERS,
+                        WIFI_CONFIGURATIONS});
 #endif
   return user_types;
 }

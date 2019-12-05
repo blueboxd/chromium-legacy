@@ -51,7 +51,8 @@ void IdleTimeEstimator::Clear() {
   did_commit_ = false;
 }
 
-void IdleTimeEstimator::WillProcessTask(const base::PendingTask& pending_task) {
+void IdleTimeEstimator::WillProcessTask(const base::PendingTask& pending_task,
+                                        bool was_blocked_or_low_priority) {
   nesting_level_++;
   if (nesting_level_ == 1)
     task_start_time_ = time_source_->NowTicks();

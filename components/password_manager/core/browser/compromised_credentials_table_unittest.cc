@@ -9,6 +9,10 @@
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
+#include "components/password_manager/core/common/password_manager_features.h"
+#include "components/safe_browsing/features.h"
 #include "sql/database.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,6 +34,8 @@ class CompromisedCredentialsTableTest : public testing::Test {
  protected:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    feature_list_.InitWithFeatures({password_manager::features::kLeakHistory},
+                                   {});
     ReloadDatabase();
   }
 
@@ -43,8 +49,21 @@ class CompromisedCredentialsTableTest : public testing::Test {
     ASSERT_TRUE(db_->CreateTableIfNecessary());
   }
 
+  void CheckDatabaseAccessibility() {
+    EXPECT_TRUE(db()->AddRow(test_data()));
+    EXPECT_THAT(db()->GetAllRows(), ElementsAre(test_data()));
+    EXPECT_THAT(db()->GetRows(test_data().url, test_data().username),
+                ElementsAre(test_data()));
+    EXPECT_TRUE(db()->RemoveRow(test_data().url, test_data().username));
+    EXPECT_THAT(db()->GetAllRows(), IsEmpty());
+    EXPECT_THAT(db()->GetRows(test_data().url, test_data().username),
+                IsEmpty());
+  }
+
   CompromisedCredentials& test_data() { return test_data_; }
   CompromisedCredentialsTable* db() { return db_.get(); }
+
+  base::test::ScopedFeatureList feature_list_;
 
  private:
   base::ScopedTempDir temp_dir_;
@@ -55,17 +74,39 @@ class CompromisedCredentialsTableTest : public testing::Test {
       base::Time::FromTimeT(1), CompromiseType::kLeaked};
 };
 
-TEST_F(CompromisedCredentialsTableTest, Sanity) {
-  EXPECT_TRUE(db()->AddRow(test_data()));
-  EXPECT_THAT(db()->GetAllRows(), ElementsAre(test_data()));
-  EXPECT_TRUE(db()->RemoveRow(test_data().url, test_data().username));
-  EXPECT_THAT(db()->GetAllRows(), IsEmpty());
-}
-
 TEST_F(CompromisedCredentialsTableTest, Reload) {
   EXPECT_TRUE(db()->AddRow(test_data()));
   ReloadDatabase();
   EXPECT_THAT(db()->GetAllRows(), ElementsAre(test_data()));
+}
+
+TEST_F(CompromisedCredentialsTableTest, DatabaseIsAccessible) {
+  // Checks that as long as one experiment is on, the database
+  // is accessible. |
+  feature_list_.Reset();
+  feature_list_.InitWithFeatures(
+      {safe_browsing::kPasswordProtectionForSignedInUsers},
+      {password_manager::features::kLeakHistory});
+  CheckDatabaseAccessibility();
+
+  feature_list_.Reset();
+  feature_list_.InitWithFeatures(
+      {password_manager::features::kLeakHistory},
+      {safe_browsing::kPasswordProtectionForSignedInUsers});
+  CheckDatabaseAccessibility();
+}
+
+TEST_F(CompromisedCredentialsTableTest, ExperimentOff) {
+  // If the needed experiments are not enabled, the database should not be
+  // accessible.
+  feature_list_.Reset();
+  feature_list_.InitWithFeatures({},
+                                 {password_manager::features::kLeakHistory});
+  EXPECT_THAT(db()->GetAllRows(), IsEmpty());
+  EXPECT_THAT(db()->GetRows(test_data().url, test_data().username),
+              ElementsAre());
+  EXPECT_FALSE(db()->RemoveRow(test_data().url, test_data().username));
+  EXPECT_TRUE(db()->AddRow(test_data()));
 }
 
 TEST_F(CompromisedCredentialsTableTest, SameUrlDifferentUsername) {
@@ -125,6 +166,19 @@ TEST_F(CompromisedCredentialsTableTest,
   EXPECT_TRUE(db()->AddRow(compromised_credentials2));
   EXPECT_THAT(db()->GetAllRows(),
               ElementsAre(compromised_credentials1, compromised_credentials2));
+}
+
+TEST_F(CompromisedCredentialsTableTest, UpdateRow) {
+  CompromisedCredentials compromised_credentials1 = test_data();
+  CompromisedCredentials compromised_credentials2{
+      GURL(kTestDomain2), base::ASCIIToUTF16(kUsername2),
+      base::Time::FromTimeT(1), CompromiseType::kLeaked};
+
+  EXPECT_TRUE(db()->AddRow(compromised_credentials1));
+  EXPECT_TRUE(db()->UpdateRow(
+      GURL(kTestDomain2), base::ASCIIToUTF16(kUsername2),
+      compromised_credentials1.url, compromised_credentials1.username));
+  EXPECT_THAT(db()->GetAllRows(), ElementsAre(compromised_credentials2));
 }
 
 TEST_F(CompromisedCredentialsTableTest, RemoveRowsCreatedBetween) {

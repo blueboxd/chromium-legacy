@@ -301,6 +301,7 @@ public class AutofillPopupTest {
     @Test
     @MediumTest
     @Feature({"autofill"})
+    @DisabledTest(message = "Flaky. crbug.com/1030559")
     public void testLoggingAnotherElementFilled() throws TimeoutException {
         loadAndFillForm(ANOTHER_ELEMENT_FILLED, "J");
         final String profileFullName = FIRST_NAME + " " + LAST_NAME;

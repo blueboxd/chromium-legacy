@@ -446,6 +446,10 @@ void CompositorImpl::CreateLayerTreeHost() {
   DCHECK(!host_->IsVisible());
   host_->SetViewportRectAndScale(gfx::Rect(size_), root_window_->GetDipScale(),
                                  GenerateLocalSurfaceId());
+  const auto& display_props =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root_window_);
+  host_->set_display_transform_hint(
+      RotationToDisplayTransform(display_props.rotation()));
 
   if (needs_animate_)
     host_->SetNeedsAnimate();
@@ -770,10 +774,9 @@ void CompositorImpl::OnDisplayMetricsChanged(const display::Display& display,
                                    GenerateLocalSurfaceId());
   }
 
-  if ((changed_metrics &
-       display::DisplayObserver::DisplayMetric::DISPLAY_METRIC_ROTATION) &&
-      display_private_) {
-    display_private_->SetDisplayTransformHint(
+  if (changed_metrics &
+      display::DisplayObserver::DisplayMetric::DISPLAY_METRIC_ROTATION) {
+    host_->set_display_transform_hint(
         RotationToDisplayTransform(display.rotation()));
   }
 }
@@ -874,8 +877,6 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   display_private_->SetVSyncPaused(vsync_paused_);
   display_private_->SetSupportedRefreshRates(
       root_window_->GetSupportedRefreshRates());
-  display_private_->SetDisplayTransformHint(
-      RotationToDisplayTransform(display_props.rotation()));
 }
 
 viz::LocalSurfaceIdAllocation CompositorImpl::GenerateLocalSurfaceId() {

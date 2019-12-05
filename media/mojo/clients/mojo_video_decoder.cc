@@ -159,8 +159,9 @@ void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
   InitCB bound_init_cb = base::BindOnce(
       &ReportMojoVideoDecoderInitializeStatusToUMAAndRunCB, std::move(init_cb));
   // Fail immediately if we know that the remote side cannot support |config|.
-  if (gpu_factories_ && !gpu_factories_->IsDecoderConfigSupported(
-                            video_decoder_implementation_, config)) {
+  if (gpu_factories_ && gpu_factories_->IsDecoderConfigSupported(
+                            video_decoder_implementation_, config) ==
+                            GpuVideoAcceleratorFactories::Supported::kFalse) {
     task_runner_->PostTask(FROM_HERE,
                            base::BindOnce(std::move(bound_init_cb), false));
     return;

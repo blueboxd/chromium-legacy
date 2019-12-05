@@ -364,6 +364,10 @@ WizardController::~WizardController() {
 void WizardController::Init(OobeScreenId first_screen) {
   screen_manager_->Init(CreateScreens());
 
+  prescribed_enrollment_config_ = g_browser_process->platform_part()
+                                      ->browser_policy_connector_chromeos()
+                                      ->GetPrescribedEnrollmentConfig();
+
   VLOG(1) << "Starting OOBE wizard with screen: " << first_screen;
   first_screen_ = first_screen;
 
@@ -591,6 +595,14 @@ void WizardController::ShowNetworkScreen() {
   SetCurrentScreen(GetScreen(NetworkScreenView::kScreenId));
 }
 
+void WizardController::OnOwnershipStatusCheckDone(
+    DeviceSettingsService::OwnershipStatus status) {
+  if (status == DeviceSettingsService::OWNERSHIP_NONE)
+    ShowPackagedLicenseScreen();
+  else
+    ShowLoginScreen(LoginScreenContext());
+}
+
 void WizardController::ShowLoginScreen(const LoginScreenContext& context) {
   // This may be triggered by multiply asynchronous events from the JS side.
   if (login_screen_started_)
@@ -747,6 +759,13 @@ void WizardController::ShowDiscoverScreen() {
   SetCurrentScreen(GetScreen(DiscoverScreenView::kScreenId));
 }
 
+void WizardController::ShowPackagedLicenseScreen() {
+  if (should_show_packaged_license_screen())
+    SetCurrentScreen(GetScreen(PackagedLicenseView::kScreenId));
+  else
+    ShowLoginScreen(LoginScreenContext());
+}
+
 void WizardController::SkipToLoginForTesting(
     const LoginScreenContext& context) {
   VLOG(1) << "SkipToLoginForTesting.";
@@ -796,7 +815,7 @@ void WizardController::OnWrongHWIDScreenExit() {
   if (previous_screen_) {
     SetCurrentScreen(previous_screen_);
   } else {
-    ShowLoginScreen(LoginScreenContext());
+    ShowPackagedLicenseScreen();
   }
 }
 
@@ -1214,7 +1233,7 @@ void WizardController::OnDeviceModificationCanceled() {
     if (current_screen_)
       current_screen_->Hide();
 
-    ShowLoginScreen(LoginScreenContext());
+    ShowPackagedLicenseScreen();
   }
 }
 
@@ -1226,8 +1245,15 @@ void WizardController::OnSupervisionTransitionScreenExit() {
 
 void WizardController::OnPackagedLicenseScreenExit(
     PackagedLicenseScreen::Result result) {
-  // TODO(crbug.com/1024809): Add new screen to the OOBE flow.
-  NOTREACHED();
+  OnScreenExit(PackagedLicenseView::kScreenId, 0 /* exit_code */);
+  switch (result) {
+    case PackagedLicenseScreen::Result::DONT_ENROLL:
+      ShowLoginScreen(LoginScreenContext());
+      break;
+    case PackagedLicenseScreen::Result::ENROLL:
+      ShowEnrollmentScreen();
+      break;
+  }
 }
 
 void WizardController::OnOobeFlowFinished() {
@@ -1278,7 +1304,7 @@ void WizardController::OnDeviceDisabledChecked(bool device_disabled) {
     StartEnrollmentScreen(skip_update_enroll_after_eula_);
   } else {
     PerformOOBECompletedActions();
-    ShowLoginScreen(LoginScreenContext());
+    ShowPackagedLicenseScreen();
   }
 }
 
@@ -1456,6 +1482,8 @@ void WizardController::AdvanceToScreen(OobeScreenId screen) {
     ShowNetworkScreen();
   } else if (screen == OobeScreen::SCREEN_SPECIAL_LOGIN) {
     ShowLoginScreen(LoginScreenContext());
+  } else if (screen == PackagedLicenseView::kScreenId) {
+    ShowPackagedLicenseScreen();
   } else if (screen == UpdateView::kScreenId) {
     InitiateOOBEUpdate();
   } else if (screen == EulaView::kScreenId) {
@@ -1529,7 +1557,9 @@ void WizardController::AdvanceToScreen(OobeScreenId screen) {
         ShowWelcomeScreen();
       }
     } else {
-      ShowLoginScreen(LoginScreenContext());
+      DeviceSettingsService::Get()->GetOwnershipStatusAsync(
+          base::Bind(&WizardController::OnOwnershipStatusCheckDone,
+                     weak_factory_.GetWeakPtr()));
     }
   }
 }

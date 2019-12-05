@@ -136,6 +136,14 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
 
   cc::TextureLayer* layer_for_testing() { return layer_.get(); }
 
+  // TODO(jochin): Remove this function completely once recorder_ has been
+  // moved into CanvasResourceProvider.
+  sk_sp<cc::PaintRecord> record_for_testing() {
+    sk_sp<cc::PaintRecord> record = recorder_->finishRecordingAsPicture();
+    StartRecording();
+    return record;
+  }
+
   // The values of the enum entries must not change because they are used for
   // usage metrics histograms. New values can be added to the end.
   enum HibernationEvent {
@@ -170,12 +178,13 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   CanvasResourceProvider* ResourceProvider() const;
   void FlushRecording();
 
-  sk_sp<cc::PaintRecord> getLastRecord() { return last_recording_; }
+  sk_sp<cc::PaintRecord> getLastRecord() {
+    return last_record_tainted_by_write_pixels_ ? nullptr : last_recording_;
+  }
 
   // This is called when the Canvas element has cleared the frame, so the 2D
   // bridge knows that there's no previous content on the resource.
   void ClearFrame() { clear_frame_ = true; }
-  bool IsDeferralEnabled() const { return is_deferral_enabled_; }
 
  private:
   friend class Canvas2DLayerBridgeTest;
@@ -199,12 +208,15 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   int frames_since_last_commit_ = 0;
   bool have_recorded_draw_commands_;
   bool is_hidden_;
-  bool is_deferral_enabled_;
   bool software_rendering_while_hidden_;
   bool hibernation_scheduled_ = false;
   bool dont_use_idle_scheduling_for_testing_ = false;
   bool context_lost_ = false;
   bool clear_frame_ = true;
+
+  // WritePixels content is not saved in recording. If a call was made to
+  // WritePixels, the recording is now missing that information.
+  bool last_record_tainted_by_write_pixels_ = false;
 
   const AccelerationMode acceleration_mode_;
   const CanvasColorParams color_params_;

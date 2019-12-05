@@ -82,8 +82,7 @@ void WebContentsViewChildFrame::CreateView(gfx::NativeView context) {
 }
 
 RenderWidgetHostViewBase* WebContentsViewChildFrame::CreateViewForWidget(
-    RenderWidgetHost* render_widget_host,
-    bool is_guest_view_hack) {
+    RenderWidgetHost* render_widget_host) {
   return RenderWidgetHostViewChildFrame::Create(render_widget_host);
 }
 

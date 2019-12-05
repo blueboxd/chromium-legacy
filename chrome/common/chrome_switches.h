@@ -174,6 +174,7 @@ extern const char kSSLVersionTLSv12[];
 extern const char kSSLVersionTLSv13[];
 extern const char kStartMaximized[];
 extern const char kStartStackProfiler[];
+extern const char kStartStackProfilerBrowserTest[];
 extern const char kSupervisedUserId[];
 extern const char kSystemLogUploadFrequency[];
 extern const char kTaskManagerShowExtraRenderers[];

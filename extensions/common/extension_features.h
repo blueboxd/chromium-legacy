@@ -9,9 +9,14 @@
 
 namespace extensions_features {
 
-extern const base::Feature kExtensionsCheckupTool;
-extern const char kExtensionsCheckupToolEntryPointParameter[];
-extern const char kExtensionsCheckupToolBannerMessageParameter[];
+extern const base::Feature kExtensionsCheckup;
+extern const char kExtensionsCheckupEntryPointParameter[];
+extern const char kExtensionsCheckupBannerMessageParameter[];
+extern const char kStartupEntryPoint[];
+extern const char kNtpPromoEntryPoint[];
+extern const char kPerformanceMessage[];
+extern const char kPrivacyMessage[];
+extern const char kNeutralMessage[];
 
 extern const base::Feature kForceWebRequestProxyForTest;
 

@@ -41,6 +41,7 @@ using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Mock;
+using ::testing::NiceMock;
 using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SaveArg;
@@ -292,7 +293,8 @@ class PipelineImplTest : public ::testing::Test {
     ResetRenderer();
   }
 
-  std::unique_ptr<Renderer> CreateRenderer() {
+  std::unique_ptr<Renderer> CreateRenderer(
+      base::Optional<RendererFactoryType> /* factory_type */) {
     return std::move(scoped_renderer_);
   }
 
@@ -350,7 +352,7 @@ class PipelineImplTest : public ::testing::Test {
   base::test::SingleThreadTaskEnvironment task_environment_;
   NullMediaLog media_log_;
   std::unique_ptr<PipelineImpl> pipeline_;
-  StrictMock<MockCdmContext> cdm_context_;
+  NiceMock<MockCdmContext> cdm_context_;
 
   std::unique_ptr<StrictMock<MockDemuxer>> demuxer_;
   DemuxerHost* demuxer_host_;

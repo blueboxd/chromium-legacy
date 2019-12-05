@@ -23,7 +23,8 @@ MessageLoopObserver::~MessageLoopObserver() {
 }
 
 void MessageLoopObserver::WillProcessTask(
-    const base::PendingTask& pending_task) {
+    const base::PendingTask& pending_task,
+    bool /* was_blocked_or_low_priority */) {
   will_run_task_callback_.Run(&pending_task);
 }
 

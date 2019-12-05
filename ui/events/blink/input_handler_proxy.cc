@@ -86,12 +86,6 @@ cc::ScrollState CreateScrollStateForGesture(const WebGestureEvent& event) {
   return cc::ScrollState(scroll_state_data);
 }
 
-cc::ScrollState CreateScrollStateForInertialEnd() {
-  cc::ScrollStateData scroll_state_data;
-  scroll_state_data.is_ending = true;
-  return cc::ScrollState(scroll_state_data);
-}
-
 cc::ScrollState CreateScrollStateForInertialUpdate(
     const gfx::Vector2dF& delta) {
   cc::ScrollStateData scroll_state_data;
@@ -913,6 +907,9 @@ InputHandlerProxy::HandleGestureScrollUpdate(
   in_inertial_scrolling_ = scroll_state.is_in_inertial_phase();
   gfx::PointF scroll_point(gesture_event.PositionInWidget());
 
+  TRACE_EVENT_INSTANT1(
+      "input", "DeltaUnits", TRACE_EVENT_SCOPE_THREAD, "unit",
+      static_cast<int>(gesture_event.data.scroll_update.delta_units));
   if (ShouldAnimate(gesture_event.SourceDevice(),
                     gesture_event.data.scroll_update.delta_units !=
                         ui::input_types::ScrollGranularity::kScrollByPixel)) {
@@ -984,8 +981,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollEnd(
   if (!gesture_scroll_on_impl_thread_)
     return DID_NOT_HANDLE;
 
-  cc::ScrollState scroll_state = CreateScrollStateForGesture(gesture_event);
-  input_handler_->ScrollEnd(&scroll_state, true);
+  input_handler_->ScrollEnd(/*should_snap=*/true);
 
   if (scroll_elasticity_controller_)
     HandleScrollElasticityOverscroll(gesture_event,
@@ -1221,8 +1217,7 @@ gfx::Vector2dF InputHandlerProxy::ScrollByForSnapFling(
 }
 
 void InputHandlerProxy::ScrollEndForSnapFling() {
-  cc::ScrollState scroll_state = CreateScrollStateForInertialEnd();
-  input_handler_->ScrollEnd(&scroll_state, false);
+  input_handler_->ScrollEnd(/*should_snap=*/false);
 }
 
 void InputHandlerProxy::RequestAnimationForSnapFling() {

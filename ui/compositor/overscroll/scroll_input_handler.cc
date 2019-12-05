@@ -54,10 +54,8 @@ bool ScrollInputHandler::OnScrollEvent(const ScrollEvent& event,
   input_handler_weak_ptr_->ScrollBy(&scroll_state);
 
   if (event.momentum_phase() == EventMomentumPhase::END) {
-    scroll_state = CreateScrollState(event, true);
-
     // For now, pass false for the |should_snap| argument.
-    input_handler_weak_ptr_->ScrollEnd(&scroll_state, false /* should_snap */);
+    input_handler_weak_ptr_->ScrollEnd(/*should_snap=*/false);
   }
 
   return true;

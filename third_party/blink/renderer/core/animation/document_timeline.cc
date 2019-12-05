@@ -75,12 +75,6 @@ base::TimeTicks CurrentAnimationTime(Document* document) {
 // TODO: Plumb a nominal framerate through and derive this value from that.
 const double DocumentTimeline::kMinimumDelay = 0.04;
 
-DocumentTimeline* DocumentTimeline::Create(Document* document,
-                                           base::TimeDelta origin_time,
-                                           PlatformTiming* timing) {
-  return MakeGarbageCollected<DocumentTimeline>(document, origin_time, timing);
-}
-
 DocumentTimeline* DocumentTimeline::Create(
     ExecutionContext* execution_context,
     const DocumentTimelineOptions* options) {

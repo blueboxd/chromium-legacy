@@ -633,7 +633,7 @@ void ArcPrintServiceImpl::Print(mojom::PrintJobInstancePtr instance,
   auto job = std::make_unique<PrintJobHostImpl>(
       mojo::MakeRequest(&host_proxy), std::move(instance), this,
       chromeos::CupsPrintJobManagerFactory::GetForBrowserContext(profile_),
-      std::move(settings), base::File(fd.release()), print_job->data_size);
+      std::move(settings), base::File(std::move(fd)), print_job->data_size);
   PrintJobHostImpl* job_raw = job.get();
   jobs_.emplace(job_raw, std::move(job));
   std::move(callback).Run(std::move(host_proxy));

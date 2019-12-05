@@ -20,9 +20,10 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
-#include <sys/stat.h>
 #include <unistd.h>
 #include <unordered_set>
+
+#include "base/files/file.h"
 #endif
 
 namespace base {
@@ -62,7 +63,7 @@ class BASE_EXPORT FileEnumerator {
     // names, we tell Windows to omit it which speeds up the query slightly.
     const WIN32_FIND_DATA& find_data() const { return find_data_; }
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
-    const struct stat& stat() const { return stat_; }
+    const stat_wrapper_t& stat() const { return stat_; }
 #endif
 
    private:
@@ -71,7 +72,7 @@ class BASE_EXPORT FileEnumerator {
 #if defined(OS_WIN)
     WIN32_FIND_DATA find_data_;
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
-    struct stat stat_;
+    stat_wrapper_t stat_;
     FilePath filename_;
 #endif
   };

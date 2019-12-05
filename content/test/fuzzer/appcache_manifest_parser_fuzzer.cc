@@ -21,7 +21,8 @@ IcuEnvironment* env = new IcuEnvironment();
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   AppCacheManifest manifest;
   const GURL kUrl("http://www.example.com");
-  ParseManifest(kUrl, reinterpret_cast<const char*>(data), size,
+  const std::string kScope = kUrl.GetWithEmptyPath().path();
+  ParseManifest(kUrl, kScope, reinterpret_cast<const char*>(data), size,
                 PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES, manifest);
   return 0;
 }

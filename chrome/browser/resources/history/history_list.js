@@ -5,7 +5,7 @@
 Polymer({
   is: 'history-list',
 
-  behaviors: [I18nBehavior],
+  behaviors: [I18nBehavior, WebUIListenerBehavior],
 
   properties: {
     // The search term for the current query. Set when the query returns.
@@ -87,6 +87,8 @@ Polymer({
     this.$['infinite-list'].scrollTarget = this;
     this.$['scroll-threshold'].scrollTarget = this;
     this.setAttribute('aria-roledescription', this.i18n('ariaRoleDescription'));
+
+    this.addWebUIListener('history-deleted', () => this.onHistoryDeleted_());
   },
 
   /////////////////////////////////////////////////////////////////////////////
@@ -148,7 +150,8 @@ Polymer({
     this.resultLoadingDisabled_ = finished;
   },
 
-  historyDeleted: function() {
+  /** @private */
+  onHistoryDeleted_: function() {
     // Do not reload the list when there are items checked.
     if (this.getSelectedItemCount() > 0) {
       return;

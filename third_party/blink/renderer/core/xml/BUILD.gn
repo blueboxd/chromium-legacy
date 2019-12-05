@@ -64,4 +64,11 @@ blink_core_sources("xml") {
     "xslt_unicode_sort.cc",
     "xslt_unicode_sort.h",
   ]
+
+  # XCode's ancient bison (v2.3 from 2006) prevents us from updating a
+  # deprecated bison directive. This will silence the warning.
+  # See https://crbug.com/1028421.
+  if (!is_mac) {
+    cflags = [ "-Wno-deprecated" ]
+  }
 }

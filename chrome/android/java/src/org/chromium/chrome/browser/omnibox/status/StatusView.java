@@ -8,6 +8,8 @@ import static org.chromium.chrome.browser.toolbar.top.ToolbarPhone.URL_FOCUS_CHA
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
+import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -21,13 +23,11 @@ import android.view.ViewStub;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import androidx.annotation.ColorRes;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
-
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
@@ -73,6 +73,7 @@ public class StatusView extends LinearLayout {
     private @StringRes int mAccessibilityToast;
 
     private Bitmap mIconBitmap;
+    private Bitmap mCachedGoogleG;
 
     private TouchDelegate mTouchDelegate;
     private CompositeTouchDelegate mCompositeTouchDelegate;
@@ -317,6 +318,29 @@ public class StatusView extends LinearLayout {
         // mIconRes and mIconBitmap are mutually exclusive and therefore when one is set, the other
         // should be unset.
         mIconBitmap = null;
+
+        // Note: To workaround for TransitionDrawable resizing mismatching layers (see
+        // {@link StatusView#animateStatusIcon} when passed into LayerDrawable.LayerState), a 20dp
+        // google g is loaded and drawn on a R.dimen.location_bar_status_icon_width sized background
+        if (mDelegate != null && mToolbarCommonPropertiesModel != null
+                && mDelegate.shouldShowSearchEngineLogo(mToolbarCommonPropertiesModel.isIncognito())
+                && mIconRes == R.drawable.ic_logo_googleg_20dp) {
+            if (mCachedGoogleG == null) {
+                int outlineSize = getResources().getDimensionPixelSize(
+                        R.dimen.location_bar_status_icon_width);
+                Drawable googleGDrawable = AppCompatResources.getDrawable(
+                        getContext(), R.drawable.ic_logo_googleg_20dp);
+                mCachedGoogleG = Bitmap.createBitmap(outlineSize, outlineSize, Config.ARGB_8888);
+                Canvas canvas = new Canvas(mCachedGoogleG);
+                canvas.translate((outlineSize - googleGDrawable.getIntrinsicWidth()) / 2f,
+                        (outlineSize - googleGDrawable.getIntrinsicHeight()) / 2f);
+                googleGDrawable.setBounds(0, 0, googleGDrawable.getIntrinsicWidth(),
+                        googleGDrawable.getIntrinsicHeight());
+                googleGDrawable.draw(canvas);
+            }
+            mIconBitmap = mCachedGoogleG;
+            mIconRes = 0;
+        }
         animateStatusIcon();
     }
 

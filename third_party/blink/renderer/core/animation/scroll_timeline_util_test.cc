@@ -70,7 +70,7 @@ TEST_F(ScrollTimelineUtilTest, ToCompositorScrollTimelineNullParameter) {
 TEST_F(ScrollTimelineUtilTest,
        ToCompositorScrollTimelineDocumentTimelineParameter) {
   DocumentTimeline* timeline =
-      DocumentTimeline::Create(MakeGarbageCollected<Document>());
+      MakeGarbageCollected<DocumentTimeline>(MakeGarbageCollected<Document>());
   EXPECT_EQ(ToCompositorScrollTimeline(timeline), nullptr);
 }
 

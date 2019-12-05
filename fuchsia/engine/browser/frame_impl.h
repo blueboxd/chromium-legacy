@@ -96,9 +96,6 @@ class FrameImpl : public fuchsia::web::Frame,
 
   aura::Window* root_window() const { return window_tree_host_->window(); }
 
-  // Release the resources associated with the View, if one is active.
-  void TearDownView();
-
   // Shared implementation for the ExecuteJavaScript[NoResult]() APIs.
   void ExecuteJavaScriptInternal(std::vector<std::string> origins,
                                  fuchsia::mem::Buffer script,
@@ -109,6 +106,18 @@ class FrameImpl : public fuchsia::web::Frame,
   void MaybeSendPopup();
 
   void OnPopupListenerDisconnected(zx_status_t status);
+
+  // Sets the WindowTreeHost to use for this Frame. Only one WindowTreeHost can
+  // be set at a time.
+  void SetWindowTreeHost(
+      std::unique_ptr<aura::WindowTreeHost> window_tree_host);
+
+  // Destroys the WindowTreeHost along with its view or other associated
+  // resources.
+  void DestroyWindowTreeHost();
+
+  // Destroys |this| and sends the FIDL |error| to the client.
+  void CloseAndDestroyFrame(zx_status_t error);
 
   // fuchsia::web::Frame implementation.
   void CreateView(fuchsia::ui::views::ViewToken view_token) override;
@@ -142,6 +151,8 @@ class FrameImpl : public fuchsia::web::Frame,
   void SetUrlRequestRewriteRules(
       std::vector<fuchsia::web::UrlRequestRewriteRule> rules,
       SetUrlRequestRewriteRulesCallback callback) override;
+  void EnableHeadlessRendering() override;
+  void DisableHeadlessRendering() override;
 
   // content::WebContentsDelegate implementation.
   void CloseContents(content::WebContents* source) override;

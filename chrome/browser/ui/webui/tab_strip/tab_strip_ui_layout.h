@@ -24,6 +24,7 @@ struct TabStripUILayout {
 
   int padding_around_tab_list;
   int tab_title_height;
+  int viewport_width;
   gfx::Size tab_thumbnail_size;
 };
 

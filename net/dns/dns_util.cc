@@ -177,7 +177,7 @@ const std::vector<DohUpgradeEntry>& GetDohUpgradeList() {
           DohUpgradeEntry("Comcast",
                           {"75.75.75.75", "75.75.76.76", "2001:558:feed::1",
                            "2001:558:feed::2"},
-                          {""} /* DoT hostname */,
+                          {"dot.xfinity.com"} /* DoT hostname */,
                           {"https://doh.xfinity.com/dns-query{?dns}",
                            false /* use_post */}),
           DohUpgradeEntry(

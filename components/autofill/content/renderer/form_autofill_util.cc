@@ -274,7 +274,6 @@ base::string16 FindChildTextInner(const WebNode& node,
 }
 
 // Same as FindChildText() below, but with a list of div nodes to skip.
-// TODO(thestig): See if other FindChildText() callers can benefit from this.
 base::string16 FindChildTextWithIgnoreList(
     const WebNode& node,
     const std::set<WebNode>& divs_to_skip) {

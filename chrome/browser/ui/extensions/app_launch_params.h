@@ -24,9 +24,17 @@ apps::AppLaunchParams CreateAppLaunchParamsUserContainer(
     apps::mojom::AppLaunchSource source);
 
 // Helper to create AppLaunchParams using event flags that allows user to
-// override the user-configured container using modifier keys, falling back to
-// extensions::GetLaunchContainer() with no modifiers. |display_id| is the id of
-// the display from which the app is launched.
+// override the user-configured container using modifier keys. |display_id| is
+// the id of the display from which the app is launched.
+apps::AppLaunchParams CreateAppIdLaunchParamsWithEventFlags(
+    const std::string& app_id,
+    int event_flags,
+    apps::mojom::AppLaunchSource source,
+    int64_t display_id,
+    apps::mojom::LaunchContainer fallback_container);
+
+// Helper to create AppLaunchParams, falling back to
+// extensions::GetLaunchContainer() with no modifiers.
 apps::AppLaunchParams CreateAppLaunchParamsWithEventFlags(
     Profile* profile,
     const extensions::Extension* extension,

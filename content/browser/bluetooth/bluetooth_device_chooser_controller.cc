@@ -255,23 +255,23 @@ BluetoothDeviceChooserController::~BluetoothDeviceChooserController() {
   }
 
   if (chooser_) {
-    DCHECK(!error_callback_.is_null());
-    error_callback_.Run(WebBluetoothResult::CHOOSER_CANCELLED);
+    DCHECK(error_callback_);
+    std::move(error_callback_).Run(WebBluetoothResult::CHOOSER_CANCELLED);
   }
 }
 
 void BluetoothDeviceChooserController::GetDevice(
     blink::mojom::WebBluetoothRequestDeviceOptionsPtr options,
-    const SuccessCallback& success_callback,
-    const ErrorCallback& error_callback) {
+    SuccessCallback success_callback,
+    ErrorCallback error_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // GetDevice should only be called once.
   DCHECK(success_callback_.is_null());
   DCHECK(error_callback_.is_null());
 
-  success_callback_ = success_callback;
-  error_callback_ = error_callback;
+  success_callback_ = std::move(success_callback);
+  error_callback_ = std::move(error_callback);
   options_ = std::move(options);
   LogRequestDeviceOptions(options_);
 
@@ -328,7 +328,7 @@ void BluetoothDeviceChooserController::GetDevice(
                                              std::move(chooser_event_handler));
   }
 
-  if (!chooser_.get()) {
+  if (!chooser_) {
     PostErrorCallback(WebBluetoothResult::WEB_BLUETOOTH_NOT_SUPPORTED);
     return;
   }
@@ -342,7 +342,7 @@ void BluetoothDeviceChooserController::GetDevice(
 
   device_ids_.clear();
   PopulateConnectedDevices();
-  if (!chooser_.get()) {
+  if (!chooser_) {
     // If the dialog's closing, no need to do any of the rest of this.
     return;
   }
@@ -452,10 +452,10 @@ void BluetoothDeviceChooserController::StartDeviceDiscovery() {
   chooser_->ShowDiscoveryState(BluetoothChooser::DiscoveryState::DISCOVERING);
   adapter_->StartDiscoverySessionWithFilter(
       ComputeScanFilter(options_->filters),
-      base::Bind(
+      base::BindOnce(
           &BluetoothDeviceChooserController::OnStartDiscoverySessionSuccess,
           weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(
+      base::BindOnce(
           &BluetoothDeviceChooserController::OnStartDiscoverySessionFailed,
           weak_ptr_factory_.GetWeakPtr()));
 }
@@ -479,7 +479,7 @@ void BluetoothDeviceChooserController::OnStartDiscoverySessionSuccess(
     std::unique_ptr<device::BluetoothDiscoverySession> discovery_session) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(1) << "Started discovery session.";
-  if (chooser_.get()) {
+  if (chooser_) {
     discovery_session_ = std::move(discovery_session);
     discovery_session_timer_.Reset();
   } else {
@@ -488,7 +488,7 @@ void BluetoothDeviceChooserController::OnStartDiscoverySessionSuccess(
 }
 
 void BluetoothDeviceChooserController::OnStartDiscoverySessionFailed() {
-  if (chooser_.get()) {
+  if (chooser_) {
     chooser_->ShowDiscoveryState(
         BluetoothChooser::DiscoveryState::FAILED_TO_START);
   }
@@ -499,7 +499,7 @@ void BluetoothDeviceChooserController::OnBluetoothChooserEvent(
     const std::string& device_address) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Shouldn't recieve an event from a closed chooser.
-  DCHECK(chooser_.get());
+  DCHECK(chooser_);
 
   switch (event) {
     case BluetoothChooser::Event::RESCAN:
@@ -547,18 +547,24 @@ void BluetoothDeviceChooserController::OnBluetoothChooserEvent(
 
 void BluetoothDeviceChooserController::PostSuccessCallback(
     const std::string& device_address) {
+  // TODO(reillyg): Note that this class still maintains ownership of the
+  // |error_callback_|, keeping any bound arguments alive even after it will no
+  // longer be used.
   if (!base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(success_callback_, std::move(options_),
-                                    device_address))) {
-    LOG(WARNING) << "No TaskRunner.";
+          FROM_HERE, base::BindOnce(std::move(success_callback_),
+                                    std::move(options_), device_address))) {
+    DLOG(WARNING) << "No TaskRunner.";
   }
 }
 
 void BluetoothDeviceChooserController::PostErrorCallback(
     WebBluetoothResult error) {
+  // TODO(reillyg): Note that this class still maintains ownership of the
+  // |success_callback_|, keeping any bound arguments alive even after it will
+  // no longer be used.
   if (!base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(error_callback_, error))) {
-    LOG(WARNING) << "No TaskRunner.";
+          FROM_HERE, base::BindOnce(std::move(error_callback_), error))) {
+    DLOG(WARNING) << "No TaskRunner.";
   }
 }
 

@@ -54,9 +54,8 @@ class ScopedEnableUnadjustedMouseEventsForTesting
 
 class MockPointerLockRenderWidgetHostView : public RenderWidgetHostViewAura {
  public:
-  MockPointerLockRenderWidgetHostView(RenderWidgetHost* host,
-                                      bool is_guest_view_hack)
-      : RenderWidgetHostViewAura(host, is_guest_view_hack),
+  MockPointerLockRenderWidgetHostView(RenderWidgetHost* host)
+      : RenderWidgetHostViewAura(host),
         host_(RenderWidgetHostImpl::From(host)) {}
   ~MockPointerLockRenderWidgetHostView() override {
     if (IsMouseLocked())
@@ -97,10 +96,8 @@ class MockPointerLockRenderWidgetHostView : public RenderWidgetHostViewAura {
 
 void InstallCreateHooksForPointerLockBrowserTests() {
   WebContentsViewAura::InstallCreateHookForTests(
-      [](RenderWidgetHost* host,
-         bool is_guest_view_hack) -> RenderWidgetHostViewAura* {
-        return new MockPointerLockRenderWidgetHostView(host,
-                                                       is_guest_view_hack);
+      [](RenderWidgetHost* host) -> RenderWidgetHostViewAura* {
+        return new MockPointerLockRenderWidgetHostView(host);
       });
 }
 #endif  // USE_AURA

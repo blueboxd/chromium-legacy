@@ -157,7 +157,7 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperWithTaskEnvTest,
 
     // Owned by its |GetInProcessNSView()|, i.e. |rwhv_cocoa|.
     RenderWidgetHostViewMac* rwhv_mac =
-        new RenderWidgetHostViewMac(render_widget, false);
+        new RenderWidgetHostViewMac(render_widget);
     base::scoped_nsobject<RenderWidgetHostViewCocoa> rwhv_cocoa(
         [rwhv_mac->GetInProcessNSView() retain]);
 

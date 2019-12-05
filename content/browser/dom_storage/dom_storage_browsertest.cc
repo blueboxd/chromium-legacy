@@ -106,12 +106,30 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, SanityCheckIncognito) {
 }
 
 // http://crbug.com/654704 PRE_ tests aren't supported on Android.
-// Also crbug/1027940: Fails on linux-chromeos-rel and other platforms.
+#if defined(OS_ANDROID)
+#define MAYBE_DataPersists DISABLED_DataPersists
+#else
+#define MAYBE_DataPersists DataPersists
+#endif
 IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, PRE_DataPersists) {
   SimpleTest(GetTestUrl("dom_storage", "store_data.html"), kNotIncognito);
+
+  // Browser shutdown can always race with async work on non-shutdown-blocking
+  // task runners. This includes the local storage implementation. If opening
+  // the database takes too long, by the time it finishes the IO thread may be
+  // shut down and the Local Storage implementation may be unable to commit its
+  // pending operations.
+  //
+  // Since the point of this test is to verify that committed data is actually
+  // retrievable by a subsequent browser session, wait for the database to be
+  // ready.
+  base::RunLoop loop;
+  context_wrapper()->GetLocalStorageUsage(base::BindLambdaForTesting(
+      [&](const std::vector<StorageUsageInfo>&) { loop.Quit(); }));
+  loop.Run();
 }
 
-IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, DISABLED_DataPersists) {
+IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, MAYBE_DataPersists) {
   SimpleTest(GetTestUrl("dom_storage", "verify_data.html"), kNotIncognito);
 }
 

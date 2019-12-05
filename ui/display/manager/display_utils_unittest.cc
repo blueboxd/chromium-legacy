@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/manager/display_change_observer.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -56,11 +57,15 @@ TEST_F(DisplayUtilTest, DisplayZooms) {
   }
 }
 
-TEST_F(DisplayUtilTest, DisplayZoomsWithInternalDsf) {
-  std::vector<float> kDsfs = {1.25f, 1.6f, 1.77777f, 2.f, 2.25f, 2.66666f};
-
-  for (const auto& dsf : kDsfs) {
-    SCOPED_TRACE(base::StringPrintf("dsf=%f", dsf));
+TEST_F(DisplayUtilTest, DisplayZoomsWithInternal) {
+  std::vector<float> kDpis = {160, 200, 225, 240, 280, 320};
+  float previous_dsf = 0.f;
+  for (const auto& dpi : kDpis) {
+    SCOPED_TRACE(base::StringPrintf("dpi=%f", dpi));
+    float dsf = DisplayChangeObserver::FindDeviceScaleFactor(dpi);
+    // Make sure each dpis is mapped to different dsf.
+    EXPECT_NE(previous_dsf, dsf);
+    previous_dsf = dsf;
     const std::vector<float> zoom_values = GetDisplayZoomFactorForDsf(dsf);
     const float inverse_dsf = 1.f / dsf;
     uint8_t checks = 0;

@@ -32,7 +32,6 @@ class V4L2StatelessVideoDecoderBackend : public V4L2VideoDecoderBackend,
   V4L2StatelessVideoDecoderBackend(
       Client* const client,
       scoped_refptr<V4L2Device> device,
-      DmabufVideoFramePool* const frame_pool,
       VideoCodecProfile profile,
       scoped_refptr<base::SequencedTaskRunner> task_runner);
 
@@ -99,7 +98,11 @@ class V4L2StatelessVideoDecoderBackend : public V4L2VideoDecoderBackend,
     kWaitSubFrameDecoded,
   };
 
-  // Callback which is called when V4L2 surface is destroyed.
+  // Callback which is called when the output buffer is not used anymore.
+  static void ReuseOutputBufferThunk(
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      base::Optional<base::WeakPtr<V4L2StatelessVideoDecoderBackend>> weak_this,
+      V4L2ReadableBufferRef buffer);
   void ReuseOutputBuffer(V4L2ReadableBufferRef buffer);
 
   // Try to advance the decoding work.
@@ -123,9 +126,6 @@ class V4L2StatelessVideoDecoderBackend : public V4L2VideoDecoderBackend,
 
   // Returns whether |profile| is supported by a v4l2 stateless decoder driver.
   bool IsSupportedProfile(VideoCodecProfile profile);
-
-  // Video frame pool provided by the decoder.
-  DmabufVideoFramePool* const frame_pool_;
 
   // Video profile we are decoding.
   VideoCodecProfile profile_;

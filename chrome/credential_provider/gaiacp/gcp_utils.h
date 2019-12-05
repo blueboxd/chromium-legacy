@@ -215,6 +215,11 @@ void DeleteStartupSentinel();
 // Gets a string resource from the DLL with the given id.
 base::string16 GetStringResource(int base_message_id);
 
+// Gets a string resource from the DLL with the given id after replacing the
+// placeholders with the provided substitutions.
+base::string16 GetStringResource(int base_message_id,
+                                 const std::vector<base::string16>& subst);
+
 // Gets the language selected by the base::win::i18n::LanguageSelector.
 base::string16 GetSelectedLanguage();
 

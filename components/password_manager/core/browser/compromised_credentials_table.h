@@ -63,16 +63,28 @@ class CompromisedCredentialsTable {
   // completed successfully.
   bool AddRow(const CompromisedCredentials& compromised_credentials);
 
+  // Updates the row that has |old_url| and |old_username| with |new_url| and
+  // |new_username|. If the row does not exist, the method will not do anything.
+  // Returns true if the SQL completed successfully.
+  bool UpdateRow(const GURL& new_url,
+                 const base::string16& new_username,
+                 const GURL& old_url,
+                 const base::string16& old_username) const;
+
   // Removes information about the credentials compromised for |username| on
   // |url|. Returns true if the SQL completed successfully.
-  // TODO(1015671): Use |compromise_type| as a param.
+  // Also logs the compromise type in UMA.
   bool RemoveRow(const GURL& url, const base::string16& username);
+
+  // Gets all the rows in the database for the |username| and |url|.
+  std::vector<CompromisedCredentials> GetRows(
+      const GURL& url,
+      const base::string16& username) const;
 
   // Removes all compromised credentials created between |remove_begin|
   // inclusive and |remove_end| exclusive. If |url_filter| is not null, only
   // compromised credentials for matching urls are removed. Returns true if the
   // SQL completed successfully.
-  // TODO(1015671): Filter by |compromise_type|.
   bool RemoveRowsByUrlAndTime(
       const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time remove_begin,

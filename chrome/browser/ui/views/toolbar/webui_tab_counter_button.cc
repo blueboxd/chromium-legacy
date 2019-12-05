@@ -18,6 +18,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/animation/throb_animation.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/controls/label.h"
@@ -27,10 +29,43 @@
 
 namespace {
 
+class TabCounterAnimator : public gfx::AnimationDelegate {
+ public:
+  explicit TabCounterAnimator(views::View* animated_view)
+      : animated_view_(animated_view),
+        starting_bounds_(animated_view->bounds()),
+        target_bounds_(starting_bounds_.x(),
+                       starting_bounds_.y() - 4,
+                       starting_bounds_.width(),
+                       starting_bounds_.height()) {
+    animation_ = std::make_unique<gfx::ThrobAnimation>(this);
+    animation_->SetTweenType(gfx::Tween::Type::FAST_OUT_SLOW_IN);
+    animation_->SetThrobDuration(base::TimeDelta::FromMilliseconds(100));
+  }
+  ~TabCounterAnimator() override = default;
+
+  void Animate() { animation_->StartThrobbing(1); }
+
+  // AnimationDelegate:
+  void AnimationProgressed(const gfx::Animation* animation) override {
+    gfx::Rect bounds_rect = gfx::Tween::RectValueBetween(
+        animation->GetCurrentValue(), starting_bounds_, target_bounds_);
+    animated_view_->SetBoundsRect(bounds_rect);
+  }
+
+ private:
+  views::View* const animated_view_;
+  const gfx::Rect starting_bounds_;
+  const gfx::Rect target_bounds_;
+  std::unique_ptr<gfx::ThrobAnimation> animation_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabCounterAnimator);
+};
+
 class TabCounterUpdater : public TabStripModelObserver {
  public:
   TabCounterUpdater(views::Button* button, views::Label* tab_counter)
-      : button_(button), tab_counter_(tab_counter) {}
+      : button_(button), tab_counter_(tab_counter), animator_(tab_counter) {}
   ~TabCounterUpdater() override = default;
 
   void UpdateCounter(TabStripModel* model) {
@@ -42,6 +77,7 @@ class TabCounterUpdater : public TabStripModelObserver {
             num_tabs));
     // TODO(999557): Have a 99+-style fallback to limit the max text width.
     tab_counter_->SetText(base::FormatNumber(num_tabs));
+    animator_.Animate();
   }
 
   // TabStripModelObserver:
@@ -55,6 +91,7 @@ class TabCounterUpdater : public TabStripModelObserver {
  private:
   views::Button* const button_;
   views::Label* const tab_counter_;
+  TabCounterAnimator animator_;
 };
 
 class WebUITabCounterButton : public views::Button {
@@ -89,7 +126,6 @@ std::unique_ptr<views::View> CreateWebUITabCounterButton(
                                views::MaximumFlexSizeRule::kPreferred)
                                .WithOrder(1));
 
-  // TODO(999557): also update this in response to touch mode changes.
   const int button_height = GetLayoutConstant(TOOLBAR_BUTTON_HEIGHT);
   tab_counter->SetPreferredSize(gfx::Size(button_height, button_height));
 

@@ -1667,7 +1667,6 @@ crbug.com/891427 virtual/android/rootscroller/rootscroller-during-fullscreen.htm
 crbug.com/891427 external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 fast/canvas/canvas-drawImage-live-video.html [ Pass Failure Timeout Crash ]
 crbug.com/816914 virtual/gpu/fast/canvas/canvas-drawImage-live-video.html [ Pass Failure Timeout Crash ]
-crbug.com/816914 virtual/disable-deferred-rendering/fast/canvas/canvas-drawImage-live-video.html [ Pass Failure Timeout Crash ]
 # Next 1 here: https://ci.chromium.org/buildbot/tryserver.blink/win7-blink-rel/1180
 # Next 2 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel/1541
 crbug.com/891427 virtual/android/rootscroller/gesture-scroll-document-not-root-scroller.html [ Pass Failure Timeout Crash ]
@@ -2718,6 +2717,14 @@ crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking
 crbug.com/1029514 external/wpt/html/semantics/embedded-content/the-video-element/resize-during-playback.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/filter-effects/backdrop-filter-containing-block.html [ Failure ]
+crbug.com/626703 [ Linux ] virtual/scalefactor200/external/wpt/css/filter-effects/backdrop-filter-basic-opacity-2.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/filter-effects/css-filters-animation-opacity.html [ Failure ]
+crbug.com/626703 [ Linux ] virtual/scalefactor200/external/wpt/css/filter-effects/backdrop-filter-zero-size.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/filter-effects/backdrop-filter-basic-opacity-2.html [ Failure ]
+crbug.com/626703 [ Linux ] virtual/scalefactor200/external/wpt/css/filter-effects/css-filters-animation-opacity.html [ Failure ]
+crbug.com/626703 [ Linux ] virtual/scalefactor200/external/wpt/css/filter-effects/backdrop-filter-containing-block.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/filter-effects/backdrop-filter-zero-size.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-text/text-transform/text-transform-upperlower-016.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-text/text-transform/text-transform-upperlower-016.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-text/text-transform/text-transform-upperlower-016.html [ Failure ]
@@ -5550,7 +5557,6 @@ crbug.com/971319 [ Mac ] virtual/audio-service/media/audio-garbage-collect.html 
 
 # Sheriff 2019-06-06
 crbug.com/971612 fast/canvas/OffscreenCanvas-MessageChannel-transfer.html [ Pass Failure ]
-crbug.com/971612 virtual/disable-deferred-rendering/fast/canvas/OffscreenCanvas-MessageChannel-transfer.html [ Pass Failure ]
 
 # Sheriff 2019-06-13
 crbug.com/973692 [ Mac ] external/wpt/css/css-text/parsing/hyphens-computed.html [ Failure ]
@@ -5840,20 +5846,11 @@ crbug.com/1010483 [ Win ] fast/parser/residual-style-dom.html [ Crash Pass ]
 crbug.com/1010483 [ Win ] fast/parser/residual-style-hang.html [ Crash Pass ]
 crbug.com/1010483 [ Win ] fast/selectors/specificity-overflow.html [ Crash Pass ]
 
-# Latent failures discovered with the creation of the
-# virtual/disable-deferred-rendering suite
-crbug.com/1010593 virtual/disable-deferred-rendering/fast/canvas/canvas-scale-drawImage-shadow.html [ Failure ]
-crbug.com/1010655 virtual/disable-deferred-rendering/fast/canvas/canvas-lost-gpu-context.html [ Failure ]
-crbug.com/1010657 [ Mac ] virtual/disable-deferred-rendering/fast/canvas/image-object-in-canvas.html [ Failure ]
-crbug.com/1011723 virtual/disable-deferred-rendering/fast/canvas/OffscreenCanvas-copyImage.html [ Failure ]
-
 # Sheriff 2019-10-11
 crbug.com/1012599 external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.sharedworker.html [ Pass Timeout ]
 crbug.com/1013391 http/tests/devtools/a11y-axe-core/settings/shortcuts-a11y-test.js [ Pass Timeout ]
 crbug.com/1013523 [ Release ] virtual/cross-origin-isolation/external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure Pass ]
 crbug.com/1013523 [ Release Linux Mac ] external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure Pass ]
-crbug.com/1010472 [ Linux Mac Debug ] virtual/disable-deferred-rendering/fast/canvas/color-space/canvas-drawImage-offscreenCanvas.html [ Timeout Pass ]
-crbug.com/1010472 virtual/disable-deferred-rendering/fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Failure Pass ]
 crbug.com/1013779 virtual/scalefactor200/fast/hidpi/static/calendar-picker-appearance.html [ Failure Pass ]
 crbug.com/1013779 [ Mac ] virtual/scalefactor200/fast/hidpi/static/data-suggestion-picker-appearance.html [ Failure Pass ]
 crbug.com/1013779 virtual/scalefactor200/fast/hidpi/static/pointerevents/pointerevent_touch-adjustment_click_target.html [ Failure Pass ]
@@ -5911,10 +5908,6 @@ crbug.com/1024976 virtual/audio-service/media/video-no-audio.html [ Pass Failure
 
 # Sheriff 2019-10-31
 crbug.com/1020036 [ Debug ] external/wpt/lifecycle/freeze.html [ Failure Pass ]
-
-# Temporarily disabled for landing datagrid Changes in devtools
-crbug.com/963183 http/tests/devtools/components/datagrid.js [ Pass Failure ]
-crbug.com/963183 http/tests/devtools/components/viewport-datagrid.js [ Pass Failure ]
 
 # Temporarily disabled for landing datagrid Changes in devtools
 crbug.com/963183 http/tests/devtools/network/network-close-request-view.js [ Pass Failure ]
@@ -5980,38 +5973,6 @@ crbug.com/1029713 external/wpt/cookie-store/cookieStoreManager_getSubscriptions_
 crbug.com/1029528 [ Linux ] http/tests/devtools/network/oopif-content.js [ Pass Failure ]
 crbug.com/1028477 [ Mac Win ] http/tests/devtools/appcache/appcache-manifest-with-non-existing-file.js [ Pass Timeout ]
 
-# Temporary suppression to allow Skia change to opaqueness tracking
-crbug.com/1028116 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-border-radius.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-filter.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-image.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/webp-color-profile-lossy.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization/images/color-jpeg-with-color-profile.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-animate-rotate.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-animate.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-background-image-cover.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-background-image-repeat.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-background-image-space.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-border-fade.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-clip.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-iframe.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-image-canvas-pattern.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-image-canvas-svg.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-image-canvas.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-image-pseudo-content.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-image-svg-resource-url.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-munsell-adobe-to-srgb-webgl.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-munsell-adobe-to-srgb.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-object.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization/images/color-profile-svg-foreign-object.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization/images/jpeg-with-color-profile.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization/images/png-with-color-profile.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization/images/webp-color-profile-lossless.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization/images/webp-color-profile-lossy-alpha.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-filter.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-image.html [ Pass Failure ]
-crbug.com/1028116 virtual/gpu-rasterization/images/yuv-decode-eligible/webp-color-profile-lossy.html [ Pass Failure ]
-
 crbug.com/833100 [ Mac ] external/wpt/battery-status/battery-full-manual.https.html [ Pass Failure ]
 
 # Tests include race-conditions that will be fixed after DevTools fully uses ES modules
@@ -6019,6 +5980,21 @@ crbug.com/1006759 http/tests/devtools/sources/debugger-ui/continue-to-location-m
 crbug.com/1006759 http/tests/devtools/sources/debugger-ui/continue-to-location-markers.js [ Pass Failure ]
 crbug.com/1006759 http/tests/devtools/sources/debugger-ui/popover-for-spread-operator.js [ Pass Failure ]
 crbug.com/1006759 http/tests/devtools/editor/php-highlighter.js [ Pass Failure ]
+
+# Temporary SkiaRenderer regressions
+crbug.com/1029941 [ Linux ] css3/filters/backdrop-filter-boundary.html [ Failure ]
+crbug.com/1029941 [ Linux ] css3/filters/backdrop-filter-edge-clipping-2.html [ Failure ]
+crbug.com/1029941 [ Linux ] css3/filters/backdrop-filter-edge-pixels.html [ Failure ]
+crbug.com/1029941 [ Linux ] external/wpt/css/css-paint-api/background-image-alpha.https.html [ Failure ]
+crbug.com/1029941 [ Linux ] external/wpt/css/filter-effects/backdrop-filter-edge-clipping.html [ Failure ]
+crbug.com/1029941 [ Linux ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
+crbug.com/1029941 [ Linux ] virtual/cascade/external/wpt/css/css-paint-api/background-image-alpha.https.html [ Failure ]
+crbug.com/1029941 [ Linux ] virtual/exotic-color-space/images/yuv-decode-eligible/color-profile-layer-filter.html [ Failure ]
+crbug.com/1029941 [ Linux ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/background-image-alpha.https.html [ Failure ]
+crbug.com/1029941 [ Linux ] virtual/scalefactor200/css3/filters/backdrop-filter-boundary.html [ Failure ]
+crbug.com/1029941 [ Linux ] virtual/scalefactor200/css3/filters/backdrop-filter-edge-clipping-2.html [ Failure ]
+crbug.com/1029941 [ Linux ] virtual/scalefactor200/css3/filters/backdrop-filter-edge-pixels.html [ Failure ]
+crbug.com/1029941 [ Linux ] virtual/scalefactor200/external/wpt/css/filter-effects/backdrop-filter-edge-clipping.html [ Failure ]
 
 # Disabled for three-way merge after https://crrev.com/c/devtools/devtools-frontend/+/1934218 is submitted
 crbug.com/1006759 http/tests/devtools/modules-load-network.js [ Pass Failure ]
@@ -6034,8 +6010,8 @@ crbug.com/993790 external/wpt/document-policy/required-policy/required-document-
 crbug.com/1025667 http/tests/devtools/inspector-backend-commands.js [ Pass Failure ]
 crbug.com/1029489 http/tests/devtools/elements/elements-linkify-attributes.js [ Pass Failure ]
 crbug.com/1030258 http/tests/devtools/resource-har-conversion.js [ Pass Failure ]
+
 crbug.com/1029521 virtual/threaded/external/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Pass Failure Timeout ]
-crbug.com/1029541 virtual/threaded/external/wpt/web-animations/timing-model/animations/reverse-running-animation.html [ Pass Failure ]
 
 # Enable scroll-snap tests on impl thread
 # These are currently failing on Mac which needs more investigation, snap-scrolls-visual-viewport seems flaky

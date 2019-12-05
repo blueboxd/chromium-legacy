@@ -99,6 +99,21 @@ class BrowsingHistoryHandlerTest : public ChromeRenderViewHostTestHarness {
     };
   }
 
+  void VerifyHistoryDeletedFired() {
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    EXPECT_EQ("cr.webUIListenerCallback", data.function_name());
+    std::string event_fired;
+    ASSERT_TRUE(data.arg1()->GetAsString(&event_fired));
+    EXPECT_EQ("history-deleted", event_fired);
+  }
+
+  void InitializeWebUI(BrowsingHistoryHandlerWithWebUIForTesting& handler) {
+    // Send historyLoaded so that JS will be allowed.
+    base::Value init_args(base::Value::Type::LIST);
+    init_args.Append("history-loaded-callback-id");
+    handler.HandleHistoryLoaded(&base::Value::AsListValue(init_args));
+  }
+
   syncer::TestSyncService* sync_service() { return sync_service_; }
   history::WebHistoryService* web_history_service() {
     return web_history_service_;
@@ -136,13 +151,14 @@ TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
         syncer::SyncService::TransportState::ACTIVE);
     BrowsingHistoryHandlerWithWebUIForTesting handler(web_ui());
     handler.RegisterMessages();
+    InitializeWebUI(handler);
 
     web_history_service()->ExpireHistoryBetween(
         std::set<GURL>(), base::Time(), base::Time::Max(), callback,
         PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
 
     EXPECT_EQ(1U, web_ui()->call_data().size());
-    EXPECT_EQ("historyDeleted", web_ui()->call_data().back()->function_name());
+    VerifyHistoryDeletedFired();
   }
 
   // BrowsingHistoryHandler will be informed about WebHistoryService deletions
@@ -160,8 +176,11 @@ TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
         std::set<GURL>(), base::Time(), base::Time::Max(), callback,
         PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
 
+    // Simulate initialization after history has been deleted.
+    InitializeWebUI(handler);
+
     EXPECT_EQ(2U, web_ui()->call_data().size());
-    EXPECT_EQ("historyDeleted", web_ui()->call_data().back()->function_name());
+    VerifyHistoryDeletedFired();
   }
 
   // BrowsingHistoryHandler does not fire historyDeleted while a web history
@@ -171,11 +190,7 @@ TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
         syncer::SyncService::TransportState::ACTIVE);
     BrowsingHistoryHandlerWithWebUIForTesting handler(web_ui());
     handler.RegisterMessages();
-
-    // First, send historyLoaded so that JS will be allowed.
-    base::Value init_args(base::Value::Type::LIST);
-    init_args.Append("history-loaded-callback-id");
-    handler.HandleHistoryLoaded(&base::Value::AsListValue(init_args));
+    InitializeWebUI(handler);
 
     // Simulate a delete request.
     base::Value args(base::Value::Type::LIST);

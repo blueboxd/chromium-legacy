@@ -158,7 +158,10 @@ std::vector<FallbackFontTestCase> kGetFontFallbackTests = {
      {"Segoe UI Historic"},
      kWin10Only},
 
-    {USCRIPT_LAO, "lo", L"\u0ED0\u0ED1", {"Lao UI", "Leelawadee UI"}},
+    {USCRIPT_LAO,
+     "lo",
+     L"\u0ED0\u0ED1",
+     {"Lao UI", "Leelawadee UI", "Segoe UI"}},
     {USCRIPT_LISU, "lis", L"\uA4D0\uA4D1", {"Segoe UI"}, kWin10Only},
 
     {USCRIPT_LYCIAN,
@@ -183,7 +186,7 @@ std::vector<FallbackFontTestCase> kGetFontFallbackTests = {
 
     {USCRIPT_MYANMAR, "my", L"\u1000\u1001", {"Myanmar Text"}, kWin10Only},
     {USCRIPT_NEW_TAI_LUE, "", L"\u1981\u1982", {"Microsoft New Tai Lue"}},
-    {USCRIPT_NKO, "nko", L"\u07C1\u07C2", {"Ebrima"}},
+    {USCRIPT_NKO, "nko", L"\u07C1\u07C2", {"Ebrima", "Segoe UI"}},
 
     {USCRIPT_OGHAM,
      "",

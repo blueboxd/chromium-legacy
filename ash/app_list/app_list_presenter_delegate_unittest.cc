@@ -894,7 +894,7 @@ TEST_F(AppListPresenterDelegateTest,
   ShelfLayoutManager* shelf_layout_manager =
       Shelf::ForWindow(Shell::GetRootWindowForDisplayId(GetPrimaryDisplayId()))
           ->shelf_layout_manager();
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_APP_LIST,
+  EXPECT_EQ(ShelfBackgroundType::kAppList,
             shelf_layout_manager->GetShelfBackgroundType());
 }
 
@@ -907,13 +907,13 @@ TEST_F(AppListPresenterDelegateTest, ShelfBackgroundWithHomeLauncher) {
   ShelfLayoutManager* shelf_layout_manager =
       Shelf::ForWindow(Shell::GetRootWindowForDisplayId(GetPrimaryDisplayId()))
           ->shelf_layout_manager();
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_HOME_LAUNCHER,
+  EXPECT_EQ(ShelfBackgroundType::kHomeLauncher,
             shelf_layout_manager->GetShelfBackgroundType());
 
   // Add a window. It should be in-app because it is in tablet mode.
   auto window = CreateTestWindow();
   wm::ActivateWindow(window.get());
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_IN_APP,
+  EXPECT_EQ(ShelfBackgroundType::kInApp,
             shelf_layout_manager->GetShelfBackgroundType());
 }
 
@@ -932,7 +932,7 @@ TEST_F(AppListPresenterDelegateTest, AppListShownWhileClosing) {
           ->shelf_layout_manager();
 
   EXPECT_FALSE(GetAppListView()->shelf_has_rounded_corners());
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST,
+  EXPECT_EQ(ShelfBackgroundType::kMaximizedWithAppList,
             shelf_layout_manager->GetShelfBackgroundType());
 
   // Enable animation to account for delay between app list starting to close
@@ -946,7 +946,7 @@ TEST_F(AppListPresenterDelegateTest, AppListShownWhileClosing) {
   GetAppListTestHelper()->Dismiss();
 
   EXPECT_FALSE(GetAppListView()->shelf_has_rounded_corners());
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST,
+  EXPECT_EQ(ShelfBackgroundType::kMaximizedWithAppList,
             shelf_layout_manager->GetShelfBackgroundType());
 
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
@@ -957,13 +957,13 @@ TEST_F(AppListPresenterDelegateTest, AppListShownWhileClosing) {
   GetAppListView()->GetWidget()->GetLayer()->GetAnimator()->StopAnimating();
 
   EXPECT_FALSE(GetAppListView()->shelf_has_rounded_corners());
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST,
+  EXPECT_EQ(ShelfBackgroundType::kMaximizedWithAppList,
             shelf_layout_manager->GetShelfBackgroundType());
 
   // Verify that the app list still picks up shelf changes.
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
   EXPECT_TRUE(GetAppListView()->shelf_has_rounded_corners());
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_APP_LIST,
+  EXPECT_EQ(ShelfBackgroundType::kAppList,
             shelf_layout_manager->GetShelfBackgroundType());
 }
 
@@ -982,7 +982,7 @@ TEST_F(AppListPresenterDelegateTest, AppListWithMaximizedShelf) {
           ->shelf_layout_manager();
 
   EXPECT_FALSE(GetAppListView()->shelf_has_rounded_corners());
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST,
+  EXPECT_EQ(ShelfBackgroundType::kMaximizedWithAppList,
             shelf_layout_manager->GetShelfBackgroundType());
 
   // Enable animation to account for delay between app list starting to close
@@ -996,7 +996,7 @@ TEST_F(AppListPresenterDelegateTest, AppListWithMaximizedShelf) {
   GetAppListTestHelper()->Dismiss();
 
   EXPECT_FALSE(GetAppListView()->shelf_has_rounded_corners());
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST,
+  EXPECT_EQ(ShelfBackgroundType::kMaximizedWithAppList,
             shelf_layout_manager->GetShelfBackgroundType());
 
   // Minimize the window, and verify that the shelf state changed from a
@@ -1004,7 +1004,7 @@ TEST_F(AppListPresenterDelegateTest, AppListWithMaximizedShelf) {
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
 
   EXPECT_TRUE(GetAppListView()->shelf_has_rounded_corners());
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_APP_LIST,
+  EXPECT_EQ(ShelfBackgroundType::kAppList,
             shelf_layout_manager->GetShelfBackgroundType());
 
   // Stop app list hide animation.
@@ -1012,7 +1012,7 @@ TEST_F(AppListPresenterDelegateTest, AppListWithMaximizedShelf) {
       GetAppListView()->GetWidget()->GetLayer()->GetAnimator()->is_animating());
   GetAppListView()->GetWidget()->GetLayer()->GetAnimator()->StopAnimating();
 
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT,
+  EXPECT_EQ(ShelfBackgroundType::kDefaultBg,
             shelf_layout_manager->GetShelfBackgroundType());
 }
 
@@ -1030,18 +1030,18 @@ TEST_F(AppListPresenterDelegateTest, WindowMaximizedWithAppListShown) {
           ->shelf_layout_manager();
 
   EXPECT_TRUE(GetAppListView()->shelf_has_rounded_corners());
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_APP_LIST,
+  EXPECT_EQ(ShelfBackgroundType::kAppList,
             shelf_layout_manager->GetShelfBackgroundType());
 
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
 
   EXPECT_FALSE(GetAppListView()->shelf_has_rounded_corners());
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST,
+  EXPECT_EQ(ShelfBackgroundType::kMaximizedWithAppList,
             shelf_layout_manager->GetShelfBackgroundType());
 
   GetAppListTestHelper()->Dismiss();
 
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_MAXIMIZED,
+  EXPECT_EQ(ShelfBackgroundType::kMaximized,
             shelf_layout_manager->GetShelfBackgroundType());
 }
 
@@ -1288,7 +1288,7 @@ TEST_F(AppListPresenterDelegateTest,
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   ShelfLayoutManager* shelf_layout_manager =
       GetPrimaryShelf()->shelf_layout_manager();
-  EXPECT_EQ(SHELF_BACKGROUND_APP_LIST,
+  EXPECT_EQ(ShelfBackgroundType::kAppList,
             shelf_layout_manager->GetShelfBackgroundType());
   GetAppListTestHelper()->DismissAndRunLoop();
 
@@ -1298,7 +1298,7 @@ TEST_F(AppListPresenterDelegateTest,
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   EXPECT_FALSE(GetPrimaryShelf()->IsHorizontalAlignment());
   EXPECT_EQ(
-      SHELF_BACKGROUND_APP_LIST,
+      ShelfBackgroundType::kAppList,
       GetPrimaryShelf()->shelf_layout_manager()->GetShelfBackgroundType());
 }
 

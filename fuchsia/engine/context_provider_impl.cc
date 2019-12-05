@@ -50,7 +50,9 @@
 #include "net/http/http_util.h"
 #include "services/service_manager/sandbox/fuchsia/sandbox_policy_fuchsia.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
+#include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/ozone/public/ozone_switches.h"
 
 namespace {
 
@@ -287,7 +289,6 @@ void ContextProviderImpl::Create(
 
   bool enable_vulkan = (features & fuchsia::web::ContextFeatureFlags::VULKAN) ==
                        fuchsia::web::ContextFeatureFlags::VULKAN;
-
   bool enable_widevine =
       (features & fuchsia::web::ContextFeatureFlags::WIDEVINE_CDM) ==
       fuchsia::web::ContextFeatureFlags::WIDEVINE_CDM;
@@ -309,9 +310,23 @@ void ContextProviderImpl::Create(
     return;
   }
 
-  if (enable_vulkan) {
-    DLOG(ERROR) << "Enabling Vulkan GPU acceleration.";
+  const bool is_headless =
+      (features & fuchsia::web::ContextFeatureFlags::HEADLESS) ==
+      fuchsia::web::ContextFeatureFlags::HEADLESS;
+  if (is_headless) {
+    launch_command.AppendSwitchNative(switches::kOzonePlatform,
+                                      switches::kHeadless);
+    launch_command.AppendSwitch(switches::kHeadless);
+  }
 
+  if (enable_vulkan) {
+    if (is_headless) {
+      LOG(ERROR) << "VULKAN and HEADLESS features cannot be used together.";
+      context_request.Close(ZX_ERR_INVALID_ARGS);
+      return;
+    }
+
+    DLOG(ERROR) << "Enabling Vulkan GPU acceleration.";
     // Vulkan requires use of SkiaRenderer, configured to a use Vulkan context.
     launch_command.AppendSwitch(switches::kUseVulkan);
     launch_command.AppendSwitchASCII(switches::kEnableFeatures,

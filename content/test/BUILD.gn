@@ -1580,7 +1580,6 @@ test("content_unittests") {
     "../browser/frame_host/origin_policy_throttle_unittest.cc",
     "../browser/frame_host/render_frame_host_feature_policy_unittest.cc",
     "../browser/frame_host/render_frame_host_manager_unittest.cc",
-    "../browser/frame_host/render_widget_host_view_guest_unittest.cc",
     "../browser/geolocation/geolocation_service_impl_unittest.cc",
     "../browser/gpu/gpu_data_manager_impl_private_unittest.cc",
     "../browser/gpu/gpu_data_manager_testing_arrays_and_structs_autogen.h",

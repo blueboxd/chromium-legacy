@@ -32,7 +32,8 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
   MOCK_METHOD0(GetCommandBufferRouteId, int32_t());
 
   MOCK_METHOD2(IsDecoderConfigSupported,
-               bool(VideoDecoderImplementation, const VideoDecoderConfig&));
+               Supported(VideoDecoderImplementation,
+                         const VideoDecoderConfig&));
   MOCK_METHOD3(
       CreateVideoDecoder,
       std::unique_ptr<media::VideoDecoder>(MediaLog*,

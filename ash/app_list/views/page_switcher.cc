@@ -33,8 +33,8 @@ namespace ash {
 
 namespace {
 
-constexpr int kNormalButtonRadius = 4;
-constexpr int kSelectedButtonRadius = 5;
+constexpr int kNormalButtonRadius = 3;
+constexpr int kSelectedButtonRadius = 4;
 constexpr int kInkDropRadiusForRootGrid = 16;
 constexpr int kInkDropRadiusForFolderGrid = 10;
 constexpr SkScalar kStrokeWidth = SkIntToScalar(2);

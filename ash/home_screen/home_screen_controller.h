@@ -45,7 +45,9 @@ class ASH_EXPORT HomeScreenController : public OverviewObserver,
   // Called when a window starts/ends dragging. If the home screen is shown, we
   // should hide it during dragging a window and reshow it when the drag ends.
   void OnWindowDragStarted();
-  void OnWindowDragEnded();
+  // If |animate| is true, scale-in-to-show home screen if home screen should
+  // be shown after drag ends.
+  void OnWindowDragEnded(bool animate);
 
   // True if home screen is visible.
   bool IsHomeScreenVisible() const;
@@ -78,6 +80,10 @@ class ASH_EXPORT HomeScreenController : public OverviewObserver,
   // |shown| - whether the final home state was shown.
   // |display_id| - the home screen display ID.
   void NotifyHomeLauncherTransitionEnded(bool shown, int64_t display_id);
+
+  // Returns true if home screen should be shown based on the current
+  // configuration.
+  bool ShouldShowHomeScreen() const;
 
   // Whether the wallpaper is being previewed. The home screen should be hidden
   // during wallpaper preview.

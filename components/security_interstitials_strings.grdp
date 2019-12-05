@@ -475,9 +475,6 @@
   </message>
 
   <!-- Safety Tip summary strings for Android (Desktop is in page_info_strings.grdp) -->
-  <message name="IDS_SAFETY_TIP_ANDROID_IGNORE_BUTTON" desc="Text of button to leave a suspicious page. Shown on the safety tip infobar.">
-    Ignore
-  </message>
   <message name="IDS_SAFETY_TIP_ANDROID_LEAVE_BUTTON" desc="Text of button to ignore the warning on a suspicious page. Shown on the safety tip infobar.">
     Leave site
   </message>

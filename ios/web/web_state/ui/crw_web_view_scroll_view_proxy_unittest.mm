@@ -7,6 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/compiler_specific.h"
+#import "ios/web/web_state/ui/crw_web_view_scroll_view_delegate_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -15,6 +16,14 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+// TODO(crbug.com/1030168): Rewrite tests Delegate, MultipleScrollView,
+// DelegateClearingUp not to depend on this, and delete this.
+@interface CRWWebViewScrollViewProxy (Testing)
+
+@property(nonatomic, readonly) CRWWebViewScrollViewDelegateProxy* delegateProxy;
+
+@end
 
 namespace {
 
@@ -34,7 +43,7 @@ class CRWWebViewScrollViewProxyTest : public PlatformTest {
 // Tests that the UIScrollViewDelegate is set correctly.
 TEST_F(CRWWebViewScrollViewProxyTest, Delegate) {
   [static_cast<UIScrollView*>([mockScrollView_ expect])
-      setDelegate:webViewScrollViewProxy_];
+      setDelegate:webViewScrollViewProxy_.delegateProxy];
   [webViewScrollViewProxy_ setScrollView:mockScrollView_];
   EXPECT_OCMOCK_VERIFY(mockScrollView_);
 }
@@ -47,7 +56,7 @@ TEST_F(CRWWebViewScrollViewProxyTest, MultipleScrollView) {
   [webViewScrollViewProxy_ setScrollView:mockScrollView1];
   [webViewScrollViewProxy_ setScrollView:mockScrollView2];
   EXPECT_FALSE([mockScrollView1 delegate]);
-  EXPECT_EQ(webViewScrollViewProxy_, [mockScrollView2 delegate]);
+  EXPECT_EQ(webViewScrollViewProxy_.delegateProxy, [mockScrollView2 delegate]);
   [webViewScrollViewProxy_ setScrollView:nil];
 }
 
@@ -56,7 +65,7 @@ TEST_F(CRWWebViewScrollViewProxyTest, MultipleScrollView) {
 TEST_F(CRWWebViewScrollViewProxyTest, DelegateClearingUp) {
   UIScrollView* mockScrollView1 = [[UIScrollView alloc] init];
   [webViewScrollViewProxy_ setScrollView:mockScrollView1];
-  EXPECT_EQ(webViewScrollViewProxy_, [mockScrollView1 delegate]);
+  EXPECT_EQ(webViewScrollViewProxy_.delegateProxy, [mockScrollView1 delegate]);
   [webViewScrollViewProxy_ setScrollView:nil];
   EXPECT_FALSE([mockScrollView1 delegate]);
 }
@@ -298,6 +307,86 @@ TEST_F(CRWWebViewScrollViewProxyTest, ContentInsetDidChange) {
   scroll_view.contentInset = UIEdgeInsetsMake(0, 1, 2, 3);
   [mock_delegate verify];
   [webViewScrollViewProxy_ setScrollView:nil];
+}
+
+// Verifies that method calls to -asUIScrollView are simply forwarded to the
+// underlying scroll view if the method is not implemented in
+// CRWWebViewScrollViewProxy.
+TEST_F(CRWWebViewScrollViewProxyTest, AsUIScrollViewWithUnderlyingScrollView) {
+  [webViewScrollViewProxy_ setScrollView:mockScrollView_];
+
+  // Verifies that a return value is properly propagated.
+  // -viewPrintFormatter is not implemented in CRWWebViewScrollViewProxy.
+  UIViewPrintFormatter* print_formatter_mock =
+      OCMClassMock([UIViewPrintFormatter class]);
+  OCMStub([mockScrollView_ viewPrintFormatter]).andReturn(print_formatter_mock);
+  EXPECT_EQ(print_formatter_mock,
+            [[webViewScrollViewProxy_ asUIScrollView] viewPrintFormatter]);
+
+  // Verifies that a parameter is properly propagated.
+  // -drawRect: is not implemented in CRWWebViewScrollViewProxy.
+  CGRect rect = CGRectMake(0, 0, 1, 1);
+  OCMExpect([mockScrollView_ drawRect:rect]);
+  [[webViewScrollViewProxy_ asUIScrollView] drawRect:rect];
+  EXPECT_OCMOCK_VERIFY((id)mockScrollView_);
+
+  [webViewScrollViewProxy_ setScrollView:nil];
+}
+
+// Verifies that method calls to -asUIScrollView are no-op if the underlying
+// scroll view is nil and the method is not implemented in
+// CRWWebViewScrollViewProxy.
+TEST_F(CRWWebViewScrollViewProxyTest,
+       AsUIScrollViewWithoutUnderlyingScrollView) {
+  [webViewScrollViewProxy_ setScrollView:nil];
+
+  // Any methods should return nil when the underlying scroll view is nil.
+  EXPECT_EQ(nil, [[webViewScrollViewProxy_ asUIScrollView] viewPrintFormatter]);
+
+  // It is expected that nothing happens. Just verifies that it doesn't crash.
+  CGRect rect = CGRectMake(0, 0, 1, 1);
+  [[webViewScrollViewProxy_ asUIScrollView] drawRect:rect];
+}
+
+// Verify that -[CRWWebViewScrollViewProxy isKindOfClass:] works as expected.
+TEST_F(CRWWebViewScrollViewProxyTest, IsKindOfClass) {
+  // The proxy is a kind of its own class.
+  EXPECT_TRUE([webViewScrollViewProxy_
+      isKindOfClass:[CRWWebViewScrollViewProxy class]]);
+
+  // The proxy prentends itself to be a kind of UIScrollView.
+  EXPECT_TRUE([webViewScrollViewProxy_ isKindOfClass:[UIScrollView class]]);
+
+  // It should return YES for ancestor classes of UIScrollView.
+  EXPECT_TRUE([webViewScrollViewProxy_ isKindOfClass:[UIView class]]);
+
+  // Returns NO if none of above applies.
+  EXPECT_FALSE([webViewScrollViewProxy_ isKindOfClass:[NSString class]]);
+}
+
+// Verify that -[CRWWebViewScrollViewProxy respondsToSelector:] works as
+// expected.
+TEST_F(CRWWebViewScrollViewProxyTest, RespondsToSelector) {
+  // A method defined in CRWWebViewScrollViewProxy but not in UIScrollView.
+  EXPECT_TRUE(
+      [webViewScrollViewProxy_ respondsToSelector:@selector(addObserver:)]);
+
+  // A method defined in CRWWebViewScrollViewProxy and also in UIScrollView.
+  EXPECT_TRUE(
+      [webViewScrollViewProxy_ respondsToSelector:@selector(contentOffset)]);
+
+  // A method defined in UIScrollView but not in CRWWebViewScrollViewProxy.
+  EXPECT_TRUE(
+      [webViewScrollViewProxy_ respondsToSelector:@selector(indexDisplayMode)]);
+
+  // A method defined in UIView (a superclass of UIScrollView) but not in
+  // CRWWebViewScrollViewProxy.
+  EXPECT_TRUE([webViewScrollViewProxy_
+      respondsToSelector:@selector(viewPrintFormatter)]);
+
+  // A method defined in none of above.
+  EXPECT_FALSE(
+      [webViewScrollViewProxy_ respondsToSelector:@selector(containsString:)]);
 }
 
 }  // namespace

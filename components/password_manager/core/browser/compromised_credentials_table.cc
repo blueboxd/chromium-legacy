@@ -4,7 +4,10 @@
 
 #include "components/password_manager/core/browser/compromised_credentials_table.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "components/password_manager/core/browser/sql_table_builder.h"
+#include "components/password_manager/core/common/password_manager_features.h"
+#include "components/safe_browsing/features.h"
 #include "sql/database.h"
 #include "sql/statement.h"
 
@@ -70,10 +73,18 @@ bool operator==(const CompromisedCredentials& lhs,
 }
 
 void CompromisedCredentialsTable::Init(sql::Database* db) {
-  db_ = db;
+  bool password_protection_show_domains_for_saved_password_is_on =
+      base::FeatureList::IsEnabled(
+          safe_browsing::kPasswordProtectionShowDomainsForSavedPasswords);
+  if (password_protection_show_domains_for_saved_password_is_on ||
+      base::FeatureList::IsEnabled(password_manager::features::kLeakHistory))
+    db_ = db;
 }
 
 bool CompromisedCredentialsTable::CreateTableIfNecessary() {
+  if (!db_)
+    return false;
+
   if (db_->DoesTableExist(kCompromisedCredentialsTableName))
     return true;
 
@@ -84,8 +95,14 @@ bool CompromisedCredentialsTable::CreateTableIfNecessary() {
 
 bool CompromisedCredentialsTable::AddRow(
     const CompromisedCredentials& compromised_credentials) {
-  if (!compromised_credentials.url.is_valid())
+  if (!db_ || !compromised_credentials.url.is_valid())
     return false;
+
+  DCHECK(db_->DoesTableExist(kCompromisedCredentialsTableName));
+
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.CompromisedCredentials.Add",
+                            compromised_credentials.compromise_type);
+
   sql::Statement s(
       db_->GetCachedStatement(SQL_FROM_HERE,
                               "INSERT OR IGNORE INTO compromised_credentials "
@@ -104,10 +121,71 @@ bool CompromisedCredentialsTable::AddRow(
   return s.Run();
 }
 
+std::vector<CompromisedCredentials> CompromisedCredentialsTable::GetRows(
+    const GURL& url,
+    const base::string16& username) const {
+  if (!db_ || !url.is_valid())
+    return std::vector<CompromisedCredentials>{};
+
+  DCHECK(db_->DoesTableExist(kCompromisedCredentialsTableName));
+
+  sql::Statement s(db_->GetCachedStatement(
+      SQL_FROM_HERE,
+      "SELECT url, username, create_time, compromise_type FROM "
+      "compromised_credentials WHERE url = ? AND username = ? "));
+  s.BindString(0, url.spec());
+  s.BindString16(1, username);
+  return StatementToCompromisedCredentials(&s);
+}
+
+bool CompromisedCredentialsTable::UpdateRow(
+    const GURL& new_url,
+    const base::string16& new_username,
+    const GURL& old_url,
+    const base::string16& old_username) const {
+  if (!db_ || !new_url.is_valid() || !old_url.is_valid())
+    return false;
+
+  DCHECK(db_->DoesTableExist(kCompromisedCredentialsTableName));
+
+  // Retrieve the rows that are to be updated to log.
+  const std::vector<CompromisedCredentials> compromised_credentials =
+      GetRows(old_url, old_username);
+  if (compromised_credentials.empty())
+    return false;
+  for (const auto& compromised_credential : compromised_credentials) {
+    UMA_HISTOGRAM_ENUMERATION("PasswordManager.CompromisedCredentials.Update",
+                              compromised_credential.compromise_type);
+  }
+
+  sql::Statement s(db_->GetCachedStatement(SQL_FROM_HERE,
+                                           "UPDATE compromised_credentials "
+                                           "SET url = ?, username = ? "
+                                           "WHERE url = ? and username = ?"));
+  s.BindString(0, new_url.spec());
+  s.BindString16(1, new_username);
+  s.BindString(2, old_url.spec());
+  s.BindString16(3, old_username);
+  return s.Run();
+}
+
 bool CompromisedCredentialsTable::RemoveRow(const GURL& url,
                                             const base::string16& username) {
-  if (!url.is_valid())
+  if (!db_ || !url.is_valid())
     return false;
+
+  DCHECK(db_->DoesTableExist(kCompromisedCredentialsTableName));
+
+  // Retrieve the rows that are to be removed to log.
+  const std::vector<CompromisedCredentials> compromised_credentials =
+      GetRows(url, username);
+  if (compromised_credentials.empty())
+    return false;
+  for (const auto& compromised_credential : compromised_credentials) {
+    UMA_HISTOGRAM_ENUMERATION("PasswordManager.CompromisedCredentials.Remove",
+                              compromised_credential.compromise_type);
+  }
+
   sql::Statement s(db_->GetCachedStatement(
       SQL_FROM_HERE,
       "DELETE FROM compromised_credentials WHERE url = ? AND username = ? "));
@@ -120,6 +198,11 @@ bool CompromisedCredentialsTable::RemoveRowsByUrlAndTime(
     const base::RepeatingCallback<bool(const GURL&)>& url_filter,
     base::Time remove_begin,
     base::Time remove_end) {
+  if (!db_)
+    return false;
+
+  DCHECK(db_->DoesTableExist(kCompromisedCredentialsTableName));
+
   const int64_t remove_begin_us =
       remove_begin.ToDeltaSinceWindowsEpoch().InMicroseconds();
   const int64_t remove_end_us =
@@ -167,6 +250,11 @@ bool CompromisedCredentialsTable::RemoveRowsByUrlAndTime(
 }
 
 std::vector<CompromisedCredentials> CompromisedCredentialsTable::GetAllRows() {
+  if (!db_)
+    return std::vector<CompromisedCredentials>{};
+
+  DCHECK(db_->DoesTableExist(kCompromisedCredentialsTableName));
+
   static constexpr char query[] = "SELECT * FROM compromised_credentials";
   sql::Statement s(db_->GetCachedStatement(SQL_FROM_HERE, query));
   return StatementToCompromisedCredentials(&s);

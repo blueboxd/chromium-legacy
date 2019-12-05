@@ -4,15 +4,16 @@
 ** Derived from the public domain SQLite (https://sqlite.org) sources.
 */
 
+#include <fuzzer/FuzzedDataProvider.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+#include <cstdlib>
 #include <iomanip>
 #include <ios>
 #include <iostream>
 #include <sstream>
-#include <stddef.h>
-#include <stdint.h>
-#include <string.h>
 #include <string>
-#include <fuzzer/FuzzedDataProvider.h>
 
 #include "third_party/sqlite/sqlite3.h"
 
@@ -98,6 +99,9 @@ std::string GetValueByType(FuzzedDataProvider *data_provider, ColumnType type) {
 }
 
 void RunSqlQuery(std::string &query, int *exec_count) {
+  static bool should_print = ::getenv("DUMP_NATIVE_INPUT");
+  if (should_print)
+    std::cout << query << std::endl;
   char *zErrMsg = 0; /* Error message returned by sqlite_exec() */
   sqlite3_exec(g_database, query.c_str(), ExecHandler,
                static_cast<void *>(exec_count), &zErrMsg);

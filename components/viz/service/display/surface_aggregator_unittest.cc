@@ -135,9 +135,7 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
   }
 
   CompositorFrame AggregateFrame(const SurfaceId& surface_id) {
-    return aggregator_.Aggregate(
-        surface_id, GetNextDisplayTimeAndIncrement(),
-        gfx::OVERLAY_TRANSFORM_NONE /* display_transform */);
+    return aggregator_.Aggregate(surface_id, GetNextDisplayTimeAndIncrement());
   }
 
   struct Quad {
@@ -4066,8 +4064,7 @@ class SurfaceAggregatorWithResourcesTest : public testing::Test,
   }
 
   CompositorFrame AggregateFrame(const SurfaceId& surface_id) {
-    return aggregator_->Aggregate(surface_id, GetNextDisplayTimeAndIncrement(),
-                                  gfx::OVERLAY_TRANSFORM_NONE);
+    return aggregator_->Aggregate(surface_id, GetNextDisplayTimeAndIncrement());
   }
 
  protected:
@@ -5357,8 +5354,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, DisplayTransformDamageCallback) {
 
   gfx::Rect transformed_rect(SurfaceSize().height(), SurfaceSize().width());
   CompositorFrame frame =
-      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement(),
-                            gfx::OVERLAY_TRANSFORM_ROTATE_90);
+      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
   EXPECT_EQ(frame.render_pass_list.back()->output_rect, transformed_rect);
   EXPECT_EQ(frame.render_pass_list.back()->damage_rect, transformed_rect);
 }

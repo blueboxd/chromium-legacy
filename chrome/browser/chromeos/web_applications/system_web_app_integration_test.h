@@ -14,6 +14,8 @@ namespace web_app {
 enum class SystemAppType;
 }
 
+class Profile;
+
 // Test harness for how ChromeOS System Web Apps integrate with the System Web
 // App platform.
 class SystemWebAppIntegrationTest
@@ -27,6 +29,9 @@ class SystemWebAppIntegrationTest
   void ExpectSystemWebAppValid(web_app::SystemAppType app_type,
                                const GURL& url,
                                const std::string& title);
+
+  // Helper to obtain browser()->profile().
+  Profile* profile();
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_WEB_APPLICATIONS_SYSTEM_WEB_APP_INTEGRATION_TEST_H_

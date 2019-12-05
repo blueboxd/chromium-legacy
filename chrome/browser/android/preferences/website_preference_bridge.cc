@@ -31,11 +31,11 @@
 #include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/media/android/cdm/media_drm_license_manager.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
-#include "chrome/browser/permissions/adaptive_notification_permission_ui_selector.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
+#include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -1262,9 +1262,8 @@ static jboolean JNI_WebsitePreferenceBridge_GetMicManagedByCustodian(
 static jboolean JNI_WebsitePreferenceBridge_GetQuietNotificationsUiEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& jprofile) {
-  return AdaptiveNotificationPermissionUiSelector::GetForProfile(
-             ProfileAndroid::FromProfileAndroid(jprofile))
-      ->ShouldShowQuietUi();
+  return QuietNotificationPermissionUiState::IsQuietUiEnabledInPrefs(
+      ProfileAndroid::FromProfileAndroid(jprofile));
 }
 
 static void JNI_WebsitePreferenceBridge_SetQuietNotificationsUiEnabled(
@@ -1272,13 +1271,11 @@ static void JNI_WebsitePreferenceBridge_SetQuietNotificationsUiEnabled(
     const JavaParamRef<jobject>& jprofile,
     jboolean enabled) {
   if (enabled) {
-    AdaptiveNotificationPermissionUiSelector::GetForProfile(
-        ProfileAndroid::FromProfileAndroid(jprofile))
-        ->EnableQuietUi();
+    QuietNotificationPermissionUiState::EnableQuietUiInPrefs(
+        ProfileAndroid::FromProfileAndroid(jprofile));
   } else {
-    AdaptiveNotificationPermissionUiSelector::GetForProfile(
-        ProfileAndroid::FromProfileAndroid(jprofile))
-        ->DisableQuietUi();
+    QuietNotificationPermissionUiState::DisableQuietUiInPrefs(
+        ProfileAndroid::FromProfileAndroid(jprofile));
   }
 }
 

@@ -262,16 +262,16 @@ class AppCacheRequestHandlerTest : public ::testing::Test {
     info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
         net::HttpUtil::AssembleRawHeaders(headers));
 
-    network::ResourceResponseHead response;
-    response.headers = info.headers;
-    request_->set_response(response);
+    auto response = network::mojom::URLResponseHead::New();
+    response->headers = info.headers;
+    request_->set_response(std::move(response));
     DCHECK_EQ(response_code, request_->GetResponseCode());
   }
 
   void SimulateResponseInfo(const net::HttpResponseInfo& info) {
-    network::ResourceResponseHead response;
-    response.headers = info.headers;
-    request_->set_response(response);
+    auto response = network::mojom::URLResponseHead::New();
+    response->headers = info.headers;
+    request_->set_response(std::move(response));
   }
 
   void Verify_MainResource_Fallback() {

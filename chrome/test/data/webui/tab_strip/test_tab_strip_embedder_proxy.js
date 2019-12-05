@@ -14,6 +14,8 @@ export class TestTabStripEmbedderProxy extends TestBrowserProxy {
       'observeThemeChanges',
       'showBackgroundContextMenu',
       'showTabContextMenu',
+      'reportTabActivationDuration',
+      'reportTabDataReceivedDuration',
     ]);
 
     this.colors_ = {};
@@ -63,5 +65,13 @@ export class TestTabStripEmbedderProxy extends TestBrowserProxy {
 
   showTabContextMenu(tabId, locationX, locationY) {
     this.methodCalled('showTabContextMenu', [tabId, locationX, locationY]);
+  }
+
+  reportTabActivationDuration(durationMs) {
+    this.methodCalled('reportTabActivationDuration', [durationMs]);
+  }
+
+  reportTabDataReceivedDuration(tabCount, durationMs) {
+    this.methodCalled('reportTabDataReceivedDuration', [tabCount, durationMs]);
   }
 }

@@ -31,7 +31,8 @@ class CONTENT_EXPORT MessageLoopObserver : base::TaskObserver {
   ~MessageLoopObserver() override;
 
  private:
-  void WillProcessTask(const base::PendingTask& pending_task) override;
+  void WillProcessTask(const base::PendingTask& pending_task,
+                       bool was_blocked_or_low_priority) override;
   void DidProcessTask(const base::PendingTask& pending_task) override;
 
   TaskCallback will_run_task_callback_;

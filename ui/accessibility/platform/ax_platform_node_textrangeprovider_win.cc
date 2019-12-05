@@ -559,7 +559,7 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetEnclosingElement(
   enclosing_node = enclosing_node->GetLowestAccessibleElement();
   DCHECK(enclosing_node);
 
-  while (ui::IsIgnored(enclosing_node->GetData()) ||
+  while (enclosing_node->GetData().IsIgnored() ||
          enclosing_node->GetData().role == ax::mojom::Role::kInlineTextBox) {
     AXPlatformNodeWin* parent = static_cast<AXPlatformNodeWin*>(
         AXPlatformNode::FromNativeViewAccessible(enclosing_node->GetParent()));
@@ -883,7 +883,7 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetChildren(
   const AXNode::AXID node_id = common_anchor->id();
   AXPlatformNodeDelegate* delegate = GetDelegate(tree_id, node_id);
   DCHECK(delegate);
-  while (ui::IsIgnored(delegate->GetData())) {
+  while (delegate->GetData().IsIgnored()) {
     auto* node = static_cast<AXPlatformNodeWin*>(
         AXPlatformNode::FromNativeViewAccessible(delegate->GetParent()));
     DCHECK(node);

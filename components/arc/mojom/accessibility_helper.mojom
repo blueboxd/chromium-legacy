@@ -306,10 +306,7 @@ enum AccessibilityFilterType {
   FOCUS,
 
   // Send a complete tree from the event source's root for every event.
-  ALL,
-
-  // Send complete subtrees for root nodes with whitelisted package names.
-  [MinVersion=2] WHITELISTED_PACKAGE_NAME_DEPRECATED
+  ALL
 };
 
 [Extensible]

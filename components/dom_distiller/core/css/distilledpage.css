@@ -194,12 +194,12 @@ body {
   border-left: 1px solid #555;
 }
 
-/* #contentWrap is added to be more specific than the color theme rules */
-#contentWrap th:first-child {
+/* #content-wrap is added to be more specific than the color theme rules */
+#content-wrap th:first-child {
   border-left: none;
 }
 
-#contentWrap td:first-child {
+#content-wrap td:first-child {
   border-left: none;
 }
 
@@ -253,13 +253,13 @@ h6 {
 
 /* Content. */
 
-#loadingIndicator {
+#loading-indicator {
   padding-bottom: 2em;
   width: 100%;
 }
 
-#loadingIndicator > img,
-#loadingIndicator > svg {
+#loading-indicator > img,
+#loading-indicator > svg {
   display: block;
   height: 2.5em;
   margin: auto;
@@ -276,18 +276,19 @@ video::-webkit-media-controls-fullscreen-button {
   margin: 24px 16px 24px 16px;
 }
 
-#mainContent {
+#main-content {
   flex: 1 1 auto;
   margin: 0 auto;
+  max-width: 35em;
   width: 100%;
 }
 
-#articleHeader {
+#article-header {
   margin-top: 24px;
   width: 100%;
 }
 
-#titleHolder {
+#title-holder {
   font-size: 1.714rem;
   line-height: 1.417;
   margin: 0 16px;
@@ -392,3 +393,9 @@ body .hidden {
   top: 0;
   width: 100%;
 }
+
+<if expr="is_ios or is_android">
+.desktop-only {
+  display: none;
+}
+</if>

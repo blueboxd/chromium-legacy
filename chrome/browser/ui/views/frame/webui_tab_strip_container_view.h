@@ -17,10 +17,15 @@
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 #if !BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 #error
 #endif
+
+namespace feature_engagement {
+class Tracker;
+}  // namespace feature_engagement
 
 namespace ui {
 class MenuModel;
@@ -33,12 +38,14 @@ class WebView;
 }  // namespace views
 
 class Browser;
+class FeaturePromoBubbleView;
 
 class WebUITabStripContainerView : public TabStripUI::Embedder,
                                    public gfx::AnimationDelegate,
                                    public views::AccessiblePaneView,
                                    public views::ButtonListener,
-                                   public views::ViewObserver {
+                                   public views::ViewObserver,
+                                   public views::WidgetObserver {
  public:
   WebUITabStripContainerView(Browser* browser,
                              views::View* tab_contents_container);
@@ -53,6 +60,10 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
   std::unique_ptr<views::View> CreateTabCounter();
 
   void UpdateButtons();
+
+  // Should be called on BrowserView re-layout. If IPH is showing,
+  // updates the promo for the new tab counter location.
+  void UpdatePromoBubbleBounds();
 
   // Clicking the tab counter button opens and closes the container with
   // an animation, so it is unsuitable for an interactive test. This
@@ -98,6 +109,9 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
   void OnViewBoundsChanged(View* observed_view) override;
   void OnViewIsDeleting(View* observed_view) override;
 
+  // views::WidgetObserver:
+  void OnWidgetDestroying(views::Widget* widget) override;
+
   // views::AccessiblePaneView
   bool SetPaneFocusAndFocusDefault() override;
 
@@ -113,6 +127,9 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
   // long the tab strip is kept open.
   base::Optional<base::TimeTicks> time_at_open_;
 
+  feature_engagement::Tracker* const iph_tracker_;
+  FeaturePromoBubbleView* tab_counter_promo_ = nullptr;
+
   gfx::SlideAnimation animation_{this};
 
   std::unique_ptr<AutoCloser> auto_closer_;
@@ -121,6 +138,7 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
   std::unique_ptr<ui::MenuModel> context_menu_model_;
 
   ScopedObserver<views::View, views::ViewObserver> view_observer_{this};
+  ScopedObserver<views::Widget, views::WidgetObserver> widget_observer_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_WEBUI_TAB_STRIP_CONTAINER_VIEW_H_

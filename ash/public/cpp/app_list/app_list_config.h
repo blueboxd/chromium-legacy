@@ -66,6 +66,10 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   SkColor grid_title_color() const { return grid_title_color_; }
   int grid_fadeout_zone_height() const { return grid_fadeout_zone_height_; }
   int grid_fadeout_mask_height() const { return grid_fadeout_mask_height_; }
+  int grid_to_page_switcher_margin() const {
+    return grid_to_page_switcher_margin_;
+  }
+  int page_switcher_end_margin() const { return page_switcher_end_margin_; }
   int search_tile_icon_dimension() const { return search_tile_icon_dimension_; }
   int search_tile_badge_icon_dimension() const {
     return search_tile_badge_icon_dimension_;
@@ -228,6 +232,14 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   // Returns the maximum number of items allowed in specified page in apps grid.
   int GetMaxNumOfItemsPerPage(int page) const;
 
+  // The minimal horizontal padding for the apps grid.
+  int GetMinGridHorizontalPadding() const;
+
+  // Returns the ideal apps container margins for the bounds available for app
+  // list content.
+  int GetIdealHorizontalMargin(const gfx::Rect& abailable_bounds) const;
+  int GetIdealVerticalMargin(const gfx::Rect& abailable_bounds) const;
+
  private:
   const ash::AppListConfigType type_;
 
@@ -270,6 +282,12 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   // This is different from |grid_fadeout_zone_height_|, which may include
   // additional margin outside the fadeout mask.
   const int grid_fadeout_mask_height_;
+
+  // Horizontal margin between the apps grid and the page switcher UI.
+  const int grid_to_page_switcher_margin_;
+
+  // Minimal horizontal page switcher distance from the app list UI edge.
+  const int page_switcher_end_margin_;
 
   // The icon dimension of tile views in search result page view.
   const int search_tile_icon_dimension_;

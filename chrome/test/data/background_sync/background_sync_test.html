@@ -18,7 +18,7 @@
       GetActivatedServiceWorkerForTest()
         .then(registration => {
           const replyListener = event => {
-            if (event.data.startsWith('onsync: ')) {
+            if (event.data.startsWith('onsync: ') || event.data.startsWith('onperiodicsync: ') || event.data.startsWith('failed periodicsync: ')) {
               messagePort.removeEventListener('message', replyListener);
               sendToTest(event.data);
             }
@@ -42,6 +42,24 @@
               registration.sync.register(tag)
                 .then(() => sendToTest('registered sync'));
             });
+        })
+        .catch(sendToTest);
+    }
+
+    function RegisterPeriodicSyncForTag(tag) {
+      GetActivatedServiceWorkerForTest()
+        .then(registration => {
+          registration.periodicSync.register(tag)
+            .then(() => sendToTest('registered periodicsync'));
+        })
+        .catch(sendToTest);
+    }
+
+    function UnregisterPeriodicSyncForTag(tag) {
+      GetActivatedServiceWorkerForTest()
+        .then(registration => {
+          registration.periodicSync.unregister(tag)
+            .then(() => sendToTest('unregistered periodicsync'));
         })
         .catch(sendToTest);
     }

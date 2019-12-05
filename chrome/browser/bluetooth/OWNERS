@@ -1,0 +1,6 @@
+file://content/browser/bluetooth/OWNERS
+
+per-file *chooser_context*=file://chrome/browser/permissions/PERMISSIONS_OWNERS
+
+# TEAM: web-bluetooth@chromium.org
+# COMPONENT: Blink>Bluetooth

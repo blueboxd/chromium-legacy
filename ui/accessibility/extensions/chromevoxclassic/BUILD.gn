@@ -459,7 +459,7 @@ chromevox_strings("chromevox_strings") {
 action("chromevox_test_messages_js") {
   script = "//chrome/browser/resources/chromeos/accessibility/chromevox/tools/generate_test_messages.py"
   sources = [
-    "$chromevox_out_dir/_locales/en/messages.json.gz",
+    "$chromevox_out_dir/_locales/en/messages.json",
   ]
   output_file = "$root_out_dir/test_data/ui/accessibility/extensions/chromevoxclassic/host/testing/test_messages.js"
   outputs = [

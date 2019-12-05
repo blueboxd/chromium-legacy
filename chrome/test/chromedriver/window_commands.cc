@@ -514,7 +514,7 @@ Status ExecuteWindowCommand(const WindowCommand& command,
   if (status.code() == kUnexpectedAlertOpen)
     return Status(kOk);
   if (status.code() == kUnexpectedAlertOpen_Keep)
-    return Status(kUnexpectedAlertOpen);
+    return Status(kUnexpectedAlertOpen, status.message());
   return status;
 }
 

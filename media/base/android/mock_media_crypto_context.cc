@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/test/gmock_move_support.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 using ::testing::DoAll;
@@ -14,12 +15,6 @@ using ::testing::Not;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::_;
-
-ACTION_TEMPLATE(MoveArg,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_1_VALUE_PARAMS(out)) {
-  *out = std::move(::testing::get<k>(args));
-}
 
 namespace media {
 

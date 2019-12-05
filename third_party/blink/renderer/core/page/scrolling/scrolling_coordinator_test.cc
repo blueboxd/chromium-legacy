@@ -760,8 +760,7 @@ TEST_P(ScrollingCoordinatorTest, touchActionOnScrollingElement) {
 }
 
 TEST_P(ScrollingCoordinatorTest, IframeWindowTouchHandler) {
-  LoadHTML(
-      R"(<iframe style="width: 275px; height: 250px;"></iframe>)");
+  LoadHTML(R"(<iframe style="width: 275px; height: 250px;"></iframe>)");
   auto* child_frame =
       To<WebLocalFrameImpl>(GetWebView()->MainFrameImpl()->FirstChild());
   frame_test_helpers::LoadHTMLString(child_frame, R"HTML(
@@ -1501,7 +1500,7 @@ TEST_P(ScrollingCoordinatorTest, ScrollOffsetClobberedBeforeCompositingUpdate) {
   gfx::ScrollOffset compositor_delta(0, 100.f);
   cc::ScrollAndScaleSet scroll_and_scale_set;
   scroll_and_scale_set.scrolls.push_back(
-      {scroller->GetScrollElementId(), compositor_delta});
+      {scroller->GetScrollElementId(), compositor_delta, base::nullopt});
   cc_layer->layer_tree_host()->ApplyScrollAndScale(&scroll_and_scale_set);
   EXPECT_EQ(compositor_delta.y(), scroller->GetScrollOffset().Height());
   EXPECT_EQ(compositor_delta, cc_layer->CurrentScrollOffset());

@@ -84,7 +84,7 @@ public final class StatusMediatorUnitTest {
         mMediator.setShowIconsWhenUrlFocused(true);
         mMediator.updateSearchEngineStatusIcon(true, true, TEST_SEARCH_URL);
         Assert.assertEquals(
-                R.drawable.ic_logo_googleg_24dp, mModel.get(StatusProperties.STATUS_ICON_RES));
+                R.drawable.ic_logo_googleg_20dp, mModel.get(StatusProperties.STATUS_ICON_RES));
     }
 
     @Test
@@ -136,7 +136,7 @@ public final class StatusMediatorUnitTest {
         mMediator.setUrlFocusChangePercent(1f);
         mMediator.updateSearchEngineStatusIcon(true, true, TEST_SEARCH_URL);
         Assert.assertEquals(
-                R.drawable.ic_logo_googleg_24dp, mModel.get(StatusProperties.STATUS_ICON_RES));
+                R.drawable.ic_logo_googleg_20dp, mModel.get(StatusProperties.STATUS_ICON_RES));
         Assert.assertTrue(mModel.get(StatusProperties.SHOW_STATUS_ICON));
     }
 
@@ -267,7 +267,7 @@ public final class StatusMediatorUnitTest {
 
         Assert.assertTrue(mMediator.maybeUpdateStatusIconForSearchEngineIcon());
         Assert.assertEquals(
-                R.drawable.ic_logo_googleg_24dp, mModel.get(StatusProperties.STATUS_ICON_RES));
+                R.drawable.ic_logo_googleg_20dp, mModel.get(StatusProperties.STATUS_ICON_RES));
     }
 
     @Test
@@ -289,11 +289,11 @@ public final class StatusMediatorUnitTest {
         mMediator.setUseDarkColors(false);
         Assert.assertEquals(0, mMediator.getSecurityIconTintForSearchEngineIcon(0));
         Assert.assertEquals(0,
-                mMediator.getSecurityIconTintForSearchEngineIcon(R.drawable.ic_logo_googleg_24dp));
+                mMediator.getSecurityIconTintForSearchEngineIcon(R.drawable.ic_logo_googleg_20dp));
         mMediator.setUseDarkColors(true);
         Assert.assertEquals(0, mMediator.getSecurityIconTintForSearchEngineIcon(0));
         Assert.assertEquals(0,
-                mMediator.getSecurityIconTintForSearchEngineIcon(R.drawable.ic_logo_googleg_24dp));
+                mMediator.getSecurityIconTintForSearchEngineIcon(R.drawable.ic_logo_googleg_20dp));
     }
 
     @Test

@@ -36,7 +36,7 @@ ShelfBubble::ShelfBubble(views::View* anchor,
           /* Don't pass the Shelf so the translucent color is always used. */
           nullptr,
           Shell::Get()->wallpaper_controller()) {
-  background_animator_.Init(SHELF_BACKGROUND_DEFAULT);
+  background_animator_.Init(ShelfBackgroundType::kDefaultBg);
   background_animator_.AddObserver(this);
 
   // Place the bubble in the same display as the anchor.

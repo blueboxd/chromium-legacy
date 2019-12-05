@@ -73,7 +73,8 @@ class WebTestWithWebState : public WebTest, public base::TaskObserver {
 
  private:
   // base::TaskObserver overrides.
-  void WillProcessTask(const base::PendingTask& pending_task) override;
+  void WillProcessTask(const base::PendingTask& pending_task,
+                       bool was_blocked_or_low_priority) override;
   void DidProcessTask(const base::PendingTask& pending_task) override;
 
   // The web state for testing.

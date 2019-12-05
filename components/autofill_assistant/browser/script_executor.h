@@ -120,11 +120,9 @@ class ScriptExecutor : public ActionDelegate,
       ClickAction::ClickType click_type,
       base::OnceCallback<void(const ClientStatus&)> callback) override;
   void CollectUserData(
-      std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
-      std::unique_ptr<UserData> user_data) override;
-  void WriteUserData(base::OnceCallback<void(const CollectUserDataOptions*,
-                                             UserData*,
-                                             UserData::FieldChange*)>) override;
+      CollectUserDataOptions* collect_user_data_options) override;
+  void WriteUserData(
+      base::OnceCallback<void(UserData*, UserData::FieldChange*)>) override;
   void GetFullCard(GetFullCardCallback callback) override;
   void Prompt(std::unique_ptr<std::vector<UserAction>> user_actions) override;
   void CancelPrompt() override;
@@ -342,9 +340,8 @@ class ScriptExecutor : public ActionDelegate,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& element_status,
       const Result* interrupt_result);
-  void OnGetUserData(
-      base::OnceCallback<void(std::unique_ptr<UserData>)> callback,
-      std::unique_ptr<UserData> result);
+  void OnGetUserData(base::OnceCallback<void(UserData*)> callback,
+                     UserData* user_data);
   void OnAdditionalActionTriggered(base::OnceCallback<void(int)> callback,
                                    int index);
   void OnTermsAndConditionsLinkClicked(base::OnceCallback<void(int)> callback,

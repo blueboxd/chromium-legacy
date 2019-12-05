@@ -13,6 +13,8 @@
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ash/public/cpp/assistant/util/histogram_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "components/viz/common/vertical_scroll_direction.h"
 #include "ui/views/widget/widget.h"
@@ -83,6 +85,9 @@ void AssistantProactiveSuggestionsController::OnDeepLinkReceived(
       return;
     case ProactiveSuggestionsAction::kEntryPointClose:
       OnProactiveSuggestionsCloseButtonPressed();
+      return;
+    case ProactiveSuggestionsAction::kViewImpression:
+      OnViewImpressionDeepLinkReceived(params);
       return;
   }
 }
@@ -269,6 +274,46 @@ void AssistantProactiveSuggestionsController::OnEntryPointClickDeepLinkReceived(
   CloseUi(ProactiveSuggestionsShowResult::kClick);
   assistant_controller_->ui_controller()->ShowUi(
       AssistantEntryPoint::kProactiveSuggestions);
+}
+
+void AssistantProactiveSuggestionsController::OnViewImpressionDeepLinkReceived(
+    const std::map<std::string, std::string>& params) {
+  // A deep link of action type |kViewImpression| may optionally provide a
+  // |category| of the content associated w/ the view that was shown.
+  const base::Optional<int> category =
+      assistant::util::GetDeepLinkParamAsInt(params, DeepLinkParam::kCategory);
+
+  // The deep link may also provide a comma-delimited list of visual element IDs
+  // that each corresponds to an impression of a distinct view.
+  const base::Optional<std::string> rawVeIds =
+      assistant::util::GetDeepLinkParam(params, DeepLinkParam::kVeId);
+  if (!rawVeIds.has_value()) {
+    // If no visual elements IDs were provided, we still record the event.
+    assistant::metrics::RecordProactiveSuggestionsViewImpression(
+        category, /*veId=*/base::nullopt);
+    return;
+  }
+
+  // Visual elements IDs, if present, are expected to be comma-delimited.
+  const std::vector<std::string> veIds = base::SplitString(
+      rawVeIds.value(), ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  if (veIds.empty()) {
+    // If no visual elements IDs could be split, we still record the event.
+    assistant::metrics::RecordProactiveSuggestionsViewImpression(
+        category, /*veId=*/base::nullopt);
+    return;
+  }
+
+  // When we are able to split a comma-delimited list of visual element IDs,
+  // we record each as a distinct impression event.
+  int veId;
+  for (const std::string& strVeId : veIds) {
+    // If we are unable to interpret a given visual element ID as an int, we
+    // still record an event to indicate that an impression did occur.
+    assistant::metrics::RecordProactiveSuggestionsViewImpression(
+        category, base::StringToInt(strVeId, &veId) ? base::Optional<int>(veId)
+                                                    : base::nullopt);
+  }
 }
 
 void AssistantProactiveSuggestionsController::MaybeShowUi() {

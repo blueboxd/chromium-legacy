@@ -10,9 +10,9 @@
 
 #include "ash/public/cpp/wallpaper_types.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_resizer_observer.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image_skia_rep.h"
@@ -94,7 +94,7 @@ class WallpaperResizerTest : public testing::Test,
   void OnWallpaperResized() override { active_runloop_->Quit(); }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> active_runloop_;
   base::Thread worker_thread_;
 

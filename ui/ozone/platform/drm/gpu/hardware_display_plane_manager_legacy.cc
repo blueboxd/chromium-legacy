@@ -65,14 +65,14 @@ bool HardwareDisplayPlaneManagerLegacy::Commit(
   for (const auto& flip : plane_list->legacy_page_flips) {
     if (!drm_->PageFlip(flip.crtc_id, flip.framebuffer, page_flip_request)) {
       // 1) Permission Denied is a legitimate error.
-      // 2) Device or resource busy is possible if we're page flipping a
-      // disconnected CRTC. Pretend we're fine since a hotplug event is supposed
-      // to be on its way.
+      // 2) EBUSY or ENODEV are possible if we're page flipping a disconnected
+      // CRTC. Pretend we're fine since a hotplug event is supposed to be on
+      // its way.
       // NOTE: We could be getting EBUSY if we're trying to page flip a CRTC
       // that has a pending page flip, however the contract is that the caller
       // will never attempt this (since the caller should be waiting for the
       // page flip completion message).
-      if (errno != EACCES && errno != EBUSY) {
+      if (errno != EACCES && errno != EBUSY && errno != ENODEV) {
         PLOG(ERROR) << "Cannot page flip: crtc=" << flip.crtc_id
                     << " framebuffer=" << flip.framebuffer;
         ret = false;

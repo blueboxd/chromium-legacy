@@ -38,7 +38,7 @@ class WallpaperControllerImpl;
 //
 //  Material Design:
 //    1. Shelf button backgrounds
-//    2. Overlay for the SHELF_BACKGROUND_MAXIMIZED state.
+//    2. Overlay for the ShelfBackgroundType::kMaximized state.
 class ASH_EXPORT ShelfBackgroundAnimator : public ShelfObserver,
                                            public gfx::AnimationDelegate,
                                            public WallpaperControllerObserver {
@@ -163,10 +163,11 @@ class ASH_EXPORT ShelfBackgroundAnimator : public ShelfObserver,
   WallpaperControllerImpl* wallpaper_controller_;
 
   // The background type that this is animating towards or has reached.
-  ShelfBackgroundType target_background_type_ = SHELF_BACKGROUND_DEFAULT;
+  ShelfBackgroundType target_background_type_ = ShelfBackgroundType::kDefaultBg;
 
   // The last background type this is animating away from.
-  ShelfBackgroundType previous_background_type_ = SHELF_BACKGROUND_MAXIMIZED;
+  ShelfBackgroundType previous_background_type_ =
+      ShelfBackgroundType::kMaximized;
 
   // Drives the animation.
   std::unique_ptr<gfx::SlideAnimation> animator_;

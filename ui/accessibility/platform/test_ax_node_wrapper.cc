@@ -551,7 +551,7 @@ bool TestAXNodeWrapper::AccessibilityPerformAction(
       return true;
 
     case ax::mojom::Action::kSetValue:
-      if (IsRangeValueSupported(GetData())) {
+      if (GetData().IsRangeValueSupported()) {
         ReplaceFloatAttribute(ax::mojom::FloatAttribute::kValueForRange,
                               std::stof(data.value));
       } else if (GetData().role == ax::mojom::Role::kTextField) {
@@ -761,9 +761,8 @@ bool TestAXNodeWrapper::HasVisibleCaretOrSelection() const {
 
   // Selection or caret will be visible in a focused editable area.
   if (GetData().HasState(ax::mojom::State::kEditable)) {
-    return ui::IsPlainTextField(GetData())
-               ? focus_object == node_
-               : focus_object->IsDescendantOf(node_);
+    return GetData().IsPlainTextField() ? focus_object == node_
+                                        : focus_object->IsDescendantOf(node_);
   }
 
   // The selection will be visible in non-editable content only if it is not

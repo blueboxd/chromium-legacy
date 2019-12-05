@@ -8,6 +8,7 @@
 #include <wrl/client.h>
 
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time_override.h"
@@ -602,6 +603,33 @@ TEST_F(GcpGaiaCredentialBaseTest, FailedUserCreation) {
 
   // Logon process should fail with an internal error.
   ASSERT_EQ(S_OK, FinishLogonProcess(false, false, IDS_INTERNAL_ERROR_BASE));
+}
+
+TEST_F(GcpGaiaCredentialBaseTest, FailOnInvalidDomain) {
+  const base::string16 allowed_email_domains =
+      L"acme.com,acme2.com,acme3.com";
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(L"ed", allowed_email_domains));
+
+  // Create provider and start logon.
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
+
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
+
+  // Fail due to invalid domain.
+  ASSERT_EQ(S_OK, test->SetDefaultExitCode(kUiecInvalidEmailDomain));
+
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+  const base::string16 formatted_domains_str =
+      L"acme.com, acme2.com, acme3.com";
+  base::string16 expected_error_msg = base::ReplaceStringPlaceholders(
+      GetStringResource(IDS_INVALID_EMAIL_DOMAIN_BASE), {formatted_domains_str},
+      nullptr);
+
+  // Logon process should fail with the specified error message.
+  ASSERT_EQ(S_OK, FinishLogonProcess(false, false, expected_error_msg));
 }
 
 TEST_F(GcpGaiaCredentialBaseTest, StripEmailTLD) {

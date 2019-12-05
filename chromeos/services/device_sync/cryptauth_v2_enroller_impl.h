@@ -138,13 +138,15 @@ class CryptAuthV2EnrollerImpl : public CryptAuthV2Enroller {
       const std::string& session_id,
       const base::flat_map<CryptAuthKeyBundle::Name, cryptauthv2::KeyDirective>&
           new_key_directives,
-      const base::flat_map<CryptAuthKeyBundle::Name, CryptAuthKey>& new_keys,
+      const base::flat_map<CryptAuthKeyBundle::Name,
+                           base::Optional<CryptAuthKey>>& new_keys,
       const base::Optional<CryptAuthKey>& client_ephemeral_dh);
 
   void OnEnrollKeysSuccess(
       const base::flat_map<CryptAuthKeyBundle::Name, cryptauthv2::KeyDirective>&
           new_key_directives,
-      const base::flat_map<CryptAuthKeyBundle::Name, CryptAuthKey>& new_keys,
+      const base::flat_map<CryptAuthKeyBundle::Name,
+                           base::Optional<CryptAuthKey>>& new_keys,
       const cryptauthv2::EnrollKeysResponse& response);
 
   void OnEnrollKeysFailure(NetworkRequestError error);

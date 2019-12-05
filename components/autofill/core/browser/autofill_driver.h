@@ -83,6 +83,9 @@ class AutofillDriver {
   virtual void PropagateAutofillPredictions(
       const std::vector<autofill::FormStructure*>& forms) = 0;
 
+  // Forwards parsed |forms| to the embedder.
+  virtual void HandleParsedForms(const std::vector<FormStructure*>& forms) = 0;
+
   // Sends the field type predictions specified in |forms| to the renderer. This
   // method is a no-op if the renderer is not available or the appropriate
   // command-line flag is not set.

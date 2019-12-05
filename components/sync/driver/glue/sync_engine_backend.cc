@@ -332,7 +332,8 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
         std::make_unique<NigoriStorageImpl>(
             sync_data_folder_.Append(kNigoriStorageFilename), &encryptor_),
         &encryptor_, base::BindRepeating(&Nigori::GenerateScryptSalt),
-        params.restored_key_for_bootstrapping);
+        params.restored_key_for_bootstrapping,
+        params.restored_keystore_key_for_bootstrapping);
     nigori_handler_proxy_ =
         std::make_unique<syncable::NigoriHandlerProxy>(&user_share_);
     sync_encryption_handler_->AddObserver(nigori_handler_proxy_.get());

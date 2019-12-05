@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_positioned_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
@@ -30,6 +31,20 @@ namespace {
 bool IsAnonymousContainer(const LayoutObject* layout_object) {
   return layout_object->IsAnonymousBlock() &&
          layout_object->CanContainAbsolutePositionObjects();
+}
+
+// This saves the static-position for an OOF-positioned object into its
+// paint-layer.
+void SaveStaticPositionForLegacy(const LayoutBox* layout_box,
+                                 const LayoutObject* container,
+                                 const LogicalOffset& offset) {
+  const LayoutObject* parent = layout_box->Parent();
+  if (parent == container ||
+      (parent->IsLayoutInline() && parent->ContainingBlock() == container)) {
+    DCHECK(layout_box->Layer());
+    layout_box->Layer()->SetStaticInlinePosition(offset.inline_offset);
+    layout_box->Layer()->SetStaticBlockPosition(offset.block_offset);
+  }
 }
 
 // When the containing block is a split inline, Legacy and NG use different
@@ -118,8 +133,7 @@ void NGOutOfFlowLayoutPart::Run(const LayoutBox* only_layout) {
           DisplayLockLifecycleTarget::kChildren))
     return;
 
-  container_builder_->SwapOutOfFlowPositionedCandidates(&candidates,
-                                                        current_container);
+  container_builder_->SwapOutOfFlowPositionedCandidates(&candidates);
 
   if (candidates.IsEmpty() &&
       !To<LayoutBlock>(current_container)->HasPositionedObjects())
@@ -172,8 +186,7 @@ void NGOutOfFlowLayoutPart::Run(const LayoutBox* only_layout) {
 
   wtf_size_t prev_placed_objects_size = placed_objects.size();
   while (SweepLegacyCandidates(&placed_objects)) {
-    container_builder_->SwapOutOfFlowPositionedCandidates(&candidates,
-                                                          current_container);
+    container_builder_->SwapOutOfFlowPositionedCandidates(&candidates);
 
     // We must have at least one new candidate, otherwise we shouldn't have
     // entered this branch.
@@ -412,25 +425,28 @@ void NGOutOfFlowLayoutPart::LayoutCandidates(
   while (candidates->size() > 0) {
     ComputeInlineContainingBlocks(*candidates);
     for (auto& candidate : *candidates) {
+      const LayoutBox* layout_box = candidate.node.GetLayoutBox();
       if (IsContainingBlockForCandidate(candidate) &&
-          (!only_layout || candidate.node.GetLayoutBox() == only_layout)) {
+          (!only_layout || layout_box == only_layout)) {
         scoped_refptr<const NGLayoutResult> result =
             LayoutCandidate(candidate, only_layout);
         container_builder_->AddChild(result->PhysicalFragment(),
                                      result->OutOfFlowPositionedOffset(),
                                      candidate.inline_container);
         placed_objects->insert(candidate.node.GetLayoutBox());
-        if (candidate.node.GetLayoutBox() != only_layout)
+        if (layout_box != only_layout)
           candidate.node.UseLegacyOutOfFlowPositioning();
       } else {
+        SaveStaticPositionForLegacy(layout_box,
+                                    container_builder_->GetLayoutObject(),
+                                    candidate.static_position.offset);
         container_builder_->AddOutOfFlowDescendant(candidate);
       }
     }
     // Sweep any candidates that might have been added.
     // This happens when an absolute container has a fixed child.
     candidates->Shrink(0);
-    container_builder_->SwapOutOfFlowPositionedCandidates(
-        candidates, container_builder_->GetLayoutObject());
+    container_builder_->SwapOutOfFlowPositionedCandidates(candidates);
   }
 }
 

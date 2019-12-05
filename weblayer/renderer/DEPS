@@ -8,10 +8,12 @@ include_rules = [
   "+components/safe_browsing/renderer",
   "+components/security_interstitials/content/renderer",
   "+components/security_interstitials/core/common",
+  "+components/spellcheck/renderer",
   "+content/public/renderer",
   # needed for safebrowsing
   "+mojo/public/cpp/bindings",
   "+net/base",
+  "+services/service_manager/public/cpp",
   "+third_party/blink/public/common",
   "+third_party/blink/public/platform",
   "+ui/base",

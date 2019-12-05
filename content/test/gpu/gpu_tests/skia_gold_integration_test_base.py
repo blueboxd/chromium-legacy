@@ -39,6 +39,7 @@ else:
   goldctl_bin = os.path.join(goldctl_bin, 'linux', 'goldctl')
 
 SKIA_GOLD_INSTANCE = 'chrome-gpu'
+SKIA_GOLD_CORPUS = SKIA_GOLD_INSTANCE
 
 
 @contextlib.contextmanager
@@ -127,8 +128,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
   @classmethod
   def TearDownProcess(cls):
     super(SkiaGoldIntegrationTestBase, cls).TearDownProcess()
-    if not cls.GetParsedCommandLineOptions().local_run:
-      shutil.rmtree(cls._skia_gold_temp_dir)
+    shutil.rmtree(cls._skia_gold_temp_dir)
 
   @classmethod
   def AddCommandlineArgs(cls, parser):
@@ -427,6 +427,12 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
               build_id_args + extra_imgtest_args)
       subprocess.check_output(cmd, stderr=subprocess.STDOUT)
     except CalledProcessError as e:
+      # We don't want to bother printing out triage links for local runs.
+      # Instead, we print out local filepaths for debugging. However, we want
+      # these to be at the bottom of the output so they're easier to find, so
+      # that is handled later.
+      if self._IsLocalRun():
+        pass
       # The triage link for the image is output to the failure file, so report
       # that if it's available so it shows up in Milo. If for whatever reason
       # the file is not present or malformed, the triage link will still be
@@ -434,7 +440,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       # If we're running on a trybot, instead generate a link to all results
       # for the CL so that the user can visit a single page instead of
       # clicking on multiple links on potentially multiple bots.
-      if parsed_options.review_patch_issue:
+      elif parsed_options.review_patch_issue:
         cl_images = ('https://%s-gold.skia.org/search?'
                      'issue=%s&new_clstore=true' % (
                        SKIA_GOLD_INSTANCE, parsed_options.review_patch_issue))
@@ -447,15 +453,36 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
           logging.error('Failed to read contents of goldctl failure file')
 
       logging.error('goldctl failed with output: %s', e.output)
-      if parsed_options.local_run:
-        logging.error(
-            'Image produced by %s: file://%s', image_name, png_temp_file)
-        gold_images = ('https://%s-gold.skia.org/search?'
-                      'match=name&metric=combined&pos=true&'
-                      'query=name%%3D%s&unt=false' % (
-                          SKIA_GOLD_INSTANCE, image_name))
-        logging.error(
-            'Approved images for %s in Gold: %s', image_name, gold_images)
+      if self._IsLocalRun():
+        # Intentionally not cleaned up so the user can look at its contents.
+        diff_dir = tempfile.mkdtemp()
+        cmd = [goldctl_bin, 'diff',
+               '--corpus', SKIA_GOLD_CORPUS,
+               '--instance', SKIA_GOLD_INSTANCE,
+               '--input', png_temp_file,
+               '--test', image_name,
+               '--work-dir', self._skia_gold_temp_dir,
+               '--out-dir', diff_dir,
+               ]
+        try:
+          subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+        except CalledProcessError as e:
+          logging.error('Failed to generate diffs from Gold: %s', e)
+
+        # The directory should contain "input-<hash>.png", "closest-<hash>.png",
+        # and "diff.png".
+        for f in os.listdir(diff_dir):
+          filepath = os.path.join(diff_dir, f)
+          if f.startswith("input-"):
+            logging.error("Image produced by %s: file://%s",
+                          image_name, filepath)
+          elif f.startswith("closest-"):
+            logging.error("Closest image for %s: file://%s",
+                          image_name, filepath)
+          elif f == "diff.png":
+            logging.error("Diff image for %s: file://%s",
+                          image_name, filepath)
+
       if self._ShouldReportGoldFailure(page):
         raise Exception('goldctl command failed, see above for details')
 
@@ -529,7 +556,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     else:
       with RunInChromiumSrc():
         try:
-          subprocess.check_call(['git', 'status'], shell=IsWin())
+          subprocess.check_output(['git', 'status'], shell=IsWin())
           logging.warning(
               'Automatically determined that test is running on a workstation')
           cls._local_run = True

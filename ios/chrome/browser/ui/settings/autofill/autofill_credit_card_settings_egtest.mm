@@ -291,7 +291,7 @@ id<GREYMatcher> BottomToolbar() {
   [[AppLaunchManager sharedManager]
       ensureAppLaunchedWithFeaturesEnabled:{kSettingsAddPaymentMethod}
                                   disabled:{}
-                              forceRestart:NO];
+                            relaunchPolicy:NoForceRelaunchAndResetState];
   NSString* lastDigits = [AutofillAppInterface saveLocalCreditCard];
   [self openCreditCardListInEditMode];
 
@@ -315,7 +315,7 @@ id<GREYMatcher> BottomToolbar() {
   [[AppLaunchManager sharedManager]
       ensureAppLaunchedWithFeaturesEnabled:{kSettingsAddPaymentMethod}
                                   disabled:{}
-                              forceRestart:NO];
+                            relaunchPolicy:NoForceRelaunchAndResetState];
   [AutofillAppInterface saveLocalCreditCard];
   [self openCreditCardListInEditMode];
 
@@ -336,7 +336,7 @@ id<GREYMatcher> BottomToolbar() {
   [[AppLaunchManager sharedManager]
       ensureAppLaunchedWithFeaturesEnabled:{kSettingsAddPaymentMethod}
                                   disabled:{}
-                              forceRestart:NO];
+                            relaunchPolicy:NoForceRelaunchAndResetState];
 
   NSString* lastDigits = [AutofillAppInterface saveLocalCreditCard];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::

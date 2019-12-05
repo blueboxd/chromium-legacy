@@ -15,6 +15,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget_observer.h"
 
 struct AutocompleteMatch;
 class LocationBarView;
@@ -23,7 +24,9 @@ class OmniboxResultView;
 class OmniboxViewViews;
 
 // A view representing the contents of the autocomplete popup.
-class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
+class OmniboxPopupContentsView : public views::View,
+                                 public OmniboxPopupView,
+                                 public views::WidgetObserver {
  public:
   OmniboxPopupContentsView(OmniboxViewViews* omnibox_view,
                            OmniboxEditModel* edit_model,
@@ -80,6 +83,10 @@ class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+
+  // views::WidgetObserver:
+  void OnWidgetBoundsChanged(views::Widget* widget,
+                             const gfx::Rect& new_bounds) override;
 
  private:
   friend class OmniboxPopupContentsViewTest;

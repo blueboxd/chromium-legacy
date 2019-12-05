@@ -1806,6 +1806,8 @@ void AutofillManager::OnFormsParsed(
   // Setup the url for metrics that we will collect for this form.
   form_interactions_ukm_logger_->OnFormsParsed(client_->GetUkmSourceId());
 
+  driver()->HandleParsedForms(form_structures);
+
   std::vector<FormStructure*> non_queryable_forms;
   std::vector<FormStructure*> queryable_forms;
   std::set<FormType> form_types;

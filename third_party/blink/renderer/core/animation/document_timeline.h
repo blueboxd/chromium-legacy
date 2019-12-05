@@ -68,16 +68,13 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
     virtual void Trace(blink::Visitor* visitor) {}
   };
 
-  static DocumentTimeline* Create(
-      Document*,
-      base::TimeDelta origin_time = base::TimeDelta(),
-      PlatformTiming* = nullptr);
-
   // Web Animations API IDL constructor
   static DocumentTimeline* Create(ExecutionContext*,
                                   const DocumentTimelineOptions*);
 
-  DocumentTimeline(Document*, base::TimeDelta origin_time, PlatformTiming*);
+  DocumentTimeline(Document*,
+                   base::TimeDelta origin_time = base::TimeDelta(),
+                   PlatformTiming* = nullptr);
   ~DocumentTimeline() override = default;
 
   bool IsDocumentTimeline() const final { return true; }

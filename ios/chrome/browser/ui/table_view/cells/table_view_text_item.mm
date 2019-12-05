@@ -61,6 +61,7 @@
       self.textAlignment ? self.textAlignment : NSTextAlignmentNatural;
 
   cell.userInteractionEnabled = self.enabled;
+  cell.checked = self.checked;
 }
 
 @end

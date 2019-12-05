@@ -20,12 +20,10 @@ namespace blink {
 // attributes) or an AtomicString (for custom CSS properties).
 class CORE_EXPORT TransitionKeyframe : public Keyframe {
  public:
-  static TransitionKeyframe* Create(const PropertyHandle& property) {
+  TransitionKeyframe(const PropertyHandle& property) : property_(property) {
     DCHECK(!property.IsSVGAttribute());
-    return MakeGarbageCollected<TransitionKeyframe>(property);
   }
 
-  TransitionKeyframe(const PropertyHandle& property) : property_(property) {}
   TransitionKeyframe(const TransitionKeyframe& copy_from)
       : Keyframe(copy_from.offset_, copy_from.composite_, copy_from.easing_),
         property_(copy_from.property_),

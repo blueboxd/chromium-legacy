@@ -179,5 +179,15 @@ TEST(ColorSpace, MixedHDR10WithRec709) {
   EXPECT_EQ(color_space, expected_color_space);
 }
 
+TEST(ColorSpace, GetsPrimariesTransferMatrixAndRange) {
+  ColorSpace color_space(
+      ColorSpace::PrimaryID::BT709, ColorSpace::TransferID::BT709,
+      ColorSpace::MatrixID::BT709, ColorSpace::RangeID::LIMITED);
+  EXPECT_EQ(color_space.GetPrimaryID(), ColorSpace::PrimaryID::BT709);
+  EXPECT_EQ(color_space.GetTransferID(), ColorSpace::TransferID::BT709);
+  EXPECT_EQ(color_space.GetMatrixID(), ColorSpace::MatrixID::BT709);
+  EXPECT_EQ(color_space.GetRangeID(), ColorSpace::RangeID::LIMITED);
+}
+
 }  // namespace
 }  // namespace gfx

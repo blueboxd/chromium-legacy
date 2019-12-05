@@ -13,6 +13,7 @@
 #include "base/scoped_observer.h"
 #import "ios/chrome/browser/download/ar_quick_look_tab_helper.h"
 #import "ios/chrome/browser/download/ar_quick_look_tab_helper_delegate.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 
@@ -58,7 +59,7 @@ PresentQLPreviewController GetHistogramEnum(
 }
 
 // The WebStateList being observed.
-@property(nonatomic, assign) WebStateList* webStateList;
+@property(nonatomic, readonly) WebStateList* webStateList;
 
 // Whether the coordinator is started.
 @property(nonatomic, assign) BOOL started;
@@ -74,17 +75,8 @@ PresentQLPreviewController GetHistogramEnum(
 
 @implementation ARQuickLookCoordinator
 
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState
-                              webStateList:(WebStateList*)webStateList {
-  DCHECK(webStateList);
-  self = [super initWithBaseViewController:viewController
-                              browserState:browserState];
-  if (self) {
-    _webStateList = webStateList;
-  }
-  return self;
+- (WebStateList*)webStateList {
+  return self.browser->GetWebStateList();
 }
 
 - (void)start {

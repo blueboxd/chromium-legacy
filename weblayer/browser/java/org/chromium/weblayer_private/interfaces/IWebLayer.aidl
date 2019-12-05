@@ -7,6 +7,7 @@ package org.chromium.weblayer_private.interfaces;
 import android.os.Bundle;
 
 import org.chromium.weblayer_private.interfaces.IBrowserFragment;
+import org.chromium.weblayer_private.interfaces.ICrashReporterController;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.IProfile;
 import org.chromium.weblayer_private.interfaces.IRemoteFragmentClient;
@@ -45,4 +46,9 @@ interface IWebLayer {
 
   // Returns whether or not the DevTools remote debugging server is enabled.
   boolean isRemoteDebuggingEnabled() = 6;
+
+  // Returns the singleton crash reporter controller. If WebLayer has not been
+  // initialized, does the minimum initialization needed for the crash reporter.
+  ICrashReporterController getCrashReporterController(
+      in IObjectWrapper appContext) = 7;
 }

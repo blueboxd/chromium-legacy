@@ -26,7 +26,6 @@
 #include "components/viz/common/surfaces/child_local_surface_id_allocator.h"
 #import "content/app_shim_remote_cocoa/render_widget_host_view_cocoa.h"
 #include "content/browser/compositor/image_transport_factory.h"
-#include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
@@ -495,7 +494,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
     host_ = base::WrapUnique(MockRenderWidgetHostImpl::Create(
         &delegate_, process_host_.get(), process_host_->GetNextRoutingID()));
     host_->set_owner_delegate(&mock_owner_delegate_);
-    rwhv_mac_ = new RenderWidgetHostViewMac(host_.get(), false);
+    rwhv_mac_ = new RenderWidgetHostViewMac(host_.get());
     rwhv_cocoa_.reset([rwhv_mac_->GetInProcessNSView() retain]);
 
     window_.reset([[CocoaTestHelperWindow alloc] init]);
@@ -1207,44 +1206,6 @@ TEST_F(RenderWidgetHostViewMacTest,
   rwhv_cocoa_.reset();
 }
 
-// Tests that when view initiated shutdown happens (i.e. RWHView is deleted
-// before RWH), we clean up properly and don't leak the RWHVGuest.
-TEST_F(RenderWidgetHostViewMacTest, GuestViewDoesNotLeak) {
-  int32_t routing_id = process_host_->GetNextRoutingID();
-
-  // Owned by its |GetInProcessNSView()|.
-  MockRenderWidgetHostImpl* rwh = MockRenderWidgetHostImpl::Create(
-      &delegate_, process_host_.get(), routing_id);
-  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(rwh, true);
-
-  // Add a delegate to the view.
-  base::scoped_nsobject<MockRenderWidgetHostViewMacDelegate> view_delegate(
-      [[MockRenderWidgetHostViewMacDelegate alloc] init]);
-  view->SetDelegate(view_delegate.get());
-
-  base::WeakPtr<RenderWidgetHostViewBase> guest_rwhv_weak =
-      (RenderWidgetHostViewGuest::Create(rwh, nullptr, view->GetWeakPtr()))
-          ->GetWeakPtr();
-
-  // Remove the GetInProcessNSView() so |view| also goes away before |rwh|.
-  {
-    base::scoped_nsobject<RenderWidgetHostViewCocoa> rwhv_cocoa;
-    rwhv_cocoa.reset([view->GetInProcessNSView() retain]);
-  }
-  RecycleAndWait();
-
-  // Clean up.
-  rwh->ShutdownAndDestroyWidget(true);
-
-  // Let |guest_rwhv_weak| have a chance to delete itself.
-  base::RunLoop run_loop;
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 run_loop.QuitClosure());
-  run_loop.Run();
-
-  ASSERT_FALSE(guest_rwhv_weak.get());
-}
-
 // Tests setting background transparency. See also (disabled on Mac)
 // RenderWidgetHostTest.Background. This test has some additional checks for
 // Mac.
@@ -1336,7 +1297,7 @@ TEST_F(RenderWidgetHostViewMacTest,
   int32_t routing_id = process_host->GetNextRoutingID();
   MockRenderWidgetHostImpl* host =
       MockRenderWidgetHostImpl::Create(&delegate, process_host, routing_id);
-  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host, false);
+  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host);
   base::RunLoop().RunUntilIdle();
 
   // Send an initial wheel event for scrolling by 3 lines.
@@ -1396,7 +1357,7 @@ TEST_F(RenderWidgetHostViewMacTest,
   int32_t routing_id = process_host->GetNextRoutingID();
   MockRenderWidgetHostImpl* host =
       MockRenderWidgetHostImpl::Create(&delegate, process_host, routing_id);
-  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host, false);
+  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host);
   base::RunLoop().RunUntilIdle();
 
   // Send an initial wheel event for scrolling by 3 lines.
@@ -1452,7 +1413,7 @@ TEST_F(RenderWidgetHostViewMacTest,
   int32_t routing_id = process_host->GetNextRoutingID();
   MockRenderWidgetHostImpl* host =
       MockRenderWidgetHostImpl::Create(&delegate, process_host, routing_id);
-  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host, false);
+  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host);
   base::RunLoop().RunUntilIdle();
 
   // Send an initial wheel event for scrolling by 3 lines.

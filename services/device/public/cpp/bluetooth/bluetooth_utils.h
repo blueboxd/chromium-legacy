@@ -20,6 +20,11 @@ base::string16 GetBluetoothAddressForDisplay(
 base::string16 GetBluetoothDeviceNameForDisplay(
     const mojom::BluetoothDeviceInfoPtr& device_info);
 
+// Returns an accessibility label for the device based on name or address and
+// device type.
+base::string16 GetBluetoothDeviceLabelForAccessibility(
+    const mojom::BluetoothDeviceInfoPtr& device_info);
+
 }  // namespace device
 
 #endif  // SERVICES_DEVICE_PUBLIC_CPP_BLUETOOTH_BLUETOOTH_UTILS_H_

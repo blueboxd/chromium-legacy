@@ -115,6 +115,7 @@ UnifiedMessageCenterBubble::~UnifiedMessageCenterBubble() {
     CHECK(message_center_view_);
     message_center_view_->RemoveObserver(this);
 
+    bubble_view_->ResetDelegate();
     bubble_widget_->RemoveObserver(this);
     bubble_widget_->CloseNow();
   }
@@ -208,6 +209,7 @@ void UnifiedMessageCenterBubble::OnWidgetDestroying(views::Widget* widget) {
   message_center_view_->RemoveObserver(this);
   bubble_widget_->RemoveObserver(this);
   bubble_widget_ = nullptr;
+  bubble_view_->ResetDelegate();
 
   // Close the quick settings bubble as well, which may not automatically happen
   // when dismissing the message center bubble by pressing ESC.

@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "base/sequence_checker.h"
+#include "base/threading/thread_checker.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "third_party/blink/public/platform/web_rtc_api_name.h"
@@ -88,7 +88,7 @@ class PLATFORM_EXPORT PerSessionWebRTCAPIMetrics {
   int num_streams_;
   bool has_used_api_[static_cast<int>(WebRTCAPIName::kInvalidName)];
 
-  SEQUENCE_CHECKER(sequence_checker_);
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(PerSessionWebRTCAPIMetrics);
 };

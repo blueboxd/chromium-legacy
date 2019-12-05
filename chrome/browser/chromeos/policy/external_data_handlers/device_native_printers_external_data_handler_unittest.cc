@@ -9,7 +9,6 @@
 
 #include "base/test/task_environment.h"
 #include "chrome/browser/chromeos/printing/bulk_printers_calculator.h"
-#include "chrome/browser/chromeos/printing/bulk_printers_calculator_factory.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -70,11 +69,10 @@ class DeviceNativePrintersExternalDataHandlerTest : public testing::Test {
     EXPECT_CALL(policy_service_,
                 RemoveObserver(policy::POLICY_DOMAIN_CHROME, testing::_))
         .Times(1);
+    external_printers_ = chromeos::BulkPrintersCalculator::Create();
     device_native_printers_external_data_handler_ =
         std::make_unique<DeviceNativePrintersExternalDataHandler>(
-            &policy_service_);
-    external_printers_ =
-        chromeos::BulkPrintersCalculatorFactory::Get()->GetForDevice();
+            &policy_service_, external_printers_->AsWeakPtr());
     external_printers_->SetAccessMode(
         chromeos::BulkPrintersCalculator::ALL_ACCESS);
   }
@@ -88,7 +86,7 @@ class DeviceNativePrintersExternalDataHandlerTest : public testing::Test {
   MockPolicyService policy_service_;
   std::unique_ptr<DeviceNativePrintersExternalDataHandler>
       device_native_printers_external_data_handler_;
-  base::WeakPtr<chromeos::BulkPrintersCalculator> external_printers_;
+  std::unique_ptr<chromeos::BulkPrintersCalculator> external_printers_;
 };
 
 TEST_F(DeviceNativePrintersExternalDataHandlerTest, OnDataFetched) {

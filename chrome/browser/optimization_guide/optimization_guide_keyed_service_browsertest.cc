@@ -479,7 +479,12 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
   // version recorded.
   auto entries = ukm_recorder.GetEntriesByName(
       ukm::builders::OptimizationGuide::kEntryName);
-  EXPECT_TRUE(entries.empty());
+  EXPECT_EQ(1u, entries.size());
+  auto* entry = entries[0];
+  EXPECT_FALSE(ukm_recorder.EntryHasMetric(
+      entry, ukm::builders::OptimizationGuide::kHintGenerationTimestampName));
+  EXPECT_FALSE(ukm_recorder.EntryHasMetric(
+      entry, ukm::builders::OptimizationGuide::kHintSourceName));
 }
 
 IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
@@ -525,10 +530,16 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
       "OptimizationGuide.HintCache.HostMatch.AtCommit", true, 1);
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintCache.PageMatch.AtCommit", true, 1);
-  // Should expect that UKM was not recorded since it did not have a version.
+  // Should expect that UKM was not recorded for hint timestamp and source since
+  // it did not have a version.
   auto entries = ukm_recorder.GetEntriesByName(
       ukm::builders::OptimizationGuide::kEntryName);
-  EXPECT_TRUE(entries.empty());
+  EXPECT_EQ(1u, entries.size());
+  auto* entry = entries[0];
+  EXPECT_FALSE(ukm_recorder.EntryHasMetric(
+      entry, ukm::builders::OptimizationGuide::kHintGenerationTimestampName));
+  EXPECT_FALSE(ukm_recorder.EntryHasMetric(
+      entry, ukm::builders::OptimizationGuide::kHintSourceName));
 }
 
 IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
@@ -574,10 +585,16 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
       "OptimizationGuide.HintCache.HostMatch.AtCommit", true, 1);
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintCache.PageMatch.AtCommit", true, 1);
-  // Should expect that UKM was not recorded since it had a bad version string.
+  // Should expect that UKM was not recorded for the hint generation timestamp
+  // and source since it had a bad version string.
   auto entries = ukm_recorder.GetEntriesByName(
       ukm::builders::OptimizationGuide::kEntryName);
-  EXPECT_TRUE(entries.empty());
+  EXPECT_EQ(1u, entries.size());
+  auto* entry = entries[0];
+  EXPECT_FALSE(ukm_recorder.EntryHasMetric(
+      entry, ukm::builders::OptimizationGuide::kHintGenerationTimestampName));
+  EXPECT_FALSE(ukm_recorder.EntryHasMetric(
+      entry, ukm::builders::OptimizationGuide::kHintSourceName));
 }
 
 class OptimizationGuideKeyedServiceDataSaverUserWithInfobarShownTest

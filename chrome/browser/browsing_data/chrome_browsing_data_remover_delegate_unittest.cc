@@ -46,7 +46,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/language/url_language_histogram_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
-#include "chrome/browser/permissions/adaptive_notification_permission_ui_selector.h"
+#include "chrome/browser/permissions/adaptive_quiet_notification_permission_ui_enabler.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -2992,23 +2992,23 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, WipeCrashData) {
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
        WipeNotificationPermissionPromptOutcomesData) {
   PrefService* prefs = GetProfile()->GetPrefs();
-  auto* permission_ui_selector =
-      AdaptiveNotificationPermissionUiSelector::GetForProfile(GetProfile());
+  auto* permission_ui_enabler =
+      AdaptiveQuietNotificationPermissionUiEnabler::GetForProfile(GetProfile());
   base::SimpleTestClock clock_;
   clock_.SetNow(base::Time::Now());
   base::Time first_recorded_time = clock_.Now();
 
-  permission_ui_selector->set_clock_for_testing(&clock_);
-  permission_ui_selector->RecordPermissionPromptOutcome(
+  permission_ui_enabler->set_clock_for_testing(&clock_);
+  permission_ui_enabler->RecordPermissionPromptOutcome(
       PermissionAction::DENIED);
   clock_.Advance(base::TimeDelta::FromDays(1));
-  permission_ui_selector->set_clock_for_testing(&clock_);
-  permission_ui_selector->RecordPermissionPromptOutcome(
+  permission_ui_enabler->set_clock_for_testing(&clock_);
+  permission_ui_enabler->RecordPermissionPromptOutcome(
       PermissionAction::DENIED);
   clock_.Advance(base::TimeDelta::FromDays(1));
   base::Time third_recorded_time = clock_.Now();
-  permission_ui_selector->set_clock_for_testing(&clock_);
-  permission_ui_selector->RecordPermissionPromptOutcome(
+  permission_ui_enabler->set_clock_for_testing(&clock_);
+  permission_ui_enabler->RecordPermissionPromptOutcome(
       PermissionAction::DENIED);
 
   constexpr char kNotificationPermissionActionsPrefPath[] =

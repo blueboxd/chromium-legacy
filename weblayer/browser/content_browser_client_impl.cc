@@ -49,7 +49,13 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/path_utils.h"
+#include "base/bind.h"
+#include "base/task/post_task.h"
 #include "components/crash/content/browser/crash_handler_host_linux.h"
+#include "components/spellcheck/browser/spell_check_host_impl.h"  // nogncheck
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #include "weblayer/browser/android_descriptors.h"
 #include "weblayer/browser/devtools_manager_delegate_android.h"
@@ -324,12 +330,21 @@ void ContentBrowserClientImpl::ExposeInterfacesToRenderer(
     service_manager::BinderRegistry* registry,
     blink::AssociatedInterfaceRegistry* associated_registry,
     content::RenderProcessHost* render_process_host) {
+#if defined(OS_ANDROID)
+  auto create_spellcheck_host =
+      [](mojo::PendingReceiver<spellcheck::mojom::SpellCheckHost> receiver) {
+        mojo::MakeSelfOwnedReceiver(std::make_unique<SpellCheckHostImpl>(),
+                                    std::move(receiver));
+      };
+  registry->AddInterface(
+      base::BindRepeating(create_spellcheck_host),
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}));
+
   if (base::FeatureList::IsEnabled(features::kWebLayerSafeBrowsing) &&
       IsSafebrowsingSupported()) {
-#if defined(OS_ANDROID)
     GetSafeBrowsingService()->AddInterface(registry, render_process_host);
-#endif
   }
+#endif  // defined(OS_ANDROID)
 }
 
 #if defined(OS_ANDROID)

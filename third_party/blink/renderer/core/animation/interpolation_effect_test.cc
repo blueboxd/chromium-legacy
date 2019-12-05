@@ -29,9 +29,9 @@ Interpolation* CreateInterpolation(int from, int to) {
   CSSNumberInterpolationType interpolation_type(property_handle);
   InterpolationValue start(std::make_unique<InterpolableNumber>(from));
   InterpolationValue end(std::make_unique<InterpolableNumber>(to));
-  return TransitionInterpolation::Create(property_handle, interpolation_type,
-                                         std::move(start), std::move(end),
-                                         nullptr, nullptr);
+  return MakeGarbageCollected<TransitionInterpolation>(
+      property_handle, interpolation_type, std::move(start), std::move(end),
+      nullptr, nullptr);
 }
 
 }  // namespace

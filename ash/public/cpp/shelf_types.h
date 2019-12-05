@@ -59,40 +59,40 @@ enum ShelfVisibilityState {
   SHELF_HIDDEN,
 };
 
-enum ShelfBackgroundType {
+enum class ShelfBackgroundType {
   // The default transparent background.
-  SHELF_BACKGROUND_DEFAULT,
+  kDefaultBg,
 
   // The background when a window is maximized or two windows are maximized
   // for a split view.
-  SHELF_BACKGROUND_MAXIMIZED,
+  kMaximized,
 
   // The background when the app list is visible in clamshell mode.
-  SHELF_BACKGROUND_APP_LIST,
+  kAppList,
 
   // The background when the app list is visible in tablet mode.
-  SHELF_BACKGROUND_HOME_LAUNCHER,
+  kHomeLauncher,
 
   // The background when a maximized window exists or two windows are maximized
   // for a split view, and the app list is visible. If the app list were not
-  // visible, the shelf would be in SHELF_BACKGROUND_MAXIMIZED state.
-  SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST,
+  // visible, the shelf would be in ShelfBackgroundType::kMaximized state.
+  kMaximizedWithAppList,
 
   // The background when OOBE is active.
-  SHELF_BACKGROUND_OOBE,
+  kOobe,
 
   // The background when login/lock/user-add is active.
-  SHELF_BACKGROUND_LOGIN,
+  kLogin,
 
   // The background when login/lock/user-add is active and the wallpaper is not
   // blurred.
-  SHELF_BACKGROUND_LOGIN_NONBLURRED_WALLPAPER,
+  kLoginNonBlurredWallpaper,
 
   // The background when overview is active.
-  SHELF_BACKGROUND_OVERVIEW,
+  kOverview,
 
   // The background for the in-app shelf in tablet mode.
-  SHELF_BACKGROUND_IN_APP,
+  kInApp,
 };
 
 // Source of the launch or activation request, for tracking.

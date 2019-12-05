@@ -550,6 +550,7 @@ TEST_F(AppCacheTest, ToFromDatabaseRecords) {
   const int64_t kCacheId = 1234;
   const int64_t kGroupId = 4321;
   const GURL kManifestUrl("http://foo.com/manifest");
+  const std::string kManifestScope = kManifestUrl.GetWithoutFilename().path();
   const GURL kInterceptUrl("http://foo.com/intercept.html");
   const GURL kFallbackUrl("http://foo.com/fallback.html");
   const GURL kWhitelistUrl("http://foo.com/whitelist*");
@@ -567,9 +568,9 @@ TEST_F(AppCacheTest, ToFromDatabaseRecords) {
   auto group = base::MakeRefCounted<AppCacheGroup>(service.storage(),
                                                    kManifestUrl, kGroupId);
   AppCacheManifest manifest;
-  EXPECT_TRUE(ParseManifest(kManifestUrl, kData.c_str(), kData.length(),
-                            PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES,
-                            manifest));
+  EXPECT_TRUE(
+      ParseManifest(kManifestUrl, kManifestScope, kData.c_str(), kData.length(),
+                    PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES, manifest));
   cache->InitializeWithManifest(&manifest);
   EXPECT_EQ(APPCACHE_NETWORK_NAMESPACE,
             cache->online_whitelist_namespaces_[0].type);

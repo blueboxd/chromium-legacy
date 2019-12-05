@@ -61,6 +61,8 @@ class LocationBarBubbleDelegateView : public views::BubbleDialogDelegateView,
   // content::WebContentsObserver:
   void OnVisibilityChanged(content::Visibility visibility) override;
   void WebContentsDestroyed() override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
   // views::BubbleDialogDelegateView:
   gfx::Rect GetAnchorBoundsInScreen() const override;
@@ -95,9 +97,17 @@ class LocationBarBubbleDelegateView : public views::BubbleDialogDelegateView,
   // Closes the bubble.
   virtual void CloseBubble();
 
+  void set_close_on_main_frame_origin_navigation(bool close) {
+    close_on_main_frame_origin_navigation_ = close;
+  }
+
  private:
   ScopedObserver<FullscreenController, FullscreenObserver> fullscreen_observer_{
       this};
+
+  // A flag controlling bubble closure when the main frame navigates to a
+  // different origin.
+  bool close_on_main_frame_origin_navigation_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarBubbleDelegateView);
 };

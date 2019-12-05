@@ -9,6 +9,9 @@
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
+#include "base/util/values/values_util.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -42,6 +45,7 @@ constexpr char kExtensionSettingsWithIdAllowed[] = R"({
     "installation_mode": "allowed"
   }
 })";
+
 }  // namespace
 
 class ExtensionInstallStatusTest : public BrowserWithTestWindowTest {
@@ -70,13 +74,17 @@ class ExtensionInstallStatusTest : public BrowserWithTestWindowTest {
                                                        std::move(value));
   }
 
-  void AddExtensionsToPendingList(const std::vector<ExtensionId>& ids) {
-    base::Value::ListStorage id_values;
-    for (const auto& id : ids)
-      id_values.push_back(base::Value(id));
+  void SetPendingList(const std::vector<ExtensionId>& ids) {
+    std::unique_ptr<base::Value> id_values =
+        std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
+    for (const auto& id : ids) {
+      base::Value request_data(base::Value::Type::DICTIONARY);
+      request_data.SetKey(extension_misc::kExtensionRequestTimestamp,
+                          ::util::TimeToValue(base::Time::Now()));
+      id_values->SetKey(id, std::move(request_data));
+    }
     profile()->GetTestingPrefService()->SetUserPref(
-        prefs::kCloudExtensionRequestIds,
-        std::make_unique<base::Value>(std::move(id_values)));
+        prefs::kCloudExtensionRequestIds, std::move(id_values));
   }
 
  private:
@@ -181,7 +189,7 @@ TEST_F(ExtensionInstallStatusTest, PendingExtenisonIsWaitingToBeReviewed) {
   SetPolicy(prefs::kCloudExtensionRequestEnabled,
             std::make_unique<base::Value>(true));
   std::vector<ExtensionId> ids = {kExtensionId};
-  AddExtensionsToPendingList(ids);
+  SetPendingList(ids);
 
   // The extension is blocked by wildcard and pending approval.
   SetExtensionSettings(kExtensionSettingsWithWildcardBlocking);

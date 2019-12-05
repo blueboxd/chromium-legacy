@@ -272,7 +272,8 @@ void MirrorWindowController::UpdateWindow(
                                             ->forced_mirror_mode_for_tablet();
       if (!should_undo_rotation) {
         mirroring_host_info->ash_host->AsWindowTreeHost()
-            ->SetDisplayTransformHint(source_compositor->display_transform());
+            ->SetDisplayTransformHint(
+                source_compositor->display_transform_hint());
       }
 
       aura::Window* mirror_window = mirroring_host_info->mirror_window;

@@ -27,6 +27,7 @@
 #include "cc/trees/property_tree.h"
 #include "cc/trees/swap_promise.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "ui/gfx/overlay_transform.h"
 
 namespace base {
 namespace trace_event {
@@ -330,6 +331,13 @@ class CC_EXPORT LayerTreeImpl {
 
   SkColor background_color() const { return background_color_; }
   void set_background_color(SkColor color) { background_color_ = color; }
+
+  gfx::OverlayTransform display_transform_hint() const {
+    return display_transform_hint_;
+  }
+  void set_display_transform_hint(gfx::OverlayTransform hint) {
+    display_transform_hint_ = hint;
+  }
 
   void UpdatePropertyTreeAnimationFromMainThread();
 
@@ -837,6 +845,9 @@ class CC_EXPORT LayerTreeImpl {
   // Tracks the lifecycle which is used for enforcing dependencies between
   // lifecycle states. See: |LayerTreeLifecycle|.
   LayerTreeLifecycle lifecycle_;
+
+  // Display transform hint to tag frames generated from this tree.
+  gfx::OverlayTransform display_transform_hint_ = gfx::OVERLAY_TRANSFORM_NONE;
 
   std::vector<LayerTreeHost::PresentationTimeCallback> presentation_callbacks_;
 };

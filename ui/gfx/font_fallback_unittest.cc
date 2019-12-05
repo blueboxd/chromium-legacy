@@ -8,6 +8,7 @@
 
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,8 +38,20 @@ const FallbackFontTestOption default_fallback_option = {false, false, false};
 // Options for tests that does not validate the GetFallbackFont(...) parameters.
 const FallbackFontTestOption untested_fallback_option = {true, true, true};
 
-using FallbackFontTestParamInfo =
-    std::tuple<FallbackFontTestCase, FallbackFontTestOption>;
+struct BaseFontTestOption {
+  const char* family_name = nullptr;
+  int delta = 0;
+  int style = 0;
+  Font::Weight weight = Font::Weight::NORMAL;
+};
+
+constexpr BaseFontTestOption default_base_font;
+constexpr BaseFontTestOption styled_font = {nullptr, 1, Font::FontStyle::ITALIC,
+                                            Font::Weight::BOLD};
+constexpr BaseFontTestOption sans_font = {"sans", 2};
+
+using FallbackFontTestParamInfo = std::
+    tuple<FallbackFontTestCase, FallbackFontTestOption, BaseFontTestOption>;
 
 class GetFallbackFontTest
     : public ::testing::TestWithParam<FallbackFontTestParamInfo> {
@@ -48,14 +61,27 @@ class GetFallbackFontTest
   static std::string ParamInfoToString(
       ::testing::TestParamInfo<FallbackFontTestParamInfo> param_info) {
     const FallbackFontTestCase& test_case = std::get<0>(param_info.param);
+    const BaseFontTestOption& base_font_option = std::get<2>(param_info.param);
+
+    std::string font_option;
+    if (base_font_option.family_name)
+      font_option += std::string("F") + base_font_option.family_name;
+    if (base_font_option.delta || base_font_option.style ||
+        base_font_option.style) {
+      font_option +=
+          base::StringPrintf("_d%ds%dw%d", base_font_option.delta,
+                             base_font_option.style, base_font_option.weight);
+    }
 
     std::string language_tag = test_case.language_tag;
     base::RemoveChars(language_tag, "-", &language_tag);
     return std::string("S") + uscript_getName(test_case.script) + "L" +
-           language_tag;
+           language_tag + font_option;
   }
 
-  void SetUp() override { std::tie(test_case_, test_option_) = GetParam(); }
+  void SetUp() override {
+    std::tie(test_case_, test_option_, base_font_option_) = GetParam();
+  }
 
  protected:
   bool GetFallbackFont(const Font& font,
@@ -115,6 +141,7 @@ class GetFallbackFontTest
 
   FallbackFontTestCase test_case_;
   FallbackFontTestOption test_option_;
+  BaseFontTestOption base_font_option_;
   std::string script_name_;
 
  private:
@@ -143,7 +170,16 @@ class GetFallbackFontTest
 #endif
 TEST_P(GetFallbackFontTest, MAYBE_GetFallbackFont) {
   // Default system font.
-  const Font base_font;
+  Font base_font;
+  // Apply font options to the base font.
+  if (base_font_option_.family_name)
+    base_font = Font(base_font_option_.family_name, base_font.GetFontSize());
+  if (base_font_option_.delta != 0 || base_font_option_.style != 0 ||
+      base_font_option_.weight != gfx::Font::Weight::NORMAL) {
+    base_font =
+        base_font.Derive(base_font_option_.delta, base_font_option_.style,
+                         base_font_option_.weight);
+  }
 
 #if defined(OS_WIN)
   // Skip testing this call to GetFallbackFont on older windows versions. Some
@@ -229,8 +265,10 @@ std::vector<FallbackFontTestCase> GetSampleFontTestCases() {
 INSTANTIATE_TEST_SUITE_P(
     KnownExpectedFonts,
     GetFallbackFontTest,
-    testing::Combine(testing::ValuesIn(kGetFontFallbackTests),
-                     testing::Values(default_fallback_option)),
+    testing::Combine(
+        testing::ValuesIn(kGetFontFallbackTests),
+        testing::Values(default_fallback_option),
+        testing::Values(default_base_font, styled_font, sans_font)),
     GetFallbackFontTest::ParamInfoToString);
 
 // Ensures that font fallback functions are working properly for any string
@@ -242,7 +280,8 @@ INSTANTIATE_TEST_SUITE_P(
     Glyphs,
     GetFallbackFontTest,
     testing::Combine(testing::ValuesIn(GetSampleFontTestCases()),
-                     testing::Values(untested_fallback_option)),
+                     testing::Values(untested_fallback_option),
+                     testing::Values(default_base_font)),
     GetFallbackFontTest::ParamInfoToString);
 
 }  // namespace gfx

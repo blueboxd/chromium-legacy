@@ -14,7 +14,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/service/display/output_surface_frame.h"
-#include "components/viz/service/display/overlay_candidate_validator.h"
+#include "components/viz/service/display/overlay_candidate_validator_strategy.h"
 #include "components/viz/test/test_context_provider.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "content/browser/compositor/reflector_texture.h"
@@ -65,7 +65,7 @@ class TestOverlayCandidatesOzone : public ui::OverlayCandidatesOzone {
 };
 #endif  // defined(USE_OZONE)
 
-std::unique_ptr<viz::OverlayCandidateValidator> CreateTestValidator() {
+std::unique_ptr<viz::OverlayCandidateValidatorStrategy> CreateTestValidator() {
 #if defined(USE_OZONE)
   std::vector<viz::OverlayStrategy> strategies = {
       viz::OverlayStrategy::kSingleOnTop, viz::OverlayStrategy::kUnderlay};
@@ -80,9 +80,11 @@ class TestOverlayProcessor : public viz::OverlayProcessor {
  public:
   TestOverlayProcessor() : OverlayProcessor(CreateTestValidator()) {}
 
-  viz::OverlayCandidateValidator* get_overlay_validator() const {
+#if defined(USE_OZONE)
+  viz::OverlayCandidateValidatorStrategy* get_overlay_validator() const {
     return overlay_validator_.get();
   }
+#endif
 };
 
 class TestOutputSurface : public BrowserCompositorOutputSurface {

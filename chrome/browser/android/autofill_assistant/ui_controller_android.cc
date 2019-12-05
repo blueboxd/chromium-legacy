@@ -21,6 +21,7 @@
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantColor_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantDetailsModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantDetails_jni.h"
+#include "chrome/android/features/autofill_assistant/jni_headers/AssistantDialogButton_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantDimension_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantDrawable_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantFormInput_jni.h"
@@ -28,6 +29,7 @@
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantHeaderModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantInfoBoxModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantInfoBox_jni.h"
+#include "chrome/android/features/autofill_assistant/jni_headers/AssistantInfoPopup_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantOverlayModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantViewFactory_jni.h"
@@ -46,6 +48,8 @@
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/rectf.h"
+#include "components/autofill_assistant/browser/user_data.h"
+#include "components/autofill_assistant/browser/user_data_util.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
@@ -216,6 +220,65 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaDrawable(
   }
 }
 
+base::android::ScopedJavaLocalRef<jobject> CreateJavaDialogButton(
+    JNIEnv* env,
+    const InfoPopupProto_DialogButton& button_proto) {
+  base::android::ScopedJavaLocalRef<jstring> jurl = nullptr;
+
+  switch (button_proto.click_action_case()) {
+    case InfoPopupProto::DialogButton::kOpenUrlInCct:
+      jurl = base::android::ConvertUTF8ToJavaString(
+          env, button_proto.open_url_in_cct().url());
+      break;
+    case InfoPopupProto::DialogButton::kCloseDialog:
+      break;
+    case InfoPopupProto::DialogButton::CLICK_ACTION_NOT_SET:
+      NOTREACHED();
+      break;
+  }
+  return Java_AssistantDialogButton_Constructor(
+      env, base::android::ConvertUTF8ToJavaString(env, button_proto.label()),
+      jurl);
+}
+
+base::android::ScopedJavaLocalRef<jobject> CreateJavaInfoPopup(
+    JNIEnv* env,
+    const InfoPopupProto& info_popup_proto) {
+  base::android::ScopedJavaLocalRef<jobject> jpositive_button = nullptr;
+  base::android::ScopedJavaLocalRef<jobject> jnegative_button = nullptr;
+  base::android::ScopedJavaLocalRef<jobject> jneutral_button = nullptr;
+
+  if (info_popup_proto.has_positive_button() ||
+      info_popup_proto.has_negative_button() ||
+      info_popup_proto.has_neutral_button()) {
+    if (info_popup_proto.has_positive_button()) {
+      jpositive_button =
+          CreateJavaDialogButton(env, info_popup_proto.positive_button());
+    }
+    if (info_popup_proto.has_negative_button()) {
+      jnegative_button =
+          CreateJavaDialogButton(env, info_popup_proto.negative_button());
+    }
+    if (info_popup_proto.has_neutral_button()) {
+      jneutral_button =
+          CreateJavaDialogButton(env, info_popup_proto.neutral_button());
+    }
+  } else {
+    // If no button is set in the proto, we add a Close button
+    jpositive_button = Java_AssistantDialogButton_Constructor(
+        env,
+        base::android::ConvertUTF8ToJavaString(
+            env, l10n_util::GetStringUTF8(IDS_CLOSE)),
+        nullptr);
+  }
+
+  return Java_AssistantInfoPopup_Constructor(
+      env,
+      base::android::ConvertUTF8ToJavaString(env, info_popup_proto.title()),
+      base::android::ConvertUTF8ToJavaString(env, info_popup_proto.text()),
+      jpositive_button, jnegative_button, jneutral_button);
+}
+
 // Creates the Java equivalent to |login_choices|.
 base::android::ScopedJavaLocalRef<jobject> CreateJavaLoginChoiceList(
     JNIEnv* env,
@@ -224,12 +287,7 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaLoginChoiceList(
   for (const auto& login_choice : login_choices) {
     base::android::ScopedJavaLocalRef<jobject> jinfo_popup = nullptr;
     if (login_choice.info_popup.has_value()) {
-      jinfo_popup = Java_AssistantCollectUserDataModel_createInfoPopup(
-          env,
-          base::android::ConvertUTF8ToJavaString(
-              env, login_choice.info_popup->title()),
-          base::android::ConvertUTF8ToJavaString(
-              env, login_choice.info_popup->text()));
+      jinfo_popup = CreateJavaInfoPopup(env, *login_choice.info_popup);
     }
     base::android::ScopedJavaLocalRef<jstring> jsublabel_accessibility_hint =
         nullptr;
@@ -412,7 +470,6 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaAdditionalSections(
   }
   return jsection_list;
 }
-
 }  // namespace
 
 // static
@@ -1201,13 +1258,18 @@ void UiControllerAndroid::OnUserDataChanged(
 
   if (field_change == UserData::FieldChange::ALL ||
       field_change == UserData::FieldChange::AVAILABLE_PROFILES) {
+    DCHECK(ui_delegate_ != nullptr);
+    const CollectUserDataOptions* collect_user_data_options =
+        ui_delegate_->GetCollectUserDataOptions();
     auto jlist =
         Java_AssistantCollectUserDataModel_createAutofillProfileList(env);
-    for (const auto& profile : state->available_profiles) {
+    auto profile_indices = SortByCompleteness(*collect_user_data_options,
+                                              state->available_profiles);
+    for (int index : profile_indices) {
       Java_AssistantCollectUserDataModel_addAutofillProfile(
           env, jlist,
           autofill::PersonalDataManagerAndroid::CreateJavaProfileFromNative(
-              env, *profile));
+              env, *state->available_profiles[index]));
     }
     Java_AssistantCollectUserDataModel_setAutofillProfiles(env, jmodel, jlist);
   }
@@ -1325,8 +1387,22 @@ void UiControllerAndroid::OnFormChanged(const FormProto* form) {
         // Intentionally no default case to make compilation fail if a new value
         // was added to the enum but not to this list.
     }
+  }
+  Java_AssistantFormModel_setInputs(env, GetFormModel(), jinput_list);
 
-    Java_AssistantFormModel_setInputs(env, GetFormModel(), jinput_list);
+  if (form->has_info_label()) {
+    Java_AssistantFormModel_setInfoLabel(
+        env, GetFormModel(),
+        base::android::ConvertUTF8ToJavaString(env, form->info_label()));
+  } else {
+    Java_AssistantFormModel_clearInfoLabel(env, GetFormModel());
+  }
+
+  if (form->has_info_popup()) {
+    Java_AssistantFormModel_setInfoPopup(
+        env, GetFormModel(), CreateJavaInfoPopup(env, form->info_popup()));
+  } else {
+    Java_AssistantFormModel_clearInfoPopup(env, GetFormModel());
   }
 }
 

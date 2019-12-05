@@ -42,8 +42,12 @@ public interface PietManager {
 
     void purgeRecyclerPools();
 
-    /** Builder for PietManager that provides defaults wherever possible */
-    class Builder {
+    /**
+     * Builder for PietManager that provides defaults wherever possible
+     * TODO(crbug.com/1029183): Builder and its ctor were made public as a work-around for a method
+     * not found exception in PietManagerImplTest.
+     */
+    public class Builder {
         private static final NullImageLoader BLANK_IMAGE_LOADER = new NullImageLoader();
         private static final StringFormatter EMPTY_STRING_FORMATTER = new EmptyStringFormatter();
         private static final Supplier<Integer> CORNER_RADIUS_DEFAULT = Suppliers.of(0);
@@ -67,7 +71,7 @@ public interface PietManager {
         private boolean mAllowLegacyRoundedCornerImpl;
         private boolean mAllowOutlineRoundedCornerImpl;
 
-        private Builder() {}
+        public Builder() {}
 
         public Builder setDebugBehavior(DebugBehavior debugBehavior) {
             this.mDebugBehavior = debugBehavior;

@@ -180,7 +180,8 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
     DCHECK(!Shell::Get()->overview_controller()->InOverviewSession());
 
     // May reshow the home launcher after dragging.
-    Shell::Get()->home_screen_controller()->OnWindowDragEnded();
+    Shell::Get()->home_screen_controller()->OnWindowDragEnded(
+        /*animate=*/false);
 
     // Clears the background wallpaper blur.
     auto* wallpaper_view =

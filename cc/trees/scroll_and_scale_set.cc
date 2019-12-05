@@ -20,4 +20,20 @@ ScrollAndScaleSet::ScrollAndScaleSet()
 
 ScrollAndScaleSet::~ScrollAndScaleSet() = default;
 
+ScrollAndScaleSet::ScrollUpdateInfo::ScrollUpdateInfo() = default;
+
+ScrollAndScaleSet::ScrollUpdateInfo::ScrollUpdateInfo(
+    ElementId id,
+    gfx::ScrollOffset delta,
+    base::Optional<TargetSnapAreaElementIds> snap_target_ids)
+    : element_id(id),
+      scroll_delta(delta),
+      snap_target_element_ids(snap_target_ids) {}
+
+ScrollAndScaleSet::ScrollUpdateInfo::ScrollUpdateInfo(
+    const ScrollUpdateInfo& other) = default;
+
+ScrollAndScaleSet::ScrollUpdateInfo& ScrollAndScaleSet::ScrollUpdateInfo::
+operator=(const ScrollUpdateInfo& other) = default;
+
 }  // namespace cc

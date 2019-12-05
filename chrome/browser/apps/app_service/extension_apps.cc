@@ -341,6 +341,8 @@ bool ExtensionApps::Accepts(const extensions::Extension* extension) {
 void ExtensionApps::Connect(
     mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
     apps::mojom::ConnectOptionsPtr opts) {
+  // TODO(crbug.com/1030126): Start publishing Extension Apps asynchronously on
+  // ExtensionSystem::Get(profile())->ready().
   std::vector<apps::mojom::AppPtr> apps;
   if (profile_) {
     extensions::ExtensionRegistry* registry =

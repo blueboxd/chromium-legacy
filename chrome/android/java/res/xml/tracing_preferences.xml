@@ -7,11 +7,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orderingFromXml="true">
     <Preference
-        android:fragment="org.chromium.chrome.browser.settings.developer.TracingCategoriesPreferences"
+        android:fragment="org.chromium.chrome.browser.settings.developer.TracingCategoriesSettings"
         android:key="default_categories"
         android:title="Default categories"/><!-- developer strings are not translated -->
     <Preference
-        android:fragment="org.chromium.chrome.browser.settings.developer.TracingCategoriesPreferences"
+        android:fragment="org.chromium.chrome.browser.settings.developer.TracingCategoriesSettings"
         android:key="non_default_categories"
         android:title="Disabled-by-default categories"/>
     <ListPreference

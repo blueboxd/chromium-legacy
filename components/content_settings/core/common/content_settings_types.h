@@ -178,6 +178,10 @@ enum class ContentSettingsType : int32_t {
   // Used to store whether to allow a website to exchange data with NFC devices.
   NFC,
 
+  // Website setting to store permissions granted to access particular Bluetooth
+  // devices.
+  BLUETOOTH_CHOOSER_DATA,
+
   NUM_TYPES,
 };
 

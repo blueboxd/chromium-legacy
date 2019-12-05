@@ -70,8 +70,10 @@
 #include "url/gurl.h"
 
 using ::base::test::RunClosure;
+using ::base::test::RunOnceCallback;
 using ::testing::_;
 using ::testing::AnyNumber;
+using ::testing::DoAll;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::InSequence;
@@ -81,6 +83,8 @@ using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::StrictMock;
+using ::testing::WithArg;
+using ::testing::WithoutArgs;
 
 namespace media {
 
@@ -343,10 +347,11 @@ class WebMediaPlayerImplTest : public testing::Test {
     ASSERT_FALSE(media_log_) << "Reinitialization of media_log_ is disallowed";
     media_log_ = media_log.get();
 
-    decoder_factory_.reset(new media::DefaultDecoderFactory(nullptr));
     auto factory_selector = std::make_unique<RendererFactorySelector>();
+    renderer_factory_selector_ = factory_selector.get();
+    decoder_factory_.reset(new media::DefaultDecoderFactory(nullptr));
     factory_selector->AddBaseFactory(
-        RendererFactorySelector::FactoryType::DEFAULT,
+        RendererFactoryType::kDefault,
         std::make_unique<DefaultRendererFactory>(
             media_log.get(), decoder_factory_.get(),
             DefaultRendererFactory::GetGpuFactoriesCB()));
@@ -839,6 +844,9 @@ class WebMediaPlayerImplTest : public testing::Test {
 
   // Total memory in bytes allocated by the WebMediaPlayerImpl instance.
   int64_t reported_memory_ = 0;
+
+  // Raw pointer of the RendererFactorySelector owned by |wmpi_|.
+  RendererFactorySelector* renderer_factory_selector_ = nullptr;
 
   // default decoder factory for WMPI
   std::unique_ptr<DecoderFactory> decoder_factory_;
@@ -1702,6 +1710,51 @@ TEST_F(WebMediaPlayerImplTest, Waiting_NoDecryptionKey) {
   EXPECT_CALL(encrypted_client_, DidResumePlaybackBlockedForKey());
 
   OnWaiting(WaitingReason::kNoDecryptionKey);
+}
+
+ACTION(ReportHaveEnough) {
+  arg0->OnBufferingStateChange(BUFFERING_HAVE_ENOUGH,
+                               BUFFERING_CHANGE_REASON_UNKNOWN);
+}
+
+TEST_F(WebMediaPlayerImplTest, FallbackToMediaFoundationRenderer) {
+  InitializeWebMediaPlayerImpl();
+  // To avoid PreloadMetadataLazyLoad.
+  wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadAuto);
+
+  // Use MockRendererFactory for kMediaFoundation where the created Renderer
+  // will take the CDM, complete Renderer initialization and report HAVE_ENOUGH
+  // so that WMPI can reach kReadyStateHaveCurrentData.
+  auto mock_renderer_factory = std::make_unique<MockRendererFactory>();
+  EXPECT_CALL(*mock_renderer_factory, CreateRenderer(_, _, _, _, _, _))
+      .WillOnce(testing::WithoutArgs(Invoke([]() {
+        auto mock_renderer = std::make_unique<NiceMock<MockRenderer>>();
+        EXPECT_CALL(*mock_renderer, OnSetCdm(_, _))
+            .WillOnce(RunOnceCallback<1>(true));
+        EXPECT_CALL(*mock_renderer, OnInitialize(_, _, _))
+            .WillOnce(DoAll(RunOnceCallback<2>(PIPELINE_OK),
+                            WithArg<1>(ReportHaveEnough())));
+        return mock_renderer;
+      })));
+
+  renderer_factory_selector_->AddFactory(RendererFactoryType::kMediaFoundation,
+                                         std::move(mock_renderer_factory));
+
+  // Create and set CDM. The CDM doesn't support a Decryptor and requires Media
+  // Foundation Renderer.
+  EXPECT_CALL(mock_cdm_context_, GetDecryptor())
+      .WillRepeatedly(Return(nullptr));
+  EXPECT_CALL(mock_cdm_context_, RequiresMediaFoundationRenderer())
+      .WillRepeatedly(Return(true));
+
+  CreateCdm();
+  SetCdm();
+
+  // Load encrypted media and wait for HaveCurrentData.
+  EXPECT_CALL(encrypted_client_,
+              Encrypted(EmeInitDataType::WEBM, NotNull(), Gt(0u)));
+  LoadAndWaitForReadyState(kEncryptedVideoOnlyTestFile,
+                           blink::WebMediaPlayer::kReadyStateHaveCurrentData);
 }
 
 TEST_F(WebMediaPlayerImplTest, VideoConfigChange) {

@@ -22,6 +22,7 @@ extern const base::Feature kIPHDummyFeature;
 extern const base::Feature kIPHFocusModeFeature;
 extern const base::Feature kIPHGlobalMediaControlsFeature;
 extern const base::Feature kIPHReopenTabFeature;
+extern const base::Feature kIPHWebUITabStripFeature;
 
 #if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
 extern const base::Feature kIPHBookmarkFeature;
@@ -62,6 +63,7 @@ extern const base::Feature kIPHKeyboardAccessoryPasswordFillingFeature;
 extern const base::Feature kIPHKeyboardAccessoryPaymentFillingFeature;
 extern const base::Feature kIPHNewTabPageButtonFeature;
 extern const base::Feature kIPHPreviewsOmniboxUIFeature;
+extern const base::Feature kIPHQuietNotificationPromptsFeature;
 extern const base::Feature kIPHTabGroupsQuicklyComparePagesFeature;
 extern const base::Feature kIPHTabGroupsTapToSeeAnotherTabFeature;
 extern const base::Feature kIPHTabGroupsYourTabsAreTogetherFeature;

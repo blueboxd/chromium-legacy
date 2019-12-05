@@ -104,7 +104,7 @@
          Signing in with this account is not allowed. Try a different account.
       </message>
       <message name="IDS_INVALID_EMAIL_DOMAIN" desc="">
-        Signing in with a work account on this domain is not allowed. Try a different account.
+        Your administrator has restricted device sign-in to the following domains: <ph name="EMAIL_DOMAINS">$1<ex>acme.com, acme2.com, acme3.com</ex></ph>. Try again using a valid work account.
       </message>
       <message name="IDS_DISALLOWED_CONSUMER_EMAIL" desc="">
         Signing in with a personal account on this device is not allowed. Please login with a work account.

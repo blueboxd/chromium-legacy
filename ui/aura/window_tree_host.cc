@@ -161,7 +161,7 @@ gfx::Transform WindowTreeHost::GetInverseRootTransform() const {
 }
 
 void WindowTreeHost::SetDisplayTransformHint(gfx::OverlayTransform transform) {
-  if (compositor()->display_transform() == transform)
+  if (compositor()->display_transform_hint() == transform)
     return;
 
   compositor()->SetDisplayTransformHint(transform);
@@ -195,8 +195,10 @@ void WindowTreeHost::UpdateRootWindowSizeInPixels() {
 void WindowTreeHost::UpdateCompositorScaleAndSize(
     const gfx::Size& new_size_in_pixels) {
   gfx::Rect new_bounds(new_size_in_pixels);
-  if (compositor_->display_transform() == gfx::OVERLAY_TRANSFORM_ROTATE_90 ||
-      compositor_->display_transform() == gfx::OVERLAY_TRANSFORM_ROTATE_270) {
+  if (compositor_->display_transform_hint() ==
+          gfx::OVERLAY_TRANSFORM_ROTATE_90 ||
+      compositor_->display_transform_hint() ==
+          gfx::OVERLAY_TRANSFORM_ROTATE_270) {
     new_bounds.Transpose();
   }
 

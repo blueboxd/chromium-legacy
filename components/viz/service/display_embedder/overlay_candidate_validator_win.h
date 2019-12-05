@@ -20,8 +20,6 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidatorWin
   ~OverlayCandidateValidatorWin() override;
 
   // OverlayCandidateValidator implementation.
-  void CheckOverlaySupport(const PrimaryPlane* primary_plane,
-                           OverlayCandidateList* surfaces) override;
   bool AllowCALayerOverlays() const override;
   bool AllowDCLayerOverlays() const override;
   bool NeedsSurfaceOccludingDamageRect() const override;

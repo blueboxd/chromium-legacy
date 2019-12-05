@@ -149,11 +149,6 @@ class ToolbarActionsBar : public ExtensionsContainer,
   // Updates all the toolbar actions.
   void Update();
 
-  // Shows the popup for the action with |id|, returning true if a popup is
-  // shown. If |grant_active_tab| is true, then active tab permissions should
-  // be given to the action (only do this if this is through a user action).
-  bool ShowToolbarActionPopup(const std::string& id, bool grant_active_tab);
-
   // Sets the width for the overflow menu rows.
   void SetOverflowRowWidth(int width);
 
@@ -241,6 +236,8 @@ class ToolbarActionsBar : public ExtensionsContainer,
   void PopOutAction(ToolbarActionViewController* action,
                     bool is_sticky,
                     const base::Closure& closure) override;
+  bool ShowToolbarActionPopup(const std::string& id,
+                              bool grant_active_tab) override;
   void ShowToolbarActionBubble(
       std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) override;
   void ShowToolbarActionBubbleAsync(

@@ -178,13 +178,6 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
   button_column_set->AddColumn(views::GridLayout::TRAILING,
                                views::GridLayout::FILL, 0.0,
                                views::GridLayout::USE_PREF, 0, 0);
-  button_column_set->AddPaddingColumn(
-      views::GridLayout::kFixedSize,
-      layout_provider->GetDistanceMetric(
-          views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
-  button_column_set->AddColumn(views::GridLayout::TRAILING,
-                               views::GridLayout::FILL, 0.0,
-                               views::GridLayout::USE_PREF, 0, 0);
 
   button_layout->StartRow(views::GridLayout::kFixedSize, kColumnId);
 
@@ -198,15 +191,6 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
   info_link->AddStyleRange(details_range, link_style);
   info_link->SizeToFit(0);
   info_button_ = button_layout->AddView(std::move(info_link));
-
-  // Ignore button.
-  std::unique_ptr<views::Button> ignore_button(
-      views::MdTextButton::CreateSecondaryUiButton(
-          this,
-          l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_IGNORE_BUTTON)));
-  ignore_button->SetID(
-      PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_IGNORE_WARNING);
-  ignore_button_ = button_layout->AddView(std::move(ignore_button));
 
   // Leave site button.
   std::unique_ptr<views::Button> leave_button(
@@ -257,8 +241,7 @@ void SafetyTipPageInfoBubbleView::OnWidgetDestroying(views::Widget* widget) {
       should_set_ignore = true;
       break;
     case views::Widget::ClosedReason::kCancelButtonClicked:
-      action_taken_ = SafetyTipInteraction::kDismissWithIgnore;
-      should_set_ignore = true;
+      NOTREACHED();
       break;
   }
   std::move(close_callback_).Run(action_taken_);
@@ -273,23 +256,15 @@ void SafetyTipPageInfoBubbleView::OnWidgetDestroying(views::Widget* widget) {
 
 void SafetyTipPageInfoBubbleView::ButtonPressed(views::Button* button,
                                                 const ui::Event& event) {
-  switch (button->GetID()) {
-    case PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_LEAVE_SITE:
-      action_taken_ = SafetyTipInteraction::kLeaveSite;
-      LeaveSiteFromSafetyTip(
-          web_contents(),
-          safety_tip_status_ == security_state::SafetyTipStatus::kLookalike
-              ? suggested_url_
-              : GURL(kSafetyTipLeaveSiteUrl));
-      return;
+  DCHECK_EQ(button->GetID(),
+            PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_LEAVE_SITE);
 
-    case PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_IGNORE_WARNING:
-      action_taken_ = SafetyTipInteraction::kDismiss;
-      GetWidget()->CloseWithReason(
-          views::Widget::ClosedReason::kCancelButtonClicked);
-      return;
-  }
-  NOTREACHED();
+  action_taken_ = SafetyTipInteraction::kLeaveSite;
+  LeaveSiteFromSafetyTip(
+      web_contents(),
+      safety_tip_status_ == security_state::SafetyTipStatus::kLookalike
+          ? suggested_url_
+          : GURL(kSafetyTipLeaveSiteUrl));
 }
 
 void SafetyTipPageInfoBubbleView::StyledLabelLinkClicked(

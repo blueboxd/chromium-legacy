@@ -100,6 +100,7 @@
 #include "chrome/browser/chromeos/power/power_metrics_reporter.h"
 #include "chrome/browser/chromeos/power/process_data_collector.h"
 #include "chrome/browser/chromeos/power/renderer_freezer.h"
+#include "chrome/browser/chromeos/printing/bulk_printers_calculator_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/resource_reporter/resource_reporter.h"
 #include "chrome/browser/chromeos/scheduler_configuration_manager.h"
@@ -580,6 +581,11 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   session_termination_manager_ =
       std::make_unique<chromeos::SessionTerminationManager>();
 
+  // This should be in PreProfileInit but it needs to be created before the
+  // policy connector is started.
+  bulk_printers_calculator_factory_ =
+      std::make_unique<BulkPrintersCalculatorFactory>();
+
   ChromeBrowserMainPartsLinux::PreMainMessageLoopRun();
 }
 
@@ -1056,6 +1062,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // crash is found.
   if (NetworkCertLoader::IsInitialized())
     NetworkCertLoader::Get()->set_is_shutting_down();
+
+  // Tear down BulkPrintersCalculators while we still have threads.
+  bulk_printers_calculator_factory_.reset();
 
   CHECK(g_browser_process);
   CHECK(g_browser_process->platform_part());

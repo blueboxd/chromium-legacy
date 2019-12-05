@@ -1107,4 +1107,77 @@ class ExtensionPrefsObsoletePrefRemoval : public ExtensionPrefsTest {
 
 TEST_F(ExtensionPrefsObsoletePrefRemoval, ExtensionPrefsObsoletePrefRemoval) {}
 
+using ExtensionPrefsWithholdingTest = testing::Test;
+
+// Tests the migration from the old withholding pref key to the new one.
+TEST_F(ExtensionPrefsWithholdingTest, OldWithholdingPrefMigration) {
+  constexpr char kOldPrefKey[] = "extension_can_script_all_urls";
+  constexpr char kNewPrefKey[] = "withholding_permissions";
+
+  content::BrowserTaskEnvironment task_environment_;
+  TestExtensionPrefs prefs(base::ThreadTaskRunnerHandle::Get());
+
+  std::string previous_false_id = prefs.AddExtensionAndReturnId("Old false");
+  std::string previous_true_id = prefs.AddExtensionAndReturnId("Old true");
+  std::string previous_empty_id = prefs.AddExtensionAndReturnId("Old empty");
+  std::string force_installed_id =
+      prefs
+          .AddExtensionWithLocation("Force installed",
+                                    Manifest::EXTERNAL_POLICY)
+          ->id();
+
+  // We need to explicitly remove the default value for the new pref as it is
+  // added on install by default.
+  prefs.prefs()->UpdateExtensionPref(previous_false_id, kNewPrefKey, nullptr);
+  prefs.prefs()->UpdateExtensionPref(previous_true_id, kNewPrefKey, nullptr);
+  prefs.prefs()->UpdateExtensionPref(previous_empty_id, kNewPrefKey, nullptr);
+
+  prefs.prefs()->UpdateExtensionPref(previous_false_id, kOldPrefKey,
+                                     std::make_unique<base::Value>(false));
+  prefs.prefs()->UpdateExtensionPref(previous_true_id, kOldPrefKey,
+                                     std::make_unique<base::Value>(true));
+
+  // First make sure that all prefs start out as we expect them to be.
+  bool bool_value = false;
+  EXPECT_TRUE(prefs.prefs()->ReadPrefAsBoolean(previous_false_id, kOldPrefKey,
+                                               &bool_value));
+  EXPECT_FALSE(bool_value);
+
+  EXPECT_TRUE(prefs.prefs()->ReadPrefAsBoolean(previous_true_id, kOldPrefKey,
+                                               &bool_value));
+  EXPECT_TRUE(bool_value);
+
+  EXPECT_FALSE(prefs.prefs()->ReadPrefAsBoolean(previous_empty_id, kOldPrefKey,
+                                                &bool_value));
+  EXPECT_FALSE(prefs.prefs()->ReadPrefAsBoolean(force_installed_id, kOldPrefKey,
+                                                &bool_value));
+
+  EXPECT_FALSE(prefs.prefs()->ReadPrefAsBoolean(previous_false_id, kNewPrefKey,
+                                                &bool_value));
+  EXPECT_FALSE(prefs.prefs()->ReadPrefAsBoolean(previous_true_id, kNewPrefKey,
+                                                &bool_value));
+  EXPECT_FALSE(prefs.prefs()->ReadPrefAsBoolean(previous_empty_id, kNewPrefKey,
+                                                &bool_value));
+  EXPECT_FALSE(prefs.prefs()->ReadPrefAsBoolean(force_installed_id, kNewPrefKey,
+                                                &bool_value));
+
+  // Now we reload the prefs and verify the migration happens.
+  prefs.RecreateExtensionPrefs();
+
+  EXPECT_TRUE(prefs.prefs()->ReadPrefAsBoolean(previous_false_id, kNewPrefKey,
+                                               &bool_value));
+  EXPECT_TRUE(bool_value);
+
+  EXPECT_TRUE(prefs.prefs()->ReadPrefAsBoolean(previous_true_id, kNewPrefKey,
+                                               &bool_value));
+  EXPECT_FALSE(bool_value);
+
+  EXPECT_TRUE(prefs.prefs()->ReadPrefAsBoolean(previous_empty_id, kNewPrefKey,
+                                               &bool_value));
+  EXPECT_FALSE(bool_value);
+
+  EXPECT_FALSE(prefs.prefs()->ReadPrefAsBoolean(force_installed_id, kNewPrefKey,
+                                                &bool_value));
+}
+
 }  // namespace extensions

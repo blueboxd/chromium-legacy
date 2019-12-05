@@ -35,6 +35,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
@@ -179,6 +180,7 @@ public class ArticleSnippetsTest {
     @MediumTest
     @Feature({"ArticleSnippets", "RenderTest"})
     @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
+    @DisabledTest(message = "Flaky. crbug.com/1030562")
     public void testSnippetAppearance(boolean nightModeEnabled) throws IOException {
         SuggestionsCategoryInfo fullCategoryInfo = new SuggestionsCategoryInfo(FULL_CATEGORY,
                 "Section Title", ContentSuggestionsCardLayout.FULL_CARD,

@@ -19,6 +19,11 @@ namespace viz {
 
 namespace {
 
+// The CoreAnimation renderer's performance starts suffering when too many
+// quads are promoted to CALayers. At extremes, corruption can occur.
+// https://crbug.com/1022116
+constexpr size_t kTooManyQuads = 128;
+
 // If there are too many RenderPassDrawQuads, we shouldn't use Core
 // Animation to present them as individual layers, since that potentially
 // doubles the amount of work needed to present them. cc has to blit them into
@@ -56,6 +61,7 @@ enum CALayerResult {
   // CA_LAYER_FAILED_QUAD_ROUNDED_CORNER = 24,
   CA_LAYER_FAILED_QUAD_ROUNDED_CORNER_CLIP_MISMATCH = 25,
   CA_LAYER_FAILED_QUAD_ROUNDED_CORNER_NOT_UNIFORM = 26,
+  CA_LAYER_FAILED_TOO_MANY_QUADS = 27,
   CA_LAYER_FAILED_COUNT,
 };
 
@@ -300,12 +306,16 @@ bool ProcessForCALayerOverlays(
         render_pass_backdrop_filters,
     CALayerOverlayList* ca_layer_overlays) {
   CALayerResult result = CA_LAYER_SUCCESS;
-  ca_layer_overlays->reserve(quad_list.size());
+
+  if (quad_list.size() < kTooManyQuads)
+    ca_layer_overlays->reserve(quad_list.size());
+  else
+    result = CA_LAYER_FAILED_TOO_MANY_QUADS;
 
   int render_pass_draw_quad_count = 0;
   CALayerOverlayProcessor processor;
-  for (auto it = quad_list.BackToFrontBegin(); it != quad_list.BackToFrontEnd();
-       ++it) {
+  for (auto it = quad_list.BackToFrontBegin();
+       result == CA_LAYER_SUCCESS && it != quad_list.BackToFrontEnd(); ++it) {
     const DrawQuad* quad = *it;
     CALayerOverlay ca_layer;
     bool skip = false;

@@ -101,8 +101,6 @@ class InProcessContextFactory : public ContextFactory,
       ui::Compositor* compositor,
       mojo::PendingRemote<viz::mojom::VSyncParameterObserver> observer)
       override {}
-  void SetDisplayTransformHint(Compositor* compositor,
-                               gfx::OverlayTransform transform) override {}
   void AddObserver(ContextFactoryObserver* observer) override;
   void RemoveObserver(ContextFactoryObserver* observer) override;
   bool SyncTokensRequiredForDisplayCompositor() override;

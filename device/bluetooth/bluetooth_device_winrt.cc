@@ -293,18 +293,18 @@ void BluetoothDeviceWinrt::SetConnectionLatency(
 }
 
 void BluetoothDeviceWinrt::Connect(PairingDelegate* pairing_delegate,
-                                   const base::Closure& callback,
-                                   const ConnectErrorCallback& error_callback) {
+                                   base::OnceClosure callback,
+                                   ConnectErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
 
 void BluetoothDeviceWinrt::Pair(PairingDelegate* pairing_delegate,
-                                const base::Closure& callback,
-                                const ConnectErrorCallback& error_callback) {
+                                base::OnceClosure callback,
+                                ConnectErrorCallback error_callback) {
   BLUETOOTH_LOG(DEBUG) << "BluetoothDeviceWinrt::Pair()";
   if (pairing_) {
     BLUETOOTH_LOG(DEBUG) << "Another Pair Operation is already in progress.";
-    PostTask(error_callback, ERROR_INPROGRESS);
+    PostTask(std::move(error_callback), ERROR_INPROGRESS);
     return;
   }
 
@@ -312,7 +312,7 @@ void BluetoothDeviceWinrt::Pair(PairingDelegate* pairing_delegate,
       GetDeviceInformationPairing(ble_device_);
   if (!pairing) {
     BLUETOOTH_LOG(DEBUG) << "Failed to get DeviceInformationPairing.";
-    PostTask(error_callback, ERROR_UNKNOWN);
+    PostTask(std::move(error_callback), ERROR_UNKNOWN);
     return;
   }
 
@@ -321,7 +321,7 @@ void BluetoothDeviceWinrt::Pair(PairingDelegate* pairing_delegate,
   if (FAILED(hr)) {
     BLUETOOTH_LOG(DEBUG) << "Obtaining IDeviceInformationPairing2 failed: "
                          << logging::SystemErrorCodeToString(hr);
-    PostTask(error_callback, ERROR_UNKNOWN);
+    PostTask(std::move(error_callback), ERROR_UNKNOWN);
     return;
   }
 
@@ -330,29 +330,29 @@ void BluetoothDeviceWinrt::Pair(PairingDelegate* pairing_delegate,
   if (FAILED(hr)) {
     BLUETOOTH_LOG(DEBUG) << "DeviceInformationPairing::get_Custom() failed: "
                          << logging::SystemErrorCodeToString(hr);
-    PostTask(error_callback, ERROR_UNKNOWN);
+    PostTask(std::move(error_callback), ERROR_UNKNOWN);
     return;
   }
 
   // Wrap success and error callback, so that they clean up the pairing object
   // once they are run.
-  auto wrapped_callback = base::BindOnce(
+  base::OnceClosure wrapped_callback = base::BindOnce(
       [](base::WeakPtr<BluetoothDeviceWinrt> device,
          base::OnceClosure callback) {
         if (device)
           device->pairing_.reset();
         std::move(callback).Run();
       },
-      weak_ptr_factory_.GetWeakPtr(), callback);
+      weak_ptr_factory_.GetWeakPtr(), std::move(callback));
 
-  auto wrapped_error_callback = base::BindOnce(
+  ConnectErrorCallback wrapped_error_callback = base::BindOnce(
       [](base::WeakPtr<BluetoothDeviceWinrt> device,
          ConnectErrorCallback error_callback, ConnectErrorCode error_code) {
         if (device)
           device->pairing_.reset();
         std::move(error_callback).Run(error_code);
       },
-      weak_ptr_factory_.GetWeakPtr(), error_callback);
+      weak_ptr_factory_.GetWeakPtr(), std::move(error_callback));
 
   pairing_ = std::make_unique<BluetoothPairingWinrt>(
       this, pairing_delegate, std::move(custom), std::move(wrapped_callback),

@@ -30,9 +30,6 @@ class SuggestionChipContainerView;
 // active folder.
 class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
  public:
-  // Returns the minimum horizontal margins that apps grid has to respect.
-  static int GetMinimumGridHorizontalMargin();
-
   AppsContainerView(ContentsView* contents_view, AppListModel* model);
   ~AppsContainerView() override;
 

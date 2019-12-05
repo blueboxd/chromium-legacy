@@ -64,7 +64,7 @@ TEST_P(CursorUtilTest, ScaleAndRotate) {
   EXPECT_EQ(pixel_color, bitmap.pixmap().getColor(0, 0));
 }
 
-INSTANTIATE_TEST_SUITE_P(, CursorUtilTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, CursorUtilTest, testing::Bool());
 
 }  // namespace
 }  // namespace ui

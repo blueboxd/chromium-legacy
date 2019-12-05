@@ -4,11 +4,17 @@
 
 #include "chrome/browser/extensions/api/enterprise_reporting_private/chrome_desktop_report_request_helper.h"
 
-#include <string>
+#if defined(OS_WIN)
+#include <windows.h>
+#include <dpapi.h>
+#endif
 
+#include "base/base64.h"
 #include "base/base_paths.h"
+#include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
+#include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -27,6 +33,11 @@
 #include "components/prefs/pref_service.h"
 #include "components/version_info/channel.h"
 #include "components/version_info/version_info.h"
+
+#if defined(OS_WIN)
+#include "base/win/registry.h"
+#endif
+
 
 namespace em = enterprise_management;
 
@@ -215,6 +226,134 @@ GenerateChromeUserProfileReportRequest(const base::Value& profile_report,
   return request;
 }
 
+#if defined(OS_WIN)
+const wchar_t kDefaultRegistryPath[] =
+    L"SOFTWARE\\Google\\EndpointVerification";
+const wchar_t kValueName[] = L"SafeStorage";
+
+std::string ReadEncryptedSecret() {
+  base::win::RegKey key;
+  DWORD kMaxRawSize = 1024;
+  char raw_data[kMaxRawSize];
+  DWORD raw_data_size = kMaxRawSize;
+  DWORD raw_type;
+  if (ERROR_SUCCESS !=
+          key.Open(HKEY_CURRENT_USER, kDefaultRegistryPath, KEY_READ) ||
+      ERROR_SUCCESS !=
+          key.ReadValue(kValueName, raw_data, &raw_data_size, &raw_type) ||
+      raw_type != REG_BINARY) {
+    return std::string();
+  }
+  std::string encrypted_secret;
+  encrypted_secret.insert(0, raw_data, raw_data_size);
+  return encrypted_secret;
+}
+
+// Encrypts the |plaintext| and write the result in |cyphertext|. This
+// function was taken from os_crypt/os_crypt_win.cc (Chromium).
+bool EncryptString(const std::string& plaintext, std::string* ciphertext) {
+  DATA_BLOB input;
+  input.pbData =
+      const_cast<BYTE*>(reinterpret_cast<const BYTE*>(plaintext.data()));
+  input.cbData = static_cast<DWORD>(plaintext.length());
+
+  DATA_BLOB output;
+  BOOL result = ::CryptProtectData(&input, nullptr, nullptr, nullptr, nullptr,
+                                   0, &output);
+  if (!result)
+    return false;
+
+  // this does a copy
+  ciphertext->assign(reinterpret_cast<std::string::value_type*>(output.pbData),
+                     output.cbData);
+
+  LocalFree(output.pbData);
+  return true;
+}
+
+// Decrypts the |cyphertext| and write the result in |plaintext|. This
+// function was taken from os_crypt/os_crypt_win.cc (Chromium).
+bool DecryptString(const std::string& ciphertext, std::string* plaintext) {
+  DATA_BLOB input;
+  input.pbData =
+      const_cast<BYTE*>(reinterpret_cast<const BYTE*>(ciphertext.data()));
+  input.cbData = static_cast<DWORD>(ciphertext.length());
+
+  DATA_BLOB output;
+  BOOL result =
+      ::CryptUnprotectData(&input, nullptr, nullptr, nullptr, nullptr, 0,
+                           &output);
+  if (!result)
+    return false;
+
+  plaintext->assign(reinterpret_cast<char*>(output.pbData), output.cbData);
+  LocalFree(output.pbData);
+  return true;
+}
+
+std::string CreateRandomSecret() {
+  // Generate a password with 128 bits of randomness.
+  const int kBytes = 128 / 8;
+  std::string secret;
+  base::Base64Encode(base::RandBytesAsString(kBytes), &secret);
+
+  std::string encrypted_secret;
+  if (!EncryptString(secret, &encrypted_secret)) {
+    return std::string();
+  }
+
+  base::win::RegKey key;
+  if (ERROR_SUCCESS !=
+      key.Create(HKEY_CURRENT_USER, kDefaultRegistryPath, KEY_WRITE)) {
+    return std::string();
+  }
+  if (ERROR_SUCCESS != key.WriteValue(kValueName, encrypted_secret.data(),
+                                      encrypted_secret.size(), REG_BINARY)) {
+    return std::string();
+  }
+  return secret;
+}
+
+#else  // defined(OS_WIN)
+
+std::string ReadEncryptedSecret() {
+  return std::string();
+}
+
+// Decrypts the |cyphertext| and write the result in |plaintext|. This
+// function was taken from os_crypt/os_crypt_win.cc (Chromium).
+bool DecryptString(const std::string& ciphertext, std::string* plaintext) {
+  return false;
+}
+
+std::string CreateRandomSecret() {
+  // Generate a password with 128 bits of randomness.
+  const int kBytes = 128 / 8;
+  std::string secret;
+  base::Base64Encode(base::RandBytesAsString(kBytes), &secret);
+  // TODO(pastarmovj): Replace with non-dummy impl.
+  return secret;
+}
+#endif  // defined(OS_WIN)
+
+// Returns "AppData\Local\Google\Endpoint Verification".
+base::FilePath GetEndpointVerificationDir() {
+  base::FilePath path;
+#if defined(OS_WIN)
+  if (!base::PathService::Get(base::DIR_LOCAL_APP_DATA, &path))
+#elif defined(OS_LINUX)
+  if (!base::PathService::Get(base::DIR_CACHE, &path))
+#elif defined(OS_MACOSX)
+  if (!base::PathService::Get(base::DIR_APP_DATA, &path))
+#else
+  if (true)
+#endif
+    return path;
+  path = path.AppendASCII("Google");
+  path = path.AppendASCII("Endpoint Verification");
+  return path;
+}
+
 }  // namespace
 
 std::unique_ptr<em::ChromeDesktopReportRequest>
@@ -249,6 +388,77 @@ GenerateChromeDesktopReportRequest(const base::DictionaryValue& report,
   AppendAdditionalBrowserInformation(request.get(), profile);
 
   return request;
+}
+
+void StoreDeviceData(const std::string& id,
+                     const std::vector<uint8_t>& data,
+                     base::OnceCallback<void(bool)> callback) {
+  base::FilePath data_file = GetEndpointVerificationDir();
+  if (data_file.empty()) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  // TODO(pastarmovj): Make sure the resulting path is still a direct file or
+  // subdir+file of the EV folder.
+  data_file = data_file.AppendASCII(id);
+
+  // Ensure the directory exists.
+  bool success = base::CreateDirectory(data_file.DirName());
+  if (!success) {
+    LOG(ERROR) << "Could not create directory: "
+               << data_file.DirName().LossyDisplayName();
+    std::move(callback).Run(false);
+    return;
+  }
+
+  base::FilePath tmp_path;
+  success = base::CreateTemporaryFileInDir(data_file.DirName(), &tmp_path);
+  if (!success) {
+    LOG(ERROR) << "Could not open file for writing: "
+               << tmp_path.LossyDisplayName();
+    std::move(callback).Run(false);
+    return;
+  }
+
+  base::WriteFile(tmp_path, reinterpret_cast<const char*>(data.data()),
+                  data.size());
+
+  success = base::Move(tmp_path, data_file);
+  std::move(callback).Run(success);
+}
+
+void RetrieveDeviceData(
+    const std::string& id,
+    base::OnceCallback<void(const std::string&, bool)> callback) {
+  base::FilePath data_file = GetEndpointVerificationDir();
+  if (data_file.empty()) {
+    std::move(callback).Run("", false);
+    return;
+  }
+  data_file = data_file.AppendASCII(id);
+  // TODO(pastarmovj): Make sure the resulting path is still a direct file or
+  // subdir+file of the EV folder.
+  std::string data;
+  bool result = base::ReadFileToString(data_file, &data);
+
+  std::move(callback).Run(data, result);
+}
+
+void RetrieveDeviceSecret(
+    base::OnceCallback<void(const std::string&, bool)> callback) {
+  std::string secret;
+  std::string encrypted_secret = ReadEncryptedSecret();
+  if (encrypted_secret.empty()) {
+    secret = CreateRandomSecret();
+    std::move(callback).Run(secret, !secret.empty());
+    return;
+  }
+  if (!DecryptString(encrypted_secret, &secret)) {
+    std::move(callback).Run("", false);
+    return;
+  }
+  std::move(callback).Run(secret, true);
 }
 
 }  // namespace extensions

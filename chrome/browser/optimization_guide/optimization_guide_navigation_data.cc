@@ -56,7 +56,9 @@ OptimizationGuideNavigationData::OptimizationGuideNavigationData(
       was_host_covered_by_fetch_at_navigation_start_(
           other.was_host_covered_by_fetch_at_navigation_start_),
       was_host_covered_by_fetch_at_commit_(
-          other.was_host_covered_by_fetch_at_commit_) {
+          other.was_host_covered_by_fetch_at_commit_),
+      was_hint_for_host_attempted_to_be_fetched_(
+          other.was_hint_for_host_attempted_to_be_fetched_) {
   if (other.has_page_hint_value()) {
     page_hint_ = std::make_unique<optimization_guide::proto::PageHint>(
         *other.page_hint());
@@ -92,8 +94,7 @@ void OptimizationGuideNavigationData::RecordHintCoverage(
                           has_hint_before_commit);
     UMA_HISTOGRAM_BOOLEAN(
         "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit",
-        has_hint_before_commit ||
-            was_host_covered_by_fetch_at_navigation_start_.value_or(false));
+        WasHostCoveredByHintOrFetchAtNavigationStart());
   }
   // If the navigation didn't commit, then don't proceed to record any of the
   // remaining metrics.
@@ -102,8 +103,7 @@ void OptimizationGuideNavigationData::RecordHintCoverage(
 
   UMA_HISTOGRAM_BOOLEAN(
       "OptimizationGuide.Hints.NavigationHostCoverage.AtCommit",
-      has_hint_after_commit_.value_or(false) ||
-          was_host_covered_by_fetch_at_commit_.value_or(false));
+      WasHostCoveredByHintOrFetchAtCommit());
 
   UMA_HISTOGRAM_BOOLEAN(
       "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch.AtCommit",
@@ -212,9 +212,44 @@ void OptimizationGuideNavigationData::RecordOptimizationGuideUKM() const {
     }
   }
 
+  // Record hint coverage metrics.
+  if (has_hint_before_commit_.has_value() ||
+      has_hint_after_commit_.has_value()) {
+    // Only record if we would potentially have had to provide optimization
+    // guidance for the navigation.
+    if (WasHostCoveredByHintOrFetchAtNavigationStart() ||
+        WasHostCoveredByHintOrFetchAtCommit()) {
+      builder.SetNavigationHostCovered(static_cast<int>(
+          optimization_guide::NavigationHostCoveredStatus::kCovered));
+    } else {
+      bool hint_was_attempted_to_be_fetched =
+          was_hint_for_host_attempted_to_be_fetched_.value_or(false);
+      optimization_guide::NavigationHostCoveredStatus status =
+          hint_was_attempted_to_be_fetched
+              ? optimization_guide::NavigationHostCoveredStatus::
+                    kFetchNotSuccessful
+              : optimization_guide::NavigationHostCoveredStatus::
+                    kFetchNotAttempted;
+      builder.SetNavigationHostCovered(static_cast<int>(status));
+    }
+    did_record_metric = true;
+  }
+
   // Only record UKM if a metric was recorded.
   if (did_record_metric)
     builder.Record(ukm::UkmRecorder::Get());
+}
+
+bool OptimizationGuideNavigationData::
+    WasHostCoveredByHintOrFetchAtNavigationStart() const {
+  return has_hint_before_commit_.value_or(false) ||
+         was_host_covered_by_fetch_at_navigation_start_.value_or(false);
+}
+
+bool OptimizationGuideNavigationData::WasHostCoveredByHintOrFetchAtCommit()
+    const {
+  return has_hint_after_commit_.value_or(false) ||
+         was_host_covered_by_fetch_at_commit_.value_or(false);
 }
 
 base::Optional<optimization_guide::OptimizationTypeDecision>

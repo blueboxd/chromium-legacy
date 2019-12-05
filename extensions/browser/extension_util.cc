@@ -8,12 +8,14 @@
 #include "content/public/browser/site_instance.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/features/behavior_feature.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 namespace extensions {
 namespace util {
@@ -126,6 +128,25 @@ bool MapUrlToLocalFilePath(const ExtensionSet* extensions,
 
   *file_path = resource_file_path;
   return true;
+}
+
+bool CanWithholdPermissionsFromExtension(const Extension& extension) {
+  return CanWithholdPermissionsFromExtension(
+      extension.id(), extension.GetType(), extension.location());
+}
+
+bool CanWithholdPermissionsFromExtension(const ExtensionId& extension_id,
+                                         Manifest::Type type,
+                                         Manifest::Location location) {
+  // Some extensions must retain privilege to all requested host permissions.
+  // Specifically, extensions that don't show up in chrome:extensions (where
+  // withheld permissions couldn't be granted), extensions that are part of
+  // chrome or corporate policy, and extensions that are whitelisted to script
+  // everywhere must always have permission to run on a page.
+  return Extension::ShouldDisplayInExtensionSettings(type, location) &&
+         !Manifest::IsPolicyLocation(location) &&
+         !Manifest::IsComponentLocation(location) &&
+         !PermissionsData::CanExecuteScriptEverywhere(extension_id, location);
 }
 
 }  // namespace util

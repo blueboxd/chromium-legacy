@@ -16,7 +16,6 @@ import android.widget.TextView;
 import androidx.annotation.DrawableRes;
 
 import org.chromium.chrome.autofill_assistant.R;
-import org.chromium.ui.UiUtils;
 
 import java.util.List;
 
@@ -37,11 +36,7 @@ public class AssistantLoginSection extends AssistantCollectUserDataSection<Assis
         assert oldItem != null;
         assert oldItem.getInfoPopup() != null;
 
-        new UiUtils.CompatibleAlertDialogBuilder(mContext, R.style.Theme_Chromium_AlertDialog)
-                .setTitle(oldItem.getInfoPopup().getTitle())
-                .setMessage(oldItem.getInfoPopup().getText())
-                .setPositiveButton(R.string.close, (dialog, which) -> {})
-                .show();
+        oldItem.getInfoPopup().show(mContext);
     }
 
     @Override

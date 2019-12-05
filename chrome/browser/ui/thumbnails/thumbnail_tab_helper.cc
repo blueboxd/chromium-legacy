@@ -80,6 +80,23 @@ ThumbnailTabHelper::~ThumbnailTabHelper() {
   StopVideoCapture();
 }
 
+enum class ThumbnailTabHelper::CaptureType {
+  // The image was copied directly from a visible RenderWidgetHostView.
+  kCopyFromView = 0,
+  // The image is a frame from a background tab video capturer.
+  kVideoFrame = 1,
+
+  kMaxValue = kVideoFrame,
+};
+
+// Called when a thumbnail is published to observers. Records what
+// method was used to capture the thumbnail.
+//
+// static
+void ThumbnailTabHelper::RecordCaptureType(CaptureType type) {
+  UMA_HISTOGRAM_ENUMERATION("Tab.Preview.CaptureType", type);
+}
+
 void ThumbnailTabHelper::ThumbnailImageBeingObservedChanged(
     bool is_being_observed) {
   if (is_being_observed_ != is_being_observed) {
@@ -109,6 +126,8 @@ bool ThumbnailTabHelper::ShouldKeepUpdatingThumbnail() const {
 }
 
 void ThumbnailTabHelper::CaptureThumbnailOnTabSwitch() {
+  const base::TimeTicks time_of_call = base::TimeTicks::Now();
+
   // Ignore previous requests to capture a thumbnail on tab switch.
   weak_factory_for_thumbnail_on_tab_hidden_.InvalidateWeakPtrs();
 
@@ -129,16 +148,28 @@ void ThumbnailTabHelper::CaptureThumbnailOnTabSwitch() {
 
   source_view->CopyFromSurface(
       copy_info.copy_rect, copy_info.target_size,
-      base::BindOnce(&ThumbnailTabHelper::StoreThumbnail,
-                     weak_factory_for_thumbnail_on_tab_hidden_.GetWeakPtr()));
+      base::BindOnce(&ThumbnailTabHelper::StoreThumbnailForTabSwitch,
+                     weak_factory_for_thumbnail_on_tab_hidden_.GetWeakPtr(),
+                     time_of_call));
 }
 
-void ThumbnailTabHelper::StoreThumbnail(const SkBitmap& bitmap) {
+void ThumbnailTabHelper::StoreThumbnailForTabSwitch(base::TimeTicks start_time,
+                                                    const SkBitmap& bitmap) {
+  UMA_HISTOGRAM_CUSTOM_TIMES("Tab.Preview.TimeToStoreAfterTabSwitch",
+                             base::TimeTicks::Now() - start_time,
+                             base::TimeDelta::FromMilliseconds(1),
+                             base::TimeDelta::FromSeconds(1), 50);
+  StoreThumbnail(CaptureType::kCopyFromView, bitmap);
+}
+
+void ThumbnailTabHelper::StoreThumbnail(CaptureType type,
+                                        const SkBitmap& bitmap) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (bitmap.drawsNothing())
     return;
 
+  RecordCaptureType(type);
   thumbnail_->AssignSkBitmap(bitmap);
 
   // Remember that a thumbnail was captured while the tab was loaded.
@@ -169,6 +200,8 @@ void ThumbnailTabHelper::StartVideoCapture() {
   if (source_size.IsEmpty())
     return;
 
+  start_video_capture_time_ = base::TimeTicks::Now();
+
   // Figure out how large we want the capture target to be.
   last_frame_capture_info_ =
       GetInitialCaptureInfo(source_size, scale_factor,
@@ -192,6 +225,8 @@ void ThumbnailTabHelper::StopVideoCapture() {
     video_capturer_->Stop();
     video_capturer_.reset();
   }
+
+  start_video_capture_time_ = base::TimeTicks();
 }
 
 content::RenderWidgetHostView* ThumbnailTabHelper::GetView() {
@@ -232,6 +267,7 @@ void ThumbnailTabHelper::OnFrameCaptured(
     mojo::PendingRemote<::viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
         callbacks) {
   CHECK(video_capturer_);
+  const base::TimeTicks time_of_call = base::TimeTicks::Now();
 
   if (!ShouldKeepUpdatingThumbnail())
     StopVideoCapture();
@@ -257,6 +293,12 @@ void ThumbnailTabHelper::OnFrameCaptured(
   if (!info->color_space) {
     DLOG(ERROR) << "Missing mandatory color space info.";
     return;
+  }
+
+  if (start_video_capture_time_ != base::TimeTicks()) {
+    UMA_HISTOGRAM_TIMES("Tab.Preview.TimeToFirstUsableFrameAfterStartCapture",
+                        time_of_call - start_video_capture_time_);
+    start_video_capture_time_ = base::TimeTicks();
   }
 
   // The SkBitmap's pixels will be marked as immutable, but the installPixels()
@@ -306,7 +348,12 @@ void ThumbnailTabHelper::OnFrameCaptured(
   SkBitmap cropped_frame;
   if (frame.extractSubset(&cropped_frame,
                           gfx::RectToSkIRect(effective_content_rect))) {
-    StoreThumbnail(cropped_frame);
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "Tab.Preview.TimeToStoreAfterFrameReceived",
+        base::TimeTicks::Now() - time_of_call,
+        base::TimeDelta::FromMicroseconds(10),
+        base::TimeDelta::FromMilliseconds(10), 50);
+    StoreThumbnail(CaptureType::kVideoFrame, cropped_frame);
   }
 }
 

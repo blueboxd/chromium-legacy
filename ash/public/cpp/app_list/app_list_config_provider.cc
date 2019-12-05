@@ -89,8 +89,8 @@ AppListConfig* AppListConfigProvider::GetConfigForType(
 
 std::unique_ptr<AppListConfig> AppListConfigProvider::CreateForAppListWidget(
     const gfx::Size& display_work_area_size,
-    int min_horizontal_margin,
     int shelf_height,
+    int side_shelf_width,
     const AppListConfig* current_config) {
   const AppListConfig& base_config =
       GetBaseConfigForDisplaySize(display_work_area_size);
@@ -153,8 +153,8 @@ std::unique_ptr<AppListConfig> AppListConfigProvider::CreateForAppListWidget(
   }
 
   const int available_grid_width =
-      display_work_area_size.width() - 2 * min_horizontal_margin;
-
+      display_work_area_size.width() - 2 * side_shelf_width -
+      2 * base_config.GetMinGridHorizontalPadding();
   if (available_grid_width < min_grid_width) {
     scale_x =
         std::max(min_config_scale,

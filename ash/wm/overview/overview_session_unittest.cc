@@ -4649,6 +4649,42 @@ TEST_P(SplitViewOverviewSessionTest,
   EXPECT_EQ(1.f, unsnappable_layer->opacity());
 }
 
+// Verify that an item's unsnappable indicator is updated for display rotation.
+TEST_P(SplitViewOverviewSessionTest,
+       OverviewUnsnappableIndicatorVisibilityAfterDisplayRotation) {
+  UpdateDisplay("800x800");
+  std::unique_ptr<aura::Window> snapped_window = CreateTestWindow();
+  // Because of its minimum size, |overview_window| is snappable in horizontal
+  // split view but not in vertical split view.
+  std::unique_ptr<aura::Window> overview_window(
+      CreateWindowWithMinimumSize(gfx::Rect(400, 600), gfx::Size(300, 500)));
+  ToggleOverview();
+  ASSERT_TRUE(overview_controller()->InOverviewSession());
+  split_view_controller()->SnapWindow(snapped_window.get(),
+                                      SplitViewController::LEFT);
+  ASSERT_TRUE(split_view_controller()->InSplitViewMode());
+  OverviewItem* overview_item = GetOverviewItemForWindow(overview_window.get());
+  // Note: |cannot_snap_label_view_| and its parent will be created on demand.
+  EXPECT_FALSE(overview_item->cannot_snap_widget_for_testing());
+
+  // Rotate to primary portrait orientation. The unsnappable indicator appears.
+  display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
+      .SetFirstDisplayAsInternalDisplay();
+  ScreenOrientationControllerTestApi test_api(
+      Shell::Get()->screen_orientation_controller());
+  test_api.SetDisplayRotation(display::Display::ROTATE_270,
+                              display::Display::RotationSource::ACTIVE);
+  ASSERT_TRUE(overview_item->cannot_snap_widget_for_testing());
+  ui::Layer* unsnappable_layer =
+      overview_item->cannot_snap_widget_for_testing()->GetLayer();
+  EXPECT_EQ(1.f, unsnappable_layer->opacity());
+
+  // Rotate to primary landscape orientation. The unsnappable indicator hides.
+  test_api.SetDisplayRotation(display::Display::ROTATE_0,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_EQ(0.f, unsnappable_layer->opacity());
+}
+
 // Test that when splitview mode and overview mode are both active at the same
 // time, dragging divider behaviors are correct.
 TEST_P(SplitViewOverviewSessionTest, DragDividerToExitTest) {
@@ -5654,6 +5690,42 @@ TEST_P(SplitViewOverviewSessionInClamshellTest, DisplayOrientationChangeTest) {
   EXPECT_NE(split_view_controller()->GetDefaultDividerPosition(),
             split_view_controller()->divider_position());
   test_many_orientation_changes("off-center divider");
+}
+
+// Verify that an item's unsnappable indicator is updated for display rotation.
+TEST_P(SplitViewOverviewSessionInClamshellTest,
+       OverviewUnsnappableIndicatorVisibilityAfterDisplayRotation) {
+  UpdateDisplay("900x600");
+  std::unique_ptr<aura::Window> snapped_window = CreateTestWindow();
+  // Because of its minimum size, |overview_window| is snappable in clamshell
+  // split view with landscape display orientation but not with portrait display
+  // orientation.
+  std::unique_ptr<aura::Window> overview_window(
+      CreateWindowWithMinimumSize(gfx::Rect(400, 400), gfx::Size(400, 0)));
+  ToggleOverview();
+  ASSERT_TRUE(overview_controller()->InOverviewSession());
+  split_view_controller()->SnapWindow(snapped_window.get(),
+                                      SplitViewController::LEFT);
+  ASSERT_TRUE(split_view_controller()->InSplitViewMode());
+  OverviewItem* overview_item = GetOverviewItemForWindow(overview_window.get());
+  // Note: |cannot_snap_label_view_| and its parent will be created on demand.
+  EXPECT_FALSE(overview_item->cannot_snap_widget_for_testing());
+
+  // Rotate to primary portrait orientation. The unsnappable indicator appears.
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  const int64_t display_id =
+      display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display_manager->SetDisplayRotation(display_id, display::Display::ROTATE_270,
+                                      display::Display::RotationSource::ACTIVE);
+  ASSERT_TRUE(overview_item->cannot_snap_widget_for_testing());
+  ui::Layer* unsnappable_layer =
+      overview_item->cannot_snap_widget_for_testing()->GetLayer();
+  EXPECT_EQ(1.f, unsnappable_layer->opacity());
+
+  // Rotate to primary landscape orientation. The unsnappable indicator hides.
+  display_manager->SetDisplayRotation(display_id, display::Display::ROTATE_0,
+                                      display::Display::RotationSource::ACTIVE);
+  EXPECT_EQ(0.f, unsnappable_layer->opacity());
 }
 
 using SplitViewOverviewSessionInClamshellTestMultiDisplayOnly =

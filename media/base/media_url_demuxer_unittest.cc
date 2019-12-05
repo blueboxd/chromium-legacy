@@ -71,8 +71,8 @@ TEST_F(MediaUrlDemuxerTest, AcceptsEmptyStrings) {
 TEST_F(MediaUrlDemuxerTest, InitializeReturnsPipelineOk) {
   InitializeTest();
   demuxer_->Initialize(nullptr,
-                       base::Bind(&MediaUrlDemuxerTest::VerifyCallbackOk,
-                                  base::Unretained(this)));
+                       base::BindOnce(&MediaUrlDemuxerTest::VerifyCallbackOk,
+                                      base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
 }

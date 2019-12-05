@@ -45,6 +45,7 @@ constexpr char kStopAlarmTimerRinging[] = "stopAlarmTimerRinging";
 constexpr char kCardClick[] = "cardClick";
 constexpr char kEntryPointClick[] = "entryPointClick";
 constexpr char kEntryPointClose[] = "entryPointClose";
+constexpr char kViewImpression[] = "viewImpression";
 
 // Supported reminder action deep link param values.
 constexpr char kCreateReminder[] = "create";
@@ -243,6 +244,8 @@ GetDeepLinkParamAsProactiveSuggestionsAction(
     return ProactiveSuggestionsAction::kEntryPointClick;
   if (value == kEntryPointClose)
     return ProactiveSuggestionsAction::kEntryPointClose;
+  if (value == kViewImpression)
+    return ProactiveSuggestionsAction::kViewImpression;
   return base::nullopt;
 }
 

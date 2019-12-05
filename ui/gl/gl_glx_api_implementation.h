@@ -18,7 +18,7 @@ struct GLVersionInfo;
 struct GLWindowSystemBindingInfo;
 
 GL_EXPORT void InitializeStaticGLBindingsGLX();
-GL_EXPORT void InitializeDebugGLBindingsGLX();
+GL_EXPORT void InitializeLogGLBindingsGLX();
 GL_EXPORT void ClearBindingsGLX();
 GL_EXPORT bool GetGLWindowSystemBindingInfoGLX(const GLVersionInfo& gl_info,
                                                GLWindowSystemBindingInfo* info);
@@ -55,10 +55,10 @@ class GL_EXPORT RealGLXApi : public GLXApiBase {
 };
 
 // Logs debug information for every GLX call.
-class GL_EXPORT DebugGLXApi : public GLXApi {
+class GL_EXPORT LogGLXApi : public GLXApi {
  public:
-  DebugGLXApi(GLXApi* glx_api);
-  ~DebugGLXApi() override;
+  LogGLXApi(GLXApi* glx_api);
+  ~LogGLXApi() override;
 
   void SetDisabledExtensions(const std::string& disabled_extensions) override;
 

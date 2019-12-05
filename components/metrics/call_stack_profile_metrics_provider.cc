@@ -29,6 +29,17 @@ namespace {
 // TODO(wittman): Remove this threshold after crbug.com/903972 is fixed.
 const size_t kMaxPendingProfiles = 1250;
 
+// Provides access to the singleton interceptor callback instance for CPU
+// profiles. Accessed asynchronously on the profiling thread after profiling has
+// been started.
+CallStackProfileMetricsProvider::InterceptorCallback&
+GetCpuInterceptorCallbackInstance() {
+  static base::NoDestructor<
+      CallStackProfileMetricsProvider::InterceptorCallback>
+      instance;
+  return *instance;
+}
+
 // PendingProfiles ------------------------------------------------------------
 
 // Singleton class responsible for retaining profiles received from
@@ -232,6 +243,13 @@ CallStackProfileMetricsProvider::~CallStackProfileMetricsProvider() = default;
 void CallStackProfileMetricsProvider::ReceiveProfile(
     base::TimeTicks profile_start_time,
     SampledProfile profile) {
+  if (GetCpuInterceptorCallbackInstance() &&
+      (profile.trigger_event() == SampledProfile::PROCESS_STARTUP ||
+       profile.trigger_event() == SampledProfile::PERIODIC_COLLECTION)) {
+    GetCpuInterceptorCallbackInstance().Run(std::move(profile));
+    return;
+  }
+
   const base::Feature& feature =
       profile.trigger_event() == SampledProfile::PERIODIC_HEAP_COLLECTION
           ? kHeapProfilerReporting
@@ -248,10 +266,27 @@ void CallStackProfileMetricsProvider::ReceiveSerializedProfile(
     std::string serialized_profile) {
   // Heap profiler does not use this path as it only reports profiles
   // from the browser process.
+  if (GetCpuInterceptorCallbackInstance()) {
+    SampledProfile profile;
+    if (profile.ParseFromArray(serialized_profile.data(),
+                               serialized_profile.size())) {
+      DCHECK(profile.trigger_event() == SampledProfile::PROCESS_STARTUP ||
+             profile.trigger_event() == SampledProfile::PERIODIC_COLLECTION);
+      GetCpuInterceptorCallbackInstance().Run(std::move(profile));
+    }
+    return;
+  }
+
   if (!base::FeatureList::IsEnabled(kSamplingProfilerReporting))
     return;
   PendingProfiles::GetInstance()->MaybeCollectSerializedProfile(
       profile_start_time, std::move(serialized_profile));
+}
+
+// static
+void CallStackProfileMetricsProvider::SetCpuInterceptorCallbackForTesting(
+    InterceptorCallback callback) {
+  GetCpuInterceptorCallbackInstance() = std::move(callback);
 }
 
 void CallStackProfileMetricsProvider::OnRecordingEnabled() {

@@ -204,8 +204,7 @@ void ScriptExecutor::ClickOrTapElement(
 }
 
 void ScriptExecutor::CollectUserData(
-    std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
-    std::unique_ptr<UserData> user_data) {
+    CollectUserDataOptions* collect_user_data_options) {
   collect_user_data_options->confirm_callback = base::BindOnce(
       &ScriptExecutor::OnGetUserData, weak_ptr_factory_.GetWeakPtr(),
       std::move(collect_user_data_options->confirm_callback));
@@ -217,23 +216,20 @@ void ScriptExecutor::CollectUserData(
       base::BindOnce(&ScriptExecutor::OnTermsAndConditionsLinkClicked,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(collect_user_data_options->terms_link_callback));
-  delegate_->SetCollectUserDataOptions(std::move(collect_user_data_options),
-                                       std::move(user_data));
+  delegate_->SetCollectUserDataOptions(collect_user_data_options);
   delegate_->EnterState(AutofillAssistantState::PROMPT);
 }
 
 void ScriptExecutor::WriteUserData(
-    base::OnceCallback<void(const CollectUserDataOptions*,
-                            UserData*,
-                            UserData::FieldChange*)> write_callback) {
+    base::OnceCallback<void(UserData*, UserData::FieldChange*)>
+        write_callback) {
   delegate_->WriteUserData(std::move(write_callback));
 }
 
-void ScriptExecutor::OnGetUserData(
-    base::OnceCallback<void(std::unique_ptr<UserData>)> callback,
-    std::unique_ptr<UserData> result) {
+void ScriptExecutor::OnGetUserData(base::OnceCallback<void(UserData*)> callback,
+                                   UserData* user_data) {
   delegate_->EnterState(AutofillAssistantState::RUNNING);
-  std::move(callback).Run(std::move(result));
+  std::move(callback).Run(user_data);
 }
 
 void ScriptExecutor::OnAdditionalActionTriggered(

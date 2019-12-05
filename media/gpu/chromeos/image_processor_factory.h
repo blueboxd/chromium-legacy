@@ -5,18 +5,26 @@
 #ifndef MEDIA_GPU_CHROMEOS_IMAGE_PROCESSOR_FACTORY_H_
 #define MEDIA_GPU_CHROMEOS_IMAGE_PROCESSOR_FACTORY_H_
 
+#include <stdint.h>
+
 #include <memory>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/chromeos/image_processor.h"
 #include "media/gpu/media_gpu_export.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace media {
 
 class MEDIA_GPU_EXPORT ImageProcessorFactory {
  public:
+  // Callback to pick a valid format from given |candidates| formats.
+  using PickFormatCB = base::RepeatingCallback<Fourcc(
+      const std::vector<Fourcc>& /* candidates */)>;
+
   // Factory method to create ImageProcessor.
   // Given input and output PortConfig, it tries to find out the most suitable
   // ImageProcessor to be used for the current platform.
@@ -47,6 +55,19 @@ class MEDIA_GPU_EXPORT ImageProcessorFactory {
       const std::vector<ImageProcessor::OutputMode>& preferred_output_modes,
       size_t num_buffers,
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
+      ImageProcessor::ErrorCB error_cb);
+
+  // Factory method to create ImageProcessor.
+  // Unlike Create(), caller gives a list of valid input for the
+  // ImageProcessor, |candidates|; frame's |input_size|; |out_format_picker| for
+  // caller to pick a valid output. With the parameters the factory can
+  // instantiate a suitable ImageProcessor if exists.
+  static std::unique_ptr<ImageProcessor> CreateWithInputCandidates(
+      const std::vector<std::pair<Fourcc, gfx::Size>>& input_candidates,
+      const gfx::Size& visible_size,
+      size_t num_buffers,
+      scoped_refptr<base::SequencedTaskRunner> client_task_runner,
+      PickFormatCB out_format_picker,
       ImageProcessor::ErrorCB error_cb);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ImageProcessorFactory);

@@ -222,6 +222,10 @@ void Connector::RaiseError() {
 }
 
 void Connector::SetConnectionGroup(ConnectionGroup::Ref ref) {
+  // If this Connector already belonged to a group, parent the new group to that
+  // one so that the reference is not lost.
+  if (connection_group_)
+    ref.SetParentGroup(std::move(connection_group_));
   connection_group_ = std::move(ref);
 }
 

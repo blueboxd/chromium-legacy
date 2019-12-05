@@ -1154,7 +1154,13 @@ IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, MAYBE_WithoutCredentialsPassingAPI) {
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepDeviceAttributes);
 }
 
-IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, WithCredentialsPassingAPI) {
+// Flakily times out in debug builds. crbug.com/1030810
+#if !defined(NDEBUG)
+#define MAYBE_WithCredentialsPassingAPI DISABLED_WithCredentialsPassingAPI
+#else
+#define MAYBE_WithCredentialsPassingAPI WithCredentialsPassingAPI
+#endif
+IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, MAYBE_WithCredentialsPassingAPI) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_api_login.html");
   fake_saml_idp()->SetLoginAuthHTMLTemplate("saml_api_login_auth.html");
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);

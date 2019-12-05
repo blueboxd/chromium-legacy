@@ -11,7 +11,7 @@
         android:key="os_version"
         android:title="@string/os_version_title" />
     <Preference
-        android:fragment="org.chromium.chrome.browser.settings.about.LegalInformationPreferences"
+        android:fragment="org.chromium.chrome.browser.settings.about.LegalInformationSettings"
         android:key="legal_information"
         android:title="@string/legal_information_title" />
 </PreferenceScreen>

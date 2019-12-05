@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_OVERLAY_CANDIDATE_VALIDATOR_SURFACE_CONTROL_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_OVERLAY_CANDIDATE_VALIDATOR_SURFACE_CONTROL_H_
 
-#include "components/viz/service/display/overlay_candidate_validator.h"
+#include "components/viz/service/display/overlay_candidate_validator_strategy.h"
 #include "components/viz/service/viz_service_export.h"
 
 namespace viz {
@@ -13,15 +13,13 @@ namespace viz {
 // Android OverlayCandidateValidator that uses surface control. Requires Android
 // Q or higher.
 class VIZ_SERVICE_EXPORT OverlayCandidateValidatorSurfaceControl
-    : public OverlayCandidateValidator {
+    : public OverlayCandidateValidatorStrategy {
  public:
   OverlayCandidateValidatorSurfaceControl();
   ~OverlayCandidateValidatorSurfaceControl() override;
 
   // OverlayCandidateValidator implementation.
   void InitializeStrategies() override;
-  bool AllowCALayerOverlays() const override;
-  bool AllowDCLayerOverlays() const override;
   bool NeedsSurfaceOccludingDamageRect() const override;
   void CheckOverlaySupport(const PrimaryPlane* primary_plane,
                            OverlayCandidateList* surfaces) override;

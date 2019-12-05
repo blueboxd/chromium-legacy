@@ -24,7 +24,7 @@ class AnimationInterpolableValueTest : public testing::Test {
     CSSNumberInterpolationType interpolation_type(property_handle);
     InterpolationValue start(std::make_unique<InterpolableNumber>(a));
     InterpolationValue end(std::make_unique<InterpolableNumber>(b));
-    TransitionInterpolation* i = TransitionInterpolation::Create(
+    TransitionInterpolation* i = MakeGarbageCollected<TransitionInterpolation>(
         property_handle, interpolation_type, std::move(start), std::move(end),
         nullptr, nullptr);
 

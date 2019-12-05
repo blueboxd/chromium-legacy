@@ -131,7 +131,7 @@ public class TabUiTestHelper {
      * @param cta       The current running activity.
      * @param count     The correct number of cards in tab switcher.
      */
-    static void verifyTabSwitcherCardCount(ChromeTabbedActivity cta, int count) {
+    public static void verifyTabSwitcherCardCount(ChromeTabbedActivity cta, int count) {
         assertTrue(cta.getLayoutManager().overviewVisible());
         onView(allOf(withParent(withId(org.chromium.chrome.R.id.compositor_view_holder)),
                        withId(R.id.tab_list_view)))
@@ -191,7 +191,7 @@ public class TabUiTestHelper {
      * @param cta             The current running activity.
      * @param orientation     The target orientation we want the screen to rotate to.
      */
-    static void rotateDeviceToOrientation(ChromeTabbedActivity cta, int orientation) {
+    public static void rotateDeviceToOrientation(ChromeTabbedActivity cta, int orientation) {
         if (cta.getResources().getConfiguration().orientation == orientation) return;
         assertTrue(orientation == Configuration.ORIENTATION_LANDSCAPE
                 || orientation == Configuration.ORIENTATION_PORTRAIT);

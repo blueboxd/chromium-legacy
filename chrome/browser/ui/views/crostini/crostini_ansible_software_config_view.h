@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_VIEW_H_
 
 #include "chrome/browser/chromeos/crostini/ansible/ansible_management_service.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/progress_bar.h"
@@ -21,6 +22,8 @@ class CrostiniAnsibleSoftwareConfigView
  public:
   // views::DialogDelegateView:
   int GetDialogButtons() const override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  bool Accept() override;
   base::string16 GetWindowTitle() const override;
   gfx::Size CalculatePreferredSize() const override;
 
@@ -38,7 +41,11 @@ class CrostiniAnsibleSoftwareConfigView
   enum class State {
     CONFIGURING,
     ERROR,
+    ERROR_OFFLINE,
   };
+
+  void OnStateChanged();
+  base::string16 GetSubtextLabel() const;
 
   State state_ = State::CONFIGURING;
   crostini::AnsibleManagementService* ansible_management_service_ = nullptr;

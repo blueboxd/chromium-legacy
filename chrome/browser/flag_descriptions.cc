@@ -194,6 +194,12 @@ const char kAutofillEnableToolbarStatusChipDescription[] =
     "When enabled, Autofill data related icon will be shown in the status "
     "chip next to the profile avatar icon in the toolbar.";
 
+const char kAutofillEnableVirtualCardName[] =
+    "Offer to use cloud token virtual card in Autofill";
+const char kAutofillEnableVirtualCardDescription[] =
+    "When enabled, if all requirements are met, Autofill will offer to use "
+    "virtual credit cards in form filling.";
+
 const char kAutofillEnforceMinRequiredFieldsForHeuristicsName[] =
     "Autofill Enforce Min Required Fields For Heuristics";
 const char kAutofillEnforceMinRequiredFieldsForHeuristicsDescription[] =
@@ -569,12 +575,6 @@ const char kEnableAutofillNativeDropdownViewsName[] =
 const char kEnableAutofillNativeDropdownViewsDescription[] =
     "If enabled, the Autofill Dropdown will be built natively using Views, "
     "rather than painted directly to a canvas.";
-
-const char kEnableAutofillUpdatedCardUnmaskPromptUiName[] =
-    "Enable new card unmask prompt UI";
-const char kEnableAutofillUpdatedCardUnmaskPromptUiDescription[] =
-    "If enabled, shows the updated card unmask prompt when performing CVC "
-    "verification.";
 
 const char kEnableDeferAllScriptName[] = "DeferAllScript previews";
 const char kEnableDeferAllScriptDescription[] =

@@ -141,6 +141,8 @@ class ArcAccessibilityHelperBridge
   void SetExploreByTouchEnabled(bool enabled);
   void UpdateTreeIdOfNotificationSurface(const std::string& notification_key,
                                          ui::AXTreeID tree_id);
+  void HandleFilterTypeFocusEvent(mojom::AccessibilityEventDataPtr event_data);
+  void HandleFilterTypeAllEvent(mojom::AccessibilityEventDataPtr event_data);
 
   AXTreeSourceArc* GetFromTaskId(int32_t task_id);
   AXTreeSourceArc* CreateFromTaskId(int32_t task_id);

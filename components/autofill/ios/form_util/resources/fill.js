@@ -526,8 +526,7 @@ __gCrWeb.fill.getCanonicalActionForForm = function(formElement) {
  *         std::map<WebFormControlElement, FormFieldData*>* element_map)
  * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc
  *
- * TODO(thestig): Make |element_map| a Map when Chrome makes iOS 8 and Safari 8
- *                part of the minimal requirements.
+ * TODO(crbug.com/1030490): Make |elementArray| a Map.
  *
  * @param {Array<FormControlElement>} controlElements The control elements that
  *     will be processed.
@@ -608,6 +607,7 @@ function isVisibleNode_(node) {
  *
  * This also uses (|controlElements|, |elementArray|) because there is no
  * guaranteeded Map support on iOS yet.
+ * TODO(crbug.com/1030490): Make |elementArray| a Map.
  *
  * @param {NodeList} labels The labels to match.
  * @param {HTMLFormElement} formElement The form element being processed.

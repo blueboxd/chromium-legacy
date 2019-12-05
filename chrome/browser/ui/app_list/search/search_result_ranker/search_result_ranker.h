@@ -70,13 +70,6 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver,
   // file_manager::file_tasks::FileTaskObserver:
   void OnFilesOpened(const std::vector<FileOpenEvent>& file_opens) override;
 
-  // history::HistoryService::HistoryServiceObserver:
-  void OnURLVisited(history::HistoryService* history_service,
-                    ui::PageTransition transition,
-                    const history::URLRow& row,
-                    const history::RedirectList& redirects,
-                    base::Time visit_time) override;
-
   // history::HistoryServiceObserver:
   void OnURLsDeleted(history::HistoryService* history_service,
                      const history::DeletionInfo& deletion_info) override;

@@ -103,6 +103,15 @@ void AutofillDriverIOS::PropagateAutofillPredictions(
   autofill_manager_.client()->PropagateAutofillPredictions(nullptr, forms);
 }
 
+void AutofillDriverIOS::HandleParsedForms(
+    const std::vector<FormStructure*>& forms) {
+  web::WebFrame* web_frame = web::GetWebFrameWithId(web_state_, web_frame_id_);
+  if (!web_frame) {
+    return;
+  }
+  [bridge_ handleParsedForms:forms inFrame:web_frame];
+}
+
 void AutofillDriverIOS::SendAutofillTypePredictionsToRenderer(
     const std::vector<FormStructure*>& forms) {
   web::WebFrame* web_frame = web::GetWebFrameWithId(web_state_, web_frame_id_);

@@ -41,7 +41,7 @@ class COMPONENT_EXPORT(OZONE_BASE) GLOzone {
   virtual bool InitializeGLOneOffPlatform() = 0;
 
   // Initializes static debug GL bindings.
-  virtual void InitializeDebugGLBindings() = 0;
+  virtual void InitializeLogGLBindings() = 0;
 
   // Disables the specified extensions in the window system bindings,
   // e.g., GLX, EGL, etc. This is part of the GPU driver bug workarounds

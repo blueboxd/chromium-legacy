@@ -21,8 +21,8 @@ class ExtensionCheckupTest : public ExtensionServiceTestBase,
 
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        extensions_features::kExtensionsCheckupTool,
-        {{extensions_features::kExtensionsCheckupToolEntryPointParameter,
+        extensions_features::kExtensionsCheckup,
+        {{extensions_features::kExtensionsCheckupEntryPointParameter,
           GetParam()}});
     ExtensionServiceTestBase::SetUp();
     InitializeEmptyExtensionService();
@@ -56,7 +56,7 @@ class ExtensionCheckupTest : public ExtensionServiceTestBase,
 
   // Verify the extensions checkup behavior.
   bool ShouldShowExperimentCheckup() {
-    if (GetParam() == kNtpPromoExperiment)
+    if (GetParam() == extensions_features::kNtpPromoEntryPoint)
       return ShouldShowExtensionsCheckupPromo(browser_context());
     return ShouldShowExtensionsCheckupOnStartup(browser_context());
   }
@@ -65,7 +65,7 @@ class ExtensionCheckupTest : public ExtensionServiceTestBase,
   // user is supposed to see the middle slot promo entry point they should never
   // see the extensions checkup upon startup).
   void VerifyNonExperimentCheckupDisabled() {
-    if (GetParam() == kNtpPromoExperiment)
+    if (GetParam() == extensions_features::kNtpPromoEntryPoint)
       EXPECT_FALSE(ShouldShowExtensionsCheckupOnStartup(browser_context()));
     else
       EXPECT_FALSE(ShouldShowExtensionsCheckupPromo(browser_context()));
@@ -105,8 +105,9 @@ TEST_P(ExtensionCheckupTest, UserAndNonUserInstalledExtensions) {
   EXPECT_TRUE(ShouldShowExperimentCheckup());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
-                         ExtensionCheckupTest,
-                         ::testing::Values(kNtpPromoExperiment,
-                                           kStartupExperiment));
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    ExtensionCheckupTest,
+    ::testing::Values(extensions_features::kNtpPromoEntryPoint,
+                      extensions_features::kStartupEntryPoint));
 }  // namespace extensions

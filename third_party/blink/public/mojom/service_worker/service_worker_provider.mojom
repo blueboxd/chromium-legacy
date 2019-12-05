@@ -43,10 +43,10 @@ struct ServiceWorkerProviderInfoForStartWorker {
 
   // |cache_storage| is an optional optimization so the service worker can use
   // the Cache Storage API immediately without using InterfaceProvider. May be
-  // null for service workers created for update checks, as the optimization
-  // would be wasteful because these workers usually are aborted after the
-  // byte-to-byte update check before running.
-  CacheStorage? cache_storage;
+  // NullRemote for service workers created for update checks, as the
+  // optimization would be wasteful because these workers usually are aborted
+  // after the byte-to-byte update check before running.
+  pending_remote<CacheStorage>? cache_storage;
 
   // TODO(crbug.com/990845): remove when no longer used.
   pending_remote<service_manager.mojom.InterfaceProvider> interface_provider;

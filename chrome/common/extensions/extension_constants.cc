@@ -131,4 +131,5 @@ const char kAppStateCannotRun[] = "cannot_run";
 const char kAppStateReadyToRun[] = "ready_to_run";
 
 const char kMediaFileSystemPathPart[] = "_";
+const char kExtensionRequestTimestamp[] = "timestamp";
 }  // namespace extension_misc

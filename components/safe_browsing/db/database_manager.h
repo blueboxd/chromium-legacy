@@ -48,6 +48,8 @@ enum class AsyncMatch : int {
   // when no hash prefix or full hash in the allowlist matches the computed
   // hashes of the URL. The callback function isn't called.
   NO_MATCH,
+
+  kMaxValue = NO_MATCH,
 };
 
 struct V4ProtocolConfig;

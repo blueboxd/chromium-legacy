@@ -43,14 +43,6 @@ void OverlayCandidateValidatorSurfaceControl::InitializeStrategies() {
       this, OverlayStrategyUnderlay::OpaqueMode::AllowTransparentCandidates));
 }
 
-bool OverlayCandidateValidatorSurfaceControl::AllowCALayerOverlays() const {
-  return false;
-}
-
-bool OverlayCandidateValidatorSurfaceControl::AllowDCLayerOverlays() const {
-  return false;
-}
-
 bool OverlayCandidateValidatorSurfaceControl::NeedsSurfaceOccludingDamageRect()
     const {
   return true;

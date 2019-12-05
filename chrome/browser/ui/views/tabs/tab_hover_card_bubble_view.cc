@@ -798,6 +798,15 @@ gfx::Size TabHoverCardBubbleView::CalculatePreferredSize() const {
   return preferred_size;
 }
 
+void TabHoverCardBubbleView::OnThemeChanged() {
+  BubbleDialogDelegateView::OnThemeChanged();
+
+  // Update fade labels' background color to match that of the the original
+  // label since these child views are ignored by layout.
+  title_fade_label_->SetBackgroundColor(title_label_->GetBackgroundColor());
+  domain_fade_label_->SetBackgroundColor(domain_label_->GetBackgroundColor());
+}
+
 void TabHoverCardBubbleView::RecordTimeSinceLastSeenMetric(
     base::TimeDelta elapsed_time) {
   constexpr base::TimeDelta kMaxHoverCardReshowTimeDelta =

@@ -522,11 +522,11 @@ bool InterceptRequest(URLLoaderInterceptor::RequestParams* params) {
   info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(headers));
 
-  network::ResourceResponseHead response;
-  response.headers = info.headers;
-  response.headers->GetMimeType(&response.mime_type);
+  auto response = network::mojom::URLResponseHead::New();
+  response->headers = info.headers;
+  response->headers->GetMimeType(&response->mime_type);
 
-  params->client->OnReceiveResponse(response);
+  params->client->OnReceiveResponse(std::move(response));
 
   mojo::ScopedDataPipeProducerHandle producer_handle;
   mojo::ScopedDataPipeConsumerHandle consumer_handle;
@@ -3216,6 +3216,8 @@ class AppCacheUpdateJobTest : public testing::Test,
                               int64_t manifest_response_id) {
     AppCache* cache = new AppCache(service_->storage(), cache_id);
     cache->set_complete(true);
+    cache->set_manifest_parser_version(0);
+    cache->set_manifest_scope("/");
     cache->set_update_time(base::Time::Now() - kOneHour);
     group_->AddCache(cache);
     group_->set_last_full_update_check_time(cache->update_time());

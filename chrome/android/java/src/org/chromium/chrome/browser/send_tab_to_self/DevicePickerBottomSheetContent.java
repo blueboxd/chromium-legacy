@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.send_tab_to_self;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,11 +16,10 @@ import android.widget.TextView;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfMetrics.SendTabToSelfShareClickResult;
-import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.ui.widget.Toast;
 
@@ -28,16 +28,20 @@ import org.chromium.ui.widget.Toast;
  * chosen to share it with themselves through the SendTabToSelfFeature.
  */
 public class DevicePickerBottomSheetContent implements BottomSheetContent, OnItemClickListener {
-    private ChromeActivity mActivity;
+    private final Context mContext;
+    private final BottomSheetController mController;
     private ViewGroup mToolbarView;
     private ViewGroup mContentView;
-    private DevicePickerBottomSheetAdapter mAdapter;
-    private NavigationEntry mEntry;
+    private final DevicePickerBottomSheetAdapter mAdapter;
+    private final NavigationEntry mEntry;
+    private final Profile mProfile;
 
-    public DevicePickerBottomSheetContent(ChromeActivity activity, NavigationEntry entry) {
-        mActivity = activity;
-        mAdapter = new DevicePickerBottomSheetAdapter(
-                ((TabImpl) activity.getActivityTabProvider().get()).getProfile());
+    public DevicePickerBottomSheetContent(
+            Context context, NavigationEntry entry, BottomSheetController controller) {
+        mContext = context;
+        mController = controller;
+        mProfile = Profile.getLastUsedProfile().getOriginalProfile();
+        mAdapter = new DevicePickerBottomSheetAdapter(mProfile);
         mEntry = entry;
 
         createToolbarView();
@@ -52,14 +56,14 @@ public class DevicePickerBottomSheetContent implements BottomSheetContent, OnIte
     }
 
     private void createToolbarView() {
-        mToolbarView = (ViewGroup) LayoutInflater.from(mActivity).inflate(
+        mToolbarView = (ViewGroup) LayoutInflater.from(mContext).inflate(
                 R.layout.send_tab_to_self_device_picker_toolbar, null);
         TextView toolbarText = mToolbarView.findViewById(R.id.device_picker_toolbar);
         toolbarText.setText(R.string.send_tab_to_self_sheet_toolbar);
     }
 
     private void createContentView() {
-        mContentView = (ViewGroup) LayoutInflater.from(mActivity).inflate(
+        mContentView = (ViewGroup) LayoutInflater.from(mContext).inflate(
                 R.layout.send_tab_to_self_device_picker_list, null);
         ListView listView = mContentView.findViewById(R.id.device_picker_list);
 
@@ -136,15 +140,14 @@ public class DevicePickerBottomSheetContent implements BottomSheetContent, OnIte
                 SendTabToSelfShareClickResult.ClickType.CLICK_ITEM);
         TargetDeviceInfo targetDeviceInfo = mAdapter.getItem(position);
 
-        Tab tab = mActivity.getActivityTabProvider().get();
-        SendTabToSelfAndroidBridge.addEntry(((TabImpl) tab).getProfile(), mEntry.getUrl(),
-                mEntry.getTitle(), mEntry.getTimestamp(), targetDeviceInfo.cacheGuid);
+        SendTabToSelfAndroidBridge.addEntry(mProfile, mEntry.getUrl(), mEntry.getTitle(),
+                mEntry.getTimestamp(), targetDeviceInfo.cacheGuid);
 
-        Resources res = mActivity.getResources();
+        Resources res = mContext.getResources();
         String toastMessage =
                 res.getString(R.string.send_tab_to_self_toast, targetDeviceInfo.deviceName);
-        Toast.makeText(mActivity, toastMessage, Toast.LENGTH_SHORT).show();
+        Toast.makeText(mContext, toastMessage, Toast.LENGTH_SHORT).show();
 
-        mActivity.getBottomSheetController().hideContent(this, true);
+        mController.hideContent(this, true);
     }
 }

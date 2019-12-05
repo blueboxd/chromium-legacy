@@ -153,6 +153,10 @@ interface LocalFrame {
   // Used to instruct the frame to go into "view source" mode. This should
   // only be sent to the main frame.
   EnableViewSourceMode();
+
+  // Notifies this frame that it is now focused.  This is used to
+  // support cross-process focused frame changes.
+  Focus();
 };
 
 // Implemented in Browser, this interface defines frame-specific methods that will
@@ -218,4 +222,8 @@ interface RemoteFrame {
   // collapsed, it will be removed from the layout tree of its parent
   // frame's document.
   Collapse(bool collapsed);
+
+  // Notifies this remote frame that it is now focused.  This is used to
+  // support cross-process focused frame changes.
+  Focus();
 };

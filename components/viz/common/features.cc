@@ -22,8 +22,13 @@ const base::Feature kUseSkiaForGLReadback{"UseSkiaForGLReadback",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Use the SkiaRenderer.
+#if defined(OS_LINUX) && !(defined(OS_CHROMEOS) || defined(IS_CHROMECAST))
+const base::Feature kUseSkiaRenderer{"UseSkiaRenderer",
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
+#else
 const base::Feature kUseSkiaRenderer{"UseSkiaRenderer",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 // Use the SkiaRenderer to record SkPicture.
 const base::Feature kRecordSkPicture{"RecordSkPicture",
@@ -66,17 +71,10 @@ bool IsUsingSkiaRenderer() {
   // We require OOP-D everywhere but WebView.
   bool enabled = base::FeatureList::IsEnabled(kUseSkiaRenderer) ||
                  base::FeatureList::IsEnabled(kVulkan);
-#if defined(OS_ANDROID)
-  if (enabled && IsAndroidSurfaceControlEnabled()) {
-    DLOG(ERROR) << "UseSkiaRenderer does not work with SurfaceControl";
-    return false;
-  }
-#else
   if (enabled && !IsVizDisplayCompositorEnabled()) {
     DLOG(ERROR) << "UseSkiaRenderer requires VizDisplayCompositor.";
     return false;
   }
-#endif  // defined(OS_ANDROID)
   return enabled;
 }
 

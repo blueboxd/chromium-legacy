@@ -2491,6 +2491,7 @@ enum WebFeature {
   kInputElementValueAsDateGetter = 3110,
   kInputElementValueAsDateSetter = 3111,
   kHTMLMetaElementReferrerPolicy = 3112,
+  kNonWebbyMixedContent = 3113,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

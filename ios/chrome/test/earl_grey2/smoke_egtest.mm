@@ -199,7 +199,7 @@
       ensureAppLaunchedWithFeaturesEnabled:
           {kNewOmniboxPopupLayout, web::features::kSlimNavigationManager}
                                   disabled:{}
-                              forceRestart:NO];
+                            relaunchPolicy:NoForceRelaunchAndResetState];
 
   GREYAssertTrue([ChromeEarlGrey isNewOmniboxPopupLayoutEnabled],
                  @"NewOmniboxPopupLayout should be enabled");
@@ -208,6 +208,65 @@
 
   GREYAssertEqual([ChromeEarlGrey mainTabCount], 1U,
                   @"Exactly one new tab should be opened.");
+}
+
+// Tests gracefully kill through AppLaunchManager.
+- (void)testAppLaunchManagerForceRelaunchByCleanShutdown {
+  [ChromeEarlGrey openNewTab];
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithFeaturesEnabled:{}
+      disabled:{}
+      relaunchPolicy:ForceRelaunchByCleanShutdown];
+  [[EarlGrey selectElementWithMatcher:grey_text(@"Restore")]
+      assertWithMatcher:grey_notVisible()];
+  [ChromeEarlGrey waitForMainTabCount:2];
+}
+
+// Tests hard kill(crash) through AppLaunchManager.
+- (void)testAppLaunchManagerForceRelaunchByKilling {
+  [ChromeEarlGrey openNewTab];
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithFeaturesEnabled:{}
+      disabled:{}
+      relaunchPolicy:ForceRelaunchByKilling];
+  [[EarlGrey selectElementWithMatcher:grey_text(@"Restore")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [ChromeEarlGrey waitForMainTabCount:1];
+}
+
+// Tests running resets after relaunch through AppLaunchManager.
+- (void)testAppLaunchManagerNoForceRelaunchAndResetState {
+  [self stopHTTPServer];
+  [self disableMockAuthentication];
+  [ChromeEarlGrey openNewTab];
+  [[AppLaunchManager sharedManager]
+      ensureAppLaunchedWithFeaturesEnabled:{kNewOmniboxPopupLayout}
+                                  disabled:{}
+                            relaunchPolicy:NoForceRelaunchAndResetState];
+  [ChromeEarlGrey waitForMainTabCount:1];
+  // |stopHTTPServer| and |disableMockAuthentication| DCHECK the flags are in
+  // correct states, which can serve as assertion that proper resets are run.
+  [self stopHTTPServer];
+  [self disableMockAuthentication];
+}
+
+// Tests no force relaunch.
+- (void)testAppLaunchManagerNoForceRelaunchAndKeepState {
+  [self stopHTTPServer];
+  [self disableMockAuthentication];
+  [ChromeEarlGrey openNewTab];
+  // No relauch when feature list isn't changed.
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithFeaturesEnabled:{}
+      disabled:{}
+      relaunchPolicy:NoForceRelaunchAndKeepState];
+  [ChromeEarlGrey waitForMainTabCount:2];
+  [[EarlGrey selectElementWithMatcher:grey_text(@"Restore")]
+      assertWithMatcher:grey_notVisible()];
+}
+
+// Tests backgrounding app and moving app back through AppLaunchManager.
+- (void)testAppLaunchManagerBackgroundAndForegroundApp {
+  [ChromeEarlGrey openNewTab];
+  [[AppLaunchManager sharedManager] backgroundAndForegroundApp];
+  [ChromeEarlGrey waitForMainTabCount:2];
 }
 
 // Tests isCompactWidth method in chrome_earl_grey.h.

@@ -114,8 +114,8 @@ struct PaymentRequestEventData {
   array<PaymentShippingOption>? shipping_options;
 
   // Handles events raised by the payment handler, such as "payment method
-  // changed" event. Null in content_browsertests.
-  PaymentHandlerHost? payment_handler_host;
+  // changed" event. NullRemote in content_browsertests.
+  pending_remote<PaymentHandlerHost>? payment_handler_host;
 };
 
 // This struct is provided to receive payment app response from render

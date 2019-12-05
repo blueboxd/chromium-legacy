@@ -171,7 +171,7 @@ public class StartupTabPreloaderUnitTest {
         @Override
         public TabCreatorManager.TabCreator getTabCreator(boolean incognito) {
             Assert.assertFalse(incognito);
-            return new ChromeTabCreator(null, null, null, false);
+            return new ChromeTabCreator(null, null, null, null, false);
         }
     }
 

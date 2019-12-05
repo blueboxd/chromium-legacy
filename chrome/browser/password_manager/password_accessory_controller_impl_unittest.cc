@@ -52,8 +52,8 @@ using testing::SaveArg;
 using testing::StrictMock;
 using FillingSource = ManualFillingController::FillingSource;
 
-constexpr char kExampleSite[] = "https://example.com/";
-constexpr char kExampleSiteMobile[] = "https://m.example.com/";
+constexpr char kExampleSite[] = "https://example.com";
+constexpr char kExampleSiteMobile[] = "https://m.example.com";
 constexpr char kExampleDomain[] = "example.com";
 
 class MockPasswordGenerationController
@@ -169,7 +169,7 @@ TEST_F(PasswordAccessoryControllerTest, IsNotRecreatedForSameWebContents) {
 
 TEST_F(PasswordAccessoryControllerTest, TransformsMatchesToSuggestions) {
   cache()->SaveCredentialsForOrigin(
-      {CreateEntry("Ben", "S3cur3", GURL(kExampleDomain), false).first},
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
       url::Origin::Create(GURL(kExampleSite)));
   EXPECT_CALL(
       mock_manual_filling_controller_,
@@ -188,7 +188,7 @@ TEST_F(PasswordAccessoryControllerTest, TransformsMatchesToSuggestions) {
 
 TEST_F(PasswordAccessoryControllerTest, HintsToEmptyUserNames) {
   cache()->SaveCredentialsForOrigin(
-      {CreateEntry("", "S3cur3", GURL(kExampleDomain), false).first},
+      {CreateEntry("", "S3cur3", GURL(kExampleSite), false, false).get()},
       url::Origin::Create(GURL(kExampleSite)));
 
   EXPECT_CALL(
@@ -207,10 +207,10 @@ TEST_F(PasswordAccessoryControllerTest, HintsToEmptyUserNames) {
 
 TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
   cache()->SaveCredentialsForOrigin(
-      {CreateEntry("Ben", "S3cur3", GURL(kExampleDomain), false).first,
-       CreateEntry("Zebra", "M3h", GURL(kExampleDomain), false).first,
-       CreateEntry("Alf", "PWD", GURL(kExampleDomain), false).first,
-       CreateEntry("Cat", "M1@u", GURL(kExampleDomain), false).first},
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get(),
+       CreateEntry("Zebra", "M3h", GURL(kExampleSite), false, false).get(),
+       CreateEntry("Alf", "PWD", GURL(kExampleSite), false, false).get(),
+       CreateEntry("Cat", "M1@u", GURL(kExampleSite), false, false).get()},
       url::Origin::Create(GURL(kExampleSite)));
 
   AccessorySheetData result(AccessoryTabType::PASSWORDS, base::string16());
@@ -246,7 +246,7 @@ TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
 
 TEST_F(PasswordAccessoryControllerTest, RepeatsSuggestionsForSameFrame) {
   cache()->SaveCredentialsForOrigin(
-      {CreateEntry("Ben", "S3cur3", GURL(kExampleDomain), false).first},
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
       url::Origin::Create(GURL(kExampleSite)));
 
   // Pretend that any input in the same frame was focused.
@@ -280,7 +280,7 @@ TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
 
 TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
   cache()->SaveCredentialsForOrigin(
-      {CreateEntry("Ben", "S3cur3", GURL(kExampleDomain), false).first},
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
       url::Origin::Create(GURL(kExampleSite)));
   // Pretend a username field was focused. This should result in non-interactive
   // suggestion.
@@ -317,7 +317,7 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
 
 TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
   cache()->SaveCredentialsForOrigin(
-      {CreateEntry("Ben", "S3cur3", GURL(kExampleDomain), false).first},
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
       url::Origin::Create(GURL(kExampleSite)));
   EXPECT_CALL(
       mock_manual_filling_controller_,
@@ -334,7 +334,7 @@ TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
       /*is_manual_generation_available=*/false);
 
   cache()->SaveCredentialsForOrigin(
-      {CreateEntry("Alf", "M3lm4k", GURL(kExampleDomain), false).first},
+      {CreateEntry("Alf", "M3lm4k", GURL(kExampleSite), false, false).get()},
       url::Origin::Create(GURL(kExampleSite)));
   EXPECT_CALL(
       mock_manual_filling_controller_,
@@ -356,8 +356,9 @@ TEST_F(PasswordAccessoryControllerTest, HidesEntriesForPSLMatchedOriginsInV1) {
   scoped_feature_list.InitAndDisableFeature(
       autofill::features::kAutofillKeyboardAccessory);
   cache()->SaveCredentialsForOrigin(
-      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false).first,
-       CreateEntry("Alf", "R4nd0m", GURL(kExampleSiteMobile), true).first},
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get(),
+       CreateEntry("Alf", "R4nd0m", GURL(kExampleSiteMobile), true, false)
+           .get()},
       url::Origin::Create(GURL(kExampleSite)));
 
   AccessorySheetData result(AccessoryTabType::PASSWORDS, base::string16());
@@ -384,8 +385,9 @@ TEST_F(PasswordAccessoryControllerTest, SetsTitleForPSLMatchedOriginsInV2) {
   scoped_feature_list.InitAndEnableFeature(
       autofill::features::kAutofillKeyboardAccessory);
   cache()->SaveCredentialsForOrigin(
-      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false).first,
-       CreateEntry("Alf", "R4nd0m", GURL(kExampleSiteMobile), true).first},
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get(),
+       CreateEntry("Alf", "R4nd0m", GURL(kExampleSiteMobile), true, false)
+           .get()},
       url::Origin::Create(GURL(kExampleSite)));
 
   AccessorySheetData result(AccessoryTabType::PASSWORDS, base::string16());
@@ -414,7 +416,7 @@ TEST_F(PasswordAccessoryControllerTest, SetsTitleForPSLMatchedOriginsInV2) {
 
 TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
   cache()->SaveCredentialsForOrigin(
-      {CreateEntry("Ben", "S3cur3", GURL(kExampleDomain), false).first},
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
       url::Origin::Create(GURL(kExampleSite)));
   // Pretend a username field was focused. This should result in non-emtpy
   // suggestions.
@@ -447,7 +449,7 @@ TEST_F(PasswordAccessoryControllerTest, NavigatingMainFrameClearsSuggestions) {
   // Set any, non-empty password list and pretend a username field was focused.
   // This should result in non-emtpy suggestions.
   cache()->SaveCredentialsForOrigin(
-      {CreateEntry("Ben", "S3cur3", GURL(kExampleDomain), false).first},
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
       url::Origin::Create(GURL(kExampleSite)));
   EXPECT_CALL(
       mock_manual_filling_controller_,

@@ -75,8 +75,12 @@ void BinaryUploadService::MaybeUploadForDeepScanningCallback(
     std::unique_ptr<BinaryUploadService::Request> request,
     bool authorized) {
   // Ignore the request if the browser cannot upload data.
-  if (!authorized)
+  if (!authorized) {
+    // TODO(crbug/1028133): Add extra logic to handle UX for non-authorized
+    // users.
+    request->FinishRequest(Result::UNAUTHORIZED, DeepScanningClientResponse());
     return;
+  }
   UploadForDeepScanning(std::move(request));
 }
 

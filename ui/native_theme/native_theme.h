@@ -338,6 +338,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_DisabledMenuItemForegroundColor,
     kColorId_SelectedMenuItemForegroundColor,
     kColorId_FocusedMenuItemBackgroundColor,
+    kColorId_MenuDropIndicator,
     kColorId_MenuItemMinorTextColor,
     kColorId_MenuSeparatorColor,
     kColorId_MenuBackgroundColor,

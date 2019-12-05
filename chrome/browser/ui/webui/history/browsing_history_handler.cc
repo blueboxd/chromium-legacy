@@ -440,7 +440,12 @@ void BrowsingHistoryHandler::OnRemoveVisitsFailed() {
 }
 
 void BrowsingHistoryHandler::HistoryDeleted() {
-  web_ui()->CallJavascriptFunctionUnsafe("historyDeleted");
+  if (IsJavascriptAllowed()) {
+    FireWebUIListener("history-deleted", base::Value());
+  } else {
+    deferred_callbacks_.push_back(base::BindOnce(
+        &BrowsingHistoryHandler::HistoryDeleted, weak_factory_.GetWeakPtr()));
+  }
 }
 
 void BrowsingHistoryHandler::HandleHistoryLoaded(const base::ListValue* args) {

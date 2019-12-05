@@ -35,6 +35,7 @@ import org.chromium.content_public.browser.ChildProcessCreationParams;
 import org.chromium.content_public.browser.DeviceUtils;
 import org.chromium.ui.base.ResourceBundle;
 import org.chromium.weblayer_private.interfaces.IBrowserFragment;
+import org.chromium.weblayer_private.interfaces.ICrashReporterController;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.IProfile;
 import org.chromium.weblayer_private.interfaces.IRemoteFragmentClient;
@@ -77,6 +78,22 @@ public final class WebLayerImpl extends IWebLayer.Stub {
 
     WebLayerImpl() {}
 
+    /**
+     * Performs the minimal initialization needed for a context. This is used for example in
+     * CrashReporterControllerImpl, so it can be used before full WebLayer initialization.
+     */
+    public static Context minimalInitForContext(IObjectWrapper appContextWrapper) {
+        if (ContextUtils.getApplicationContext() != null) {
+            return ContextUtils.getApplicationContext();
+        }
+        // Wrap the app context so that it can be used to load WebLayer implementation classes.
+        Context appContext = ClassLoaderContextWrapperFactory.get(
+                ObjectWrapper.unwrap(appContextWrapper, Context.class));
+        ContextUtils.initApplicationContext(appContext);
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DIRECTORY_SUFFIX, PRIVATE_DIRECTORY_SUFFIX);
+        return appContext;
+    }
+
     @Override
     public void loadAsync(IObjectWrapper appContextWrapper, IObjectWrapper loadedCallbackWrapper) {
         StrictModeWorkaround.apply();
@@ -90,6 +107,8 @@ public final class WebLayerImpl extends IWebLayer.Stub {
                         new BrowserStartupController.StartupCallback() {
                             @Override
                             public void onSuccess() {
+                                CrashReporterControllerImpl.getInstance(appContextWrapper)
+                                        .notifyNativeInitialized();
                                 loadedCallback.onReceiveValue(true);
                             }
                             @Override
@@ -107,6 +126,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         BrowserStartupController.get(LibraryProcessType.PROCESS_WEBLAYER)
                 .startBrowserProcessesSync(
                         /* singleProcess*/ false);
+        CrashReporterControllerImpl.getInstance(appContextWrapper).notifyNativeInitialized();
     }
 
     private void init(IObjectWrapper appContextWrapper) {
@@ -117,9 +137,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
 
         UmaUtils.recordMainEntryPointTime();
 
-        // Wrap the app context so that it can be used to load WebLayer implementation classes.
-        Context appContext = ClassLoaderContextWrapperFactory.get(
-                ObjectWrapper.unwrap(appContextWrapper, Context.class));
+        Context appContext = minimalInitForContext(appContextWrapper);
         PackageInfo packageInfo = WebViewFactory.getLoadedPackageInfo();
 
         // TODO: This can break some functionality of apps that are doing interesting things with
@@ -127,7 +145,6 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         addWebViewAssetPath(appContext, packageInfo);
 
         applySplitApkWorkaround(packageInfo.applicationInfo, appContext.getResources().getAssets());
-        ContextUtils.initApplicationContext(appContext);
         BuildInfo.setBrowserPackageInfo(packageInfo);
         int resourcesPackageId = getPackageId(appContext, packageInfo.packageName);
         // TODO: The call to onResourcesLoaded() can be slow, we may need to parallelize this with
@@ -135,7 +152,6 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         R.onResourcesLoaded(resourcesPackageId);
 
         ResourceBundle.setAvailablePakLocales(new String[] {}, ProductConfig.UNCOMPRESSED_LOCALES);
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DIRECTORY_SUFFIX, PRIVATE_DIRECTORY_SUFFIX);
 
         ChildProcessCreationParams.set(appContext.getPackageName(), false /* isExternalService */,
                 LibraryProcessType.PROCESS_WEBLAYER_CHILD, true /* bindToCaller */,
@@ -186,6 +202,11 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     @Override
     public boolean isRemoteDebuggingEnabled() {
         return WebLayerImplJni.get().isRemoteDebuggingEnabled();
+    }
+
+    @Override
+    public ICrashReporterController getCrashReporterController(IObjectWrapper appContext) {
+        return CrashReporterControllerImpl.getInstance(appContext);
     }
 
     private static void addWebViewAssetPath(Context appContext, PackageInfo packageInfo) {

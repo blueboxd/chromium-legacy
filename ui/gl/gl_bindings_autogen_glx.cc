@@ -462,7 +462,7 @@ void TraceGLXApi::glXBindTexImageEXTFn(Display* dpy,
                                        GLXDrawable drawable,
                                        int buffer,
                                        int* attribList) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXBindTexImageEXT")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXBindTexImageEXT")
   glx_api_->glXBindTexImageEXTFn(dpy, drawable, buffer, attribList);
 }
 
@@ -470,14 +470,14 @@ GLXFBConfig* TraceGLXApi::glXChooseFBConfigFn(Display* dpy,
                                               int screen,
                                               const int* attribList,
                                               int* nitems) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXChooseFBConfig")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXChooseFBConfig")
   return glx_api_->glXChooseFBConfigFn(dpy, screen, attribList, nitems);
 }
 
 XVisualInfo* TraceGLXApi::glXChooseVisualFn(Display* dpy,
                                             int screen,
                                             int* attribList) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXChooseVisual")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXChooseVisual")
   return glx_api_->glXChooseVisualFn(dpy, screen, attribList);
 }
 
@@ -485,7 +485,7 @@ void TraceGLXApi::glXCopyContextFn(Display* dpy,
                                    GLXContext src,
                                    GLXContext dst,
                                    unsigned long mask) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXCopyContext")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXCopyContext")
   glx_api_->glXCopyContextFn(dpy, src, dst, mask);
 }
 
@@ -495,7 +495,7 @@ void TraceGLXApi::glXCopySubBufferMESAFn(Display* dpy,
                                          int y,
                                          int width,
                                          int height) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXCopySubBufferMESA")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXCopySubBufferMESA")
   glx_api_->glXCopySubBufferMESAFn(dpy, drawable, x, y, width, height);
 }
 
@@ -503,7 +503,7 @@ GLXContext TraceGLXApi::glXCreateContextFn(Display* dpy,
                                            XVisualInfo* vis,
                                            GLXContext shareList,
                                            int direct) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXCreateContext")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXCreateContext")
   return glx_api_->glXCreateContextFn(dpy, vis, shareList, direct);
 }
 
@@ -512,7 +512,8 @@ GLXContext TraceGLXApi::glXCreateContextAttribsARBFn(Display* dpy,
                                                      GLXContext share_context,
                                                      int direct,
                                                      const int* attrib_list) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXCreateContextAttribsARB")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "TraceGLXAPI::glXCreateContextAttribsARB")
   return glx_api_->glXCreateContextAttribsARBFn(dpy, config, share_context,
                                                 direct, attrib_list);
 }
@@ -520,7 +521,7 @@ GLXContext TraceGLXApi::glXCreateContextAttribsARBFn(Display* dpy,
 GLXPixmap TraceGLXApi::glXCreateGLXPixmapFn(Display* dpy,
                                             XVisualInfo* visual,
                                             Pixmap pixmap) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXCreateGLXPixmap")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXCreateGLXPixmap")
   return glx_api_->glXCreateGLXPixmapFn(dpy, visual, pixmap);
 }
 
@@ -529,7 +530,7 @@ GLXContext TraceGLXApi::glXCreateNewContextFn(Display* dpy,
                                               int renderType,
                                               GLXContext shareList,
                                               int direct) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXCreateNewContext")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXCreateNewContext")
   return glx_api_->glXCreateNewContextFn(dpy, config, renderType, shareList,
                                          direct);
 }
@@ -537,7 +538,7 @@ GLXContext TraceGLXApi::glXCreateNewContextFn(Display* dpy,
 GLXPbuffer TraceGLXApi::glXCreatePbufferFn(Display* dpy,
                                            GLXFBConfig config,
                                            const int* attribList) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXCreatePbuffer")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXCreatePbuffer")
   return glx_api_->glXCreatePbufferFn(dpy, config, attribList);
 }
 
@@ -545,7 +546,7 @@ GLXPixmap TraceGLXApi::glXCreatePixmapFn(Display* dpy,
                                          GLXFBConfig config,
                                          Pixmap pixmap,
                                          const int* attribList) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXCreatePixmap")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXCreatePixmap")
   return glx_api_->glXCreatePixmapFn(dpy, config, pixmap, attribList);
 }
 
@@ -553,37 +554,37 @@ GLXWindow TraceGLXApi::glXCreateWindowFn(Display* dpy,
                                          GLXFBConfig config,
                                          Window win,
                                          const int* attribList) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXCreateWindow")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXCreateWindow")
   return glx_api_->glXCreateWindowFn(dpy, config, win, attribList);
 }
 
 void TraceGLXApi::glXDestroyContextFn(Display* dpy, GLXContext ctx) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXDestroyContext")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXDestroyContext")
   glx_api_->glXDestroyContextFn(dpy, ctx);
 }
 
 void TraceGLXApi::glXDestroyGLXPixmapFn(Display* dpy, GLXPixmap pixmap) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXDestroyGLXPixmap")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXDestroyGLXPixmap")
   glx_api_->glXDestroyGLXPixmapFn(dpy, pixmap);
 }
 
 void TraceGLXApi::glXDestroyPbufferFn(Display* dpy, GLXPbuffer pbuf) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXDestroyPbuffer")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXDestroyPbuffer")
   glx_api_->glXDestroyPbufferFn(dpy, pbuf);
 }
 
 void TraceGLXApi::glXDestroyPixmapFn(Display* dpy, GLXPixmap pixmap) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXDestroyPixmap")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXDestroyPixmap")
   glx_api_->glXDestroyPixmapFn(dpy, pixmap);
 }
 
 void TraceGLXApi::glXDestroyWindowFn(Display* dpy, GLXWindow window) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXDestroyWindow")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXDestroyWindow")
   glx_api_->glXDestroyWindowFn(dpy, window);
 }
 
 const char* TraceGLXApi::glXGetClientStringFn(Display* dpy, int name) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXGetClientString")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXGetClientString")
   return glx_api_->glXGetClientStringFn(dpy, name);
 }
 
@@ -591,27 +592,27 @@ int TraceGLXApi::glXGetConfigFn(Display* dpy,
                                 XVisualInfo* visual,
                                 int attrib,
                                 int* value) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXGetConfig")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXGetConfig")
   return glx_api_->glXGetConfigFn(dpy, visual, attrib, value);
 }
 
 GLXContext TraceGLXApi::glXGetCurrentContextFn(void) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXGetCurrentContext")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXGetCurrentContext")
   return glx_api_->glXGetCurrentContextFn();
 }
 
 Display* TraceGLXApi::glXGetCurrentDisplayFn(void) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXGetCurrentDisplay")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXGetCurrentDisplay")
   return glx_api_->glXGetCurrentDisplayFn();
 }
 
 GLXDrawable TraceGLXApi::glXGetCurrentDrawableFn(void) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXGetCurrentDrawable")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXGetCurrentDrawable")
   return glx_api_->glXGetCurrentDrawableFn();
 }
 
 GLXDrawable TraceGLXApi::glXGetCurrentReadDrawableFn(void) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXGetCurrentReadDrawable")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXGetCurrentReadDrawable")
   return glx_api_->glXGetCurrentReadDrawableFn();
 }
 
@@ -619,7 +620,7 @@ int TraceGLXApi::glXGetFBConfigAttribFn(Display* dpy,
                                         GLXFBConfig config,
                                         int attribute,
                                         int* value) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXGetFBConfigAttrib")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXGetFBConfigAttrib")
   return glx_api_->glXGetFBConfigAttribFn(dpy, config, attribute, value);
 }
 
@@ -627,14 +628,14 @@ GLXFBConfig TraceGLXApi::glXGetFBConfigFromVisualSGIXFn(
     Display* dpy,
     XVisualInfo* visualInfo) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
-                                "TraceGLAPI::glXGetFBConfigFromVisualSGIX")
+                                "TraceGLXAPI::glXGetFBConfigFromVisualSGIX")
   return glx_api_->glXGetFBConfigFromVisualSGIXFn(dpy, visualInfo);
 }
 
 GLXFBConfig* TraceGLXApi::glXGetFBConfigsFn(Display* dpy,
                                             int screen,
                                             int* nelements) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXGetFBConfigs")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXGetFBConfigs")
   return glx_api_->glXGetFBConfigsFn(dpy, screen, nelements);
 }
 
@@ -642,14 +643,14 @@ bool TraceGLXApi::glXGetMscRateOMLFn(Display* dpy,
                                      GLXDrawable drawable,
                                      int32_t* numerator,
                                      int32_t* denominator) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXGetMscRateOML")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXGetMscRateOML")
   return glx_api_->glXGetMscRateOMLFn(dpy, drawable, numerator, denominator);
 }
 
 void TraceGLXApi::glXGetSelectedEventFn(Display* dpy,
                                         GLXDrawable drawable,
                                         unsigned long* mask) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXGetSelectedEvent")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXGetSelectedEvent")
   glx_api_->glXGetSelectedEventFn(dpy, drawable, mask);
 }
 
@@ -658,18 +659,18 @@ bool TraceGLXApi::glXGetSyncValuesOMLFn(Display* dpy,
                                         int64_t* ust,
                                         int64_t* msc,
                                         int64_t* sbc) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXGetSyncValuesOML")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXGetSyncValuesOML")
   return glx_api_->glXGetSyncValuesOMLFn(dpy, drawable, ust, msc, sbc);
 }
 
 XVisualInfo* TraceGLXApi::glXGetVisualFromFBConfigFn(Display* dpy,
                                                      GLXFBConfig config) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXGetVisualFromFBConfig")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXGetVisualFromFBConfig")
   return glx_api_->glXGetVisualFromFBConfigFn(dpy, config);
 }
 
 int TraceGLXApi::glXIsDirectFn(Display* dpy, GLXContext ctx) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXIsDirect")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXIsDirect")
   return glx_api_->glXIsDirectFn(dpy, ctx);
 }
 
@@ -677,14 +678,14 @@ int TraceGLXApi::glXMakeContextCurrentFn(Display* dpy,
                                          GLXDrawable draw,
                                          GLXDrawable read,
                                          GLXContext ctx) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXMakeContextCurrent")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXMakeContextCurrent")
   return glx_api_->glXMakeContextCurrentFn(dpy, draw, read, ctx);
 }
 
 int TraceGLXApi::glXMakeCurrentFn(Display* dpy,
                                   GLXDrawable drawable,
                                   GLXContext ctx) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXMakeCurrent")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXMakeCurrent")
   return glx_api_->glXMakeCurrentFn(dpy, drawable, ctx);
 }
 
@@ -692,7 +693,7 @@ int TraceGLXApi::glXQueryContextFn(Display* dpy,
                                    GLXContext ctx,
                                    int attribute,
                                    int* value) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXQueryContext")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXQueryContext")
   return glx_api_->glXQueryContextFn(dpy, ctx, attribute, value);
 }
 
@@ -700,89 +701,89 @@ void TraceGLXApi::glXQueryDrawableFn(Display* dpy,
                                      GLXDrawable draw,
                                      int attribute,
                                      unsigned int* value) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXQueryDrawable")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXQueryDrawable")
   glx_api_->glXQueryDrawableFn(dpy, draw, attribute, value);
 }
 
 int TraceGLXApi::glXQueryExtensionFn(Display* dpy, int* errorb, int* event) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXQueryExtension")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXQueryExtension")
   return glx_api_->glXQueryExtensionFn(dpy, errorb, event);
 }
 
 const char* TraceGLXApi::glXQueryExtensionsStringFn(Display* dpy, int screen) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXQueryExtensionsString")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXQueryExtensionsString")
   return glx_api_->glXQueryExtensionsStringFn(dpy, screen);
 }
 
 const char* TraceGLXApi::glXQueryServerStringFn(Display* dpy,
                                                 int screen,
                                                 int name) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXQueryServerString")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXQueryServerString")
   return glx_api_->glXQueryServerStringFn(dpy, screen, name);
 }
 
 int TraceGLXApi::glXQueryVersionFn(Display* dpy, int* maj, int* min) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXQueryVersion")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXQueryVersion")
   return glx_api_->glXQueryVersionFn(dpy, maj, min);
 }
 
 void TraceGLXApi::glXReleaseTexImageEXTFn(Display* dpy,
                                           GLXDrawable drawable,
                                           int buffer) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXReleaseTexImageEXT")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXReleaseTexImageEXT")
   glx_api_->glXReleaseTexImageEXTFn(dpy, drawable, buffer);
 }
 
 void TraceGLXApi::glXSelectEventFn(Display* dpy,
                                    GLXDrawable drawable,
                                    unsigned long mask) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXSelectEvent")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXSelectEvent")
   glx_api_->glXSelectEventFn(dpy, drawable, mask);
 }
 
 void TraceGLXApi::glXSwapBuffersFn(Display* dpy, GLXDrawable drawable) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXSwapBuffers")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXSwapBuffers")
   glx_api_->glXSwapBuffersFn(dpy, drawable);
 }
 
 void TraceGLXApi::glXSwapIntervalEXTFn(Display* dpy,
                                        GLXDrawable drawable,
                                        int interval) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXSwapIntervalEXT")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXSwapIntervalEXT")
   glx_api_->glXSwapIntervalEXTFn(dpy, drawable, interval);
 }
 
 void TraceGLXApi::glXSwapIntervalMESAFn(unsigned int interval) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXSwapIntervalMESA")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXSwapIntervalMESA")
   glx_api_->glXSwapIntervalMESAFn(interval);
 }
 
 void TraceGLXApi::glXUseXFontFn(Font font, int first, int count, int list) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXUseXFont")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXUseXFont")
   glx_api_->glXUseXFontFn(font, first, count, list);
 }
 
 void TraceGLXApi::glXWaitGLFn(void) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXWaitGL")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXWaitGL")
   glx_api_->glXWaitGLFn();
 }
 
 int TraceGLXApi::glXWaitVideoSyncSGIFn(int divisor,
                                        int remainder,
                                        unsigned int* count) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXWaitVideoSyncSGI")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXWaitVideoSyncSGI")
   return glx_api_->glXWaitVideoSyncSGIFn(divisor, remainder, count);
 }
 
 void TraceGLXApi::glXWaitXFn(void) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glXWaitX")
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLXAPI::glXWaitX")
   glx_api_->glXWaitXFn();
 }
 
-void DebugGLXApi::glXBindTexImageEXTFn(Display* dpy,
-                                       GLXDrawable drawable,
-                                       int buffer,
-                                       int* attribList) {
+void LogGLXApi::glXBindTexImageEXTFn(Display* dpy,
+                                     GLXDrawable drawable,
+                                     int buffer,
+                                     int* attribList) {
   GL_SERVICE_LOG("glXBindTexImageEXT"
                  << "(" << static_cast<const void*>(dpy) << ", " << drawable
                  << ", " << buffer << ", "
@@ -790,10 +791,10 @@ void DebugGLXApi::glXBindTexImageEXTFn(Display* dpy,
   glx_api_->glXBindTexImageEXTFn(dpy, drawable, buffer, attribList);
 }
 
-GLXFBConfig* DebugGLXApi::glXChooseFBConfigFn(Display* dpy,
-                                              int screen,
-                                              const int* attribList,
-                                              int* nitems) {
+GLXFBConfig* LogGLXApi::glXChooseFBConfigFn(Display* dpy,
+                                            int screen,
+                                            const int* attribList,
+                                            int* nitems) {
   GL_SERVICE_LOG("glXChooseFBConfig"
                  << "(" << static_cast<const void*>(dpy) << ", " << screen
                  << ", " << static_cast<const void*>(attribList) << ", "
@@ -804,9 +805,9 @@ GLXFBConfig* DebugGLXApi::glXChooseFBConfigFn(Display* dpy,
   return result;
 }
 
-XVisualInfo* DebugGLXApi::glXChooseVisualFn(Display* dpy,
-                                            int screen,
-                                            int* attribList) {
+XVisualInfo* LogGLXApi::glXChooseVisualFn(Display* dpy,
+                                          int screen,
+                                          int* attribList) {
   GL_SERVICE_LOG("glXChooseVisual"
                  << "(" << static_cast<const void*>(dpy) << ", " << screen
                  << ", " << static_cast<const void*>(attribList) << ")");
@@ -815,22 +816,22 @@ XVisualInfo* DebugGLXApi::glXChooseVisualFn(Display* dpy,
   return result;
 }
 
-void DebugGLXApi::glXCopyContextFn(Display* dpy,
-                                   GLXContext src,
-                                   GLXContext dst,
-                                   unsigned long mask) {
+void LogGLXApi::glXCopyContextFn(Display* dpy,
+                                 GLXContext src,
+                                 GLXContext dst,
+                                 unsigned long mask) {
   GL_SERVICE_LOG("glXCopyContext"
                  << "(" << static_cast<const void*>(dpy) << ", " << src << ", "
                  << dst << ", " << mask << ")");
   glx_api_->glXCopyContextFn(dpy, src, dst, mask);
 }
 
-void DebugGLXApi::glXCopySubBufferMESAFn(Display* dpy,
-                                         GLXDrawable drawable,
-                                         int x,
-                                         int y,
-                                         int width,
-                                         int height) {
+void LogGLXApi::glXCopySubBufferMESAFn(Display* dpy,
+                                       GLXDrawable drawable,
+                                       int x,
+                                       int y,
+                                       int width,
+                                       int height) {
   GL_SERVICE_LOG("glXCopySubBufferMESA"
                  << "(" << static_cast<const void*>(dpy) << ", " << drawable
                  << ", " << x << ", " << y << ", " << width << ", " << height
@@ -838,10 +839,10 @@ void DebugGLXApi::glXCopySubBufferMESAFn(Display* dpy,
   glx_api_->glXCopySubBufferMESAFn(dpy, drawable, x, y, width, height);
 }
 
-GLXContext DebugGLXApi::glXCreateContextFn(Display* dpy,
-                                           XVisualInfo* vis,
-                                           GLXContext shareList,
-                                           int direct) {
+GLXContext LogGLXApi::glXCreateContextFn(Display* dpy,
+                                         XVisualInfo* vis,
+                                         GLXContext shareList,
+                                         int direct) {
   GL_SERVICE_LOG("glXCreateContext"
                  << "(" << static_cast<const void*>(dpy) << ", "
                  << static_cast<const void*>(vis) << ", " << shareList << ", "
@@ -851,11 +852,11 @@ GLXContext DebugGLXApi::glXCreateContextFn(Display* dpy,
   return result;
 }
 
-GLXContext DebugGLXApi::glXCreateContextAttribsARBFn(Display* dpy,
-                                                     GLXFBConfig config,
-                                                     GLXContext share_context,
-                                                     int direct,
-                                                     const int* attrib_list) {
+GLXContext LogGLXApi::glXCreateContextAttribsARBFn(Display* dpy,
+                                                   GLXFBConfig config,
+                                                   GLXContext share_context,
+                                                   int direct,
+                                                   const int* attrib_list) {
   GL_SERVICE_LOG("glXCreateContextAttribsARB"
                  << "(" << static_cast<const void*>(dpy) << ", " << config
                  << ", " << share_context << ", " << direct << ", "
@@ -866,9 +867,9 @@ GLXContext DebugGLXApi::glXCreateContextAttribsARBFn(Display* dpy,
   return result;
 }
 
-GLXPixmap DebugGLXApi::glXCreateGLXPixmapFn(Display* dpy,
-                                            XVisualInfo* visual,
-                                            Pixmap pixmap) {
+GLXPixmap LogGLXApi::glXCreateGLXPixmapFn(Display* dpy,
+                                          XVisualInfo* visual,
+                                          Pixmap pixmap) {
   GL_SERVICE_LOG("glXCreateGLXPixmap"
                  << "(" << static_cast<const void*>(dpy) << ", "
                  << static_cast<const void*>(visual) << ", " << pixmap << ")");
@@ -877,11 +878,11 @@ GLXPixmap DebugGLXApi::glXCreateGLXPixmapFn(Display* dpy,
   return result;
 }
 
-GLXContext DebugGLXApi::glXCreateNewContextFn(Display* dpy,
-                                              GLXFBConfig config,
-                                              int renderType,
-                                              GLXContext shareList,
-                                              int direct) {
+GLXContext LogGLXApi::glXCreateNewContextFn(Display* dpy,
+                                            GLXFBConfig config,
+                                            int renderType,
+                                            GLXContext shareList,
+                                            int direct) {
   GL_SERVICE_LOG("glXCreateNewContext"
                  << "(" << static_cast<const void*>(dpy) << ", " << config
                  << ", " << renderType << ", " << shareList << ", " << direct
@@ -892,9 +893,9 @@ GLXContext DebugGLXApi::glXCreateNewContextFn(Display* dpy,
   return result;
 }
 
-GLXPbuffer DebugGLXApi::glXCreatePbufferFn(Display* dpy,
-                                           GLXFBConfig config,
-                                           const int* attribList) {
+GLXPbuffer LogGLXApi::glXCreatePbufferFn(Display* dpy,
+                                         GLXFBConfig config,
+                                         const int* attribList) {
   GL_SERVICE_LOG("glXCreatePbuffer"
                  << "(" << static_cast<const void*>(dpy) << ", " << config
                  << ", " << static_cast<const void*>(attribList) << ")");
@@ -903,10 +904,10 @@ GLXPbuffer DebugGLXApi::glXCreatePbufferFn(Display* dpy,
   return result;
 }
 
-GLXPixmap DebugGLXApi::glXCreatePixmapFn(Display* dpy,
-                                         GLXFBConfig config,
-                                         Pixmap pixmap,
-                                         const int* attribList) {
+GLXPixmap LogGLXApi::glXCreatePixmapFn(Display* dpy,
+                                       GLXFBConfig config,
+                                       Pixmap pixmap,
+                                       const int* attribList) {
   GL_SERVICE_LOG("glXCreatePixmap"
                  << "(" << static_cast<const void*>(dpy) << ", " << config
                  << ", " << pixmap << ", "
@@ -917,10 +918,10 @@ GLXPixmap DebugGLXApi::glXCreatePixmapFn(Display* dpy,
   return result;
 }
 
-GLXWindow DebugGLXApi::glXCreateWindowFn(Display* dpy,
-                                         GLXFBConfig config,
-                                         Window win,
-                                         const int* attribList) {
+GLXWindow LogGLXApi::glXCreateWindowFn(Display* dpy,
+                                       GLXFBConfig config,
+                                       Window win,
+                                       const int* attribList) {
   GL_SERVICE_LOG("glXCreateWindow"
                  << "(" << static_cast<const void*>(dpy) << ", " << config
                  << ", " << win << ", " << static_cast<const void*>(attribList)
@@ -930,41 +931,41 @@ GLXWindow DebugGLXApi::glXCreateWindowFn(Display* dpy,
   return result;
 }
 
-void DebugGLXApi::glXDestroyContextFn(Display* dpy, GLXContext ctx) {
+void LogGLXApi::glXDestroyContextFn(Display* dpy, GLXContext ctx) {
   GL_SERVICE_LOG("glXDestroyContext"
                  << "(" << static_cast<const void*>(dpy) << ", " << ctx << ")");
   glx_api_->glXDestroyContextFn(dpy, ctx);
 }
 
-void DebugGLXApi::glXDestroyGLXPixmapFn(Display* dpy, GLXPixmap pixmap) {
+void LogGLXApi::glXDestroyGLXPixmapFn(Display* dpy, GLXPixmap pixmap) {
   GL_SERVICE_LOG("glXDestroyGLXPixmap"
                  << "(" << static_cast<const void*>(dpy) << ", " << pixmap
                  << ")");
   glx_api_->glXDestroyGLXPixmapFn(dpy, pixmap);
 }
 
-void DebugGLXApi::glXDestroyPbufferFn(Display* dpy, GLXPbuffer pbuf) {
+void LogGLXApi::glXDestroyPbufferFn(Display* dpy, GLXPbuffer pbuf) {
   GL_SERVICE_LOG("glXDestroyPbuffer"
                  << "(" << static_cast<const void*>(dpy) << ", " << pbuf
                  << ")");
   glx_api_->glXDestroyPbufferFn(dpy, pbuf);
 }
 
-void DebugGLXApi::glXDestroyPixmapFn(Display* dpy, GLXPixmap pixmap) {
+void LogGLXApi::glXDestroyPixmapFn(Display* dpy, GLXPixmap pixmap) {
   GL_SERVICE_LOG("glXDestroyPixmap"
                  << "(" << static_cast<const void*>(dpy) << ", " << pixmap
                  << ")");
   glx_api_->glXDestroyPixmapFn(dpy, pixmap);
 }
 
-void DebugGLXApi::glXDestroyWindowFn(Display* dpy, GLXWindow window) {
+void LogGLXApi::glXDestroyWindowFn(Display* dpy, GLXWindow window) {
   GL_SERVICE_LOG("glXDestroyWindow"
                  << "(" << static_cast<const void*>(dpy) << ", " << window
                  << ")");
   glx_api_->glXDestroyWindowFn(dpy, window);
 }
 
-const char* DebugGLXApi::glXGetClientStringFn(Display* dpy, int name) {
+const char* LogGLXApi::glXGetClientStringFn(Display* dpy, int name) {
   GL_SERVICE_LOG("glXGetClientString"
                  << "(" << static_cast<const void*>(dpy) << ", " << name
                  << ")");
@@ -973,10 +974,10 @@ const char* DebugGLXApi::glXGetClientStringFn(Display* dpy, int name) {
   return result;
 }
 
-int DebugGLXApi::glXGetConfigFn(Display* dpy,
-                                XVisualInfo* visual,
-                                int attrib,
-                                int* value) {
+int LogGLXApi::glXGetConfigFn(Display* dpy,
+                              XVisualInfo* visual,
+                              int attrib,
+                              int* value) {
   GL_SERVICE_LOG("glXGetConfig"
                  << "(" << static_cast<const void*>(dpy) << ", "
                  << static_cast<const void*>(visual) << ", " << attrib << ", "
@@ -986,7 +987,7 @@ int DebugGLXApi::glXGetConfigFn(Display* dpy,
   return result;
 }
 
-GLXContext DebugGLXApi::glXGetCurrentContextFn(void) {
+GLXContext LogGLXApi::glXGetCurrentContextFn(void) {
   GL_SERVICE_LOG("glXGetCurrentContext"
                  << "("
                  << ")");
@@ -995,7 +996,7 @@ GLXContext DebugGLXApi::glXGetCurrentContextFn(void) {
   return result;
 }
 
-Display* DebugGLXApi::glXGetCurrentDisplayFn(void) {
+Display* LogGLXApi::glXGetCurrentDisplayFn(void) {
   GL_SERVICE_LOG("glXGetCurrentDisplay"
                  << "("
                  << ")");
@@ -1004,7 +1005,7 @@ Display* DebugGLXApi::glXGetCurrentDisplayFn(void) {
   return result;
 }
 
-GLXDrawable DebugGLXApi::glXGetCurrentDrawableFn(void) {
+GLXDrawable LogGLXApi::glXGetCurrentDrawableFn(void) {
   GL_SERVICE_LOG("glXGetCurrentDrawable"
                  << "("
                  << ")");
@@ -1013,7 +1014,7 @@ GLXDrawable DebugGLXApi::glXGetCurrentDrawableFn(void) {
   return result;
 }
 
-GLXDrawable DebugGLXApi::glXGetCurrentReadDrawableFn(void) {
+GLXDrawable LogGLXApi::glXGetCurrentReadDrawableFn(void) {
   GL_SERVICE_LOG("glXGetCurrentReadDrawable"
                  << "("
                  << ")");
@@ -1022,10 +1023,10 @@ GLXDrawable DebugGLXApi::glXGetCurrentReadDrawableFn(void) {
   return result;
 }
 
-int DebugGLXApi::glXGetFBConfigAttribFn(Display* dpy,
-                                        GLXFBConfig config,
-                                        int attribute,
-                                        int* value) {
+int LogGLXApi::glXGetFBConfigAttribFn(Display* dpy,
+                                      GLXFBConfig config,
+                                      int attribute,
+                                      int* value) {
   GL_SERVICE_LOG("glXGetFBConfigAttrib"
                  << "(" << static_cast<const void*>(dpy) << ", " << config
                  << ", " << attribute << ", " << static_cast<const void*>(value)
@@ -1035,9 +1036,8 @@ int DebugGLXApi::glXGetFBConfigAttribFn(Display* dpy,
   return result;
 }
 
-GLXFBConfig DebugGLXApi::glXGetFBConfigFromVisualSGIXFn(
-    Display* dpy,
-    XVisualInfo* visualInfo) {
+GLXFBConfig LogGLXApi::glXGetFBConfigFromVisualSGIXFn(Display* dpy,
+                                                      XVisualInfo* visualInfo) {
   GL_SERVICE_LOG("glXGetFBConfigFromVisualSGIX"
                  << "(" << static_cast<const void*>(dpy) << ", "
                  << static_cast<const void*>(visualInfo) << ")");
@@ -1047,9 +1047,9 @@ GLXFBConfig DebugGLXApi::glXGetFBConfigFromVisualSGIXFn(
   return result;
 }
 
-GLXFBConfig* DebugGLXApi::glXGetFBConfigsFn(Display* dpy,
-                                            int screen,
-                                            int* nelements) {
+GLXFBConfig* LogGLXApi::glXGetFBConfigsFn(Display* dpy,
+                                          int screen,
+                                          int* nelements) {
   GL_SERVICE_LOG("glXGetFBConfigs"
                  << "(" << static_cast<const void*>(dpy) << ", " << screen
                  << ", " << static_cast<const void*>(nelements) << ")");
@@ -1058,10 +1058,10 @@ GLXFBConfig* DebugGLXApi::glXGetFBConfigsFn(Display* dpy,
   return result;
 }
 
-bool DebugGLXApi::glXGetMscRateOMLFn(Display* dpy,
-                                     GLXDrawable drawable,
-                                     int32_t* numerator,
-                                     int32_t* denominator) {
+bool LogGLXApi::glXGetMscRateOMLFn(Display* dpy,
+                                   GLXDrawable drawable,
+                                   int32_t* numerator,
+                                   int32_t* denominator) {
   GL_SERVICE_LOG("glXGetMscRateOML"
                  << "(" << static_cast<const void*>(dpy) << ", " << drawable
                  << ", " << static_cast<const void*>(numerator) << ", "
@@ -1072,20 +1072,20 @@ bool DebugGLXApi::glXGetMscRateOMLFn(Display* dpy,
   return result;
 }
 
-void DebugGLXApi::glXGetSelectedEventFn(Display* dpy,
-                                        GLXDrawable drawable,
-                                        unsigned long* mask) {
+void LogGLXApi::glXGetSelectedEventFn(Display* dpy,
+                                      GLXDrawable drawable,
+                                      unsigned long* mask) {
   GL_SERVICE_LOG("glXGetSelectedEvent"
                  << "(" << static_cast<const void*>(dpy) << ", " << drawable
                  << ", " << static_cast<const void*>(mask) << ")");
   glx_api_->glXGetSelectedEventFn(dpy, drawable, mask);
 }
 
-bool DebugGLXApi::glXGetSyncValuesOMLFn(Display* dpy,
-                                        GLXDrawable drawable,
-                                        int64_t* ust,
-                                        int64_t* msc,
-                                        int64_t* sbc) {
+bool LogGLXApi::glXGetSyncValuesOMLFn(Display* dpy,
+                                      GLXDrawable drawable,
+                                      int64_t* ust,
+                                      int64_t* msc,
+                                      int64_t* sbc) {
   GL_SERVICE_LOG("glXGetSyncValuesOML"
                  << "(" << static_cast<const void*>(dpy) << ", " << drawable
                  << ", " << static_cast<const void*>(ust) << ", "
@@ -1096,8 +1096,8 @@ bool DebugGLXApi::glXGetSyncValuesOMLFn(Display* dpy,
   return result;
 }
 
-XVisualInfo* DebugGLXApi::glXGetVisualFromFBConfigFn(Display* dpy,
-                                                     GLXFBConfig config) {
+XVisualInfo* LogGLXApi::glXGetVisualFromFBConfigFn(Display* dpy,
+                                                   GLXFBConfig config) {
   GL_SERVICE_LOG("glXGetVisualFromFBConfig"
                  << "(" << static_cast<const void*>(dpy) << ", " << config
                  << ")");
@@ -1106,7 +1106,7 @@ XVisualInfo* DebugGLXApi::glXGetVisualFromFBConfigFn(Display* dpy,
   return result;
 }
 
-int DebugGLXApi::glXIsDirectFn(Display* dpy, GLXContext ctx) {
+int LogGLXApi::glXIsDirectFn(Display* dpy, GLXContext ctx) {
   GL_SERVICE_LOG("glXIsDirect"
                  << "(" << static_cast<const void*>(dpy) << ", " << ctx << ")");
   int result = glx_api_->glXIsDirectFn(dpy, ctx);
@@ -1114,10 +1114,10 @@ int DebugGLXApi::glXIsDirectFn(Display* dpy, GLXContext ctx) {
   return result;
 }
 
-int DebugGLXApi::glXMakeContextCurrentFn(Display* dpy,
-                                         GLXDrawable draw,
-                                         GLXDrawable read,
-                                         GLXContext ctx) {
+int LogGLXApi::glXMakeContextCurrentFn(Display* dpy,
+                                       GLXDrawable draw,
+                                       GLXDrawable read,
+                                       GLXContext ctx) {
   GL_SERVICE_LOG("glXMakeContextCurrent"
                  << "(" << static_cast<const void*>(dpy) << ", " << draw << ", "
                  << read << ", " << ctx << ")");
@@ -1126,9 +1126,9 @@ int DebugGLXApi::glXMakeContextCurrentFn(Display* dpy,
   return result;
 }
 
-int DebugGLXApi::glXMakeCurrentFn(Display* dpy,
-                                  GLXDrawable drawable,
-                                  GLXContext ctx) {
+int LogGLXApi::glXMakeCurrentFn(Display* dpy,
+                                GLXDrawable drawable,
+                                GLXContext ctx) {
   GL_SERVICE_LOG("glXMakeCurrent"
                  << "(" << static_cast<const void*>(dpy) << ", " << drawable
                  << ", " << ctx << ")");
@@ -1137,10 +1137,10 @@ int DebugGLXApi::glXMakeCurrentFn(Display* dpy,
   return result;
 }
 
-int DebugGLXApi::glXQueryContextFn(Display* dpy,
-                                   GLXContext ctx,
-                                   int attribute,
-                                   int* value) {
+int LogGLXApi::glXQueryContextFn(Display* dpy,
+                                 GLXContext ctx,
+                                 int attribute,
+                                 int* value) {
   GL_SERVICE_LOG("glXQueryContext"
                  << "(" << static_cast<const void*>(dpy) << ", " << ctx << ", "
                  << attribute << ", " << static_cast<const void*>(value)
@@ -1150,10 +1150,10 @@ int DebugGLXApi::glXQueryContextFn(Display* dpy,
   return result;
 }
 
-void DebugGLXApi::glXQueryDrawableFn(Display* dpy,
-                                     GLXDrawable draw,
-                                     int attribute,
-                                     unsigned int* value) {
+void LogGLXApi::glXQueryDrawableFn(Display* dpy,
+                                   GLXDrawable draw,
+                                   int attribute,
+                                   unsigned int* value) {
   GL_SERVICE_LOG("glXQueryDrawable"
                  << "(" << static_cast<const void*>(dpy) << ", " << draw << ", "
                  << attribute << ", " << static_cast<const void*>(value)
@@ -1161,7 +1161,7 @@ void DebugGLXApi::glXQueryDrawableFn(Display* dpy,
   glx_api_->glXQueryDrawableFn(dpy, draw, attribute, value);
 }
 
-int DebugGLXApi::glXQueryExtensionFn(Display* dpy, int* errorb, int* event) {
+int LogGLXApi::glXQueryExtensionFn(Display* dpy, int* errorb, int* event) {
   GL_SERVICE_LOG("glXQueryExtension"
                  << "(" << static_cast<const void*>(dpy) << ", "
                  << static_cast<const void*>(errorb) << ", "
@@ -1171,7 +1171,7 @@ int DebugGLXApi::glXQueryExtensionFn(Display* dpy, int* errorb, int* event) {
   return result;
 }
 
-const char* DebugGLXApi::glXQueryExtensionsStringFn(Display* dpy, int screen) {
+const char* LogGLXApi::glXQueryExtensionsStringFn(Display* dpy, int screen) {
   GL_SERVICE_LOG("glXQueryExtensionsString"
                  << "(" << static_cast<const void*>(dpy) << ", " << screen
                  << ")");
@@ -1180,9 +1180,9 @@ const char* DebugGLXApi::glXQueryExtensionsStringFn(Display* dpy, int screen) {
   return result;
 }
 
-const char* DebugGLXApi::glXQueryServerStringFn(Display* dpy,
-                                                int screen,
-                                                int name) {
+const char* LogGLXApi::glXQueryServerStringFn(Display* dpy,
+                                              int screen,
+                                              int name) {
   GL_SERVICE_LOG("glXQueryServerString"
                  << "(" << static_cast<const void*>(dpy) << ", " << screen
                  << ", " << name << ")");
@@ -1191,7 +1191,7 @@ const char* DebugGLXApi::glXQueryServerStringFn(Display* dpy,
   return result;
 }
 
-int DebugGLXApi::glXQueryVersionFn(Display* dpy, int* maj, int* min) {
+int LogGLXApi::glXQueryVersionFn(Display* dpy, int* maj, int* min) {
   GL_SERVICE_LOG("glXQueryVersion"
                  << "(" << static_cast<const void*>(dpy) << ", "
                  << static_cast<const void*>(maj) << ", "
@@ -1201,63 +1201,63 @@ int DebugGLXApi::glXQueryVersionFn(Display* dpy, int* maj, int* min) {
   return result;
 }
 
-void DebugGLXApi::glXReleaseTexImageEXTFn(Display* dpy,
-                                          GLXDrawable drawable,
-                                          int buffer) {
+void LogGLXApi::glXReleaseTexImageEXTFn(Display* dpy,
+                                        GLXDrawable drawable,
+                                        int buffer) {
   GL_SERVICE_LOG("glXReleaseTexImageEXT"
                  << "(" << static_cast<const void*>(dpy) << ", " << drawable
                  << ", " << buffer << ")");
   glx_api_->glXReleaseTexImageEXTFn(dpy, drawable, buffer);
 }
 
-void DebugGLXApi::glXSelectEventFn(Display* dpy,
-                                   GLXDrawable drawable,
-                                   unsigned long mask) {
+void LogGLXApi::glXSelectEventFn(Display* dpy,
+                                 GLXDrawable drawable,
+                                 unsigned long mask) {
   GL_SERVICE_LOG("glXSelectEvent"
                  << "(" << static_cast<const void*>(dpy) << ", " << drawable
                  << ", " << mask << ")");
   glx_api_->glXSelectEventFn(dpy, drawable, mask);
 }
 
-void DebugGLXApi::glXSwapBuffersFn(Display* dpy, GLXDrawable drawable) {
+void LogGLXApi::glXSwapBuffersFn(Display* dpy, GLXDrawable drawable) {
   GL_SERVICE_LOG("glXSwapBuffers"
                  << "(" << static_cast<const void*>(dpy) << ", " << drawable
                  << ")");
   glx_api_->glXSwapBuffersFn(dpy, drawable);
 }
 
-void DebugGLXApi::glXSwapIntervalEXTFn(Display* dpy,
-                                       GLXDrawable drawable,
-                                       int interval) {
+void LogGLXApi::glXSwapIntervalEXTFn(Display* dpy,
+                                     GLXDrawable drawable,
+                                     int interval) {
   GL_SERVICE_LOG("glXSwapIntervalEXT"
                  << "(" << static_cast<const void*>(dpy) << ", " << drawable
                  << ", " << interval << ")");
   glx_api_->glXSwapIntervalEXTFn(dpy, drawable, interval);
 }
 
-void DebugGLXApi::glXSwapIntervalMESAFn(unsigned int interval) {
+void LogGLXApi::glXSwapIntervalMESAFn(unsigned int interval) {
   GL_SERVICE_LOG("glXSwapIntervalMESA"
                  << "(" << interval << ")");
   glx_api_->glXSwapIntervalMESAFn(interval);
 }
 
-void DebugGLXApi::glXUseXFontFn(Font font, int first, int count, int list) {
+void LogGLXApi::glXUseXFontFn(Font font, int first, int count, int list) {
   GL_SERVICE_LOG("glXUseXFont"
                  << "(" << font << ", " << first << ", " << count << ", "
                  << list << ")");
   glx_api_->glXUseXFontFn(font, first, count, list);
 }
 
-void DebugGLXApi::glXWaitGLFn(void) {
+void LogGLXApi::glXWaitGLFn(void) {
   GL_SERVICE_LOG("glXWaitGL"
                  << "("
                  << ")");
   glx_api_->glXWaitGLFn();
 }
 
-int DebugGLXApi::glXWaitVideoSyncSGIFn(int divisor,
-                                       int remainder,
-                                       unsigned int* count) {
+int LogGLXApi::glXWaitVideoSyncSGIFn(int divisor,
+                                     int remainder,
+                                     unsigned int* count) {
   GL_SERVICE_LOG("glXWaitVideoSyncSGI"
                  << "(" << divisor << ", " << remainder << ", "
                  << static_cast<const void*>(count) << ")");
@@ -1266,7 +1266,7 @@ int DebugGLXApi::glXWaitVideoSyncSGIFn(int divisor,
   return result;
 }
 
-void DebugGLXApi::glXWaitXFn(void) {
+void LogGLXApi::glXWaitXFn(void) {
   GL_SERVICE_LOG("glXWaitX"
                  << "("
                  << ")");

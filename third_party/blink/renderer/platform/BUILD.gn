@@ -114,6 +114,7 @@ group("make_platform_generated") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "//third_party/blink/renderer/*" ]
   public_deps = [
+    ":bindings_buildflags",
     ":character_data",
     ":color_data",
     ":font_family_names",
@@ -141,7 +142,6 @@ group("blink_platform_public_deps") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "//third_party/blink/renderer/platform/*" ]
   public_deps = [
-    ":bindings_buildflags",
     ":make_platform_generated",
     "//base",
     "//cc",
@@ -1506,8 +1506,10 @@ jumbo_component("platform") {
     "//skia:skcms",
     "//third_party:freetype_harfbuzz",
     "//third_party/abseil-cpp/absl/types:optional",
+    "//third_party/blink/public:image_resources",
     "//third_party/blink/public/common",
     "//third_party/blink/public/mojom:embedded_frame_sink_mojo_bindings_blink",
+    "//third_party/blink/public/strings",
     "//third_party/ced",
     "//third_party/emoji-segmenter",
     "//third_party/icu",

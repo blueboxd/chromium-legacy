@@ -222,8 +222,8 @@ void FakePeripheral::SetConnectionLatency(ConnectionLatency connection_latency,
 }
 
 void FakePeripheral::Connect(PairingDelegate* pairing_delegate,
-                             const base::Closure& callback,
-                             const ConnectErrorCallback& error_callback) {
+                             base::OnceClosure callback,
+                             ConnectErrorCallback error_callback) {
   NOTREACHED();
 }
 
@@ -271,11 +271,10 @@ void FakePeripheral::ConnectToServiceInsecurely(
   NOTREACHED();
 }
 
-void FakePeripheral::CreateGattConnection(
-    const GattConnectionCallback& callback,
-    const ConnectErrorCallback& error_callback) {
-  create_gatt_connection_success_callbacks_.push_back(callback);
-  create_gatt_connection_error_callbacks_.push_back(error_callback);
+void FakePeripheral::CreateGattConnection(GattConnectionCallback callback,
+                                          ConnectErrorCallback error_callback) {
+  create_gatt_connection_success_callbacks_.push_back(std::move(callback));
+  create_gatt_connection_error_callbacks_.push_back(std::move(error_callback));
 
   // TODO(crbug.com/728870): Stop overriding CreateGattConnection once
   // IsGattConnected() is fixed. See issue for more details.

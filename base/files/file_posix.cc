@@ -7,7 +7,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <stdint.h>
-#include <sys/stat.h>
 #include <unistd.h>
 
 #include "base/logging.h"
@@ -29,19 +28,6 @@ static_assert(File::FROM_BEGIN == SEEK_SET && File::FROM_CURRENT == SEEK_CUR &&
               "whence mapping must match the system headers");
 
 namespace {
-
-#if defined(OS_BSD) || defined(OS_MACOSX) || defined(OS_NACL) || \
-  defined(OS_FUCHSIA) || (defined(OS_ANDROID) && __ANDROID_API__ < 21)
-int CallFstat(int fd, stat_wrapper_t *sb) {
-  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
-  return fstat(fd, sb);
-}
-#else
-int CallFstat(int fd, stat_wrapper_t *sb) {
-  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
-  return fstat64(fd, sb);
-}
-#endif
 
 // NaCl doesn't provide the following system calls, so either simulate them or
 // wrap them in order to minimize the number of #ifdef's in this file.
@@ -361,7 +347,7 @@ int64_t File::GetLength() {
   SCOPED_FILE_TRACE("GetLength");
 
   stat_wrapper_t file_info;
-  if (CallFstat(file_.get(), &file_info))
+  if (Fstat(file_.get(), &file_info))
     return -1;
 
   return file_info.st_size;
@@ -394,7 +380,7 @@ bool File::GetInfo(Info* info) {
   SCOPED_FILE_TRACE("GetInfo");
 
   stat_wrapper_t file_info;
-  if (CallFstat(file_.get(), &file_info))
+  if (Fstat(file_.get(), &file_info))
     return false;
 
   info->FromStat(file_info);
@@ -594,5 +580,34 @@ void File::SetPlatformFile(PlatformFile file) {
 File::Error File::GetLastFileError() {
   return base::File::OSErrorToFileError(errno);
 }
+
+#if defined(OS_BSD) || defined(OS_MACOSX) || defined(OS_NACL) || \
+    defined(OS_FUCHSIA) || (defined(OS_ANDROID) && __ANDROID_API__ < 21)
+int File::Stat(const char* path, stat_wrapper_t* sb) {
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
+  return stat(path, sb);
+}
+int File::Fstat(int fd, stat_wrapper_t* sb) {
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
+  return fstat(fd, sb);
+}
+int File::Lstat(const char* path, stat_wrapper_t* sb) {
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
+  return lstat(path, sb);
+}
+#else
+int File::Stat(const char* path, stat_wrapper_t* sb) {
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
+  return stat64(path, sb);
+}
+int File::Fstat(int fd, stat_wrapper_t* sb) {
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
+  return fstat64(fd, sb);
+}
+int File::Lstat(const char* path, stat_wrapper_t* sb) {
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
+  return lstat64(path, sb);
+}
+#endif
 
 }  // namespace base

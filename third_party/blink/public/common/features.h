@@ -100,8 +100,6 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 // Returns true when PlzDedicatedWorker is enabled.
 BLINK_COMMON_EXPORT bool IsPlzDedicatedWorkerEnabled();
 
-BLINK_COMMON_EXPORT extern const base::Feature kCanvasAlwaysDeferral;
-
 BLINK_COMMON_EXPORT extern const base::Feature kWebRtcUseMinMaxVEADimensions;
 
 // Blink garbage collection.

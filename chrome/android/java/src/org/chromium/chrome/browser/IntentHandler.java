@@ -96,11 +96,6 @@ public class IntentHandler {
     public static final String EXTRA_TAB_ID = "com.android.chrome.tab_id";
 
     /**
-     * Parcelable FullscreenOptions to use when creating a new Tab.
-     */
-    public static final String EXTRA_FULLSCREEN_OPTIONS = "com.android.chrome.fullscreen_options";
-
-    /**
      * The tab id of the parent tab, if any.
      */
     public static final String EXTRA_PARENT_TAB_ID = "com.android.chrome.parent_tab_id";

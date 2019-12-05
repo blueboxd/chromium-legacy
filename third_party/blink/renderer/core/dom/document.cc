@@ -1181,7 +1181,7 @@ Document::Document(const DocumentInit& initializer,
           GetTaskRunner(TaskType::kInternalUserInteraction),
           this,
           &Document::ElementDataCacheClearTimerFired),
-      timeline_(DocumentTimeline::Create(this)),
+      timeline_(MakeGarbageCollected<DocumentTimeline>(this)),
       pending_animations_(MakeGarbageCollected<PendingAnimations>(*this)),
       worklet_animation_controller_(
           MakeGarbageCollected<WorkletAnimationController>(this)),

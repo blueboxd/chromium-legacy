@@ -110,7 +110,7 @@ BOOL WaitForKeyboardToAppear() {
       ensureAppLaunchedWithFeaturesEnabled:{kSettingsAddPaymentMethod,
                                             kCreditCardScanner}
                                   disabled:{}
-                              forceRestart:NO];
+                            relaunchPolicy:NoForceRelaunchAndResetState];
 }
 
 - (void)setUp {

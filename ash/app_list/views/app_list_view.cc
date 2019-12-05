@@ -850,7 +850,7 @@ bool AppListView::IsShowingEmbeddedAssistantUI() const {
 void AppListView::UpdateAppListConfig(aura::Window* parent_window) {
   // For side shelf, extra horizontal margin is needed to ensure the apps grid
   // does not overlap with shelf.
-  const int margin_for_side_shelf =
+  const int side_shelf_width =
       is_side_shelf() ? delegate_->GetShelfHeight() : 0;
   // Create the app list configuration override if it's needed for the current
   // display bounds and the available apps grid size.
@@ -860,9 +860,8 @@ void AppListView::UpdateAppListConfig(aura::Window* parent_window) {
               ->GetDisplayNearestView(parent_window)
               .work_area()
               .size(),
-          AppsContainerView::GetMinimumGridHorizontalMargin() +
-              margin_for_side_shelf,
-          delegate_->GetShelfHeight(), app_list_config_.get());
+          delegate_->GetShelfHeight(), side_shelf_width,
+          app_list_config_.get());
 
   if (!new_config)
     return;

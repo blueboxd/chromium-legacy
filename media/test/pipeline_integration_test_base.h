@@ -144,8 +144,8 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
     audio_play_delay_cb_ = std::move(cb);
   }
 
-  std::unique_ptr<Renderer> CreateRenderer();
-  void CreateRendererAsync(RendererCreatedCB renderer_created_cb);
+  std::unique_ptr<Renderer> CreateRenderer(
+      base::Optional<RendererFactoryType> factory_type);
 
  protected:
   NiceMock<MockMediaLog> media_log_;

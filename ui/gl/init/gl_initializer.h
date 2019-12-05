@@ -23,7 +23,7 @@ bool InitializeGLOneOffPlatform();
 bool InitializeStaticGLBindings(GLImplementation implementation);
 
 // Initializes debug logging wrappers for GL bindings.
-void InitializeDebugGLBindings();
+void InitializeLogGLBindings();
 
 // Clears GL bindings for all implementations supported by platform.
 void ShutdownGLPlatform();

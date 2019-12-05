@@ -379,13 +379,17 @@ TEST_F(BinaryUploadServiceTest, OnUnauthorized) {
   simulated_response.mutable_malware_scan_verdict();
   ExpectNetworkResponse(true, simulated_response);
 
+  EXPECT_EQ(scanning_result, BinaryUploadService::Result::UNKNOWN);
+
   UploadForDeepScanning(std::move(request), /*authorized=*/false);
 
-  EXPECT_EQ(scanning_result, BinaryUploadService::Result::UNKNOWN);
+  // The result is set synchronously on unauthorized requests, so it is
+  // UNAUTHORIZED before and after waiting.
+  EXPECT_EQ(scanning_result, BinaryUploadService::Result::UNAUTHORIZED);
 
   content::RunAllTasksUntilIdle();
 
-  EXPECT_EQ(scanning_result, BinaryUploadService::Result::UNKNOWN);
+  EXPECT_EQ(scanning_result, BinaryUploadService::Result::UNAUTHORIZED);
 }
 
 TEST_F(BinaryUploadServiceTest, OnGetSynchronousResponse) {

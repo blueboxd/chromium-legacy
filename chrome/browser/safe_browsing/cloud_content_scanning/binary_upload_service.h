@@ -65,7 +65,10 @@ class BinaryUploadService {
     // The BinaryUploadService failed to get an InstanceID token.
     FAILED_TO_GET_TOKEN = 5,
 
-    kMaxValue = FAILED_TO_GET_TOKEN,
+    // The user is unauthorized to make the request.
+    UNAUTHORIZED = 6,
+
+    kMaxValue = UNAUTHORIZED,
   };
 
   // Callbacks used to pass along the results of scanning. The response protos

@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/component_updater_utils.h"
-#include "chrome/browser/component_updater/recovery_improved_component_installer.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"

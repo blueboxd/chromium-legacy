@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "cc/base/synced_property.h"
 #include "cc/cc_export.h"
+#include "cc/input/scroll_snap_data.h"
 #include "cc/paint/element_id.h"
 #include "cc/paint/filter_operations.h"
 #include "cc/trees/mutator_host_client.h"
@@ -28,7 +29,7 @@ namespace base {
 namespace trace_event {
 class TracedValue;
 }
-}
+}  // namespace base
 
 namespace viz {
 class CopyOutputRequest;
@@ -369,7 +370,8 @@ class ScrollCallbacks {
  public:
   // Called after the composited scroll offset changed.
   virtual void DidScroll(ElementId scroll_element_id,
-                         const gfx::ScrollOffset&) = 0;
+                         const gfx::ScrollOffset&,
+                         const base::Optional<TargetSnapAreaElementIds>&) = 0;
   // Called after the hidden status of composited scrollbars changed. Note that
   // |scroll_element_id| is the element id of the scroll not of the scrollbars.
   virtual void DidChangeScrollbarsHidden(ElementId scroll_element_id,
@@ -477,8 +479,10 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
 
   void SetScrollCallbacks(base::WeakPtr<ScrollCallbacks> callbacks);
 
-  void NotifyDidScroll(ElementId scroll_element_id,
-                       const gfx::ScrollOffset& scroll_offset);
+  void NotifyDidScroll(
+      ElementId scroll_element_id,
+      const gfx::ScrollOffset& scroll_offset,
+      const base::Optional<TargetSnapAreaElementIds>& snap_target_ids);
   void NotifyDidChangeScrollbarsHidden(ElementId scroll_element_id,
                                        bool hidden);
 

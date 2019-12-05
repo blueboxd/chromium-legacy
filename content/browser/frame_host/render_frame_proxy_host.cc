@@ -325,7 +325,7 @@ void RenderFrameProxyHost::UpdateOpener() {
 }
 
 void RenderFrameProxyHost::SetFocusedFrame() {
-  Send(new FrameMsg_SetFocusedFrame(routing_id_));
+  GetAssociatedRemoteFrame()->Focus();
 }
 
 void RenderFrameProxyHost::ScrollRectToVisible(

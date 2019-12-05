@@ -61,12 +61,3 @@ function setForeignSessions(sessionList) {
         .setForeignSessions(sessionList);
   });
 }
-
-/**
- * Called when the history is deleted by someone else.
- */
-function historyDeleted() {
-  waitForAppUpgrade().then(function() {
-    /** @type {HistoryAppElement} */ ($('history-app')).historyDeleted();
-  });
-}

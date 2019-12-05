@@ -40,8 +40,8 @@ class BleSynchronizerBase {
 
   // Discovery session wrappers.
   void StartDiscoverySession(
-      const device::BluetoothAdapter::DiscoverySessionCallback& callback,
-      const device::BluetoothAdapter::ErrorCallback& error_callback);
+      device::BluetoothAdapter::DiscoverySessionCallback callback,
+      device::BluetoothAdapter::ErrorCallback error_callback);
   void StopDiscoverySession(
       base::WeakPtr<device::BluetoothDiscoverySession> discovery_session,
       const base::Closure& callback,
@@ -83,8 +83,8 @@ class BleSynchronizerBase {
 
   struct StartDiscoveryArgs {
     StartDiscoveryArgs(
-        const device::BluetoothAdapter::DiscoverySessionCallback& callback,
-        const device::BluetoothAdapter::ErrorCallback& error_callback);
+        device::BluetoothAdapter::DiscoverySessionCallback callback,
+        device::BluetoothAdapter::ErrorCallback error_callback);
     virtual ~StartDiscoveryArgs();
 
     device::BluetoothAdapter::DiscoverySessionCallback callback;

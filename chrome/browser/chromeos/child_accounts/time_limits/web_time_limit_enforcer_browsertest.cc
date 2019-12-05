@@ -77,7 +77,7 @@ class WebTimeLimitEnforcerThrottleTest : public InProcessBrowserTest {
   bool IsErrorPageBeingShownInWebContents(content::WebContents* tab);
   void WhitelistHost(const GURL& url);
   void BlockWeb();
-  chromeos::WebTimeLimitEnforcer* GetWebTimeLimitEnforcer();
+  chromeos::app_time::WebTimeLimitEnforcer* GetWebTimeLimitEnforcer();
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -123,16 +123,16 @@ void WebTimeLimitEnforcerThrottleTest::BlockWeb() {
   GetWebTimeLimitEnforcer()->OnWebTimeLimitReached();
 }
 
-chromeos::WebTimeLimitEnforcer*
+chromeos::app_time::WebTimeLimitEnforcer*
 WebTimeLimitEnforcerThrottleTest::GetWebTimeLimitEnforcer() {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   content::BrowserContext* browser_context = web_contents->GetBrowserContext();
-  chromeos::ChildUserService* child_user_service =
-      chromeos::ChildUserServiceFactory::GetForBrowserContext(browser_context);
-  chromeos::AppTimeController* app_time_controller =
-      child_user_service->app_time_controller();
-  return app_time_controller->web_time_enforcer();
+  chromeos::ChildUserService::TestApi child_user_service =
+      chromeos::ChildUserService::TestApi(
+          chromeos::ChildUserServiceFactory::GetForBrowserContext(
+              browser_context));
+  return child_user_service.web_time_enforcer();
 }
 
 IN_PROC_BROWSER_TEST_F(WebTimeLimitEnforcerThrottleTest,

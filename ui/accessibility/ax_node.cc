@@ -873,7 +873,7 @@ AXNode* AXNode::ComputeFirstUnignoredChildRecursive() const {
 }
 
 bool AXNode::IsIgnored() const {
-  return ui::IsIgnored(data());
+  return data().IsIgnored();
 }
 
 bool AXNode::IsInListMarker() const {

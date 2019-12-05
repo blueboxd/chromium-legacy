@@ -16,8 +16,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
-class MessageLoop;
+namespace test {
+class SingleThreadTaskEnvironment;
 }
+}  // namespace base
 
 namespace content {
 class SynchronousCompositor;
@@ -97,7 +99,7 @@ class RenderingTest : public testing::Test,
   std::unique_ptr<content::TestSynchronousCompositor> compositor_;
 
  private:
-  const std::unique_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::test::SingleThreadTaskEnvironment> task_environment_;
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderingTest);

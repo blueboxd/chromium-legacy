@@ -25,8 +25,7 @@
 namespace cc {
 
 template <typename T>
-PropertyTree<T>::PropertyTree()
-    : needs_update_(false) {
+PropertyTree<T>::PropertyTree() : needs_update_(false) {
   nodes_.push_back(T());
   back()->id = kRootNodeId;
   back()->parent_id = kInvalidNodeId;
@@ -1423,6 +1422,7 @@ void ScrollTree::CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
                                      ElementId inner_viewport_scroll_element_id,
                                      bool use_fractional_deltas) {
   DCHECK(!property_trees()->is_main_thread);
+  TRACE_EVENT0("cc", "ScrollTree::CollectScrollDeltas");
   for (auto map_entry : synced_scroll_offset_map_) {
     gfx::ScrollOffset scroll_delta =
         PullDeltaForMainThread(map_entry.second.get(), use_fractional_deltas);
@@ -1430,12 +1430,25 @@ void ScrollTree::CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
     ElementId id = map_entry.first;
 
     if (!scroll_delta.IsZero()) {
+      TRACE_EVENT_INSTANT2("cc", "CollectScrollDeltas",
+                           TRACE_EVENT_SCOPE_THREAD, "x", scroll_delta.x(), "y",
+                           scroll_delta.y());
+      // The snap targets will change on cc only if the node was scrolled, so it
+      // is safe to update the snap targets only when the scroll delta is not
+      // zero.
+      ScrollNode* scroll_node = FindNodeFromElementId(id);
+      base::Optional<TargetSnapAreaElementIds> snap_target_ids;
+      if (scroll_node && scroll_node->snap_container_data) {
+        snap_target_ids = scroll_node->snap_container_data.value()
+                              .GetTargetSnapAreaElementIds();
+      }
+      ScrollAndScaleSet::ScrollUpdateInfo update(id, scroll_delta,
+                                                 snap_target_ids);
       if (id == inner_viewport_scroll_element_id) {
         // Inner (visual) viewport is stored separately.
-        scroll_info->inner_viewport_scroll.element_id = id;
-        scroll_info->inner_viewport_scroll.scroll_delta = scroll_delta;
+        scroll_info->inner_viewport_scroll = std::move(update);
       } else {
-        scroll_info->scrolls.push_back({id, scroll_delta});
+        scroll_info->scrolls.push_back(std::move(update));
       }
     }
   }
@@ -1620,11 +1633,13 @@ void ScrollTree::SetScrollCallbacks(base::WeakPtr<ScrollCallbacks> callbacks) {
   callbacks_ = std::move(callbacks);
 }
 
-void ScrollTree::NotifyDidScroll(ElementId scroll_element_id,
-                                 const gfx::ScrollOffset& scroll_offset) {
+void ScrollTree::NotifyDidScroll(
+    ElementId scroll_element_id,
+    const gfx::ScrollOffset& scroll_offset,
+    const base::Optional<TargetSnapAreaElementIds>& snap_target_ids) {
   DCHECK(property_trees()->is_main_thread);
   if (callbacks_)
-    callbacks_->DidScroll(scroll_element_id, scroll_offset);
+    callbacks_->DidScroll(scroll_element_id, scroll_offset, snap_target_ids);
 }
 
 void ScrollTree::NotifyDidChangeScrollbarsHidden(ElementId scroll_element_id,

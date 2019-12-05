@@ -316,13 +316,16 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // The ErrorCallback is used for methods that can fail in which case it is
   // called, in the success case the callback is simply not called.
   using ErrorCallback = base::Closure;
+  // TODO(reillyg): Remove this and rename everything to ErrorCallback once
+  // all users are converted to using OnceClosure.
+  using ErrorOnceCallback = base::OnceClosure;
 
   // The InitCallback is used to trigger a callback after asynchronous
   // initialization, if initialization is asynchronous on the platform.
   using InitCallback = base::OnceClosure;
 
   using DiscoverySessionCallback =
-      base::Callback<void(std::unique_ptr<BluetoothDiscoverySession>)>;
+      base::OnceCallback<void(std::unique_ptr<BluetoothDiscoverySession>)>;
   using DeviceList = std::vector<BluetoothDevice*>;
   using ConstDeviceList = std::vector<const BluetoothDevice*>;
   using UUIDList = std::vector<BluetoothUUID>;
@@ -467,12 +470,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // that have been discovered so far. Otherwise, clients can be notified of all
   // new and lost devices by implementing the Observer methods "DeviceAdded" and
   // "DeviceRemoved".
-  void StartDiscoverySession(const DiscoverySessionCallback& callback,
-                             const ErrorCallback& error_callback);
+  void StartDiscoverySession(DiscoverySessionCallback callback,
+                             ErrorOnceCallback error_callback);
   void StartDiscoverySessionWithFilter(
       std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
-      const DiscoverySessionCallback& callback,
-      const ErrorCallback& error_callback);
+      DiscoverySessionCallback callback,
+      ErrorOnceCallback error_callback);
 
   // Return all discovery filters assigned to this adapter merged together.
   std::unique_ptr<BluetoothDiscoveryFilter> GetMergedDiscoveryFilter() const;
@@ -626,19 +629,19 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // desired from all requests is achieved or an error is thrown.
   struct StartOrStopDiscoveryCallback {
     StartOrStopDiscoveryCallback(base::OnceClosure start_callback,
-                                 ErrorCallback start_error_callback);
+                                 ErrorOnceCallback start_error_callback);
     StartOrStopDiscoveryCallback(
-        base::Closure stop_callback,
+        base::OnceClosure stop_callback,
         DiscoverySessionErrorCallback stop_error_callback);
     ~StartOrStopDiscoveryCallback();
 
-    // The success callback for a start discovery request
+    // The success callback for a start discovery request.
     base::OnceClosure start_callback;
-    // The success callback for a stop discovery request
-    base::Closure stop_callback;
-    // The error callback for a start discovery request
-    ErrorCallback start_error_callback;
-    // The error callback for a stop discovery request
+    // The success callback for a stop discovery request.
+    base::OnceClosure stop_callback;
+    // The error callback for a start discovery request.
+    ErrorOnceCallback start_error_callback;
+    // The error callback for a stop discovery request.
     DiscoverySessionErrorCallback stop_error_callback;
   };
 
@@ -719,7 +722,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // Removes the |discovery_session| from |discovery_sessions_| and updates
   // accordingly
   void RemoveDiscoverySession(BluetoothDiscoverySession* discovery_session,
-                              const base::Closure& callback,
+                              base::OnceClosure callback,
                               DiscoverySessionErrorCallback error_callback);
   // Helper function that short circuits a successful callback if the filter is
   // the same as the current filter.

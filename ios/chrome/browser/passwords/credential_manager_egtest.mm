@@ -88,7 +88,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [[AppLaunchManager sharedManager]
       ensureAppLaunchedWithFeaturesEnabled:{features::kCredentialManager}
                                   disabled:{}
-                              forceRestart:NO];
+                            relaunchPolicy:NoForceRelaunchAndResetState];
 }
 
 #pragma mark - Utils

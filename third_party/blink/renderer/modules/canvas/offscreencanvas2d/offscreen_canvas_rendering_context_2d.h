@@ -123,7 +123,6 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   bool PushFrame() override;
 
   bool HasRecordedDrawCommands() { return have_recorded_draw_commands_; }
-  bool IsDeferralEnabled() const final { return is_deferral_enabled_; }
 
  protected:
   CanvasColorParams ColorParams() const override;
@@ -135,7 +134,6 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 
  private:
   void StartRecording();
-  bool is_deferral_enabled_;
   std::unique_ptr<PaintRecorder> recorder_;
   bool have_recorded_draw_commands_;
   void FinalizeFrame() final;

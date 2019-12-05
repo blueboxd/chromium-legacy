@@ -13,6 +13,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
@@ -185,8 +186,7 @@ void DragWindowFromShelfController::Drag(const gfx::Point& location_in_screen,
                std::abs(scroll_y) > kShowOverviewThreshold) {
       // If the dragging velocity is large enough, hide overview windows.
       show_overview_timer_.Stop();
-      overview_session->SetVisibleDuringWindowDragging(/*visible=*/false,
-                                                       /*animate=*/false);
+      HideOverviewDuringDrag();
     } else {
       // Otherwise start the |show_overview_timer_| to show and update overview
       // when the dragging slows down or stops.
@@ -217,7 +217,7 @@ DragWindowFromShelfController::EndDrag(const gfx::Point& location_in_screen,
     DCHECK(!in_splitview);
     if (in_overview) {
       overview_controller->EndOverview(
-          OverviewSession::EnterExitOverviewType::kImmediateExit);
+          OverviewSession::EnterExitOverviewType::kFadeOutExit);
     }
     ScaleDownWindowAfterDrag();
     window_drag_result = ShelfWindowDragResult::kGoToHomeScreen;
@@ -229,7 +229,6 @@ DragWindowFromShelfController::EndDrag(const gfx::Point& location_in_screen,
     // dragged window to go to home screen.
     ScaleDownWindowAfterDrag();
     window_drag_result = ShelfWindowDragResult::kGoToHomeScreen;
-
   } else {
     window_drag_result = ShelfWindowDragResult::kGoToOverviewMode;
   }
@@ -273,6 +272,16 @@ void DragWindowFromShelfController::OnWindowDestroying(aura::Window* window) {
   CancelDrag();
   window_->RemoveObserver(this);
   window_ = nullptr;
+}
+
+void DragWindowFromShelfController::AddObserver(
+    DragWindowFromShelfController::Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void DragWindowFromShelfController::RemoveObserver(
+    DragWindowFromShelfController::Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void DragWindowFromShelfController::OnDragStarted(
@@ -340,7 +349,9 @@ void DragWindowFromShelfController::OnDragEnded(
                                              location_in_screen);
   }
 
-  Shell::Get()->home_screen_controller()->OnWindowDragEnded();
+  // Scale-in-to-show home screen if home screen should be shown after drag
+  // ends.
+  Shell::Get()->home_screen_controller()->OnWindowDragEnded(/*animate=*/true);
 
   // Clear the wallpaper dim and blur if not in overview after drag ends.
   // If in overview, the dim and blur will be cleared after overview ends.
@@ -483,6 +494,14 @@ bool DragWindowFromShelfController::ShouldRestoreToOriginalBounds(
 bool DragWindowFromShelfController::ShouldGoToHomeScreen(
     const gfx::Point& location_in_screen,
     base::Optional<float> velocity_y) const {
+  // If the drag ends below the shelf, do not go to home screen (theoratically
+  // it may happen in kExtended hotseat case when drag can start and end below
+  // the shelf).
+  if (location_in_screen.y() >=
+      Shelf::ForWindow(window_)->GetIdealBoundsForWorkAreaCalculation().y()) {
+    return false;
+  }
+
   // For a hidden hotseat, if the event end position does not exceed
   // GetReturnToMaximizedThreshold(), it should restore back to the maximized
   // bounds even though the velocity might be large.
@@ -491,10 +510,22 @@ bool DragWindowFromShelfController::ShouldGoToHomeScreen(
     return false;
   }
 
+  // Do not go home if we're in split screen.
+  if (SplitViewController::Get(Shell::GetPrimaryRootWindow())
+          ->InSplitViewMode()) {
+    return false;
+  }
+
+  // If overview is invisible when the drag ends, no matter what the velocity
+  // is, we should go to home screen.
+  if (Shell::Get()->overview_controller()->InOverviewSession() &&
+      !show_overview_windows_) {
+    return true;
+  }
+
+  // Otherwise go home if the velocity is large enough.
   return velocity_y.has_value() && *velocity_y < 0 &&
-         std::abs(*velocity_y) >= kVelocityToHomeScreenThreshold &&
-         !SplitViewController::Get(Shell::GetPrimaryRootWindow())
-              ->InSplitViewMode();
+         std::abs(*velocity_y) >= kVelocityToHomeScreenThreshold;
 }
 
 SplitViewController::SnapPosition
@@ -548,11 +579,37 @@ void DragWindowFromShelfController::ShowOverviewDuringOrAfterDrag() {
   if (!overview_controller->InOverviewSession())
     return;
 
+  show_overview_windows_ = true;
   overview_controller->overview_session()->SetVisibleDuringWindowDragging(
       /*visible=*/true, /*animate=*/true);
+  for (Observer& observer : observers_)
+    observer.OnOverviewVisibilityChanged(true);
+}
+
+void DragWindowFromShelfController::HideOverviewDuringDrag() {
+  show_overview_windows_ = false;
+
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  if (!overview_controller->InOverviewSession())
+    return;
+  overview_controller->overview_session()->SetVisibleDuringWindowDragging(
+      /*visible=*/false,
+      /*animate=*/false);
+  for (Observer& observer : observers_)
+    observer.OnOverviewVisibilityChanged(false);
 }
 
 void DragWindowFromShelfController::ScaleDownWindowAfterDrag() {
+  // Notify home screen controller that the home screen is about to be shown, so
+  // home screen and shelf start updating their state as the window is
+  // minimizing.
+  Shell::Get()
+      ->home_screen_controller()
+      ->delegate()
+      ->OnHomeLauncherPositionChanged(
+          /*percent_shown=*/100,
+          display::Screen::GetScreen()->GetPrimaryDisplay().id());
+
   // Do the scale-down transform for the entire transient tree.
   for (auto* window : GetTransientTreeIterator(window_)) {
     // self-destructed when window transform animation is done.
@@ -560,8 +617,22 @@ void DragWindowFromShelfController::ScaleDownWindowAfterDrag() {
         window, WindowScaleAnimation::WindowScaleType::kScaleDownToShelf,
         window == window_ ? base::make_optional(original_backdrop_mode_)
                           : base::nullopt,
-        base::NullCallback());
+        window == window_
+            ? base::BindOnce(
+                  &DragWindowFromShelfController::OnWindowScaledDownAfterDrag,
+                  weak_ptr_factory_.GetWeakPtr())
+            : base::NullCallback());
   }
+}
+
+void DragWindowFromShelfController::OnWindowScaledDownAfterDrag() {
+  HomeScreenController* home_screen_controller =
+      Shell::Get()->home_screen_controller();
+  if (!home_screen_controller || !home_screen_controller->delegate())
+    return;
+
+  home_screen_controller->delegate()->OnHomeLauncherAnimationComplete(
+      /*shown=*/true, display::Screen::GetScreen()->GetPrimaryDisplay().id());
 }
 
 void DragWindowFromShelfController::ScaleUpToRestoreWindowAfterDrag() {
@@ -599,8 +670,7 @@ void DragWindowFromShelfController::OnWindowDragStartedInOverview() {
     overview_session->SetSplitViewDragIndicatorsDraggedWindow(window_);
   // Hide overview windows first and fade in the windows after delaying
   // kShowOverviewTimeWhenDragSuspend.
-  overview_session->SetVisibleDuringWindowDragging(/*visible=*/false,
-                                                   /*animate=*/false);
+  HideOverviewDuringDrag();
 }
 
 }  // namespace ash

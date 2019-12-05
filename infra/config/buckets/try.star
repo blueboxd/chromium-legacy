@@ -92,6 +92,10 @@ def android_builder(*, name, **kwargs):
   )
 
 android_builder(
+    name = 'android-asan',
+)
+
+android_builder(
     name = 'android-bfcache-debug',
 )
 
@@ -1538,6 +1542,8 @@ win_builder(
 
 win_builder(
     name = 'win10_chromium_x64_dbg_ng',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_10,
 )
 
@@ -1590,4 +1596,6 @@ win_builder(
 
 win_builder(
     name = 'win_x64_archive',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )

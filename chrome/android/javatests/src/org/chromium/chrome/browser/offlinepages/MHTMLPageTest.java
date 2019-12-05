@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -118,6 +119,7 @@ public class MHTMLPageTest implements CustomMainActivityStart {
     @Test
     @SmallTest
     @RetryOnFailure
+    @DisabledTest(message = "Flaky. crbug.com/1030558")
     public void testDownloadMultipartRelatedPageFromServer() throws Exception {
         // .mhtml file is mapped to "multipart/related" by the test server.
         final String url = mTestServer.getURL("/chrome/test/data/android/hello.mhtml");

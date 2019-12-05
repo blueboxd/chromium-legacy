@@ -36,9 +36,7 @@ const CancelableTaskTracker::TaskId CancelableTaskTracker::kBadTaskId = 0;
 CancelableTaskTracker::CancelableTaskTracker() = default;
 
 CancelableTaskTracker::~CancelableTaskTracker() {
-  // TODO(https://crbug.com/1009795): Use DCHECK_CALLED_ON_VALID_SEQUENCE() once
-  // the crasher issue is resolved.
-  CHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   TryCancelAll();
 }
@@ -47,9 +45,7 @@ CancelableTaskTracker::TaskId CancelableTaskTracker::PostTask(
     TaskRunner* task_runner,
     const Location& from_here,
     OnceClosure task) {
-  // TODO(https://crbug.com/1009795): Use DCHECK_CALLED_ON_VALID_SEQUENCE() once
-  // the crasher issue is resolved.
-  CHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   return PostTaskAndReply(task_runner, from_here, std::move(task), DoNothing());
 }
@@ -59,9 +55,7 @@ CancelableTaskTracker::TaskId CancelableTaskTracker::PostTaskAndReply(
     const Location& from_here,
     OnceClosure task,
     OnceClosure reply) {
-  // TODO(https://crbug.com/1009795): Use DCHECK_CALLED_ON_VALID_SEQUENCE() once
-  // the crasher issue is resolved.
-  CHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   // We need a SequencedTaskRunnerHandle to run |reply|.
   DCHECK(SequencedTaskRunnerHandle::IsSet());
@@ -89,9 +83,7 @@ CancelableTaskTracker::TaskId CancelableTaskTracker::PostTaskAndReply(
 
 CancelableTaskTracker::TaskId CancelableTaskTracker::NewTrackedTaskId(
     IsCanceledCallback* is_canceled_cb) {
-  // TODO(https://crbug.com/1009795): Use DCHECK_CALLED_ON_VALID_SEQUENCE() once
-  // the crasher issue is resolved.
-  CHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(SequencedTaskRunnerHandle::IsSet());
 
   TaskId id = next_id_;
@@ -116,9 +108,7 @@ CancelableTaskTracker::TaskId CancelableTaskTracker::NewTrackedTaskId(
 }
 
 void CancelableTaskTracker::TryCancel(TaskId id) {
-  // TODO(https://crbug.com/1009795): Use DCHECK_CALLED_ON_VALID_SEQUENCE() once
-  // the crasher issue is resolved.
-  CHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   const auto it = task_flags_.find(id);
   if (it == task_flags_.end()) {
@@ -140,18 +130,14 @@ void CancelableTaskTracker::TryCancel(TaskId id) {
 }
 
 void CancelableTaskTracker::TryCancelAll() {
-  // TODO(https://crbug.com/1009795): Use DCHECK_CALLED_ON_VALID_SEQUENCE() once
-  // the crasher issue is resolved.
-  CHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   for (const auto& it : task_flags_)
     it.second->data.Set();
   task_flags_.clear();
 }
 
 bool CancelableTaskTracker::HasTrackedTasks() const {
-  // TODO(https://crbug.com/1009795): Use DCHECK_CALLED_ON_VALID_SEQUENCE() once
-  // the crasher issue is resolved.
-  CHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   return !task_flags_.empty();
 }
 
@@ -181,17 +167,13 @@ bool CancelableTaskTracker::IsCanceled(
 
 void CancelableTaskTracker::Track(TaskId id,
                                   scoped_refptr<TaskCancellationFlag> flag) {
-  // TODO(https://crbug.com/1009795): Use DCHECK_CALLED_ON_VALID_SEQUENCE() once
-  // the crasher issue is resolved.
-  CHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   bool success = task_flags_.insert(std::make_pair(id, std::move(flag))).second;
   DCHECK(success);
 }
 
 void CancelableTaskTracker::Untrack(TaskId id) {
-  // TODO(https://crbug.com/1009795): Use DCHECK_CALLED_ON_VALID_SEQUENCE() once
-  // the crasher issue is resolved.
-  CHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   size_t num = task_flags_.erase(id);
   DCHECK_EQ(1u, num);
 }

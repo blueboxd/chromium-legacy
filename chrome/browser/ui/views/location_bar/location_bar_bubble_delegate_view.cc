@@ -9,10 +9,12 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "url/origin.h"
 
 LocationBarBubbleDelegateView::WebContentMouseHandler::WebContentMouseHandler(
     LocationBarBubbleDelegateView* bubble,
@@ -89,6 +91,21 @@ void LocationBarBubbleDelegateView::OnVisibilityChanged(
 
 void LocationBarBubbleDelegateView::WebContentsDestroyed() {
   CloseBubble();
+}
+
+void LocationBarBubbleDelegateView::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!close_on_main_frame_origin_navigation_ ||
+      !navigation_handle->IsInMainFrame() ||
+      !navigation_handle->HasCommitted()) {
+    return;
+  }
+
+  // Close dialog when navigating to a different domain.
+  if (!url::IsSameOriginWith(navigation_handle->GetPreviousURL(),
+                             navigation_handle->GetURL())) {
+    CloseBubble();
+  }
 }
 
 gfx::Rect LocationBarBubbleDelegateView::GetAnchorBoundsInScreen() const {

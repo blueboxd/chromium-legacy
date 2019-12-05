@@ -64,15 +64,14 @@ std::unique_ptr<autofill::PasswordForm> FillPasswordFormWithData(
     const PasswordFormData& form_data,
     bool use_federated_login = false);
 
-// Creates a new vector entry in the |first| element of the returned pair. The
-// |second| element holds the PasswordForm that the |first| element points to.
-// That way, the pointer only points to a valid address in the called scope.
-std::pair<const autofill::PasswordForm*,
-          std::unique_ptr<const autofill::PasswordForm>>
-CreateEntry(const std::string& username,
-            const std::string& password,
-            const GURL& origin_url,
-            bool is_psl_match);
+// Creates a new vector entry. Callers are expected to call .get() to get a raw
+// pointer to the underlying PasswordForm.
+std::unique_ptr<autofill::PasswordForm> CreateEntry(
+    const std::string& username,
+    const std::string& password,
+    const GURL& origin_url,
+    bool is_psl_match,
+    bool is_affiliation_based_match);
 
 // Checks whether the PasswordForms pointed to in |actual_values| are in some
 // permutation pairwise equal to those in |expectations|. Returns true in case

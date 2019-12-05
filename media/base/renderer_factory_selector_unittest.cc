@@ -14,7 +14,7 @@ namespace media {
 
 class RendererFactorySelectorTest : public testing::Test {
  public:
-  using FactoryType = RendererFactorySelector::FactoryType;
+  using FactoryType = RendererFactoryType;
 
   class FakeFactory : public RendererFactory {
    public:
@@ -50,8 +50,8 @@ class RendererFactorySelectorTest : public testing::Test {
     condition_met_map_[type] = false;
     selector_.AddConditionalFactory(
         type, std::make_unique<FakeFactory>(type),
-        base::Bind(&RendererFactorySelectorTest::IsConditionMet,
-                   base::Unretained(this), type));
+        base::BindRepeating(&RendererFactorySelectorTest::IsConditionMet,
+                            base::Unretained(this), type));
   }
 
   FactoryType GetCurrentlySelectedFactoryType() {
@@ -72,57 +72,57 @@ class RendererFactorySelectorTest : public testing::Test {
 };
 
 TEST_F(RendererFactorySelectorTest, SingleFactory) {
-  AddBaseFactory(FactoryType::DEFAULT);
-  EXPECT_EQ(FactoryType::DEFAULT, GetCurrentlySelectedFactoryType());
+  AddBaseFactory(FactoryType::kDefault);
+  EXPECT_EQ(FactoryType::kDefault, GetCurrentlySelectedFactoryType());
 }
 
 TEST_F(RendererFactorySelectorTest, MultipleFactory) {
-  AddBaseFactory(FactoryType::DEFAULT);
-  AddFactory(FactoryType::MOJO);
+  AddBaseFactory(FactoryType::kDefault);
+  AddFactory(FactoryType::kMojo);
 
-  EXPECT_EQ(FactoryType::DEFAULT, GetCurrentlySelectedFactoryType());
+  EXPECT_EQ(FactoryType::kDefault, GetCurrentlySelectedFactoryType());
 
-  selector_.SetBaseFactoryType(FactoryType::MOJO);
-  EXPECT_EQ(FactoryType::MOJO, GetCurrentlySelectedFactoryType());
+  selector_.SetBaseFactoryType(FactoryType::kMojo);
+  EXPECT_EQ(FactoryType::kMojo, GetCurrentlySelectedFactoryType());
 }
 
 TEST_F(RendererFactorySelectorTest, ConditionalFactory) {
-  AddBaseFactory(FactoryType::DEFAULT);
-  AddFactory(FactoryType::MOJO);
-  AddConditionalFactory(FactoryType::COURIER);
+  AddBaseFactory(FactoryType::kDefault);
+  AddFactory(FactoryType::kMojo);
+  AddConditionalFactory(FactoryType::kCourier);
 
-  EXPECT_EQ(FactoryType::DEFAULT, GetCurrentlySelectedFactoryType());
+  EXPECT_EQ(FactoryType::kDefault, GetCurrentlySelectedFactoryType());
 
-  condition_met_map_[FactoryType::COURIER] = true;
-  EXPECT_EQ(FactoryType::COURIER, GetCurrentlySelectedFactoryType());
+  condition_met_map_[FactoryType::kCourier] = true;
+  EXPECT_EQ(FactoryType::kCourier, GetCurrentlySelectedFactoryType());
 
-  selector_.SetBaseFactoryType(FactoryType::MOJO);
-  EXPECT_EQ(FactoryType::COURIER, GetCurrentlySelectedFactoryType());
+  selector_.SetBaseFactoryType(FactoryType::kMojo);
+  EXPECT_EQ(FactoryType::kCourier, GetCurrentlySelectedFactoryType());
 
-  condition_met_map_[FactoryType::COURIER] = false;
-  EXPECT_EQ(FactoryType::MOJO, GetCurrentlySelectedFactoryType());
+  condition_met_map_[FactoryType::kCourier] = false;
+  EXPECT_EQ(FactoryType::kMojo, GetCurrentlySelectedFactoryType());
 }
 
 TEST_F(RendererFactorySelectorTest, MultipleConditionalFactories) {
-  AddBaseFactory(FactoryType::DEFAULT);
-  AddConditionalFactory(FactoryType::FLINGING);
-  AddConditionalFactory(FactoryType::COURIER);
+  AddBaseFactory(FactoryType::kDefault);
+  AddConditionalFactory(FactoryType::kFlinging);
+  AddConditionalFactory(FactoryType::kCourier);
 
-  EXPECT_EQ(FactoryType::DEFAULT, GetCurrentlySelectedFactoryType());
+  EXPECT_EQ(FactoryType::kDefault, GetCurrentlySelectedFactoryType());
 
-  condition_met_map_[FactoryType::FLINGING] = false;
-  condition_met_map_[FactoryType::COURIER] = true;
-  EXPECT_EQ(FactoryType::COURIER, GetCurrentlySelectedFactoryType());
+  condition_met_map_[FactoryType::kFlinging] = false;
+  condition_met_map_[FactoryType::kCourier] = true;
+  EXPECT_EQ(FactoryType::kCourier, GetCurrentlySelectedFactoryType());
 
-  condition_met_map_[FactoryType::FLINGING] = true;
-  condition_met_map_[FactoryType::COURIER] = false;
-  EXPECT_EQ(FactoryType::FLINGING, GetCurrentlySelectedFactoryType());
+  condition_met_map_[FactoryType::kFlinging] = true;
+  condition_met_map_[FactoryType::kCourier] = false;
+  EXPECT_EQ(FactoryType::kFlinging, GetCurrentlySelectedFactoryType());
 
   // It's up to the implementation detail to decide which one to use.
-  condition_met_map_[FactoryType::FLINGING] = true;
-  condition_met_map_[FactoryType::COURIER] = true;
-  EXPECT_TRUE(GetCurrentlySelectedFactoryType() == FactoryType::FLINGING ||
-              GetCurrentlySelectedFactoryType() == FactoryType::COURIER);
+  condition_met_map_[FactoryType::kFlinging] = true;
+  condition_met_map_[FactoryType::kCourier] = true;
+  EXPECT_TRUE(GetCurrentlySelectedFactoryType() == FactoryType::kFlinging ||
+              GetCurrentlySelectedFactoryType() == FactoryType::kCourier);
 }
 
 }  // namespace media

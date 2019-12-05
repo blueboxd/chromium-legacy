@@ -7,13 +7,12 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <stddef.h>
-#include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 
 #include <string>
 
-#include "base/files/file_path.h"
+#include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
@@ -26,8 +25,8 @@ namespace {
 
 // Deny |permission| on the file |path|.
 bool DenyFilePermission(const FilePath& path, mode_t permission) {
-  struct stat stat_buf;
-  if (stat(path.value().c_str(), &stat_buf) != 0)
+  stat_wrapper_t stat_buf;
+  if (File::Stat(path.value().c_str(), &stat_buf) != 0)
     return false;
   stat_buf.st_mode &= ~permission;
 
@@ -42,8 +41,8 @@ void* GetPermissionInfo(const FilePath& path, size_t* length) {
   DCHECK(length);
   *length = 0;
 
-  struct stat stat_buf;
-  if (stat(path.value().c_str(), &stat_buf) != 0)
+  stat_wrapper_t stat_buf;
+  if (File::Stat(path.value().c_str(), &stat_buf) != 0)
     return nullptr;
 
   *length = sizeof(mode_t);

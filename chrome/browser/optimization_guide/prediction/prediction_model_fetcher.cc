@@ -49,6 +49,8 @@ bool PredictionModelFetcher::FetchOptimizationGuideServiceModels(
     ModelsFetchedCallback models_fetched_callback) {
   SEQUENCE_CHECKER(sequence_checker_);
 
+  // TODO(crbug/1030358): Make the fetcher a network quality tracker observer
+  // or move this logic to the prediction manager.
   if (content::GetNetworkConnectionTracker()->IsOffline()) {
     std::move(models_fetched_callback).Run(base::nullopt);
     return false;

@@ -241,9 +241,13 @@ void HomeScreenController::OnWindowDragStarted() {
   UpdateVisibility();
 }
 
-void HomeScreenController::OnWindowDragEnded() {
+void HomeScreenController::OnWindowDragEnded(bool animate) {
   in_window_dragging_ = false;
   UpdateVisibility();
+  if (ShouldShowHomeScreen()) {
+    home_screen_presenter_.ScheduleOverviewModeAnimation(
+        HomeScreenPresenter::TransitionType::kScaleHomeIn, animate);
+  }
 }
 
 bool HomeScreenController::IsHomeScreenVisible() const {
@@ -359,12 +363,19 @@ void HomeScreenController::UpdateVisibility() {
   if (!window)
     return;
 
+  if (ShouldShowHomeScreen())
+    window->Show();
+  else
+    window->Hide();
+}
+
+bool HomeScreenController::ShouldShowHomeScreen() const {
+  const bool in_tablet_mode =
+      Shell::Get()->tablet_mode_controller()->InTabletMode();
   const bool in_overview =
       Shell::Get()->overview_controller()->InOverviewSession();
-  if (in_overview || in_wallpaper_preview_ || in_window_dragging_)
-    window->Hide();
-  else
-    window->Show();
+  return in_tablet_mode && !in_overview && !in_wallpaper_preview_ &&
+         !in_window_dragging_;
 }
 
 }  // namespace ash

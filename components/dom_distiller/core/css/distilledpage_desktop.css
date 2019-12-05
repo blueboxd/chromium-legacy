@@ -16,15 +16,15 @@ fieldset {
   background: transparent;
 }
 
-#mainContent h1 {
+#main-content h1 {
   font-size: 1.5em;
 }
 
-#mainContent article {
+#main-content article {
   margin-top: 2em;
 }
 
-.screenReaderOnly {
+.screen-reader-only {
   display: block;
   color: transparent;
   height: 0px;
@@ -34,7 +34,7 @@ fieldset {
   user-select: none;
 }
 
-#mainContent {
+#main-content {
   max-width: 100%;
   width: 35em;
   padding: 1em;
@@ -42,7 +42,7 @@ fieldset {
   margin-bottom: 1em;
 }
 
-#settingsContainer {
+#settings-container {
   position: absolute;
   width: inherit;
   max-width: 90%;
@@ -52,40 +52,40 @@ fieldset {
   border-bottom: thin solid gray;
 }
 
-#settingsContainer button {
+#settings-container button {
   background: transparent;
   border: none;
   border-radius: 50%;
   color: var(--mdgrey);
 }
 
-#settingsContainer button .material-icons {
+#settings-container button .material-icons {
   user-select: none;
 }
 
-#settingsContainer button.activated {
+#settings-container button.activated {
   background-color: rgba(0, 0, 0, .1);
 }
 
-.dark #settingsContainer button.activated {
+.dark #settings-container button.activated {
   background-color: rgba(255, 255, 255, .1);
 }
 
-#settingsContainer button:focus {
+#settings-container button:focus {
   background-color: rgba(95, 99, 104, .2);
   box-shadow: 0px 0px 0px 8px rgba(95, 99, 104, .2);
   outline: none;
 }
 
-#settingsContainer button#settingsToggle {
+#settings-container button#settings-toggle {
   border-radius: 16px;
 }
 
-.dark #settingsToggle {
+.dark #settings-toggle {
   color: #E0E0E0;
 }
 
-#settingsDialog {
+#settings-dialog {
   top: 3em;
   left: auto;
   border: none;
@@ -104,20 +104,20 @@ fieldset {
   z-index: 1;
 }
 
-#settingsDialog h2 {
+#settings-dialog h2 {
   font-size: 14px;
   font-family: 'Roboto Medium', 'Roboto', sans-serif;
 }
 
-#settingsHeader {
+#settings-header {
   margin-bottom: 16px;
 }
 
-#settingsHeader > * {
+#settings-header > * {
   display: inline;
 }
 
-#closeSettingsButton {
+#close-settings-button {
   position: absolute;
   top: 8px;
   right: 8px;
@@ -126,13 +126,13 @@ fieldset {
   padding: 0;
 }
 
-#closeSettingsButton > * {
+#close-settings-button > * {
   font-size: 18px;
   margin: 0;
 }
 
 
-#settingsFields {
+#settings-fields {
   width: 100%;
   display: grid;
   grid-row-gap: 12px;
@@ -142,7 +142,7 @@ fieldset {
     / 50% 50%;
 }
 
-select#fontFamilySelection {
+select#font-family-selection {
   background: transparent;
   border: 1px solid silver;
   border-radius: 2px;
@@ -153,24 +153,24 @@ select#fontFamilySelection {
   font-family: inherit;
 }
 
-select#fontFamilySelection:focus {
+select#font-family-selection:focus {
   outline-color: var(--mdblue);
 }
 
-#themeSelection ul {
+#theme-selection ul {
   list-style-type: none;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
 }
 
-.themeOption {
+.theme-option {
   display: block;
   position: relative;
   width: 32px;
   height: 32px;
 }
 
-.themeOption input[type="radio"] {
+.theme-option input[type="radio"] {
   -webkit-appearance: none;
   appearance: none;
   width: 32px;
@@ -180,11 +180,11 @@ select#fontFamilySelection:focus {
   padding: 0;
 }
 
-.themeOption input[type="radio"].light {
+.theme-option input[type="radio"].light {
   border: 1px solid gray;
 }
 
-.themeOption input[type="radio"]:focus {
+.theme-option input[type="radio"]:focus {
   outline: none;
   border: 2px solid var(--mdblue);
 }
@@ -206,26 +206,26 @@ select#fontFamilySelection:focus {
   user-select: none;
 }
 
-.themeOption input[type="radio"]:checked + .checkmark {
+.theme-option input[type="radio"]:checked + .checkmark {
   display: inline;
 }
 
-#fontSizeWrapper {
+#font-size-wrapper {
   grid-area: size;
 }
 
-#fontSizeSelection {
+#font-size-selection {
   -webkit-appearance: none;
   width: 100%;
   margin: 0;
   background: transparent;
 }
 
-#fontSizeSelection:focus {
+#font-size-selection:focus {
   outline: none;
 }
 
-#fontSizeSelection::-webkit-slider-thumb {
+#font-size-selection::-webkit-slider-thumb {
   -webkit-appearance: none;
   border-radius: 50%;
   background-color: var(--mdblue);
@@ -242,17 +242,17 @@ select#fontFamilySelection:focus {
   z-index: 1;
 }
 
-#fontSizeSelection:focus::-webkit-slider-thumb {
+#font-size-selection:focus::-webkit-slider-thumb {
   box-shadow: 0px 0px 0px 11px var(--mdblue-faint);
 }
 
-#fontSizeSelection::-webkit-slider-container {
+#font-size-selection::-webkit-slider-container {
   /* Increase the clickable area of the slider. */
   border-top: 5px solid transparent;
   border-bottom: 5px solid transparent;
 }
 
-#fontSizeSelection::-webkit-slider-runnable-track {
+#font-size-selection::-webkit-slider-runnable-track {
   height: 2px;
   width: 100%;
 
@@ -284,11 +284,11 @@ select#fontFamilySelection:focus {
   padding: 0;
 }
 
-.tickmarks option.beforeThumb {
+.tickmarks option.before-thumb {
   background: white;
 }
 
-.tickmarks option.afterThumb {
+.tickmarks option.after-thumb {
   background: var(--mdblue);
 }
 

@@ -1951,6 +1951,15 @@ TEST_F(OptimizationGuideHintsManagerTest,
   run_loop.Run();
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1, 1);
+
+  // Make sure navigation data is populated correctly.
+  OptimizationGuideNavigationData* navigation_data =
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
+  EXPECT_TRUE(
+      navigation_data->was_hint_for_host_attempted_to_be_fetched().has_value());
+  EXPECT_TRUE(
+      navigation_data->was_hint_for_host_attempted_to_be_fetched().value());
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,
@@ -1975,6 +1984,13 @@ TEST_F(OptimizationGuideHintsManagerTest,
   run_loop.Run();
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
+
+  // Make sure navigation data is populated correctly.
+  OptimizationGuideNavigationData* navigation_data =
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
+  EXPECT_FALSE(
+      navigation_data->was_hint_for_host_attempted_to_be_fetched().has_value());
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,
@@ -1999,6 +2015,12 @@ TEST_F(OptimizationGuideHintsManagerTest,
   run_loop.Run();
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
+  // Make sure navigation data is populated correctly.
+  OptimizationGuideNavigationData* navigation_data =
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
+  EXPECT_FALSE(
+      navigation_data->was_hint_for_host_attempted_to_be_fetched().has_value());
 }
 
 TEST_F(OptimizationGuideHintsManagerTest, CanApplyOptimizationCalledMidFetch) {

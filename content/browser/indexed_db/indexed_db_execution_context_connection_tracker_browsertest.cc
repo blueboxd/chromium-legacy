@@ -191,8 +191,14 @@ IN_PROC_BROWSER_TEST_F(IndexedDBExecutionContextConnectionTrackerBrowserTest,
 // Verify that content::LockObserver is notified when a frame opens multiple
 // IndexedDB connections (notifications only when the number of held connections
 // switches between zero and non-zero).
+// Disabled on ChromeOS release build for flakiness. See crbug.com/1030733.
+#if defined(OS_CHROMEOS) && defined(NDEBUG)
+#define MAYBE_ObserverTwoLocks DISABLED_ObserverTwoLocks
+#else
+#define MAYBE_ObserverTwoLocks ObserverTwoLocks
+#endif
 IN_PROC_BROWSER_TEST_F(IndexedDBExecutionContextConnectionTrackerBrowserTest,
-                       ObserverTwoLocks) {
+                       MAYBE_ObserverTwoLocks) {
   if (!CheckShouldRunTestAndNavigate())
     return;
 

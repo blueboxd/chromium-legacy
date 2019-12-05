@@ -41,7 +41,7 @@ class TestObserver : public Thread::TaskObserver {
 
   ~TestObserver() override = default;
 
-  void WillProcessTask(const base::PendingTask&) override {
+  void WillProcessTask(const base::PendingTask&, bool) override {
     calls_->Append(" willProcessTask");
   }
 

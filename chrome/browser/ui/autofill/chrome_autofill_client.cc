@@ -66,7 +66,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
-#include "chrome/browser/android/preferences/preferences_launcher.h"
+#include "chrome/browser/android/preferences/autofill/autofill_profile_bridge.h"
 #include "chrome/browser/android/signin/signin_promo_util_android.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/autofill/autofill_logger_android.h"
@@ -197,11 +197,9 @@ void ChromeAutofillClient::ShowAutofillSettings(
     bool show_credit_card_settings) {
 #if defined(OS_ANDROID)
   if (show_credit_card_settings) {
-    chrome::android::PreferencesLauncher::ShowAutofillCreditCardSettings(
-        web_contents());
+    autofill::ShowAutofillCreditCardSettings(web_contents());
   } else {
-    chrome::android::PreferencesLauncher::ShowAutofillProfileSettings(
-        web_contents());
+    autofill::ShowAutofillProfileSettings(web_contents());
   }
 #else
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
@@ -517,7 +515,7 @@ bool ChromeAutofillClient::IsContextSecure() {
   //
   // TODO(crbug.com/701018): Once passive mixed content and legacy TLS are less
   // common, just use IsSslCertificateValid().
-  return entry->GetURL().SchemeIsCryptographic() &&
+  return entry && entry->GetURL().SchemeIsCryptographic() &&
          security_level != security_state::DANGEROUS;
 }
 

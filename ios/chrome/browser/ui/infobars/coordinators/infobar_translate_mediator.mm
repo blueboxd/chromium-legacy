@@ -45,27 +45,18 @@ const int kInvalidLanguageIndex = -1;
   BOOL currentStepBeforeTranslate =
       self.currentStep ==
       translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE;
-  BOOL currentStepAfterTranslate =
-      self.currentStep ==
-      translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE;
 
-  NSDictionary* prefs = @{
-    kSourceLanguagePrefKey : base::SysUTF16ToNSString(
-        self.translateInfobarDelegate->original_language_name()),
-    kTargetLanguagePrefKey : base::SysUTF16ToNSString(
-        self.translateInfobarDelegate->target_language_name()),
-    kEnableTranslateButtonPrefKey : @(currentStepBeforeTranslate),
-    kEnableAndDisplayShowOriginalButtonPrefKey : @(currentStepAfterTranslate),
-    kShouldAlwaysTranslatePrefKey :
-        @(self.translateInfobarDelegate->ShouldAlwaysTranslate()),
-    kDisplayNeverTranslateLanguagePrefKey : @(currentStepBeforeTranslate),
-    kDisplayNeverTranslateSiteButtonPrefKey : @(currentStepBeforeTranslate),
-    kIsTranslatableLanguagePrefKey :
-        @(self.translateInfobarDelegate->IsTranslatableLanguageByPrefs()),
-    kIsSiteBlacklistedPrefKey :
-        @(self.translateInfobarDelegate->IsSiteBlacklisted()),
-  };
-  [self.modalConsumer setupModalViewControllerWithPrefs:prefs];
+  [self.modalConsumer
+      setupModalViewControllerWithPrefs:
+          [self createPrefDictionaryForSourceLanguage:
+                    base::SysUTF16ToNSString(
+                        self.translateInfobarDelegate->original_language_name())
+                                       targetLanguage:
+                                           base::SysUTF16ToNSString(
+                                               self.translateInfobarDelegate
+                                                   ->target_language_name())
+                               translateButtonEnabled:
+                                   currentStepBeforeTranslate]];
 }
 
 - (void)setSourceLanguageSelectionConsumer:
@@ -116,12 +107,94 @@ const int kInvalidLanguageIndex = -1;
         [[TableViewTextItem alloc] initWithType:kItemTypeEnumZero];
     item.text = base::SysUTF16ToNSString(
         self.translateInfobarDelegate->language_name_at((int(i))));
+    if ((sourceLanguage && originalLanguageIndex == (int)i) ||
+        (!sourceLanguage && targetLanguageIndex == (int)i)) {
+      item.checked = YES;
+    }
     [items addObject:item];
   }
   DCHECK_GT(originalLanguageIndex, kInvalidLanguageIndex);
   DCHECK_GT(targetLanguageIndex, kInvalidLanguageIndex);
 
   return items;
+}
+
+#pragma mark - InfobarTranslateLanguageSelectionDelegate
+
+- (void)didSelectSourceLanguageIndex:(int)languageIndex
+                            withName:(NSString*)languageName {
+  // Sanity check that |languageIndex| matches the languageName selected.
+  DCHECK([languageName
+      isEqualToString:base::SysUTF16ToNSString(
+                          self.translateInfobarDelegate->language_name_at(
+                              languageIndex))]);
+  DCHECK(self.modalConsumer);
+
+  [self.modalConsumer
+      setupModalViewControllerWithPrefs:
+          [self createPrefDictionaryForSourceLanguage:
+                    base::SysUTF16ToNSString(
+                        self.translateInfobarDelegate->language_name_at(
+                            languageIndex))
+                                       targetLanguage:
+                                           base::SysUTF16ToNSString(
+                                               self.translateInfobarDelegate
+                                                   ->target_language_name())
+                               translateButtonEnabled:YES]];
+}
+
+- (void)didSelectTargetLanguageIndex:(int)languageIndex
+                            withName:(NSString*)languageName {
+  // Sanity check that |languageIndex| matches the languageName selected.
+  DCHECK([languageName
+      isEqualToString:base::SysUTF16ToNSString(
+                          self.translateInfobarDelegate->language_name_at(
+                              languageIndex))]);
+  DCHECK(self.modalConsumer);
+
+  [self.modalConsumer
+      setupModalViewControllerWithPrefs:
+          [self createPrefDictionaryForSourceLanguage:
+                    base::SysUTF16ToNSString(
+                        self.translateInfobarDelegate->original_language_name())
+                                       targetLanguage:
+                                           base::SysUTF16ToNSString(
+                                               self.translateInfobarDelegate
+                                                   ->language_name_at(
+                                                       languageIndex))
+                               translateButtonEnabled:YES]];
+}
+
+#pragma mark - Private
+
+// Returns a dictionary of prefs to send to the modalConsumer depending on
+// |sourceLanguage|, |targetLanguage|, |translateButtonEnabled|, and
+// |self.currentStep|.
+- (NSDictionary*)createPrefDictionaryForSourceLanguage:(NSString*)sourceLanguage
+                                        targetLanguage:(NSString*)targetLanguage
+                                translateButtonEnabled:
+                                    (BOOL)translateButtonEnabled {
+  BOOL currentStepBeforeTranslate =
+      self.currentStep ==
+      translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE;
+  BOOL currentStepAfterTranslate =
+      self.currentStep ==
+      translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE;
+
+  return @{
+    kSourceLanguagePrefKey : sourceLanguage,
+    kTargetLanguagePrefKey : targetLanguage,
+    kEnableTranslateButtonPrefKey : @(translateButtonEnabled),
+    kEnableAndDisplayShowOriginalButtonPrefKey : @(currentStepAfterTranslate),
+    kShouldAlwaysTranslatePrefKey :
+        @(self.translateInfobarDelegate->ShouldAlwaysTranslate()),
+    kDisplayNeverTranslateLanguagePrefKey : @(currentStepBeforeTranslate),
+    kDisplayNeverTranslateSiteButtonPrefKey : @(currentStepBeforeTranslate),
+    kIsTranslatableLanguagePrefKey :
+        @(self.translateInfobarDelegate->IsTranslatableLanguageByPrefs()),
+    kIsSiteBlacklistedPrefKey :
+        @(self.translateInfobarDelegate->IsSiteBlacklisted()),
+  };
 }
 
 @end

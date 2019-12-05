@@ -86,7 +86,21 @@
         </cr-toggle>
       </div>
 
-      <!-- TODO(jamescook): Wallpaper, Wi-Fi configs. -->
+      <div class="list-item"
+           hidden="[[!osSyncPrefs.wifiConfigurationsRegistered]]">
+        <div id="wifiConfigurationsCheckboxLabel">
+          $i18n{wifiConfigurationsCheckboxLabel}
+        </div>
+        <cr-toggle checked="{{osSyncPrefs.wifiConfigurationsSynced}}"
+            on-change="onSingleSyncDataTypeChanged_"
+            disabled="[[shouldSyncCheckboxBeDisabled_(
+                osSyncPrefs.syncAllOsTypes,
+                osSyncPrefs.wifiConfigurationsEnforced)]]"
+            aria-labelledby="wifiConfigurationsCheckboxLabel">
+        </cr-toggle>
+      </div>
+
+      <!-- TODO(jamescook): Wallpaper. -->
 
     </div>
   </template>

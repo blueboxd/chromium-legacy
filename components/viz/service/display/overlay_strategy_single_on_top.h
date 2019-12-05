@@ -12,13 +12,13 @@
 
 namespace viz {
 
-class OverlayCandidateValidator;
+class OverlayCandidateValidatorStrategy;
 
 class VIZ_SERVICE_EXPORT OverlayStrategySingleOnTop
     : public OverlayProcessor::Strategy {
  public:
   explicit OverlayStrategySingleOnTop(
-      OverlayCandidateValidator* capability_checker);
+      OverlayCandidateValidatorStrategy* capability_checker);
   ~OverlayStrategySingleOnTop() override;
 
   bool Attempt(
@@ -41,7 +41,7 @@ class VIZ_SERVICE_EXPORT OverlayStrategySingleOnTop
                   const OverlayCandidate& candidate,
                   QuadList::Iterator candidate_iterator);
 
-  OverlayCandidateValidator* capability_checker_;  // Weak.
+  OverlayCandidateValidatorStrategy* capability_checker_;  // Weak.
 
   ResourceId previous_frame_resource_id_ = kInvalidResourceId;
   size_t same_resource_id_frames_count_ = 0;

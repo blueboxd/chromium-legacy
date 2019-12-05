@@ -9,4 +9,4 @@ package org.chromium.weblayer_private.interfaces;
  *
  * Whenever any AIDL file is changed, sVersionNumber must be incremented.
  * */
-public final class WebLayerVersion { public static final int sVersionNumber = 19; }
+public final class WebLayerVersion { public static final int sVersionNumber = 20; }

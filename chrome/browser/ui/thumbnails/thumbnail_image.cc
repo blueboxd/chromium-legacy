@@ -6,8 +6,10 @@
 
 #include <utility>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/time/time.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/skia_util.h"
 
@@ -72,7 +74,7 @@ void ThumbnailImage::AssignSkBitmap(SkBitmap bitmap) {
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&ThumbnailImage::CompressBitmap, std::move(bitmap)),
       base::BindOnce(&ThumbnailImage::AssignJPEGData,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now()));
 }
 
 void ThumbnailImage::RequestThumbnailImage() {
@@ -85,9 +87,15 @@ void ThumbnailImage::RequestCompressedThumbnailData() {
     NotifyCompressedDataObservers(data_);
 }
 
-void ThumbnailImage::AssignJPEGData(std::vector<uint8_t> data) {
+void ThumbnailImage::AssignJPEGData(base::TimeTicks assign_sk_bitmap_time,
+                                    std::vector<uint8_t> data) {
   data_ = base::MakeRefCounted<base::RefCountedData<std::vector<uint8_t>>>(
       std::move(data));
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+      "Tab.Preview.TimeToNotifyObserversAfterCaptureReceived",
+      base::TimeTicks::Now() - assign_sk_bitmap_time,
+      base::TimeDelta::FromMicroseconds(100),
+      base::TimeDelta::FromMilliseconds(100), 50);
   NotifyCompressedDataObservers(data_);
   ConvertJPEGDataToImageSkiaAndNotifyObservers();
 }

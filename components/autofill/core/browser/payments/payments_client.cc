@@ -1241,6 +1241,9 @@ void PaymentsClient::OnSimpleLoaderCompleteInternal(int response_code,
 
   AutofillClient::PaymentsRpcResult result = AutofillClient::SUCCESS;
 
+  if (!request_)
+    return;
+
   switch (response_code) {
     // Valid response.
     case net::HTTP_OK: {

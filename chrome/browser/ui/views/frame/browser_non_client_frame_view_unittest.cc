@@ -74,8 +74,8 @@ class BrowserNonClientFrameViewTabbedTest
       : BrowserNonClientFrameViewTest(Browser::TYPE_NORMAL) {}
 };
 
-// TODO(crbug.com/1015949): Flaky on ChromeOS and Linux TSAN.
-#if defined(OS_CHROMEOS) || (defined(OS_LINUX) && defined(THREAD_SANITIZER))
+// TODO(crbug.com/1011339): Flaky on Linux TSAN.
+#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
 #define MAYBE_HitTestTabstrip DISABLED_HitTestTabstrip
 #else
 #define MAYBE_HitTestTabstrip HitTestTabstrip

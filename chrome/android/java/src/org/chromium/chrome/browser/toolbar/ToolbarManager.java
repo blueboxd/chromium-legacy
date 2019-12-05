@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.toolbar;
 
 import android.app.Activity;
+import android.content.ComponentCallbacks;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
@@ -14,7 +15,6 @@ import android.os.Message;
 import android.os.SystemClock;
 import android.support.v7.app.ActionBar;
 import android.text.TextUtils;
-import android.view.OrientationEventListener;
 import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
 import android.view.View.OnClickListener;
@@ -218,7 +218,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private final Handler mHandler = new Handler();
     private final ChromeActivity mActivity;
     private UrlFocusChangeListener mLocationBarFocusObserver;
-    private OrientationEventListener mOrientationEventListener;
+    private ComponentCallbacks mComponentCallbacks;
 
     private BrowserStateBrowserControlsVisibilityDelegate mControlsVisibilityDelegate;
     private int mFullscreenFocusToken = TokenHolder.INVALID_TOKEN;
@@ -247,6 +247,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
     private AppMenuHandler mAppMenuHandler;
 
+    private int mCurrentOrientation;
+
     /**
      * Creates a ToolbarManager object.
      *
@@ -272,13 +274,20 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         mToolbarActionModeCallback = new ToolbarActionModeCallback();
         mBookmarkBridgeSupplier = new ObservableSupplierImpl<>();
 
-        mOrientationEventListener = new OrientationEventListener(activity) {
+        mComponentCallbacks = new ComponentCallbacks() {
             @Override
-            public void onOrientationChanged(int orientation) {
-                onOrientationChange();
+            public void onConfigurationChanged(Configuration configuration) {
+                int newOrientation = configuration.orientation;
+                if (newOrientation == mCurrentOrientation) {
+                    return;
+                }
+                mCurrentOrientation = newOrientation;
+                onOrientationChange(newOrientation);
             }
+            @Override
+            public void onLowMemory() {}
         };
-        mOrientationEventListener.enable();
+        mActivity.registerComponentCallbacks(mComponentCallbacks);
 
         mLocationBarFocusObserver = new UrlFocusChangeListener() {
             /** The params used to control how the scrim behaves when shown for the omnibox. */
@@ -1304,8 +1313,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
         if (mTabThemeColorProvider != null) mTabThemeColorProvider.removeThemeColorObserver(this);
         if (mAppThemeColorProvider != null) mAppThemeColorProvider.destroy();
-        mOrientationEventListener.disable();
-        mOrientationEventListener = null;
+        mActivity.unregisterComponentCallbacks(mComponentCallbacks);
+        mComponentCallbacks = null;
 
         mShareDelegateSupplier.removeObserver(mShareDelegateSupplierCallback);
     }
@@ -1313,13 +1322,12 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     /**
      * Called when the orientation of the activity has changed.
      */
-    public void onOrientationChange() {
+    private void onOrientationChange(int newOrientation) {
         if (mActionModeController != null) mActionModeController.showControlsOnOrientationChange();
 
         if (mBottomControlsCoordinator != null && FeatureUtilities.isBottomToolbarEnabled()
                 && FeatureUtilities.isAdaptiveToolbarEnabled()) {
-            mIsBottomToolbarVisible = mActivity.getResources().getConfiguration().orientation
-                    != Configuration.ORIENTATION_LANDSCAPE;
+            mIsBottomToolbarVisible = newOrientation != Configuration.ORIENTATION_LANDSCAPE;
             mToolbar.onBottomToolbarVisibilityChanged(mIsBottomToolbarVisible);
             mBottomControlsCoordinator.setBottomControlsVisible(mIsBottomToolbarVisible);
             if (mAppMenuButtonHelper != null) {
@@ -1816,13 +1824,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      */
     public void finishAnimations() {
         if (isInitialized()) mToolbar.finishAnimations();
-    }
-
-    /**
-     * See {@link LocationBar#updateVisualsForState()}
-     */
-    public void updateLocationBarVisualsForState() {
-        mLocationBar.updateVisualsForState();
     }
 
     /**

@@ -182,6 +182,7 @@ SharingDialogView::SharingDialogView(views::View* anchor_view,
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
   DialogDelegate::SetFootnoteView(
       CreateHelpOrOriginView(data_, web_contents, this));
+  set_close_on_main_frame_origin_navigation(true);
 }
 
 SharingDialogView::~SharingDialogView() = default;

@@ -33,10 +33,6 @@ class BluetoothRemoteGATTDescriptor final : public ScriptWrappable {
       mojom::blink::WebBluetoothRemoteGATTDescriptorPtr,
       BluetoothRemoteGATTCharacteristic*);
 
-  static BluetoothRemoteGATTDescriptor* Create(
-      mojom::blink::WebBluetoothRemoteGATTDescriptorPtr,
-      BluetoothRemoteGATTCharacteristic*);
-
   // IDL exposed interface:
   BluetoothRemoteGATTCharacteristic* characteristic() {
     return characteristic_;

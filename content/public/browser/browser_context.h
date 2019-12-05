@@ -19,9 +19,11 @@
 #include "base/optional.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory.h"
+#include "services/content/public/mojom/navigable_contents_factory.mojom-forward.h"
 #include "services/network/public/mojom/cors_origin_pattern.mojom-forward.h"
 #include "services/service_manager/public/mojom/service.mojom-forward.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-forward.h"
@@ -336,6 +338,11 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   virtual std::unique_ptr<service_manager::Service> HandleServiceRequest(
       const std::string& service_name,
       service_manager::mojom::ServiceRequest request);
+
+  // Binds a NavigableContentsFactory interface receiver to this browser
+  // context.
+  virtual void BindNavigableContentsFactory(
+      mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver);
 
   // Returns a unique string associated with this browser context.
   virtual const std::string& UniqueId();

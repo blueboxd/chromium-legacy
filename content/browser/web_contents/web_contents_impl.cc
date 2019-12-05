@@ -85,7 +85,6 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/javascript_dialog_navigation_deferrer.h"
 #include "content/browser/web_contents/web_contents_view_child_frame.h"
-#include "content/browser/web_contents/web_contents_view_guest.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/browser_plugin/browser_plugin_constants.h"
@@ -2055,11 +2054,6 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   } else {
     view_.reset(CreateWebContentsView(this, delegate,
                                       &render_view_host_delegate_view_));
-    if (browser_plugin_guest_) {
-      view_ = std::make_unique<WebContentsViewGuest>(
-          this, browser_plugin_guest_.get(), std::move(view_),
-          &render_view_host_delegate_view_);
-    }
   }
   CHECK(render_view_host_delegate_view_);
   CHECK(view_.get());
@@ -2399,13 +2393,8 @@ RenderWidgetHostImpl* WebContentsImpl::GetFocusedRenderWidgetHost(
 
   // If the focused WebContents is a guest WebContents, then get the focused
   // frame in the embedder WebContents instead.
-  FrameTreeNode* focused_frame = nullptr;
-  if (focused_contents->browser_plugin_guest_ &&
-      !GuestMode::IsCrossProcessFrameGuest(focused_contents)) {
-    focused_frame = frame_tree_.GetFocusedFrame();
-  } else {
-    focused_frame = GetFocusedWebContents()->frame_tree_.GetFocusedFrame();
-  }
+  FrameTreeNode* focused_frame =
+      GetFocusedWebContents()->frame_tree_.GetFocusedFrame();
 
   if (!focused_frame)
     return receiving_widget;
@@ -2427,13 +2416,6 @@ RenderWidgetHostImpl* WebContentsImpl::GetRenderWidgetHostWithPageFocus() {
   if (focused_web_contents->ShowingInterstitialPage()) {
     return static_cast<RenderFrameHostImpl*>(
                focused_web_contents->interstitial_page_->GetMainFrame())
-        ->GetRenderWidgetHost();
-  }
-  if (!GuestMode::IsCrossProcessFrameGuest(focused_web_contents) &&
-      focused_web_contents->browser_plugin_guest_) {
-    // If this is a guest, we need to be controlled by our embedder.
-    return focused_web_contents->GetOuterWebContents()
-        ->GetMainFrame()
         ->GetRenderWidgetHost();
   }
 
@@ -2912,7 +2894,7 @@ RenderFrameHostDelegate* WebContentsImpl::CreateNewWindow(
       // TODO(brettw): It seems bogus that we have to call this function on the
       // newly created object and give it one of its own member variables.
       RenderWidgetHostView* widget_view = new_view->CreateViewForWidget(
-          new_contents_impl->GetRenderViewHost()->GetWidget(), false);
+          new_contents_impl->GetRenderViewHost()->GetWidget());
       if (!renderer_started_hidden) {
         // RenderWidgets for frames always initialize as hidden. If the renderer
         // created this window as visible, then we show it here.
@@ -5750,12 +5732,6 @@ RenderFrameHostImpl* WebContentsImpl::GetOuterWebContentsFrame() {
 }
 
 WebContentsImpl* WebContentsImpl::GetOuterWebContents() {
-  if (GuestMode::IsCrossProcessFrameGuest(this))
-    return node_.outer_web_contents();
-
-  if (browser_plugin_guest_)
-    return browser_plugin_guest_->embedder_web_contents();
-
   return node_.outer_web_contents();
 }
 
@@ -6251,9 +6227,6 @@ void WebContentsImpl::SetAsFocusedWebContentsIfNecessary() {
 
   GetOutermostWebContents()->node_.SetFocusedWebContents(this);
 
-  if (!GuestMode::IsCrossProcessFrameGuest(this) && browser_plugin_guest_)
-    return;
-
   // Send a page level blur to the old contents so that it displays inactive UI
   // and focus this contents to activate it.
   if (old_contents)
@@ -6420,11 +6393,6 @@ bool WebContentsImpl::ShouldIgnoreInputEvents() {
 
 void WebContentsImpl::FocusOwningWebContents(
     RenderWidgetHostImpl* render_widget_host) {
-  // The PDF plugin still runs as a BrowserPlugin and must go through the
-  // input redirection mechanism. It must not become focused direcly.
-  if (!GuestMode::IsCrossProcessFrameGuest(this) && browser_plugin_guest_)
-    return;
-
   RenderWidgetHostImpl* main_frame_widget_host =
       GetMainFrame()->GetRenderWidgetHost();
   RenderWidgetHostImpl* focused_widget =
@@ -6580,7 +6548,7 @@ InterstitialPageImpl* WebContentsImpl::GetInterstitialForRenderManager() {
 void WebContentsImpl::CreateRenderWidgetHostViewForRenderManager(
     RenderViewHost* render_view_host) {
   RenderWidgetHostViewBase* rwh_view =
-      view_->CreateViewForWidget(render_view_host->GetWidget(), false);
+      view_->CreateViewForWidget(render_view_host->GetWidget());
   rwh_view->SetSize(GetSizeForNewRenderView(true));
 }
 

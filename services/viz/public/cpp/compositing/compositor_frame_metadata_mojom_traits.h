@@ -13,6 +13,7 @@
 #include "services/viz/public/cpp/compositing/frame_deadline_mojom_traits.h"
 #include "services/viz/public/cpp/compositing/surface_range_mojom_traits.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_metadata.mojom-shared.h"
+#include "ui/gfx/mojom/overlay_transform_mojom_traits.h"
 
 namespace mojo {
 
@@ -112,6 +113,11 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
   static float top_controls_visible_height(
       const viz::CompositorFrameMetadata& metadata) {
     return metadata.top_controls_visible_height.value_or(0.f);
+  }
+
+  static gfx::OverlayTransform display_transform_hint(
+      const viz::CompositorFrameMetadata& metadata) {
+    return metadata.display_transform_hint;
   }
 
   static bool Read(viz::mojom::CompositorFrameMetadataDataView data,

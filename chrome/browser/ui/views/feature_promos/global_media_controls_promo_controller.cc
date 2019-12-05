@@ -56,7 +56,7 @@ void GlobalMediaControlsPromoController::ShowPromo() {
   promo_bubble_ = FeaturePromoBubbleView::CreateOwned(
       owner_, views::BubbleBorder::Arrow::TOP_RIGHT,
       FeaturePromoBubbleView::ActivationAction::DO_NOT_ACTIVATE,
-      string_specifier, base::nullopt, base::nullopt,
+      string_specifier, base::nullopt, base::nullopt, base::nullopt,
       std::move(feature_promo_bubble_timeout));
   promo_bubble_->set_close_on_deactivate(false);
   promo_bubble_->GetWidget()->AddObserver(this);

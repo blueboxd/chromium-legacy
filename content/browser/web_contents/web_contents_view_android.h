@@ -70,8 +70,7 @@ class WebContentsViewAndroid : public WebContentsView,
   gfx::Rect GetViewBounds() const override;
   void CreateView(gfx::NativeView context) override;
   RenderWidgetHostViewBase* CreateViewForWidget(
-      RenderWidgetHost* render_widget_host,
-      bool is_guest_view_hack) override;
+      RenderWidgetHost* render_widget_host) override;
   RenderWidgetHostViewBase* CreateViewForChildWidget(
       RenderWidgetHost* render_widget_host) override;
   void SetPageTitle(const base::string16& title) override;

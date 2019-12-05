@@ -37,6 +37,8 @@ const char BackgroundSyncControllerImpl::kRelyOnAndroidNetworkDetection[] =
 #endif
 const char BackgroundSyncControllerImpl::kKeepBrowserAwakeParameterName[] =
     "keep_browser_awake_till_events_complete";
+const char BackgroundSyncControllerImpl::kSkipPermissionsCheckParameterName[] =
+    "skip_permissions_check_for_testing";
 const char BackgroundSyncControllerImpl::kMaxAttemptsParameterName[] =
     "max_sync_attempts";
 const char BackgroundSyncControllerImpl::
@@ -117,6 +119,11 @@ void BackgroundSyncControllerImpl::GetParameterOverrides(
   if (base::LowerCaseEqualsASCII(field_params[kKeepBrowserAwakeParameterName],
                                  "true")) {
     parameters->keep_browser_awake_till_events_complete = true;
+  }
+
+  if (base::LowerCaseEqualsASCII(
+          field_params[kSkipPermissionsCheckParameterName], "true")) {
+    parameters->skip_permissions_check_for_testing = true;
   }
 
   if (base::Contains(field_params,

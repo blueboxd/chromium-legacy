@@ -19,12 +19,16 @@
 #include "fuchsia/engine/switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ui/aura/screen_ozone.h"
+#include "ui/gfx/switches.h"
 #include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/ozone_switches.h"
 
 WebEngineBrowserMainParts::WebEngineBrowserMainParts(
     const content::MainFunctionParams& parameters,
     fidl::InterfaceRequest<fuchsia::web::Context> request)
-    : parameters_(parameters), request_(std::move(request)) {}
+    : parameters_(parameters), request_(std::move(request)) {
+  DCHECK(request_);
+}
 
 WebEngineBrowserMainParts::~WebEngineBrowserMainParts() {
   display::Screen::SetScreenInstance(nullptr);
@@ -51,7 +55,6 @@ void WebEngineBrowserMainParts::PreMainMessageLoopRun() {
   browser_context_ = std::make_unique<WebEngineBrowserContext>(
       base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kIncognito));
 
-  DCHECK(request_);
   devtools_controller_ = WebEngineDevToolsController::CreateFromCommandLine(
       *base::CommandLine::ForCurrentProcess());
   context_service_ = std::make_unique<ContextImpl>(browser_context_.get(),

@@ -188,7 +188,7 @@ bool MediaRecorderHandler::Initialize(MediaRecorder* recorder,
       VideoStringToCodecId(codecs);
   video_codec_id_ = (video_codec_id != VideoTrackRecorder::CodecId::LAST)
                         ? video_codec_id
-                        : VideoTrackRecorder::GetPreferredCodecId();
+                        : VideoTrackRecorderImpl::GetPreferredCodecId();
   DVLOG_IF(1, video_codec_id == VideoTrackRecorder::CodecId::LAST)
       << "Falling back to preferred video codec id "
       << static_cast<int>(video_codec_id_);
@@ -262,7 +262,7 @@ bool MediaRecorderHandler::Start(int timeslice) {
         media::BindToCurrentLoop(WTF::BindRepeating(
             &MediaRecorderHandler::OnEncodedVideo, WrapWeakPersistent(this)));
 
-    video_recorders_.emplace_back(MakeGarbageCollected<VideoTrackRecorder>(
+    video_recorders_.emplace_back(MakeGarbageCollected<VideoTrackRecorderImpl>(
         video_codec_id_, video_tracks_[0], on_encoded_video_cb,
         video_bits_per_second_, task_runner_));
   }
@@ -353,7 +353,7 @@ void MediaRecorderHandler::EncodingInfo(
 
   if (configuration.video_configuration && info->supported) {
     const bool is_likely_accelerated =
-        VideoTrackRecorder::CanUseAcceleratedEncoder(
+        VideoTrackRecorderImpl::CanUseAcceleratedEncoder(
             VideoStringToCodecId(codec),
             configuration.video_configuration->width,
             configuration.video_configuration->height,

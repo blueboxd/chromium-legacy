@@ -8,7 +8,6 @@
 #include <errno.h>
 #include <limits.h>
 #include <math.h>
-#include <sys/stat.h>
 #include <sys/syscall.h>
 #include <unistd.h>
 
@@ -16,6 +15,7 @@
 #include <time64.h>
 #endif
 
+#include "base/files/file.h"
 #include "base/rand_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -104,7 +104,7 @@ void sincosf(float angle, float* s, float* c) {
   *s = sinf(angle);
 }
 
-#endif // __GNUC__ && !__clang__
+#endif  // __GNUC__ && !__clang__
 
 // An implementation of mkdtemp, since it is not exposed by the NDK
 // for native API level 9 that we target.
@@ -114,9 +114,9 @@ void sincosf(float angle, float* s, float* c) {
 // passes. Please don't enable it, since it creates a directory and may be
 // source of flakyness.
 char* mkdtemp(char* path) {
-  if (path == NULL) {
+  if (!path) {
     errno = EINVAL;
-    return NULL;
+    return nullptr;
   }
 
   const int path_len = strlen(path);
@@ -126,27 +126,25 @@ char* mkdtemp(char* path) {
   const int kSuffixLen = kSuffix.length();
   if (!base::StringPiece(path, path_len).ends_with(kSuffix)) {
     errno = EINVAL;
-    return NULL;
+    return nullptr;
   }
 
   // If the path contains a directory, as in /tmp/foo/XXXXXXXX, make sure
   // that /tmp/foo exists, otherwise we're going to loop a really long
   // time for nothing below
   char* dirsep = strrchr(path, '/');
-  if (dirsep != NULL) {
-    struct stat st;
-    int ret;
-
+  if (dirsep) {
     *dirsep = '\0';  // Terminating directory path temporarily
 
-    ret = stat(path, &st);
+    base::stat_wrapper_t st;
+    int ret = base::File::Stat(path, &st);
 
     *dirsep = '/';  // Restoring directory separator
     if (ret < 0)  // Directory probably does not exist
-      return NULL;
+      return nullptr;
     if (!S_ISDIR(st.st_mode)) {  // Not a directory
       errno = ENOTDIR;
-      return NULL;
+      return nullptr;
     }
   }
 
@@ -167,12 +165,12 @@ char* mkdtemp(char* path) {
     }
     if (errno != EEXIST) {
       // The directory doesn't exist, but an error occured
-      return NULL;
+      return nullptr;
     }
   }
 
   // We reached the max number of tries.
-  return NULL;
+  return nullptr;
 }
 
 }  // extern "C"

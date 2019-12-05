@@ -37,9 +37,9 @@ void SearchResponseParser::ProcessResponse(
       response_body->substr(0, strlen(kJsonSafetyPrefix)) !=
           kJsonSafetyPrefix) {
     LOG(ERROR) << "Invalid search response.";
+    std::move(complete_callback_).Run(nullptr);
     return;
   }
-
   data_decoder::DataDecoder::ParseJsonIsolated(
       response_body->substr(strlen(kJsonSafetyPrefix)),
       base::BindOnce(&SearchResponseParser::OnJsonParsed,
@@ -52,21 +52,26 @@ void SearchResponseParser::OnJsonParsed(
 
   if (!result.value) {
     LOG(ERROR) << "JSON parsing failed: " << *result.error;
+    std::move(complete_callback_).Run(nullptr);
     return;
   }
 
-  auto quick_answer = std::make_unique<QuickAnswer>();
   // Get the first result.
   const Value* entries = result.value->FindListPath("results");
+  if (!entries) {
+    std::move(complete_callback_).Run(nullptr);
+    return;
+  }
 
-  if (entries) {
-    for (const auto& entry : entries->GetList()) {
-      if (ProcessResult(&entry, quick_answer.get()))
-        break;
+  for (const auto& entry : entries->GetList()) {
+    auto quick_answer = std::make_unique<QuickAnswer>();
+    if (ProcessResult(&entry, quick_answer.get())) {
+      std::move(complete_callback_).Run(std::move(quick_answer));
+      return;
     }
   }
 
-  std::move(complete_callback_).Run(std::move(quick_answer));
+  std::move(complete_callback_).Run(nullptr);
 }
 
 bool SearchResponseParser::ProcessResult(const Value* result,

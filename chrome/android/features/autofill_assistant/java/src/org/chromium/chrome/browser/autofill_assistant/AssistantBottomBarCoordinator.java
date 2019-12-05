@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantSuggestionsCarouselCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.form.AssistantFormCoordinator;
+import org.chromium.chrome.browser.autofill_assistant.form.AssistantFormModel;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
 import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBoxCoordinator;
@@ -243,9 +244,8 @@ class AssistantBottomBarCoordinator
         });
 
         // Animate when form inputs change.
-        model.getFormModel().getInputsModel().addObserver(new AbstractListObserver<Void>() {
-            @Override
-            public void onDataSetChanged() {
+        model.getFormModel().addObserver((source, propertyKey) -> {
+            if (AssistantFormModel.INPUTS == propertyKey) {
                 animateChildren(rootView);
             }
         });

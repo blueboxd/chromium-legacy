@@ -2383,7 +2383,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
         break;
     }
     return [NSNumber numberWithInt:value];
-  } else if (IsRangeValueSupported(owner_->GetData())) {
+  } else if (owner_->GetData().IsRangeValueSupported()) {
     float floatValue;
     if (owner_->GetFloatAttribute(ax::mojom::FloatAttribute::kValueForRange,
                                   &floatValue)) {
@@ -3288,7 +3288,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     ]];
   } else if ([role isEqualToString:NSAccessibilityTabGroupRole]) {
     [ret addObject:NSAccessibilityTabsAttribute];
-  } else if (IsRangeValueSupported(owner_->GetData())) {
+  } else if (owner_->GetData().IsRangeValueSupported()) {
     [ret addObjectsFromArray:@[
       NSAccessibilityMaxValueAttribute, NSAccessibilityMinValueAttribute,
       NSAccessibilityValueDescriptionAttribute

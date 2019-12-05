@@ -27,7 +27,7 @@ static CurrentGL* g_no_context_current_gl = nullptr;
 static bool g_null_draw_bindings_enabled = false;
 
 // If the GL debug bindings are enabled.
-static bool g_debug_bindings_enabled = false;
+static bool g_log_bindings_enabled = false;
 
 namespace {
 
@@ -229,12 +229,12 @@ void ClearBindingsGL() {
   }
 }
 
-void InitializeDebugGLBindingsGL() {
-  g_debug_bindings_enabled = true;
+void InitializeLogGLBindingsGL() {
+  g_log_bindings_enabled = true;
 }
 
 bool GetDebugGLBindingsInitializedGL() {
-  return g_debug_bindings_enabled;
+  return g_log_bindings_enabled;
 }
 
 bool SetNullDrawGLBindingsEnabled(bool enabled) {
@@ -548,9 +548,9 @@ void RealGLApi::set_version(std::unique_ptr<GLVersionInfo> version) {
 TraceGLApi::~TraceGLApi() {
 }
 
-DebugGLApi::DebugGLApi(GLApi* gl_api) : gl_api_(gl_api) {}
+LogGLApi::LogGLApi(GLApi* gl_api) : gl_api_(gl_api) {}
 
-DebugGLApi::~DebugGLApi() {}
+LogGLApi::~LogGLApi() {}
 
 NoContextGLApi::NoContextGLApi() {
 }

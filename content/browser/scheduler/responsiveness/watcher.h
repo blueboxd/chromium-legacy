@@ -60,16 +60,7 @@ class CONTENT_EXPORT Watcher : public base::RefCounted<Watcher>,
     // Whether the task or event has caused reentrancy.
     bool caused_reentrancy = false;
 
-    // For delayed tasks, the time at which the event is scheduled to run
-    // is only loosely coupled to the time that the task actually runs. The
-    // difference between these is not interesting for computing responsiveness.
-    // Instead of measuring the duration between |queue_time| and |finish_time|,
-    // we measure the duration of execution itself.
-    //
-    // We have evidence on Windows, macOS and Linux that the timestamp on native
-    // events is not reliable. For native events, we also measure execution
-    // duration instead of queue time + execution duration. See
-    // https://crbug.com/859155#c39.
+    // The time at which the task or event started running.
     base::TimeTicks execution_start_time;
   };
 

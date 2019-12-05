@@ -100,7 +100,7 @@ void SetupSignalHandlers() {
   sigact.sa_handler = SIG_DFL;
   static const int signals_to_reset[] = {
       SIGHUP,  SIGINT,  SIGQUIT, SIGILL, SIGABRT, SIGFPE, SIGSEGV,
-      SIGALRM, SIGTERM, SIGCHLD, SIGBUS, SIGTRAP};  // SIGPIPE is set below.
+      SIGALRM, SIGTERM, SIGCHLD, SIGBUS, SIGTRAP};
   for (unsigned i = 0; i < base::size(signals_to_reset); i++) {
     CHECK_EQ(0, sigaction(signals_to_reset[i], &sigact, NULL));
   }

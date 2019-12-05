@@ -254,7 +254,7 @@ def _OptimizeWithR8(options,
     stderr_filter = lambda l: re.sub(r'.*_JAVA_OPTIONS.*\n?', '', l)
     env['_JAVA_OPTIONS'] = '-Dcom.android.tools.r8.allowTestProguardOptions=1'
     if options.disable_outlining:
-      env['_JAVA_OPTIONS'] += '-Dcom.android.tools.r8.disableOutlining=1'
+      env['_JAVA_OPTIONS'] += ' -Dcom.android.tools.r8.disableOutlining=1'
 
     try:
       build_utils.CheckOutput(

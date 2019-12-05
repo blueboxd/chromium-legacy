@@ -60,7 +60,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
-#include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 #endif
@@ -3580,8 +3579,8 @@ class VerifyPathControlledByUserTest : public FileUtilTest {
     CreateTextFile(text_file_, L"This text file has some text in it.");
 
     // Get the user and group files are created with from |base_dir_|.
-    struct stat stat_buf;
-    ASSERT_EQ(0, stat(base_dir_.value().c_str(), &stat_buf));
+    stat_wrapper_t stat_buf;
+    ASSERT_EQ(0, File::Stat(base_dir_.value().c_str(), &stat_buf));
     uid_ = stat_buf.st_uid;
     ok_gids_.insert(stat_buf.st_gid);
     bad_gids_.insert(stat_buf.st_gid + 1);

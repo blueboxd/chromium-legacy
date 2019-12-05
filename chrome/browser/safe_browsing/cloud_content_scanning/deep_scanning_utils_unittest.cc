@@ -20,7 +20,8 @@ constexpr BinaryUploadService::Result kAllBinaryUploadServiceResults[]{
     BinaryUploadService::Result::UPLOAD_FAILURE,
     BinaryUploadService::Result::TIMEOUT,
     BinaryUploadService::Result::FILE_TOO_LARGE,
-    BinaryUploadService::Result::FAILED_TO_GET_TOKEN};
+    BinaryUploadService::Result::FAILED_TO_GET_TOKEN,
+    BinaryUploadService::Result::UNAUTHORIZED};
 
 constexpr int64_t kTotalBytes = 1000;
 
@@ -53,6 +54,8 @@ std::string ResultToString(const BinaryUploadService::Result& result,
     case BinaryUploadService::Result::UNKNOWN:
       result_value = "Unknown";
       break;
+    case BinaryUploadService::Result::UNAUTHORIZED:
+      return "";
   }
   return result_value;
 }
@@ -98,25 +101,32 @@ INSTANTIATE_TEST_SUITE_P(
 TEST_P(DeepScanningUtilsUMATest, SuccessfulScanVerdicts) {
   RecordDeepScanMetrics(access_point(), kDuration, kTotalBytes, result(),
                         DeepScanningClientResponse());
-  // We expect at least 2 histograms (<access-point>.Duration and
-  // <access-point>.<result>.Duration), but only expect a third histogram in the
-  // success case (bytes/seconds).
-  uint64_t expected_histograms = success() ? 3u : 2u;
-  EXPECT_EQ(
-      expected_histograms,
-      histograms().GetTotalCountsForPrefix("SafeBrowsing.DeepScan.").size());
-  if (success()) {
-    histograms().ExpectUniqueSample(
-        "SafeBrowsing.DeepScan." + access_point_string() + ".BytesPerSeconds",
-        kTotalBytes / kDuration.InSeconds(), 1);
+
+  if (result() == BinaryUploadService::Result::UNAUTHORIZED) {
+    EXPECT_EQ(
+        0u,
+        histograms().GetTotalCountsForPrefix("SafeBrowsing.DeepScan.").size());
+  } else {
+    // We expect at least 2 histograms (<access-point>.Duration and
+    // <access-point>.<result>.Duration), but only expect a third histogram in
+    // the success case (bytes/seconds).
+    uint64_t expected_histograms = success() ? 3u : 2u;
+    EXPECT_EQ(
+        expected_histograms,
+        histograms().GetTotalCountsForPrefix("SafeBrowsing.DeepScan.").size());
+    if (success()) {
+      histograms().ExpectUniqueSample(
+          "SafeBrowsing.DeepScan." + access_point_string() + ".BytesPerSeconds",
+          kTotalBytes / kDuration.InSeconds(), 1);
+    }
+    histograms().ExpectTimeBucketCount(
+        "SafeBrowsing.DeepScan." + access_point_string() + ".Duration",
+        kDuration, 1);
+    histograms().ExpectTimeBucketCount("SafeBrowsing.DeepScan." +
+                                           access_point_string() + "." +
+                                           result_value(true) + ".Duration",
+                                       kDuration, 1);
   }
-  histograms().ExpectTimeBucketCount(
-      "SafeBrowsing.DeepScan." + access_point_string() + ".Duration", kDuration,
-      1);
-  histograms().ExpectTimeBucketCount("SafeBrowsing.DeepScan." +
-                                         access_point_string() + "." +
-                                         result_value(true) + ".Duration",
-                                     kDuration, 1);
 }
 
 TEST_P(DeepScanningUtilsUMATest, UnsuccessfulDlpScanVerdict) {
@@ -128,16 +138,22 @@ TEST_P(DeepScanningUtilsUMATest, UnsuccessfulDlpScanVerdict) {
   RecordDeepScanMetrics(access_point(), kDuration, kTotalBytes, result(),
                         response);
 
-  EXPECT_EQ(
-      2u,
-      histograms().GetTotalCountsForPrefix("SafeBrowsing.DeepScan.").size());
-  histograms().ExpectTimeBucketCount(
-      "SafeBrowsing.DeepScan." + access_point_string() + ".Duration", kDuration,
-      1);
-  histograms().ExpectTimeBucketCount("SafeBrowsing.DeepScan." +
-                                         access_point_string() + "." +
-                                         result_value(false) + ".Duration",
-                                     kDuration, 1);
+  if (result() == BinaryUploadService::Result::UNAUTHORIZED) {
+    EXPECT_EQ(
+        0u,
+        histograms().GetTotalCountsForPrefix("SafeBrowsing.DeepScan.").size());
+  } else {
+    EXPECT_EQ(
+        2u,
+        histograms().GetTotalCountsForPrefix("SafeBrowsing.DeepScan.").size());
+    histograms().ExpectTimeBucketCount(
+        "SafeBrowsing.DeepScan." + access_point_string() + ".Duration",
+        kDuration, 1);
+    histograms().ExpectTimeBucketCount("SafeBrowsing.DeepScan." +
+                                           access_point_string() + "." +
+                                           result_value(false) + ".Duration",
+                                       kDuration, 1);
+  }
 }
 
 TEST_P(DeepScanningUtilsUMATest, UnsuccessfulMalwareScanVerdict) {
@@ -149,16 +165,22 @@ TEST_P(DeepScanningUtilsUMATest, UnsuccessfulMalwareScanVerdict) {
   RecordDeepScanMetrics(access_point(), kDuration, kTotalBytes, result(),
                         response);
 
-  EXPECT_EQ(
-      2u,
-      histograms().GetTotalCountsForPrefix("SafeBrowsing.DeepScan.").size());
-  histograms().ExpectTimeBucketCount(
-      "SafeBrowsing.DeepScan." + access_point_string() + ".Duration", kDuration,
-      1);
-  histograms().ExpectTimeBucketCount("SafeBrowsing.DeepScan." +
-                                         access_point_string() + "." +
-                                         result_value(false) + ".Duration",
-                                     kDuration, 1);
+  if (result() == BinaryUploadService::Result::UNAUTHORIZED) {
+    EXPECT_EQ(
+        0u,
+        histograms().GetTotalCountsForPrefix("SafeBrowsing.DeepScan.").size());
+  } else {
+    EXPECT_EQ(
+        2u,
+        histograms().GetTotalCountsForPrefix("SafeBrowsing.DeepScan.").size());
+    histograms().ExpectTimeBucketCount(
+        "SafeBrowsing.DeepScan." + access_point_string() + ".Duration",
+        kDuration, 1);
+    histograms().ExpectTimeBucketCount("SafeBrowsing.DeepScan." +
+                                           access_point_string() + "." +
+                                           result_value(false) + ".Duration",
+                                       kDuration, 1);
+  }
 }
 
 TEST_P(DeepScanningUtilsUMATest, BypassScanVerdict) {

@@ -420,30 +420,27 @@ TEST_F(HomeLauncherGestureHandlerTest, TransparentToOpaqueShelfWileDragging) {
 
   auto window = CreateWindowForTesting();
   ASSERT_TRUE(window->IsVisible());
-  ASSERT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_IN_APP,
-            AshTestBase::GetPrimaryShelf()
-                ->shelf_layout_manager()
-                ->GetShelfBackgroundType());
+  ASSERT_EQ(ShelfBackgroundType::kInApp, AshTestBase::GetPrimaryShelf()
+                                             ->shelf_layout_manager()
+                                             ->GetShelfBackgroundType());
 
   ShelfBackgroundTypeWatcher watcher(AshTestBase::GetPrimaryShelf());
 
   // Begin to show the home launcher, the shelf should become transparent.
   DoPress(Mode::kSlideUpToShow);
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_HOME_LAUNCHER,
-            AshTestBase::GetPrimaryShelf()
-                ->shelf_layout_manager()
-                ->GetShelfBackgroundType());
+  EXPECT_EQ(ShelfBackgroundType::kHomeLauncher, AshTestBase::GetPrimaryShelf()
+                                                    ->shelf_layout_manager()
+                                                    ->GetShelfBackgroundType());
 
   // Fling up to complete showing the home launcher, the shelf should remain
   // transparent.
   GetGestureHandler()->OnScrollEvent(gfx::PointF(0.f, 300.f), 0.f, -10.f);
   GetGestureHandler()->OnReleaseEvent(gfx::PointF(0.f, 300.f),
                                       /*velocity_y=*/base::nullopt);
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_HOME_LAUNCHER,
-            AshTestBase::GetPrimaryShelf()
-                ->shelf_layout_manager()
-                ->GetShelfBackgroundType());
-  watcher.CheckEqual({ShelfBackgroundType::SHELF_BACKGROUND_HOME_LAUNCHER});
+  EXPECT_EQ(ShelfBackgroundType::kHomeLauncher, AshTestBase::GetPrimaryShelf()
+                                                    ->shelf_layout_manager()
+                                                    ->GetShelfBackgroundType());
+  watcher.CheckEqual({ShelfBackgroundType::kHomeLauncher});
 
   // Reset the watcher queue to start recording the changes during the slide
   // down.
@@ -452,36 +449,32 @@ TEST_F(HomeLauncherGestureHandlerTest, TransparentToOpaqueShelfWileDragging) {
   // Begin to hide the home launcher, the background should still be
   // transparent.
   DoPress(Mode::kSlideDownToHide);
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_HOME_LAUNCHER,
-            AshTestBase::GetPrimaryShelf()
-                ->shelf_layout_manager()
-                ->GetShelfBackgroundType());
+  EXPECT_EQ(ShelfBackgroundType::kHomeLauncher, AshTestBase::GetPrimaryShelf()
+                                                    ->shelf_layout_manager()
+                                                    ->GetShelfBackgroundType());
 
   // Fling down to hide the home launcher before the middle of the screen, the
   // shelf should still be transparent.
   GetGestureHandler()->OnScrollEvent(gfx::PointF(0.f, 100.f), 0.f, -10.f);
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_HOME_LAUNCHER,
-            AshTestBase::GetPrimaryShelf()
-                ->shelf_layout_manager()
-                ->GetShelfBackgroundType());
+  EXPECT_EQ(ShelfBackgroundType::kHomeLauncher, AshTestBase::GetPrimaryShelf()
+                                                    ->shelf_layout_manager()
+                                                    ->GetShelfBackgroundType());
 
   // Continue the fling down after the middle of the screen, the shelf
   // background should now be the in-app shelf.
   GetGestureHandler()->OnScrollEvent(gfx::PointF(0.f, 250.f), 0.f, -10.f);
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_IN_APP,
-            AshTestBase::GetPrimaryShelf()
-                ->shelf_layout_manager()
-                ->GetShelfBackgroundType());
+  EXPECT_EQ(ShelfBackgroundType::kInApp, AshTestBase::GetPrimaryShelf()
+                                             ->shelf_layout_manager()
+                                             ->GetShelfBackgroundType());
 
   // The shelf background should be the in-app shelf when the gesture sequence
   // has completed.
   GetGestureHandler()->OnReleaseEvent(gfx::PointF(0.f, 300.f),
                                       /*velocity_y=*/base::nullopt);
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_IN_APP,
-            AshTestBase::GetPrimaryShelf()
-                ->shelf_layout_manager()
-                ->GetShelfBackgroundType());
-  watcher.CheckEqual({ShelfBackgroundType::SHELF_BACKGROUND_IN_APP});
+  EXPECT_EQ(ShelfBackgroundType::kInApp, AshTestBase::GetPrimaryShelf()
+                                             ->shelf_layout_manager()
+                                             ->GetShelfBackgroundType());
+  watcher.CheckEqual({ShelfBackgroundType::kInApp});
 }
 
 class HomeLauncherModeGestureHandlerTest

@@ -84,6 +84,39 @@ chromiumos_builder(
 )
 
 
+def fyi_builder(
+    *,
+    name,
+    execution_timeout=10 * time.hour,
+    **kwargs):
+  return builder(
+      name = name,
+      execution_timeout = execution_timeout,
+      mastername = 'chromium.fyi',
+      **kwargs
+  )
+
+# This is launching & collecting entirely isolated tests.
+# OS shouldn't matter.
+fyi_builder(
+    name = 'mac-osxbeta-rel',
+    goma_backend = goma.backend.RBE_PROD,
+)
+
+
+def fyi_windows_builder(*, name, os=os.WINDOWS_DEFAULT, **kwargs):
+  return fyi_builder(
+      name = name,
+      os = os,
+      **kwargs
+  )
+
+fyi_windows_builder(
+    name = 'Win10 Tests x64 1803',
+    os = os.WINDOWS_10,
+)
+
+
 def gpu_builder(*, name, **kwargs):
   return builder(
       name = name,
@@ -180,8 +213,28 @@ mac_builder(
     name = 'Mac Builder',
 )
 
+# The build runs on 10.13, but triggers tests on 10.10 bots.
+mac_builder(
+    name = 'Mac10.10 Tests',
+)
+
+# The build runs on 10.13, but triggers tests on 10.11 bots.
+mac_builder(
+    name = 'Mac10.11 Tests',
+)
+
+mac_builder(
+    name = 'Mac10.12 Tests',
+    os = os.MAC_10_12,
+)
+
 mac_builder(
     name = 'Mac10.13 Tests',
+    os = os.MAC_10_13,
+)
+
+mac_builder(
+    name = 'WebKit Mac10.13 (retina)',
     os = os.MAC_10_13,
 )
 
@@ -208,6 +261,11 @@ def win_builder(*, name, os=os.WINDOWS_DEFAULT, **kwargs):
       os = os,
       **kwargs
   )
+
+win_builder(
+    name = 'Win 7 Tests x64 (1)',
+    os = os.WINDOWS_7,
+)
 
 win_builder(
     name = 'Win x64 Builder',

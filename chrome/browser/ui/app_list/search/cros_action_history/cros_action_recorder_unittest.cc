@@ -30,6 +30,7 @@ class CrOSActionRecorderTest : public testing::Test {
     Test::SetUp();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     profile_path_ = temp_dir_.GetPath();
+    ASSERT_TRUE(base::IsDirectoryEmpty(profile_path_));
     actions_ = {"Action0", "Action1", "Action2"};
     conditions_ = {"Condition0", "Condition1", "Condition2"};
 
@@ -45,6 +46,7 @@ class CrOSActionRecorderTest : public testing::Test {
     CrOSActionRecorder::GetCrosActionRecorder()->should_log_ = false;
     CrOSActionRecorder::GetCrosActionRecorder()->should_hash_ = true;
     CrOSActionRecorder::GetCrosActionRecorder()->profile_path_ = profile_path_;
+    Wait();
   }
 
   CrOSActionHistoryProto GetCrOSActionHistory() {

@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "chrome/common/buildflags.h"
-#include "chrome/common/plugin.mojom.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/web_contents_receiver_set.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
@@ -15,12 +14,20 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "chrome/common/plugin.mojom.h"
+#endif
+
 namespace extensions {
 class WebViewGuest;
 
 class ChromeWebViewPermissionHelperDelegate
-    : public WebViewPermissionHelperDelegate,
-      public chrome::mojom::PluginAuthHost {
+    : public WebViewPermissionHelperDelegate
+#if BUILDFLAG(ENABLE_PLUGINS)
+    ,
+      public chrome::mojom::PluginAuthHost
+#endif
+{
  public:
   explicit ChromeWebViewPermissionHelperDelegate(
       WebViewPermissionHelper* web_view_permission_helper);

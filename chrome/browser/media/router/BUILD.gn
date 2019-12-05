@@ -73,6 +73,13 @@ static_library("router") {
       "discovery",
       "//components/mirroring/mojom:host",
       "//components/mirroring/mojom:service",
+
+      # We can't depend on //chrome/browser/ui due to introducing a cyclic
+      # dependency, so we have to depend on this directly to fix include
+      # resolution for browser.h, which is used in multiple extension-only
+      # files.
+      # TODO(crbug.com/1030821): Resolve circular dependencies
+      "//components/signin/public/base:signin_buildflags",
       "//components/translate/content/common",
       "//mojo/public/cpp/bindings",
       "//ui/base:buildflags",

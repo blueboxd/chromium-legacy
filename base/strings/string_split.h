@@ -40,6 +40,8 @@ enum SplitResult {
 // Split the given string on ANY of the given separators, returning copies of
 // the result.
 //
+// Note this is inverse of JoinString() defined in string_util.h.
+//
 // To split on either commas or semicolons, keeping all whitespace:
 //
 //   std::vector<std::string> tokens = base::SplitString(
@@ -60,6 +62,8 @@ BASE_EXPORT std::vector<string16> SplitString(StringPiece16 input,
 // reference the original buffer without copying. Although you have to be
 // careful to keep the original string unmodified, this provides an efficient
 // way to iterate through tokens in a string.
+//
+// Note this is inverse of JoinString() defined in string_util.h.
 //
 // To iterate through all whitespace-separated tokens in an input string:
 //

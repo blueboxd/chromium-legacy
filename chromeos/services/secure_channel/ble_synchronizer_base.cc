@@ -31,9 +31,10 @@ BleSynchronizerBase::UnregisterArgs::UnregisterArgs(
 BleSynchronizerBase::UnregisterArgs::~UnregisterArgs() = default;
 
 BleSynchronizerBase::StartDiscoveryArgs::StartDiscoveryArgs(
-    const device::BluetoothAdapter::DiscoverySessionCallback& callback,
-    const device::BluetoothAdapter::ErrorCallback& error_callback)
-    : callback(callback), error_callback(error_callback) {}
+    device::BluetoothAdapter::DiscoverySessionCallback callback,
+    device::BluetoothAdapter::ErrorCallback error_callback)
+    : callback(std::move(callback)),
+      error_callback(std::move(error_callback)) {}
 
 BleSynchronizerBase::StartDiscoveryArgs::~StartDiscoveryArgs() = default;
 
@@ -95,10 +96,11 @@ void BleSynchronizerBase::UnregisterAdvertisement(
 }
 
 void BleSynchronizerBase::StartDiscoverySession(
-    const device::BluetoothAdapter::DiscoverySessionCallback& callback,
-    const device::BluetoothAdapter::ErrorCallback& error_callback) {
-  command_queue_.emplace_back(std::make_unique<Command>(
-      std::make_unique<StartDiscoveryArgs>(callback, error_callback)));
+    device::BluetoothAdapter::DiscoverySessionCallback callback,
+    device::BluetoothAdapter::ErrorCallback error_callback) {
+  command_queue_.emplace_back(
+      std::make_unique<Command>(std::make_unique<StartDiscoveryArgs>(
+          std::move(callback), std::move(error_callback))));
   ProcessQueue();
 }
 

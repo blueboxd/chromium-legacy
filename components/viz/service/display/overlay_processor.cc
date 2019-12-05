@@ -15,7 +15,7 @@
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/overlay_candidate_list.h"
-#include "components/viz/service/display/overlay_candidate_validator.h"
+#include "components/viz/service/display/overlay_candidate_validator_strategy.h"
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
 #include "components/viz/service/display/skia_output_surface.h"
@@ -130,10 +130,16 @@ std::unique_ptr<OverlayProcessor> OverlayProcessor::CreateOverlayProcessor(
     gpu::SurfaceHandle surface_handle,
     const OutputSurface::Capabilities& capabilities,
     const RendererSettings& renderer_settings) {
-  auto processor = base::WrapUnique(new OverlayProcessor(
-      skia_output_surface,
-      OverlayCandidateValidator::Create(surface_handle, capabilities,
-                                        renderer_settings)));
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  auto validator = OverlayCandidateValidator::Create(
+      surface_handle, capabilities, renderer_settings);
+#else  // defined(USE_OZONE) || defined(OS_ANDROID) || Default
+  auto validator = OverlayCandidateValidatorStrategy::Create(
+      surface_handle, capabilities, renderer_settings);
+#endif
+
+  auto processor = base::WrapUnique(
+      new OverlayProcessor(skia_output_surface, std::move(validator)));
 #if defined(OS_WIN)
   processor->InitializeDCOverlayProcessor(
       std::make_unique<DCLayerOverlayProcessor>(capabilities,
@@ -145,16 +151,21 @@ std::unique_ptr<OverlayProcessor> OverlayProcessor::CreateOverlayProcessor(
 #if defined(OS_ANDROID)
 OverlayProcessor::OverlayProcessor(
     SkiaOutputSurface* skia_output_surface,
-    std::unique_ptr<OverlayCandidateValidator> overlay_validator)
+    std::unique_ptr<OverlayCandidateValidatorStrategy> overlay_validator)
     : overlay_validator_(std::move(overlay_validator)),
       skia_output_surface_(skia_output_surface) {
   if (overlay_validator_)
     overlay_validator_->InitializeStrategies();
 }
-#else
+#elif defined(OS_MACOSX) || defined(OS_WIN)
 OverlayProcessor::OverlayProcessor(
     SkiaOutputSurface* skia_output_surface,
     std::unique_ptr<OverlayCandidateValidator> overlay_validator)
+    : overlay_validator_(std::move(overlay_validator)) {}
+#else  // defined(USE_OZONE)
+OverlayProcessor::OverlayProcessor(
+    SkiaOutputSurface* skia_output_surface,
+    std::unique_ptr<OverlayCandidateValidatorStrategy> overlay_validator)
     : overlay_validator_(std::move(overlay_validator)) {
   if (overlay_validator_)
     overlay_validator_->InitializeStrategies();
@@ -163,7 +174,7 @@ OverlayProcessor::OverlayProcessor(
 
 // For testing.
 OverlayProcessor::OverlayProcessor(
-    std::unique_ptr<OverlayCandidateValidator> overlay_validator)
+    std::unique_ptr<OverlayValidator> overlay_validator)
     : OverlayProcessor(nullptr, std::move(overlay_validator)) {
 #if defined(OS_WIN)
   InitializeDCOverlayProcessor(std::make_unique<DCLayerOverlayProcessor>());
@@ -283,7 +294,7 @@ void OverlayProcessor::ProcessForOverlays(
 
   DCHECK(candidates->empty());
 
-#if !defined(OS_MACOSX) && !defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(USE_OZONE)
   RenderPass* render_pass = render_passes->back().get();
 
   // If we have any copy requests, we can't remove any quads for overlays or
@@ -325,6 +336,7 @@ void OverlayProcessor::ProcessForOverlays(
 #endif
 }
 
+#if defined(OS_ANDROID) || defined(USE_OZONE)
 // Subtract on-top opaque overlays from the damage rect, unless the overlays
 // use the backbuffer as their content (in which case, add their combined rect
 // back to the damage at the end).
@@ -396,6 +408,7 @@ void OverlayProcessor::UpdateDamageRect(
 
   previous_frame_underlay_rect_ = this_frame_underlay_rect;
 }
+#endif
 
 OverlayProcessor::OutputSurfaceOverlayPlane
 OverlayProcessor::ProcessOutputSurfaceAsOverlay(

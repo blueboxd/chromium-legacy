@@ -199,7 +199,7 @@ class GpuIntegrationTest(
         # stacks could slow down the tests' running time unacceptably.
         # We also don't do this if the browser failed to startup.
         if self.browser is not None:
-          self.browser.LogSymbolizedUnsymbolizedMinidumps(logging.ERROR)
+          self.browser.CollectDebugData(logging.ERROR)
         # This failure might have been caused by a browser or renderer
         # crash, so restart the browser to make sure any state doesn't
         # propagate to the next test iteration.

@@ -88,7 +88,7 @@ struct BackgroundFetchRegistrationData {
 // The registration data and interface to make per registration calls.
 struct BackgroundFetchRegistration {
   BackgroundFetchRegistrationData registration_data;
-  BackgroundFetchRegistrationService registration_interface;
+  pending_remote<BackgroundFetchRegistrationService> registration_interface;
 };
 
 // This contains the data we need to record UKM metrics, that isn't needed for

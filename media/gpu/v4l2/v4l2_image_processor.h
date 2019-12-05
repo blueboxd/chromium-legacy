@@ -18,6 +18,7 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"

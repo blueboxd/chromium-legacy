@@ -638,6 +638,24 @@ suite('<history-list>', function() {
         });
   });
 
+  test('deleteHistory results in query-history event', function() {
+    app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
+
+    cr.webUIListenerCallback('history-deleted');
+    return testService.whenCalled('queryHistory').then(() => {
+      Polymer.dom.flush();
+      const items = polymerSelectAll(element, 'history-item');
+
+      items[2].$.checkbox.click();
+      items[3].$.checkbox.click();
+
+      testService.resetResolver('queryHistory');
+      cr.webUIListenerCallback('history-deleted');
+      test_util.flushTasks();
+      assertEquals(0, testService.getCallCount('queryHistory'));
+    });
+  });
+
   teardown(function() {
     app.fire('change-query', {search: ''});
   });

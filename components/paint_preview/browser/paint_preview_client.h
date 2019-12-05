@@ -20,6 +20,7 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "ui/gfx/geometry/rect.h"
+#include "url/gurl.h"
 
 namespace paint_preview {
 
@@ -89,6 +90,9 @@ class PaintPreviewClient
 
     // Root directory to store artifacts to.
     base::FilePath root_dir;
+
+    // URL of the root frame.
+    GURL root_url;
 
     // Callback that is invoked on completion of data.
     PaintPreviewCallback callback;

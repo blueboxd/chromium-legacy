@@ -53,7 +53,7 @@ base::string16 SafetyTipInfoBarDelegate::GetMessageText() const {
 }
 
 int SafetyTipInfoBarDelegate::GetButtons() const {
-  return BUTTON_OK | BUTTON_CANCEL;
+  return BUTTON_OK;
 }
 
 base::string16 SafetyTipInfoBarDelegate::GetButtonLabel(
@@ -63,7 +63,6 @@ base::string16 SafetyTipInfoBarDelegate::GetButtonLabel(
       return l10n_util::GetStringUTF16(
           GetSafetyTipLeaveButtonId(safety_tip_status_));
     case BUTTON_CANCEL:
-      return l10n_util::GetStringUTF16(IDS_SAFETY_TIP_ANDROID_IGNORE_BUTTON);
     case BUTTON_NONE:
       NOTREACHED();
   }
@@ -80,21 +79,6 @@ bool SafetyTipInfoBarDelegate::Accept() {
   return true;
 }
 
-bool SafetyTipInfoBarDelegate::Cancel() {
-  auto* tab = TabAndroid::FromWebContents(web_contents_);
-  if (tab) {
-    // Only record the action taken if it hasn't already been set by
-    // InfoBarDismissed().
-    if (action_taken_ != SafetyTipInteraction::kDismissWithClose) {
-      action_taken_ = SafetyTipInteraction::kDismissWithIgnore;
-    }
-    ReputationService::Get(tab->GetProfile())
-        ->SetUserIgnore(web_contents_, url_, action_taken_);
-  }
-
-  return true;
-}
-
 infobars::InfoBarDelegate::InfoBarIdentifier
 SafetyTipInfoBarDelegate::GetIdentifier() const {
   return SAFETY_TIP_INFOBAR_DELEGATE;
@@ -105,10 +89,15 @@ int SafetyTipInfoBarDelegate::GetIconId() const {
 }
 
 void SafetyTipInfoBarDelegate::InfoBarDismissed() {
-  // Called when you click the X. Treat the same as 'ignore', except record
-  // the interaction differently.
+  // Called when you click the X. Treat as 'ignore'.
   action_taken_ = SafetyTipInteraction::kDismissWithClose;
-  Cancel();
+
+  auto* tab = TabAndroid::FromWebContents(web_contents_);
+  if (!tab) {
+    return;
+  }
+  ReputationService::Get(tab->GetProfile())
+      ->SetUserIgnore(web_contents_, url_, action_taken_);
 }
 
 base::string16 SafetyTipInfoBarDelegate::GetDescriptionText() const {

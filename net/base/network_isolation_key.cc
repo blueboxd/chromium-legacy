@@ -24,6 +24,10 @@ url::Origin GetSchemeAndRegistrableDomain(const url::Origin& origin) {
   std::string registrable_domain = GetDomainAndRegistry(
       origin.host(),
       net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  // GetDomainAndRegistry() returns an empty string for IP literals and
+  // effective TLDs.
+  if (registrable_domain.empty())
+    registrable_domain = origin.host();
   return url::Origin::CreateFromNormalizedTuple(
       origin.scheme(), registrable_domain,
       url::DefaultPortForScheme(origin.scheme().c_str(),

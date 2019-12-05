@@ -90,6 +90,11 @@ gfx::Insets GetCloseButtonSpacing() {
 InfoBarView::InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate)
     : infobars::InfoBar(std::move(delegate)),
       views::ExternalFocusTracker(this, nullptr) {
+  // Make Infobar animation aligned to the Compositor.
+  SetNotifier(std::make_unique<
+              gfx::AnimationDelegateNotifier<views::AnimationDelegateViews>>(
+      this, this));
+
   set_owned_by_client();  // InfoBar deletes itself at the appropriate time.
 
   // Clip child layers; without this, buttons won't look correct during

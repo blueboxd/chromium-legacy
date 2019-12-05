@@ -140,6 +140,7 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   P2PQuicStreamImpl* CreateOutgoingBidirectionalStream();
 
   void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) override;
+  void SetDefaultEncryptionLevel(quic::EncryptionLevel level) override;
 
  private:
   // This is for testing connection failures and handshake failures.

@@ -304,6 +304,7 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
       safe_synchronously = false;
       AsyncMatch match =
           database_manager_->CheckUrlForHighConfidenceAllowlist(url, this);
+      UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.RT.LocalMatch.Result", match);
       switch (match) {
         case AsyncMatch::ASYNC:
           // Hash-prefix matched. A call to

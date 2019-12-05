@@ -296,6 +296,8 @@ IntentPickerBubbleView::IntentPickerBubbleView(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_INTENT_PICKER_BUBBLE_VIEW_STAY_IN_CHROME));
 
+  set_close_on_main_frame_origin_navigation(true);
+
   chrome::RecordDialogCreation(chrome::DialogIdentifier::INTENT_PICKER);
 }
 

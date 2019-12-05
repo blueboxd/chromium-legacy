@@ -36,8 +36,6 @@ namespace keys = extensions::manifest_keys;
 
 namespace {
 
-bool g_allow_gzipped_messages_for_test = false;
-
 // Loads contents of the messages file for given locale. If file is not found,
 // or there was parsing error we return null and set |error|. If
 // |gzip_permission| is kAllowForTrustedSource, this will also look for a .gz
@@ -56,8 +54,7 @@ std::unique_ptr<base::DictionaryValue> LoadMessageFile(
     dictionary = base::DictionaryValue::From(
         messages_deserializer.Deserialize(nullptr, error));
   } else if (gzip_permission == extension_l10n_util::GzippedMessagesPermission::
-                                    kAllowForTrustedSource ||
-             g_allow_gzipped_messages_for_test) {
+                                    kAllowForTrustedSource) {
     // If a compressed version of the file exists, load that.
     base::FilePath compressed_file_path =
         file_path.AddExtension(FILE_PATH_LITERAL(".gz"));
@@ -78,8 +75,6 @@ std::unique_ptr<base::DictionaryValue> LoadMessageFile(
       dictionary = base::DictionaryValue::From(
           messages_deserializer.Deserialize(nullptr, error));
     }
-  } else {
-    LOG(ERROR) << "Unable to load message file: " << locale_path.AsUTF8Unsafe();
   }
 
   if (!dictionary) {
@@ -158,10 +153,6 @@ std::string LocaleForLocalization() {
 }  // namespace
 
 namespace extension_l10n_util {
-
-base::AutoReset<bool> AllowGzippedMessagesAllowedForTest() {
-  return base::AutoReset<bool>(&g_allow_gzipped_messages_for_test, true);
-}
 
 void SetProcessLocale(const std::string& locale) {
   GetProcessLocale() = locale;

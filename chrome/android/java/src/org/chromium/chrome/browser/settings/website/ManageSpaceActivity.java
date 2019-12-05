@@ -38,7 +38,7 @@ import org.chromium.chrome.browser.init.EmptyBrowserParts;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
 import org.chromium.chrome.browser.settings.PreferencesLauncher;
-import org.chromium.chrome.browser.settings.about.AboutChromePreferences;
+import org.chromium.chrome.browser.settings.about.AboutChromeSettings;
 import org.chromium.chrome.browser.settings.website.Website.StoredDataClearedCallback;
 import org.chromium.chrome.browser.util.ConversionUtils;
 
@@ -124,7 +124,7 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
         // kicking off the browser process initialization.
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
-            String productVersion = AboutChromePreferences.getApplicationVersion(
+            String productVersion = AboutChromeSettings.getApplicationVersion(
                     this, ChromeVersionInfo.getProductVersion());
             String failedVersion = ContextUtils.getAppSharedPreferences().getString(
                     PREF_FAILED_BUILD_VERSION, null);

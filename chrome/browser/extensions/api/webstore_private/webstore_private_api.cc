@@ -17,6 +17,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/util/values/values_util.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
@@ -829,11 +830,14 @@ WebstorePrivateRequestExtensionFunction::Run() {
 
 void WebstorePrivateRequestExtensionFunction::AddExtensionToPendingList(
     const ExtensionId& id) {
-  ListPrefUpdate pending_list_update(
+  DictionaryPrefUpdate pending_requests_update(
       Profile::FromBrowserContext(browser_context())->GetPrefs(),
       prefs::kCloudExtensionRequestIds);
-  DCHECK(!base::Contains(pending_list_update->GetList(), base::Value(id)));
-  pending_list_update->GetList().push_back(base::Value(id));
+  DCHECK(!pending_requests_update->FindKey(id));
+  base::Value request_data(base::Value::Type::DICTIONARY);
+  request_data.SetKey(extension_misc::kExtensionRequestTimestamp,
+                      ::util::TimeToValue(base::Time::Now()));
+  pending_requests_update->SetKey(id, std::move(request_data));
 }
 
 }  // namespace extensions

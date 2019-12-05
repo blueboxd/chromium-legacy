@@ -46,7 +46,7 @@ class CORE_EXPORT CanvasFontCache final
 
   // TaskObserver implementation
   void DidProcessTask(const base::PendingTask&) override;
-  void WillProcessTask(const base::PendingTask&) override {}
+  void WillProcessTask(const base::PendingTask&, bool) override {}
 
   // For testing
   bool IsInCache(const String&);

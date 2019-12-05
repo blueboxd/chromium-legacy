@@ -62,6 +62,8 @@ CONTENT_EXPORT extern const char kChromeUIGpuHangURL[];
 CONTENT_EXPORT extern const char kChromeUIHangURL[];
 CONTENT_EXPORT extern const char kChromeUIKillURL[];
 CONTENT_EXPORT extern const char kChromeUIMemoryExhaustURL[];
+CONTENT_EXPORT extern const char kChromeUIMemoryPressureCriticalURL[];
+CONTENT_EXPORT extern const char kChromeUIMemoryPressureModerateURL[];
 CONTENT_EXPORT extern const char kChromeUINetworkErrorsListingURL[];
 CONTENT_EXPORT extern const char kChromeUINetworkErrorURL[];
 CONTENT_EXPORT extern const char kChromeUIPpapiFlashCrashURL[];

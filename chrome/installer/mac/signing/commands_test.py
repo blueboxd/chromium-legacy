@@ -147,20 +147,18 @@ class TestCommands(unittest.TestCase):
         self.assertFalse(commands.file_exists(orig_path))
         self.assertTrue(commands.file_exists(new_path))
 
-    def test_write_file(self):
+    def test_read_write_file(self):
         path = os.path.join(self.tempdir, 'file.txt')
 
         data1 = 'hello world this is a test'
         commands.write_file(path, data1)
-
-        with open(path, 'r') as f:
-            self.assertEqual(data1, f.read())
+        data1_read = commands.read_file(path)
+        self.assertEqual(data1, data1_read)
 
         data2 = 'moo'
         commands.write_file(path, data2)
-
-        with open(path, 'r') as f:
-            self.assertEqual(data2, f.read())
+        data2_read = commands.read_file(path)
+        self.assertEqual(data2, data2_read)
 
     def test_run_command(self):
         path = os.path.join(self.tempdir, 'touch.txt')

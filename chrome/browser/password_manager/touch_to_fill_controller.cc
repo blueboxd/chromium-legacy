@@ -73,7 +73,7 @@ void TouchToFillController::OnCredentialSelected(
     return;
 
   password_manager::metrics_util::LogFilledCredentialIsFromAndroidApp(
-      password_manager::IsValidAndroidFacetURI(credential.origin_url().spec()));
+      credential.is_affiliation_based_match().value());
   driver_->TouchToFillClosed(ShowVirtualKeyboard(false));
   std::exchange(driver_, nullptr)
       ->FillSuggestion(credential.username(), credential.password());

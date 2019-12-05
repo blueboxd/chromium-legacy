@@ -121,6 +121,10 @@ class PredictionManager
   // Override |clock_| for testing.
   void SetClockForTesting(const base::Clock* clock);
 
+  // Clear host model features from the in memory host model features map and
+  // from the models and features store.
+  void ClearHostModelFeatures();
+
  protected:
   // Return the prediction model for the optimization target used by this
   // PredictionManager for testing.
@@ -294,6 +298,10 @@ class PredictionManager
   // The optimization guide store that contains prediction models and host
   // model features from the remote Optimization Guide Service.
   std::unique_ptr<OptimizationGuideStore> model_and_features_store_;
+
+  // A stored response from a model and host model features fetch used to hold
+  // models to be stored once host model features are processed and stored.
+  std::unique_ptr<proto::GetModelsResponse> get_models_response_data_to_store_;
 
   // The URL loader factory used for fetching model and host feature updates
   // from the remote Optimization Guide Service.

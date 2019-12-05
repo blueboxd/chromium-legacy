@@ -220,6 +220,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Returns the base extension url for a given |extension_id|.
   static GURL GetBaseURLFromExtensionId(const ExtensionId& extension_id);
 
+  // Returns true if the extension should be displayed in the extension
+  // settings page (i.e. chrome://extensions).
+  static bool ShouldDisplayInExtensionSettings(Manifest::Type type,
+                                               Manifest::Location location);
+
   // Returns true if this extension or app includes areas within |origin|.
   bool OverlapsWithOrigin(const GURL& origin) const;
 

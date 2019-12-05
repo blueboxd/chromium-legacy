@@ -268,6 +268,8 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
 
   virtual void DidChangeVisibleToHitTesting() = 0;
 
+  void FocusImpl();
+
   mutable FrameTree tree_node_;
 
   Member<Page> page_;

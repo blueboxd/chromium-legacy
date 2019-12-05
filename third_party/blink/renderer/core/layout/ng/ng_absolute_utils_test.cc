@@ -516,6 +516,43 @@ TEST_F(NGAbsoluteUtilsTest, Vertical) {
   EXPECT_EQ(height, p.size.block_size);
 }
 
+TEST_F(NGAbsoluteUtilsTest, CenterStaticPosition) {
+  NGLogicalStaticPosition static_position = {
+      {LayoutUnit(150), LayoutUnit(200)},
+      NGLogicalStaticPosition::kInlineCenter,
+      NGLogicalStaticPosition::kBlockCenter};
+
+  SetHorizontalStyle(NGAuto, NGAuto, NGAuto, NGAuto, NGAuto);
+  SetVerticalStyle(NGAuto, NGAuto, NGAuto, NGAuto, NGAuto);
+
+  EXPECT_EQ(AbsoluteNeedsChildInlineSize(*style_), true);
+  EXPECT_EQ(AbsoluteNeedsChildBlockSize(*style_), true);
+
+  NGBoxStrut border_padding;
+  NGLogicalOutOfFlowPosition p = ComputePartialAbsoluteWithChildInlineSize(
+      ltr_space_, *style_, border_padding, static_position,
+      MinMaxSize{LayoutUnit(), LayoutUnit(1000)}, base::nullopt,
+      WritingMode::kHorizontalTb, TextDirection::kLtr);
+  EXPECT_EQ(LayoutUnit(100), p.size.inline_size);
+  EXPECT_EQ(LayoutUnit(100), p.inset.inline_start);
+  EXPECT_EQ(LayoutUnit(), p.inset.inline_end);
+
+  p = ComputePartialAbsoluteWithChildInlineSize(
+      ltr_space_, *style_, border_padding, static_position,
+      MinMaxSize{LayoutUnit(), LayoutUnit(1000)}, base::nullopt,
+      WritingMode::kHorizontalTb, TextDirection::kRtl);
+  EXPECT_EQ(LayoutUnit(100), p.size.inline_size);
+  EXPECT_EQ(LayoutUnit(100), p.inset.inline_start);
+  EXPECT_EQ(LayoutUnit(), p.inset.inline_end);
+
+  ComputeFullAbsoluteWithChildBlockSize(
+      ltr_space_, *style_, border_padding, static_position, LayoutUnit(150),
+      base::nullopt, WritingMode::kHorizontalTb, TextDirection::kLtr, &p);
+  EXPECT_EQ(LayoutUnit(150), p.size.block_size);
+  EXPECT_EQ(LayoutUnit(125), p.inset.block_start);
+  EXPECT_EQ(LayoutUnit(25), p.inset.block_end);
+}
+
 TEST_F(NGAbsoluteUtilsTest, MinMax) {
   LayoutUnit min{50};
   LayoutUnit max{150};

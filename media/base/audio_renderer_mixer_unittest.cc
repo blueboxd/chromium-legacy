@@ -77,8 +77,8 @@ class AudioRendererMixerTest
     EXPECT_CALL(*sink_.get(), Start());
     EXPECT_CALL(*sink_.get(), Stop());
 
-    mixer_.reset(
-        new AudioRendererMixer(output_parameters_, sink_, base::Bind(&LogUma)));
+    mixer_.reset(new AudioRendererMixer(output_parameters_, sink_,
+                                        base::BindRepeating(&LogUma)));
     mixer_callback_ = sink_->callback();
 
     audio_bus_ = AudioBus::Create(output_parameters_);

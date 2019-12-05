@@ -8,7 +8,12 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/policy/external_data_handlers/device_cloud_external_data_policy_handler.h"
+
+namespace chromeos {
+class BulkPrintersCalculator;
+}  // namespace chromeos
 
 namespace policy {
 
@@ -17,8 +22,9 @@ class PolicyService;
 class DeviceNativePrintersExternalDataHandler
     : public DeviceCloudExternalDataPolicyHandler {
  public:
-  explicit DeviceNativePrintersExternalDataHandler(
-      PolicyService* policy_service);
+  DeviceNativePrintersExternalDataHandler(
+      PolicyService* policy_service,
+      base::WeakPtr<chromeos::BulkPrintersCalculator> device_calculator);
   ~DeviceNativePrintersExternalDataHandler() override;
 
   // DeviceCloudExternalDataPolicyHandler:
@@ -30,6 +36,8 @@ class DeviceNativePrintersExternalDataHandler
   void Shutdown() override;
 
  private:
+  base::WeakPtr<chromeos::BulkPrintersCalculator> calculator_;
+
   std::unique_ptr<DeviceCloudExternalDataPolicyObserver>
       device_native_printers_observer_;
 

@@ -642,13 +642,13 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
   // The current shelf background. Should not be assigned to directly, use
   // MaybeUpdateShelfBackground() instead.
-  ShelfBackgroundType shelf_background_type_ = SHELF_BACKGROUND_DEFAULT;
+  ShelfBackgroundType shelf_background_type_ = ShelfBackgroundType::kDefaultBg;
 
   // Shelf will become transparent if launcher is opened. Stores the shelf
   // background type before open the launcher when start to drag the launcher
   // from shelf.
   ShelfBackgroundType shelf_background_type_before_drag_ =
-      SHELF_BACKGROUND_DEFAULT;
+      ShelfBackgroundType::kDefaultBg;
 
   ScopedSessionObserver scoped_session_observer_{this};
   ScopedObserver<WallpaperController, WallpaperControllerObserver>

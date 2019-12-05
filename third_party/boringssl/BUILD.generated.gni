@@ -463,6 +463,7 @@ crypto_sources_linux_arm = [
 crypto_sources_linux_ppc64le = [
   "linux-ppc64le/crypto/fipsmodule/aesp8-ppc.S",
   "linux-ppc64le/crypto/fipsmodule/ghashp8-ppc.S",
+  "linux-ppc64le/crypto/test/trampoline-ppc.S",
 ]
 
 crypto_sources_linux_x86 = [

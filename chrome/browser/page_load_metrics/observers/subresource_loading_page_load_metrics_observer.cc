@@ -58,7 +58,7 @@ SubresourceLoadingPageLoadMetricsObserver::OnStart(
   navigation_start_ = base::Time::Now();
 
   CheckForCookiesOnURL(navigation_handle->GetWebContents()->GetBrowserContext(),
-                       currently_committed_url);
+                       navigation_handle->GetURL());
   return CONTINUE_OBSERVING;
 }
 

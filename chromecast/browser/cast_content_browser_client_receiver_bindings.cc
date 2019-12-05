@@ -21,6 +21,7 @@
 #include "components/network_hints/browser/simple_network_hints_handler_impl.h"
 #include "content/public/browser/render_process_host.h"
 #include "media/mojo/buildflags.h"
+#include "services/service_manager/public/cpp/binder_map.h"
 
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
 #include "chromecast/media/service/cast_mojo_media_client.h"
@@ -88,6 +89,13 @@ void StartExternalMojoBrokerService(
 }
 #endif  // BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
 
+void BindNetworkHintsHandler(
+    content::RenderFrameHost* frame_host,
+    mojo::PendingReceiver<network_hints::mojom::NetworkHintsHandler> receiver) {
+  network_hints::SimpleNetworkHintsHandlerImpl::Create(frame_host,
+                                                       std::move(receiver));
+}
+
 }  // namespace
 
 void CastContentBrowserClient::ExposeInterfacesToRenderer(
@@ -126,6 +134,13 @@ void CastContentBrowserClient::ExposeInterfacesToMediaService(
   registry->AddInterface(base::BindRepeating(
       &media::CreateApplicationMediaInfoManager, render_frame_host,
       std::move(application_session_id), mixer_audio_enabled));
+}
+
+void CastContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
+    content::RenderFrameHost* render_frame_host,
+    service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
+  map->Add<network_hints::mojom::NetworkHintsHandler>(
+      base::BindRepeating(&BindNetworkHintsHandler));
 }
 
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
@@ -213,10 +228,6 @@ void CastContentBrowserClient::BindHostReceiverForRenderer(
     return;
   }
 #endif
-  if (auto r = receiver.As<::network_hints::mojom::NetworkHintsHandler>()) {
-    network_hints::SimpleNetworkHintsHandlerImpl::Create(
-        render_process_host->GetID(), std::move(r));
-  }
   ContentBrowserClient::BindHostReceiverForRenderer(render_process_host,
                                                     std::move(receiver));
 }

@@ -657,7 +657,10 @@ void PageInfo::OnWhitelistPasswordReuseButtonPressed(
 #endif
 }
 
-void PageInfo::ComputeUIInputs(
+// TODO(crbug.com/1030099): ComputeUIInputs causes Chrome OS' compiler to hang
+// during an optimization pass; optnone appears to fix that. Remove this once
+// that's fixed.
+__attribute__((optnone)) void PageInfo::ComputeUIInputs(
     const GURL& url,
     security_state::SecurityLevel security_level,
     const security_state::VisibleSecurityState& visible_security_state) {

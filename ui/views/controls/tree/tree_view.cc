@@ -751,6 +751,15 @@ void TreeView::LayoutEditor() {
                    -(empty_editor_size_.height() - font_list_.GetHeight()) / 2);
   // Give a little extra space for editing.
   row_bounds.set_width(row_bounds.width() + 50);
+  // If contained within a ScrollView, make sure the editor doesn't extend past
+  // the viewport bounds.
+  ScrollView* scroll_view = ScrollView::GetScrollViewForContents(this);
+  if (scroll_view) {
+    gfx::Rect content_bounds = scroll_view->GetContentsBounds();
+    row_bounds.set_size(
+        gfx::Size(std::min(row_bounds.width(), content_bounds.width()),
+                  std::min(row_bounds.height(), content_bounds.height())));
+  }
   // Scroll as necessary to ensure that the editor is visible.
   ScrollRectToVisible(row_bounds);
   editor_->SetBoundsRect(row_bounds);

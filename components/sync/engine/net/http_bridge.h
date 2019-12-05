@@ -45,8 +45,8 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
                    public HttpPostProviderInterface {
  public:
   HttpBridge(const std::string& user_agent,
-             std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-                 url_loader_factory_info,
+             std::unique_ptr<network::PendingSharedURLLoaderFactory>
+                 pending_url_loader_factory,
              const NetworkTimeUpdateCallback& network_time_update_callback);
 
   // HttpPostProviderInterface implementation.
@@ -182,7 +182,8 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   mutable base::Lock fetch_state_lock_;
   URLFetchState fetch_state_;
 
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info_;
+  std::unique_ptr<network::PendingSharedURLLoaderFactory>
+      pending_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   const scoped_refptr<base::SequencedTaskRunner> network_task_runner_;
@@ -197,8 +198,8 @@ class HttpBridgeFactory : public HttpPostProviderFactory {
  public:
   HttpBridgeFactory(
       const std::string& user_agent,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          url_loader_factory_info,
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          pending_url_loader_factory,
       const NetworkTimeUpdateCallback& network_time_update_callback);
   ~HttpBridgeFactory() override;
 

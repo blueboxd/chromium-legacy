@@ -19218,6 +19218,25 @@
 
       If the setting is enabled or not set then websites are allowed to check if the user has payment methods saved.'''
     },
+    {
+      'name': 'StricterMixedContentTreatmentEnabled',
+      'owners': ['carlosil@chromium.org', 'estark@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:80-', 'chrome_os:80-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 652,
+      'caption': '''Enable stricter treatment for mixed content''',
+      'tags': [],
+      'desc': '''This policy controls the treatment for mixed content (HTTP content in HTTPS sites) in the browser.
+       If the policy is set to true or unset, audio and video mixed content will be autoupgraded to HTTPS (i.e. the URL will be rewritten as HTTPS, without a fallback if the resource is not available over HTTPS) and a 'Not Secure' warning will be shown in the URL bar for image mixed content.
+       If the policy is set to false, autoupgrades will be disabled for audio and video, and no warning will be shown for images.
+       This policy does not affect other types of mixed content other than audio, video, and images.''',
+    },
   ],
 
   'messages': {
@@ -20042,6 +20061,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569, 578],
-  'highest_id_currently_used': 651,
+  'highest_id_currently_used': 652,
   'highest_atomic_group_id_currently_used': 38
 }

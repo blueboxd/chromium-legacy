@@ -40,7 +40,7 @@ class MockWebBundleReaderFactory {
   // |response| is read.
   virtual void ReadAndFullfillResponse(
       WebBundleReader* reader,
-      const GURL& url,
+      const network::ResourceRequest& resource_request,
       data_decoder::mojom::BundleResponseLocationPtr expected_parse_args,
       data_decoder::mojom::BundleResponsePtr response,
       WebBundleReader::ResponseCallback callback) = 0;

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/strings/string_number_conversions.h"
 #include "components/invalidation/impl/network_channel.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
@@ -63,13 +62,7 @@ void FCMInvalidationListener::UpdateRegisteredTopics(const Topics& topics) {
 void FCMInvalidationListener::Invalidate(const std::string& payload,
                                          const std::string& private_topic,
                                          const std::string& public_topic,
-                                         const std::string& version) {
-  int64_t v;
-  if (!base::StringToInt64(version, &v)) {
-    // The version must always be in the message, and be a number.
-    // TODO(crbug.com/1023813): Record UMA, and either use InitUnknownVersion()
-    // instead of Init() below, or don't process the invalidation at all.
-  }
+                                         int64_t version) {
   // Note: |public_topic| is empty for some invalidations (e.g. Drive). Prefer
   // using |*expected_public_topic| over |public_topic|.
   base::Optional<std::string> expected_public_topic =
@@ -83,8 +76,8 @@ void FCMInvalidationListener::Invalidate(const std::string& payload,
     return;
   }
   TopicInvalidationMap invalidations;
-  Invalidation inv =
-      Invalidation::Init(ConvertTopicToId(*expected_public_topic), v, payload);
+  Invalidation inv = Invalidation::Init(
+      ConvertTopicToId(*expected_public_topic), version, payload);
   inv.SetAckHandler(weak_factory_.GetWeakPtr(),
                     base::ThreadTaskRunnerHandle::Get());
   DVLOG(1) << "Received invalidation with version " << inv.version() << " for "

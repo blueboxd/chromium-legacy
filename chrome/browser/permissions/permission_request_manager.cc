@@ -466,12 +466,14 @@ void PermissionRequestManager::FinalizeBubble(
         PermissionEmbargoStatus::NOT_EMBARGOED;
     if (permission_action == PermissionAction::DISMISSED) {
       if (autoblocker->RecordDismissAndEmbargo(
-              request->GetOrigin(), request->GetContentSettingsType())) {
+              request->GetOrigin(), request->GetContentSettingsType(),
+              ShouldCurrentRequestUseQuietUI())) {
         embargo_status = PermissionEmbargoStatus::REPEATED_DISMISSALS;
       }
     } else if (permission_action == PermissionAction::IGNORED) {
       if (autoblocker->RecordIgnoreAndEmbargo(
-              request->GetOrigin(), request->GetContentSettingsType())) {
+              request->GetOrigin(), request->GetContentSettingsType(),
+              ShouldCurrentRequestUseQuietUI())) {
         embargo_status = PermissionEmbargoStatus::REPEATED_IGNORES;
       }
     }
@@ -574,7 +576,7 @@ void PermissionRequestManager::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-bool PermissionRequestManager::ShouldCurrentRequestUseQuietUI() {
+bool PermissionRequestManager::ShouldCurrentRequestUseQuietUI() const {
   if (!IsRequestInProgress())
     return false;
 
@@ -585,11 +587,11 @@ bool PermissionRequestManager::ShouldCurrentRequestUseQuietUI() {
 }
 
 PermissionRequestManager::QuietUiReason
-PermissionRequestManager::ReasonForUsingQuietUi() {
+PermissionRequestManager::ReasonForUsingQuietUi() const {
   return *current_request_quiet_ui_reason_;
 }
 
-bool PermissionRequestManager::IsRequestInProgress() {
+bool PermissionRequestManager::IsRequestInProgress() const {
   return !requests_.empty();
 }
 

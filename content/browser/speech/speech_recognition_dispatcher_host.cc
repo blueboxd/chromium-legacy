@@ -153,8 +153,8 @@ void SpeechRecognitionDispatcherHost::StartSessionOnIO(
     int embedder_render_process_id,
     int embedder_render_frame_id,
     bool filter_profanities,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        shared_url_loader_factory_info,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_shared_url_loader_factory,
     const std::string& accept_language) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -175,7 +175,7 @@ void SpeechRecognitionDispatcherHost::StartSessionOnIO(
   config.origin = params->origin;
   config.initial_context = context;
   config.shared_url_loader_factory = network::SharedURLLoaderFactory::Create(
-      std::move(shared_url_loader_factory_info));
+      std::move(pending_shared_url_loader_factory));
   config.filter_profanities = filter_profanities;
   config.continuous = params->continuous;
   config.interim_results = params->interim_results;

@@ -307,9 +307,8 @@ class FetchEventServiceWorker : public FakeServiceWorker {
 
 // Returns typical response info for a resource load that went through a service
 // worker.
-std::unique_ptr<network::ResourceResponseHead>
-CreateResponseInfoFromServiceWorker() {
-  auto head = std::make_unique<network::ResourceResponseHead>();
+network::mojom::URLResponseHeadPtr CreateResponseInfoFromServiceWorker() {
+  auto head = network::mojom::URLResponseHead::New();
   head->was_fetched_via_service_worker = true;
   head->was_fallback_required_by_service_worker = false;
   head->url_list_via_service_worker = std::vector<GURL>();
@@ -435,8 +434,9 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
     run_loop.Run();
   }
 
-  void ExpectResponseInfo(const network::ResourceResponseHead& info,
-                          const network::ResourceResponseHead& expected_info) {
+  void ExpectResponseInfo(
+      const network::mojom::URLResponseHead& info,
+      const network::mojom::URLResponseHead& expected_info) {
     EXPECT_EQ(expected_info.was_fetched_via_service_worker,
               info.was_fetched_via_service_worker);
     EXPECT_EQ(expected_info.was_fallback_required_by_service_worker,
@@ -495,13 +495,13 @@ TEST_F(ServiceWorkerNavigationLoaderTest, Basic) {
   client_.RunUntilComplete();
 
   EXPECT_EQ(net::OK, client_.completion_status().error_code);
-  const network::ResourceResponseHead& info = client_.response_head();
-  EXPECT_EQ(200, info.headers->response_code());
-  EXPECT_FALSE(info.load_timing.receive_headers_start.is_null());
-  EXPECT_FALSE(info.load_timing.receive_headers_end.is_null());
-  EXPECT_LE(info.load_timing.receive_headers_start,
-            info.load_timing.receive_headers_end);
-  ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
+  auto& info = client_.response_head();
+  EXPECT_EQ(200, info->headers->response_code());
+  EXPECT_FALSE(info->load_timing.receive_headers_start.is_null());
+  EXPECT_FALSE(info->load_timing.receive_headers_end.is_null());
+  EXPECT_LE(info->load_timing.receive_headers_start,
+            info->load_timing.receive_headers_end);
+  ExpectResponseInfo(*info, *CreateResponseInfoFromServiceWorker());
 
   histogram_tester.ExpectUniqueSample(kHistogramMainResourceFetchEvent,
                                       blink::ServiceWorkerStatusCode::kOk, 1);
@@ -581,10 +581,10 @@ TEST_F(ServiceWorkerNavigationLoaderTest, BlobResponse) {
   StartRequest(CreateRequest());
   client_.RunUntilComplete();
 
-  const network::ResourceResponseHead& info = client_.response_head();
-  EXPECT_EQ(200, info.headers->response_code());
-  ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
-  EXPECT_EQ(33, info.content_length);
+  auto& info = client_.response_head();
+  EXPECT_EQ(200, info->headers->response_code());
+  ExpectResponseInfo(*info, *CreateResponseInfoFromServiceWorker());
+  EXPECT_EQ(33, info->content_length);
 
   // Test the body.
   std::string body;
@@ -622,9 +622,9 @@ TEST_F(ServiceWorkerNavigationLoaderTest, BrokenBlobResponse) {
 
   // We should get a valid response once the headers arrive.
   client_.RunUntilResponseReceived();
-  const network::ResourceResponseHead& info = client_.response_head();
-  EXPECT_EQ(200, info.headers->response_code());
-  ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
+  auto& info = client_.response_head();
+  EXPECT_EQ(200, info->headers->response_code());
+  ExpectResponseInfo(*info, *CreateResponseInfoFromServiceWorker());
 
   // However, since the blob is broken we should get an error while transferring
   // the body.
@@ -657,9 +657,9 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponse) {
   StartRequest(CreateRequest());
   client_.RunUntilResponseReceived();
 
-  const network::ResourceResponseHead& info = client_.response_head();
-  EXPECT_EQ(200, info.headers->response_code());
-  ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
+  auto& info = client_.response_head();
+  EXPECT_EQ(200, info->headers->response_code());
+  ExpectResponseInfo(*info, *CreateResponseInfoFromServiceWorker());
 
   EXPECT_FALSE(version_->HasNoWork());
 
@@ -705,9 +705,9 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponse_Abort) {
   StartRequest(CreateRequest());
   client_.RunUntilResponseReceived();
 
-  const network::ResourceResponseHead& info = client_.response_head();
-  EXPECT_EQ(200, info.headers->response_code());
-  ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
+  auto& info = client_.response_head();
+  EXPECT_EQ(200, info->headers->response_code());
+  ExpectResponseInfo(*info, *CreateResponseInfoFromServiceWorker());
 
   // Start writing the body stream, then abort before finishing.
   uint32_t written_bytes = sizeof(kResponseBody) - 1;
@@ -755,9 +755,9 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponseAndCancel) {
   StartRequest(CreateRequest());
   client_.RunUntilResponseReceived();
 
-  const network::ResourceResponseHead& info = client_.response_head();
-  EXPECT_EQ(200, info.headers->response_code());
-  ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
+  auto& info = client_.response_head();
+  EXPECT_EQ(200, info->headers->response_code());
+  ExpectResponseInfo(*info, *CreateResponseInfoFromServiceWorker());
 
   // Start writing the body stream, then break the Mojo connection to the loader
   // before finishing.
@@ -872,9 +872,9 @@ TEST_F(ServiceWorkerNavigationLoaderTest, EarlyResponse) {
   StartRequest(CreateRequest());
   client_.RunUntilComplete();
 
-  const network::ResourceResponseHead& info = client_.response_head();
-  EXPECT_EQ(200, info.headers->response_code());
-  ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
+  auto& info = client_.response_head();
+  EXPECT_EQ(200, info->headers->response_code());
+  ExpectResponseInfo(*info, *CreateResponseInfoFromServiceWorker());
 
   // Although the response was already received, the event remains outstanding
   // until waitUntil() resolves.
@@ -893,9 +893,9 @@ TEST_F(ServiceWorkerNavigationLoaderTest, Redirect) {
   StartRequest(CreateRequest());
   client_.RunUntilRedirectReceived();
 
-  const network::ResourceResponseHead& info = client_.response_head();
-  EXPECT_EQ(301, info.headers->response_code());
-  ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
+  auto& info = client_.response_head();
+  EXPECT_EQ(301, info->headers->response_code());
+  ExpectResponseInfo(*info, *CreateResponseInfoFromServiceWorker());
 
   const net::RedirectInfo& redirect_info = client_.redirect_info();
   EXPECT_EQ(301, redirect_info.status_code);

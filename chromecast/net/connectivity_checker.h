@@ -17,7 +17,7 @@ class SingleThreadTaskRunner;
 }
 
 namespace network {
-class SharedURLLoaderFactoryInfo;
+class PendingSharedURLLoaderFactory;
 class NetworkConnectionTracker;
 }  // namespace network
 
@@ -42,8 +42,8 @@ class ConnectivityChecker
 
   static scoped_refptr<ConnectivityChecker> Create(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          url_loader_factory_info,
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          pending_url_loader_factory,
       network::NetworkConnectionTracker* network_connection_tracker);
 
   void AddConnectivityObserver(ConnectivityObserver* observer);

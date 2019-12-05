@@ -59,10 +59,10 @@ class SpeechRecognizerOnIO : public content::SpeechRecognitionEventListener {
   SpeechRecognizerOnIO();
   ~SpeechRecognizerOnIO() override;
 
-  // |shared_url_loader_factory_info| must be non-null for the first call to
+  // |pending_shared_url_loader_factory| must be non-null for the first call to
   // Start().
-  void Start(std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-                 shared_url_loader_factory_info,
+  void Start(std::unique_ptr<network::PendingSharedURLLoaderFactory>
+                 pending_shared_url_loader_factory,
              const std::string& accept_language,
              const base::WeakPtr<IOBrowserUIInterface>& browser_ui,
              const std::string& locale,
@@ -127,8 +127,8 @@ SpeechRecognizerOnIO::~SpeechRecognizerOnIO() {
 }
 
 void SpeechRecognizerOnIO::Start(
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        shared_url_loader_factory_info,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_shared_url_loader_factory,
     const std::string& accept_language,
     const base::WeakPtr<IOBrowserUIInterface>& browser_ui,
     const std::string& locale,
@@ -148,9 +148,9 @@ void SpeechRecognizerOnIO::Start(
   config.filter_profanities = true;
   config.accept_language = accept_language;
   if (!shared_url_loader_factory_) {
-    DCHECK(shared_url_loader_factory_info);
+    DCHECK(pending_shared_url_loader_factory);
     shared_url_loader_factory_ = network::SharedURLLoaderFactory::Create(
-        std::move(shared_url_loader_factory_info));
+        std::move(pending_shared_url_loader_factory));
   }
   config.event_listener = weak_factory_.GetWeakPtr();
   // kInvalidUniqueID is not a valid render process, so the speech permission
@@ -291,14 +291,14 @@ void SpeechRecognizerOnIO::SetTimerForTest(
 SpeechRecognizer::SpeechRecognizer(
     VoiceResultDelegate* delegate,
     BrowserUiInterface* ui,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        shared_url_loader_factory_info,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_shared_url_loader_factory,
     const std::string& accept_language,
     const std::string& locale)
     : delegate_(delegate),
       ui_(ui),
-      shared_url_loader_factory_info_(
-          std::move(shared_url_loader_factory_info)),
+      pending_shared_url_loader_factory_(
+          std::move(pending_shared_url_loader_factory)),
       accept_language_(accept_language),
       locale_(locale),
       speech_recognizer_on_io_(std::make_unique<SpeechRecognizerOnIO>()) {
@@ -326,7 +326,7 @@ void SpeechRecognizer::Start() {
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&SpeechRecognizerOnIO::Start,
                      base::Unretained(speech_recognizer_on_io_.get()),
-                     std::move(shared_url_loader_factory_info_),
+                     std::move(pending_shared_url_loader_factory_),
                      accept_language_, weak_factory_.GetWeakPtr(), locale_,
                      auth_scope, auth_token));
   if (ui_)

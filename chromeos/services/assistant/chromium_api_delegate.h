@@ -13,7 +13,7 @@
 #include "libassistant/shared/internal_api/fuchsia_api_helper.h"
 
 namespace network {
-class SharedURLLoaderFactoryInfo;
+class PendingSharedURLLoaderFactory;
 }  // namespace network
 
 namespace chromeos {
@@ -24,8 +24,8 @@ class ChromiumHttpConnectionFactory;
 class ChromiumApiDelegate : public assistant_client::FuchsiaApiDelegate {
  public:
   explicit ChromiumApiDelegate(
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          url_loader_factory_info);
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          pending_url_loader_factory);
   ~ChromiumApiDelegate() override;
   // assistant_client::FuchsiaApiDelegate overrides:
   assistant_client::HttpConnectionFactory* GetHttpConnectionFactory() override;

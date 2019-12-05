@@ -12,7 +12,6 @@ import org.chromium.chrome.browser.download.home.list.CalendarUtils;
 import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.OfflineItemListItem;
 import org.chromium.components.offline_items_collection.OfflineItem;
-import org.chromium.components.offline_items_collection.OfflineItemFilter;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -20,62 +19,47 @@ import java.util.List;
 
 /**
  * Implementation of {@link LabelAdder} that adds date headers for each date.
- * Also adds Just Now header for recently completed items.
+ * Also adds Just Now header for recently completed items. Note that this class must be called on
+ * the list before adding any other labels such as card header/footer/pagination etc.
  */
 public class DateLabelAdder implements DateOrderedListMutator.LabelAdder {
     private final DownloadManagerUiConfig mConfig;
+    @Nullable
     private final JustNowProvider mJustNowProvider;
 
-    public DateLabelAdder(DownloadManagerUiConfig config, JustNowProvider justNowProvider) {
+    public DateLabelAdder(
+            DownloadManagerUiConfig config, @Nullable JustNowProvider justNowProvider) {
         mConfig = config;
         mJustNowProvider = justNowProvider;
     }
 
     @Override
-    public List<ListItem> addLabels(List<OfflineItem> sortedList) {
+    public List<ListItem> addLabels(List<ListItem> sortedList) {
         List<ListItem> listItems = new ArrayList<>();
         OfflineItem previousItem = null;
         for (int i = 0; i < sortedList.size(); i++) {
-            OfflineItem offlineItem = sortedList.get(i);
+            ListItem listItem = sortedList.get(i);
+            if (!(listItem instanceof OfflineItemListItem)) continue;
+
+            OfflineItem offlineItem = ((OfflineItemListItem) listItem).item;
             if (startOfNewDay(offlineItem, previousItem)
                     || justNowSectionsDiffer(offlineItem, previousItem)) {
                 addDateHeader(listItems, offlineItem, i);
             }
 
-            addOfflineListItem(listItems, sortedList, i);
+            listItems.add(listItem);
             previousItem = offlineItem;
         }
 
         return listItems;
     }
 
-    private void addOfflineListItem(
-            List<ListItem> listItems, List<OfflineItem> sortedList, int index) {
-        OfflineItem currentItem = sortedList.get(index);
-        OfflineItemListItem offlineItemListItem = new OfflineItemListItem(currentItem);
-        listItems.add(offlineItemListItem);
-
-        if (mConfig.supportFullWidthImages && currentItem.filter == OfflineItemFilter.IMAGE) {
-            markFullWidthImageIfApplicable(offlineItemListItem, sortedList, index);
-        }
-    }
-
     private void addDateHeader(List<ListItem> listItems, OfflineItem currentItem, int index) {
         Date day = CalendarUtils.getStartOfDay(currentItem.creationTimeMs).getTime();
+        boolean isJustNow = mJustNowProvider != null && mJustNowProvider.isJustNowItem(currentItem);
         ListItem.SectionHeaderListItem sectionHeaderItem =
-                new ListItem.SectionHeaderListItem(day.getTime(),
-                        mJustNowProvider.isJustNowItem(currentItem), index != 0 /* showDivider */);
+                new ListItem.SectionHeaderListItem(day.getTime(), isJustNow, index != 0);
         listItems.add(sectionHeaderItem);
-    }
-
-    private static void markFullWidthImageIfApplicable(
-            OfflineItemListItem offlineItemListItem, List<OfflineItem> sortedList, int index) {
-        OfflineItem previousItem = index == 0 ? null : sortedList.get(index - 1);
-        OfflineItem nextItem = index >= sortedList.size() - 1 ? null : sortedList.get(index + 1);
-        boolean previousItemIsImage =
-                previousItem != null && previousItem.filter == OfflineItemFilter.IMAGE;
-        boolean nextItemIsImage = nextItem != null && nextItem.filter == OfflineItemFilter.IMAGE;
-        if (!previousItemIsImage && !nextItemIsImage) offlineItemListItem.spanFullWidth = true;
     }
 
     private static boolean startOfNewDay(
@@ -89,6 +73,7 @@ public class DateLabelAdder implements DateOrderedListMutator.LabelAdder {
 
     private boolean justNowSectionsDiffer(
             OfflineItem currentItem, @Nullable OfflineItem previousItem) {
+        if (mJustNowProvider == null) return false;
         if (currentItem == null || previousItem == null) return true;
         return mJustNowProvider.isJustNowItem(currentItem)
                 != mJustNowProvider.isJustNowItem(previousItem);

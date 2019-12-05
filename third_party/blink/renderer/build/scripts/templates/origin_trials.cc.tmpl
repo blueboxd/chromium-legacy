@@ -41,6 +41,13 @@ bool origin_trials::IsTrialValid(const String& trial_name) {
   return GetTrialToFeaturesMap().Contains(trial_name);
 }
 
+bool origin_trials::IsTrialEnabledForInsecureContext(const String& trial_name) {
+  // TODO(crbug.com/1027546): Generate the contents from config in runtime_enabled_features.json5.
+  if (trial_name == "FrobulateDeprecation") {
+    return true;
+  }
+  return false;
+}
 
 const Vector<OriginTrialFeature>& origin_trials::FeaturesForTrial(const String& trial_name) {
   DCHECK(IsTrialValid(trial_name));

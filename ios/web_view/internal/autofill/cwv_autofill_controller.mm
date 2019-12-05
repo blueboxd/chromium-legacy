@@ -348,46 +348,6 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
                                       completionHandler:completionHandler];
 }
 
-- (void)findAllFormsWithCompletionHandler:
-    (void (^)(NSArray<CWVAutofillForm*>*))completionHandler {
-  web::WebFramesManager* framesManager = _webState->GetWebFramesManager();
-  DCHECK(framesManager);
-  web::WebFrame* webFrame = framesManager->GetMainWebFrame();
-  if (!webFrame) {
-    completionHandler(nil);
-    return;
-  }
-
-  GURL pageURL = _webState->GetLastCommittedURL();
-  GURL frameOrigin = webFrame->GetSecurityOrigin();
-  id fetchCompletionHandler = ^(NSString* formJSON) {
-    std::vector<autofill::FormData> formDataVector;
-    bool success = autofill::ExtractFormsData(
-        formJSON, /*filtered=*/NO, /*form_name=*/base::string16(), pageURL,
-        frameOrigin, &formDataVector);
-    if (!success) {
-      completionHandler(nil);
-      return;
-    }
-    NSMutableArray<CWVAutofillForm*>* autofillForms = [NSMutableArray array];
-    for (const autofill::FormData& formData : formDataVector) {
-      autofill::FormStructure formStructure(formData);
-      formStructure.DetermineHeuristicTypes();
-      CWVAutofillForm* autofillForm =
-          [[CWVAutofillForm alloc] initWithFormStructure:formStructure];
-      [autofillForms addObject:autofillForm];
-    }
-    completionHandler([autofillForms copy]);
-  };
-
-  // Ignore empty forms.
-  NSUInteger minRequiredFieldsCount = 1;
-  [_JSAutofillManager
-      fetchFormsWithMinimumRequiredFieldsCount:minRequiredFieldsCount
-                                       inFrame:webFrame
-                             completionHandler:fetchCompletionHandler];
-}
-
 #pragma mark - Utility Methods
 
 - (autofill::AutofillManager*)autofillManagerForFrame:(web::WebFrame*)frame {
@@ -541,7 +501,20 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
 
 - (void)handleParsedForms:(const std::vector<autofill::FormStructure*>&)forms
                   inFrame:(web::WebFrame*)frame {
-  // TODO(crbug.com/1030451): Pass through in CVWAutofillControllerDelegate.
+  if (![_delegate respondsToSelector:@selector(autofillController:
+                                                     didFindForms:frameID:)]) {
+    return;
+  }
+
+  NSMutableArray<CWVAutofillForm*>* autofillForms = [NSMutableArray array];
+  for (autofill::FormStructure* form : forms) {
+    CWVAutofillForm* autofillForm =
+        [[CWVAutofillForm alloc] initWithFormStructure:*form];
+    [autofillForms addObject:autofillForm];
+  }
+  [_delegate autofillController:self
+                   didFindForms:autofillForms
+                        frameID:base::SysUTF8ToNSString(frame->GetFrameId())];
 }
 
 - (void)fillFormDataPredictions:
@@ -551,22 +524,6 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
 }
 
 #pragma mark - CRWWebStateObserver
-
-- (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
-  if (!success) {
-    return;
-  }
-
-  web::WebFramesManager* framesManager = _webState->GetWebFramesManager();
-  DCHECK(framesManager);
-  web::WebFrame* webFrame = framesManager->GetMainWebFrame();
-  if (!webFrame) {
-    return;
-  }
-
-  // Start listening for any form mutations.
-  [_JSAutofillManager toggleTrackingFormMutations:YES inFrame:webFrame];
-}
 
 - (void)webState:(web::WebState*)webState
     didRegisterFormActivity:(const autofill::FormActivityParams&)params
@@ -613,11 +570,6 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
                               formName:nsFormName
                                frameID:nsFrameID
                                  value:nsValue];
-    }
-  } else if (params.type == "form_changed") {
-    if ([_delegate respondsToSelector:@selector
-                   (autofillControllerDidInsertFormElements:)]) {
-      [_delegate autofillControllerDidInsertFormElements:self];
     }
   }
 }

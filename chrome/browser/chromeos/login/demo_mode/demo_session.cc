@@ -329,6 +329,8 @@ std::string DemoSession::GetScreensaverAppId() {
     return extension_misc::kScreensaverNocturneAppId;
   if (board == "atlas")
     return extension_misc::kScreensaverAltAppId;
+  if (board == "kukui")
+    return extension_misc::kScreensaverKukuiAppId;
   return extension_misc::kScreensaverAppId;
 }
 

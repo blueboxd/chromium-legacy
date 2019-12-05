@@ -276,8 +276,8 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     storage::QuotaManagerProxy* quota_manager_proxy,
     storage::SpecialStoragePolicy* special_storage_policy,
     URLLoaderFactoryGetter* url_loader_factory_getter,
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-        non_network_loader_factory_bundle_info_for_update_check,
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+        non_network_pending_loader_factory_bundle_for_update_check,
     base::ObserverListThreadSafe<ServiceWorkerContextCoreObserver>*
         observer_list,
     ServiceWorkerContextWrapper* wrapper)
@@ -295,10 +295,10 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
       was_service_worker_registered_(false),
       observer_list_(observer_list) {
   DCHECK(observer_list_);
-  if (non_network_loader_factory_bundle_info_for_update_check) {
+  if (non_network_pending_loader_factory_bundle_for_update_check) {
     loader_factory_bundle_for_update_check_ =
-        base::MakeRefCounted<blink::URLLoaderFactoryBundle>(
-            std::move(non_network_loader_factory_bundle_info_for_update_check));
+        base::MakeRefCounted<blink::URLLoaderFactoryBundle>(std::move(
+            non_network_pending_loader_factory_bundle_for_update_check));
   }
 }
 

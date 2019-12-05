@@ -73,6 +73,9 @@ class PLATFORM_EXPORT FetchParameters {
 
   explicit FetchParameters(const ResourceRequest&);
   FetchParameters(const ResourceRequest&, const ResourceLoaderOptions&);
+  FetchParameters(const FetchParameters&) = delete;
+  FetchParameters& operator=(const FetchParameters&) = delete;
+  FetchParameters(FetchParameters&&);
   ~FetchParameters();
 
   ResourceRequest& MutableResourceRequest() { return resource_request_; }

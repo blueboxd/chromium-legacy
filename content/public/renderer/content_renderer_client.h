@@ -254,7 +254,11 @@ class CONTENT_EXPORT ContentRendererClient {
   // See blink::Platform.
   virtual uint64_t VisitedLinkHash(const char* canonical_url, size_t length);
   virtual bool IsLinkVisited(uint64_t link_hash);
-  virtual blink::WebPrescientNetworking* GetPrescientNetworking();
+
+  // Creates a WebPrescientNetworking instance for |render_frame|. The returned
+  // instance is owned by the frame. May return null.
+  virtual std::unique_ptr<blink::WebPrescientNetworking>
+  CreatePrescientNetworking(RenderFrame* render_frame);
 
   // Returns true if the given Pepper plugin is external (requiring special
   // startup steps).

@@ -11,8 +11,9 @@
 
 namespace mojo {
 
-using Traits = StructTraits<blink::mojom::URLLoaderFactoryBundleDataView,
-                            std::unique_ptr<blink::URLLoaderFactoryBundleInfo>>;
+using Traits =
+    StructTraits<blink::mojom::URLLoaderFactoryBundleDataView,
+                 std::unique_ptr<blink::PendingURLLoaderFactoryBundle>>;
 
 // static
 mojo::PendingRemote<network::mojom::URLLoaderFactory> Traits::default_factory(
@@ -27,14 +28,14 @@ mojo::PendingRemote<network::mojom::URLLoaderFactory> Traits::appcache_factory(
 }
 
 // static
-blink::URLLoaderFactoryBundleInfo::SchemeMap Traits::scheme_specific_factories(
-    BundleInfoType& bundle) {
+blink::PendingURLLoaderFactoryBundle::SchemeMap
+Traits::scheme_specific_factories(BundleInfoType& bundle) {
   return std::move(bundle->pending_scheme_specific_factories());
 }
 
 // static
-blink::URLLoaderFactoryBundleInfo::OriginMap Traits::isolated_world_factories(
-    BundleInfoType& bundle) {
+blink::PendingURLLoaderFactoryBundle::OriginMap
+Traits::isolated_world_factories(BundleInfoType& bundle) {
   return std::move(bundle->pending_isolated_world_factories());
 }
 
@@ -46,7 +47,7 @@ bool Traits::bypass_redirect_checks(BundleInfoType& bundle) {
 // static
 bool Traits::Read(blink::mojom::URLLoaderFactoryBundleDataView data,
                   BundleInfoType* out_bundle) {
-  *out_bundle = std::make_unique<blink::URLLoaderFactoryBundleInfo>();
+  *out_bundle = std::make_unique<blink::PendingURLLoaderFactoryBundle>();
 
   (*out_bundle)->pending_default_factory() = data.TakeDefaultFactory<
       mojo::PendingRemote<network::mojom::URLLoaderFactory>>();

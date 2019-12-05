@@ -36,7 +36,7 @@ HtmlVideoElementCapturerSource::CreateFromWebMediaPlayerImpl(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   // Save histogram data so we can see how much HTML Video capture is used.
   // The histogram counts the number of calls to the JS API.
-  UpdateWebRTCMethodCount(blink::WebRTCAPIName::kVideoCaptureStream);
+  UpdateWebRTCMethodCount(RTCAPIName::kVideoCaptureStream);
 
   // TODO(crbug.com/963651): Remove the need for AsWeakPtr altogether.
   return base::WrapUnique(new HtmlVideoElementCapturerSource(

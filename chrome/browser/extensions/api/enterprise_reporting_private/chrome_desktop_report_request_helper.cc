@@ -228,8 +228,8 @@ GenerateChromeUserProfileReportRequest(const base::Value& profile_report,
 
 #if defined(OS_WIN)
 const wchar_t kDefaultRegistryPath[] =
-    L"SOFTWARE\\Google\\EndpointVerification";
-const wchar_t kValueName[] = L"SafeStorage";
+    L"SOFTWARE\\Google\\Endpoint Verification";
+const wchar_t kValueName[] = L"Safe Storage";
 
 std::string ReadEncryptedSecret() {
   base::win::RegKey key;

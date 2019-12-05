@@ -21,8 +21,6 @@ template("chrome_feature_module") {
   _module_desc = invoker.module_desc
   _is_monochrome_or_trichrome = defined(invoker.is_monochrome_or_trichrome) &&
                                 invoker.is_monochrome_or_trichrome
-  _is_64_bit_browser =
-      defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser
 
   _loadable_modules_32_bit = []
   if (defined(_module_desc.loadable_modules_32_bit)) {
@@ -34,12 +32,15 @@ template("chrome_feature_module") {
     _loadable_modules_64_bit += _module_desc.loadable_modules_64_bit
   }
 
+  not_needed([ "_loadable_modules_32_bit" ])
+  not_needed([ "_loadable_modules_64_bit" ])
+
   _shared_libraries = []
   if (defined(_module_desc.native_deps) && _module_desc.native_deps != []) {
     _arch = ""
     _toolchain = ""
     if (android_64bit_target_cpu && _is_monochrome_or_trichrome) {
-      if (_is_64_bit_browser) {
+      if (invoker.is_64_bit_browser) {
         _arch = "_64"
       } else {
         _toolchain = "($android_secondary_abi_toolchain)"
@@ -103,20 +104,19 @@ template("chrome_feature_module") {
 
     # Determine whether to assign native libraries to the primary or secondary
     # ABI.
-    if (_is_64_bit_browser) {
-      not_needed([ "_loadable_modules_32_bit" ])
-      assert(android_64bit_target_cpu)
-      loadable_modules = _loadable_modules_64_bit
-      shared_libraries = _shared_libraries
-    } else {
-      not_needed([ "_loadable_modules_64_bit" ])
-      if (android_64bit_target_cpu) {
-        secondary_abi_loadable_modules = _loadable_modules_32_bit
-        secondary_abi_shared_libraries = _shared_libraries
-      } else {
-        loadable_modules = _loadable_modules_32_bit
+    if (android_64bit_target_cpu) {
+      if (invoker.is_64_bit_browser) {
+        loadable_modules = _loadable_modules_64_bit
         shared_libraries = _shared_libraries
+      } else {
+        if (build_apk_secondary_abi) {
+          secondary_abi_loadable_modules = _loadable_modules_32_bit
+          secondary_abi_shared_libraries = _shared_libraries
+        }
       }
+    } else {
+      loadable_modules = _loadable_modules_32_bit
+      shared_libraries = _shared_libraries
     }
   }
 }

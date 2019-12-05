@@ -17,6 +17,7 @@
 #include "content/browser/appcache/appcache_subresource_url_factory.h"
 #include "content/browser/appcache/appcache_url_loader_job.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/public/common/content_client.h"
 #include "net/url_request/url_request.h"
@@ -424,7 +425,7 @@ void AppCacheRequestHandler::RunLoaderCallbackForMainResource(
         base::MakeRefCounted<SingleRequestURLLoaderFactory>(std::move(handler));
     FrameTreeNode* frame_tree_node =
         FrameTreeNode::GloballyFindByID(frame_tree_node_id);
-    if (frame_tree_node) {
+    if (frame_tree_node && frame_tree_node->navigation_request()) {
       mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_factory;
       auto factory_receiver = pending_factory.InitWithNewPipeAndPassReceiver();
       bool use_proxy =
@@ -432,7 +433,9 @@ void AppCacheRequestHandler::RunLoaderCallbackForMainResource(
               browser_context, frame_tree_node->current_frame_host(),
               frame_tree_node->current_frame_host()->GetProcess()->GetID(),
               ContentBrowserClient::URLLoaderFactoryType::kNavigation,
-              url::Origin(), &factory_receiver, nullptr /* header_client */,
+              url::Origin(),
+              frame_tree_node->navigation_request()->GetNavigationId(),
+              &factory_receiver, nullptr /* header_client */,
               nullptr /* bypass_redirect_checks */,
               nullptr /* factory_override */);
       if (use_proxy) {

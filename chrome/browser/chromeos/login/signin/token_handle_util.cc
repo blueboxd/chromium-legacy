@@ -33,6 +33,7 @@ TokenHandleUtil::~TokenHandleUtil() {
   gaia_client_.reset();
 }
 
+// static
 bool TokenHandleUtil::HasToken(const AccountId& account_id) {
   const base::DictionaryValue* dict = nullptr;
   std::string token;
@@ -43,6 +44,7 @@ bool TokenHandleUtil::HasToken(const AccountId& account_id) {
   return !token.empty();
 }
 
+// static
 bool TokenHandleUtil::ShouldObtainHandle(const AccountId& account_id) {
   const base::DictionaryValue* dict = nullptr;
   std::string token;
@@ -57,6 +59,7 @@ bool TokenHandleUtil::ShouldObtainHandle(const AccountId& account_id) {
   return kHandleStatusInvalid == status;
 }
 
+// static
 void TokenHandleUtil::DeleteHandle(const AccountId& account_id) {
   const base::DictionaryValue* dict = nullptr;
   if (!user_manager::known_user::FindPrefs(account_id, &dict))
@@ -68,11 +71,13 @@ void TokenHandleUtil::DeleteHandle(const AccountId& account_id) {
                                         /* replace values */ true);
 }
 
+// static
 void TokenHandleUtil::MarkHandleInvalid(const AccountId& account_id) {
   user_manager::known_user::SetStringPref(account_id, kTokenHandleStatusPref,
                                           kHandleStatusInvalid);
 }
 
+// static
 void TokenHandleUtil::CheckToken(const AccountId& account_id,
                                  const TokenValidationCallback& callback) {
   const base::DictionaryValue* dict = nullptr;
@@ -101,6 +106,7 @@ void TokenHandleUtil::CheckToken(const AccountId& account_id,
                                    validation_delegates_[token].get());
 }
 
+// static
 void TokenHandleUtil::StoreTokenHandle(const AccountId& account_id,
                                        const std::string& handle) {
   user_manager::known_user::SetStringPref(account_id, kTokenHandlePref, handle);

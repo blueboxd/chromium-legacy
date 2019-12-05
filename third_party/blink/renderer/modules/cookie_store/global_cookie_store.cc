@@ -46,8 +46,10 @@ class GlobalCookieStoreImpl final
   CookieStore* GetCookieStore(T& scope) {
     if (!cookie_store_) {
       ExecutionContext* execution_context = scope.GetExecutionContext();
-      if (!execution_context->GetInterfaceProvider())
+      if (&execution_context->GetBrowserInterfaceBroker() ==
+          &GetEmptyBrowserInterfaceBroker()) {
         return nullptr;
+      }
 
       mojo::Remote<network::mojom::blink::RestrictedCookieManager> backend;
       execution_context->GetBrowserInterfaceBroker().GetInterface(

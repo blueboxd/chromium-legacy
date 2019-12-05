@@ -54,6 +54,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.signin.metrics.SignoutReason;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -558,7 +559,8 @@ public class HistoryActivityTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             IdentityServicesProvider.getSigninManager().onFirstRunCheckDone();
             IdentityServicesProvider.getSigninManager().addSignInStateObserver(mTestObserver);
-            IdentityServicesProvider.getSigninManager().signIn(account, null);
+            IdentityServicesProvider.getSigninManager().signIn(
+                    SigninAccessPoint.UNKNOWN, account, null);
         });
 
         mTestObserver.onSigninStateChangedCallback.waitForCallback(

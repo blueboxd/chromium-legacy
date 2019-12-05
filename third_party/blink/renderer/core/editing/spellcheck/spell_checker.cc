@@ -744,7 +744,7 @@ bool SpellChecker::IsSpellCheckingEnabledAt(const Position& position) {
   if (position.IsNull())
     return false;
   if (TextControlElement* text_control = EnclosingTextControl(position)) {
-    if (auto* input = ToHTMLInputElementOrNull(text_control)) {
+    if (auto* input = DynamicTo<HTMLInputElement>(text_control)) {
       // TODO(tkent): The following password type check should be done in
       // HTMLElement::spellcheck(). crbug.com/371567
       if (input->type() == input_type_names::kPassword)

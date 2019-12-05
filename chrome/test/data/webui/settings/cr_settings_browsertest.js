@@ -1122,6 +1122,7 @@ CrSettingsPersonalizationOptionsTest.prototype = {
     '//ui/webui/resources/js/promise_resolver.js',
     'sync_test_util.js',
     'test_util.js',
+    '../test_util.js',
     '../test_browser_proxy.js',
     'test_privacy_page_browser_proxy.js',
     'test_sync_browser_proxy.js',
@@ -1208,6 +1209,36 @@ TEST_F('CrSettingsPrivacyPageTest', 'ClearBrowsingDataTestsDice', function() {
   mocha.run();
 });
 GEN('#endif');
+
+/**
+ * Test fixture for
+ * chrome/browser/resources/settings/privacy_page/
+ *        passwords-leak-detection-toggle.html.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsPasswordsLeakDetectionToggleTest() {}
+
+CrSettingsPasswordsLeakDetectionToggleTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://settings/privacy_page/passwords_leak_detection_toggle.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'sync_test_util.js',
+    '../test_browser_proxy.js',
+    'test_privacy_page_browser_proxy.js',
+    'test_sync_browser_proxy.js',
+    'passwords_leak_detection_toggle_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsPasswordsLeakDetectionToggleTest', 'All', function() {
+  mocha.run();
+});
 
 /**
  * @constructor

@@ -21,8 +21,8 @@ CreateFakeServerHttpPostProviderFactoryHelper(
     const base::WeakPtr<FakeServer>& fake_server,
     scoped_refptr<base::SequencedTaskRunner> fake_server_task_runner,
     const std::string& user_agent,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        url_loader_factory_info,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_url_loader_factory,
     const syncer::NetworkTimeUpdateCallback& network_time_update_callback) {
   return std::make_unique<FakeServerHttpPostProviderFactory>(
       fake_server, fake_server_task_runner);

@@ -2598,7 +2598,6 @@
               "os": "Ubuntu-16.04"
             }
           ],
-          "idempotent": false,
           "shards": 6
         },
         "test": "content_browsertests"

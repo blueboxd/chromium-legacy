@@ -30,7 +30,6 @@
     <org.chromium.chrome.browser.settings.ChromeBaseCheckBoxPreference
         android:key="notifications_quiet_ui"
         android:title="@string/website_settings_category_notifications_quiet"
-        android:summary="@string/website_settings_category_notifications_quiet_summary_enabled"
         android:defaultValue="false"
         android:persistent="false" />
     <!-- A toggle for enabling vibration in notifications. -->

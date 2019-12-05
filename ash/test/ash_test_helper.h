@@ -52,6 +52,7 @@ class TestNotifierSettingsController;
 class TestPrefServiceProvider;
 class TestShellDelegate;
 class TestSystemTrayClient;
+class TestPhotoController;
 
 // A helper class that does common initialization required for Ash. Creates a
 // root window and an ash::Shell instance with a test delegate.
@@ -160,6 +161,7 @@ class AshTestHelper {
   std::unique_ptr<TestPrefServiceProvider> prefs_provider_;
   std::unique_ptr<TestAssistantService> assistant_service_;
   std::unique_ptr<ui::TestContextFactories> context_factories_;
+  std::unique_ptr<TestPhotoController> photo_controller_;
 
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
 

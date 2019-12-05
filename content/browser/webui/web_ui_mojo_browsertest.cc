@@ -246,6 +246,7 @@ class TestWebUIContentBrowserClient : public ContentBrowserClient {
   ~TestWebUIContentBrowserClient() override {}
 
   void RegisterBrowserInterfaceBindersForFrame(
+      RenderFrameHost* render_frame_host,
       service_manager::BinderMapWithContext<content::RenderFrameHost*>* map)
       override {
     map->Add<mojom::BrowserTarget>(

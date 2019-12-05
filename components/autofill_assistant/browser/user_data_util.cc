@@ -9,6 +9,8 @@
 #include "components/autofill/core/browser/autofill_data_util.h"
 
 namespace autofill_assistant {
+namespace {
+
 // TODO: Share this helper function with use_address_action.
 base::string16 GetProfileFullName(const autofill::AutofillProfile& profile) {
   return autofill::data_util::JoinNameParts(
@@ -53,6 +55,54 @@ bool CompletenessCompare(const CollectUserDataOptions& options,
   return complete_fields_a > complete_fields_b;
 }
 
+int CountCompleteFields(const CollectUserDataOptions& options,
+                        const PaymentInstrument& instrument) {
+  int complete_fields = 0;
+  if (!instrument.card->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL).empty()) {
+    ++complete_fields;
+  }
+  if (!instrument.card->GetRawInfo(autofill::CREDIT_CARD_NUMBER).empty()) {
+    ++complete_fields;
+  }
+  if (!instrument.card->GetRawInfo(autofill::CREDIT_CARD_EXP_MONTH).empty()) {
+    ++complete_fields;
+  }
+  if (!instrument.card->GetRawInfo(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR)
+           .empty()) {
+    ++complete_fields;
+  }
+  if (instrument.billing_address != nullptr) {
+    ++complete_fields;
+
+    if (options.require_billing_postal_code &&
+        !instrument.billing_address->GetRawInfo(autofill::ADDRESS_HOME_ZIP)
+             .empty()) {
+      ++complete_fields;
+    }
+  }
+  return complete_fields;
+}
+
+// Helper function that compares instances of PaymentInstrument by completeness
+// in regards to the current options. Full payment instruments should be
+// ordered before empty ones and fall back to compare the full name on the
+// credit card in case of equality.
+bool CompletenessCompare(const CollectUserDataOptions& options,
+                         const PaymentInstrument& a,
+                         const PaymentInstrument& b) {
+  int complete_fields_a = CountCompleteFields(options, a);
+  int complete_fields_b = CountCompleteFields(options, b);
+  if (complete_fields_a == complete_fields_b) {
+    return base::i18n::ToLower(
+               a.card->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL))
+               .compare(base::i18n::ToLower(
+                   b.card->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL))) < 0;
+  }
+  return complete_fields_a > complete_fields_b;
+}
+
+}  // namespace
+
 std::vector<int> SortByCompleteness(
     const CollectUserDataOptions& collect_user_data_options,
     const std::vector<std::unique_ptr<autofill::AutofillProfile>>& profiles) {
@@ -65,4 +115,22 @@ std::vector<int> SortByCompleteness(
             });
   return profile_indices;
 }
+
+std::vector<int> SortByCompleteness(
+    const CollectUserDataOptions& collect_user_data_options,
+    const std::vector<std::unique_ptr<PaymentInstrument>>&
+        payment_instruments) {
+  std::vector<int> payment_instrument_indices(payment_instruments.size());
+  std::iota(std::begin(payment_instrument_indices),
+            std::end(payment_instrument_indices), 0);
+  std::sort(payment_instrument_indices.begin(),
+            payment_instrument_indices.end(),
+            [&collect_user_data_options, &payment_instruments](int a, int b) {
+              return CompletenessCompare(collect_user_data_options,
+                                         *payment_instruments[a],
+                                         *payment_instruments[b]);
+            });
+  return payment_instrument_indices;
+}
+
 }  // namespace autofill_assistant

@@ -15,7 +15,6 @@ import androidx.annotation.IntDef;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
-import org.chromium.chrome.browser.settings.ManagedPreferencesUtils;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 
 import java.lang.annotation.Retention;
@@ -33,25 +32,6 @@ public class SigninActivity extends ChromeBaseAppCompatActivity {
             SigninAccessPoint.NTP_CONTENT_SUGGESTIONS, SigninAccessPoint.AUTOFILL_DROPDOWN})
     @Retention(RetentionPolicy.SOURCE)
     public @interface AccessPoint {}
-
-    /**
-     * A convenience method to create a SigninActivity passing the access point in the
-     * intent. Checks if the sign in flow can be started before showing the activity.
-     * @param accessPoint {@link AccessPoint} for starting signin flow. Used in metrics.
-     * @return {@code true} if sign in has been allowed.
-     */
-    // TODO(https://crbug.com/1017697): Move this method to SigninActivityLauncher
-    public static boolean startIfAllowed(Context context, @AccessPoint int accessPoint) {
-        SigninManager signinManager = IdentityServicesProvider.getSigninManager();
-        if (!signinManager.isSignInAllowed()) {
-            if (signinManager.isSigninDisabledByPolicy()) {
-                ManagedPreferencesUtils.showManagedByAdministratorToast(context);
-            }
-            return false;
-        }
-        SigninActivityLauncher.get().launchActivity(context, accessPoint);
-        return true;
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

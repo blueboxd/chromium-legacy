@@ -452,7 +452,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   // AppCache ------------------------------------------------------------
   virtual void UpdateSubresourceFactory(
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) {}
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle> pending_factory) {}
 };
 
 }  // namespace blink

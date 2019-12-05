@@ -336,7 +336,7 @@ class TextFragmentRelatedMetricTest : public TextFragmentAnchorMetricsTest,
 
 // These tests will run with and without the TextFragmentIdentifiers feature
 // enabled to ensure we collect metrics correctly under both situations.
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          TextFragmentRelatedMetricTest,
                          testing::Values(false, true));
 

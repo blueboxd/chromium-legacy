@@ -157,17 +157,6 @@ cca.util.orientPhoto = function(blob, onSuccess, onFailure) {
 };
 
 /**
- * Returns true if current installed Chrome version is larger than or equal to
- * the given version.
- * @param {number} minVersion the version to be compared with.
- * @return {boolean}
- */
-cca.util.isChromeVersionAbove = function(minVersion) {
-  var match = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
-  return (match ? parseInt(match[2], 10) : 0) >= minVersion;
-};
-
-/**
  * Animates the element once by applying 'animate' class.
  * @param {HTMLElement} element Element to be animated.
  * @param {function()=} callback Callback called on completion.

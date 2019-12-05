@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.autofill_assistant.form;
 
 import android.content.Context;
-import android.support.v7.content.res.AppCompatResources;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,9 +30,6 @@ public class AssistantFormCoordinator {
         mRootView = makeLinearLayout(context);
 
         mFormView = makeLinearLayout(context);
-        mFormView.setDividerDrawable(AppCompatResources.getDrawable(
-                context, R.drawable.autofill_assistant_form_input_divider));
-        mFormView.setShowDividers(LinearLayout.SHOW_DIVIDER_MIDDLE);
 
         mInfoView = (LinearLayout) LayoutInflater.from(context).inflate(
                 R.layout.autofill_assistant_form_information, mRootView,

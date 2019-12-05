@@ -30,7 +30,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/template_expressions.h"
 
@@ -144,12 +144,12 @@ class ResourceBundleFileLoader : public network::mojom::URLLoader {
   void OnMimeTypeRead(scoped_refptr<base::RefCountedMemory> data,
                       std::string* read_mime_type,
                       bool read_result) {
-    network::ResourceResponseHead head;
-    head.request_start = base::TimeTicks::Now();
-    head.response_start = base::TimeTicks::Now();
-    head.content_length = data->size();
-    head.mime_type = *read_mime_type;
-    DetermineCharset(head.mime_type, data.get(), &head.charset);
+    auto head = network::mojom::URLResponseHead::New();
+    head->request_start = base::TimeTicks::Now();
+    head->response_start = base::TimeTicks::Now();
+    head->content_length = data->size();
+    head->mime_type = *read_mime_type;
+    DetermineCharset(head->mime_type, data.get(), &head->charset);
     mojo::DataPipe pipe(data->size());
     if (!pipe.consumer_handle.is_valid()) {
       client_->OnComplete(network::URLLoaderCompletionStatus(net::ERR_FAILED));
@@ -157,16 +157,16 @@ class ResourceBundleFileLoader : public network::mojom::URLLoader {
       MaybeDeleteSelf();
       return;
     }
-    head.headers = response_headers_;
-    head.headers->AddHeader(
+    head->headers = response_headers_;
+    head->headers->AddHeader(
         base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentLength,
-                           base::NumberToString(head.content_length).c_str()));
-    if (!head.mime_type.empty()) {
-      head.headers->AddHeader(
+                           base::NumberToString(head->content_length).c_str()));
+    if (!head->mime_type.empty()) {
+      head->headers->AddHeader(
           base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentType,
-                             head.mime_type.c_str()));
+                             head->mime_type.c_str()));
     }
-    client_->OnReceiveResponse(head);
+    client_->OnReceiveResponse(std::move(head));
     client_->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
 
     uint32_t write_size = data->size();

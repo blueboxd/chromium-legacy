@@ -5,9 +5,11 @@
 #include "chrome/browser/sharing/click_to_call/phone_number_regex.h"
 
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
@@ -132,9 +134,15 @@ const char kPhoneNumberRegexPatternLowConfidenceModified[] =
 void PrecompilePhoneNumberRegexes() {
   SCOPED_UMA_HISTOGRAM_TIMER("Sharing.ClickToCallPhoneNumberPrecompileTime");
   static const char kExampleInput[] = "+01(2)34-5678 9012";
+  std::vector<PhoneNumberRegexVariant> variants = {
+      PhoneNumberRegexVariant::kSimple};
+
+  // Only precompile the low confidence regex when the flag is enabled.
+  if (base::FeatureList::IsEnabled(kClickToCallDetectionV2))
+    variants.push_back(PhoneNumberRegexVariant::kLowConfidenceModified);
+
   std::string parsed;
-  for (auto variant : {PhoneNumberRegexVariant::kSimple,
-                       PhoneNumberRegexVariant::kLowConfidenceModified}) {
+  for (auto variant : variants) {
     // Run RE2::PartialMatch over some example input to speed up future queries.
     re2::RE2::PartialMatch(kExampleInput, GetPhoneNumberRegex(variant),
                            &parsed);
@@ -152,6 +160,7 @@ const re2::RE2& GetPhoneNumberRegex(PhoneNumberRegexVariant variant) {
     case PhoneNumberRegexVariant::kSimple:
       return *kRegexSimple;
     case PhoneNumberRegexVariant::kLowConfidenceModified:
+      DCHECK(base::FeatureList::IsEnabled(kClickToCallDetectionV2));
       return *kRegexLowConfidenceModified;
   }
 }

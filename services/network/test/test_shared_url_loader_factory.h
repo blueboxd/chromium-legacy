@@ -41,8 +41,8 @@ class TestSharedURLLoaderFactory : public SharedURLLoaderFactory {
                                 traffic_annotation) override;
   void Clone(mojo::PendingReceiver<mojom::URLLoaderFactory> receiver) override;
 
-  // SharedURLLoaderFactoryInfo implementation
-  std::unique_ptr<SharedURLLoaderFactoryInfo> Clone() override;
+  // PendingSharedURLLoaderFactory implementation
+  std::unique_ptr<PendingSharedURLLoaderFactory> Clone() override;
 
   NetworkContext* network_context() { return network_context_.get(); }
 

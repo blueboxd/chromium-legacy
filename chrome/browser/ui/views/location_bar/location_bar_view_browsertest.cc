@@ -34,7 +34,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "services/network/public/cpp/features.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "ui/base/test/material_design_controller_test_api.h"
 
@@ -239,10 +239,10 @@ class SecurityIndicatorTest
     ssl_info.cert_status = cert_status;
     ssl_info.ct_policy_compliance =
         net::ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
-    network::ResourceResponseHead resource_response;
-    resource_response.mime_type = "text/html";
-    resource_response.ssl_info = ssl_info;
-    params->client->OnReceiveResponse(resource_response);
+    auto resource_response = network::mojom::URLResponseHead::New();
+    resource_response->mime_type = "text/html";
+    resource_response->ssl_info = ssl_info;
+    params->client->OnReceiveResponse(std::move(resource_response));
     // Send an empty response's body. This pipe is not filled with data.
     mojo::DataPipe pipe;
     params->client->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));

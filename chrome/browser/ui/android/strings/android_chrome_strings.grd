@@ -1138,14 +1138,11 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_NOTIFICATIONS_ASK" desc="Summary text explaining that sites need to ask for permission before sending notifications.">
         New sites you visit can ask to send you notifications
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_NOTIFICATIONS_BLOCK" desc="Summary text explaining that sites will not be able to send notifications.">
+        New sites you visit can't send you notifications
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_NOTIFICATIONS_QUIET" desc="A setting that, if turned on will enable a quieter permission prompt for notifications.">
-        Inform quietly
-      </message>
-      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_NOTIFICATIONS_QUIET_SUMMARY_ENABLED" desc="A summary explaining how quiet notifications work, when the setting is enabled.">
-        Block sites from interrupting you when asking for notifications, and inform quietly instead
-      </message>
-      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_NOTIFICATIONS_QUIET_SUMMARY_DISABLED" desc="A summary explaining how quiet notifications work, when the setting is disabled.">
-        Enable to automatically block sites from asking to show you notifications. If a site requests notifications, an infobar will appear at the bottom of the page.
+        Block notification prompts from interrupting you, and use a quieter message instead
       </message>
       <message name="IDS_NOTIFICATIONS_IPH" desc="A message that explains to the users that notification permission requests will appear as an infobar from now on because the user repeatedly denied the notification permission in the past.">
         You usually block notifications. To allow, tap Details.
@@ -2322,10 +2319,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Drag from top and touch the back button to exit full screen.
       </message>
 
-      <message name="IDS_FULLSCREEN_API_NOTIFICATION" desc="Notification message when a site has entered non-immsersive fullscreen and the directions of how to exit.">
-        Touch the back button to exit full screen.
-      </message>
-
       <!-- Download UI -->
       <message name="IDS_DOWNLOAD_NOTIFICATION_CANCEL_BUTTON" desc="Text on the button that cancels a download.">
         Cancel
@@ -2507,7 +2500,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Images
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_UI_PAGINATION" desc="Indicates that clicking on this button will show more items in the list.">
-        Load more…
+        See more
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_UI_DOCUMENTS" desc="Indicates that clicking on this button shows only documents.">
         Documents

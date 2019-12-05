@@ -315,7 +315,7 @@ Document* WebDocumentFirstPartyTest::NestedNestedDocument() const {
 bool OriginsEqual(const char* path,
                   scoped_refptr<const SecurityOrigin> origin) {
   return SecurityOrigin::Create(ToOriginA(path))
-      ->IsSameSchemeHostPort(origin.get());
+      ->IsSameOriginWith(origin.get());
 }
 
 TEST_F(WebDocumentFirstPartyTest, Empty) {

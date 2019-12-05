@@ -58,20 +58,6 @@ template("system_webview_apk_tmpl") {
     _use_trichrome_library =
         defined(use_trichrome_library) && use_trichrome_library
 
-    # TODO(https://crbug.com/1027573): Remove this when all targets are explicit
-    # about their configuration.
-    if (android_64bit_target_cpu && _use_trichrome_library) {
-      _is_64_bit_browser =
-          defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser
-      if (_is_64_bit_browser) {
-        _include_32_bit_webview = !defined(invoker.include_32_bit_webview) ||
-                                  invoker.include_32_bit_webview
-      } else {
-        _include_64_bit_webview = !defined(invoker.include_64_bit_webview) ||
-                                  invoker.include_64_bit_webview
-      }
-    }
-
     if (!_use_trichrome_library) {
       deps += [ "//android_webview:monochrome_webview_assets" ]
     }
@@ -95,15 +81,15 @@ template("system_webview_apk_tmpl") {
       # Include placeholder libraries to ensure we are treated as the desired
       # architecture.
       if (android_64bit_target_cpu) {
-        if (_is_64_bit_browser) {
+        if (invoker.is_64_bit_browser) {
           native_lib_placeholders = [ "libdummy.so" ]
-          if (_include_32_bit_webview && build_apk_secondary_abi) {
+          if (invoker.include_32_bit_webview && build_apk_secondary_abi) {
             secondary_abi_shared_libraries = [ "//android_webview:monochrome_64($android_secondary_abi_toolchain)" ]
             deps += [ "//android_webview:v8_snapshot_secondary_abi_assets" ]
             _include_secondary_support = true
           }
         } else {
-          if (_include_64_bit_webview) {
+          if (invoker.include_64_bit_webview) {
             shared_libraries = [ "//android_webview:monochrome" ]
             _include_primary_support = true
             if (use_v8_context_snapshot) {
@@ -183,14 +169,14 @@ template("system_webview_apk_tmpl") {
     if (!defined(version_code)) {
       if (_use_trichrome_library) {
         if (android_64bit_target_cpu) {
-          if (_is_64_bit_browser) {
-            if (_include_32_bit_webview) {
+          if (invoker.is_64_bit_browser) {
+            if (invoker.include_32_bit_webview) {
               version_code = trichrome_64_32_version_code
             } else {
               version_code = trichrome_64_version_code
             }
           } else {
-            if (_include_64_bit_webview) {
+            if (invoker.include_64_bit_webview) {
               version_code = trichrome_32_64_version_code
             } else {
               version_code = trichrome_32_version_code

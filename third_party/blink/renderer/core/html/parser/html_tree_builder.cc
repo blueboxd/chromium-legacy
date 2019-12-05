@@ -2535,7 +2535,7 @@ void HTMLTreeBuilder::ProcessEndOfFile(AtomicHTMLToken* token) {
         DVLOG(1) << "Not implemented.";
       }
       Element* el = tree_.OpenElements()->Top();
-      if (IsHTMLTextAreaElement(el))
+      if (IsA<HTMLTextAreaElement>(el))
         To<HTMLFormControlElement>(el)->SetBlocksFormSubmission(true);
       tree_.OpenElements()->Pop();
       DCHECK_NE(original_insertion_mode_, kTextMode);

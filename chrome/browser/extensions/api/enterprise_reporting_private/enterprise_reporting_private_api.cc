@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/enterprise_reporting_private/chrome_desktop_report_request_helper.h"
+#include "chrome/browser/extensions/api/enterprise_reporting_private/device_info_fetcher.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
@@ -180,6 +181,7 @@ EnterpriseReportingPrivateGetPersistentSecretFunction::
 
 ExtensionFunction::ResponseAction
 EnterpriseReportingPrivateGetPersistentSecretFunction::Run() {
+  // TODO(pastarmovj): Consider keying the secret retrieval by extension id.
   base::PostTask(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(),
@@ -281,5 +283,20 @@ void EnterpriseReportingPrivateSetDeviceDataFunction::OnDataStored(
     Respond(Error(enterprise_reporting::kEndpointVerificationStoreFailed));
   }
 }
+
+// getDeviceInfo
+
+EnterpriseReportingPrivateGetDeviceInfoFunction::
+    EnterpriseReportingPrivateGetDeviceInfoFunction() = default;
+
+ExtensionFunction::ResponseAction
+EnterpriseReportingPrivateGetDeviceInfoFunction::Run() {
+  enterprise_reporting::DeviceInfo device_info =
+      enterprise_reporting::DeviceInfoFetcher::CreateInstance()->Fetch();
+  return RespondNow(OneArgument(device_info.ToValue()));
+}
+
+EnterpriseReportingPrivateGetDeviceInfoFunction::
+    ~EnterpriseReportingPrivateGetDeviceInfoFunction() = default;
 
 }  // namespace extensions

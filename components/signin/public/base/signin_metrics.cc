@@ -122,6 +122,14 @@ void RecordSigninUserActionForAccessPoint(AccessPoint access_point) {
       base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromGoogleServicesSettings"));
       break;
+    case AccessPoint::ACCESS_POINT_SYNC_ERROR_CARD:
+    case AccessPoint::ACCESS_POINT_FORCED_SIGNIN:
+    case AccessPoint::ACCESS_POINT_ACCOUNT_RENAMED:
+      NOTREACHED() << "Access point " << static_cast<int>(access_point)
+                   << " is only used on Android, where"
+                   << " RecordSigninUserActionForAccessPoint is not used"
+                   << " for logging user actions.";
+      break;
     case AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED();
       break;
@@ -191,6 +199,9 @@ void RecordSigninWithDefaultUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_UNKNOWN:
     case AccessPoint::ACCESS_POINT_MACHINE_LOGON:
     case AccessPoint::ACCESS_POINT_GOOGLE_SERVICES_SETTINGS:
+    case AccessPoint::ACCESS_POINT_SYNC_ERROR_CARD:
+    case AccessPoint::ACCESS_POINT_FORCED_SIGNIN:
+    case AccessPoint::ACCESS_POINT_ACCOUNT_RENAMED:
       NOTREACHED() << "Signin_SigninWithDefault_From* user actions"
                    << " are not recorded for access_point "
                    << static_cast<int>(access_point)
@@ -265,6 +276,9 @@ void RecordSigninNotDefaultUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_UNKNOWN:
     case AccessPoint::ACCESS_POINT_MACHINE_LOGON:
     case AccessPoint::ACCESS_POINT_GOOGLE_SERVICES_SETTINGS:
+    case AccessPoint::ACCESS_POINT_SYNC_ERROR_CARD:
+    case AccessPoint::ACCESS_POINT_FORCED_SIGNIN:
+    case AccessPoint::ACCESS_POINT_ACCOUNT_RENAMED:
       NOTREACHED() << "Signin_SigninNotDefault_From* user actions"
                    << " are not recorded for access point "
                    << static_cast<int>(access_point)
@@ -343,6 +357,9 @@ void RecordSigninNewAccountNoExistingAccountUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_UNKNOWN:
     case AccessPoint::ACCESS_POINT_MACHINE_LOGON:
     case AccessPoint::ACCESS_POINT_GOOGLE_SERVICES_SETTINGS:
+    case AccessPoint::ACCESS_POINT_SYNC_ERROR_CARD:
+    case AccessPoint::ACCESS_POINT_FORCED_SIGNIN:
+    case AccessPoint::ACCESS_POINT_ACCOUNT_RENAMED:
       // These access points do not support personalized sign-in promos, so
       // |Signin_SigninNewAccountNoExistingAccount_From*| user actions should
       // not be recorded for them. Note: To avoid bloating the sign-in APIs, the
@@ -424,6 +441,9 @@ void RecordSigninNewAccountExistingAccountUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_UNKNOWN:
     case AccessPoint::ACCESS_POINT_MACHINE_LOGON:
     case AccessPoint::ACCESS_POINT_GOOGLE_SERVICES_SETTINGS:
+    case AccessPoint::ACCESS_POINT_SYNC_ERROR_CARD:
+    case AccessPoint::ACCESS_POINT_FORCED_SIGNIN:
+    case AccessPoint::ACCESS_POINT_ACCOUNT_RENAMED:
       // These access points do not support personalized sign-in promos, so
       // |Signin_SigninNewAccountExistingAccount_From*| user actions should not
       // be recorded for them. Note: To avoid bloating the sign-in APIs, the
@@ -827,6 +847,9 @@ void RecordSigninImpressionUserActionForAccessPoint(AccessPoint access_point) {
     case AccessPoint::ACCESS_POINT_USER_MANAGER:
     case AccessPoint::ACCESS_POINT_UNKNOWN:
     case AccessPoint::ACCESS_POINT_MACHINE_LOGON:
+    case AccessPoint::ACCESS_POINT_SYNC_ERROR_CARD:
+    case AccessPoint::ACCESS_POINT_FORCED_SIGNIN:
+    case AccessPoint::ACCESS_POINT_ACCOUNT_RENAMED:
       NOTREACHED() << "Signin_Impression_From* user actions"
                    << " are not recorded for access point "
                    << static_cast<int>(access_point);
@@ -956,6 +979,9 @@ void RecordSigninImpressionWithAccountUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_UNKNOWN:
     case AccessPoint::ACCESS_POINT_MACHINE_LOGON:
     case AccessPoint::ACCESS_POINT_GOOGLE_SERVICES_SETTINGS:
+    case AccessPoint::ACCESS_POINT_SYNC_ERROR_CARD:
+    case AccessPoint::ACCESS_POINT_FORCED_SIGNIN:
+    case AccessPoint::ACCESS_POINT_ACCOUNT_RENAMED:
       NOTREACHED() << "Signin_Impression{With|WithNo}Account_From* user actions"
                    << " are not recorded for access point "
                    << static_cast<int>(access_point)

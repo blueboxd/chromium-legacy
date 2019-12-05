@@ -142,13 +142,20 @@ ui::AXTreeUpdate BrowserAccessibilityManagerMac::GetEmptyDocument() {
 
 BrowserAccessibility* BrowserAccessibilityManagerMac::GetFocus() const {
   BrowserAccessibility* focus = BrowserAccessibilityManager::GetFocus();
+  if (!focus)
+    return nullptr;
 
   // For editable combo boxes, focus should stay on the combo box so the user
   // will not be taken out of the combo box while typing.
-  if (focus && focus->GetRole() == ax::mojom::Role::kTextFieldWithComboBox)
+  if (focus->GetRole() == ax::mojom::Role::kTextFieldWithComboBox)
     return focus;
 
-  // For other roles, follow the active descendant.
+  // If multiselectable, treat the container as focused and send selected
+  // children changed events as the user navigates.
+  if (focus->HasState(ax::mojom::State::kMultiselectable))
+    return focus;
+
+  // Otherwise, follow the active descendant.
   return GetActiveDescendant(focus);
 }
 
@@ -157,6 +164,17 @@ void BrowserAccessibilityManagerMac::FireFocusEvent(
   BrowserAccessibilityManager::FireFocusEvent(node);
   FireNativeMacNotification(NSAccessibilityFocusedUIElementChangedNotification,
                             node);
+
+  // Announce any active unselected item directly when a multiselection
+  // container becomes focused. VoiceOver will only automatically announce
+  // a selected item, and the active descendant may not be selected.
+  if (node && node->HasState(ax::mojom::State::kMultiselectable)) {
+    BrowserAccessibility* active_descendant = GetActiveDescendant(node);
+    if (active_descendant->GetBoolAttribute(
+            ax::mojom::BoolAttribute::kSelected))
+      return;  // Selected item will already be announced upon new focus.
+    AnnounceActiveDescendant(node);
+  }
 }
 
 void BrowserAccessibilityManagerMac::FireBlinkEvent(
@@ -188,6 +206,18 @@ void PostAnnouncementNotification(NSString* announcement) {
       notification_info);
 }
 
+void BrowserAccessibilityManagerMac::AnnounceActiveDescendant(
+    BrowserAccessibility* node) const {
+  if (GetFocus() != node)
+    return;  // Container not focused.
+  BrowserAccessibility* active_descendant = GetActiveDescendant(node);
+  if (!active_descendant || active_descendant == node)
+    return;  // No active descendant.
+  PostAnnouncementNotification(
+      base::SysUTF8ToNSString(active_descendant->GetStringAttribute(
+          ax::mojom::StringAttribute::kName)));
+}
+
 void BrowserAccessibilityManagerMac::FireGeneratedEvent(
     ui::AXEventGenerator::Event event_type,
     BrowserAccessibility* node) {
@@ -209,6 +239,12 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
         // want to post a focus change because this will take the focus out of
         // the combo box where the user might be typing.
         mac_notification = NSAccessibilitySelectedChildrenChangedNotification;
+      } else if (node->HasState(ax::mojom::State::kMultiselectable)) {
+        // Speak item directly in case the focused item changes but selection
+        // does not change, e.g. if cmd+down is pressed in a multiselectable
+        // listbox, so that there is still some announcement.
+        AnnounceActiveDescendant(node);
+        return;
       } else {
         // In all other cases we should post
         // |NSAccessibilityFocusedUIElementChangedNotification|, but this is

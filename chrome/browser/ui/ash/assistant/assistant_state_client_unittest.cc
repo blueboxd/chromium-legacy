@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/assistant/assistant_state_client.h"
 
+#include <memory>
+
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/mojom/assistant_state_controller.mojom.h"
 #include "base/bind.h"

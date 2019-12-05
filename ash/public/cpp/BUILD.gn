@@ -17,6 +17,8 @@ component("cpp") {
     "accessibility_focus_ring_controller.h",
     "accessibility_focus_ring_info.cc",
     "accessibility_focus_ring_info.h",
+    "ambient/ambient_mode_state.cc",
+    "ambient/ambient_mode_state.h",
     "ambient/photo_controller.cc",
     "ambient/photo_controller.h",
     "android_intent_helper.cc",
@@ -318,6 +320,8 @@ source_set("test_support") {
     "test/test_keyboard_controller_observer.h",
     "test/test_new_window_delegate.cc",
     "test/test_new_window_delegate.h",
+    "test/test_photo_controller.cc",
+    "test/test_photo_controller.h",
     "test/test_system_tray_client.cc",
     "test/test_system_tray_client.h",
   ]
@@ -329,6 +333,7 @@ source_set("test_support") {
     "//ui/aura",
     "//ui/aura:test_support",
     "//ui/gfx",
+    "//ui/gfx:test_support",
     "//ui/views",
   ]
 }

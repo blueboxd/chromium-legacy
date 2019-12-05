@@ -382,7 +382,7 @@ bool HTMLObjectElement::IsExposed() const {
       return false;
   }
   for (HTMLElement& element : Traversal<HTMLElement>::DescendantsOf(*this)) {
-    if (IsA<HTMLObjectElement>(element) || IsHTMLEmbedElement(element))
+    if (IsA<HTMLObjectElement>(element) || IsA<HTMLEmbedElement>(element))
       return false;
   }
   return true;

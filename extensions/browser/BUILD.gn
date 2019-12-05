@@ -195,6 +195,8 @@ jumbo_source_set("browser_sources") {
     "extensions_browser_api_provider.h",
     "extensions_browser_client.cc",
     "extensions_browser_client.h",
+    "extensions_browser_interface_binders.cc",
+    "extensions_browser_interface_binders.h",
     "external_install_info.cc",
     "external_install_info.h",
     "external_provider_interface.h",

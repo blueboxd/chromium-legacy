@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 public class LegacyHelpers {
     // These are legacy namespaces for the purpose of ID generation that will only affect the UI.
     public static final String LEGACY_OFFLINE_PAGE_NAMESPACE = "LEGACY_OFFLINE_PAGE";
+    public static final String LEGACY_CONTENT_INDEX_NAMESPACE = "content_index";
     public static final String LEGACY_DOWNLOAD_NAMESPACE = "LEGACY_DOWNLOAD";
     public static final String LEGACY_ANDROID_DOWNLOAD_NAMESPACE = "LEGACY_ANDROID_DOWNLOAD";
     private static final String LEGACY_DOWNLOAD_NAMESPACE_PREFIX = "LEGACY_DOWNLOAD";
@@ -42,6 +43,15 @@ public class LegacyHelpers {
     public static boolean isLegacyDownload(@Nullable ContentId id) {
         return id != null && id.namespace != null
                 && id.namespace.startsWith(LEGACY_DOWNLOAD_NAMESPACE);
+    }
+
+    /**
+     * Helper to determine if a {@link ContentId} is for an content indexed item.
+     * @param id The {@link ContentId} to inspect.
+     * @return   Whether or not {@code id} was built for a content indexed item.
+     */
+    public static boolean isLegacyContentIndexedItem(@Nullable ContentId id) {
+        return id != null && TextUtils.equals(LEGACY_CONTENT_INDEX_NAMESPACE, id.namespace);
     }
 
     /**

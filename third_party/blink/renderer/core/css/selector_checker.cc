@@ -1200,7 +1200,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       return element.MatchesValidityPseudoClasses() &&
              !element.IsValidElement();
     case CSSSelector::kPseudoChecked: {
-      if (auto* input_element = ToHTMLInputElementOrNull(element)) {
+      if (auto* input_element = DynamicTo<HTMLInputElement>(element)) {
         // Even though WinIE allows checked and indeterminate to
         // co-exist, the CSS selector spec says that you can't be
         // both checked and indeterminate. We will behave like WinIE

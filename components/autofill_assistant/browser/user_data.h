@@ -65,6 +65,8 @@ struct LoginChoice {
 // Tuple for holding credit card and billing address;
 struct PaymentInstrument {
   PaymentInstrument();
+  PaymentInstrument(std::unique_ptr<autofill::CreditCard> card,
+                    std::unique_ptr<autofill::AutofillProfile> billing_address);
   ~PaymentInstrument();
 
   std::unique_ptr<autofill::CreditCard> card;

@@ -13,9 +13,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
-#include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
-#include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_ice_candidate_platform.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_receiver_platform.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_transceiver_platform.h"
 
 namespace blink {
 
@@ -44,21 +44,21 @@ class MockWebRTCPeerConnectionHandlerClient
       DidChangePeerConnectionState,
       void(webrtc::PeerConnectionInterface::PeerConnectionState state));
   void DidAddReceiverPlanB(
-      std::unique_ptr<blink::WebRTCRtpReceiver> web_rtp_receiver) override {
+      std::unique_ptr<RTCRtpReceiverPlatform> web_rtp_receiver) override {
     DidAddReceiverPlanBForMock(&web_rtp_receiver);
   }
   void DidRemoveReceiverPlanB(
-      std::unique_ptr<blink::WebRTCRtpReceiver> web_rtp_receiver) override {
+      std::unique_ptr<RTCRtpReceiverPlatform> web_rtp_receiver) override {
     DidRemoveReceiverPlanBForMock(&web_rtp_receiver);
   }
   MOCK_METHOD1(DidModifySctpTransport,
                void(blink::WebRTCSctpTransportSnapshot snapshot));
   void DidModifyTransceivers(
-      blink::WebVector<std::unique_ptr<blink::WebRTCRtpTransceiver>>
-          web_transceivers,
+      blink::WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>>
+          platform_transceivers,
       WebVector<uintptr_t> removed_transceivers,
       bool is_remote_description) override {
-    DidModifyTransceiversForMock(&web_transceivers, is_remote_description);
+    DidModifyTransceiversForMock(&platform_transceivers, is_remote_description);
   }
   MOCK_METHOD1(DidAddRemoteDataChannel,
                void(scoped_refptr<webrtc::DataChannelInterface>));
@@ -68,20 +68,20 @@ class MockWebRTCPeerConnectionHandlerClient
   // Move-only arguments do not play nicely with MOCK, the workaround is to
   // EXPECT_CALL with these instead.
   MOCK_METHOD1(DidAddReceiverPlanBForMock,
-               void(std::unique_ptr<blink::WebRTCRtpReceiver>*));
+               void(std::unique_ptr<RTCRtpReceiverPlatform>*));
   MOCK_METHOD1(DidRemoveReceiverPlanBForMock,
-               void(std::unique_ptr<blink::WebRTCRtpReceiver>*));
+               void(std::unique_ptr<RTCRtpReceiverPlatform>*));
   MOCK_METHOD2(
       DidModifyTransceiversForMock,
-      void(blink::WebVector<std::unique_ptr<blink::WebRTCRtpTransceiver>>*,
+      void(blink::WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>>*,
            bool));
 
   void didGenerateICECandidateWorker(
       scoped_refptr<RTCIceCandidatePlatform> candidate);
   void didAddReceiverWorker(
-      std::unique_ptr<blink::WebRTCRtpReceiver>* stream_web_rtp_receivers);
+      std::unique_ptr<RTCRtpReceiverPlatform>* stream_web_rtp_receivers);
   void didRemoveReceiverWorker(
-      std::unique_ptr<blink::WebRTCRtpReceiver>* stream_web_rtp_receivers);
+      std::unique_ptr<RTCRtpReceiverPlatform>* stream_web_rtp_receivers);
 
   const std::string& candidate_sdp() const { return candidate_sdp_; }
   const base::Optional<uint16_t>& candidate_mlineindex() const {

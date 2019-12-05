@@ -73,7 +73,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   PhysicalRect OverflowClipRect(
       const PhysicalOffset& location,
       OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize) const;
-  LayoutSize ScrolledContentOffset() const;
+  LayoutSize PixelSnappedScrolledContentOffset() const;
   PhysicalSize ScrollSize() const;
 
   // Compute visual overflow of this box in the local coordinate.

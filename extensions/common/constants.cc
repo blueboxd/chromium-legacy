@@ -130,6 +130,7 @@ const char kScreensaverAppId[] = "mnoijifedipmbjaoekhadjcijipaijjc";
 const char kScreensaverEveAppId[] = "gdobaoeekhiklaljmhladjfdfkigampc";
 const char kScreensaverNocturneAppId[] = "lminefdanffajachfahfpmphfkhahcnj";
 const char kScreensaverAltAppId[] = "bnabjkecnachpogjlfilfcnlpcmacglh";
+const char kScreensaverKukuiAppId[] = "fafhbhdboeiciklpkminlncemohljlkj";
 
 bool IsSystemUIApp(base::StringPiece extension_id) {
   static const char* const kApps[] = {

@@ -27,11 +27,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseQuotaClient
     : public storage::QuotaClient {
  public:
   DatabaseQuotaClient(scoped_refptr<DatabaseTracker> tracker);
-  ~DatabaseQuotaClient() override;
 
   // QuotaClient method overrides
   ID id() const override;
-  void OnQuotaManagerDestroyed() override;
+  void OnQuotaManagerDestroyed() override {}
   void GetOriginUsage(const url::Origin& origin,
                       blink::mojom::StorageType type,
                       GetUsageCallback callback) override;
@@ -46,6 +45,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseQuotaClient
   bool DoesSupport(blink::mojom::StorageType type) const override;
 
  private:
+  ~DatabaseQuotaClient() override;
+
   scoped_refptr<DatabaseTracker> db_tracker_;  // only used on its sequence
 
   DISALLOW_COPY_AND_ASSIGN(DatabaseQuotaClient);

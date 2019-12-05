@@ -144,6 +144,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   void OnSetFrameColors(SkColor active_color, SkColor inactive_color) override;
   void OnSetStartupId(const char* startup_id) override;
   void OnSetApplicationId(const char* application_id) override;
+  void OnActivationRequested() override;
 
   // Overridden from SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;

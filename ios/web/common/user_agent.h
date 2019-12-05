@@ -7,6 +7,8 @@
 
 #include <string>
 
+#import <UIKit/UIKit.h>
+
 namespace web {
 
 // Enum type specifying a user agent's type.
@@ -14,7 +16,13 @@ enum class UserAgentType : short {
   // Used for pages that are generated for app-specific URLs.
   NONE = 0,
 
-  // The default user agent type.  Used to specify a mobile browser user agent.
+  // The default user agent type. The user agent used will depend on the size of
+  // the application window.
+  AUTOMATIC,
+
+  // TODO(crbug.com/1025227): Update comments.
+  // The default user agent type if kDefaultToDesktopOnIPad isn't enabled.  Used
+  // to specify a mobile browser user agent.
   MOBILE,
 
   // Used to specify a desktop browser user agent.
@@ -27,6 +35,10 @@ std::string GetUserAgentTypeDescription(UserAgentType type);
 // Returns a UserAgentType with the given description.  If |description| doesn't
 // correspond with a UserAgentType, UserAgentType::NONE will be returned.
 UserAgentType GetUserAgentTypeWithDescription(const std::string& description);
+
+// Returns the UserAgentType that should be used by default for the web content,
+// based on the size class of |web_view|.
+UserAgentType GetDefaultUserAgent(UIView* web_view);
 
 // Returns the os cpu info portion for a user agent.
 std::string BuildOSCpuInfo(UserAgentType type);

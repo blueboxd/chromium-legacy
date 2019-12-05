@@ -201,7 +201,8 @@ InfoBarService* DefaultBindingsDelegate::GetInfoBarService() {
 
 std::unique_ptr<base::DictionaryValue> BuildObjectForResponse(
     const net::HttpResponseHeaders* rh,
-    bool success) {
+    bool success,
+    int net_error) {
   auto response = std::make_unique<base::DictionaryValue>();
   int responseCode = 200;
   if (rh) {
@@ -211,6 +212,7 @@ std::unique_ptr<base::DictionaryValue> BuildObjectForResponse(
     responseCode = 404;
   }
   response->SetInteger("statusCode", responseCode);
+  response->SetInteger("netError", net_error);
 
   auto headers = std::make_unique<base::DictionaryValue>();
   size_t iterator = 0;
@@ -497,7 +499,8 @@ class DevToolsUIBindings::NetworkResourceLoader
           stream_id_, bindings_, resource_request_, traffic_annotation_,
           std::move(url_loader_factory_), callback_, delay);
     } else {
-      auto response = BuildObjectForResponse(response_headers_.get(), success);
+      auto response = BuildObjectForResponse(response_headers_.get(), success,
+                                             loader_->NetError());
       callback_.Run(response.get());
     }
     bindings_->loaders_.erase(bindings_->loaders_.find(this));
@@ -802,6 +805,7 @@ void DevToolsUIBindings::LoadNetworkResource(const DispatchCallback& callback,
   if (!gurl.is_valid()) {
     base::DictionaryValue response;
     response.SetInteger("statusCode", 404);
+    response.SetBoolean("urlValid", false);
     callback.Run(&response);
     return;
   }

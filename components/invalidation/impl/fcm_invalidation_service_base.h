@@ -52,7 +52,7 @@ class FCMInvalidationServiceBase
       FCMNetworkHandlerCallback fcm_network_handler_callback,
       PerUserTopicRegistrationManagerCallback
           per_user_topic_registration_manager_callback,
-      instance_id::InstanceIDDriver* client_id_driver,
+      instance_id::InstanceIDDriver* instance_id_driver,
       PrefService* pref_service,
       const std::string& sender_id = {});
 
@@ -66,6 +66,9 @@ class FCMInvalidationServiceBase
   // It is an error to have registered handlers when the service is destroyed.
   void RegisterInvalidationHandler(
       syncer::InvalidationHandler* handler) override;
+  // TODO(crbug.com/1029698,crbug.com/1029481): This methods updates the set of
+  // *topics* that we're *subscribed* to. Once the legacy Tango implementation
+  // (i.e. TiclInvalidationService) is gone, rename accordingly.
   bool UpdateRegisteredInvalidationIds(syncer::InvalidationHandler* handler,
                                        const syncer::ObjectIdSet& ids) override;
   void UnregisterInvalidationHandler(
@@ -116,9 +119,9 @@ class FCMInvalidationServiceBase
 
   void PopulateClientID();
   void ResetClientID();
-  void OnInstanceIdReceived(const std::string& id);
-  void OnDeleteIDCompleted(instance_id::InstanceID::Result result);
-  void DoUpdateRegisteredIdsIfNeeded();
+  void OnInstanceIDReceived(const std::string& instance_id);
+  void OnDeleteInstanceIDCompleted(instance_id::InstanceID::Result result);
+  void DoUpdateSubscribedTopicsIfNeeded();
   const std::string GetApplicationName();
 
   const std::string sender_id_;
@@ -133,6 +136,7 @@ class FCMInvalidationServiceBase
       per_user_topic_registration_manager_callback_;
 
   instance_id::InstanceIDDriver* const instance_id_driver_;
+  // The invalidator client ID, aka instance ID.
   std::string client_id_;
 
   PrefService* const pref_service_;

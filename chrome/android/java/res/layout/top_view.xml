@@ -26,42 +26,42 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:paddingStart="15dp"
-        app:horizontalSpacing="10dp">
+        app:horizontalSpacing="8dp">
 
         <org.chromium.ui.widget.ChipView
             android:id="@+id/icon_filter"
             android:gravity="center"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
-            style="@style/SuggestionChip" />
+            style="@style/SuggestionChipContacts" />
 
         <org.chromium.ui.widget.ChipView
             android:id="@+id/names_filter"
             android:gravity="center"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
-            style="@style/SuggestionChip" />
+            style="@style/SuggestionChipContacts" />
 
         <org.chromium.ui.widget.ChipView
             android:id="@+id/address_filter"
             android:gravity="center"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
-            style="@style/SuggestionChip" />
+            style="@style/SuggestionChipContacts" />
 
         <org.chromium.ui.widget.ChipView
             android:id="@+id/email_filter"
             android:gravity="center"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
-            style="@style/SuggestionChip" />
+            style="@style/SuggestionChipContacts" />
 
         <org.chromium.ui.widget.ChipView
             android:id="@+id/tel_filter"
             android:gravity="center"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
-            style="@style/SuggestionChip" />
+            style="@style/SuggestionChipContacts" />
     </org.chromium.chrome.browser.ui.widget.WrappingLayout>
 
     <LinearLayout

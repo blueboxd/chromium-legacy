@@ -888,11 +888,7 @@ class CORE_EXPORT Node : public EventTarget {
   }
 
   void FlatTreeParentChanged();
-  void RemovedFromFlatTree() {
-    // This node was previously part of the flat tree, but due to slot re-
-    // assignment it no longer is. We need to detach the layout tree.
-    DetachLayoutTree();
-  }
+  void RemovedFromFlatTree();
 
   void SetHasDuplicateAttributes() { SetFlag(kHasDuplicateAttributes); }
   bool HasDuplicateAttribute() const {

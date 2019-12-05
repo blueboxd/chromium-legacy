@@ -1399,7 +1399,7 @@ PhysicalRect NGBoxFragmentPainter::AdjustRectForScrolledContent(
 
     // Adjust the paint rect to reflect a scrolled content box with borders at
     // the ends.
-    PhysicalOffset offset(physical.ScrolledContentOffset());
+    PhysicalOffset offset(physical.PixelSnappedScrolledContentOffset());
     scrolled_paint_rect.Move(-offset);
     LayoutRectOutsets borders = AdjustedBorderOutsets(info);
     scrolled_paint_rect.size =
@@ -1476,8 +1476,8 @@ bool NGBoxFragmentPainter::NodeAtPoint(HitTestResult& result,
   if (!skip_children) {
     PhysicalOffset scrolled_offset = physical_offset;
     if (box_fragment_.HasOverflowClip()) {
-      scrolled_offset -=
-          PhysicalOffset(PhysicalFragment().ScrolledContentOffset());
+      scrolled_offset -= PhysicalOffset(
+          PhysicalFragment().PixelSnappedScrolledContentOffset());
     }
     if (HitTestChildren(result, hit_test_location, scrolled_offset, action))
       return true;

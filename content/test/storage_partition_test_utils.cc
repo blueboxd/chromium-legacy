@@ -66,7 +66,7 @@ IOThreadSharedURLLoaderFactoryOwner::Create(
 // static
 IOThreadSharedURLLoaderFactoryOwner::IOThreadSharedURLLoaderFactoryOwnerPtr
 IOThreadSharedURLLoaderFactoryOwner::Create(
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo> info) {
+    std::unique_ptr<network::PendingSharedURLLoaderFactory> info) {
   return IOThreadSharedURLLoaderFactoryOwnerPtr(
       new IOThreadSharedURLLoaderFactoryOwner(std::move(info)));
 }
@@ -81,7 +81,7 @@ IOThreadSharedURLLoaderFactoryOwner::IOThreadSharedURLLoaderFactoryOwner(
 }
 
 IOThreadSharedURLLoaderFactoryOwner::IOThreadSharedURLLoaderFactoryOwner(
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo> info) {
+    std::unique_ptr<network::PendingSharedURLLoaderFactory> info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   InitializeSharedFactoryOnIOThread(
       base::BindOnce(&network::SharedURLLoaderFactory::Create, std::move(info)),

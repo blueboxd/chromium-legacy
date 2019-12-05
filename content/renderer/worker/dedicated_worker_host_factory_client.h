@@ -9,7 +9,6 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/service_manager/public/mojom/interface_provider.mojom-forward.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
@@ -66,16 +65,14 @@ class DedicatedWorkerHostFactoryClient final
  private:
   // Implements blink::mojom::DedicatedWorkerHostFactoryClient.
   void OnWorkerHostCreated(
-      mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-          interface_provider,
       mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker) override;
   void OnScriptLoadStarted(
       blink::mojom::ServiceWorkerProviderInfoForClientPtr
           service_worker_provider_info,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-          subresource_loader_factory_bundle_info,
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+          pending_subresource_loader_factory_bundle,
       mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
           subresource_loader_updater,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info) override;

@@ -56,12 +56,17 @@ class WebGPUDecoderTest : public ::testing::Test {
         &shared_image_manager_, nullptr, &outputter_));
     ASSERT_EQ(decoder_->Initialize(), ContextResult::kSuccess);
 
-    constexpr uint32_t kadapter_client_id = 0;
+    constexpr uint32_t kAdapterClientID = 0;
     cmds::RequestAdapter requestAdapterCmd;
     requestAdapterCmd.Init(
-        kadapter_client_id,
+        kAdapterClientID,
         static_cast<uint32_t>(webgpu::PowerPreference::kHighPerformance));
     ASSERT_EQ(error::kNoError, ExecuteCmd(requestAdapterCmd));
+
+    constexpr uint32_t kAdapterServiceID = 0;
+    cmds::RequestDevice requestDeviceCmd;
+    requestDeviceCmd.Init(kAdapterServiceID, 0, 0, 0);
+    ASSERT_EQ(error::kNoError, ExecuteCmd(requestDeviceCmd));
 
     factory_ = std::make_unique<SharedImageFactory>(
         GpuPreferences(), GpuDriverBugWorkarounds(), GpuFeatureInfo(),

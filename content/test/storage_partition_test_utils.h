@@ -31,7 +31,7 @@ class IOThreadSharedURLLoaderFactoryOwner {
   static IOThreadSharedURLLoaderFactoryOwnerPtr Create(
       URLLoaderFactoryGetter* url_loader_factory_getter);
   static IOThreadSharedURLLoaderFactoryOwnerPtr Create(
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo> info);
+      std::unique_ptr<network::PendingSharedURLLoaderFactory> info);
 
   // Load the given |url| with the internal |shared_url_loader_factory_| on IO
   // thread and return the |net::Error| code.
@@ -44,7 +44,7 @@ class IOThreadSharedURLLoaderFactoryOwner {
   explicit IOThreadSharedURLLoaderFactoryOwner(
       URLLoaderFactoryGetter* url_loader_factory_getter);
   explicit IOThreadSharedURLLoaderFactoryOwner(
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo> info);
+      std::unique_ptr<network::PendingSharedURLLoaderFactory> info);
   ~IOThreadSharedURLLoaderFactoryOwner();
 
   // Lives on the IO thread.

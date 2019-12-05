@@ -100,8 +100,8 @@ class WebBundleURLLoaderFactory::EntryLoader final
     }
 
     factory_->reader()->ReadResponse(
-        resource_request.url, base::BindOnce(&EntryLoader::OnResponseReady,
-                                             weak_factory_.GetWeakPtr()));
+        resource_request, base::BindOnce(&EntryLoader::OnResponseReady,
+                                         weak_factory_.GetWeakPtr()));
   }
   ~EntryLoader() override = default;
 

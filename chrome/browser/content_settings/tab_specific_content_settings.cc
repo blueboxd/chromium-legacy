@@ -35,6 +35,7 @@
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/prefs/pref_service.h"
+#include "components/security_state/core/security_state_pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
@@ -766,6 +767,20 @@ void TabSpecificContentSettings::ReadyToCommitNavigation(
   if (!navigation_handle->IsInMainFrame() ||
       navigation_handle->IsSameDocument()) {
     return;
+  }
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+
+  if (profile &&
+      !profile->GetPrefs()->GetBoolean(
+          security_state::prefs::kStricterMixedContentTreatmentEnabled)) {
+    auto* render_frame_host = navigation_handle->GetRenderFrameHost();
+    mojo::AssociatedRemote<chrome::mojom::ContentSettingsAgent>
+        content_settings_agent;
+    render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
+        &content_settings_agent);
+    content_settings_agent->SetDisabledMixedContentUpgrades();
   }
 
   // There may be content settings that were updated for the navigated URL.

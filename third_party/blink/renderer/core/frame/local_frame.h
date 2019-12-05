@@ -108,6 +108,7 @@ class SpellChecker;
 class TextSuggestionController;
 class WebContentSettingsClient;
 class WebPluginContainerImpl;
+class WebPrescientNetworking;
 class WebURLLoaderFactory;
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<LocalFrame>;
@@ -452,6 +453,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   void DidChangeVisibleToHitTesting() override;
 
+  WebPrescientNetworking* PrescientNetworking();
+  void SetPrescientNetworkingForTesting(
+      std::unique_ptr<WebPrescientNetworking> prescient_networking);
+
   // blink::mojom::LocalFrame overrides:
   void GetTextSurroundingSelection(
       uint32_t max_length,
@@ -603,6 +608,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   mojom::FrameLifecycleState lifecycle_state_;
   base::Optional<mojom::FrameLifecycleState> pending_lifecycle_state_;
+
+  std::unique_ptr<WebPrescientNetworking> prescient_networking_;
 
   mojo::AssociatedRemote<mojom::blink::LocalFrameHost> local_frame_host_remote_;
   mojo::AssociatedReceiver<mojom::blink::LocalFrame> receiver_{this};

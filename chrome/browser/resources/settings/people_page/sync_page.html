@@ -97,7 +97,7 @@
     <template is="dom-if" if="[[shouldShowSyncAccountControl_(
         syncStatus.syncSystemEnabled, syncStatus.signinAllowed)]]">
       <settings-sync-account-control embedded-in-subpage
-          sync-status="[[syncStatus]]"
+          sync-status="[[syncStatus]]" prefs="{{prefs}}"
           promo-label-with-account=
               "$i18n{peopleSignInPromptSecondaryWithAccount}"
           promo-label-with-no-account=

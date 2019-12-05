@@ -98,6 +98,7 @@ suite('AllSites', function() {
     // The code being tested changes the Route. Reset so that state is not
     // leaked across tests.
     settings.resetRouteForTesting();
+    loadTimeData.overrideValues({enableStoragePressureUI: false});
   });
 
   /**

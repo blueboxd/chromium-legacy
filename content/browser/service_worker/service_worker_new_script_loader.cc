@@ -201,7 +201,7 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
   std::string error_message;
   std::unique_ptr<net::HttpResponseInfo> response_info =
       service_worker_loader_helpers::CreateHttpResponseInfoAndCheckHeaders(
-          response_head, &service_worker_state, &completion_status,
+          *response_head, &service_worker_state, &completion_status,
           &error_message);
   if (!response_info) {
     DCHECK_NE(net::OK, completion_status.error_code);

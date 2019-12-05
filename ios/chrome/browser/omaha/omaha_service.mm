@@ -285,16 +285,16 @@ OmahaService* OmahaService::GetInstance() {
 }
 
 // static
-void OmahaService::Start(std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-                             url_loader_factory_info,
+void OmahaService::Start(std::unique_ptr<network::PendingSharedURLLoaderFactory>
+                             pending_url_loader_factory,
                          const UpgradeRecommendedCallback& callback) {
-  DCHECK(url_loader_factory_info);
+  DCHECK(pending_url_loader_factory);
   DCHECK(!callback.is_null());
   OmahaService* result = GetInstance();
   result->set_upgrade_recommended_callback(callback);
   // This should only be called once.
-  DCHECK(!result->url_loader_factory_info_ || !result->url_loader_factory_);
-  result->url_loader_factory_info_ = std::move(url_loader_factory_info);
+  DCHECK(!result->pending_url_loader_factory_ || !result->url_loader_factory_);
+  result->pending_url_loader_factory_ = std::move(pending_url_loader_factory);
   result->locale_lang_ = GetApplicationContext()->GetApplicationLocale();
   base::PostTask(FROM_HERE, {web::WebThread::IO},
                  base::BindOnce(&OmahaService::SendOrScheduleNextPing,
@@ -523,13 +523,13 @@ void OmahaService::SendPing() {
   }
 
   // There are 2 situations here:
-  // 1) production code, where |url_loader_factory_info_| is used.
+  // 1) production code, where |pending_url_loader_factory_| is used.
   // 2) testing code, where the |url_loader_factory_| creation is triggered by
   // the test.
-  if (url_loader_factory_info_) {
+  if (pending_url_loader_factory_) {
     DCHECK(!url_loader_factory_);
     url_loader_factory_ = network::SharedURLLoaderFactory::Create(
-        std::move(url_loader_factory_info_));
+        std::move(pending_url_loader_factory_));
   }
 
   DCHECK(url_loader_factory_);

@@ -35,7 +35,7 @@ void P2PAsyncAddressResolver::Start(const rtc::SocketAddress& host_name,
   done_callback_ = std::move(done_callback);
   bool enable_mdns = base::FeatureList::IsEnabled(
       blink::features::kWebRtcHideLocalIpsWithMdns);
-  dispatcher_->GetP2PSocketManager()->get()->GetHostAddress(
+  dispatcher_->GetP2PSocketManager()->GetHostAddress(
       String(host_name.hostname().data()), enable_mdns,
       base::BindOnce(&P2PAsyncAddressResolver::OnResponse,
                      base::Unretained(this)));

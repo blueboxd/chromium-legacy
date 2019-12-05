@@ -28,20 +28,16 @@ namespace storage {
 
 class FileSystemContext;
 
-// An instance of this class is created per-profile.  This class
-// is self-destructed and will delete itself when OnQuotaManagerDestroyed
-// is called.
 // All of the public methods of this class are called by the quota manager
 // (except for the constructor/destructor).
 class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemQuotaClient
     : public storage::QuotaClient {
  public:
   FileSystemQuotaClient(FileSystemContext* file_system_context);
-  ~FileSystemQuotaClient() override;
 
   // QuotaClient methods.
   storage::QuotaClient::ID id() const override;
-  void OnQuotaManagerDestroyed() override;
+  void OnQuotaManagerDestroyed() override {}
   void GetOriginUsage(const url::Origin& origin,
                       blink::mojom::StorageType type,
                       GetUsageCallback callback) override;
@@ -58,6 +54,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemQuotaClient
   bool DoesSupport(blink::mojom::StorageType type) const override;
 
  private:
+  ~FileSystemQuotaClient() override;
+
   base::SequencedTaskRunner* file_task_runner() const;
 
   scoped_refptr<FileSystemContext> file_system_context_;

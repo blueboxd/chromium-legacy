@@ -9,8 +9,6 @@ source_set("common") {
     "crw_content_view.h",
     "crw_web_view_content_view.h",
     "crw_web_view_content_view.mm",
-    "features.h",
-    "features.mm",
     "origin_util.h",
     "origin_util.mm",
     "referrer_util.cc",
@@ -28,8 +26,23 @@ source_set("common") {
     "//url",
   ]
 
+  public_deps = [
+    ":features",
+  ]
+
   libs = [ "UIKit.framework" ]
 
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("features") {
+  deps = [
+    "//base",
+  ]
+  sources = [
+    "features.h",
+    "features.mm",
+  ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
@@ -54,6 +67,7 @@ source_set("web_view_creation_util") {
 # This is a separate target as it is used by Cronet.
 source_set("user_agent") {
   deps = [
+    ":features",
     "//base",
   ]
 
@@ -72,9 +86,11 @@ source_set("unittests") {
     ":common",
     ":user_agent",
     "//base",
+    "//base/test:test_support",
     "//ios/web/public/navigation",
     "//net",
     "//testing/gtest",
+    "//third_party/ocmock",
     "//ui/base",
     "//url",
   ]

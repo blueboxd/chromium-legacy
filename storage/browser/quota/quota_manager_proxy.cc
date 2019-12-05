@@ -35,16 +35,16 @@ void DidGetUsageAndQuota(base::SequencedTaskRunner* original_task_runner,
 
 }  // namespace
 
-void QuotaManagerProxy::RegisterClient(QuotaClient* client) {
+void QuotaManagerProxy::RegisterClient(scoped_refptr<QuotaClient> client) {
   if (!io_thread_->BelongsToCurrentThread() &&
       io_thread_->PostTask(
-          FROM_HERE,
-          base::BindOnce(&QuotaManagerProxy::RegisterClient, this, client))) {
+          FROM_HERE, base::BindOnce(&QuotaManagerProxy::RegisterClient, this,
+                                    std::move(client)))) {
     return;
   }
 
   if (manager_)
-    manager_->RegisterClient(client);
+    manager_->RegisterClient(std::move(client));
   else
     client->OnQuotaManagerDestroyed();
 }

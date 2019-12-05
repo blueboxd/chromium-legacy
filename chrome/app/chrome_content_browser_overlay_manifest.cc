@@ -67,10 +67,6 @@
 #include "chrome/browser/ui/webui/discards/discards.mojom.h"
 #endif
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "extensions/common/mojom/keep_alive.mojom.h"  // nogncheck
-#endif
-
 const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest {
     service_manager::ManifestBuilder()
@@ -139,9 +135,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                 chromeos::multidevice_setup::mojom::PrivilegedHostDeviceSetter,
                 chromeos::network_config::mojom::CrosNetworkConfig,
                 cros::mojom::CameraAppDeviceProvider,
-#endif
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-                extensions::KeepAlive,
 #endif
                 media::mojom::MediaEngagementScoreDetailsProvider,
                 media_router::mojom::MediaRouter,

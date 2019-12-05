@@ -315,6 +315,38 @@ bool Time::ExplodedMostlyEquals(const Exploded& lhs, const Exploded& rhs) {
          lhs.millisecond == rhs.millisecond;
 }
 
+// static
+bool Time::FromMillisecondsSinceUnixEpoch(int64_t unix_milliseconds,
+                                          Time* time) {
+  // Adjust the provided time from milliseconds since the Unix epoch (1970) to
+  // microseconds since the Windows epoch (1601), avoiding overflows.
+  base::CheckedNumeric<int64_t> checked_microseconds_win_epoch =
+      unix_milliseconds;
+  checked_microseconds_win_epoch *= kMicrosecondsPerMillisecond;
+  checked_microseconds_win_epoch += kTimeTToMicrosecondsOffset;
+  if (!checked_microseconds_win_epoch.IsValid()) {
+    *time = base::Time(0);
+    return false;
+  }
+
+  *time = Time(checked_microseconds_win_epoch.ValueOrDie());
+  return true;
+}
+
+int64_t Time::ToRoundedDownMillisecondsSinceUnixEpoch() const {
+  // Adjust from Windows epoch (1601) to Unix epoch (1970).
+  int64_t microseconds = us_ - kTimeTToMicrosecondsOffset;
+
+  // Round the microseconds towards -infinity.
+  if (microseconds >= 0) {
+    // In this case, rounding towards -infinity means rounding towards 0.
+    return microseconds / kMicrosecondsPerMillisecond;
+  } else {
+    return (microseconds - kMicrosecondsPerMillisecond + 1) /
+           kMicrosecondsPerMillisecond;
+  }
+}
+
 std::ostream& operator<<(std::ostream& os, Time time) {
   Time::Exploded exploded;
   time.UTCExplode(&exploded);

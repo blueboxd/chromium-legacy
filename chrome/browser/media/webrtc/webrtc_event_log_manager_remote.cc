@@ -285,7 +285,10 @@ void WebRtcRemoteEventLogManager::EnableForBrowserContext(
   DCHECK(network_connection_tracker_)
       << "SetNetworkConnectionTracker not called.";
   DCHECK(log_file_writer_factory_) << "SetLogFileWriterFactory() not called.";
-  DCHECK(!BrowserContextEnabled(browser_context_id)) << "Already enabled.";
+
+  if (BrowserContextEnabled(browser_context_id)) {
+    return;
+  }
 
   const base::FilePath remote_bound_logs_dir =
       GetRemoteBoundWebRtcEventLogsDir(browser_context_dir);

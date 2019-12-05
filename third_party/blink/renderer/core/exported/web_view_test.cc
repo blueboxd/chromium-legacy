@@ -3005,10 +3005,9 @@ TEST_F(WebViewTest, TouchDoesntSelectEmptyTextarea) {
   web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   EXPECT_TRUE(frame->SelectionAsText().IsEmpty());
 
-  HTMLTextAreaElement* text_area_element =
-      ToHTMLTextAreaElement(static_cast<Node*>(
-          web_view->MainFrameImpl()->GetDocument().GetElementById(
-              blanklinestextbox)));
+  auto* text_area_element = To<HTMLTextAreaElement>(static_cast<Node*>(
+      web_view->MainFrameImpl()->GetDocument().GetElementById(
+          blanklinestextbox)));
   text_area_element->setValue("hello");
 
   // Long-press past last word of textbox.
@@ -3716,9 +3715,7 @@ TEST_F(WebViewTest, ChooseValueFromDateTimeChooser) {
   Document* document =
       web_view_impl->MainFrameImpl()->GetFrame()->GetDocument();
 
-  HTMLInputElement* input_element;
-
-  input_element = ToHTMLInputElement(document->getElementById("date"));
+  auto* input_element = To<HTMLInputElement>(document->getElementById("date"));
   OpenDateTimeChooser(web_view_impl, input_element);
   GetExternalDateTimeChooser(web_view_impl)->ResponseHandler(true, 0);
   EXPECT_EQ("1970-01-01", input_element->value());
@@ -3728,7 +3725,8 @@ TEST_F(WebViewTest, ChooseValueFromDateTimeChooser) {
       ->ResponseHandler(true, std::numeric_limits<double>::quiet_NaN());
   EXPECT_EQ("", input_element->value());
 
-  input_element = ToHTMLInputElement(document->getElementById("datetimelocal"));
+  input_element =
+      To<HTMLInputElement>(document->getElementById("datetimelocal"));
   OpenDateTimeChooser(web_view_impl, input_element);
   GetExternalDateTimeChooser(web_view_impl)->ResponseHandler(true, 0);
   EXPECT_EQ("1970-01-01T00:00", input_element->value());
@@ -3738,7 +3736,7 @@ TEST_F(WebViewTest, ChooseValueFromDateTimeChooser) {
       ->ResponseHandler(true, std::numeric_limits<double>::quiet_NaN());
   EXPECT_EQ("", input_element->value());
 
-  input_element = ToHTMLInputElement(document->getElementById("month"));
+  input_element = To<HTMLInputElement>(document->getElementById("month"));
   OpenDateTimeChooser(web_view_impl, input_element);
   GetExternalDateTimeChooser(web_view_impl)->ResponseHandler(true, 0);
   EXPECT_EQ("1970-01", input_element->value());
@@ -3748,7 +3746,7 @@ TEST_F(WebViewTest, ChooseValueFromDateTimeChooser) {
       ->ResponseHandler(true, std::numeric_limits<double>::quiet_NaN());
   EXPECT_EQ("", input_element->value());
 
-  input_element = ToHTMLInputElement(document->getElementById("time"));
+  input_element = To<HTMLInputElement>(document->getElementById("time"));
   OpenDateTimeChooser(web_view_impl, input_element);
   GetExternalDateTimeChooser(web_view_impl)->ResponseHandler(true, 0);
   EXPECT_EQ("00:00", input_element->value());
@@ -3758,7 +3756,7 @@ TEST_F(WebViewTest, ChooseValueFromDateTimeChooser) {
       ->ResponseHandler(true, std::numeric_limits<double>::quiet_NaN());
   EXPECT_EQ("", input_element->value());
 
-  input_element = ToHTMLInputElement(document->getElementById("week"));
+  input_element = To<HTMLInputElement>(document->getElementById("week"));
   OpenDateTimeChooser(web_view_impl, input_element);
   GetExternalDateTimeChooser(web_view_impl)->ResponseHandler(true, 0);
   EXPECT_EQ("1970-W01", input_element->value());
@@ -4074,8 +4072,7 @@ TEST_F(WebViewTest, TextInputFlags) {
   // (A) <input>
   // (A.1) Verifies autocorrect/autocomplete/spellcheck flags are Off and
   // autocapitalize is set to none.
-  HTMLInputElement* input_element =
-      ToHTMLInputElement(document->getElementById("input"));
+  auto* input_element = To<HTMLInputElement>(document->getElementById("input"));
   document->SetFocusedElement(
       input_element,
       FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeNone, nullptr));
@@ -4088,7 +4085,7 @@ TEST_F(WebViewTest, TextInputFlags) {
 
   // (A.2) Verifies autocorrect/autocomplete/spellcheck flags are On and
   // autocapitalize is set to sentences.
-  input_element = ToHTMLInputElement(document->getElementById("input2"));
+  input_element = To<HTMLInputElement>(document->getElementById("input2"));
   document->SetFocusedElement(
       input_element,
       FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeNone, nullptr));
@@ -4101,8 +4098,8 @@ TEST_F(WebViewTest, TextInputFlags) {
 
   // (B) <textarea> Verifies the default text input flags are
   // WebTextInputFlagAutocapitalizeSentences.
-  HTMLTextAreaElement* text_area_element =
-      ToHTMLTextAreaElement(document->getElementById("textarea"));
+  auto* text_area_element =
+      To<HTMLTextAreaElement>(document->getElementById("textarea"));
   document->SetFocusedElement(
       text_area_element,
       FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeNone, nullptr));

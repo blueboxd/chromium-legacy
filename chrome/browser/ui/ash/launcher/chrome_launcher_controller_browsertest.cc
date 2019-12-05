@@ -2136,7 +2136,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest,
   chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
 
   ash::ShelfID shelf_id(app_id);
-  EXPECT_TRUE(ChromeLauncherController::instance()->IsPinned(shelf_id));
+  EXPECT_FALSE(ChromeLauncherController::instance()->IsPinned(shelf_id));
   EXPECT_EQ(
       shelf_id,
       ChromeLauncherController::instance()->shelf_model()->active_shelf_id());
@@ -2153,14 +2153,14 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest,
       GURL(embedded_test_server()->GetURL("/banners/manifest_test_page.html")),
       ui::PAGE_TRANSITION_LINK);
   // Install shortcut app.
-  chrome::SetAutoAcceptBookmarkAppDialogForTesting(true);
+  chrome::SetAutoAcceptBookmarkAppDialogForTesting(true, true);
   web_app::WebAppInstallObserver observer(profile());
   chrome::ExecuteCommand(browser(), IDC_CREATE_SHORTCUT);
   web_app::AppId app_id = observer.AwaitNextInstall();
-  chrome::SetAutoAcceptBookmarkAppDialogForTesting(false);
+  chrome::SetAutoAcceptBookmarkAppDialogForTesting(false, false);
 
   ash::ShelfID shelf_id(app_id);
-  EXPECT_TRUE(ChromeLauncherController::instance()->IsPinned(shelf_id));
+  EXPECT_FALSE(ChromeLauncherController::instance()->IsPinned(shelf_id));
   EXPECT_EQ(
       shelf_id,
       ChromeLauncherController::instance()->shelf_model()->active_shelf_id());

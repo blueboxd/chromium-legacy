@@ -8,16 +8,16 @@ namespace network {
 
 // static
 scoped_refptr<SharedURLLoaderFactory> SharedURLLoaderFactory::Create(
-    std::unique_ptr<SharedURLLoaderFactoryInfo> info) {
-  DCHECK(info);
-  return info->CreateFactory();
+    std::unique_ptr<PendingSharedURLLoaderFactory> pending_factory) {
+  DCHECK(pending_factory);
+  return pending_factory->CreateFactory();
 }
 
 SharedURLLoaderFactory::~SharedURLLoaderFactory() = default;
 
-SharedURLLoaderFactoryInfo::SharedURLLoaderFactoryInfo() = default;
+PendingSharedURLLoaderFactory::PendingSharedURLLoaderFactory() = default;
 
-SharedURLLoaderFactoryInfo::~SharedURLLoaderFactoryInfo() = default;
+PendingSharedURLLoaderFactory::~PendingSharedURLLoaderFactory() = default;
 
 bool SharedURLLoaderFactory::BypassRedirectChecks() const {
   return false;

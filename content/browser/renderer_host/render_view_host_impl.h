@@ -210,7 +210,10 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Called when the RenderFrameHostImpls/RenderFrameProxyHosts that own this
   // RenderViewHost leave the BackForwardCache. This occurs immediately before a
   // restored document is committed.
-  void LeaveBackForwardCache();
+  // |navigation_start| is the timestamp corresponding to the start of the
+  // back-forward cached navigation, which would be communicated to the page
+  // to allow it to record the latency of this navigation.
+  void LeaveBackForwardCache(base::TimeTicks navigation_start);
 
   // Called during frame eviction to return all SurfaceIds in the frame tree.
   // Marks all views in the frame tree as evicted.

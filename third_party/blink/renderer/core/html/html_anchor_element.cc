@@ -230,7 +230,7 @@ void HTMLAnchorElement::ParseAttribute(
         if (ProtocolIs(parsed_url, "http") || ProtocolIs(parsed_url, "https") ||
             parsed_url.StartsWith("//")) {
           WebPrescientNetworking* web_prescient_networking =
-              Platform::Current()->PrescientNetworking();
+              GetDocument().GetFrame()->PrescientNetworking();
           if (web_prescient_networking) {
             web_prescient_networking->PrefetchDNS(
                 GetDocument().CompleteURL(parsed_url).Host());

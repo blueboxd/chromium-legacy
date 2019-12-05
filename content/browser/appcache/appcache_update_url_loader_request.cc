@@ -15,6 +15,7 @@
 namespace content {
 
 namespace {
+
 constexpr net::NetworkTrafficAnnotationTag kAppCacheTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("appcache_update_job", R"(
       semantics {
@@ -44,6 +45,8 @@ constexpr net::NetworkTrafficAnnotationTag kAppCacheTrafficAnnotation =
             }
           }
       })");
+
+const char kAppCacheAllowed[] = "X-AppCache-Allowed";
 }
 
 AppCacheUpdateJob::UpdateURLLoaderRequest::~UpdateURLLoaderRequest() {}
@@ -104,6 +107,16 @@ int AppCacheUpdateJob::UpdateURLLoaderRequest::GetResponseCode() const {
   if (response_->headers)
     return response_->headers->response_code();
   return 0;
+}
+
+std::string
+AppCacheUpdateJob::UpdateURLLoaderRequest::GetAppCacheAllowedHeader() const {
+  std::string string_value;
+  if (!response_->headers || !response_->headers->EnumerateHeader(
+                                 nullptr, kAppCacheAllowed, &string_value)) {
+    return "";
+  }
+  return string_value;
 }
 
 const net::HttpResponseInfo&

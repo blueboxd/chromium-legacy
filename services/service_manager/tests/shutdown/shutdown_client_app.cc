@@ -9,6 +9,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -45,9 +46,9 @@ class ShutdownClientApp : public Service,
 
   // mojom::ShutdownTestClientController:
   void ConnectAndWait(ConnectAndWaitCallback callback) override {
-    mojom::ShutdownTestServicePtr service;
-    service_binding_.GetConnector()->BindInterface("shutdown_service",
-                                                   &service);
+    mojo::Remote<mojom::ShutdownTestService> service;
+    service_binding_.GetConnector()->BindInterface(
+        "shutdown_service", service.BindNewPipeAndPassReceiver());
 
     mojo::Receiver<mojom::ShutdownTestClient> client_receiver(this);
 

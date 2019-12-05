@@ -330,8 +330,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
 
   // Called by clients via proxy.
   // Registers a quota client to the manager.
-  // The client must remain valid until OnQuotaManagerDestored is called.
-  void RegisterClient(QuotaClient* client);
+  void RegisterClient(scoped_refptr<QuotaClient> client);
 
   UsageTracker* GetUsageTracker(blink::mojom::StorageType type) const;
 
@@ -448,7 +447,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   GetOriginCallback lru_origin_callback_;
   std::set<url::Origin> access_notified_origins_;
 
-  std::vector<QuotaClient*> clients_;
+  std::vector<scoped_refptr<QuotaClient>> clients_;
 
   std::unique_ptr<UsageTracker> temporary_usage_tracker_;
   std::unique_ptr<UsageTracker> persistent_usage_tracker_;

@@ -13,7 +13,9 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "base/bind.h"
+#include "base/containers/flat_tree.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/crostini/crostini_force_close_watcher.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
@@ -32,6 +34,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_features.h"
 #include "components/arc/arc_util.h"
+#include "components/exo/permission.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/user_manager/user_manager.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -45,6 +48,11 @@
 #include "ui/wm/core/window_util.h"
 
 namespace {
+
+// Time allowed for apps to self-activate after launch, see
+// go/crostini-self-activate for details.
+constexpr base::TimeDelta kSelfActivationTimeout =
+    base::TimeDelta::FromSeconds(5);
 
 void MoveWindowFromOldDisplayToNewDisplay(aura::Window* window,
                                           display::Display& old_display,
@@ -306,6 +314,10 @@ void CrostiniAppWindowShelfController::OnWindowDestroying(
   }
 
   aura_window_to_app_window_.erase(app_window_it);
+
+  base::EraseIf(activation_permissions_, [&window](const auto& element) {
+    return element.first == window;
+  });
 }
 
 AppWindowLauncherItemController*
@@ -367,6 +379,24 @@ void CrostiniAppWindowShelfController::OnAppLaunchRequested(
     const std::string& app_id,
     int64_t display_id) {
   crostini_app_display_.Register(app_id, display_id);
+  // Remove the old permissions and add a permission for every window the app
+  // currently has open.
+  activation_permissions_.clear();
+  ash::ShelfModel* model = owner()->shelf_model();
+  AppWindowLauncherItemController* launcher_item_controller =
+      model->GetAppWindowLauncherItemController(
+          model->items()[model->ItemIndexByAppID(app_id)].id);
+  // Apps run for the first time won't have a launcher controller yet, return
+  // early because they won't have windows either so permissions aren't
+  // necessary.
+  if (!launcher_item_controller)
+    return;
+  for (ui::BaseWindow* app_window : launcher_item_controller->windows()) {
+    activation_permissions_.emplace(
+        app_window->GetNativeWindow(),
+        exo::GrantPermissionToActivate(app_window->GetNativeWindow(),
+                                       kSelfActivationTimeout));
+  }
 }
 
 void CrostiniAppWindowShelfController::Restart(const ash::ShelfID& shelf_id,

@@ -3,7 +3,6 @@
     Constructor(DOMString format),
     ConstructorCallWith=ScriptState,
     RaisesException=Constructor,
-    RuntimeEnabled=CompressionStreams,
     MeasureAs=DecompressionStreamConstructor
 ] interface DecompressionStream {
     readonly attribute ReadableStream readable;

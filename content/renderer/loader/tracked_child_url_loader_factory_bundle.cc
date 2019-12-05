@@ -11,23 +11,24 @@
 
 namespace content {
 
-TrackedChildURLLoaderFactoryBundleInfo::
-    TrackedChildURLLoaderFactoryBundleInfo() = default;
+TrackedChildPendingURLLoaderFactoryBundle::
+    TrackedChildPendingURLLoaderFactoryBundle() = default;
 
-TrackedChildURLLoaderFactoryBundleInfo::TrackedChildURLLoaderFactoryBundleInfo(
-    mojo::PendingRemote<network::mojom::URLLoaderFactory>
-        pending_default_factory,
-    mojo::PendingRemote<network::mojom::URLLoaderFactory>
-        pending_appcache_factory,
-    SchemeMap pending_scheme_specific_factories,
-    OriginMap pending_isolated_world_factories,
-    mojo::PendingRemote<network::mojom::URLLoaderFactory>
-        direct_network_factory_remote,
-    mojo::PendingRemote<network::mojom::URLLoaderFactory>
-        pending_prefetch_loader_factory,
-    std::unique_ptr<HostPtrAndTaskRunner> main_thread_host_bundle,
-    bool bypass_redirect_checks)
-    : ChildURLLoaderFactoryBundleInfo(
+TrackedChildPendingURLLoaderFactoryBundle::
+    TrackedChildPendingURLLoaderFactoryBundle(
+        mojo::PendingRemote<network::mojom::URLLoaderFactory>
+            pending_default_factory,
+        mojo::PendingRemote<network::mojom::URLLoaderFactory>
+            pending_appcache_factory,
+        SchemeMap pending_scheme_specific_factories,
+        OriginMap pending_isolated_world_factories,
+        mojo::PendingRemote<network::mojom::URLLoaderFactory>
+            direct_network_factory_remote,
+        mojo::PendingRemote<network::mojom::URLLoaderFactory>
+            pending_prefetch_loader_factory,
+        std::unique_ptr<HostPtrAndTaskRunner> main_thread_host_bundle,
+        bool bypass_redirect_checks)
+    : ChildPendingURLLoaderFactoryBundle(
           std::move(pending_default_factory),
           std::move(pending_appcache_factory),
           std::move(pending_scheme_specific_factories),
@@ -37,12 +38,12 @@ TrackedChildURLLoaderFactoryBundleInfo::TrackedChildURLLoaderFactoryBundleInfo(
           bypass_redirect_checks),
       main_thread_host_bundle_(std::move(main_thread_host_bundle)) {}
 
-TrackedChildURLLoaderFactoryBundleInfo::
-    ~TrackedChildURLLoaderFactoryBundleInfo() = default;
+TrackedChildPendingURLLoaderFactoryBundle::
+    ~TrackedChildPendingURLLoaderFactoryBundle() = default;
 
 scoped_refptr<network::SharedURLLoaderFactory>
-TrackedChildURLLoaderFactoryBundleInfo::CreateFactory() {
-  auto other = std::make_unique<TrackedChildURLLoaderFactoryBundleInfo>();
+TrackedChildPendingURLLoaderFactoryBundle::CreateFactory() {
+  auto other = std::make_unique<TrackedChildPendingURLLoaderFactoryBundle>();
   other->pending_default_factory_ = std::move(pending_default_factory_);
   other->pending_appcache_factory_ = std::move(pending_appcache_factory_);
   other->pending_scheme_specific_factories_ =
@@ -63,7 +64,8 @@ TrackedChildURLLoaderFactoryBundleInfo::CreateFactory() {
 // -----------------------------------------------------------------------------
 
 TrackedChildURLLoaderFactoryBundle::TrackedChildURLLoaderFactoryBundle(
-    std::unique_ptr<TrackedChildURLLoaderFactoryBundleInfo> pending_factories) {
+    std::unique_ptr<TrackedChildPendingURLLoaderFactoryBundle>
+        pending_factories) {
   DCHECK(pending_factories->main_thread_host_bundle());
   main_thread_host_bundle_ =
       std::move(pending_factories->main_thread_host_bundle());
@@ -75,10 +77,10 @@ TrackedChildURLLoaderFactoryBundle::~TrackedChildURLLoaderFactoryBundle() {
   RemoveObserverOnMainThread();
 }
 
-std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+std::unique_ptr<network::PendingSharedURLLoaderFactory>
 TrackedChildURLLoaderFactoryBundle::Clone() {
   auto pending_factories =
-      base::WrapUnique(static_cast<ChildURLLoaderFactoryBundleInfo*>(
+      base::WrapUnique(static_cast<ChildPendingURLLoaderFactoryBundle*>(
           ChildURLLoaderFactoryBundle::Clone().release()));
 
   DCHECK(main_thread_host_bundle_);
@@ -86,7 +88,7 @@ TrackedChildURLLoaderFactoryBundle::Clone() {
   auto main_thread_host_bundle_clone = std::make_unique<HostPtrAndTaskRunner>(
       main_thread_host_bundle_->first, main_thread_host_bundle_->second);
 
-  return std::make_unique<TrackedChildURLLoaderFactoryBundleInfo>(
+  return std::make_unique<TrackedChildPendingURLLoaderFactoryBundle>(
       std::move(pending_factories->pending_default_factory()),
       std::move(pending_factories->pending_appcache_factory()),
       std::move(pending_factories->pending_scheme_specific_factories()),
@@ -124,9 +126,9 @@ void TrackedChildURLLoaderFactoryBundle::RemoveObserverOnMainThread() {
 }
 
 void TrackedChildURLLoaderFactoryBundle::OnUpdate(
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo> info) {
+    std::unique_ptr<network::PendingSharedURLLoaderFactory> info) {
   Update(base::WrapUnique(
-      static_cast<ChildURLLoaderFactoryBundleInfo*>(info.release())));
+      static_cast<ChildPendingURLLoaderFactoryBundle*>(info.release())));
 }
 
 // -----------------------------------------------------------------------------
@@ -141,10 +143,10 @@ HostChildURLLoaderFactoryBundle::HostChildURLLoaderFactoryBundle(
 
 HostChildURLLoaderFactoryBundle::~HostChildURLLoaderFactoryBundle() = default;
 
-std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+std::unique_ptr<network::PendingSharedURLLoaderFactory>
 HostChildURLLoaderFactoryBundle::Clone() {
   auto pending_factories =
-      base::WrapUnique(static_cast<ChildURLLoaderFactoryBundleInfo*>(
+      base::WrapUnique(static_cast<ChildPendingURLLoaderFactoryBundle*>(
           ChildURLLoaderFactoryBundle::Clone().release()));
 
   DCHECK(base::SequencedTaskRunnerHandle::IsSet());
@@ -152,7 +154,7 @@ HostChildURLLoaderFactoryBundle::Clone() {
       TrackedChildURLLoaderFactoryBundle::HostPtrAndTaskRunner>(AsWeakPtr(),
                                                                 task_runner_);
 
-  return std::make_unique<TrackedChildURLLoaderFactoryBundleInfo>(
+  return std::make_unique<TrackedChildPendingURLLoaderFactoryBundle>(
       std::move(pending_factories->pending_default_factory()),
       std::move(pending_factories->pending_appcache_factory()),
       std::move(pending_factories->pending_scheme_specific_factories()),
@@ -163,10 +165,10 @@ HostChildURLLoaderFactoryBundle::Clone() {
       pending_factories->bypass_redirect_checks());
 }
 
-std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+std::unique_ptr<network::PendingSharedURLLoaderFactory>
 HostChildURLLoaderFactoryBundle::CloneWithoutAppCacheFactory() {
   auto pending_factories =
-      base::WrapUnique(static_cast<ChildURLLoaderFactoryBundleInfo*>(
+      base::WrapUnique(static_cast<ChildPendingURLLoaderFactoryBundle*>(
           ChildURLLoaderFactoryBundle::CloneWithoutAppCacheFactory()
               .release()));
 
@@ -175,7 +177,7 @@ HostChildURLLoaderFactoryBundle::CloneWithoutAppCacheFactory() {
       TrackedChildURLLoaderFactoryBundle::HostPtrAndTaskRunner>(AsWeakPtr(),
                                                                 task_runner_);
 
-  return std::make_unique<TrackedChildURLLoaderFactoryBundleInfo>(
+  return std::make_unique<TrackedChildPendingURLLoaderFactoryBundle>(
       std::move(pending_factories->pending_default_factory()),
       std::move(pending_factories->pending_appcache_factory()),
       std::move(pending_factories->pending_scheme_specific_factories()),
@@ -187,7 +189,7 @@ HostChildURLLoaderFactoryBundle::CloneWithoutAppCacheFactory() {
 }
 
 void HostChildURLLoaderFactoryBundle::UpdateThisAndAllClones(
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) {
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle> info) {
   DCHECK(RenderThread::Get()) << "Should run on the main renderer thread";
   DCHECK(observer_list_);
 
@@ -225,7 +227,7 @@ void HostChildURLLoaderFactoryBundle::RemoveObserver(
 
 void HostChildURLLoaderFactoryBundle::NotifyUpdateOnMainOrWorkerThread(
     ObserverPtrAndTaskRunner* observer_bundle,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo> update_info) {
+    std::unique_ptr<network::PendingSharedURLLoaderFactory> update_info) {
   observer_bundle->second->PostTask(
       FROM_HERE,
       base::BindOnce(&TrackedChildURLLoaderFactoryBundle::OnUpdate,

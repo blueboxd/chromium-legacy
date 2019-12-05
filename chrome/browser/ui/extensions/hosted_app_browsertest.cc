@@ -416,11 +416,11 @@ class HostedAppTest : public extensions::ExtensionBrowserTest,
   }
 
   web_app::AppId InstallShortcutAppForCurrentUrl() {
-    chrome::SetAutoAcceptBookmarkAppDialogForTesting(true);
+    chrome::SetAutoAcceptBookmarkAppDialogForTesting(true, false);
     web_app::WebAppInstallObserver observer(profile());
     CHECK(chrome::ExecuteCommand(browser(), IDC_CREATE_SHORTCUT));
     web_app::AppId app_id = observer.AwaitNextInstall();
-    chrome::SetAutoAcceptBookmarkAppDialogForTesting(false);
+    chrome::SetAutoAcceptBookmarkAppDialogForTesting(false, false);
     return app_id;
   }
 

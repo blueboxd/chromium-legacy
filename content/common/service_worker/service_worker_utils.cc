@@ -226,7 +226,7 @@ const char* ServiceWorkerUtils::FetchResponseSourceToSuffix(
 }
 
 ServiceWorkerUtils::ResourceResponseHeadAndMetadata::
-    ResourceResponseHeadAndMetadata(network::ResourceResponseHead head,
+    ResourceResponseHeadAndMetadata(network::mojom::URLResponseHeadPtr head,
                                     std::vector<uint8_t> metadata)
     : head(std::move(head)), metadata(std::move(metadata)) {}
 
@@ -246,24 +246,24 @@ ServiceWorkerUtils::CreateResourceResponseHeadAndMetadata(
     int response_data_size) {
   DCHECK(http_info);
 
-  network::ResourceResponseHead head;
-  head.request_start = request_start_time;
-  head.response_start = response_start_time;
-  head.request_time = http_info->request_time;
-  head.response_time = http_info->response_time;
-  head.headers = http_info->headers;
-  head.headers->GetMimeType(&head.mime_type);
-  head.headers->GetCharset(&head.charset);
-  head.content_length = response_data_size;
-  head.was_fetched_via_spdy = http_info->was_fetched_via_spdy;
-  head.was_alpn_negotiated = http_info->was_alpn_negotiated;
-  head.connection_info = http_info->connection_info;
-  head.alpn_negotiated_protocol = http_info->alpn_negotiated_protocol;
-  head.remote_endpoint = http_info->remote_endpoint;
-  head.cert_status = http_info->ssl_info.cert_status;
+  auto head = network::mojom::URLResponseHead::New();
+  head->request_start = request_start_time;
+  head->response_start = response_start_time;
+  head->request_time = http_info->request_time;
+  head->response_time = http_info->response_time;
+  head->headers = http_info->headers;
+  head->headers->GetMimeType(&head->mime_type);
+  head->headers->GetCharset(&head->charset);
+  head->content_length = response_data_size;
+  head->was_fetched_via_spdy = http_info->was_fetched_via_spdy;
+  head->was_alpn_negotiated = http_info->was_alpn_negotiated;
+  head->connection_info = http_info->connection_info;
+  head->alpn_negotiated_protocol = http_info->alpn_negotiated_protocol;
+  head->remote_endpoint = http_info->remote_endpoint;
+  head->cert_status = http_info->ssl_info.cert_status;
 
   if (options & network::mojom::kURLLoadOptionSendSSLInfoWithResponse)
-    head.ssl_info = http_info->ssl_info;
+    head->ssl_info = http_info->ssl_info;
 
   std::vector<uint8_t> metadata;
   if (http_info->metadata) {

@@ -44,7 +44,8 @@ TEST_P(InstallLimiterTest, ShouldDeferInstall) {
   const std::vector<std::string> screensaver_ids = {
       extension_misc::kScreensaverAppId, extension_misc::kScreensaverEveAppId,
       extension_misc::kScreensaverNocturneAppId,
-      extension_misc::kScreensaverAltAppId};
+      extension_misc::kScreensaverAltAppId,
+      extension_misc::kScreensaverKukuiAppId};
 
   chromeos::DemoModeTestHelper demo_mode_test_helper;
   if (GetParam() != chromeos::DemoSession::DemoModeConfig::kNone)

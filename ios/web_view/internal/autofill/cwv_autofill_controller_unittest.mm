@@ -339,26 +339,4 @@ TEST_F(CWVAutofillControllerTest, SubmitCallback) {
   }
 }
 
-// Tests CWVAutofillController delegate form insertion callback is invoked.
-TEST_F(CWVAutofillControllerTest, DidInsertFormElementsCallback) {
-  id delegate = OCMProtocolMock(@protocol(CWVAutofillControllerDelegate));
-  autofill_controller_.delegate = delegate;
-
-  // [delegate expect] returns an autoreleased object, but it must be destroyed
-  // before this test exits to avoid holding on to |autofill_controller_|.
-  @autoreleasepool {
-    [[delegate expect]
-        autofillControllerDidInsertFormElements:autofill_controller_];
-
-    autofill::FormActivityParams params;
-    params.frame_id = base::SysNSStringToUTF8(kTestFrameId);
-    params.type = "form_changed";
-    web::FakeWebFrame frame(base::SysNSStringToUTF8(kTestFrameId), true,
-                            GURL::EmptyGURL());
-    test_form_activity_tab_helper_->FormActivityRegistered(&frame, params);
-
-    [delegate verify];
-  }
-}
-
 }  // namespace ios_web_view

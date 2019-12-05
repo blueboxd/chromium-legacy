@@ -145,6 +145,22 @@ class EnterpriseReportingPrivateSetDeviceDataFunction
   DISALLOW_COPY_AND_ASSIGN(EnterpriseReportingPrivateSetDeviceDataFunction);
 };
 
+class EnterpriseReportingPrivateGetDeviceInfoFunction
+    : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("enterprise.reportingPrivate.getDeviceInfo",
+                             ENTERPRISEREPORTINGPRIVATE_GETDEVICEINFO)
+  EnterpriseReportingPrivateGetDeviceInfoFunction();
+
+  // ExtensionFunction
+  ExtensionFunction::ResponseAction Run() override;
+
+ private:
+  ~EnterpriseReportingPrivateGetDeviceInfoFunction() override;
+
+  DISALLOW_COPY_AND_ASSIGN(EnterpriseReportingPrivateGetDeviceInfoFunction);
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_ENTERPRISE_REPORTING_PRIVATE_ENTERPRISE_REPORTING_PRIVATE_API_H_

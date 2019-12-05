@@ -108,6 +108,11 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter reason
 [Worker]     getter wasClean
 [Worker]     method constructor
+[Worker] interface CompressionStream
+[Worker]     attribute @@toStringTag
+[Worker]     getter readable
+[Worker]     getter writable
+[Worker]     method constructor
 [Worker] interface CountQueuingStrategy
 [Worker]     attribute @@toStringTag
 [Worker]     getter highWaterMark
@@ -329,6 +334,11 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker]     method contains
 [Worker]     method item
+[Worker] interface DecompressionStream
+[Worker]     attribute @@toStringTag
+[Worker]     getter readable
+[Worker]     getter writable
+[Worker]     method constructor
 [Worker] interface DedicatedWorkerGlobalScope : WorkerGlobalScope
 [Worker]     attribute @@toStringTag
 [Worker]     attribute PERSISTENT

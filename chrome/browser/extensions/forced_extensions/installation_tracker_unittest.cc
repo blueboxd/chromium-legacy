@@ -7,6 +7,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/timer/mock_timer.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
@@ -17,6 +18,7 @@
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -59,17 +61,25 @@ class ForcedExtensionsInstallationTrackerTest : public testing::Test {
   }
 
   void SetupForceList() {
-    base::Value dict(base::Value::Type::DICTIONARY);
-    dict.SetKey(kExtensionId1, base::Value(kExtensionUrl1));
-    dict.SetKey(kExtensionId2, base::Value(kExtensionUrl2));
-    prefs_->SetManagedPref(pref_names::kInstallForceList,
-                           base::Value::ToUniquePtrValue(std::move(dict)));
+    std::unique_ptr<base::Value> dict =
+        DictionaryBuilder()
+            .Set(kExtensionId1,
+                 DictionaryBuilder()
+                     .Set(ExternalProviderImpl::kExternalUpdateUrl,
+                          kExtensionUrl1)
+                     .Build())
+            .Set(kExtensionId2,
+                 DictionaryBuilder()
+                     .Set(ExternalProviderImpl::kExternalUpdateUrl,
+                          kExtensionUrl2)
+                     .Build())
+            .Build();
+    prefs_->SetManagedPref(pref_names::kInstallForceList, std::move(dict));
   }
 
   void SetupEmptyForceList() {
-    base::Value dict(base::Value::Type::DICTIONARY);
-    prefs_->SetManagedPref(pref_names::kInstallForceList,
-                           base::Value::ToUniquePtrValue(std::move(dict)));
+    std::unique_ptr<base::Value> dict = DictionaryBuilder().Build();
+    prefs_->SetManagedPref(pref_names::kInstallForceList, std::move(dict));
   }
 
  protected:

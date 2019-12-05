@@ -49,8 +49,8 @@ void SetDevToolsAttachedOnCoreThread(
 void UpdateLoaderFactoriesOnCoreThread(
     base::WeakPtr<ServiceWorkerContextCore> context_weak,
     int64_t version_id,
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo> script_bundle,
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_bundle) {
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle> script_bundle,
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle> subresource_bundle) {
   auto* version =
       context_weak ? context_weak->GetLiveVersion(version_id) : nullptr;
   if (!version)

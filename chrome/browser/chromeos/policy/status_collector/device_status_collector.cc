@@ -128,6 +128,15 @@ const char kStorageInfoPath[] = "/var/log/storage_info.txt";
 // The location where stateful partition info is read from.
 const char kStatefulPartitionPath[] = "/home/.shadow";
 
+// TODO(b/144081278): Remove when resolved.
+// Debug values for cases when firmware version is not present.
+const char kFirmwareFileEmpty[] = "FirmwareFileEmpty";
+const char kFirmwareFileNotRead[] = "FirmwareFileNotRead";
+const char kFirmwareNotInitialized[] = "FirmwareNotInitialized";
+const char kFirmwareNotParsed[] = "FirmwareNotParsed";
+// File to look for firmware number in.
+const char kPathFirmware[] = "/var/log/bios_info.txt";
+
 // Helper function (invoked via blocking pool) to fetch information about
 // mounted disks.
 std::vector<em::VolumeInfo> GetVolumeInfo(
@@ -497,6 +506,24 @@ void AddCrostiniAppListForProfile(Profile* const profile,
   }
 }
 
+// Reads content of firmware file.
+// Returns pair of the firmware version and fetch error if not fetched.
+// TODO(b/144081278): Just call chromeos::version_loader::ParseFirmware() when
+// it's resolved.
+std::pair<std::string, std::string> ReadFirmwareVersion() {
+  std::string firmware;
+  std::string contents;
+  const base::FilePath file_path(kPathFirmware);
+  if (!base::ReadFileToString(file_path, &contents))
+    return {firmware, kFirmwareFileNotRead};
+  if (contents.empty())
+    return {firmware, kFirmwareFileEmpty};
+  firmware = chromeos::version_loader::ParseFirmware(contents);
+  if (firmware.empty())
+    return {firmware, kFirmwareNotParsed};
+  return {firmware, std::string()};
+}
+
 }  // namespace
 
 namespace policy {
@@ -789,6 +816,7 @@ DeviceStatusCollector::DeviceStatusCollector(
     const CrosHealthdDataFetcher& cros_healthd_data_fetcher)
     : StatusCollector(provider, chromeos::CrosSettings::Get()),
       pref_service_(pref_service),
+      firmware_fetch_error_(kFirmwareNotInitialized),
       volume_info_fetcher_(volume_info_fetcher),
       cpu_statistics_fetcher_(cpu_statistics_fetcher),
       cpu_temp_fetcher_(cpu_temp_fetcher),
@@ -886,7 +914,7 @@ DeviceStatusCollector::DeviceStatusCollector(
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&chromeos::version_loader::GetFirmware),
+      base::Bind(&ReadFirmwareVersion),
       base::Bind(&DeviceStatusCollector::OnOSFirmware,
                  weak_factory_.GetWeakPtr()));
   chromeos::tpm_util::GetTpmVersion(base::BindOnce(
@@ -1334,7 +1362,11 @@ bool DeviceStatusCollector::GetVersionInfo(
   status->set_os_version(os_version_);
   status->set_browser_version(version_info::GetVersionNumber());
   status->set_channel(ConvertToProtoChannel(chrome::GetChannel()));
-  status->set_firmware_version(firmware_version_);
+
+  // TODO(b/144081278): Remove when resolved.
+  // When firmware version is not fetched, report error instead.
+  status->set_firmware_version(
+      !firmware_version_.empty() ? firmware_version_ : firmware_fetch_error_);
 
   em::TpmVersionInfo* const tpm_version_info =
       status->mutable_tpm_version_info();
@@ -1927,8 +1959,10 @@ void DeviceStatusCollector::OnOSVersion(const std::string& version) {
   os_version_ = version;
 }
 
-void DeviceStatusCollector::OnOSFirmware(const std::string& version) {
-  firmware_version_ = version;
+void DeviceStatusCollector::OnOSFirmware(
+    std::pair<const std::string&, const std::string&> version) {
+  firmware_version_ = version.first;
+  firmware_fetch_error_ = version.second;
 }
 
 void DeviceStatusCollector::OnTpmVersion(

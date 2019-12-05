@@ -1322,13 +1322,11 @@ bool ChromeContentRendererClient::IsLinkVisited(uint64_t link_hash) {
   return chrome_observer_->visited_link_reader()->IsVisited(link_hash);
 }
 
-blink::WebPrescientNetworking*
-ChromeContentRendererClient::GetPrescientNetworking() {
-  if (!web_prescient_networking_impl_) {
-    web_prescient_networking_impl_ =
-        std::make_unique<network_hints::WebPrescientNetworkingImpl>();
-  }
-  return web_prescient_networking_impl_.get();
+std::unique_ptr<blink::WebPrescientNetworking>
+ChromeContentRendererClient::CreatePrescientNetworking(
+    content::RenderFrame* render_frame) {
+  return std::make_unique<network_hints::WebPrescientNetworkingImpl>(
+      render_frame);
 }
 
 bool ChromeContentRendererClient::IsExternalPepperPlugin(

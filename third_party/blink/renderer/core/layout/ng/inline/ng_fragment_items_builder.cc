@@ -201,7 +201,10 @@ void NGFragmentItemsBuilder::AssociateNextForSameLayoutObject() {
   // items_[0] can be:
   //  - kBox  for list marker, e.g. <li>abc</li>
   //  - kLine for line, e.g. <div>abc</div>
-  DCHECK(items_.IsEmpty() || items_[0]->IsContainer()) << items_[0];
+  // Calling get() is necessary below because operator<< in std::unique_ptr is
+  // a C++20 feature.
+  // TODO(https://crbug.com/980914): Drop .get() once we move to C++20.
+  DCHECK(items_.IsEmpty() || items_[0]->IsContainer()) << items_[0].get();
   HashMap<const LayoutObject*, wtf_size_t> last_fragment_map;
   for (wtf_size_t index = 1u; index < items_.size(); ++index) {
     const NGFragmentItem& item = *items_[index];

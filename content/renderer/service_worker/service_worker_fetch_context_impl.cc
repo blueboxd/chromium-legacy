@@ -23,10 +23,10 @@ namespace content {
 ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
     const blink::mojom::RendererPreferences& renderer_preferences,
     const GURL& worker_script_url,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        url_loader_factory_info,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        script_loader_factory_info,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_url_loader_factory,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_script_loader_factory,
     const GURL& script_url_to_skip_throttling,
     std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
     std::unique_ptr<WebSocketHandshakeThrottleProvider>
@@ -38,8 +38,8 @@ ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
     int32_t service_worker_route_id)
     : renderer_preferences_(renderer_preferences),
       worker_script_url_(worker_script_url),
-      url_loader_factory_info_(std::move(url_loader_factory_info)),
-      script_loader_factory_info_(std::move(script_loader_factory_info)),
+      pending_url_loader_factory_(std::move(pending_url_loader_factory)),
+      pending_script_loader_factory_(std::move(pending_script_loader_factory)),
       script_url_to_skip_throttling_(script_url_to_skip_throttling),
       throttle_provider_(std::move(throttle_provider)),
       websocket_handshake_throttle_provider_(
@@ -71,14 +71,14 @@ void ServiceWorkerFetchContextImpl::InitializeOnWorkerThread(
   web_url_loader_factory_ = std::make_unique<WebURLLoaderFactoryImpl>(
       resource_dispatcher_->GetWeakPtr(),
       network::SharedURLLoaderFactory::Create(
-          std::move(url_loader_factory_info_)));
+          std::move(pending_url_loader_factory_)));
 
-  if (script_loader_factory_info_) {
+  if (pending_script_loader_factory_) {
     web_script_loader_factory_ =
         std::make_unique<content::WebURLLoaderFactoryImpl>(
             resource_dispatcher_->GetWeakPtr(),
             network::SharedURLLoaderFactory::Create(
-                std::move(script_loader_factory_info_)));
+                std::move(pending_script_loader_factory_)));
   }
 
   accept_languages_watcher_ = watcher;
@@ -171,7 +171,7 @@ ServiceWorkerFetchContextImpl::CreateWebSocketHandshakeThrottle(
 }
 
 void ServiceWorkerFetchContextImpl::UpdateSubresourceLoaderFactories(
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
         subresource_loader_factories) {
   web_url_loader_factory_ = std::make_unique<WebURLLoaderFactoryImpl>(
       resource_dispatcher_->GetWeakPtr(),

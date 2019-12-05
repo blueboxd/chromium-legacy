@@ -30,7 +30,7 @@ class HTMLInputElementTest : public PageTestBase {
   HTMLInputElement& TestElement() {
     Element* element = GetDocument().getElementById("test");
     DCHECK(element);
-    return ToHTMLInputElement(*element);
+    return To<HTMLInputElement>(*element);
   }
 };
 
@@ -156,9 +156,8 @@ TEST_F(HTMLInputElementTest, RadioKeyDownDCHECKFailure) {
   // crbug.com/697286
   GetDocument().body()->SetInnerHTMLFromString(
       "<input type=radio name=g><input type=radio name=g>");
-  HTMLInputElement& radio1 =
-      ToHTMLInputElement(*GetDocument().body()->firstChild());
-  HTMLInputElement& radio2 = ToHTMLInputElement(*radio1.nextSibling());
+  auto& radio1 = To<HTMLInputElement>(*GetDocument().body()->firstChild());
+  auto& radio2 = To<HTMLInputElement>(*radio1.nextSibling());
   radio1.focus();
   // Make layout-dirty.
   radio2.setAttribute(html_names::kStyleAttr, "position:fixed");
@@ -175,8 +174,7 @@ TEST_F(HTMLInputElementTest, DateTimeChooserSizeParamRespectsScale) {
   GetDocument().body()->SetInnerHTMLFromString(
       "<input type='date' style='width:200px;height:50px' />");
   UpdateAllLifecyclePhasesForTest();
-  HTMLInputElement* input =
-      ToHTMLInputElement(GetDocument().body()->firstChild());
+  auto* input = To<HTMLInputElement>(GetDocument().body()->firstChild());
 
   DateTimeChooserParameters params;
   bool success = input->SetupDateTimeChooserParameters(params);
@@ -198,15 +196,13 @@ TEST_F(HTMLInputElementTest, StepDownOverflow) {
 
 TEST_F(HTMLInputElementTest, CheckboxHasNoShadowRoot) {
   GetDocument().body()->SetInnerHTMLFromString("<input type='checkbox' />");
-  HTMLInputElement* input =
-      ToHTMLInputElement(GetDocument().body()->firstChild());
+  auto* input = To<HTMLInputElement>(GetDocument().body()->firstChild());
   EXPECT_EQ(nullptr, input->UserAgentShadowRoot());
 }
 
 TEST_F(HTMLInputElementTest, ChangingInputTypeCausesShadowRootToBeCreated) {
   GetDocument().body()->SetInnerHTMLFromString("<input type='checkbox' />");
-  HTMLInputElement* input =
-      ToHTMLInputElement(GetDocument().body()->firstChild());
+  auto* input = To<HTMLInputElement>(GetDocument().body()->firstChild());
   EXPECT_EQ(nullptr, input->UserAgentShadowRoot());
   input->setAttribute(html_names::kTypeAttr, "text");
   EXPECT_NE(nullptr, input->UserAgentShadowRoot());
@@ -214,8 +210,7 @@ TEST_F(HTMLInputElementTest, ChangingInputTypeCausesShadowRootToBeCreated) {
 
 TEST_F(HTMLInputElementTest, RepaintAfterClearingFile) {
   GetDocument().body()->SetInnerHTMLFromString("<input type='file' />");
-  HTMLInputElement* input =
-      ToHTMLInputElement(GetDocument().body()->firstChild());
+  auto* input = To<HTMLInputElement>(GetDocument().body()->firstChild());
 
   FileChooserFileInfoList files;
   files.push_back(CreateFileChooserFileInfoNative("/native/path/native-file",

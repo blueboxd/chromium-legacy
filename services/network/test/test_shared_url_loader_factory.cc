@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/network_context.h"
-#include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
+#include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"
 
 namespace network {
 
@@ -50,10 +50,10 @@ void TestSharedURLLoaderFactory::Clone(
   NOTIMPLEMENTED();
 }
 
-// SharedURLLoaderFactoryInfo implementation
-std::unique_ptr<SharedURLLoaderFactoryInfo>
+// PendingSharedURLLoaderFactory implementation
+std::unique_ptr<PendingSharedURLLoaderFactory>
 TestSharedURLLoaderFactory::Clone() {
-  return std::make_unique<CrossThreadSharedURLLoaderFactoryInfo>(this);
+  return std::make_unique<CrossThreadPendingSharedURLLoaderFactory>(this);
 }
 
 }  // namespace network

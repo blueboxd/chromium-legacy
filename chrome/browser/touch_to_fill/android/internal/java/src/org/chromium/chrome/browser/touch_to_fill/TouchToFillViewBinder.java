@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.touch_to_fill;
 
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.CREDENTIAL;
-import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FAVICON;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FAVICON_OR_FALLBACK;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FORMATTED_ORIGIN;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.ON_CLICK_LISTENER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.DISMISS_HANDLER;
@@ -22,6 +22,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.chromium.chrome.browser.favicon.FaviconUtils;
+import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ItemType;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
 import org.chromium.ui.modelutil.MVCListAdapter;
@@ -103,9 +105,13 @@ class TouchToFillViewBinder {
     private static void bindCredentialView(
             PropertyModel model, View view, PropertyKey propertyKey) {
         Credential credential = model.get(CREDENTIAL);
-        if (propertyKey == FAVICON) {
+        if (propertyKey == FAVICON_OR_FALLBACK) {
             ImageView imageView = view.findViewById(R.id.favicon);
-            imageView.setImageBitmap(model.get(FAVICON));
+            CredentialProperties.FaviconOrFallback data = model.get(FAVICON_OR_FALLBACK);
+            imageView.setImageDrawable(FaviconUtils.getIconDrawableWithoutFilter(data.mIcon,
+                    data.mUrl, data.mFallbackColor,
+                    FaviconUtils.createCircularIconGenerator(view.getResources()),
+                    view.getResources(), data.mIconSize));
         } else if (propertyKey == ON_CLICK_LISTENER) {
             view.setOnClickListener(
                     clickedView -> { model.get(ON_CLICK_LISTENER).onResult(credential); });
@@ -146,7 +152,7 @@ class TouchToFillViewBinder {
         if (propertyKey == ON_CLICK_LISTENER) {
             view.setOnClickListener(
                     clickedView -> { model.get(ON_CLICK_LISTENER).onResult(credential); });
-        } else if (propertyKey == FAVICON || propertyKey == FORMATTED_ORIGIN
+        } else if (propertyKey == FAVICON_OR_FALLBACK || propertyKey == FORMATTED_ORIGIN
                 || propertyKey == CREDENTIAL) {
             // The button appearance is static.
         } else {

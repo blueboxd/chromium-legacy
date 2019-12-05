@@ -511,13 +511,13 @@ bool LayoutTheme::IsActive(const Node* node) {
 }
 
 bool LayoutTheme::IsChecked(const Node* node) {
-  if (auto* input = ToHTMLInputElementOrNull(node))
+  if (auto* input = DynamicTo<HTMLInputElement>(node))
     return input->ShouldAppearChecked();
   return false;
 }
 
 bool LayoutTheme::IsIndeterminate(const Node* node) {
-  if (auto* input = ToHTMLInputElementOrNull(node))
+  if (auto* input = DynamicTo<HTMLInputElement>(node))
     return input->ShouldAppearIndeterminate();
   return false;
 }

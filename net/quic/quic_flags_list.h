@@ -190,14 +190,6 @@ QUIC_FLAG(bool,
 // If true, use predictable version negotiation versions.
 QUIC_FLAG(bool, FLAGS_quic_disable_version_negotiation_grease_randomness, false)
 
-// If true, do not add connection ID of packets with unknown connection ID
-// and no version to time wait list, instead, send appropriate responses
-// depending on the packets' sizes and drop them.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_reject_unprocessable_packets_statelessly,
-    true)
-
 // Maximum number of tracked packets.
 QUIC_FLAG(int64_t, FLAGS_quic_max_tracked_packet_count, 10000)
 
@@ -258,11 +250,6 @@ QUIC_FLAG(bool,
 // If true, enable HTTP/2 default scheduling(round robin).
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_rr_write_scheduler, true)
 
-// If true, treat queued QUIC packets as sent.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_treat_queued_packets_as_sent,
-          true)
-
 // Call NeuterHandshakePackets() at most once per connection.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_neuter_handshake_packets_once2,
@@ -273,15 +260,6 @@ QUIC_FLAG(bool, FLAGS_quic_allow_http3_priority, false)
 
 // If true, enable QUIC version 50.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_50, true)
-
-// If true, enable QUIC MTU discovery version 2.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_mtu_discovery_v2, true)
-
-// If true, QUIC connection close packet will be sent at all available
-// encryption levels.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_close_all_encryptions_levels,
-          false)
 
 // If the bandwidth during ack aggregation is smaller than (estimated
 // bandwidth * this flag), consider the current aggregation completed
@@ -299,11 +277,6 @@ QUIC_FLAG(int32_t,
 // If true, Adjacent stream frames will be combined into one stream frame before
 // the packet is serialized.
 QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_coalesce_stream_frames_2, false)
-
-// If true, populate nonretransmittable frames in SerializedPacket.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_populate_nonretransmittable_frames,
-          true)
 
 // If true, connection will be closed if a stream receives stream frame or
 // RESET_STREAM frame with bad close offset.
@@ -387,4 +360,22 @@ QUIC_FLAG(bool,
 
 // If true, QUIC crypto handshaker uses handshaker delegate to notify session
 // about handshake events.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_handshaker_delegate, true)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_handshaker_delegate, false)
+
+// If true, for QUIC BBRv2 flows, exit PROBE_BW_DOWN phase after one round trip
+// time.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_bbr2_exit_probe_bw_down_after_one_rtt,
+          false)
+
+// If true, QUIC connection close packet will be sent at all available
+// encryption levels.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_close_all_encryptions_levels2,
+          false)
+
+// If true, then a MAX_PUSH_ID frame will be send when the initial SETTINGS
+// frame is sent in HTTP/3.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_send_max_push_id_with_settings,
+          false)

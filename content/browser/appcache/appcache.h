@@ -50,9 +50,8 @@ class CONTENT_EXPORT AppCache
   static bool CheckValidManifestScope(const GURL& manifest_url,
                                       const std::string& manifest_scope);
 
-  static std::string GetManifestScope(
-      base::Optional<std::string> optional_scope,
-      const GURL& manifest_url);
+  static std::string GetManifestScope(const GURL& manifest_url,
+                                      std::string optional_scope);
 
   AppCache(AppCacheStorage* storage, int64_t cache_id);
 

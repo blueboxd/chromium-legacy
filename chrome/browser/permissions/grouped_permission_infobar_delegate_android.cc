@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/permissions/notification_permission_ui_selector.h"
 #include "chrome/browser/permissions/permission_prompt_android.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
@@ -56,8 +57,20 @@ base::string16 GroupedPermissionInfoBarDelegate::GetCompactLinkText() const {
 }
 
 base::string16 GroupedPermissionInfoBarDelegate::GetDescriptionText() const {
-  return l10n_util::GetStringUTF16(
-      IDS_NOTIFICATION_QUIET_PERMISSION_PROMPT_MESSAGE);
+  auto* manager = PermissionRequestManager::FromWebContents(
+      permission_prompt_->web_contents());
+
+  switch (manager->ReasonForUsingQuietUi()) {
+    case NotificationPermissionUiSelector::QuietUiReason::kEnabledInPrefs:
+      return l10n_util::GetStringUTF16(
+          IDS_NOTIFICATION_QUIET_PERMISSION_PROMPT_MESSAGE);
+    case NotificationPermissionUiSelector::QuietUiReason::kTriggeredByCrowdDeny:
+      return l10n_util::GetStringUTF16(
+          IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_CROWD_DENY_DESCRIPTION);
+  }
+
+  NOTREACHED();
+  return base::string16();
 }
 
 int GroupedPermissionInfoBarDelegate::GetIconId() const {

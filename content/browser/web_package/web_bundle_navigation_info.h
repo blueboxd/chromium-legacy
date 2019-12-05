@@ -7,31 +7,36 @@
 
 #include <memory>
 
+#include "base/memory/weak_ptr.h"
 #include "url/gurl.h"
 
 namespace content {
 
 class WebBundleSource;
+class WebBundleReader;
 
-// A class that holds necessary information for navigation in a Web Bundle.
+// A class that holds necessary information for navigation in a
+// WebBundle.
 class WebBundleNavigationInfo {
  public:
   WebBundleNavigationInfo(std::unique_ptr<WebBundleSource> source,
-                          const GURL& target_inner_url);
+                          const GURL& target_inner_url,
+                          base::WeakPtr<WebBundleReader> weak_reader);
   ~WebBundleNavigationInfo();
 
   const WebBundleSource& source() const;
   const GURL& target_inner_url() const;
+  const base::WeakPtr<WebBundleReader>& GetReader() const;
 
   std::unique_ptr<WebBundleNavigationInfo> Clone() const;
 
  private:
   std::unique_ptr<WebBundleSource> source_;
   const GURL target_inner_url_;
+  const base::WeakPtr<WebBundleReader> weak_reader_;
 
   DISALLOW_COPY_AND_ASSIGN(WebBundleNavigationInfo);
 };
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_WEB_PACKAGE_WEB_BUNDLE_NAVIGATION_INFO_H_

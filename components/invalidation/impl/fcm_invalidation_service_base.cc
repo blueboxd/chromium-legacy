@@ -53,8 +53,7 @@ FCMInvalidationServiceBase::FCMInvalidationServiceBase(
       per_user_topic_registration_manager_callback_(
           std::move(per_user_topic_registration_manager_callback)),
       instance_id_driver_(instance_id_driver),
-      pref_service_(pref_service),
-      update_was_requested_(false) {}
+      pref_service_(pref_service) {}
 
 FCMInvalidationServiceBase::~FCMInvalidationServiceBase() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -93,7 +92,7 @@ bool FCMInvalidationServiceBase::UpdateRegisteredInvalidationIds(
   syncer::Topics topics = ConvertIdsToTopics(ids, handler);
   if (!invalidator_registrar_.UpdateRegisteredTopics(handler, topics))
     return false;
-  DoUpdateRegisteredIdsIfNeeded();
+  DoUpdateSubscribedTopicsIfNeeded();
   logger_.OnUpdateTopics(invalidator_registrar_.GetHandlerNameToTopicsMap());
   return true;
 }
@@ -162,7 +161,7 @@ void FCMInvalidationServiceBase::InitForTest(
   invalidation_listener_ = std::move(invalidation_listener);
   invalidation_listener_->StartForTest(this);
 
-  DoUpdateRegisteredIdsIfNeeded();
+  DoUpdateSubscribedTopicsIfNeeded();
 }
 
 base::DictionaryValue FCMInvalidationServiceBase::CollectDebugData() const {
@@ -213,7 +212,7 @@ void FCMInvalidationServiceBase::StartInvalidator() {
   invalidation_listener_->Start(this, std::move(registration_manager));
 
   PopulateClientID();
-  DoUpdateRegisteredIdsIfNeeded();
+  DoUpdateSubscribedTopicsIfNeeded();
 }
 
 void FCMInvalidationServiceBase::StopInvalidator() {
@@ -240,7 +239,7 @@ void FCMInvalidationServiceBase::PopulateClientID() {
   instance_id::InstanceID* instance_id =
       instance_id_driver_->GetInstanceID(GetApplicationName());
   instance_id->GetID(
-      base::Bind(&FCMInvalidationServiceBase::OnInstanceIdReceived,
+      base::Bind(&FCMInvalidationServiceBase::OnInstanceIDReceived,
                  base::Unretained(this)));
 }
 
@@ -248,30 +247,31 @@ void FCMInvalidationServiceBase::ResetClientID() {
   instance_id::InstanceID* instance_id =
       instance_id_driver_->GetInstanceID(GetApplicationName());
   instance_id->DeleteID(
-      base::Bind(&FCMInvalidationServiceBase::OnDeleteIDCompleted,
+      base::Bind(&FCMInvalidationServiceBase::OnDeleteInstanceIDCompleted,
                  base::Unretained(this)));
   DictionaryPrefUpdate update(pref_service_, prefs::kInvalidationClientIDCache);
   update->RemoveKey(sender_id_);
 }
 
-void FCMInvalidationServiceBase::OnInstanceIdReceived(const std::string& id) {
+void FCMInvalidationServiceBase::OnInstanceIDReceived(
+    const std::string& instance_id) {
   diagnostic_info_.instance_id_received = base::Time::Now();
-  if (client_id_ != id) {
-    client_id_ = id;
+  if (client_id_ != instance_id) {
+    client_id_ = instance_id;
     DictionaryPrefUpdate update(pref_service_,
                                 prefs::kInvalidationClientIDCache);
-    update->SetStringKey(sender_id_, id);
-    invalidator_registrar_.UpdateInvalidatorInstanceId(id);
+    update->SetStringKey(sender_id_, instance_id);
+    invalidator_registrar_.UpdateInvalidatorInstanceId(instance_id);
   }
 }
 
-void FCMInvalidationServiceBase::OnDeleteIDCompleted(
+void FCMInvalidationServiceBase::OnDeleteInstanceIDCompleted(
     instance_id::InstanceID::Result result) {
   UMA_HISTOGRAM_ENUMERATION("FCMInvalidations.ResetClientIDStatus", result,
                             instance_id::InstanceID::Result::LAST_RESULT + 1);
 }
 
-void FCMInvalidationServiceBase::DoUpdateRegisteredIdsIfNeeded() {
+void FCMInvalidationServiceBase::DoUpdateSubscribedTopicsIfNeeded() {
   if (!invalidation_listener_ || !update_was_requested_)
     return;
   auto subscribed_topics = invalidator_registrar_.GetAllSubscribedTopics();

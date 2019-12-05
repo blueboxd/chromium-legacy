@@ -108,9 +108,16 @@
   // Not implemented.
 }
 
-- (void)autofillControllerDidInsertFormElements:
-    (CWVAutofillController*)autofillController {
-  // Not implemented.
+- (void)autofillController:(CWVAutofillController*)autofillController
+              didFindForms:(NSArray<CWVAutofillForm*>*)forms
+                   frameID:(NSString*)frameID {
+  if (forms.count == 0) {
+    return;
+  }
+
+  NSArray<NSString*>* debugDescriptions =
+      [forms valueForKey:NSStringFromSelector(@selector(debugDescription))];
+  NSLog(@"Found forms in frame %@\n%@", frameID, debugDescriptions);
 }
 
 - (void)autofillController:(CWVAutofillController*)autofillController

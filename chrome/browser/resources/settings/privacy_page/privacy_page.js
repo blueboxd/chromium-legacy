@@ -30,29 +30,6 @@ const NetworkPredictionOptions = {
   DEFAULT: 1,
 };
 
-/**
- * These values are persisted to logs. Entries should not be renumbered and
- * numeric values should never be reused.
- *
- * Must be kept in sync with enum of the same name in
- * histograms/enums.xml
- *
- * Interactions across all settings pages should be added here.
- */
-settings.SettingsPageInteractions = {
-  PRIVACY_SYNC_AND_GOOGLE_SERVICES: 0,
-  PRIVACY_CHROME_SIGN_IN: 1,
-  PRIVACY_DO_NOT_TRACK: 2,
-  PRIVACY_PAYMENT_METHOD: 3,
-  PRIVACY_NETWORK_PREDICTION: 4,
-  PRIVACY_MANAGE_CERTIFICATES: 5,
-  PRIVACY_SECURITY_KEYS: 6,
-  PRIVACY_SITE_SETTINGS: 7,
-  PRIVACY_CLEAR_BROWSING_DATA: 8,
-  // Leave this at the end.
-  SETTINGS_MAX_VALUE: 8,
-};
-
 Polymer({
   is: 'settings-privacy-page',
 
@@ -455,13 +432,13 @@ Polymer({
 
   /** @private */
   onSigninAllowedChange_: function() {
-    if (this.syncStatus.signedIn && !this.$.signinAllowedToggle.checked) {
+    const toggle = this.$$('#signinAllowedToggle');
+    if (this.syncStatus.signedIn && !toggle.checked) {
       // Switch the toggle back on and show the signout dialog.
-      this.$.signinAllowedToggle.checked = true;
+      toggle.checked = true;
       this.showSignoutDialog_ = true;
     } else {
-      /** @type {!SettingsToggleButtonElement} */ (this.$.signinAllowedToggle)
-          .sendPrefChange();
+      toggle.sendPrefChange();
       this.showRestart_ = true;
     }
     this.browserProxy_.recordSettingsPageHistogram(
@@ -473,9 +450,9 @@ Polymer({
     if (/** @type {!SettingsSignoutDialogElement} */ (
             this.$$('settings-signout-dialog'))
             .wasConfirmed()) {
-      this.$.signinAllowedToggle.checked = false;
-      /** @type {!SettingsToggleButtonElement} */ (this.$.signinAllowedToggle)
-          .sendPrefChange();
+      const toggle = this.$$('#signinAllowedToggle');
+      toggle.checked = false;
+      toggle.sendPrefChange();
       this.showRestart_ = true;
     }
     this.showSignoutDialog_ = false;

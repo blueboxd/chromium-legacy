@@ -23,15 +23,17 @@ namespace storage {
 // the quota manager, by calling QuotaManager::RegisterClient().
 //
 // All the methods will be called on the IO thread in the browser.
-class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaClient {
+//
+// When AppCache is deleted, this can become a std::unique_ptr instead
+// of refcounted, and owned by the QuotaManager.
+class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaClient
+    : public base::RefCountedThreadSafe<QuotaClient> {
  public:
   using GetUsageCallback = base::OnceCallback<void(int64_t usage)>;
   using GetOriginsCallback =
       base::OnceCallback<void(const std::set<url::Origin>& origins)>;
   using DeletionCallback =
       base::OnceCallback<void(blink::mojom::QuotaStatusCode status)>;
-
-  virtual ~QuotaClient() = default;
 
   enum ID {
     kUnknown = 1 << 0,
@@ -84,6 +86,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaClient {
                                      base::OnceClosure callback);
 
   virtual bool DoesSupport(blink::mojom::StorageType type) const = 0;
+
+ protected:
+  friend class RefCountedThreadSafe<QuotaClient>;
+
+  virtual ~QuotaClient() = default;
 };
 
 }  // namespace storage

@@ -2105,30 +2105,28 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
   BrowserAccessibilityManager* manager = owner_->manager();
   BrowserAccessibility* focusedChild = manager->GetFocus();
-  if (focusedChild && !focusedChild->IsDescendantOf(owner_))
+  if (focusedChild == owner_)
+    focusedChild = manager->GetActiveDescendant(focusedChild);
+
+  if (focusedChild &&
+      (focusedChild == owner_ || !focusedChild->IsDescendantOf(owner_)))
     focusedChild = nullptr;
 
   // If it's not multiselectable, try to skip iterating over the
   // children.
   if (!GetState(owner_, ax::mojom::State::kMultiselectable)) {
     // First try the focused child.
-    if (focusedChild && focusedChild != owner_) {
+    if (focusedChild) {
       [ret addObject:ToBrowserAccessibilityCocoa(focusedChild)];
       return ret;
     }
-
-    // Next try the active descendant.
-    int activeDescendantId;
-    if (owner_->GetIntAttribute(ax::mojom::IntAttribute::kActivedescendantId,
-                                &activeDescendantId)) {
-      BrowserAccessibility* activeDescendant =
-          manager->GetFromID(activeDescendantId);
-      if (activeDescendant) {
-        [ret addObject:ToBrowserAccessibilityCocoa(activeDescendant)];
-        return ret;
-      }
-    }
   }
+
+  // Put the focused one first, if it's focused, as this helps VO draw the
+  // focus box around the active item.
+  if (focusedChild &&
+      focusedChild->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
+    [ret addObject:ToBrowserAccessibilityCocoa(focusedChild)];
 
   // If it's multiselectable or if the previous attempts failed,
   // return any children with the "selected" state, which may
@@ -2136,13 +2134,12 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   for (auto it = owner_->PlatformChildrenBegin();
        it != owner_->PlatformChildrenEnd(); ++it) {
     BrowserAccessibility* child = it.get();
-    if (child->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
-      [ret addObject:ToBrowserAccessibilityCocoa(child)];
-  }
-
-  // And if nothing's selected but one has focus, use the focused one.
-  if ([ret count] == 0 && focusedChild && focusedChild != owner_) {
-    [ret addObject:ToBrowserAccessibilityCocoa(focusedChild)];
+    if (child->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected)) {
+      if (child == focusedChild)
+        continue;  // Already added as first item.
+      else
+        [ret addObject:ToBrowserAccessibilityCocoa(child)];
+    }
   }
 
   return ret;

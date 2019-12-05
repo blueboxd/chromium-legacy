@@ -40,7 +40,7 @@ class TestSharedURLLoaderFactory : public network::TestURLLoaderFactory,
     NOTREACHED();
   }
 
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
+  std::unique_ptr<network::PendingSharedURLLoaderFactory> Clone() override {
     NOTREACHED();
     return nullptr;
   }
@@ -50,10 +50,10 @@ class TestSharedURLLoaderFactory : public network::TestURLLoaderFactory,
   ~TestSharedURLLoaderFactory() override = default;
 };
 
-class MockSharedURLLoaderFactoryInfo
-    : public network::SharedURLLoaderFactoryInfo {
+class MockPendingSharedURLLoaderFactory
+    : public network::PendingSharedURLLoaderFactory {
  public:
-  explicit MockSharedURLLoaderFactoryInfo()
+  explicit MockPendingSharedURLLoaderFactory()
       : factory_(base::MakeRefCounted<TestSharedURLLoaderFactory>()) {}
 
   scoped_refptr<TestSharedURLLoaderFactory> factory() const { return factory_; }
@@ -98,7 +98,7 @@ class SyncLoadContextTest : public testing::Test {
 
   void StartAsyncWithWaitableEventOnLoadingThread(
       std::unique_ptr<network::ResourceRequest> request,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo> factory_info,
+      std::unique_ptr<network::PendingSharedURLLoaderFactory> pending_factory,
       SyncLoadResponse* out_response,
       base::WaitableEvent* redirect_or_response_event) {
     loading_thread_.task_runner()->PostTask(
@@ -106,7 +106,7 @@ class SyncLoadContextTest : public testing::Test {
         base::BindOnce(&SyncLoadContext::StartAsyncWithWaitableEvent,
                        std::move(request), MSG_ROUTING_NONE,
                        loading_thread_.task_runner(),
-                       TRAFFIC_ANNOTATION_FOR_TESTS, std::move(factory_info),
+                       TRAFFIC_ANNOTATION_FOR_TESTS, std::move(pending_factory),
                        std::vector<std::unique_ptr<blink::URLLoaderThrottle>>(),
                        out_response, redirect_or_response_event,
                        nullptr /* terminate_sync_load_event */,
@@ -122,8 +122,9 @@ class SyncLoadContextTest : public testing::Test {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     DCHECK(task_runner->BelongsToCurrentThread());
     auto* context = new SyncLoadContext(
-        request, std::make_unique<MockSharedURLLoaderFactoryInfo>(), response,
-        redirect_or_response_event, nullptr /* terminate_sync_load_event */,
+        request, std::make_unique<MockPendingSharedURLLoaderFactory>(),
+        response, redirect_or_response_event,
+        nullptr /* terminate_sync_load_event */,
         base::TimeDelta::FromSeconds(60) /* timeout */,
         mojo::NullRemote() /* download_to_blob_registry */, task_runner);
 
@@ -156,15 +157,15 @@ TEST_F(SyncLoadContextTest, StartAsyncWithWaitableEvent) {
   // Create and exercise SyncLoadContext on the |loading_thread_|.
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = expected_url;
-  auto factory_info = std::make_unique<MockSharedURLLoaderFactoryInfo>();
-  factory_info->factory()->AddResponse(expected_url.spec(), expected_data);
+  auto pending_factory = std::make_unique<MockPendingSharedURLLoaderFactory>();
+  pending_factory->factory()->AddResponse(expected_url.spec(), expected_data);
   SyncLoadResponse response;
   base::WaitableEvent redirect_or_response_event(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
-  StartAsyncWithWaitableEventOnLoadingThread(std::move(request),
-                                             std::move(factory_info), &response,
-                                             &redirect_or_response_event);
+  StartAsyncWithWaitableEventOnLoadingThread(
+      std::move(request), std::move(pending_factory), &response,
+      &redirect_or_response_event);
 
   // Wait until the response is received.
   redirect_or_response_event.Wait();

@@ -70,8 +70,7 @@ class PLATFORM_EXPORT ParkableStringManager {
  private:
   friend class ParkableString;
   friend class ParkableStringImpl;
-  struct ParkableStringImplHash;
-  struct ParkableStringImplTranslator;
+  struct SecureDigestHash;
 
   scoped_refptr<ParkableStringImpl> Add(scoped_refptr<StringImpl>&&);
   void Remove(ParkableStringImpl*);
@@ -100,8 +99,17 @@ class PLATFORM_EXPORT ParkableStringManager {
   bool did_register_memory_pressure_listener_;
   base::TimeDelta total_unparking_time_;
   base::TimeDelta total_parking_thread_time_;
-  WTF::HashSet<ParkableStringImpl*, ParkableStringImplHash> unparked_strings_;
-  WTF::HashSet<ParkableStringImpl*, ParkableStringImplHash> parked_strings_;
+
+  // Relies on secure hash equality for deduplication. If one day SHA256 becomes
+  // insecure, then this would need to be updated to a more robust hash.
+  WTF::HashMap<ParkableStringImpl::SecureDigest*,
+               ParkableStringImpl*,
+               SecureDigestHash>
+      unparked_strings_;
+  WTF::HashMap<ParkableStringImpl::SecureDigest*,
+               ParkableStringImpl*,
+               SecureDigestHash>
+      parked_strings_;
 
   friend class ParkableStringTest;
   FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, SynchronousCompression);

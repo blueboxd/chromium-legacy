@@ -137,7 +137,7 @@ public class SigninFragment extends SigninFragmentBase {
             return;
         }
         IdentityServicesProvider.getSigninManager().signIn(
-                account, new SigninManager.SignInCallback() {
+                mSigninAccessPoint, account, new SigninManager.SignInCallback() {
                     @Override
                     public void onSignInComplete() {
                         UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(

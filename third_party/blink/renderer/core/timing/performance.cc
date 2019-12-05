@@ -365,7 +365,7 @@ bool Performance::PassesTimingAllowCheck(
   scoped_refptr<const SecurityOrigin> resource_origin =
       SecurityOrigin::Create(response_url);
   bool is_same_origin =
-      resource_origin->IsSameSchemeHostPort(&initiator_security_origin);
+      resource_origin->IsSameOriginWith(&initiator_security_origin);
   if (!*response_tainting_not_basic && is_same_origin)
     return true;
   *response_tainting_not_basic = true;
@@ -393,7 +393,7 @@ bool Performance::PassesTimingAllowCheck(
   if (&next_response != &response) {
     is_next_resource_same_origin =
         SecurityOrigin::Create(next_response.ResponseUrl())
-            ->IsSameSchemeHostPort(resource_origin.get());
+            ->IsSameOriginWith(resource_origin.get());
   }
   if (!is_same_origin && !is_next_resource_same_origin)
     *tainted_origin_flag = true;

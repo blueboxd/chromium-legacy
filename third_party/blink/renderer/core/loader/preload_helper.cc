@@ -149,7 +149,7 @@ void PreloadHelper::DnsPrefetchIfNeeded(
             document, frame);
       }
       WebPrescientNetworking* web_prescient_networking =
-          Platform::Current()->PrescientNetworking();
+          frame ? frame->PrescientNetworking() : nullptr;
       if (web_prescient_networking) {
         web_prescient_networking->PrefetchDNS(params.href.Host());
       }
@@ -188,11 +188,10 @@ void PreloadHelper::PreconnectIfNeeded(
       }
     }
     WebPrescientNetworking* web_prescient_networking =
-        Platform::Current()->PrescientNetworking();
+        frame ? frame->PrescientNetworking() : nullptr;
     if (web_prescient_networking) {
       web_prescient_networking->Preconnect(
-          WebLocalFrameImpl::FromFrame(frame), params.href,
-          params.cross_origin != kCrossOriginAttributeAnonymous);
+          params.href, params.cross_origin != kCrossOriginAttributeAnonymous);
     }
   }
 }

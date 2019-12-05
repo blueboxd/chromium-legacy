@@ -1325,7 +1325,8 @@ TEST_P(NavigationManagerTest, OverrideUserAgentWithMobile) {
 
   NavigationItem* last_committed_item =
       navigation_manager()->GetLastCommittedItem();
-  last_committed_item->SetUserAgentType(UserAgentType::DESKTOP);
+  last_committed_item->SetUserAgentType(UserAgentType::DESKTOP,
+                                        /*update_inherited_user_agent =*/true);
   EXPECT_EQ(UserAgentType::DESKTOP, last_committed_item->GetUserAgentType());
 
   navigation_manager()->AddPendingItem(
@@ -1486,7 +1487,8 @@ TEST_P(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
 
   // Update |item2|'s UA type to DESKTOP and add a third non-native navigation,
   // once again separated by a native one.
-  item2->SetUserAgentType(web::UserAgentType::DESKTOP);
+  item2->SetUserAgentType(web::UserAgentType::DESKTOP,
+                          /*update_inherited_user_agent =*/true);
   ASSERT_EQ(web::UserAgentType::DESKTOP, item2->GetUserAgentType());
 
   GURL item3_url = item2->GetURL().ReplaceComponents(native_scheme_replacement);
@@ -1522,7 +1524,8 @@ TEST_P(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
 }
 
 // Tests that adding transient item for a pending item with mobile user agent
-// type results in a transient item with mobile user agent type.
+// type results in a transient item with mobile user agent type when the type is
+// forcing the inheritance.
 TEST_P(NavigationManagerTest, AddTransientItemForMobilePendingItem) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -1530,7 +1533,7 @@ TEST_P(NavigationManagerTest, AddTransientItemForMobilePendingItem) {
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
   ASSERT_TRUE(navigation_manager()->GetPendingItem());
   navigation_manager()->GetPendingItem()->SetUserAgentType(
-      UserAgentType::MOBILE);
+      UserAgentType::MOBILE, /*update_inherited_user_agent =*/true);
 
   navigation_manager()->AddTransientItem(GURL("http://www.url.com"));
   ASSERT_TRUE(navigation_manager()->GetTransientItem());
@@ -1538,10 +1541,21 @@ TEST_P(NavigationManagerTest, AddTransientItemForMobilePendingItem) {
             navigation_manager()->GetTransientItem()->GetUserAgentType());
   EXPECT_EQ(UserAgentType::MOBILE,
             navigation_manager()->GetPendingItem()->GetUserAgentType());
+
+  // Don't update the inherited user agent.
+  navigation_manager()->GetPendingItem()->SetUserAgentType(
+      UserAgentType::DESKTOP, /*update_inherited_user_agent =*/false);
+  navigation_manager()->AddTransientItem(GURL("http://www.url2.com"));
+  ASSERT_TRUE(navigation_manager()->GetTransientItem());
+  EXPECT_EQ(UserAgentType::MOBILE,
+            navigation_manager()->GetTransientItem()->GetUserAgentType());
+  EXPECT_EQ(UserAgentType::DESKTOP,
+            navigation_manager()->GetPendingItem()->GetUserAgentType());
 }
 
 // Tests that adding transient item for a pending item with desktop user agent
-// type results in a transient item with desktop user agent type.
+// type results in a transient item with desktop user agent type when the type
+// is forcing the inheritance.
 TEST_P(NavigationManagerTest, AddTransientItemForDesktopPendingItem) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -1549,13 +1563,23 @@ TEST_P(NavigationManagerTest, AddTransientItemForDesktopPendingItem) {
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
   ASSERT_TRUE(navigation_manager()->GetPendingItem());
   navigation_manager()->GetPendingItem()->SetUserAgentType(
-      UserAgentType::DESKTOP);
+      UserAgentType::DESKTOP, /*update_inherited_user_agent =*/true);
 
   navigation_manager()->AddTransientItem(GURL("http://www.url.com"));
   ASSERT_TRUE(navigation_manager()->GetTransientItem());
   EXPECT_EQ(UserAgentType::DESKTOP,
             navigation_manager()->GetTransientItem()->GetUserAgentType());
   EXPECT_EQ(UserAgentType::DESKTOP,
+            navigation_manager()->GetPendingItem()->GetUserAgentType());
+
+  // Don't update the inherited user agent.
+  navigation_manager()->GetPendingItem()->SetUserAgentType(
+      UserAgentType::MOBILE, /*update_inherited_user_agent =*/false);
+  navigation_manager()->AddTransientItem(GURL("http://www.url2.com"));
+  ASSERT_TRUE(navigation_manager()->GetTransientItem());
+  EXPECT_EQ(UserAgentType::DESKTOP,
+            navigation_manager()->GetTransientItem()->GetUserAgentType());
+  EXPECT_EQ(UserAgentType::MOBILE,
             navigation_manager()->GetPendingItem()->GetUserAgentType());
 }
 

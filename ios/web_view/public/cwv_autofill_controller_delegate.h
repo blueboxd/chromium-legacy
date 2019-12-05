@@ -10,6 +10,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class CWVAutofillController;
+@class CWVAutofillForm;
 @class CWVAutofillFormSuggestion;
 @class CWVAutofillProfile;
 @class CWVCreditCard;
@@ -71,12 +72,12 @@ typedef NS_ENUM(NSInteger, CWVPasswordUserDecision) {
              userInitiated:(BOOL)userInitiated
                isMainFrame:(BOOL)isMainFrame;
 
-// Called when a form related element is inserted into the DOM.
-// A form related element includes forms, inputs, selects, and options.
-// This callback is throttled and will group together multiple inserts that are
-// close together in time into one invocation.
-- (void)autofillControllerDidInsertFormElements:
-    (CWVAutofillController*)autofillController;
+// Called when |forms| are found in a frame with |frameID|.
+// Will be called after initial load and after any form mutations.
+// Always includes all forms in the frame.
+- (void)autofillController:(CWVAutofillController*)autofillController
+              didFindForms:(NSArray<CWVAutofillForm*>*)forms
+                   frameID:(NSString*)frameID;
 
 // Called when it is possible to save a new autofill profile used in filling
 // address forms. This is usually invoked after successfully submitting an

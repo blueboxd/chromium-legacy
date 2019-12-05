@@ -40,7 +40,7 @@ class AppCacheQuotaClientTest : public testing::Test {
         num_get_origins_completions_(0),
         num_delete_origins_completions_(0) {}
 
-  int64_t GetOriginUsage(base::WeakPtr<storage::QuotaClient> client,
+  int64_t GetOriginUsage(scoped_refptr<storage::QuotaClient> client,
                          const url::Origin& origin,
                          StorageType type) {
     usage_ = -1;
@@ -50,7 +50,7 @@ class AppCacheQuotaClientTest : public testing::Test {
   }
 
   const std::set<url::Origin>& GetOriginsForType(
-      base::WeakPtr<storage::QuotaClient> client,
+      scoped_refptr<storage::QuotaClient> client,
       StorageType type) {
     origins_.clear();
     AsyncGetOriginsForType(std::move(client), type);
@@ -59,7 +59,7 @@ class AppCacheQuotaClientTest : public testing::Test {
   }
 
   const std::set<url::Origin>& GetOriginsForHost(
-      base::WeakPtr<storage::QuotaClient> client,
+      scoped_refptr<storage::QuotaClient> client,
       StorageType type,
       const std::string& host) {
     origins_.clear();
@@ -69,7 +69,7 @@ class AppCacheQuotaClientTest : public testing::Test {
   }
 
   blink::mojom::QuotaStatusCode DeleteOriginData(
-      base::WeakPtr<storage::QuotaClient> client,
+      scoped_refptr<storage::QuotaClient> client,
       StorageType type,
       const url::Origin& origin) {
     delete_status_ = blink::mojom::QuotaStatusCode::kUnknown;
@@ -78,7 +78,7 @@ class AppCacheQuotaClientTest : public testing::Test {
     return delete_status_;
   }
 
-  void AsyncGetOriginUsage(base::WeakPtr<storage::QuotaClient> client,
+  void AsyncGetOriginUsage(scoped_refptr<storage::QuotaClient> client,
                            const url::Origin& origin,
                            StorageType type) {
     CHECK(client);
@@ -88,7 +88,7 @@ class AppCacheQuotaClientTest : public testing::Test {
                        weak_factory_.GetWeakPtr()));
   }
 
-  void AsyncGetOriginsForType(base::WeakPtr<storage::QuotaClient> client,
+  void AsyncGetOriginsForType(scoped_refptr<storage::QuotaClient> client,
                               StorageType type) {
     CHECK(client);
     client->GetOriginsForType(
@@ -96,7 +96,7 @@ class AppCacheQuotaClientTest : public testing::Test {
                              weak_factory_.GetWeakPtr()));
   }
 
-  void AsyncGetOriginsForHost(base::WeakPtr<storage::QuotaClient> client,
+  void AsyncGetOriginsForHost(scoped_refptr<storage::QuotaClient> client,
                               StorageType type,
                               const std::string& host) {
     CHECK(client);
@@ -106,7 +106,7 @@ class AppCacheQuotaClientTest : public testing::Test {
                        weak_factory_.GetWeakPtr()));
   }
 
-  void AsyncDeleteOriginData(base::WeakPtr<storage::QuotaClient> client,
+  void AsyncDeleteOriginData(scoped_refptr<storage::QuotaClient> client,
                              StorageType type,
                              const url::Origin& origin) {
     CHECK(client);
@@ -120,23 +120,21 @@ class AppCacheQuotaClientTest : public testing::Test {
     mock_service_.storage()->usage_map_[origin] = usage;
   }
 
-  base::WeakPtr<AppCacheQuotaClient> CreateClient() {
-    // The bare operator new is used here because AppCacheQuotaClient deletes
-    // itself when the QuotaManager goes out of scope.
-    return (new AppCacheQuotaClient(mock_service_.AsWeakPtr()))->AsWeakPtr();
+  scoped_refptr<AppCacheQuotaClient> CreateClient() {
+    return base::MakeRefCounted<AppCacheQuotaClient>(mock_service_.AsWeakPtr());
   }
 
-  void Call_NotifyAppCacheReady(base::WeakPtr<AppCacheQuotaClient> client) {
+  void Call_NotifyAppCacheReady(scoped_refptr<AppCacheQuotaClient> client) {
     if (client)
       client->NotifyAppCacheReady();
   }
 
-  void Call_NotifyAppCacheDestroyed(base::WeakPtr<AppCacheQuotaClient> client) {
+  void Call_NotifyAppCacheDestroyed(scoped_refptr<AppCacheQuotaClient> client) {
     if (client)
       client->NotifyAppCacheDestroyed();
   }
 
-  void Call_OnQuotaManagerDestroyed(base::WeakPtr<AppCacheQuotaClient> client) {
+  void Call_OnQuotaManagerDestroyed(scoped_refptr<AppCacheQuotaClient> client) {
     if (client)
       client->OnQuotaManagerDestroyed();
   }
@@ -169,19 +167,19 @@ class AppCacheQuotaClientTest : public testing::Test {
 };
 
 TEST_F(AppCacheQuotaClientTest, BasicCreateDestroy) {
-  base::WeakPtr<AppCacheQuotaClient> client = CreateClient();
+  auto client = CreateClient();
   Call_NotifyAppCacheReady(client);
   Call_OnQuotaManagerDestroyed(client);
   Call_NotifyAppCacheDestroyed(client);
 }
 
 TEST_F(AppCacheQuotaClientTest, QuotaManagerDestroyedInCallback) {
-  base::WeakPtr<AppCacheQuotaClient> client = CreateClient();
+  auto client = CreateClient();
   Call_NotifyAppCacheReady(client);
   client->DeleteOriginData(kOriginA, kTemp,
                            base::BindOnce(
                                [](AppCacheQuotaClientTest* test,
-                                  base::WeakPtr<AppCacheQuotaClient> client,
+                                  scoped_refptr<AppCacheQuotaClient> client,
                                   blink::mojom::QuotaStatusCode) {
                                  test->Call_OnQuotaManagerDestroyed(client);
                                },
@@ -190,7 +188,7 @@ TEST_F(AppCacheQuotaClientTest, QuotaManagerDestroyedInCallback) {
 }
 
 TEST_F(AppCacheQuotaClientTest, EmptyService) {
-  base::WeakPtr<AppCacheQuotaClient> client = CreateClient();
+  auto client = CreateClient();
   Call_NotifyAppCacheReady(client);
 
   EXPECT_EQ(0, GetOriginUsage(client, kOriginA, kTemp));
@@ -209,7 +207,7 @@ TEST_F(AppCacheQuotaClientTest, EmptyService) {
 }
 
 TEST_F(AppCacheQuotaClientTest, NoService) {
-  base::WeakPtr<AppCacheQuotaClient> client = CreateClient();
+  auto client = CreateClient();
   Call_NotifyAppCacheReady(client);
   Call_NotifyAppCacheDestroyed(client);
 
@@ -228,7 +226,7 @@ TEST_F(AppCacheQuotaClientTest, NoService) {
 }
 
 TEST_F(AppCacheQuotaClientTest, GetOriginUsage) {
-  base::WeakPtr<AppCacheQuotaClient> client = CreateClient();
+  auto client = CreateClient();
   Call_NotifyAppCacheReady(client);
 
   SetUsageMapEntry(kOriginA, 1000);
@@ -240,7 +238,7 @@ TEST_F(AppCacheQuotaClientTest, GetOriginUsage) {
 }
 
 TEST_F(AppCacheQuotaClientTest, GetOriginsForHost) {
-  base::WeakPtr<AppCacheQuotaClient> client = CreateClient();
+  auto client = CreateClient();
   Call_NotifyAppCacheReady(client);
 
   EXPECT_EQ(kOriginA.host(), kOriginB.host());
@@ -271,7 +269,7 @@ TEST_F(AppCacheQuotaClientTest, GetOriginsForHost) {
 }
 
 TEST_F(AppCacheQuotaClientTest, GetOriginsForType) {
-  base::WeakPtr<AppCacheQuotaClient> client = CreateClient();
+  auto client = CreateClient();
   Call_NotifyAppCacheReady(client);
 
   EXPECT_TRUE(GetOriginsForType(client, kTemp).empty());
@@ -292,7 +290,7 @@ TEST_F(AppCacheQuotaClientTest, GetOriginsForType) {
 }
 
 TEST_F(AppCacheQuotaClientTest, DeleteOriginData) {
-  base::WeakPtr<AppCacheQuotaClient> client = CreateClient();
+  auto client = CreateClient();
   Call_NotifyAppCacheReady(client);
 
   // Perm deletions are short circuited in the Client and
@@ -316,7 +314,7 @@ TEST_F(AppCacheQuotaClientTest, DeleteOriginData) {
 }
 
 TEST_F(AppCacheQuotaClientTest, PendingRequests) {
-  base::WeakPtr<AppCacheQuotaClient> client = CreateClient();
+  auto client = CreateClient();
 
   SetUsageMapEntry(kOriginA, 1000);
   SetUsageMapEntry(kOriginB, 10);
@@ -358,7 +356,7 @@ TEST_F(AppCacheQuotaClientTest, PendingRequests) {
 }
 
 TEST_F(AppCacheQuotaClientTest, DestroyServiceWithPending) {
-  base::WeakPtr<AppCacheQuotaClient> client = CreateClient();
+  auto client = CreateClient();
 
   SetUsageMapEntry(kOriginA, 1000);
   SetUsageMapEntry(kOriginB, 10);
@@ -394,7 +392,7 @@ TEST_F(AppCacheQuotaClientTest, DestroyServiceWithPending) {
 }
 
 TEST_F(AppCacheQuotaClientTest, DestroyQuotaManagerWithPending) {
-  base::WeakPtr<AppCacheQuotaClient> client = CreateClient();
+  auto client = CreateClient();
 
   SetUsageMapEntry(kOriginA, 1000);
   SetUsageMapEntry(kOriginB, 10);
@@ -429,7 +427,7 @@ TEST_F(AppCacheQuotaClientTest, DestroyQuotaManagerWithPending) {
 }
 
 TEST_F(AppCacheQuotaClientTest, DestroyWithDeleteInProgress) {
-  base::WeakPtr<AppCacheQuotaClient> client = CreateClient();
+  auto client = CreateClient();
   Call_NotifyAppCacheReady(client);
 
   // Start an async delete.

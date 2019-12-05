@@ -11,7 +11,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
-#include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/public/web/web_script_source.h"
@@ -34,6 +33,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_session_description_init.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_receiver_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_sender_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_platform.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
@@ -703,7 +703,7 @@ void PostToCompleteRequest(AsyncOperationAction action, RequestType* request) {
 
 class FakeWebRTCPeerConnectionHandler : public MockWebRTCPeerConnectionHandler {
  public:
-  WebVector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
+  WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
       RTCSessionDescriptionRequest* request,
       const WebMediaConstraints&) override {
     PostToCompleteRequest<RTCSessionDescriptionRequest>(async_operation_action_,
@@ -711,7 +711,7 @@ class FakeWebRTCPeerConnectionHandler : public MockWebRTCPeerConnectionHandler {
     return {};
   }
 
-  WebVector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
+  WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
       RTCSessionDescriptionRequest* request,
       RTCOfferOptionsPlatform*) override {
     PostToCompleteRequest<RTCSessionDescriptionRequest>(async_operation_action_,

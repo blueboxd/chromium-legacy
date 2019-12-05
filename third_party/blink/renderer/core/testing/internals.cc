@@ -839,13 +839,13 @@ void Internals::selectColorInColorChooser(Element* element,
   Color color;
   if (!color.SetFromString(color_value))
     return;
-  if (auto* input = ToHTMLInputElementOrNull(*element))
+  if (auto* input = DynamicTo<HTMLInputElement>(*element))
     input->SelectColorInColorChooser(color);
 }
 
 void Internals::endColorChooser(Element* element) {
   DCHECK(element);
-  if (auto* input = ToHTMLInputElementOrNull(*element))
+  if (auto* input = DynamicTo<HTMLInputElement>(*element))
     input->EndColorChooser();
 }
 
@@ -1304,7 +1304,7 @@ String Internals::viewportAsText(Document* document,
 bool Internals::elementShouldAutoComplete(Element* element,
                                           ExceptionState& exception_state) {
   DCHECK(element);
-  if (auto* input = ToHTMLInputElementOrNull(*element))
+  if (auto* input = DynamicTo<HTMLInputElement>(*element))
     return input->ShouldAutocomplete();
 
   exception_state.ThrowDOMException(DOMExceptionCode::kInvalidNodeTypeError,
@@ -1323,10 +1323,10 @@ String Internals::suggestedValue(Element* element,
   }
 
   String suggested_value;
-  if (auto* input = ToHTMLInputElementOrNull(*element))
+  if (auto* input = DynamicTo<HTMLInputElement>(*element))
     return input->SuggestedValue();
 
-  if (auto* textarea = ToHTMLTextAreaElementOrNull(*element))
+  if (auto* textarea = DynamicTo<HTMLTextAreaElement>(*element))
     return textarea->SuggestedValue();
 
   if (auto* select = DynamicTo<HTMLSelectElement>(*element))
@@ -1346,10 +1346,10 @@ void Internals::setSuggestedValue(Element* element,
     return;
   }
 
-  if (auto* input = ToHTMLInputElementOrNull(*element))
+  if (auto* input = DynamicTo<HTMLInputElement>(*element))
     input->SetSuggestedValue(value);
 
-  if (auto* textarea = ToHTMLTextAreaElementOrNull(*element))
+  if (auto* textarea = DynamicTo<HTMLTextAreaElement>(*element))
     textarea->SetSuggestedValue(value);
 
   if (auto* select = DynamicTo<HTMLSelectElement>(*element))
@@ -1367,14 +1367,14 @@ void Internals::setAutofilledValue(Element* element,
     return;
   }
 
-  if (auto* input = ToHTMLInputElementOrNull(*element)) {
+  if (auto* input = DynamicTo<HTMLInputElement>(*element)) {
     input->DispatchScopedEvent(
         *Event::CreateBubble(event_type_names::kKeydown));
     input->SetAutofillValue(value);
     input->DispatchScopedEvent(*Event::CreateBubble(event_type_names::kKeyup));
   }
 
-  if (auto* textarea = ToHTMLTextAreaElementOrNull(*element)) {
+  if (auto* textarea = DynamicTo<HTMLTextAreaElement>(*element)) {
     textarea->DispatchScopedEvent(
         *Event::CreateBubble(event_type_names::kKeydown));
     textarea->SetAutofillValue(value);
@@ -1393,13 +1393,14 @@ void Internals::setEditingValue(Element* element,
                                 const String& value,
                                 ExceptionState& exception_state) {
   DCHECK(element);
-  if (!IsHTMLInputElement(*element)) {
+  auto* html_input_element = DynamicTo<HTMLInputElement>(element);
+  if (!html_input_element) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidNodeTypeError,
                                       "The element provided is not an INPUT.");
     return;
   }
 
-  ToHTMLInputElement(*element).SetEditingValue(value);
+  html_input_element->SetEditingValue(value);
 }
 
 void Internals::setAutofilled(Element* element,
@@ -2986,13 +2987,14 @@ void Internals::setShouldRevealPassword(Element* element,
                                         bool reveal,
                                         ExceptionState& exception_state) {
   DCHECK(element);
-  if (!IsHTMLInputElement(element)) {
+  auto* html_input_element = DynamicTo<HTMLInputElement>(element);
+  if (!html_input_element) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidNodeTypeError,
                                       "The element provided is not an INPUT.");
     return;
   }
 
-  return ToHTMLInputElement(*element).SetShouldRevealPassword(reveal);
+  return html_input_element->SetShouldRevealPassword(reveal);
 }
 
 namespace {

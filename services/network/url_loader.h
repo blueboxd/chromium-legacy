@@ -195,6 +195,17 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   class FileOpenerForUpload;
   friend class FileOpenerForUpload;
 
+  // An enum class representing the result of keepalive requests. This is used
+  // for UMA so do NOT re-assign values.
+  enum class KeepaliveRequestResult {
+    kOk = 0,
+    kMojoConnectionErrorBeforeResponseArrival = 1,
+    kMojoConnectionErrorAfterResponseArrival = 2,
+    kErrorBeforeResponseArrival = 3,
+    kErrorAfterResponseArrival = 4,
+    kMaxValue = kErrorAfterResponseArrival,
+  };
+
   void OpenFilesForUpload(const ResourceRequest& request);
   void SetUpUpload(const ResourceRequest& request,
                    int error_code,
@@ -203,6 +214,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   void ReadMore();
   void DidRead(int num_bytes, bool completed_synchronously);
   void NotifyCompleted(int error_code);
+  void RecordKeepaliveResult(KeepaliveRequestResult result);
   void OnMojoDisconnect();
   void OnResponseBodyStreamConsumerClosed(MojoResult result);
   void OnResponseBodyStreamReady(MojoResult result);
@@ -258,6 +270,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   bool corb_detachable_;
   int resource_type_;
   bool is_load_timing_enabled_;
+  bool has_received_response_ = false;
+  bool has_recorded_keepalive_result_ = false;
 
   // URLLoaderFactory is guaranteed to outlive URLLoader, so it is safe to
   // store a raw pointer to mojom::URLLoaderFactoryParams.

@@ -618,8 +618,8 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
   auto_blocker->SetClockForTesting(&clock);
   const GURL url4("https://example2.co.uk");
   for (int i = 0; i < 3; ++i) {
-    auto_blocker->RecordDismissAndEmbargo(url4,
-                                          ContentSettingsType::NOTIFICATIONS);
+    auto_blocker->RecordDismissAndEmbargo(
+        url4, ContentSettingsType::NOTIFICATIONS, false);
   }
   EXPECT_EQ(
       CONTENT_SETTING_BLOCK,
@@ -656,8 +656,8 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
   // Add an expired embargo setting to an existing eTLD+1 group and make sure it
   // still appears.
   for (int i = 0; i < 3; ++i) {
-    auto_blocker->RecordDismissAndEmbargo(url3,
-                                          ContentSettingsType::NOTIFICATIONS);
+    auto_blocker->RecordDismissAndEmbargo(
+        url3, ContentSettingsType::NOTIFICATIONS, false);
   }
   EXPECT_EQ(
       CONTENT_SETTING_BLOCK,
@@ -685,8 +685,8 @@ TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
   // Add an expired embargo to a new eTLD+1 and make sure it doesn't appear.
   const GURL url5("http://test.example5.com");
   for (int i = 0; i < 3; ++i) {
-    auto_blocker->RecordDismissAndEmbargo(url5,
-                                          ContentSettingsType::NOTIFICATIONS);
+    auto_blocker->RecordDismissAndEmbargo(
+        url5, ContentSettingsType::NOTIFICATIONS, false);
   }
   EXPECT_EQ(
       CONTENT_SETTING_BLOCK,

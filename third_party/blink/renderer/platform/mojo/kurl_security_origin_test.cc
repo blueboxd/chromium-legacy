@@ -79,7 +79,7 @@ TEST(KURLSecurityOriginStructTraitsTest, Basic) {
       SecurityOrigin::Create("http", "www.google.com", 80);
   scoped_refptr<const SecurityOrigin> output;
   EXPECT_TRUE(proxy->BounceOrigin(non_unique, &output));
-  EXPECT_TRUE(non_unique->IsSameSchemeHostPort(output.get()));
+  EXPECT_TRUE(non_unique->IsSameOriginWith(output.get()));
   EXPECT_FALSE(output->IsOpaque());
 
   scoped_refptr<const SecurityOrigin> unique =

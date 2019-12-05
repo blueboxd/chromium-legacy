@@ -19,6 +19,7 @@
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -303,7 +304,8 @@ void CreateNetworkFactoryForNavigationPreloadOnUI(
   FrameTreeNode* frame_tree_node =
       FrameTreeNode::GloballyFindByID(frame_tree_node_id);
   StoragePartitionImpl* partition = context_wrapper->storage_partition();
-  if (!frame_tree_node || !partition) {
+  if (!frame_tree_node || !partition ||
+      !frame_tree_node->navigation_request()) {
     // The navigation was cancelled or we are in shutdown. Just drop the
     // request. Otherwise, we might go to network without consulting the
     // embedder first, which would break guarantees.
@@ -324,7 +326,8 @@ void CreateNetworkFactoryForNavigationPreloadOnUI(
       partition->browser_context(), frame_tree_node->current_frame_host(),
       frame_tree_node->current_frame_host()->GetProcess()->GetID(),
       ContentBrowserClient::URLLoaderFactoryType::kNavigation, url::Origin(),
-      &receiver, &header_client, &bypass_redirect_checks_unused,
+      frame_tree_node->navigation_request()->GetNavigationId(), &receiver,
+      &header_client, &bypass_redirect_checks_unused,
       /*factory_override=*/nullptr);
 
   // Make the network factory.

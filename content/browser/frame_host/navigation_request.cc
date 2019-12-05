@@ -2436,6 +2436,10 @@ void NavigationRequest::CommitNavigation() {
     // RenderFrameHost.
     frame_tree_node_->TransferNavigationRequestOwnership(GetRenderFrameHost());
 
+    // Capture the navigation start timestamp to dispatch to the page when the
+    // navigation is committed.
+    restored_bfcache_entry->restore_navigation_start = NavigationStart();
+
     // Move the restored BackForwardCache Entry into RenderFrameHostManager, in
     // preparation for committing.
     frame_tree_node_->render_manager()->RestoreFromBackForwardCache(

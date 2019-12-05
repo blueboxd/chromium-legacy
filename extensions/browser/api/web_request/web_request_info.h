@@ -47,7 +47,8 @@ struct WebRequestInfoInitParams {
       const network::ResourceRequest& request,
       bool is_download,
       bool is_async,
-      bool is_service_worker_script);
+      bool is_service_worker_script,
+      base::Optional<int64_t> navigation_id);
 
   ~WebRequestInfoInitParams();
 
@@ -71,6 +72,7 @@ struct WebRequestInfoInitParams {
   int web_view_embedder_process_id = -1;
   ExtensionApiFrameIdMap::FrameData frame_data;
   bool is_service_worker_script = false;
+  base::Optional<int64_t> navigation_id;
 
  private:
   void InitializeWebViewAndFrameData(
@@ -171,6 +173,9 @@ struct WebRequestInfo {
       dnr_actions;
 
   const bool is_service_worker_script;
+
+  // Valid if this request corresponds to a navigation.
+  const base::Optional<int64_t> navigation_id;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebRequestInfo);

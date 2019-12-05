@@ -111,8 +111,8 @@ component("sandbox") {
     ]
 
     deps += [
-      "//third_party/fuchsia-sdk/sdk:fuchsia-deprecatedtimezone",
       "//third_party/fuchsia-sdk/sdk:fuchsia-fonts",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-intl",
       "//third_party/fuchsia-sdk/sdk:fuchsia-logger",
       "//third_party/fuchsia-sdk/sdk:fuchsia-mediacodec",
       "//third_party/fuchsia-sdk/sdk:fuchsia-net",

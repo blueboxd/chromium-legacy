@@ -93,7 +93,7 @@ class HTMLPlugInElementTest : public PageTestBase,
   Persistent<TestPluginLocalFrameClient> frame_client_;
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          HTMLPlugInElementTest,
                          testing::Values("embed", "object"));
 

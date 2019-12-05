@@ -16,6 +16,7 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event_handler.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -206,6 +207,56 @@ void LoginBaseBubbleView::Layout() {
 
 void LoginBaseBubbleView::OnBlur() {
   Hide();
+}
+
+gfx::Point LoginBaseBubbleView::CalculatePositionUsingDefaultStrategy(
+    PositioningStrategy strategy,
+    int horizontal_padding,
+    int vertical_padding) const {
+  if (!GetAnchorView())
+    return gfx::Point();
+
+  gfx::Point anchor_position = GetAnchorView()->bounds().origin();
+  ConvertPointToTarget(GetAnchorView()->parent() /*source*/,
+                       GetAnchorView()->GetWidget()->GetRootView() /*target*/,
+                       &anchor_position);
+  auto bounds = GetBoundsAvailableToShowBubble();
+  gfx::Size bubble_size(width() + 2 * horizontal_padding,
+                        height() + vertical_padding);
+  gfx::Point result = gfx::Point();
+  switch (strategy) {
+    case PositioningStrategy::kShowOnLeftSideOrRightSide:
+      result = login_views_utils::CalculateBubblePositionLeftRightStrategy(
+          {anchor_position, GetAnchorView()->size()}, bubble_size, bounds);
+      break;
+    case PositioningStrategy::kShowOnRightSideOrLeftSide:
+      result = login_views_utils::CalculateBubblePositionRightLeftStrategy(
+          {anchor_position, GetAnchorView()->size()}, bubble_size, bounds);
+      break;
+  }
+  // Get position of the bubble surrounded by paddings.
+  result.Offset(horizontal_padding, 0);
+  ConvertPointToTarget(GetAnchorView()->GetWidget()->GetRootView() /*source*/,
+                       parent() /*target*/, &result);
+  return result;
+}
+
+gfx::Rect LoginBaseBubbleView::GetBoundsAvailableToShowBubble() const {
+  auto bounds = GetRootViewBounds();
+  auto work_area = GetWorkArea();
+  // Get min means here to exclude either shelf or virtual keyaboard.
+  bounds.set_height(std::min(bounds.height(), work_area.height()));
+  return bounds;
+}
+
+gfx::Rect LoginBaseBubbleView::GetRootViewBounds() const {
+  return GetAnchorView()->GetWidget()->GetRootView()->GetLocalBounds();
+}
+
+gfx::Rect LoginBaseBubbleView::GetWorkArea() const {
+  return display::Screen::GetScreen()
+      ->GetDisplayNearestWindow(GetAnchorView()->GetWidget()->GetNativeWindow())
+      .work_area();
 }
 
 void LoginBaseBubbleView::ScheduleAnimation(bool visible) {

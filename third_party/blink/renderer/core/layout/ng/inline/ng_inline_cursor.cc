@@ -608,12 +608,23 @@ PhysicalOffset NGInlineCursor::LineEndPoint() const {
 }
 
 PositionWithAffinity NGInlineCursor::PositionForPoint(
-    const PhysicalOffset& point) const {
-  if (current_paint_fragment_)
-    return current_paint_fragment_->PositionForPoint(point);
-  if (current_item_)
-    return current_item_->PositionForPoint(point);
-  NOTREACHED();
+    const PhysicalOffset& point) {
+  if (root_paint_fragment_)
+    return root_paint_fragment_->PositionForPoint(point);
+  DCHECK(IsItemCursor());
+  while (*this) {
+    const NGFragmentItem* item = CurrentItem();
+    DCHECK(item);
+    // TODO(kojii): Do more staff, when the point is not on any item but within
+    // line box, etc., see |NGPaintFragment::PositionForPoint|.
+    if (!item->Rect().Contains(point)) {
+      MoveToNextItemSkippingChildren();
+      continue;
+    }
+    if (item->Type() == NGFragmentItem::kText)
+      return item->PositionForPointInText(point, *this);
+    MoveToNext();
+  }
   return PositionWithAffinity();
 }
 

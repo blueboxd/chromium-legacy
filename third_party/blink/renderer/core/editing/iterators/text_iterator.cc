@@ -511,8 +511,10 @@ bool TextIteratorAlgorithm<Strategy>::SupportsAltText(const Node& node) {
   // FIXME: Add isSVGImageElement.
   if (IsA<HTMLImageElement>(*element))
     return true;
-  if (IsHTMLInputElement(*element) &&
-      ToHTMLInputElement(node).type() == input_type_names::kImage)
+
+  auto* html_input_element = DynamicTo<HTMLInputElement>(element);
+  if (html_input_element &&
+      html_input_element->type() == input_type_names::kImage)
     return true;
   return false;
 }
@@ -590,8 +592,9 @@ bool TextIteratorAlgorithm<Strategy>::ShouldEmitNewlineForNode(
 
   if (layout_object ? !layout_object->IsBR() : !IsA<HTMLBRElement>(node))
     return false;
-  return emits_original_text || !(node.IsInShadowTree() &&
-                                  IsHTMLInputElement(*node.OwnerShadowHost()));
+  return emits_original_text ||
+         !(node.IsInShadowTree() &&
+           IsA<HTMLInputElement>(*node.OwnerShadowHost()));
 }
 
 static bool ShouldEmitNewlinesBeforeAndAfterNode(const Node& node) {

@@ -10,7 +10,6 @@ import android.text.format.DateUtils;
 import android.text.format.Formatter;
 
 import androidx.annotation.DrawableRes;
-import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
@@ -19,6 +18,7 @@ import org.chromium.chrome.browser.download.home.filter.Filters;
 import org.chromium.chrome.browser.download.home.list.view.CircularProgressView;
 import org.chromium.chrome.browser.download.home.list.view.CircularProgressView.UiState;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
@@ -31,16 +31,6 @@ import java.util.Date;
 
 /** A set of helper utility methods for the UI. */
 public final class UiUtils {
-    private static boolean sDisableUrlFormatting;
-
-    /**
-     * Disable url formatting for tests since tests might not native initialized.
-     */
-    @VisibleForTesting
-    public static void setDisableUrlFormattingForTests(boolean disabled) {
-        sDisableUrlFormatting = disabled;
-    }
-
     private UiUtils() {}
 
     /**
@@ -142,10 +132,7 @@ public final class UiUtils {
     public static CharSequence generatePrefetchCaption(OfflineItem item) {
         Context context = ContextUtils.getApplicationContext();
         String displaySize = Formatter.formatFileSize(context, item.totalSizeBytes);
-        String displayUrl = item.pageUrl;
-        if (!sDisableUrlFormatting) {
-            displayUrl = UrlFormatter.formatUrlForSecurityDisplayOmitScheme(item.pageUrl);
-        }
+        String displayUrl = UrlFormatter.formatUrlForSecurityDisplayOmitScheme(item.pageUrl);
         return context.getString(
                 R.string.download_manager_prefetch_caption, displayUrl, displaySize);
     }
@@ -157,10 +144,7 @@ public final class UiUtils {
      */
     public static CharSequence generateGenericCaption(OfflineItem item) {
         Context context = ContextUtils.getApplicationContext();
-        String displayUrl = item.pageUrl;
-        if (!sDisableUrlFormatting) {
-            displayUrl = UrlFormatter.formatUrlForSecurityDisplayOmitScheme(item.pageUrl);
-        }
+        String displayUrl = UrlFormatter.formatUrlForSecurityDisplayOmitScheme(item.pageUrl);
 
         if (item.totalSizeBytes == 0) {
             return context.getString(
@@ -373,5 +357,24 @@ public final class UiUtils {
                 assert false;
                 return "";
         }
+    }
+
+    /** @return Whether the given {@link OfflineItem} can be played as a media. */
+    public static boolean isMedia(OfflineItem offlineItem) {
+        return offlineItem.filter == OfflineItemFilter.AUDIO
+                || offlineItem.filter == OfflineItemFilter.VIDEO;
+    }
+
+    /** @return Whether the given {@link OfflineItem} can be shared. */
+    public static boolean canShare(OfflineItem item) {
+        return LegacyHelpers.isLegacyDownload(item.id)
+                || LegacyHelpers.isLegacyOfflinePage(item.id);
+    }
+
+    /** @return The domain associated with the given {@link OfflineItem}. */
+    public static String getDomainForItem(OfflineItem offlineItem) {
+        String formattedUrl =
+                UrlFormatter.formatUrlForSecurityDisplayOmitScheme(offlineItem.pageUrl);
+        return formattedUrl;
     }
 }

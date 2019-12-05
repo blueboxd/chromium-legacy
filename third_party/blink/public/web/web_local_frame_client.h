@@ -54,6 +54,7 @@
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_file_system_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
+#include "third_party/blink/public/platform/web_prescient_networking.h"
 #include "third_party/blink/public/platform/web_scroll_types.h"
 #include "third_party/blink/public/platform/web_set_sink_id_callbacks.h"
 #include "third_party/blink/public/platform/web_source_location.h"
@@ -107,10 +108,11 @@ class WebMediaPlayerEncryptedMediaClient;
 class WebMediaPlayerSource;
 class WebMediaStreamDeviceObserver;
 class WebNavigationControl;
-class WebServiceWorkerProvider;
 class WebPlugin;
+class WebPrescientNetworking;
 class WebRTCPeerConnectionHandler;
 class WebRelatedAppsFetcher;
+class WebServiceWorkerProvider;
 class WebSocketHandshakeThrottle;
 class WebString;
 class WebURL;
@@ -183,6 +185,11 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual WebExternalPopupMenu* CreateExternalPopupMenu(
       const WebPopupMenuInfo&,
       WebExternalPopupMenuClient*) {
+    return nullptr;
+  }
+
+  // May return null.
+  virtual std::unique_ptr<WebPrescientNetworking> CreatePrescientNetworking() {
     return nullptr;
   }
 
@@ -772,7 +779,7 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // AppCache ------------------------------------------------------------
   virtual void UpdateSubresourceFactory(
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) {}
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle> pending_factory) {}
 
   // Misc ----------------------------------------------------------------
 

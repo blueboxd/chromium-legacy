@@ -54,7 +54,7 @@ void TextControlElementTest::SetUp() {
   UpdateAllLifecyclePhases();
   text_control_ = ToTextControl(document_->getElementById("textarea"));
   text_control_->focus();
-  input_ = ToHTMLInputElement(document_->getElementById("input"));
+  input_ = To<HTMLInputElement>(document_->getElementById("input"));
 }
 
 TEST_F(TextControlElementTest, SetSelectionRange) {

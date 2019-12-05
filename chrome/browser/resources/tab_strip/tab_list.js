@@ -24,6 +24,14 @@ import {TabData, TabsApiProxy} from './tabs_api_proxy.js';
  */
 const SCROLL_PADDING = 32;
 
+/** @type {boolean} */
+let scrollAnimationEnabled = true;
+
+/** @param {boolean} enabled */
+export function setScrollAnimationEnabledForTesting(enabled) {
+  scrollAnimationEnabled = enabled;
+}
+
 /**
  * @enum {string}
  */
@@ -56,6 +64,13 @@ class TabListElement extends CustomElement {
      * @type {!Promise}
      */
     this.animationPromises = Promise.resolve();
+
+    /**
+     * The ID of the current animation frame that is in queue to update the
+     * scroll position.
+     * @private {?number}
+     */
+    this.currentScrollUpdateFrame_ = null;
 
     /** @private {!Function} */
     this.documentVisibilityChangeListener_ = () =>
@@ -157,6 +172,50 @@ class TabListElement extends CustomElement {
    */
   addAnimationPromise_(promise) {
     this.animationPromises = this.animationPromises.then(() => promise);
+  }
+
+  /**
+   * @param {number} scrollBy
+   * @private
+   */
+  animateScrollPosition_(scrollBy) {
+    if (this.currentScrollUpdateFrame_) {
+      cancelAnimationFrame(this.currentScrollUpdateFrame_);
+      this.currentScrollUpdateFrame_ = null;
+    }
+
+    const prevScrollLeft = this.scrollLeft;
+    if (!scrollAnimationEnabled || !this.tabStripEmbedderProxy_.isVisible()) {
+      // Do not animate if tab strip is not visible.
+      this.scrollLeft = prevScrollLeft + scrollBy;
+      return;
+    }
+
+    const duration = 350;
+    let startTime;
+
+    const onAnimationFrame = (currentTime) => {
+      const startScroll = this.scrollLeft;
+      if (!startTime) {
+        startTime = currentTime;
+      }
+
+      const elapsedRatio = Math.min(1, (currentTime - startTime) / duration);
+
+      // The elapsed ratio should be decelerated such that the elapsed time
+      // of the animation gets less and less further apart as time goes on,
+      // giving the effect of an animation that slows down towards the end. When
+      // 0ms has passed, the decelerated ratio should be 0. When the full
+      // duration has passed, the ratio should be 1.
+      const deceleratedRatio =
+          1 - (1 - elapsedRatio) / Math.pow(2, 6 * elapsedRatio);
+
+      this.scrollLeft = prevScrollLeft + (scrollBy * deceleratedRatio);
+
+      this.currentScrollUpdateFrame_ =
+          deceleratedRatio < 1 ? requestAnimationFrame(onAnimationFrame) : null;
+    };
+    this.currentScrollUpdateFrame_ = requestAnimationFrame(onAnimationFrame);
   }
 
   /**
@@ -534,7 +593,7 @@ class TabListElement extends CustomElement {
       }
     }
 
-    this.scrollLeft += scrollBy;
+    this.animateScrollPosition_(scrollBy);
   }
 
   /**

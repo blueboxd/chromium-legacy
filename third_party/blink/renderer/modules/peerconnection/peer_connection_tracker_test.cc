@@ -10,14 +10,14 @@
 #include "third_party/blink/public/mojom/peerconnection/peer_connection_tracker.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
-#include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
-#include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/renderer/modules/peerconnection/fake_rtc_rtp_transceiver_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_dependency_factory.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_web_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_handler.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_receiver_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_sender_platform.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_transceiver_platform.h"
 
 using ::testing::_;
 
@@ -85,9 +85,9 @@ class MockPeerConnectionTrackerHost
 //
 // This is used in unittests that don't care about the specific attributes of
 // the transceiver.
-std::unique_ptr<blink::WebRTCRtpTransceiver> CreateDefaultTransceiver(
-    blink::WebRTCRtpTransceiverImplementationType implementation_type) {
-  std::unique_ptr<blink::WebRTCRtpTransceiver> transceiver;
+std::unique_ptr<RTCRtpTransceiverPlatform> CreateDefaultTransceiver(
+    RTCRtpTransceiverPlatformImplementationType implementation_type) {
+  std::unique_ptr<RTCRtpTransceiverPlatform> transceiver;
   blink::FakeRTCRtpSenderImpl sender(
       "senderTrackId", {"senderStreamId"},
       blink::scheduler::GetSingleThreadTaskRunnerForTesting());
@@ -95,20 +95,19 @@ std::unique_ptr<blink::WebRTCRtpTransceiver> CreateDefaultTransceiver(
       "receiverTrackId", {"receiverStreamId"},
       blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   if (implementation_type ==
-      blink::WebRTCRtpTransceiverImplementationType::kFullTransceiver) {
+      RTCRtpTransceiverPlatformImplementationType::kFullTransceiver) {
     transceiver = std::make_unique<blink::FakeRTCRtpTransceiverImpl>(
         base::nullopt, std::move(sender), std::move(receiver),
         false /* stopped */,
         webrtc::RtpTransceiverDirection::kSendOnly /* direction */,
         base::nullopt /* current_direction */);
   } else if (implementation_type ==
-             blink::WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly) {
+             RTCRtpTransceiverPlatformImplementationType::kPlanBSenderOnly) {
     transceiver = std::make_unique<blink::RTCRtpSenderOnlyTransceiver>(
         std::make_unique<blink::FakeRTCRtpSenderImpl>(sender));
   } else {
-    DCHECK_EQ(
-        implementation_type,
-        blink::WebRTCRtpTransceiverImplementationType::kPlanBReceiverOnly);
+    DCHECK_EQ(implementation_type,
+              RTCRtpTransceiverPlatformImplementationType::kPlanBReceiverOnly);
     transceiver = std::make_unique<blink::RTCRtpReceiverOnlyTransceiver>(
         std::make_unique<blink::FakeRTCRtpReceiverImpl>(receiver));
   }
@@ -278,7 +277,7 @@ TEST_F(PeerConnectionTrackerTest, ModifyTransceiver) {
   CreateTrackerWithMocks();
   CreateAndRegisterPeerConnectionHandler();
   auto transceiver = CreateDefaultTransceiver(
-      blink::WebRTCRtpTransceiverImplementationType::kFullTransceiver);
+      RTCRtpTransceiverPlatformImplementationType::kFullTransceiver);
   String update_value;
   EXPECT_CALL(*mock_host_,
               UpdatePeerConnection(_, String("transceiverModified"), _))
@@ -297,7 +296,7 @@ TEST_F(PeerConnectionTrackerTest, RemoveTransceiver) {
   CreateTrackerWithMocks();
   CreateAndRegisterPeerConnectionHandler();
   auto transceiver = CreateDefaultTransceiver(
-      blink::WebRTCRtpTransceiverImplementationType::kFullTransceiver);
+      RTCRtpTransceiverPlatformImplementationType::kFullTransceiver);
   String update_value;
   EXPECT_CALL(*mock_host_,
               UpdatePeerConnection(_, String("transceiverRemoved"), _))
@@ -318,7 +317,7 @@ TEST_F(PeerConnectionTrackerTest, AddSender) {
   CreateTrackerWithMocks();
   CreateAndRegisterPeerConnectionHandler();
   auto sender_only = CreateDefaultTransceiver(
-      blink::WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly);
+      RTCRtpTransceiverPlatformImplementationType::kPlanBSenderOnly);
   String update_value;
   EXPECT_CALL(*mock_host_, UpdatePeerConnection(_, String("senderAdded"), _))
       .WillOnce(testing::SaveArg<2>(&update_value));
@@ -338,7 +337,7 @@ TEST_F(PeerConnectionTrackerTest, ModifySender) {
   CreateTrackerWithMocks();
   CreateAndRegisterPeerConnectionHandler();
   auto sender_only = CreateDefaultTransceiver(
-      blink::WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly);
+      RTCRtpTransceiverPlatformImplementationType::kPlanBSenderOnly);
   String update_value;
   EXPECT_CALL(*mock_host_, UpdatePeerConnection(_, String("senderModified"), _))
       .WillOnce(testing::SaveArg<2>(&update_value));
@@ -358,7 +357,7 @@ TEST_F(PeerConnectionTrackerTest, RemoveSender) {
   CreateTrackerWithMocks();
   CreateAndRegisterPeerConnectionHandler();
   auto sender_only = CreateDefaultTransceiver(
-      blink::WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly);
+      RTCRtpTransceiverPlatformImplementationType::kPlanBSenderOnly);
   String update_value;
   EXPECT_CALL(*mock_host_, UpdatePeerConnection(_, String("senderRemoved"), _))
       .WillOnce(testing::SaveArg<2>(&update_value));
@@ -378,7 +377,7 @@ TEST_F(PeerConnectionTrackerTest, AddReceiver) {
   CreateTrackerWithMocks();
   CreateAndRegisterPeerConnectionHandler();
   auto receiver_only = CreateDefaultTransceiver(
-      blink::WebRTCRtpTransceiverImplementationType::kPlanBReceiverOnly);
+      RTCRtpTransceiverPlatformImplementationType::kPlanBReceiverOnly);
   String update_value;
   EXPECT_CALL(*mock_host_, UpdatePeerConnection(_, String("receiverAdded"), _))
       .WillOnce(testing::SaveArg<2>(&update_value));
@@ -398,7 +397,7 @@ TEST_F(PeerConnectionTrackerTest, ModifyReceiver) {
   CreateTrackerWithMocks();
   CreateAndRegisterPeerConnectionHandler();
   auto receiver_only = CreateDefaultTransceiver(
-      blink::WebRTCRtpTransceiverImplementationType::kPlanBReceiverOnly);
+      RTCRtpTransceiverPlatformImplementationType::kPlanBReceiverOnly);
   String update_value;
   EXPECT_CALL(*mock_host_,
               UpdatePeerConnection(_, String("receiverModified"), _))
@@ -419,7 +418,7 @@ TEST_F(PeerConnectionTrackerTest, RemoveReceiver) {
   CreateTrackerWithMocks();
   CreateAndRegisterPeerConnectionHandler();
   auto receiver_only = CreateDefaultTransceiver(
-      blink::WebRTCRtpTransceiverImplementationType::kPlanBReceiverOnly);
+      RTCRtpTransceiverPlatformImplementationType::kPlanBReceiverOnly);
   String update_value;
   EXPECT_CALL(*mock_host_,
               UpdatePeerConnection(_, String("receiverRemoved"), _))

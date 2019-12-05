@@ -10,6 +10,7 @@
 #include "ash/ambient/util/ambient_util.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/login/ui/lock_screen.h"
+#include "ash/public/cpp/ambient/ambient_mode_state.h"
 #include "ash/public/cpp/ambient/photo_controller.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/views/widget/widget.h"
@@ -26,9 +27,13 @@ bool CanStartAmbientMode() {
 }  // namespace
 
 AmbientController::AmbientController(AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller) {}
+    : assistant_controller_(assistant_controller) {
+  ambient_state_.AddObserver(this);
+}
 
 AmbientController::~AmbientController() {
+  ambient_state_.RemoveObserver(this);
+
   DestroyContainerView();
 }
 
@@ -41,6 +46,21 @@ void AmbientController::OnWidgetDestroying(views::Widget* widget) {
   // If Assistant UI was already closed, this is a no-op.
   assistant_controller_->ui_controller()->CloseUi(
       AssistantExitPoint::kUnspecified);
+
+  // We need to update the mode when the widget gets destroyed as this may have
+  // caused by AmbientContainerView directly closed the widget without calling
+  // Stop() after an outside press.
+  ambient_state_.SetAmbientModeEnabled(false);
+}
+
+void AmbientController::OnAmbientModeEnabled(bool enabled) {
+  if (enabled) {
+    CreateContainerView();
+    container_view_->GetWidget()->Show();
+    RefreshImage();
+  } else {
+    DestroyContainerView();
+  }
 }
 
 void AmbientController::Toggle() {
@@ -64,20 +84,18 @@ void AmbientController::Start() {
     return;
   }
 
-  // CloseUi to ensure standalone Assistant Ui doesn't exist when entering
-  // Ambient mode to avoid strange behavior caused by standalone Ui was
-  // only hidden at that time. This will be a no-op if Ui was already closed.
-  // TODO(meilinw): Handle embedded Ui.
+  // CloseUi to ensure standalone Assistant UI doesn't exist when entering
+  // Ambient mode to avoid strange behavior caused by standalone UI was
+  // only hidden at that time. This will be a no-op if UI was already closed.
+  // TODO(meilinw): Handle embedded UI.
   assistant_controller_->ui_controller()->CloseUi(
       AssistantExitPoint::kUnspecified);
 
-  CreateContainerView();
-  container_view_->GetWidget()->Show();
-  RefreshImage();
+  ambient_state_.SetAmbientModeEnabled(true);
 }
 
 void AmbientController::Stop() {
-  DestroyContainerView();
+  ambient_state_.SetAmbientModeEnabled(false);
 }
 
 void AmbientController::CreateContainerView() {

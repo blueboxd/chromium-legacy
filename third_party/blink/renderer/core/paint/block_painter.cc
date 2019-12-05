@@ -353,7 +353,8 @@ PhysicalRect BlockPainter::OverflowRectForCullRectTesting(
 
   if (include_layout_overflow) {
     overflow_rect.Unite(layout_block_.PhysicalLayoutOverflowRect());
-    overflow_rect.Move(-PhysicalOffset(layout_block_.ScrolledContentOffset()));
+    overflow_rect.Move(
+        -PhysicalOffset(layout_block_.PixelSnappedScrolledContentOffset()));
   }
   return overflow_rect;
 }

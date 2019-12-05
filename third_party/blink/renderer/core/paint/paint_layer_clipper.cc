@@ -566,8 +566,9 @@ void PaintLayerClipper::CalculateBackgroundClipRect(
   // accidentally no longer be considered infinite.
   if (parent_clip_rects->Fixed() &&
       &context.root_layer->GetLayoutObject() == layout_view &&
-      output != PhysicalRect(LayoutRect::InfiniteIntRect()))
-    output.Move(layout_view->OffsetForFixedPosition());
+      output != PhysicalRect(LayoutRect::InfiniteIntRect())) {
+    output.Move(layout_view->PixelSnappedOffsetForFixedPosition());
+  }
 }
 
 void PaintLayerClipper::GetOrCalculateClipRects(const ClipRectsContext& context,

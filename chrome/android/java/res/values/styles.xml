@@ -849,6 +849,11 @@
         <item name="android:windowExitAnimation">@null</item>
     </style>
 
+    <!-- Contacts Dialog -->
+    <style name="SuggestionChipContacts" parent="SuggestionChip">
+        <item name="iconWidth">16dp</item>
+        <item name="iconHeight">16dp</item>
+    </style>
 
     <!-- Card for General Use -->
     <style name="Card">

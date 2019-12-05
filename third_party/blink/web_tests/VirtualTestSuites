@@ -580,7 +580,7 @@
   },
   {
     "prefix": "out-of-blink-frame-ancestors",
-    "bases": ["external/wpt/content-security-policy/frame-ancestors"],
+    "bases": ["external/wpt/content-security-policy/frame-ancestors", "external/wpt/portals/csp"],
     "args": ["--enable-features=OutOfBlinkFrameAncestors"]
   },
   {

@@ -620,6 +620,15 @@ enum class BackForwardNavigationType {
   // the next request sent by this web view.
   web::UserAgentType itemUserAgentType =
       self.currentNavItem->GetUserAgentType();
+
+  if (itemUserAgentType == web::UserAgentType::AUTOMATIC) {
+    DCHECK(
+        base::FeatureList::IsEnabled(web::features::kDefaultToDesktopOnIPad));
+    itemUserAgentType = web::GetDefaultUserAgent(self.webView);
+    self.currentNavItem->SetUserAgentType(
+        itemUserAgentType, /*update_inherited_user_agent =*/false);
+  }
+
   if (itemUserAgentType != web::UserAgentType::NONE) {
     NSString* userAgentString = base::SysUTF8ToNSString(
         web::GetWebClient()->GetUserAgent(itemUserAgentType));

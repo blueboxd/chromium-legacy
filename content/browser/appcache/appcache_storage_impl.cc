@@ -305,10 +305,11 @@ void AppCacheStorageImpl::InitTask::RunCompleted() {
         kDelay);
   }
 
-  if (storage_->service()->quota_manager_proxy()) {
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&AppCacheQuotaClient::NotifyAppCacheReady,
-                                  storage_->service()->quota_client()));
+  if (storage_->service()->quota_client()) {
+    base::PostTask(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&AppCacheQuotaClient::NotifyAppCacheReady,
+                       base::RetainedRef(storage_->service()->quota_client())));
   }
 }
 
@@ -366,9 +367,8 @@ void AppCacheStorageImpl::GetAllInfoTask::Run() {
       info.cache_id = cache_record.cache_id;
       info.group_id = group.group_id;
       info.is_complete = true;
-      // These will be added when the fields are added to the group record.
-      // info.manifest_parser_version = cache_record.manifest_parser_version;
-      // info.manifest_scope = cache_record.manifest_scope;
+      info.manifest_parser_version = cache_record.manifest_parser_version;
+      info.manifest_scope = cache_record.manifest_scope;
       infos.push_back(info);
     }
   }

@@ -173,12 +173,12 @@ Topics InvalidatorRegistrarWithMemory::GetRegisteredTopics(
 }
 
 Topics InvalidatorRegistrarWithMemory::GetAllSubscribedTopics() const {
-  Topics registered_topics;
+  Topics subscribed_topics;
   for (const auto& handler_to_topic : handler_name_to_subscribed_topics_map_) {
-    registered_topics.insert(handler_to_topic.second.begin(),
+    subscribed_topics.insert(handler_to_topic.second.begin(),
                              handler_to_topic.second.end());
   }
-  return registered_topics;
+  return subscribed_topics;
 }
 
 void InvalidatorRegistrarWithMemory::DispatchInvalidationsToHandlers(

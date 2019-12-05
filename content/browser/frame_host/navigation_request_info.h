@@ -35,7 +35,7 @@ struct CONTENT_EXPORT NavigationRequestInfo {
                         bool report_raw_headers,
                         bool is_prerendering,
                         bool upgrade_if_insecure,
-                        std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+                        std::unique_ptr<network::PendingSharedURLLoaderFactory>
                             blob_url_loader_factory,
                         const base::UnguessableToken& devtools_navigation_token,
                         const base::UnguessableToken& devtools_frame_token,
@@ -74,7 +74,8 @@ struct CONTENT_EXPORT NavigationRequestInfo {
   const bool upgrade_if_insecure;
 
   // URLLoaderFactory to facilitate loading blob URLs.
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> blob_url_loader_factory;
+  std::unique_ptr<network::PendingSharedURLLoaderFactory>
+      blob_url_loader_factory;
 
   const base::UnguessableToken devtools_navigation_token;
 

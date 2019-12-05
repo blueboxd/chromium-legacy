@@ -27,10 +27,8 @@ namespace blink {
 
 // Holds the internal state of a URLLoaderFactoryBundle in a form that is safe
 // to pass across sequences.
-// TODO(domfarolino, crbug.com/955171): This class should be renamed to not
-// include "Info".
-class BLINK_COMMON_EXPORT URLLoaderFactoryBundleInfo
-    : public network::SharedURLLoaderFactoryInfo {
+class BLINK_COMMON_EXPORT PendingURLLoaderFactoryBundle
+    : public network::PendingSharedURLLoaderFactory {
  public:
   // Map from URL scheme to PendingRemote<URLLoaderFactory> for handling URL
   // requests for schemes not handled by the |pending_default_factory|. See also
@@ -46,14 +44,14 @@ class BLINK_COMMON_EXPORT URLLoaderFactoryBundleInfo
       std::map<url::Origin,
                mojo::PendingRemote<network::mojom::URLLoaderFactory>>;
 
-  URLLoaderFactoryBundleInfo();
-  URLLoaderFactoryBundleInfo(
+  PendingURLLoaderFactoryBundle();
+  PendingURLLoaderFactoryBundle(
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           pending_default_factory,
-      SchemeMap scheme_specific_factory_infos,
-      OriginMap isolated_world_factory_infos,
+      SchemeMap scheme_specific_pending_factories,
+      OriginMap isolated_world_pending_factories,
       bool bypass_redirect_checks);
-  ~URLLoaderFactoryBundleInfo() override;
+  ~PendingURLLoaderFactoryBundle() override;
 
   mojo::PendingRemote<network::mojom::URLLoaderFactory>&
   pending_default_factory() {
@@ -78,7 +76,7 @@ class BLINK_COMMON_EXPORT URLLoaderFactoryBundleInfo
   }
 
  protected:
-  // SharedURLLoaderFactoryInfo implementation.
+  // PendingSharedURLLoaderFactory implementation.
   scoped_refptr<network::SharedURLLoaderFactory> CreateFactory() override;
 
   mojo::PendingRemote<network::mojom::URLLoaderFactory>
@@ -89,7 +87,7 @@ class BLINK_COMMON_EXPORT URLLoaderFactoryBundleInfo
   OriginMap pending_isolated_world_factories_;
   bool bypass_redirect_checks_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryBundleInfo);
+  DISALLOW_COPY_AND_ASSIGN(PendingURLLoaderFactoryBundle);
 };
 
 // Encapsulates a collection of URLLoaderFactoryPtrs which can be usd to acquire
@@ -100,7 +98,7 @@ class BLINK_COMMON_EXPORT URLLoaderFactoryBundle
   URLLoaderFactoryBundle();
 
   explicit URLLoaderFactoryBundle(
-      std::unique_ptr<URLLoaderFactoryBundleInfo> pending_factories);
+      std::unique_ptr<PendingURLLoaderFactoryBundle> pending_factories);
 
   // SharedURLLoaderFactory implementation.
   void CreateLoaderAndStart(
@@ -114,12 +112,12 @@ class BLINK_COMMON_EXPORT URLLoaderFactoryBundle
       override;
   void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
       override;
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;
+  std::unique_ptr<network::PendingSharedURLLoaderFactory> Clone() override;
   bool BypassRedirectChecks() const override;
 
   // The |pending_factories| contains replacement factories for a subset of the
   // existing bundle.
-  void Update(std::unique_ptr<URLLoaderFactoryBundleInfo> pending_factories);
+  void Update(std::unique_ptr<PendingURLLoaderFactoryBundle> pending_factories);
 
  protected:
   ~URLLoaderFactoryBundle() override;
@@ -157,7 +155,7 @@ class BLINK_COMMON_EXPORT URLLoaderFactoryBundle
 
   // Map from URL scheme to Remote<URLLoaderFactory> for handling URL requests
   // for schemes not handled by the |default_factory_|.  See also
-  // URLLoaderFactoryBundleInfo::SchemeMap and
+  // PendingURLLoaderFactoryBundle::SchemeMap and
   // ContentBrowserClient::SchemeToURLLoaderFactoryMap.
   using SchemeMap =
       std::map<std::string, mojo::Remote<network::mojom::URLLoaderFactory>>;
@@ -165,7 +163,7 @@ class BLINK_COMMON_EXPORT URLLoaderFactoryBundle
 
   // Map from origin of isolated world to Remote<URLLoaderFactory> for handling
   // this isolated world's requests. See also
-  // URLLoaderFactoryBundleInfo::OriginMap.
+  // PendingURLLoaderFactoryBundle::OriginMap.
   using OriginMap =
       std::map<url::Origin, mojo::Remote<network::mojom::URLLoaderFactory>>;
   OriginMap isolated_world_factories_;

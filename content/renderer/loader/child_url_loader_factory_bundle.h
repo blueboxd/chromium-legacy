@@ -29,15 +29,13 @@ namespace content {
 // pressure), and also adds special handling for Signed Exchanges (SXG) when the
 // flag is enabled. TODO(crbug/803776): deprecate this once SXG specific code is
 // moved into Network Service unless we see huge memory benefit for doing this.
-// TODO(domfarolino, crbug.com/955171): This class should be renamed to not
-// include "Info".
-class CONTENT_EXPORT ChildURLLoaderFactoryBundleInfo
-    : public blink::URLLoaderFactoryBundleInfo {
+class CONTENT_EXPORT ChildPendingURLLoaderFactoryBundle
+    : public blink::PendingURLLoaderFactoryBundle {
  public:
-  ChildURLLoaderFactoryBundleInfo();
-  explicit ChildURLLoaderFactoryBundleInfo(
-      std::unique_ptr<URLLoaderFactoryBundleInfo> base_factories);
-  ChildURLLoaderFactoryBundleInfo(
+  ChildPendingURLLoaderFactoryBundle();
+  explicit ChildPendingURLLoaderFactoryBundle(
+      std::unique_ptr<PendingURLLoaderFactoryBundle> base_factories);
+  ChildPendingURLLoaderFactoryBundle(
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           pending_default_factory,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
@@ -49,7 +47,7 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundleInfo
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           pending_prefetch_loader_factory,
       bool bypass_redirect_checks);
-  ~ChildURLLoaderFactoryBundleInfo() override;
+  ~ChildPendingURLLoaderFactoryBundle() override;
 
   mojo::PendingRemote<network::mojom::URLLoaderFactory>&
   direct_network_factory_remote() {
@@ -61,7 +59,7 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundleInfo
   }
 
  protected:
-  // URLLoaderFactoryBundleInfo overrides.
+  // PendingURLLoaderFactoryBundle overrides.
   scoped_refptr<network::SharedURLLoaderFactory> CreateFactory() override;
 
   mojo::PendingRemote<network::mojom::URLLoaderFactory>
@@ -69,7 +67,7 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundleInfo
   mojo::PendingRemote<network::mojom::URLLoaderFactory>
       pending_prefetch_loader_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChildURLLoaderFactoryBundleInfo);
+  DISALLOW_COPY_AND_ASSIGN(ChildPendingURLLoaderFactoryBundle);
 };
 
 // This class extends URLLoaderFactoryBundle to support a direct network loader
@@ -85,7 +83,7 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
   ChildURLLoaderFactoryBundle();
 
   explicit ChildURLLoaderFactoryBundle(
-      std::unique_ptr<ChildURLLoaderFactoryBundleInfo> pending_factories);
+      std::unique_ptr<ChildPendingURLLoaderFactoryBundle> pending_factories);
 
   ChildURLLoaderFactoryBundle(
       FactoryGetterCallback direct_network_factory_getter);
@@ -100,19 +98,19 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
       mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
       override;
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;
+  std::unique_ptr<network::PendingSharedURLLoaderFactory> Clone() override;
 
   // Does the same as Clone(), but without cloning the appcache_factory_.
   // This is used for creating a bundle for network fallback loading with
   // Service Workers (where AppCache must be skipped), and only when
   // claim() is called.
-  virtual std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+  virtual std::unique_ptr<network::PendingSharedURLLoaderFactory>
   CloneWithoutAppCacheFactory();
 
-  std::unique_ptr<ChildURLLoaderFactoryBundleInfo> PassInterface();
+  std::unique_ptr<ChildPendingURLLoaderFactoryBundle> PassInterface();
 
   void Update(
-      std::unique_ptr<ChildURLLoaderFactoryBundleInfo> pending_factories);
+      std::unique_ptr<ChildPendingURLLoaderFactoryBundle> pending_factories);
   void UpdateSubresourceOverrides(
       std::vector<mojom::TransferrableURLLoaderPtr>* subresource_overrides);
   void SetPrefetchLoaderFactory(
@@ -130,7 +128,7 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
 
  private:
   void InitDirectNetworkFactoryIfNecessary();
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> CloneInternal(
+  std::unique_ptr<network::PendingSharedURLLoaderFactory> CloneInternal(
       bool include_appcache);
 
   FactoryGetterCallback direct_network_factory_getter_;

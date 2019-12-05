@@ -32,29 +32,53 @@ class MockEvent {
 
   bool Started() const { return event_id_.has_value(); }
 
-  std::unique_ptr<ServiceWorkerEventQueue::Task> CreateTask() {
-    return std::make_unique<ServiceWorkerEventQueue::Task>(
-        ServiceWorkerEventQueue::Task::Type::Normal,
+  void EnqueueTo(ServiceWorkerEventQueue* event_queue) {
+    event_queue->EnqueueNormal(
         WTF::Bind(&MockEvent::Start, weak_factory_.GetWeakPtr()),
         WTF::Bind(&MockEvent::Abort, weak_factory_.GetWeakPtr()),
         base::nullopt);
   }
 
-  std::unique_ptr<ServiceWorkerEventQueue::Task> CreatePendingTask() {
-    return std::make_unique<ServiceWorkerEventQueue::Task>(
-        ServiceWorkerEventQueue::Task::Type::Pending,
+  void EnqueuePendingTo(ServiceWorkerEventQueue* event_queue) {
+    event_queue->EnqueuePending(
         WTF::Bind(&MockEvent::Start, weak_factory_.GetWeakPtr()),
         WTF::Bind(&MockEvent::Abort, weak_factory_.GetWeakPtr()),
         base::nullopt);
   }
 
-  std::unique_ptr<ServiceWorkerEventQueue::Task> CreateTaskWithCustomTimeout(
-      base::TimeDelta custom_timeout) {
-    return std::make_unique<ServiceWorkerEventQueue::Task>(
-        ServiceWorkerEventQueue::Task::Type::Normal,
+  void EnqueueWithCustomTimeoutTo(ServiceWorkerEventQueue* event_queue,
+                                  base::TimeDelta custom_timeout) {
+    event_queue->EnqueueNormal(
         WTF::Bind(&MockEvent::Start, weak_factory_.GetWeakPtr()),
         WTF::Bind(&MockEvent::Abort, weak_factory_.GetWeakPtr()),
         custom_timeout);
+  }
+
+  void EnqueueOfflineTo(ServiceWorkerEventQueue* event_queue) {
+    event_queue->EnqueueOffline(
+        WTF::Bind(&MockEvent::Start, weak_factory_.GetWeakPtr()),
+        WTF::Bind(&MockEvent::Abort, weak_factory_.GetWeakPtr()),
+        base::nullopt);
+  }
+
+  void EnqueuePendingDispatchingEventTo(ServiceWorkerEventQueue* event_queue,
+                                        String tag,
+                                        Vector<String>* out_tags) {
+    event_queue->EnqueuePending(
+        WTF::Bind(
+            [](ServiceWorkerEventQueue* event_queue, MockEvent* event,
+               String tag, Vector<String>* out_tags, int /* event id */) {
+              event->EnqueueTo(event_queue);
+              EXPECT_FALSE(event_queue->did_idle_timeout());
+              // Event dispatched inside of a pending event should not run
+              // immediately.
+              EXPECT_FALSE(event->Started());
+              EXPECT_FALSE(event->status().has_value());
+              out_tags->emplace_back(std::move(tag));
+            },
+            WTF::Unretained(event_queue), WTF::Unretained(this), std::move(tag),
+            WTF::Unretained(out_tags)),
+        base::DoNothing(), base::nullopt);
   }
 
  private:
@@ -77,29 +101,6 @@ class MockEvent {
 base::RepeatingClosure CreateReceiverWithCalledFlag(bool* out_is_called) {
   return WTF::BindRepeating([](bool* out_is_called) { *out_is_called = true; },
                             WTF::Unretained(out_is_called));
-}
-
-std::unique_ptr<ServiceWorkerEventQueue::Task>
-CreatePendingTaskDispatchingEvent(ServiceWorkerEventQueue* event_queue,
-                                  MockEvent* event,
-                                  String tag,
-                                  Vector<String>* out_tags) {
-  return std::make_unique<ServiceWorkerEventQueue::Task>(
-      ServiceWorkerEventQueue::Task::Type::Pending,
-      WTF::Bind(
-          [](ServiceWorkerEventQueue* event_queue, MockEvent* event, String tag,
-             Vector<String>* out_tags, int /* event id */) {
-            event_queue->PushTask(event->CreateTask());
-            EXPECT_FALSE(event_queue->did_idle_timeout());
-            // Event dispatched inside of a pending task should not run
-            // immediately.
-            EXPECT_FALSE(event->Started());
-            EXPECT_FALSE(event->status().has_value());
-            out_tags->emplace_back(std::move(tag));
-          },
-          WTF::Unretained(event_queue), WTF::Unretained(event), std::move(tag),
-          WTF::Unretained(out_tags)),
-      base::DoNothing(), base::nullopt);
 }
 
 }  // namespace
@@ -133,49 +134,49 @@ TEST_F(ServiceWorkerEventQueueTest, IdleTimer) {
       base::TimeDelta::FromSeconds(1);
 
   bool is_idle = false;
-  ServiceWorkerEventQueue timer(CreateReceiverWithCalledFlag(&is_idle),
-                                task_runner()->GetMockTickClock());
+  ServiceWorkerEventQueue event_queue(CreateReceiverWithCalledFlag(&is_idle),
+                                      task_runner()->GetMockTickClock());
   task_runner()->FastForwardBy(kIdleInterval);
   // Nothing should happen since the event queue has not started yet.
   EXPECT_FALSE(is_idle);
 
-  timer.Start();
+  event_queue.Start();
   task_runner()->FastForwardBy(kIdleInterval);
   // |idle_callback| should be fired since there is no event.
   EXPECT_TRUE(is_idle);
 
   is_idle = false;
   MockEvent event1;
-  timer.PushTask(event1.CreateTask());
+  event1.EnqueueTo(&event_queue);
   task_runner()->FastForwardBy(kIdleInterval);
   // Nothing happens since there is an inflight event.
   EXPECT_FALSE(is_idle);
 
   MockEvent event2;
-  timer.PushTask(event2.CreateTask());
+  event2.EnqueueTo(&event_queue);
   task_runner()->FastForwardBy(kIdleInterval);
   // Nothing happens since there are two inflight events.
   EXPECT_FALSE(is_idle);
 
-  timer.EndEvent(event2.event_id());
+  event_queue.EndEvent(event2.event_id());
   task_runner()->FastForwardBy(kIdleInterval);
   // Nothing happens since there is an inflight event.
   EXPECT_FALSE(is_idle);
 
-  timer.EndEvent(event1.event_id());
+  event_queue.EndEvent(event1.event_id());
   task_runner()->FastForwardBy(kIdleInterval);
   // |idle_callback| should be fired.
   EXPECT_TRUE(is_idle);
 
   is_idle = false;
   MockEvent event3;
-  timer.PushTask(event3.CreateTask());
+  event3.EnqueueTo(&event_queue);
   task_runner()->FastForwardBy(kIdleInterval);
   // Nothing happens since there is an inflight event.
   EXPECT_FALSE(is_idle);
 
-  std::unique_ptr<StayAwakeToken> token = timer.CreateStayAwakeToken();
-  timer.EndEvent(event3.event_id());
+  std::unique_ptr<StayAwakeToken> token = event_queue.CreateStayAwakeToken();
+  event_queue.EndEvent(event3.event_id());
   task_runner()->FastForwardBy(kIdleInterval);
   // Nothing happens since there is a living StayAwakeToken.
   EXPECT_FALSE(is_idle);
@@ -195,11 +196,11 @@ TEST_F(ServiceWorkerEventQueueTest, InflightEventBeforeStart) {
       base::TimeDelta::FromSeconds(1);
 
   bool is_idle = false;
-  ServiceWorkerEventQueue timer(CreateReceiverWithCalledFlag(&is_idle),
-                                task_runner()->GetMockTickClock());
+  ServiceWorkerEventQueue event_queue(CreateReceiverWithCalledFlag(&is_idle),
+                                      task_runner()->GetMockTickClock());
   MockEvent event;
-  timer.PushTask(event.CreateTask());
-  timer.Start();
+  event.EnqueueTo(&event_queue);
+  event_queue.Start();
   task_runner()->FastForwardBy(kIdleInterval);
   // Nothing happens since there is an inflight event.
   EXPECT_FALSE(is_idle);
@@ -217,20 +218,20 @@ TEST_F(ServiceWorkerEventQueueTest, InflightEventBeforeStart) {
 // In the first UpdateStatus() the idle callback should be triggered.
 TEST_F(ServiceWorkerEventQueueTest, EventFinishedBeforeStart) {
   bool is_idle = false;
-  ServiceWorkerEventQueue timer(CreateReceiverWithCalledFlag(&is_idle),
-                                task_runner()->GetMockTickClock());
+  ServiceWorkerEventQueue event_queue(CreateReceiverWithCalledFlag(&is_idle),
+                                      task_runner()->GetMockTickClock());
   // Start and finish an event before starting the timer.
   MockEvent event;
-  timer.PushTask(event.CreateTask());
+  event.EnqueueTo(&event_queue);
   task_runner()->FastForwardBy(base::TimeDelta::FromSeconds(1));
-  timer.EndEvent(event.event_id());
+  event_queue.EndEvent(event.event_id());
 
   // Move the time ticks to almost before |idle_time_| so that |idle_callback|
   // will get called at the first update check.
   task_runner()->FastForwardBy(ServiceWorkerEventQueue::kIdleDelay -
                                base::TimeDelta::FromSeconds(1));
 
-  timer.Start();
+  event_queue.Start();
 
   // Make sure the timer calls UpdateStatus().
   task_runner()->FastForwardBy(ServiceWorkerEventQueue::kUpdateInterval +
@@ -246,8 +247,8 @@ TEST_F(ServiceWorkerEventQueueTest, EventTimer) {
   event_queue.Start();
 
   MockEvent event1, event2;
-  event_queue.PushTask(event1.CreateTask());
-  event_queue.PushTask(event2.CreateTask());
+  event1.EnqueueTo(&event_queue);
+  event2.EnqueueTo(&event_queue);
   task_runner()->FastForwardBy(ServiceWorkerEventQueue::kUpdateInterval +
                                base::TimeDelta::FromSeconds(1));
 
@@ -268,12 +269,12 @@ TEST_F(ServiceWorkerEventQueueTest, CustomTimeouts) {
                                       task_runner()->GetMockTickClock());
   event_queue.Start();
   MockEvent event1, event2;
-  event_queue.PushTask(event1.CreateTaskWithCustomTimeout(
-      ServiceWorkerEventQueue::kUpdateInterval -
-      base::TimeDelta::FromSeconds(1)));
-  event_queue.PushTask(event2.CreateTaskWithCustomTimeout(
-      ServiceWorkerEventQueue::kUpdateInterval * 2 -
-      base::TimeDelta::FromSeconds(1)));
+  event1.EnqueueWithCustomTimeoutTo(&event_queue,
+                                    ServiceWorkerEventQueue::kUpdateInterval -
+                                        base::TimeDelta::FromSeconds(1));
+  event2.EnqueueWithCustomTimeoutTo(
+      &event_queue, ServiceWorkerEventQueue::kUpdateInterval * 2 -
+                        base::TimeDelta::FromSeconds(1));
   task_runner()->FastForwardBy(ServiceWorkerEventQueue::kUpdateInterval +
                                base::TimeDelta::FromSeconds(1));
 
@@ -297,7 +298,7 @@ TEST_F(ServiceWorkerEventQueueTest, BecomeIdleAfterAbort) {
   event_queue.Start();
 
   MockEvent event;
-  event_queue.PushTask(event.CreateTask());
+  event.EnqueueTo(&event_queue);
   task_runner()->FastForwardBy(ServiceWorkerEventQueue::kEventTimeout +
                                ServiceWorkerEventQueue::kUpdateInterval +
                                base::TimeDelta::FromSeconds(1));
@@ -315,8 +316,9 @@ TEST_F(ServiceWorkerEventQueueTest, AbortAllOnDestruction) {
                                         task_runner()->GetMockTickClock());
     event_queue.Start();
 
-    event_queue.PushTask(event1.CreateTask());
-    event_queue.PushTask(event2.CreateTask());
+    event1.EnqueueTo(&event_queue);
+    event2.EnqueueTo(&event_queue);
+
     task_runner()->FastForwardBy(ServiceWorkerEventQueue::kUpdateInterval +
                                  base::TimeDelta::FromSeconds(1));
 
@@ -342,12 +344,12 @@ TEST_F(ServiceWorkerEventQueueTest, PushPendingTask) {
   EXPECT_TRUE(event_queue.did_idle_timeout());
 
   MockEvent pending_event;
-  event_queue.PushTask(pending_event.CreatePendingTask());
+  pending_event.EnqueuePendingTo(&event_queue);
   EXPECT_FALSE(pending_event.Started());
 
   // Start a new event. PushTask() should run the pending tasks.
   MockEvent event;
-  event_queue.PushTask(event.CreateTask());
+  event.EnqueueTo(&event_queue);
   EXPECT_FALSE(event_queue.did_idle_timeout());
   EXPECT_TRUE(pending_event.Started());
 }
@@ -363,15 +365,13 @@ TEST_F(ServiceWorkerEventQueueTest, RunPendingTasksWithZeroIdleTimerDelay) {
 
   MockEvent event1, event2;
   Vector<String> handled_tasks;
-  event_queue.PushTask(CreatePendingTaskDispatchingEvent(&event_queue, &event1,
-                                                         "1", &handled_tasks));
-  event_queue.PushTask(CreatePendingTaskDispatchingEvent(&event_queue, &event2,
-                                                         "2", &handled_tasks));
+  event1.EnqueuePendingDispatchingEventTo(&event_queue, "1", &handled_tasks);
+  event2.EnqueuePendingDispatchingEventTo(&event_queue, "2", &handled_tasks);
   EXPECT_TRUE(handled_tasks.IsEmpty());
 
   // Start a new event. PushTask() should run the pending tasks.
   MockEvent event;
-  event_queue.PushTask(event.CreateTask());
+  event.EnqueueTo(&event_queue);
   EXPECT_FALSE(event_queue.did_idle_timeout());
   ASSERT_EQ(2u, handled_tasks.size());
   EXPECT_EQ("1", handled_tasks[0]);
@@ -400,7 +400,7 @@ TEST_F(ServiceWorkerEventQueueTest, SetIdleTimerDelayToZero) {
                                         task_runner()->GetMockTickClock());
     event_queue.Start();
     MockEvent event;
-    event_queue.PushTask(event.CreateTask());
+    event.EnqueueTo(&event_queue);
     event_queue.SetIdleTimerDelayToZero();
     // Nothing happens since there is an inflight event.
     EXPECT_FALSE(is_idle);
@@ -416,8 +416,8 @@ TEST_F(ServiceWorkerEventQueueTest, SetIdleTimerDelayToZero) {
                                         task_runner()->GetMockTickClock());
     event_queue.Start();
     MockEvent event1, event2;
-    event_queue.PushTask(event1.CreateTask());
-    event_queue.PushTask(event2.CreateTask());
+    event1.EnqueueTo(&event_queue);
+    event2.EnqueueTo(&event_queue);
     event_queue.SetIdleTimerDelayToZero();
     // Nothing happens since there are two inflight events.
     EXPECT_FALSE(is_idle);
@@ -453,6 +453,141 @@ TEST_F(ServiceWorkerEventQueueTest, SetIdleTimerDelayToZero) {
     // EndEvent() immediately triggers the idle callback when no tokens exist.
     EXPECT_TRUE(is_idle);
   }
+}
+
+TEST_F(ServiceWorkerEventQueueTest, EnqueuOffline) {
+  ServiceWorkerEventQueue event_queue(base::DoNothing(),
+                                      task_runner()->GetMockTickClock());
+  event_queue.Start();
+
+  MockEvent event_1;
+  event_1.EnqueueTo(&event_queue);
+  // State:
+  // - inflight_events: {1 (normal)}
+  // - queue: []
+  EXPECT_TRUE(event_1.Started());
+
+  MockEvent event_2;
+  event_2.EnqueueTo(&event_queue);
+  // |event_queue| should start |event_2| because both 1 and 2 are normal
+  // events.
+  //
+  // State:
+  // - inflight_events: {1 (normal), 2 (normal)}
+  // - queue: []
+  EXPECT_TRUE(event_2.Started());
+
+  MockEvent event_3;
+  event_3.EnqueueOfflineTo(&event_queue);
+  // |event_queue| should not start an offline |event_3| because non-offline
+  // events are running.
+  //
+  // State:
+  // - inflight_events: {1 (normal), 2 (normal)}
+  // - queue: [3 (offline)]
+  EXPECT_FALSE(event_3.Started());
+
+  MockEvent event_4;
+  event_4.EnqueueOfflineTo(&event_queue);
+  // State:
+  // - inflight_events: {1 (normal), 2 (normal)}
+  // - queue: [3 (offline), 4 (offline)]
+  EXPECT_FALSE(event_3.Started());
+  EXPECT_FALSE(event_4.Started());
+
+  MockEvent event_5;
+  event_5.EnqueueTo(&event_queue);
+  // |event_queue| should not start a normal |event_5| because an offline event
+  // is already enqueued.
+  //
+  // State:
+  // - inflight_events: {1 (normal), 2 (normal)}
+  // - queue: [3 (offline), 4 (offline), 5 (normal)]
+  EXPECT_FALSE(event_3.Started());
+  EXPECT_FALSE(event_4.Started());
+  EXPECT_FALSE(event_5.Started());
+
+  event_queue.EndEvent(event_1.event_id());
+  // |event_1| is finished, but there ia still an inflight event, |event_2|.
+  // Events in the queue are not processed.
+  //
+  // State:
+  // - inflight_events: {2 (normal)}
+  // - queue: [3 (offline), 4 (offline), 5 (normal)]
+  EXPECT_FALSE(event_3.Started());
+  EXPECT_FALSE(event_4.Started());
+  EXPECT_FALSE(event_5.Started());
+
+  event_queue.EndEvent(event_2.event_id());
+  // All inflight events are finished. |event_queue| starts processing
+  // events in the queue. As a result, |event_3| and |event_4| are started, but
+  // |event_5| are not.
+  //
+  // State:
+  // - inflight_events: {3 (offline), 4 (offline)}
+  // - queue: [5 (normal)]
+  EXPECT_TRUE(event_3.Started());
+  EXPECT_TRUE(event_4.Started());
+  EXPECT_FALSE(event_5.Started());
+
+  event_queue.EndEvent(event_3.event_id());
+  // State:
+  // - inflight_events: {4 (offline)}
+  // - queue: [5 (normal)]
+  EXPECT_FALSE(event_5.Started());
+
+  event_queue.EndEvent(event_4.event_id());
+  // State:
+  // - inflight_events: {5 (normal)}
+  // - queue: []
+  EXPECT_TRUE(event_5.Started());
+}
+
+TEST_F(ServiceWorkerEventQueueTest, IdleTimerWithOfflineEvents) {
+  const base::TimeDelta kIdleInterval =
+      ServiceWorkerEventQueue::kIdleDelay +
+      ServiceWorkerEventQueue::kUpdateInterval +
+      base::TimeDelta::FromSeconds(1);
+
+  bool is_idle = false;
+  ServiceWorkerEventQueue event_queue(CreateReceiverWithCalledFlag(&is_idle),
+                                      task_runner()->GetMockTickClock());
+  event_queue.Start();
+
+  MockEvent event1;
+  event1.EnqueueTo(&event_queue);
+  // State:
+  // - inflight_events: {1 (normal)}
+  // - queue: []
+  EXPECT_TRUE(event1.Started());
+  task_runner()->FastForwardBy(kIdleInterval);
+  EXPECT_FALSE(is_idle);
+
+  MockEvent event2;
+  event2.EnqueueOfflineTo(&event_queue);
+  task_runner()->FastForwardBy(kIdleInterval);
+  // State:
+  // - inflight_events: {1 (normal)}
+  // - queue: [2 (offline)]
+  EXPECT_FALSE(event2.Started());
+  EXPECT_FALSE(is_idle);
+
+  event_queue.EndEvent(event1.event_id());
+  task_runner()->FastForwardBy(kIdleInterval);
+  // State:
+  // - inflight_events: {2 (offline)}
+  // - queue: []
+  EXPECT_TRUE(event2.Started());
+  EXPECT_FALSE(is_idle);
+
+  event_queue.EndEvent(event2.event_id());
+  // State:
+  // - inflight_events: {}
+  // - queue: []
+  EXPECT_FALSE(is_idle);
+  task_runner()->FastForwardBy(kIdleInterval);
+  // |idle_callback| should be fired.
+  EXPECT_TRUE(is_idle);
 }
 
 }  // namespace blink

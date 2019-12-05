@@ -110,9 +110,21 @@ class NavigationItem : public base::SupportsUserData {
   virtual base::Time GetTimestamp() const = 0;
 
   // The type of user agent requested for the navigation.
+  // If |update_inherited_user_agent| is false, then the user agent type used
+  // for inheritance won't be changed. If it is true, the the user agent for
+  // inheritance will be updated to |type|.
+  // See NavigationManager UserAgentOverrideOption::INHERIT.
   // TODO(crbug.com/697512): Create equivalent enum type for WebContents.
-  virtual void SetUserAgentType(UserAgentType type) = 0;
+  virtual void SetUserAgentType(UserAgentType type,
+                                bool update_inherited_user_agent) = 0;
   virtual UserAgentType GetUserAgentType() const = 0;
+
+  // Returns the type of user agent to be used for inheritance. Inheritance is
+  // used to know the User Agent type when a new navigation is started. This
+  // type could be different from GetUserAgentType() as if the Inherited user
+  // agent could be the automatic one, whereas the GetUserAgentType is the one
+  // actually used by this item.
+  virtual UserAgentType GetUserAgentForInheritance() const = 0;
 
   // |true| if this item is the result of a POST request with data.
   virtual bool HasPostData() const = 0;

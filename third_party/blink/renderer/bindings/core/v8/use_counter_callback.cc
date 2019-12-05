@@ -240,6 +240,9 @@ void UseCounterCallback(v8::Isolate* isolate,
     case v8::Isolate::kRegExpReplaceCalledOnSlowRegExp:
       blink_feature = WebFeature::kV8RegExpReplaceCalledOnSlowRegExp;
       break;
+    case v8::Isolate::kSharedArrayBufferConstructed:
+      blink_feature = WebFeature::kV8SharedArrayBufferConstructed;
+      break;
     default:
       // This can happen if V8 has added counters that this version of Blink
       // does not know about. It's harmless.

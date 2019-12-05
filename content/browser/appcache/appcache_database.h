@@ -46,7 +46,8 @@ FORWARD_DECLARE_TEST(AppCacheDatabaseTest, OriginUsage);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest, FindCachesForOrigin);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest,
                      UpgradeSchemaForVersionsWithoutSupportedMigrations);
-FORWARD_DECLARE_TEST(AppCacheDatabaseTest, UpgradeSchemaFrom7to8);
+FORWARD_DECLARE_TEST(AppCacheDatabaseTest, UpgradeSchemaFrom7to9);
+FORWARD_DECLARE_TEST(AppCacheDatabaseTest, UpgradeSchemaFrom8to9);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest, WasCorrutionDetected);
 class AppCacheDatabaseTest;
 class AppCacheStorageImplTest;
@@ -69,19 +70,18 @@ class CONTENT_EXPORT AppCacheDatabase {
   };
 
   struct CONTENT_EXPORT CacheRecord {
-    CacheRecord()
-        : cache_id(0),
-          group_id(0),
-          online_wildcard(false),
-          cache_size(0),
-          padding_size(0) {}
+    CacheRecord();
+    CacheRecord(const CacheRecord& other);
+    ~CacheRecord();
 
-    int64_t cache_id;
-    int64_t group_id;
-    bool online_wildcard;
+    int64_t cache_id = 0;
+    int64_t group_id = 0;
+    bool online_wildcard = false;
     base::Time update_time;
-    int64_t cache_size;  // the sum of all response sizes in this cache
-    int64_t padding_size;  // the sum of all padding sizes in this cache
+    int64_t cache_size = 0;    // the sum of all response sizes in this cache
+    int64_t padding_size = 0;  // the sum of all padding sizes in this cache
+    int64_t manifest_parser_version = -1;
+    std::string manifest_scope;
   };
 
   struct EntryRecord {
@@ -143,8 +143,8 @@ class CONTENT_EXPORT AppCacheDatabase {
   bool InsertGroup(const GroupRecord* record);
   bool DeleteGroup(int64_t group_id);
 
-  // The access and eviction time update methods do not fail when
-  // given invalid group_ids. The return value only indicates whether
+  // The access, eviction time, and manifest version/scope update methods do not
+  // fail when given invalid group_ids. The return value only indicates whether
   // the database is functioning.
   bool UpdateLastAccessTime(int64_t group_id, base::Time last_access_time);
   bool LazyUpdateLastAccessTime(int64_t group_id, base::Time last_access_time);
@@ -277,7 +277,9 @@ class CONTENT_EXPORT AppCacheDatabase {
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest,
                            UpgradeSchemaForVersionsWithoutSupportedMigrations);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest,
-                           UpgradeSchemaFrom7to8);
+                           UpgradeSchemaFrom7to9);
+  FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest,
+                           UpgradeSchemaFrom8to9);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, WasCorrutionDetected);
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheDatabase);

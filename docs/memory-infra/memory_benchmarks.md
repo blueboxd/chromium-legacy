@@ -56,20 +56,26 @@ perform with the browser:
     browser to the background).
 *   `long_running` stories interact with a page for a longer period
     of time (~5 mins).
-*   `blank` has a single story that just navigates to **about:blank**.
+*   `multitab` loads different web sites in several tabs, then cycles through
+    them.
+*   `play` loads a web site and plays some media (e.g. a song).
 
-The full name of a story has the form `{interaction}:{category}:{site}` where:
+The full name of a story has the form `{interaction}:{category}:{site}[:{year}]`
+where:
 
 *   `interaction` is one the labels given above;
 *   `category` is used to group together sites with a similar purpose,
     e.g. `news`, `social`, `tools`;
 *   `site` is a short name identifying the website in which the story mostly
     takes place, e.g. `cnn`, `facebook`, `gmail`.
+*   `year` indicates the year in which the web page recording for the story
+    was most recently updated.
 
-For example `browse:news:cnn` and `background:social:facebook` are two system
-health user stories.
+For example `browse:news:cnn:2018` and `background:social:facebook` are two
+system health user stories. The list of all current stories can be found at
+[bit.ly/csh-stories](http://bit.ly/csh-stories).
 
-Today, for most stories a garbage collection is forced at the end of the
+Today, for most stories, a garbage collection is forced at the end of the
 story and a memory dump is then triggered. Metrics report the values
 obtained from this single measurement.
 
@@ -89,14 +95,56 @@ To view data from one of the benchmarks on the
 *   **Subtest (3):** The name of a *[user story](#User-stories)*
     (with `:` replaced by `_`).
 
-If you are investigating a Perf dashboard alert and would like to see the
-details, you can click on any point of the graph. It gives you the commit range,
-buildbot output and a link to the trace file taken during the buildbot run.
-(More information about reading trace files [here][memory-infra])
+Clicking on any point of the graph will give you the commit range, links to the
+builder that ran the benchmark, and a trace file collected during the story
+run. See below for details on how to interpret these traces when
+[debugging memory related issues](#debugging-memory-regressions).
 
-[memory-infra]: /docs/memory-infra/README.md
+Many of the high level memory measurements are automatically tracked and the
+Performance Dashboard will generate alerts when a memory regression is detected.
+These are triaged by [perf sheriffs][] who create bugs and start bisect jobs
+to find the root cause of regressions.
+
+[perf sheriffs]: /docs/speed/perf_regression_sheriffing.md
 
 ![Chrome Performance Dashboard Alert](https://storage.googleapis.com/chromium-docs.appspot.com/perfdashboard_alert.png)
+
+## Debugging memory regressions
+
+If you are investigating a memory regression, chances are, a [pinpoint][]
+job identified one of your CLs as a possible culprit.
+
+![Pinpoint Regression](https://storage.googleapis.com/chromium-docs.appspot.com/pinpoint_regression.png)
+
+Note the "chart" argument identifies the memory metric that regressed. The
+pinpoint results page also gives you easy access to traces before and after
+your commit landed. It's useful to look at both and compare them to identify what
+changed. The documentation on [memory-infra][memory-infra] explains how to dig
+down into details and interpret memory measurements. Also note that pinpoint
+runs each commit multiple times, so you can access more traces by clicking on
+a different "repeat" of either commit.
+
+Sometimes it's also useful to follow the link to "Analyze benchmark results"
+which will bring up the [Metrics Results UI][results-ui] to compare all
+measurements (not just the one caught by the alert) before and after your
+CL landed. Make sure to select the "before" commit as reference column, show
+absolute changes (i.e. "Δavg") instead of relative, and sort by the column
+with changes on the "after" commit to visualize them more easily. This can be
+useful to find a more specific source of the regression, e.g.
+`renderer_processes:reported_by_chrome:v8:heap:code_space:effective_size`
+rather than just `all_processes:reported_by_chrome:effective_size`, and help
+you pin down the source of the regression.
+
+To confirm whether a revert of your CL would fix the regression you can run
+a [pinpoint try job](#How-to-run-a-pinpoint-try-job) with a patch containing
+the revert. Finally, **do not close the bug** even if you suspect that your CL
+may not be the cause of the regression; instead follow the more general
+guidance on how to [address performance regressions][addressing-regressions].
+Bugs should only be closed if the regression has been fixed or justified.
+
+[results-ui]: https://chromium.googlesource.com/catapult.git/+/HEAD/docs/metrics-results-ui.md
+[memory-infra]: /docs/memory-infra/README.md
+[addressing-regressions]: /docs/speed/addressing_performance_regressions.md
 
 ## How to run the benchmarks
 
@@ -199,5 +247,7 @@ where:
     and `allocated_objects_size`); for metrics by the OS this usually is
     `proportional_resident_size` (others are `peak_resident_size` and
     `private_dirty_size`).
+
+Read the [memory-infra documentation][memory-infra] for more details on them.
 
 [memory-infra]: /docs/memory-infra/README.md

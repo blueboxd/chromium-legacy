@@ -24,6 +24,13 @@ class GPU_GLES2_EXPORT SharedImageRepresentationSkiaGL
       SharedImageManager* manager,
       SharedImageBacking* backing,
       MemoryTypeTracker* tracker);
+  static std::unique_ptr<SharedImageRepresentationSkiaGL> CreateForPassthrough(
+      std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
+          passthrough_representation,
+      scoped_refptr<SharedContextState> context_state,
+      SharedImageManager* manager,
+      SharedImageBacking* backing,
+      MemoryTypeTracker* tracker);
 
   ~SharedImageRepresentationSkiaGL() override;
 
@@ -46,9 +53,20 @@ class GPU_GLES2_EXPORT SharedImageRepresentationSkiaGL
       SharedImageManager* manager,
       SharedImageBacking* backing,
       MemoryTypeTracker* tracker);
+  SharedImageRepresentationSkiaGL(
+      std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
+          passthrough_representation,
+      sk_sp<SkPromiseImageTexture> promise_texture,
+      scoped_refptr<SharedContextState> context_state,
+      SharedImageManager* manager,
+      SharedImageBacking* backing,
+      MemoryTypeTracker* tracker);
+
   void CheckContext();
 
   std::unique_ptr<SharedImageRepresentationGLTexture> gl_representation_;
+  std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
+      passthrough_representation_;
   sk_sp<SkPromiseImageTexture> promise_texture_;
   scoped_refptr<SharedContextState> context_state_;
   SkSurface* surface_ = nullptr;

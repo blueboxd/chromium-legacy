@@ -62,7 +62,7 @@ class FCMSyncNetworkChannel : public NetworkChannel {
   bool DeliverIncomingMessage(const std::string& payload,
                               const std::string& private_topic,
                               const std::string& public_topic,
-                              const std::string& version);
+                              int64_t version);
 
   // Subclass should call DeliverToken for token to reach registration
   // manager.

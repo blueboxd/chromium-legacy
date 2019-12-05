@@ -47,6 +47,8 @@ class PermissionPromptAndroid : public PermissionPrompt,
   base::string16 GetTitleText() const;
   base::string16 GetMessageText() const;
 
+  const content::WebContents* web_contents() { return web_contents_; }
+
   // InfoBar::Manager:
   void OnInfoBarRemoved(infobars::InfoBar* infobar, bool animate) override;
   void OnManagerShuttingDown(infobars::InfoBarManager* manager) override;

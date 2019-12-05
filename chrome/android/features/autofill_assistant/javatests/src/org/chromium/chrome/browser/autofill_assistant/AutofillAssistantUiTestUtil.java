@@ -7,20 +7,24 @@ package org.chromium.chrome.browser.autofill_assistant;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.os.Build.VERSION;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.NoMatchingViewException;
 import android.support.test.espresso.UiController;
 import android.support.test.espresso.ViewAction;
+import android.support.test.espresso.matcher.BoundedMatcher;
 import android.text.SpannableString;
 import android.text.style.ClickableSpan;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -31,6 +35,7 @@ import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 import org.json.JSONArray;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.Supplier;
 import org.chromium.base.ThreadUtils;
@@ -141,6 +146,39 @@ class AutofillAssistantUiTestUtil {
             @Override
             public void describeTo(Description description) {
                 description.appendText("important for Accessibility set to " + mode);
+            }
+        };
+    }
+
+    public static Matcher<View> hasTintColor(final int colorResId) {
+        return new BoundedMatcher<View, ImageView>(ImageView.class) {
+            private Context mContext;
+
+            @Override
+            protected boolean matchesSafely(ImageView imageView) {
+                if (VERSION.SDK_INT < 21) {
+                    // Image tint didn't exist before then.
+                    return true;
+                }
+                if (imageView.getImageTintList() == null) {
+                    return false;
+                }
+                this.mContext = imageView.getContext();
+                int imageTintColor = imageView.getImageTintList().getColorForState(
+                        imageView.getDrawable().getState(), -1);
+                int expectedColor =
+                        ApiCompatibilityUtils.getColor(mContext.getResources(), colorResId);
+                return imageTintColor == expectedColor;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                String colorId = String.valueOf(colorResId);
+                if (this.mContext != null) {
+                    colorId = this.mContext.getResources().getResourceName(colorResId);
+                }
+
+                description.appendText("has tint with ID " + colorId);
             }
         };
     }

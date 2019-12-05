@@ -69,7 +69,7 @@
 // cannot forward methods in UIScrollView if CRWWebViewScrollViewProxy is a
 // subclass of UIScrollView.
 //
-// TODO(crbug.com/1023250): Support KVO and delegate of this scroll view.
+// TODO(crbug.com/1023250): Support KVO of this scroll view.
 // TODO(crbug.com/1023250): Restore properties of the scroll view when the
 // scroll view is reset.
 - (UIScrollView*)asUIScrollView;

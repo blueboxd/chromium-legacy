@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
@@ -281,6 +282,11 @@ AudioInputStream* AudioManagerBase::MakeAudioInputStream(
 
   if (stream) {
     input_streams_.insert(stream);
+    if (!log_callback.is_null()) {
+      log_callback.Run(base::StringPrintf(
+          "AMB::MakeAudioInputStream => (number of streams=%d)",
+          input_stream_count()));
+    }
 
     if (!params.IsBitstreamFormat() && debug_recording_manager_) {
       // Using unretained for |debug_recording_manager_| is safe since it

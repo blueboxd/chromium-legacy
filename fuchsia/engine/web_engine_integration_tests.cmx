@@ -7,9 +7,9 @@
     ],
     "services": [
       "fuchsia.accessibility.semantics.SemanticsManager",
-      "fuchsia.deprecatedtimezone.Timezone",
       "fuchsia.device.NameProvider",
       "fuchsia.fonts.Provider",
+      "fuchsia.intl.PropertyProvider",
       "fuchsia.logger.LogSink",
       "fuchsia.media.Audio",
       "fuchsia.net.NameLookup",

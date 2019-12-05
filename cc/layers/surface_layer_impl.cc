@@ -149,7 +149,7 @@ void SurfaceLayerImpl::AppendQuads(viz::RenderPass* render_pass,
     auto* quad = render_pass->CreateAndAppendDrawQuad<viz::SurfaceDrawQuad>();
     quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
                  surface_range_, background_color(),
-                 stretch_content_to_fill_bounds_, has_pointer_events_none_);
+                 stretch_content_to_fill_bounds_);
     quad->is_reflection = is_reflection_;
     // Add the primary surface ID as a dependency.
     append_quads_data->activation_dependencies.push_back(surface_range_.end());

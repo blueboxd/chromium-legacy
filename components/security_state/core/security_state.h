@@ -19,6 +19,8 @@
 #include "net/cert/x509_certificate.h"
 #include "url/gurl.h"
 
+class PrefRegistrySimple;
+
 // Provides helper methods and data types that are used to determine the
 // high-level security information about a page or request.
 //
@@ -201,6 +203,10 @@ struct VisibleSecurityState {
   // True if the page should be excluded from a UI treatment for legacy TLS
   // (used for control group in an experimental UI rollout).
   bool should_suppress_legacy_tls_warning;
+  // True if the page should be excluded from a warning UI treatment for mixed
+  // content. If set to false, the page will receive a neutral (rather than
+  // positively secure) UI treatment.
+  bool should_suppress_mixed_content_warning;
   // Contains information about input events that may impact the security
   // level of the page.
   InsecureInputEventData insecure_input_events;
@@ -231,6 +237,8 @@ SecurityLevel GetSecurityLevel(
 // and its certificate has any major errors.
 bool HasMajorCertificateError(
     const VisibleSecurityState& visible_security_state);
+
+void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
 // Returns true for a valid |url| with a cryptographic scheme, e.g., HTTPS, WSS.
 bool IsSchemeCryptographic(const GURL& url);

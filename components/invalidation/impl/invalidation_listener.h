@@ -10,6 +10,8 @@
 namespace syncer {
 
 // Handlers registration and message receiving events.
+// TODO(crbug.com/1029481): Get rid of this interface; it has a single
+// implementation and nothing refers to it directly.
 class InvalidationListener {
  public:
   virtual ~InvalidationListener() {}
@@ -31,7 +33,7 @@ class InvalidationListener {
   virtual void Invalidate(const std::string& payload,
                           const std::string& private_topic,
                           const std::string& public_topic,
-                          const std::string& version) = 0;
+                          int64_t version) = 0;
 
   /* Informs the listener about new token being available.
    *     token - instance id token, received from the network.

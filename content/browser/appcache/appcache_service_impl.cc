@@ -383,12 +383,8 @@ AppCacheServiceImpl::AppCacheServiceImpl(
       force_keep_session_state_(false),
       partition_(std::move(partition)) {
   if (quota_manager_proxy_.get()) {
-    // The operator new is used here because this AppCacheQuotaClient instance
-    // deletes itself after both the QuotaManager and the AppCacheService are
-    // destroyed.
-    auto* quota_client = new AppCacheQuotaClient(AsWeakPtr());
-    quota_manager_proxy_->RegisterClient(quota_client);
-    quota_client_ = quota_client->AsWeakPtr();
+    quota_client_ = base::MakeRefCounted<AppCacheQuotaClient>(AsWeakPtr());
+    quota_manager_proxy_->RegisterClient(quota_client_);
   }
 }
 
@@ -399,10 +395,10 @@ AppCacheServiceImpl::~AppCacheServiceImpl() {
   for (auto& helper : pending_helpers_)
     helper.first->Cancel();
   pending_helpers_.clear();
-  if (quota_manager_proxy_.get()) {
+  if (quota_client_) {
     base::PostTask(FROM_HERE, {BrowserThread::IO},
                    base::BindOnce(&AppCacheQuotaClient::NotifyAppCacheDestroyed,
-                                  quota_client_));
+                                  std::move(quota_client_)));
   }
 
   // Destroy storage_ first; ~AppCacheStorageImpl accesses other data members

@@ -135,14 +135,14 @@ class Service::Context : public ServiceContext {
 };
 
 Service::Service(mojo::PendingReceiver<mojom::AssistantService> receiver,
-                 std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-                     url_loader_factory_info,
+                 std::unique_ptr<network::PendingSharedURLLoaderFactory>
+                     pending_url_loader_factory,
                  PrefService* profile_prefs)
     : receiver_(this, std::move(receiver)),
       token_refresh_timer_(std::make_unique<base::OneShotTimer>()),
       main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       context_(std::make_unique<Context>(this)),
-      url_loader_factory_info_(std::move(url_loader_factory_info)),
+      pending_url_loader_factory_(std::move(pending_url_loader_factory)),
       profile_prefs_(profile_prefs) {
   DCHECK(profile_prefs_);
   // TODO(xiaohuic): We will need to setup the power manager dbus client if
@@ -472,10 +472,10 @@ Service::CreateAndReturnAssistantManagerService() {
       std::move(battery_monitor), client_.get(), context());
 
   // |assistant_manager_service_| is only created once.
-  DCHECK(url_loader_factory_info_);
+  DCHECK(pending_url_loader_factory_);
   return std::make_unique<AssistantManagerServiceImpl>(
       client_.get(), context(), std::move(delegate),
-      std::move(url_loader_factory_info_), is_signed_out_mode_);
+      std::move(pending_url_loader_factory_), is_signed_out_mode_);
 #else
   return std::make_unique<FakeAssistantManagerServiceImpl>();
 #endif

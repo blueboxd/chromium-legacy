@@ -330,20 +330,6 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       "//chrome/android:chrome_public_non_pak_assets",
     ]
 
-    # TODO(https://crbug.com/1027573): Remove this when all targets are explicit
-    # about their configuration.
-    if (android_64bit_target_cpu) {
-      _is_64_bit_browser =
-          defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser
-      if (_is_64_bit_browser) {
-        _include_32_bit_webview = defined(invoker.include_32_bit_webview) &&
-                                  invoker.include_32_bit_webview
-      } else {
-        _include_64_bit_webview = !defined(invoker.include_64_bit_webview) ||
-                                  invoker.include_64_bit_webview
-      }
-    }
-
     if (is_monochrome) {
       product_config_java_packages = [
         "org.chromium.chrome.browser",
@@ -361,15 +347,15 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       if (android_64bit_target_cpu) {
         # Build //android_webview:monochrome with the opposite bitness that
         # Chrome runs in.
-        if (_is_64_bit_browser) {
+        if (invoker.is_64_bit_browser) {
           _include_primary_support = true
           shared_libraries = [ "//chrome/android:libmonochrome_64" ]
-          if (_include_32_bit_webview && build_apk_secondary_abi) {
+          if (invoker.include_32_bit_webview && build_apk_secondary_abi) {
             secondary_abi_shared_libraries = [ "//android_webview:monochrome_64($android_secondary_abi_toolchain)" ]
             _include_secondary_support = true
           }
         } else {
-          if (_include_64_bit_webview) {
+          if (invoker.include_64_bit_webview) {
             shared_libraries = [ "//android_webview:monochrome" ]
             _include_primary_support = true
           }
@@ -423,14 +409,14 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       # depend on their respective versions of the shared library APK even
       # though they're functionally the same.
       if (android_64bit_target_cpu) {
-        if (_is_64_bit_browser) {
+        if (invoker.is_64_bit_browser) {
           native_lib_placeholders = [ "libdummy.so" ]
-          if (_include_32_bit_webview) {
+          if (invoker.include_32_bit_webview) {
             secondary_native_lib_placeholders = [ "libdummy.so" ]
           }
         } else {
           secondary_native_lib_placeholders = [ "libdummy.so" ]
-          if (_include_64_bit_webview) {
+          if (invoker.include_64_bit_webview) {
             native_lib_placeholders = [ "libdummy.so" ]
           }
         }

@@ -54,15 +54,15 @@ base::LazyInstance<scoped_refptr<base::SequencedTaskRunner>>::Leaky
 
 HttpBridgeFactory::HttpBridgeFactory(
     const std::string& user_agent,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        url_loader_factory_info,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_url_loader_factory,
     const NetworkTimeUpdateCallback& network_time_update_callback)
     : user_agent_(user_agent),
       network_time_update_callback_(network_time_update_callback) {
-  // Some tests pass null'ed out url_loader_factory_info instances.
-  if (url_loader_factory_info) {
+  // Some tests pass null'ed out pending_url_loader_factory instances.
+  if (pending_url_loader_factory) {
     url_loader_factory_ = network::SharedURLLoaderFactory::Create(
-        std::move(url_loader_factory_info));
+        std::move(pending_url_loader_factory));
   }
 }
 
@@ -91,13 +91,13 @@ HttpBridge::URLFetchState::~URLFetchState() {}
 
 HttpBridge::HttpBridge(
     const std::string& user_agent,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        url_loader_factory_info,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_url_loader_factory,
     const NetworkTimeUpdateCallback& network_time_update_callback)
     : user_agent_(user_agent),
       http_post_completed_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                            base::WaitableEvent::InitialState::NOT_SIGNALED),
-      url_loader_factory_info_(std::move(url_loader_factory_info)),
+      pending_url_loader_factory_(std::move(pending_url_loader_factory)),
       network_task_runner_(g_io_capable_task_runner_for_tests.Get()
                                ? g_io_capable_task_runner_for_tests.Get()
                                : base::CreateSequencedTaskRunner(
@@ -205,12 +205,12 @@ void HttpBridge::MakeAsynchronousPost() {
 
   // Some tests inject |url_loader_factory_| created to operated on the
   // IO-capable thread currently running.
-  DCHECK((!url_loader_factory_ && url_loader_factory_info_) ||
-         (url_loader_factory_ && !url_loader_factory_info_));
+  DCHECK((!url_loader_factory_ && pending_url_loader_factory_) ||
+         (url_loader_factory_ && !pending_url_loader_factory_));
   if (!url_loader_factory_) {
-    DCHECK(url_loader_factory_info_);
+    DCHECK(pending_url_loader_factory_);
     url_loader_factory_ = network::SharedURLLoaderFactory::Create(
-        std::move(url_loader_factory_info_));
+        std::move(pending_url_loader_factory_));
   }
 
   fetch_state_.start_time = base::Time::Now();
@@ -306,9 +306,9 @@ const std::string HttpBridge::GetResponseHeaderValue(
 void HttpBridge::Abort() {
   base::AutoLock lock(fetch_state_lock_);
 
-  // Release |url_loader_factory_info_| as soon as possible so that
+  // Release |pending_url_loader_factory_| as soon as possible so that
   // no URLLoaderFactory instances proceed on the network task runner.
-  url_loader_factory_info_.reset();
+  pending_url_loader_factory_.reset();
 
   DCHECK(!fetch_state_.aborted);
   if (fetch_state_.aborted || fetch_state_.request_completed)

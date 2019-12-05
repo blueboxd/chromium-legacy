@@ -78,7 +78,7 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
     const KURL request_url = resource->Url();
     const KURL response_url = resource->GetResponse().CurrentRequestUrl();
     if (request_url != response_url &&
-        !global_scope_->GetSecurityOrigin()->IsSameSchemeHostPort(
+        !global_scope_->GetSecurityOrigin()->IsSameOriginWith(
             SecurityOrigin::Create(response_url).get())) {
       error_messages.push_back(ConsoleMessage::Create(
           mojom::ConsoleMessageSource::kSecurity,

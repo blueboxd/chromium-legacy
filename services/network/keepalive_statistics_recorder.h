@@ -5,12 +5,13 @@
 #ifndef SERVICES_NETWORK_KEEPALIVE_STATISTICS_RECORDER_H_
 #define SERVICES_NETWORK_KEEPALIVE_STATISTICS_RECORDER_H_
 
-#include <unordered_map>
+#include <map>
 
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/unguessable_token.h"
 
 namespace network {
 
@@ -19,7 +20,7 @@ namespace network {
 class COMPONENT_EXPORT(NETWORK_SERVICE) KeepaliveStatisticsRecorder
     : public base::SupportsWeakPtr<KeepaliveStatisticsRecorder> {
  public:
-  struct PerProcessStats {
+  struct PerTopLevelFrameStats {
     int num_registrations = 1;
     int num_inflight_requests = 0;
     int peak_inflight_requests = 0;
@@ -29,28 +30,35 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) KeepaliveStatisticsRecorder
   KeepaliveStatisticsRecorder();
   ~KeepaliveStatisticsRecorder();
 
-  // Registers / Unregisters |process_id| to this object. There can be multiple
-  // Register / Unregister calls with the same |process_id|, and this object
-  // thinks a process |p| is gone when the number of Register calls with |p|
-  // equals to the number of Unregister calls with |p|.
-  void Register(int process_id);
-  void Unregister(int process_id);
+  // Registers / Unregisters |top_level_frame| to this object.
+  // There can be multiple Register / Unregister calls with the same
+  // |top_level_frame|, and this object thinks a an entry for |top_level_frame|
+  // is gone when the number of Register calls with |top_level_frame| equals to
+  // the number of Unregister calls with |token|.
+  void Register(const base::UnguessableToken& top_level_frame_id);
+  void Unregister(const base::UnguessableToken& top_level_frame_id);
 
   // Called when a request with keepalive set starts.
-  void OnLoadStarted(int process_id, int request_size);
+  void OnLoadStarted(const base::UnguessableToken& top_level_frame_id,
+                     int request_size);
   // Called when a request with keepalive set finishes.
-  void OnLoadFinished(int process_id, int request_size);
+  void OnLoadFinished(const base::UnguessableToken& top_level_frame_id,
+                      int request_size);
 
-  const std::unordered_map<int, PerProcessStats>& per_process_records() const {
-    return per_process_records_;
+  const std::map<base::UnguessableToken, PerTopLevelFrameStats>&
+  per_top_level_frame_records() const {
+    return per_top_level_frame_records_;
   }
-  int NumInflightRequestsPerProcess(int process_id) const;
-  int GetTotalRequestSizePerProcess(int process_id) const;
+  int NumInflightRequestsPerTopLevelFrame(
+      const base::UnguessableToken& top_level_frame_id) const;
+  int GetTotalRequestSizePerTopLevelFrame(
+      const base::UnguessableToken& top_level_frame_id) const;
   int num_inflight_requests() const { return num_inflight_requests_; }
   int peak_inflight_requests() const { return peak_inflight_requests_; }
 
  private:
-  std::unordered_map<int, PerProcessStats> per_process_records_;
+  std::map<base::UnguessableToken, PerTopLevelFrameStats>
+      per_top_level_frame_records_;
   int num_inflight_requests_ = 0;
   int peak_inflight_requests_ = 0;
 

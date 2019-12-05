@@ -21,7 +21,7 @@ class FCMInvalidationService : public FCMInvalidationServiceBase,
                          FCMNetworkHandlerCallback fcm_network_handler_callback,
                          PerUserTopicRegistrationManagerCallback
                              per_user_topic_registration_manager_callback,
-                         instance_id::InstanceIDDriver* client_id_driver,
+                         instance_id::InstanceIDDriver* instance_id_driver,
                          PrefService* pref_service,
                          const std::string& sender_id = {});
   ~FCMInvalidationService() override;

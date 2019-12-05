@@ -82,13 +82,13 @@ promise_test(() => {
   // Intercept any browser-bound request for TestMessageTarget and bind it
   // instead to the local |impl| object.
   let interceptor = new MojoInterfaceInterceptor(
-    liteJsTest.mojom.TestMessageTarget.$interfaceName);
+      liteJsTest.mojom.TestMessageTarget.$interfaceName, 'context', true);
   interceptor.oninterfacerequest = e => {
     impl.target.$.bindHandle(e.handle);
   }
   interceptor.start();
 
-  let remote = liteJsTest.mojom.TestMessageTarget.getRemote();
+  let remote = liteJsTest.mojom.TestMessageTarget.getRemote(true);
   remote.poke();
   return remote.ping().then(() => {
     assert_equals(impl.numPokes, 1);

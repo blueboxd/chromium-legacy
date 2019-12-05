@@ -6,19 +6,48 @@
 
 #include <memory>
 
+#include "base/bind.h"
+#include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/intl_profile_watcher.h"
 #include "base/logging.h"
+#include "base/strings/string_piece.h"
+#include "third_party/icu/source/common/unicode/unistr.h"
+#include "third_party/icu/source/i18n/unicode/timezone.h"
 
 namespace device {
 namespace {
 
-// TODO(fuchsia): Implement this. crbug.com/750934
 class TimeZoneMonitorFuchsia : public TimeZoneMonitor {
  public:
-  TimeZoneMonitorFuchsia() = default;
+  TimeZoneMonitorFuchsia()
+      : watcher_(base::BindRepeating(&TimeZoneMonitorFuchsia::OnProfileChanged,
+                                     base::Unretained(this))) {}
+
+  TimeZoneMonitorFuchsia(const TimeZoneMonitorFuchsia&) = delete;
+  TimeZoneMonitorFuchsia& operator=(const TimeZoneMonitorFuchsia&) = delete;
   ~TimeZoneMonitorFuchsia() override = default;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TimeZoneMonitorFuchsia);
+  void OnProfileChanged(const ::fuchsia::intl::Profile& profile) {
+    std::string new_zone_id = watcher_.GetPrimaryTimeZoneIdFromProfile(profile);
+    std::unique_ptr<icu::TimeZone> new_zone(
+        base::WrapUnique(icu::TimeZone::createTimeZone(
+            icu::UnicodeString::fromUTF8(new_zone_id))));
+
+    // Changes to profile properties other than the time zone may have caused
+    // the notification, but we only want to update the ICU default zone and
+    // notify renderers if the time zone changed. The timezone must have
+    // previously been populated. See InitializeICU().
+    std::unique_ptr<icu::TimeZone> current_zone(icu::TimeZone::createDefault());
+    if (*current_zone == *new_zone) {
+      DVLOG(1) << "timezone already updated";
+      return;
+    }
+
+    UpdateIcuAndNotifyClients(std::move(new_zone));
+  }
+
+  base::fuchsia::IntlProfileWatcher watcher_;
 };
 
 }  // namespace
@@ -26,8 +55,6 @@ class TimeZoneMonitorFuchsia : public TimeZoneMonitor {
 // static
 std::unique_ptr<TimeZoneMonitor> TimeZoneMonitor::Create(
     scoped_refptr<base::SequencedTaskRunner> file_task_runner) {
-  // TODO(https://crbug.com/750934): Implement a real TimeZoneMonitor.
-
   return std::make_unique<TimeZoneMonitorFuchsia>();
 }
 

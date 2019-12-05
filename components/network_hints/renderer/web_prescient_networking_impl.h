@@ -11,20 +11,22 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/platform/web_prescient_networking.h"
 
+namespace content {
+class RenderFrame;
+}
+
 namespace network_hints {
 
 // The main entry point from blink for sending DNS prefetch requests to the
 // network stack.
 class WebPrescientNetworkingImpl : public blink::WebPrescientNetworking {
  public:
-  WebPrescientNetworkingImpl();
+  explicit WebPrescientNetworkingImpl(content::RenderFrame* render_frame);
   ~WebPrescientNetworkingImpl() override;
 
   // blink::WebPrescientNetworking methods:
   void PrefetchDNS(const blink::WebString& hostname) override;
-  void Preconnect(blink::WebLocalFrame* web_local_frame,
-                  const blink::WebURL& url,
-                  const bool allow_credentials) override;
+  void Preconnect(const blink::WebURL& url, bool allow_credentials) override;
 
  private:
   mojo::Remote<mojom::NetworkHintsHandler> handler_;

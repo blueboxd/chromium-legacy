@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_CHROME_EXTENSIONS_INTERFACE_REGISTRATION_H_
 #define CHROME_BROWSER_EXTENSIONS_CHROME_EXTENSIONS_INTERFACE_REGISTRATION_H_
 
+#include "services/service_manager/public/cpp/binder_map.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace content {
@@ -18,6 +19,10 @@ class Extension;
 void RegisterChromeInterfacesForExtension(
     service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>*
         registry,
+    content::RenderFrameHost* render_frame_host,
+    const Extension* extension);
+void PopulateChromeFrameBindersForExtension(
+    service_manager::BinderMapWithContext<content::RenderFrameHost*>* map,
     content::RenderFrameHost* render_frame_host,
     const Extension* extension);
 

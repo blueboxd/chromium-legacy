@@ -54,6 +54,8 @@ class OriginTrialsTest : public ScriptWrappable {
   bool secureMethod() { return true; }
   static bool secureStaticMethod() { return true; }
 
+  bool deprecationAttribute() { return true; }
+
   bool impliedAttribute() { return true; }
 
   bool invalidOSAttribute() { return true; }

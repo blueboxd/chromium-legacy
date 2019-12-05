@@ -9,6 +9,7 @@
 
 #include "base/optional.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
+#include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_source.h"
 
 namespace blink {
 
@@ -22,12 +23,15 @@ class MockMediaStreamRegistry final {
   MockMediaStreamRegistry();
 
   void Init();
-  void AddVideoTrack(const std::string& track_id,
-                     const VideoTrackAdapterSettings& adapter_settings,
-                     const base::Optional<bool>& noise_reduction,
-                     bool is_screen_cast,
-                     double min_frame_rate);
-  void AddVideoTrack(const std::string& track_id);
+
+  // Returns the native mock vidoe source for optional use in tests.
+  MockMediaStreamVideoSource* AddVideoTrack(
+      const std::string& track_id,
+      const VideoTrackAdapterSettings& adapter_settings,
+      const base::Optional<bool>& noise_reduction,
+      bool is_screen_cast,
+      double min_frame_rate);
+  MockMediaStreamVideoSource* AddVideoTrack(const std::string& track_id);
   void AddAudioTrack(const std::string& track_id);
 
   const WebMediaStream test_stream() const { return test_stream_; }

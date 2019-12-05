@@ -1096,11 +1096,13 @@ PhysicalOffset LayoutBoxModelObject::StickyPositionOffset() const {
     return PhysicalOffset();
   StickyPositionScrollingConstraints* constraints = &it->value;
 
+  LayoutBox* layout_box = ancestor_overflow_layer->GetLayoutBox();
+  DCHECK(layout_box);
+
   // The sticky offset is physical, so we can just return the delta computed in
   // absolute coords (though it may be wrong with transforms).
   PhysicalRect constraining_rect = ComputeStickyConstrainingRect();
-  constraining_rect.Move(PhysicalOffset::FromFloatPointRound(
-      ancestor_overflow_layer->GetScrollableArea()->ScrollPosition()));
+  constraining_rect.Move(PhysicalOffset(layout_box->ScrolledContentOffset()));
   return constraints->ComputeStickyOffset(constraining_rect, constraints_map);
 }
 

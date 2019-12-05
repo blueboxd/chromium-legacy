@@ -6,18 +6,18 @@
 
 namespace network {
 
-WrapperSharedURLLoaderFactoryInfo::WrapperSharedURLLoaderFactoryInfo() =
+WrapperPendingSharedURLLoaderFactory::WrapperPendingSharedURLLoaderFactory() =
     default;
 
-WrapperSharedURLLoaderFactoryInfo::WrapperSharedURLLoaderFactoryInfo(
+WrapperPendingSharedURLLoaderFactory::WrapperPendingSharedURLLoaderFactory(
     mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote)
     : factory_remote_(std::move(factory_remote)) {}
 
-WrapperSharedURLLoaderFactoryInfo::~WrapperSharedURLLoaderFactoryInfo() =
+WrapperPendingSharedURLLoaderFactory::~WrapperPendingSharedURLLoaderFactory() =
     default;
 
 scoped_refptr<network::SharedURLLoaderFactory>
-WrapperSharedURLLoaderFactoryInfo::CreateFactory() {
+WrapperPendingSharedURLLoaderFactory::CreateFactory() {
   return base::MakeRefCounted<WrapperSharedURLLoaderFactory>(
       std::move(factory_remote_));
 }

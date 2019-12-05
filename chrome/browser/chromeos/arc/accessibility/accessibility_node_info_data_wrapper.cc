@@ -71,7 +71,9 @@ bool AccessibilityNodeInfoDataWrapper::CanBeAccessibilityFocused() const {
   bool important = GetProperty(AXBooleanProperty::IMPORTANCE) ||
                    IsFocusableNativeWeb(data.role);
   bool non_generic_role = data.role != ax::mojom::Role::kGenericContainer &&
-                          data.role != ax::mojom::Role::kGroup;
+                          data.role != ax::mojom::Role::kGroup &&
+                          data.role != ax::mojom::Role::kList &&
+                          data.role != ax::mojom::Role::kGrid;
   bool actionable = is_clickable_leaf_ ||
                     GetProperty(AXBooleanProperty::FOCUSABLE) ||
                     GetProperty(AXBooleanProperty::CHECKABLE);

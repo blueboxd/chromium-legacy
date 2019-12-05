@@ -164,31 +164,9 @@ class AuthErrorBubble : public LoginErrorBubble {
 
   // ash::LoginBaseBubbleView
   gfx::Point CalculatePosition() override {
-    if (!GetAnchorView())
-      return gfx::Point();
-
-    gfx::Point anchor_position = GetAnchorView()->bounds().origin();
-    ConvertPointToTarget(GetAnchorView()->parent() /*source*/,
-                         GetAnchorView()->GetWidget()->GetRootView() /*target*/,
-                         &anchor_position);
-    auto bounds = GetAnchorView()->GetWidget()->GetRootView()->GetLocalBounds();
-    const int work_area_height =
-        display::Screen::GetScreen()
-            ->GetDisplayNearestWindow(
-                GetAnchorView()->GetWidget()->GetNativeWindow())
-            .work_area()
-            .height();
-    bounds.set_height(std::min(bounds.height(), work_area_height));
-
-    gfx::Size bubble_size(width() + 2 * kHorizontalPaddingAuthErrorBubbleDp,
-                          height() + kVerticalPaddingAuthErrorBubbleDp);
-    auto result = login_views_utils::CalculateBubblePositionRigthLeftStrategy(
-        {anchor_position, GetAnchorView()->size()}, bubble_size, bounds);
-    // Get position of the bubble surrounded by paddings.
-    result.Offset(kHorizontalPaddingAuthErrorBubbleDp, 0);
-    ConvertPointToTarget(GetAnchorView()->GetWidget()->GetRootView() /*source*/,
-                         parent() /*target*/, &result);
-    return result;
+    return CalculatePositionUsingDefaultStrategy(
+        PositioningStrategy::kShowOnRightSideOrLeftSide,
+        kHorizontalPaddingAuthErrorBubbleDp, kVerticalPaddingAuthErrorBubbleDp);
   }
 };
 

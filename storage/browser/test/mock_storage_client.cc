@@ -87,10 +87,6 @@ QuotaClient::ID MockStorageClient::id() const {
   return id_;
 }
 
-void MockStorageClient::OnQuotaManagerDestroyed() {
-  delete this;
-}
-
 void MockStorageClient::GetOriginUsage(const url::Origin& origin,
                                        StorageType type,
                                        GetUsageCallback callback) {

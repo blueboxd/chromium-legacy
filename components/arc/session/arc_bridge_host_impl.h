@@ -12,8 +12,8 @@
 #include "base/threading/thread_checker.h"
 #include "components/arc/mojom/arc_bridge.mojom.h"
 #include "components/arc/session/connection_holder.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace arc {
 
@@ -138,7 +138,7 @@ class ArcBridgeHostImpl : public mojom::ArcBridgeHost {
   // Owned by ArcServiceManager.
   ArcBridgeService* const arc_bridge_service_;
 
-  mojo::Binding<mojom::ArcBridgeHost> binding_;
+  mojo::Receiver<mojom::ArcBridgeHost> receiver_;
   mojom::ArcBridgeInstancePtr instance_;
 
   // Put as a last member to ensure that any callback tied to the elements

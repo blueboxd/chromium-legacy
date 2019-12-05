@@ -608,6 +608,11 @@ void ShellSurfaceBase::OnSetApplicationId(const char* application_id) {
   SetApplicationId(application_id);
 }
 
+void ShellSurfaceBase::OnActivationRequested() {
+  if (widget_ && HasPermissionToActivate(widget_->GetNativeWindow()))
+    this->Activate();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // SurfaceObserver overrides:
 

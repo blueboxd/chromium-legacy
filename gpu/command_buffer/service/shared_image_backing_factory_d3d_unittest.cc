@@ -14,12 +14,23 @@
 #include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
+#include "gpu/config/gpu_test_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkPromiseImageTexture.h"
+#include "third_party/skia/include/core/SkSurface.h"
+#include "ui/gl/buildflags.h"
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_d3d.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/init/gl_factory.h"
+
+#if BUILDFLAG(USE_DAWN)
+#include <dawn/dawn_proc.h>
+#include <dawn/webgpu_cpp.h>
+#include <dawn_native/DawnNative.h>
+#endif  // BUILDFLAG(USE_DAWN)
 
 namespace gpu {
 namespace {
@@ -55,12 +66,19 @@ GLuint MakeTextureAndSetParameters(gl::GLApi* api, GLenum target, bool fbo) {
   return texture_id;
 }
 
-class SharedImageBackingFactoryD3DTest : public testing::TestWithParam<bool> {
+bool IsD3DSharedImageSupported() {
+  // D3D shared images with the current group of flags only works on Win8+
+  // OSes. If we need shared images on Win7, we can create them but a more
+  // insecure group of flags is required.
+  if (GPUTestBotConfig::CurrentConfigMatches("Win7"))
+    return false;
+  return true;
+}
+
+class SharedImageBackingFactoryD3DTestBase
+    : public testing::TestWithParam<bool> {
  public:
   void SetUp() override {
-    if (!SharedImageBackingFactoryD3D::IsSwapChainSupported())
-      return;
-
     use_passthrough_texture_ = GetParam();
 
     surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
@@ -90,7 +108,17 @@ class SharedImageBackingFactoryD3DTest : public testing::TestWithParam<bool> {
   std::unique_ptr<SharedImageBackingFactoryD3D> shared_image_factory_;
 };
 
-TEST_P(SharedImageBackingFactoryD3DTest, InvalidFormat) {
+class SharedImageBackingFactoryD3DTestSwapChain
+    : public SharedImageBackingFactoryD3DTestBase {
+ public:
+  void SetUp() override {
+    if (!SharedImageBackingFactoryD3D::IsSwapChainSupported())
+      return;
+    SharedImageBackingFactoryD3DTestBase::SetUp();
+  }
+};
+
+TEST_P(SharedImageBackingFactoryD3DTestSwapChain, InvalidFormat) {
   if (!SharedImageBackingFactoryD3D::IsSwapChainSupported())
     return;
 
@@ -139,7 +167,7 @@ TEST_P(SharedImageBackingFactoryD3DTest, InvalidFormat) {
   }
 }
 
-TEST_P(SharedImageBackingFactoryD3DTest, CreateAndPresentSwapChain) {
+TEST_P(SharedImageBackingFactoryD3DTestSwapChain, CreateAndPresentSwapChain) {
   if (!SharedImageBackingFactoryD3D::IsSwapChainSupported())
     return;
 
@@ -391,9 +419,213 @@ TEST_P(SharedImageBackingFactoryD3DTest, CreateAndPresentSwapChain) {
   api->glDeleteFramebuffersEXTFn(1, &fbo);
 }
 
+class SharedImageBackingFactoryD3DTest
+    : public SharedImageBackingFactoryD3DTestBase {
+ public:
+  void SetUp() override {
+    if (!IsD3DSharedImageSupported())
+      return;
+
+    SharedImageBackingFactoryD3DTestBase::SetUp();
+    ASSERT_TRUE(use_passthrough_texture_);
+    GpuDriverBugWorkarounds workarounds;
+    scoped_refptr<gl::GLShareGroup> share_group = new gl::GLShareGroup();
+    context_state_ = base::MakeRefCounted<SharedContextState>(
+        std::move(share_group), surface_, context_,
+        /*use_virtualized_gl_contexts=*/false, base::DoNothing());
+    context_state_->InitializeGrContext(workarounds, nullptr);
+    auto feature_info =
+        base::MakeRefCounted<gles2::FeatureInfo>(workarounds, GpuFeatureInfo());
+    context_state_->InitializeGL(GpuPreferences(), std::move(feature_info));
+  }
+
+ protected:
+  GrContext* gr_context() const { return context_state_->gr_context(); }
+
+  void CheckSkiaPixels(const Mailbox& mailbox, const gfx::Size& size) const {
+    auto skia_representation =
+        shared_image_representation_factory_->ProduceSkia(mailbox,
+                                                          context_state_);
+    ASSERT_NE(skia_representation, nullptr);
+
+    SharedImageRepresentationSkia::ScopedReadAccess scoped_read_access(
+        skia_representation.get(), nullptr, nullptr);
+
+    auto* promise_texture = scoped_read_access.promise_image_texture();
+    GrBackendTexture backend_texture = promise_texture->backendTexture();
+
+    EXPECT_TRUE(backend_texture.isValid());
+    EXPECT_EQ(size.width(), backend_texture.width());
+    EXPECT_EQ(size.height(), backend_texture.height());
+
+    // Create an Sk Image from GrBackendTexture.
+    auto sk_image = SkImage::MakeFromTexture(
+        gr_context(), backend_texture, kTopLeft_GrSurfaceOrigin,
+        kRGBA_8888_SkColorType, kOpaque_SkAlphaType, nullptr);
+
+    const SkImageInfo dst_info =
+        SkImageInfo::Make(size.width(), size.height(), kRGBA_8888_SkColorType,
+                          kOpaque_SkAlphaType, nullptr);
+
+    const int num_pixels = size.width() * size.height();
+    std::vector<uint8_t> dst_pixels(num_pixels * 4);
+
+    // Read back pixels from Sk Image.
+    EXPECT_TRUE(sk_image->readPixels(dst_info, dst_pixels.data(),
+                                     dst_info.minRowBytes(), 0, 0));
+
+    for (int i = 0; i < num_pixels; i++) {
+      // Compare the pixel values.
+      const uint8_t* pixel = dst_pixels.data() + (i * 4);
+      EXPECT_EQ(pixel[0], 0);
+      EXPECT_EQ(pixel[1], 255);
+      EXPECT_EQ(pixel[2], 0);
+      EXPECT_EQ(pixel[3], 255);
+    }
+  }
+
+  scoped_refptr<SharedContextState> context_state_;
+};
+
+// Test to check interaction between Gl and skia GL representations.
+// We write to a GL texture using gl representation and then read from skia
+// representation.
+TEST_P(SharedImageBackingFactoryD3DTest, GL_SkiaGL) {
+  if (!IsD3DSharedImageSupported())
+    return;
+
+  // Create a backing using mailbox.
+  auto mailbox = Mailbox::GenerateForSharedImage();
+  const auto format = viz::ResourceFormat::RGBA_8888;
+  const gfx::Size size(1, 1);
+  const auto color_space = gfx::ColorSpace::CreateSRGB();
+  const uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_DISPLAY;
+  auto backing = shared_image_factory_->CreateSharedImage(
+      mailbox, format, size, color_space, usage, false /* is_thread_safe */);
+  ASSERT_NE(backing, nullptr);
+
+  GLenum expected_target = GL_TEXTURE_2D;
+  std::unique_ptr<SharedImageRepresentationFactoryRef> factory_ref =
+      shared_image_manager_.Register(std::move(backing),
+                                     memory_type_tracker_.get());
+
+  // Create a SharedImageRepresentationGLTexture.
+  auto gl_representation =
+      shared_image_representation_factory_->ProduceGLTexturePassthrough(
+          mailbox);
+  EXPECT_EQ(expected_target,
+            gl_representation->GetTexturePassthrough()->target());
+
+  SharedImageRepresentationGLTexturePassthrough::ScopedAccess scoped_access(
+      gl_representation.get(), GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
+  EXPECT_TRUE(scoped_access.success());
+
+  // Create an FBO.
+  GLuint fbo = 0;
+  gl::GLApi* api = gl::g_current_gl_context;
+  api->glGenFramebuffersEXTFn(1, &fbo);
+  api->glBindFramebufferEXTFn(GL_FRAMEBUFFER, fbo);
+
+  // Attach the texture to FBO.
+  api->glFramebufferTexture2DEXTFn(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+      gl_representation->GetTexturePassthrough()->target(),
+      gl_representation->GetTexturePassthrough()->service_id(), 0);
+
+  // Set the clear color to green.
+  api->glClearColorFn(0.0f, 1.0f, 0.0f, 1.0f);
+  api->glClearFn(GL_COLOR_BUFFER_BIT);
+  scoped_access.reset();
+  gl_representation.reset();
+
+  CheckSkiaPixels(mailbox, size);
+
+  factory_ref.reset();
+}
+
+#if BUILDFLAG(USE_DAWN)
+// Test to check interaction between Dawn and skia GL representations.
+TEST_P(SharedImageBackingFactoryD3DTest, Dawn_SkiaGL) {
+  if (!IsD3DSharedImageSupported())
+    return;
+
+  // Create a Dawn D3D12 device
+  dawn_native::Instance instance;
+  instance.DiscoverDefaultAdapters();
+
+  std::vector<dawn_native::Adapter> adapters = instance.GetAdapters();
+  auto adapter_it = std::find_if(
+      adapters.begin(), adapters.end(), [](dawn_native::Adapter adapter) {
+        return adapter.GetBackendType() == dawn_native::BackendType::D3D12;
+      });
+  ASSERT_NE(adapter_it, adapters.end());
+
+  wgpu::Device device = wgpu::Device::Acquire(adapter_it->CreateDevice());
+  DawnProcTable procs = dawn_native::GetProcs();
+  dawnProcSetProcs(&procs);
+
+  // Create a backing using mailbox.
+  const auto mailbox = Mailbox::GenerateForSharedImage();
+  const auto format = viz::ResourceFormat::RGBA_8888;
+  const gfx::Size size(1, 1);
+  const auto color_space = gfx::ColorSpace::CreateSRGB();
+  const uint32_t usage = SHARED_IMAGE_USAGE_WEBGPU | SHARED_IMAGE_USAGE_DISPLAY;
+  auto backing = shared_image_factory_->CreateSharedImage(
+      mailbox, format, size, color_space, usage, false /* is_thread_safe */);
+  ASSERT_NE(backing, nullptr);
+
+  std::unique_ptr<SharedImageRepresentationFactoryRef> factory_ref =
+      shared_image_manager_.Register(std::move(backing),
+                                     memory_type_tracker_.get());
+
+  // Clear the shared image to green using Dawn.
+  {
+    // Create a SharedImageRepresentationDawn.
+    auto dawn_representation =
+        shared_image_representation_factory_->ProduceDawn(mailbox,
+                                                          device.Get());
+
+    wgpu::Texture texture = wgpu::Texture::Acquire(
+        dawn_representation->BeginAccess(WGPUTextureUsage_OutputAttachment));
+
+    wgpu::RenderPassColorAttachmentDescriptor color_desc;
+    color_desc.attachment = texture.CreateView();
+    color_desc.resolveTarget = nullptr;
+    color_desc.loadOp = wgpu::LoadOp::Clear;
+    color_desc.storeOp = wgpu::StoreOp::Store;
+    color_desc.clearColor = {0, 255, 0, 255};
+
+    wgpu::RenderPassDescriptor renderPassDesc;
+    renderPassDesc.colorAttachmentCount = 1;
+    renderPassDesc.colorAttachments = &color_desc;
+    renderPassDesc.depthStencilAttachment = nullptr;
+
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPassDesc);
+    pass.EndPass();
+    wgpu::CommandBuffer commands = encoder.Finish();
+
+    wgpu::Queue queue = device.CreateQueue();
+    queue.Submit(1, &commands);
+
+    dawn_representation->EndAccess();
+  }
+
+  CheckSkiaPixels(mailbox, size);
+
+  // Shut down Dawn
+  device = wgpu::Device();
+  dawnProcSetProcs(nullptr);
+
+  factory_ref.reset();
+}
+#endif  // BUILDFLAG(USE_DAWN)
+
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         SharedImageBackingFactoryD3DTestSwapChain,
+                         testing::Bool());
 INSTANTIATE_TEST_SUITE_P(/* no prefix */,
                          SharedImageBackingFactoryD3DTest,
-                         testing::Bool());
-
+                         testing::Values(true));
 }  // anonymous namespace
 }  // namespace gpu

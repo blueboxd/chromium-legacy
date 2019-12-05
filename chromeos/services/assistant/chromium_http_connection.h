@@ -25,7 +25,7 @@
 namespace network {
 class SimpleURLLoader;
 class SharedURLLoaderFactory;
-class SharedURLLoaderFactoryInfo;
+class PendingSharedURLLoaderFactory;
 }  // namespace network
 
 namespace chromeos {
@@ -38,8 +38,8 @@ class ChromiumHttpConnection
       public network::SimpleURLLoaderStreamConsumer,
       public base::RefCountedThreadSafe<ChromiumHttpConnection> {
  public:
-  ChromiumHttpConnection(std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-                             url_loader_factory_info,
+  ChromiumHttpConnection(std::unique_ptr<network::PendingSharedURLLoaderFactory>
+                             pending_url_loader_factory,
                          Delegate* delegate);
 
   // assistant_client::HttpConnection implementation:
@@ -98,7 +98,8 @@ class ChromiumHttpConnection
   State state_ = State::NEW;
   bool has_last_chunk_ = false;
   uint64_t upload_body_size_ = 0;
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info_;
+  std::unique_ptr<network::PendingSharedURLLoaderFactory>
+      pending_url_loader_factory_;
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
   // The portion of the body not yet uploaded when doing chunked uploads.
   std::string upload_body_;
@@ -133,8 +134,8 @@ class ChromiumHttpConnectionFactory
     : public assistant_client::HttpConnectionFactory {
  public:
   explicit ChromiumHttpConnectionFactory(
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          url_loader_factory_info);
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          pending_url_loader_factory);
   ~ChromiumHttpConnectionFactory() override;
 
   // assistant_client::HttpConnectionFactory implementation:

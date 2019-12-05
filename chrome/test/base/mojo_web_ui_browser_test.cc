@@ -68,9 +68,11 @@ class MojoWebUIBrowserTest::WebUITestContentBrowserClient
   ~WebUITestContentBrowserClient() override {}
 
   void RegisterBrowserInterfaceBindersForFrame(
+      content::RenderFrameHost* render_frame_host,
       service_manager::BinderMapWithContext<content::RenderFrameHost*>* map)
       override {
-    ChromeContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(map);
+    ChromeContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
+        render_frame_host, map);
     map->Add<web_ui_test::mojom::TestRunner>(
         base::BindRepeating(&WebUITestContentBrowserClient::BindWebUITestRunner,
                             base::Unretained(this)));

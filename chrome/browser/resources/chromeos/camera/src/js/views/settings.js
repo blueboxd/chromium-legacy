@@ -80,7 +80,7 @@ cca.views.BaseSettings.prototype.focus = function() {
  */
 cca.views.BaseSettings.prototype.openSubSettings = function(id) {
   // Dismiss master-settings if sub-settings was dimissed by background click.
-  cca.nav.open(id).then((cond) => cond && cond.bkgnd && this.leave());
+  cca.nav.open(id).then((cond) => cond && cond.bkgnd && this.leave(cond));
 };
 
 /**
@@ -100,9 +100,6 @@ cca.views.MasterSettings = function() {
 
   // End of properties, seal the object.
   Object.seal(this);
-
-  document.querySelector('#settings-feedback').hidden =
-      !cca.util.isChromeVersionAbove(72);  // Feedback available since M72.
 };
 
 cca.views.MasterSettings.prototype = {
@@ -492,7 +489,7 @@ cca.views.ResolutionSettings.prototype.updateResolutions_ = function() {
   if ((cca.state.get('photoresolutionsettings') ||
        cca.state.get('videoresolutionsettings')) &&
       this.openedSettingDeviceId_ !== null &&
-      this.getDeviceSetting_(this.openedSettingDeviceId_) !== undefined) {
+      this.getDeviceSetting_(this.openedSettingDeviceId_) === null) {
     cca.nav.close(
         cca.state.get('photoresolutionsettings') ? 'photoresolutionsettings' :
                                                    'videoresolutionsettings');
@@ -512,7 +509,7 @@ cca.views.ResolutionSettings.prototype.updateSelectedPhotoResolution_ =
   let /** !HTMLElement */ photoItem;
   if (this.frontSetting_ && this.frontSetting_.deviceId === deviceId) {
     photoItem = this.frontPhotoItem_;
-  } else if (this.backsetting_ && this.backsetting_.deviceId === deviceId) {
+  } else if (this.backSetting_ && this.backSetting_.deviceId === deviceId) {
     photoItem = this.backPhotoItem_;
   } else {
     photoItem = /** @type {!HTMLElement} */ (this.resMenu_.querySelector(

@@ -5,7 +5,6 @@
 module blink.mojom;
 
 import "mojo/public/mojom/base/unguessable_token.mojom";
-import "services/service_manager/public/mojom/interface_provider.mojom";
 import "third_party/blink/public/mojom/browser_interface_broker.mojom";
 import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
 import "third_party/blink/public/mojom/renderer_preference_watcher.mojom";
@@ -30,7 +29,7 @@ interface SharedWorkerFactory {
   // shared worker.
   //
   // TODO(sammc): Change shared workers to obtain |content_settings| via
-  // |interface_provider| instead of receiving plumbing it here.
+  // |browser_interface_broker| instead of receiving plumbing it here.
   CreateSharedWorker(
       SharedWorkerInfo info,
       string user_agent,
@@ -67,10 +66,6 @@ interface SharedWorkerFactory {
 
       pending_remote<SharedWorkerHost> host,
       pending_receiver<SharedWorker> shared_worker,
-
-      // TODO(crbug.com/990845): remove when no longer used.
-      pending_remote<service_manager.mojom.InterfaceProvider>
-          interface_provider,
 
       // BrowserInterfaceBroker for providing browser interfaces.
       pending_remote<blink.mojom.BrowserInterfaceBroker>

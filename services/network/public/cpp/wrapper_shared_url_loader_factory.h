@@ -15,19 +15,19 @@
 
 namespace network {
 
-// A SharedURLLoaderFactoryInfo implementation that wraps a
+// A PendingSharedURLLoaderFactory implementation that wraps a
 // mojo::PendingRemote<network::mojom::URLLoaderFactory>.
-class COMPONENT_EXPORT(NETWORK_CPP) WrapperSharedURLLoaderFactoryInfo
-    : public network::SharedURLLoaderFactoryInfo {
+class COMPONENT_EXPORT(NETWORK_CPP) WrapperPendingSharedURLLoaderFactory
+    : public network::PendingSharedURLLoaderFactory {
  public:
-  WrapperSharedURLLoaderFactoryInfo();
-  explicit WrapperSharedURLLoaderFactoryInfo(
+  WrapperPendingSharedURLLoaderFactory();
+  explicit WrapperPendingSharedURLLoaderFactory(
       mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote);
 
-  ~WrapperSharedURLLoaderFactoryInfo() override;
+  ~WrapperPendingSharedURLLoaderFactory() override;
 
  private:
-  // SharedURLLoaderFactoryInfo implementation.
+  // PendingSharedURLLoaderFactory implementation.
   scoped_refptr<network::SharedURLLoaderFactory> CreateFactory() override;
 
   mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote_;
@@ -73,14 +73,14 @@ class WrapperSharedURLLoaderFactoryBase
     factory_remote_->Clone(std::move(receiver));
   }
 
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
+  std::unique_ptr<network::PendingSharedURLLoaderFactory> Clone() override {
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         pending_factory_remote;
     if (factory_remote_) {
       factory_remote_->Clone(
           pending_factory_remote.InitWithNewPipeAndPassReceiver());
     }
-    return std::make_unique<WrapperSharedURLLoaderFactoryInfo>(
+    return std::make_unique<WrapperPendingSharedURLLoaderFactory>(
         std::move(pending_factory_remote));
   }
 

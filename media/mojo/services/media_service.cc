@@ -46,8 +46,8 @@ void MediaService::OnDisconnected() {
   Terminate();
 }
 
-void MediaService::Create(mojom::MediaServiceRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void MediaService::Create(mojo::PendingReceiver<mojom::MediaService> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void MediaService::CreateInterfaceFactory(

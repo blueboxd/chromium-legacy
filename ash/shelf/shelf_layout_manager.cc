@@ -1404,8 +1404,6 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
   {
     ui::ScopedLayerAnimationSettings shelf_animation_setter(
         GetLayer(shelf_widget_)->GetAnimator());
-    ui::ScopedLayerAnimationSettings nav_animation_setter(
-        GetLayer(nav_widget)->GetAnimator());
     ui::ScopedLayerAnimationSettings hotseat_animation_setter(
         GetLayer(hotseat_widget)->GetAnimator());
     ui::ScopedLayerAnimationSettings status_animation_setter(
@@ -1420,10 +1418,6 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
       shelf_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
       shelf_animation_setter.SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-      nav_animation_setter.SetTransitionDuration(duration);
-      nav_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
-      nav_animation_setter.SetPreemptionStrategy(
-          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
       hotseat_animation_setter.SetTransitionDuration(duration);
       hotseat_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
       hotseat_animation_setter.SetPreemptionStrategy(
@@ -1435,7 +1429,6 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     } else {
       StopAnimating();
       shelf_animation_setter.SetTransitionDuration(base::TimeDelta());
-      nav_animation_setter.SetTransitionDuration(base::TimeDelta());
       hotseat_animation_setter.SetTransitionDuration(base::TimeDelta());
       status_animation_setter.SetTransitionDuration(base::TimeDelta());
     }

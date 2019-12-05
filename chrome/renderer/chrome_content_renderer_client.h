@@ -67,10 +67,6 @@ class BrowserPluginDelegate;
 struct WebPluginInfo;
 }  // namespace content
 
-namespace network_hints {
-class WebPrescientNetworkingImpl;
-}
-
 namespace extensions {
 class Extension;
 }
@@ -156,7 +152,8 @@ class ChromeContentRendererClient
                       const blink::WebURLRequest& request) override;
   uint64_t VisitedLinkHash(const char* canonical_url, size_t length) override;
   bool IsLinkVisited(uint64_t link_hash) override;
-  blink::WebPrescientNetworking* GetPrescientNetworking() override;
+  std::unique_ptr<blink::WebPrescientNetworking> CreatePrescientNetworking(
+      content::RenderFrame* render_frame) override;
   bool IsExternalPepperPlugin(const std::string& module_name) override;
   bool IsOriginIsolatedPepperPlugin(const base::FilePath& plugin_path) override;
   std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
@@ -291,9 +288,6 @@ class ChromeContentRendererClient
   std::unique_ptr<ChromeRenderThreadObserver> chrome_observer_;
   std::unique_ptr<web_cache::WebCacheImpl> web_cache_impl_;
   std::unique_ptr<chrome::WebRtcLoggingAgentImpl> webrtc_logging_agent_impl_;
-
-  std::unique_ptr<network_hints::WebPrescientNetworkingImpl>
-      web_prescient_networking_impl_;
 
   ChromeKeySystemsProvider key_systems_provider_;
 

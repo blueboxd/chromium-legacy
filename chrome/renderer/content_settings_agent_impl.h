@@ -133,6 +133,7 @@ class ContentSettingsAgentImpl
   // chrome::mojom::ContentSettingsAgent:
   void SetAllowRunningInsecureContent() override;
   void SetAsInterstitial() override;
+  void SetDisabledMixedContentUpgrades() override;
 
   void OnContentSettingsAgentRequest(
       mojo::PendingAssociatedReceiver<chrome::mojom::ContentSettingsAgent>
@@ -199,6 +200,7 @@ class ContentSettingsAgentImpl
 
   base::flat_set<std::string> temporarily_allowed_plugins_;
   bool is_interstitial_page_ = false;
+  bool mixed_content_autoupgrades_disabled_ = false;
 
   // If true, IsWhitelistedForContentSettings will always return true.
   const bool should_whitelist_;

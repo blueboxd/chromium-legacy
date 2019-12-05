@@ -186,8 +186,9 @@ void ViewPainter::PaintBoxDecorationBackgroundInternal(
   } else if (root_object->HasLayer()) {
     if (BoxDecorationData::IsPaintingScrollingBackground(paint_info,
                                                          layout_view_)) {
-      transform.Translate(layout_view_.ScrolledContentOffset().Width(),
-                          layout_view_.ScrolledContentOffset().Height());
+      transform.Translate(
+          layout_view_.PixelSnappedScrolledContentOffset().Width(),
+          layout_view_.PixelSnappedScrolledContentOffset().Height());
     }
     const PaintLayer& root_layer =
         *ToLayoutBoxModelObject(root_object)->Layer();

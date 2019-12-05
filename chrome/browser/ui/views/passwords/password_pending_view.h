@@ -45,7 +45,6 @@ class PasswordPendingView : public PasswordBubbleViewBase,
   void OnContentChanged(views::EditableCombobox* editable_combobox) override;
 
   // PasswordBubbleViewBase:
-  std::unique_ptr<views::View> CreateFootnoteView() override;
   gfx::Size CalculatePreferredSize() const override;
   views::View* GetInitiallyFocusedView() override;
   int GetDialogButtons() const override;
@@ -65,6 +64,7 @@ class PasswordPendingView : public PasswordBubbleViewBase,
   void TogglePasswordVisibility();
   void UpdateUsernameAndPasswordInModel();
   void ReplaceWithPromo();
+  std::unique_ptr<views::View> CreateFooterView();
 
   // True iff it is an update password bubble on creation. False iff it is a
   // save bubble.

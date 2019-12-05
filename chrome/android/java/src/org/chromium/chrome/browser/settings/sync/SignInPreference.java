@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.signin.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
-import org.chromium.chrome.browser.signin.SigninActivity;
 import org.chromium.chrome.browser.signin.SigninManager.SignInAllowedObserver;
 import org.chromium.chrome.browser.signin.SigninPromoController;
 import org.chromium.chrome.browser.signin.SigninPromoUtil;
@@ -77,7 +76,8 @@ public class SignInPreference
         mProfileDataCache = new ProfileDataCache(context, imageSize);
 
         setOnPreferenceClickListener(preference
-                -> SigninActivity.startIfAllowed(getContext(), SigninAccessPoint.SETTINGS));
+                -> SigninPromoUtil.startSigninActivityIfAllowed(
+                        getContext(), SigninAccessPoint.SETTINGS));
 
         // State will be updated in registerForUpdates.
         mState = State.SIGNED_IN;

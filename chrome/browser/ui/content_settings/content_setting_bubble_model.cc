@@ -1619,11 +1619,24 @@ ContentSettingNotificationsBubbleModel::ContentSettingNotificationsBubbleModel(
     : ContentSettingBubbleModel(delegate, web_contents) {
   set_title(l10n_util::GetStringUTF16(
       IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_TITLE));
-  set_message(l10n_util::GetStringUTF16(
-      IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_DESCRIPTION));
   set_done_button_text(l10n_util::GetStringUTF16(
       IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_ALLOW_BUTTON));
   set_show_learn_more(false);
+
+  // TODO(crbug.com/1030633): This block is more defensive than it needs to be
+  // because ContentSettingImageModelBrowserTest exercises it without setting up
+  // the correct PermissionRequestManager state. Fix that.
+  PermissionRequestManager* manager =
+      PermissionRequestManager::FromWebContents(web_contents);
+  int message_resource_id =
+      IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_DESCRIPTION;
+  if (manager->ShouldCurrentRequestUseQuietUI() &&
+      manager->ReasonForUsingQuietUi() ==
+          PermissionRequestManager::QuietUiReason::kTriggeredByCrowdDeny) {
+    message_resource_id =
+        IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_CROWD_DENY_DESCRIPTION;
+  }
+  set_message(l10n_util::GetStringUTF16(message_resource_id));
 
   if (QuietNotificationPermissionUiConfig::UiFlavorToUse() ==
       QuietNotificationPermissionUiConfig::UiFlavor::ANIMATED_ICON) {

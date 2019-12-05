@@ -34,7 +34,6 @@
 #include <memory>
 #include <string>
 
-#include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
@@ -53,14 +52,15 @@ class RTCAnswerOptionsPlatform;
 class RTCIceCandidatePlatform;
 class RTCOfferOptionsPlatform;
 class RTCRtpSenderPlatform;
+class RTCRtpTransceiverPlatform;
 class RTCSessionDescriptionPlatform;
 class RTCSessionDescriptionRequest;
+class RTCStatsRequest;
 class RTCVoidRequest;
 class WebLocalFrame;
 class WebMediaConstraints;
 class WebMediaStream;
 class WebMediaStreamTrack;
-class RTCStatsRequest;
 class WebString;
 
 class WebRTCPeerConnectionHandler {
@@ -88,10 +88,10 @@ class WebRTCPeerConnectionHandler {
   // create new transceivers or update the direction of existing transceivers.
   // https://w3c.github.io/webrtc-pc/#legacy-configuration-extensions
   // Plan B: Returns an empty list.
-  virtual WebVector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
+  virtual WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
       RTCSessionDescriptionRequest*,
       const WebMediaConstraints&) = 0;
-  virtual WebVector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
+  virtual WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
       RTCSessionDescriptionRequest*,
       RTCOfferOptionsPlatform*) = 0;
   virtual void CreateAnswer(RTCSessionDescriptionRequest*,
@@ -126,25 +126,24 @@ class WebRTCPeerConnectionHandler {
   virtual scoped_refptr<webrtc::DataChannelInterface> CreateDataChannel(
       const WebString& label,
       const webrtc::DataChannelInit&) = 0;
-  virtual webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>
+  virtual webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
   AddTransceiverWithTrack(const WebMediaStreamTrack&,
                           const webrtc::RtpTransceiverInit&) = 0;
-  virtual webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>
+  virtual webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
   AddTransceiverWithKind(
       // webrtc::MediaStreamTrackInterface::kAudioKind or kVideoKind
       std::string kind,
       const webrtc::RtpTransceiverInit&) = 0;
   // Adds the track to the peer connection, returning the resulting transceiver
   // or error.
-  virtual webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>> AddTrack(
-      const WebMediaStreamTrack&,
-      const WebVector<WebMediaStream>&) = 0;
+  virtual webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
+  AddTrack(const WebMediaStreamTrack&, const WebVector<WebMediaStream>&) = 0;
   // Removes the sender.
   // In Plan B: Returns OK() with value nullptr on success. The sender's track
   // must be nulled by the caller.
   // In Unified Plan: Returns OK() with the updated transceiver state.
-  virtual webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>> RemoveTrack(
-      RTCRtpSenderPlatform*) = 0;
+  virtual webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
+  RemoveTrack(RTCRtpSenderPlatform*) = 0;
   virtual void Stop() = 0;
 
   // Returns a pointer to the underlying native PeerConnection object.

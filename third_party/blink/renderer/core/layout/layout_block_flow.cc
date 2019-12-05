@@ -4201,7 +4201,7 @@ bool LayoutBlockFlow::HitTestChildren(HitTestResult& result,
                                       HitTestAction hit_test_action) {
   PhysicalOffset scrolled_offset = accumulated_offset;
   if (HasOverflowClip())
-    scrolled_offset -= PhysicalOffset(ScrolledContentOffset());
+    scrolled_offset -= PhysicalOffset(PixelSnappedScrolledContentOffset());
 
   if (hit_test_action == kHitTestFloat && !IsLayoutNGObject()) {
     // Hit-test the floats using the FloatingObjects list if we're in legacy
@@ -4684,7 +4684,7 @@ PositionWithAffinity LayoutBlockFlow::PositionForPoint(
   // offset of this |LayoutBlockFlow|.
   if (HasOverflowClip()) {
     PhysicalOffset offset_in_this = offset;
-    offset_in_this -= PhysicalOffset(ScrolledContentOffset());
+    offset_in_this -= PhysicalOffset(PixelSnappedScrolledContentOffset());
     return PositionForPoint(offset_in_this);
   }
 

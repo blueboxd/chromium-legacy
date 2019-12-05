@@ -137,7 +137,7 @@ Referrer SecurityPolicy::GenerateReferrer(
           SecurityOrigin::Create(referrer_url);
       scoped_refptr<const SecurityOrigin> url_origin =
           SecurityOrigin::Create(url);
-      if (!url_origin->IsSameSchemeHostPort(referrer_origin.get())) {
+      if (!url_origin->IsSameOriginWith(referrer_origin.get())) {
         String origin = referrer_origin->ToString();
         return Referrer(origin + "/", referrer_policy_no_default);
       }
@@ -148,7 +148,7 @@ Referrer SecurityPolicy::GenerateReferrer(
           SecurityOrigin::Create(referrer_url);
       scoped_refptr<const SecurityOrigin> url_origin =
           SecurityOrigin::Create(url);
-      if (!url_origin->IsSameSchemeHostPort(referrer_origin.get())) {
+      if (!url_origin->IsSameOriginWith(referrer_origin.get())) {
         return Referrer(Referrer::NoReferrer(), referrer_policy_no_default);
       }
       return Referrer(referrer, referrer_policy_no_default);
@@ -166,7 +166,7 @@ Referrer SecurityPolicy::GenerateReferrer(
           SecurityOrigin::Create(referrer_url);
       scoped_refptr<const SecurityOrigin> url_origin =
           SecurityOrigin::Create(url);
-      if (!url_origin->IsSameSchemeHostPort(referrer_origin.get())) {
+      if (!url_origin->IsSameOriginWith(referrer_origin.get())) {
         String origin = referrer_origin->ToString();
         return Referrer(ShouldHideReferrer(url, referrer_url)
                             ? Referrer::NoReferrer()

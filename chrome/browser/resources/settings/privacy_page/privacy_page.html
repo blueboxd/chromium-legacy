@@ -102,13 +102,15 @@
           </settings-toggle-button>
         </template>
 <if expr="not chromeos">
-        <settings-toggle-button id="signinAllowedToggle"
-            pref="{{prefs.signin.allowed_on_next_startup}}"
-            label="$i18n{signinAllowedTitle}"
-            sub-label="$i18n{signinAllowedDescription}"
-            on-settings-boolean-control-change="onSigninAllowedChange_"
-            no-set-pref>
-        </settings-toggle-button>
+        <template is="dom-if" if="[[!privacySettingsRedesignEnabled_]]">
+          <settings-toggle-button id="signinAllowedToggle"
+              pref="{{prefs.signin.allowed_on_next_startup}}"
+              label="$i18n{signinAllowedTitle}"
+              sub-label="$i18n{signinAllowedDescription}"
+              on-settings-boolean-control-change="onSigninAllowedChange_"
+              no-set-pref>
+          </settings-toggle-button>
+        </template>
 </if><!-- not chromeos -->
         <settings-toggle-button id="doNotTrack"
             pref="{{prefs.enable_do_not_track}}" label="$i18n{doNotTrack}"
@@ -704,10 +706,12 @@
       </template>
     </settings-animated-pages>
 
-    <template is="dom-if" if="[[showSignoutDialog_]]" restamp>
-      <settings-signout-dialog sync-status="[[syncStatus]]"
-          on-close="onSignoutDialogClosed_">
-      </settings-signout-dialog>
+    <template is="dom-if" if="[[!privacySettingsRedesignEnabled_]]">
+      <template is="dom-if" if="[[showSignoutDialog_]]" restamp>
+        <settings-signout-dialog sync-status="[[syncStatus]]"
+            on-close="onSignoutDialogClosed_">
+        </settings-signout-dialog>
+      </template>
     </template>
 
 <if expr="not chromeos">

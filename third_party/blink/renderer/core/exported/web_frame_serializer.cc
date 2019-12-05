@@ -169,8 +169,9 @@ bool MHTMLFrameSerializerDelegate::ShouldIgnoreHiddenElement(
     return true;
 
   // Do not include the hidden form element.
-  return IsHTMLInputElement(element) &&
-         ToHTMLInputElement(&element)->type() == input_type_names::kHidden;
+  auto* html_element_element = DynamicTo<HTMLInputElement>(&element);
+  return html_element_element &&
+         html_element_element->type() == input_type_names::kHidden;
 }
 
 bool MHTMLFrameSerializerDelegate::ShouldIgnoreMetaElement(

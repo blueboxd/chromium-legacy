@@ -458,7 +458,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   void NoteRespondedToFetchEvent(const KURL& request_url);
 
   // Dispatches the event synchronously. Enqueued by Dispatch*Event methods to
-  // the timeout timer, and executed immediately or sometimes later.
+  // the event queue, and executed immediately or sometimes later.
   void StartFetchEvent(
       mojom::blink::DispatchFetchEventParamsPtr params,
       network::mojom::blink::CrossOriginEmbedderPolicy requestor_coep,
@@ -641,8 +641,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // optimizations in these cases.
   HashMap<KURL, int> unresponded_fetch_event_counts_;
 
-  // Timer triggered when the service worker considers it should be stopped or
-  // an event should be aborted.
+  // ServiceWorker event queue where all events are queued before
+  // they are dispatched.
   std::unique_ptr<ServiceWorkerEventQueue> event_queue_;
 
   // InitializeGlobalScope() pauses the top level script evaluation when this

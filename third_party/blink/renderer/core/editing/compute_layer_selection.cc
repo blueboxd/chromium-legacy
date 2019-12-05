@@ -131,7 +131,7 @@ static bool IsVisible(const LayoutObject& rect_layout_object,
   TextControlElement* text_control = EnclosingTextControl(node);
   if (!text_control)
     return true;
-  if (!IsHTMLInputElement(text_control))
+  if (!IsA<HTMLInputElement>(text_control))
     return true;
 
   LayoutObject* layout_object = text_control->GetLayoutObject();

@@ -1970,7 +1970,15 @@ void HashTable<Key,
                KeyTraits,
                Allocator>::swap(HashTable& other) {
   DCHECK(!AccessForbidden());
-  std::swap(table_, other.table_);
+  // Following 3 lines swap table_ and other.table_ using atomic stores. These
+  // are needed for Oilpan concurrent marking which might trace the hash table
+  // while it is being swapped (i.e. the atomic stores are to avoid a data
+  // race). Atomic reads are not needed here because this method is only called
+  // on the mutator thread, which is also the only one that writes to them, so
+  // there is *no* risk of data races when reading.
+  Value* tmp_table = other.table_;
+  AsAtomic<Value*>(other.table_).store(table_, std::memory_order_relaxed);
+  AsAtomic<Value*>(table_).store(tmp_table, std::memory_order_relaxed);
   Allocator::template BackingWriteBarrierForHashTable<HashTable>(table_);
   Allocator::template BackingWriteBarrierForHashTable<HashTable>(other.table_);
   std::swap(table_size_, other.table_size_);

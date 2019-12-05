@@ -299,12 +299,13 @@ class MODULES_EXPORT RTCPeerConnection final
       webrtc::PeerConnectionInterface::IceConnectionState) override;
   void DidChangePeerConnectionState(
       webrtc::PeerConnectionInterface::PeerConnectionState) override;
-  void DidAddReceiverPlanB(std::unique_ptr<WebRTCRtpReceiver>) override;
-  void DidRemoveReceiverPlanB(std::unique_ptr<WebRTCRtpReceiver>) override;
+  void DidAddReceiverPlanB(std::unique_ptr<RTCRtpReceiverPlatform>) override;
+  void DidRemoveReceiverPlanB(std::unique_ptr<RTCRtpReceiverPlatform>) override;
   void DidModifySctpTransport(WebRTCSctpTransportSnapshot) override;
-  void DidModifyTransceivers(WebVector<std::unique_ptr<WebRTCRtpTransceiver>>,
-                             WebVector<uintptr_t>,
-                             bool is_remote_description) override;
+  void DidModifyTransceivers(
+      WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>>,
+      WebVector<uintptr_t>,
+      bool is_remote_description) override;
   void DidAddRemoteDataChannel(
       scoped_refptr<webrtc::DataChannelInterface> channel) override;
   void DidNoteInterestingUsage(int usage_pattern) override;
@@ -404,9 +405,9 @@ class MODULES_EXPORT RTCPeerConnection final
   HeapVector<Member<RTCRtpSender>>::iterator FindSender(
       const RTCRtpSenderPlatform& web_sender);
   HeapVector<Member<RTCRtpReceiver>>::iterator FindReceiver(
-      const WebRTCRtpReceiver& web_receiver);
+      const RTCRtpReceiverPlatform& platform_receiver);
   HeapVector<Member<RTCRtpTransceiver>>::iterator FindTransceiver(
-      const WebRTCRtpTransceiver& web_transceiver);
+      const RTCRtpTransceiverPlatform& platform_transceiver);
 
   // Creates or updates the sender such that it is up-to-date with the
   // RTCRtpSenderPlatform in all regards *except for streams*. The web sender
@@ -421,20 +422,21 @@ class MODULES_EXPORT RTCPeerConnection final
   RTCRtpSender* CreateOrUpdateSender(std::unique_ptr<RTCRtpSenderPlatform>,
                                      String kind);
   // Creates or updates the receiver such that it is up-to-date with the
-  // WebRTCRtpReceiver in all regards *except for streams*. The web receiver
-  // only knows of stream IDs; updating the stream objects requires additional
-  // logic which is different depending on context, e.g:
+  // RTCRtpReceiverPlatform in all regards *except for streams*. The web
+  // receiver only knows of stream IDs; updating the stream objects requires
+  // additional logic which is different depending on context, e.g:
   // - If created/updated with setRemoteDescription(), there is an algorithm for
   //   processing the addition/removal of remote tracks which includes how to
   //   create and update the associated streams set.
-  RTCRtpReceiver* CreateOrUpdateReceiver(std::unique_ptr<WebRTCRtpReceiver>);
+  RTCRtpReceiver* CreateOrUpdateReceiver(
+      std::unique_ptr<RTCRtpReceiverPlatform>);
   // Creates or updates the transceiver such that it, including its sender and
-  // receiver, are up-to-date with the WebRTCRtpTransceiver in all regerds
+  // receiver, are up-to-date with the RTCRtpTransceiverPlatform in all regerds
   // *except for sender and receiver streams*. The web sender and web receiver
   // only knows of stream IDs; updating the stream objects require additional
   // logic which is different depending on context. See above.
   RTCRtpTransceiver* CreateOrUpdateTransceiver(
-      std::unique_ptr<WebRTCRtpTransceiver>);
+      std::unique_ptr<RTCRtpTransceiverPlatform>);
 
   // Creates or updates the RTCDtlsTransport object corresponding to the
   // given webrtc::DtlsTransportInterface object.

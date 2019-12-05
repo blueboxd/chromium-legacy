@@ -123,6 +123,9 @@ class WEBGPU_EXPORT WebGPUImplementation final
       PowerPreference power_preference,
       base::OnceCallback<void(uint32_t, const WGPUDeviceProperties&)>
           request_adapter_callback) override;
+  bool RequestDevice(
+      uint32_t requested_adapter_id,
+      const WGPUDeviceProperties* requested_device_properties) override;
 
  private:
   const char* GetLogPrefix() const { return "webgpu"; }

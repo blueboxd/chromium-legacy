@@ -90,7 +90,7 @@ DownloadResponseHandler::~DownloadResponseHandler() = default;
 
 void DownloadResponseHandler::OnReceiveResponse(
     network::mojom::URLResponseHeadPtr head) {
-  create_info_ = CreateDownloadCreateInfo(head);
+  create_info_ = CreateDownloadCreateInfo(*head);
   cert_status_ = head->cert_status;
 
   // TODO(xingliu): Do not use http cache.
@@ -122,7 +122,7 @@ void DownloadResponseHandler::OnReceiveResponse(
 
 std::unique_ptr<DownloadCreateInfo>
 DownloadResponseHandler::CreateDownloadCreateInfo(
-    const network::ResourceResponseHead& head) {
+    const network::mojom::URLResponseHead& head) {
   auto create_info = std::make_unique<DownloadCreateInfo>(
       base::Time::Now(), std::move(save_info_));
 
@@ -262,7 +262,7 @@ void DownloadResponseHandler::OnComplete(
   // OnComplete() called without OnResponseStarted(). This should only
   // happen when the request was aborted.
   if (!create_info_)
-    create_info_ = CreateDownloadCreateInfo(network::ResourceResponseHead());
+    create_info_ = CreateDownloadCreateInfo(network::mojom::URLResponseHead());
   create_info_->result = reason == DOWNLOAD_INTERRUPT_REASON_NONE
                              ? DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED
                              : reason;

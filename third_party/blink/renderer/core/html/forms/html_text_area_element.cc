@@ -618,7 +618,7 @@ bool HTMLTextAreaElement::IsInteractiveContent() const {
 void HTMLTextAreaElement::CloneNonAttributePropertiesFrom(
     const Element& source,
     CloneChildrenFlag flag) {
-  const HTMLTextAreaElement& source_element = ToHTMLTextAreaElement(source);
+  const auto& source_element = To<HTMLTextAreaElement>(source);
   SetValueCommon(source_element.value(),
                  TextFieldEventBehavior::kDispatchNoEvent,
                  TextControlSetValueSelection::kSetSelectionToEnd);

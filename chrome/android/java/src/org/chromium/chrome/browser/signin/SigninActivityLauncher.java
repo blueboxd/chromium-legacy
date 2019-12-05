@@ -37,7 +37,7 @@ public class SigninActivityLauncher {
     private SigninActivityLauncher() {}
 
     /**
-     * Launch the SigninActivity with default sign-in flow from personalized sign-in promo.
+     * Launches the SigninActivity with default sign-in flow from personalized sign-in promo.
      * @param accessPoint {@link SigninAccessPoint} for starting sign-in flow.
      * @param accountName The account to preselect or null to preselect the default account.
      */
@@ -48,7 +48,7 @@ public class SigninActivityLauncher {
     }
 
     /**
-     * Launch the SigninActivity with "Choose account" sign-in flow from personalized
+     * Launches the SigninActivity with "Choose account" sign-in flow from personalized
      * sign-in promo.
      * @param accessPoint {@link SigninAccessPoint} for starting sign-in flow.
      * @param accountName The account to preselect or null to preselect the default account.
@@ -60,7 +60,7 @@ public class SigninActivityLauncher {
     }
 
     /**
-     * Launch the SigninActivity with "New account" sign-in flow from personalized sign-in
+     * Launches the SigninActivity with "New account" sign-in flow from personalized sign-in
      * promo.
      * @param accessPoint {@link SigninAccessPoint} for starting sign-in flow.
      */
@@ -70,8 +70,7 @@ public class SigninActivityLauncher {
     }
 
     /**
-     * Creates an {@link Intent} which can be used to start sign-in flow and launch the signin
-     * activity.
+     * Launches the signin activity.
      * @param accessPoint {@link SigninAccessPoint} for starting sign-in flow.
      */
     public void launchActivity(Context context, @SigninAccessPoint int accessPoint) {

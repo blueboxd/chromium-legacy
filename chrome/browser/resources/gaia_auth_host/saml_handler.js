@@ -307,12 +307,16 @@ cr.define('cr.login', function() {
     }
 
     /**
-     * Gets the list of passwords which were scpared exactly |times| times.
+     * Gets the list of passwords which have matching passwordProperty and
+     * are scraped exactly |times| times.
      * @return {Array<string>}
      */
-    getPasswordsScrapedTimes(times) {
+    getPasswordsWithPropertyScrapedTimes(times, passwordProperty) {
       const passwords = {};
       for (const property in this.passwordStore_) {
+        if (passwordProperty && !property.match(passwordProperty)) {
+          continue;
+        }
         const key = this.passwordStore_[property];
         passwords[key] = (passwords[key] + 1) || 1;
       }

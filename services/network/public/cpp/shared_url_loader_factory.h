@@ -17,33 +17,33 @@
 
 namespace network {
 
-class SharedURLLoaderFactoryInfo;
+class PendingSharedURLLoaderFactory;
 
 // This is a ref-counted C++ interface to replace raw mojom::URLLoaderFactory
 // pointers and various factory getters.
 // A SharedURLLoaderFactory instance is supposed to be used on a single
 // sequence. To use it on a different sequence, use Clone() and pass the
-// resulting SharedURLLoaderFactoryInfo instance to the target sequence. On the
-// target sequence, call SharedURLLoaderFactory::Create() to convert the info
-// instance to a new SharedURLLoaderFactory.
+// resulting PendingSharedURLLoaderFactory instance to the target sequence. On
+// the target sequence, call SharedURLLoaderFactory::Create() to convert it to a
+// new SharedURLLoaderFactory.
 class COMPONENT_EXPORT(NETWORK_CPP) SharedURLLoaderFactory
     : public base::RefCounted<SharedURLLoaderFactory>,
       public mojom::URLLoaderFactory {
  public:
   static scoped_refptr<SharedURLLoaderFactory> Create(
-      std::unique_ptr<SharedURLLoaderFactoryInfo> info);
+      std::unique_ptr<PendingSharedURLLoaderFactory> pending_factory);
 
   // From mojom::URLLoaderFactory:
   void Clone(mojo::PendingReceiver<mojom::URLLoaderFactory> receiver) override =
       0;
 
-  // If implemented, creates a SharedURLLoaderFactoryInfo that can be used on
+  // If implemented, creates a PendingSharedURLLoaderFactory that can be used on
   // any thread to create a SharedURLLoaderFactory that works there.
   //
   // A simple way of providing this API is to use
-  // CrossThreadSharedURLLoaderFactoryInfo; which will implement it at cost of
-  // a single thread hop on any different-thread fetch.
-  virtual std::unique_ptr<SharedURLLoaderFactoryInfo> Clone() = 0;
+  // CrossThreadPendingSharedURLLoaderFactory; which will implement it at cost
+  // of a single thread hop on any different-thread fetch.
+  virtual std::unique_ptr<PendingSharedURLLoaderFactory> Clone() = 0;
 
   // If this returns true, any redirect safety checks should be bypassed.
   virtual bool BypassRedirectChecks() const;
@@ -53,27 +53,26 @@ class COMPONENT_EXPORT(NETWORK_CPP) SharedURLLoaderFactory
   ~SharedURLLoaderFactory() override;
 };
 
-// SharedURLLoaderFactoryInfo contains necessary information to construct a
+// PendingSharedURLLoaderFactory contains necessary information to construct a
 // SharedURLLoaderFactory. It is not sequence safe but can be passed across
 // sequences. Please see the comments of SharedURLLoaderFactory for how this
 // class is used.
-// TODO(domfarolino, crbug.com/955171): This class should be renamed to not
-// include "Info".
-class COMPONENT_EXPORT(NETWORK_CPP) SharedURLLoaderFactoryInfo {
+class COMPONENT_EXPORT(NETWORK_CPP) PendingSharedURLLoaderFactory {
  public:
-  SharedURLLoaderFactoryInfo();
-  virtual ~SharedURLLoaderFactoryInfo();
+  PendingSharedURLLoaderFactory();
+  virtual ~PendingSharedURLLoaderFactory();
 
  protected:
   friend class SharedURLLoaderFactory;
 
   // Creates a SharedURLLoaderFactory. It should only be called by
   // SharedURLLoaderFactory::Create(), which makes sense that CreateFactory() is
-  // never called multiple times for each SharedURLLoaderFactoryInfo instance.
+  // never called multiple times for each PendingSharedURLLoaderFactory
+  // instance.
   virtual scoped_refptr<SharedURLLoaderFactory> CreateFactory() = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SharedURLLoaderFactoryInfo);
+  DISALLOW_COPY_AND_ASSIGN(PendingSharedURLLoaderFactory);
 };
 
 }  // namespace network

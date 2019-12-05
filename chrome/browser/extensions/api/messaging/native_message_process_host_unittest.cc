@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/base_paths.h"
 #include "base/base_switches.h"
@@ -230,16 +231,18 @@ TEST_F(NativeMessagingTest, SingleSendMessageWrite) {
   base::string16 pipe_name = base::StringPrintf(
       L"\\\\.\\pipe\\chrome.nativeMessaging.out.%llx", base::RandUint64());
   base::File write_handle =
-      base::File(CreateNamedPipeW(pipe_name.c_str(),
-                                  PIPE_ACCESS_OUTBOUND | FILE_FLAG_OVERLAPPED |
-                                      FILE_FLAG_FIRST_PIPE_INSTANCE,
-                                  PIPE_TYPE_BYTE, 1, 0, 0, 5000, NULL),
+      base::File(base::ScopedPlatformFile(CreateNamedPipeW(
+                     pipe_name.c_str(),
+                     PIPE_ACCESS_OUTBOUND | FILE_FLAG_OVERLAPPED |
+                         FILE_FLAG_FIRST_PIPE_INSTANCE,
+                     PIPE_TYPE_BYTE, 1, 0, 0, 5000, nullptr)),
                  true /* async */);
   ASSERT_TRUE(write_handle.IsValid());
-  base::File read_handle = base::File(
-      CreateFileW(pipe_name.c_str(), GENERIC_READ, 0, NULL, OPEN_EXISTING,
-                  FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL),
-      true /* async */);
+  base::File read_handle =
+      base::File(base::ScopedPlatformFile(CreateFileW(
+                     pipe_name.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING,
+                     FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, nullptr)),
+                 true /* async */);
   ASSERT_TRUE(read_handle.IsValid());
 
   read_file = std::move(read_handle);

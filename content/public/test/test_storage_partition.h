@@ -55,7 +55,7 @@ class TestStoragePartition : public StoragePartition {
   scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactoryForBrowserProcessWithCORBEnabled() override;
 
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+  std::unique_ptr<network::PendingSharedURLLoaderFactory>
   GetURLLoaderFactoryForBrowserProcessIOThread() override;
 
   void set_cookie_manager_for_browser_process(

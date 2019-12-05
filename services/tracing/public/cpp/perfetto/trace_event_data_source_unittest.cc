@@ -355,9 +355,6 @@ class TraceEventDataSourceTest : public testing::Test {
       case TRACE_EVENT_PHASE_END:
         track_event_type = TrackEvent::TYPE_SLICE_END;
         break;
-      case TRACE_EVENT_PHASE_INSTANT:
-        track_event_type = TrackEvent::TYPE_INSTANT;
-        break;
       default:
         track_event_type = TrackEvent::TYPE_UNSPECIFIED;
         break;

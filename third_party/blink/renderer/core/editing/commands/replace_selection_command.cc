@@ -1716,8 +1716,9 @@ bool ReplaceSelectionCommand::ShouldPerformSmartReplace() const {
 
   TextControlElement* text_control =
       EnclosingTextControl(PositionAtStartOfInsertedContent().DeepEquivalent());
-  if (IsHTMLInputElement(text_control) &&
-      ToHTMLInputElement(text_control)->type() == input_type_names::kPassword)
+  auto* html_input_element = DynamicTo<HTMLInputElement>(text_control);
+  if (html_input_element &&
+      html_input_element->type() == input_type_names::kPassword)
     return false;  // Disable smart replace for password fields.
 
   return true;

@@ -4,6 +4,7 @@
 
 #include "android_webview/renderer/aw_content_settings_client.h"
 
+#include "content/public/common/web_preferences.h"
 #include "content/public/renderer/render_frame.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -37,6 +38,10 @@ bool AwContentSettingsClient::AllowRunningInsecureContent(
     bool enabled_per_settings,
     const blink::WebURL& url) {
   return enabled_per_settings ? true : AllowMixedContent(url);
+}
+
+bool AwContentSettingsClient::ShouldAutoupgradeMixedContent() {
+  return render_frame()->GetWebkitPreferences().allow_mixed_content_upgrades;
 }
 
 void AwContentSettingsClient::OnDestruct() {

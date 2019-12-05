@@ -149,13 +149,6 @@ IN_PROC_BROWSER_TEST_F(CRLSetBrowserTest, TestCRLSetBlockedInterception) {
         GetActiveWebContents(),
         net::CERT_STATUS_KNOWN_INTERCEPTION_BLOCKED | net::CERT_STATUS_REVOKED,
         AuthState::SHOWING_INTERSTITIAL);
-
-    // Simulate clicking the learn more link.
-    ASSERT_TRUE(content::ExecuteScript(
-        GetActiveWebContents(),
-        "window.certificateErrorPageController.openHelpCenter();"));
-    EXPECT_EQ(GetActiveWebContents()->GetVisibleURL().ref(),
-              base::NumberToString(net::ERR_CERT_KNOWN_INTERCEPTION_BLOCKED));
   } else {
     ssl_test_util::CheckAuthenticatedState(GetActiveWebContents(),
                                            AuthState::NONE);

@@ -109,7 +109,8 @@ void SyncManager::RegisterCallback(
       break;
     case mojom::blink::BackgroundSyncError::NO_SERVICE_WORKER:
       resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kUnknownError, "No service worker is active."));
+          DOMExceptionCode::kInvalidStateError,
+          "Registration failed - no active Service Worker"));
       break;
   }
 }

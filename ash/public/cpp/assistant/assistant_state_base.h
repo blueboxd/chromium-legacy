@@ -5,6 +5,7 @@
 #ifndef ASH_PUBLIC_CPP_ASSISTANT_ASSISTANT_STATE_BASE_H_
 #define ASH_PUBLIC_CPP_ASSISTANT_ASSISTANT_STATE_BASE_H_
 
+#include <memory>
 #include <string>
 
 #include "ash/public/mojom/assistant_state_controller.mojom.h"

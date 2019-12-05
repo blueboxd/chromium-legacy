@@ -572,7 +572,7 @@ TEST_P(SyncPrefsSyncSuppressedMigrationCombinationsTest, Idempotent) {
 // Not all combinations of pref values are possible in practice, but anyway the
 // migration should always be idempotent, so we test all combinations here.
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     SyncPrefsSyncSuppressedMigrationCombinationsTest,
     testing::Combine(::testing::Values(PREF_FALSE, PREF_TRUE, PREF_UNSET),
                      ::testing::Values(PREF_FALSE, PREF_TRUE, PREF_UNSET),

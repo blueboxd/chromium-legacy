@@ -305,7 +305,12 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     return location_without_position_offset_;
   }
 
-  LayoutSize ScrolledContentOffset() const;
+  // This is the scroll offset that's actually used to display to the screen.
+  // It should only be used in paint/compositing type use cases (includes hit
+  // testing, intersection observer). Most other cases should use the unsnapped
+  // offset from LayoutBox (for layout) or the source offset from the
+  // ScrollableArea.
+  LayoutSize PixelSnappedScrolledContentOffset() const;
 
   // FIXME: size() should DCHECK(!needs_position_update_) as well, but that
   // fails in some tests, for example, fast/repaint/clipped-relative.html.

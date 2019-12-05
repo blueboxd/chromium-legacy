@@ -252,6 +252,10 @@ void ContentSettingsAgentImpl::SetAsInterstitial() {
   is_interstitial_page_ = true;
 }
 
+void ContentSettingsAgentImpl::SetDisabledMixedContentUpgrades() {
+  mixed_content_autoupgrades_disabled_ = true;
+}
+
 void ContentSettingsAgentImpl::OnContentSettingsAgentRequest(
     mojo::PendingAssociatedReceiver<chrome::mojom::ContentSettingsAgent>
         receiver) {
@@ -544,6 +548,9 @@ void ContentSettingsAgentImpl::GetAllowedClientHintsFromSource(
 }
 
 bool ContentSettingsAgentImpl::ShouldAutoupgradeMixedContent() {
+  if (mixed_content_autoupgrades_disabled_)
+    return false;
+
   if (content_setting_rules_) {
     auto setting =
         GetContentSettingFromRules(content_setting_rules_->mixed_content_rules,

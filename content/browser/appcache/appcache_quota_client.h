@@ -31,12 +31,12 @@ class AppCacheStorageImpl;
 // used on the IO thread by the quota manager. This class deletes
 // itself when both the quota manager and the appcache service have
 // been destroyed.
-class AppCacheQuotaClient : public storage::QuotaClient,
-                            public base::SupportsWeakPtr<AppCacheQuotaClient> {
+class AppCacheQuotaClient : public storage::QuotaClient {
  public:
   using RequestQueue = base::circular_deque<base::OnceClosure>;
 
-  ~AppCacheQuotaClient() override;
+  CONTENT_EXPORT
+  explicit AppCacheQuotaClient(base::WeakPtr<AppCacheServiceImpl> service);
 
   // QuotaClient method overrides
   ID id() const override;
@@ -59,8 +59,7 @@ class AppCacheQuotaClient : public storage::QuotaClient,
   friend class AppCacheServiceImpl;  // for NotifyAppCacheIsDestroyed
   friend class AppCacheStorageImpl;  // for NotifyAppCacheIsReady
 
-  CONTENT_EXPORT
-  explicit AppCacheQuotaClient(base::WeakPtr<AppCacheServiceImpl> service);
+  ~AppCacheQuotaClient() override;
 
   void DidDeleteAppCachesForOrigin(int rv);
   void GetOriginsHelper(blink::mojom::StorageType type,
@@ -88,9 +87,6 @@ class AppCacheQuotaClient : public storage::QuotaClient,
   base::WeakPtr<AppCacheServiceImpl> service_;
   bool appcache_is_ready_ = false;
   bool service_is_destroyed_ = false;
-  // This is used to prevent this object from being deleted in
-  // OnQuotaManagerDestroyed() while NotifyAppCacheDestroyed() is still running.
-  bool keep_alive_ = false;
   SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheQuotaClient);

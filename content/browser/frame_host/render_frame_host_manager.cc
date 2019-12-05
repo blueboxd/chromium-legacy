@@ -507,7 +507,6 @@ void RenderFrameHostManager::SwapOutOldFrame(
       std::set<RenderViewHostImpl*> old_render_view_hosts;
 
       // Prepare the main frame.
-      back_forward_cache.Freeze(old_render_frame_host.get());
       old_render_view_hosts.insert(static_cast<RenderViewHostImpl*>(
           old_render_frame_host->GetRenderViewHost()));
 
@@ -628,12 +627,6 @@ void RenderFrameHostManager::RestoreFromBackForwardCache(
   // it to preserve the understood logic in CommitPending.
   speculative_render_frame_host_ = std::move(entry->render_frame_host);
   bfcache_entry_to_restore_ = std::move(entry);
-}
-
-void RenderFrameHostManager::UnfreezeCurrentFrameHost(
-    base::TimeTicks navigation_start) {
-  delegate_->GetControllerForRenderManager().GetBackForwardCache().Resume(
-      current_frame_host(), navigation_start);
 }
 
 void RenderFrameHostManager::ResetProxyHosts() {
@@ -2378,8 +2371,10 @@ void RenderFrameHostManager::CommitPending(
 
     std::set<RenderViewHostImpl*> render_view_hosts_to_restore =
         std::move(pending_bfcache_entry->render_view_hosts);
-    for (RenderViewHostImpl* rvh : render_view_hosts_to_restore)
-      rvh->LeaveBackForwardCache();
+    for (RenderViewHostImpl* rvh : render_view_hosts_to_restore) {
+      rvh->LeaveBackForwardCache(
+          pending_bfcache_entry->restore_navigation_start);
+    }
   }
 
   // For top-level frames, the RenderWidget{Host} will not be destroyed when the

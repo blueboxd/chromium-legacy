@@ -417,5 +417,39 @@ bool WebGPUImplementation::RequestAdapterAsync(
   return true;
 }
 
+bool WebGPUImplementation::RequestDevice(
+    uint32_t requested_adapter_id,
+    const WGPUDeviceProperties* requested_device_properties) {
+#if BUILDFLAG(USE_DAWN)
+  if (!requested_device_properties) {
+    helper_->RequestDevice(requested_adapter_id, 0, 0, 0);
+    return true;
+  }
+
+  size_t serialized_device_properties_size =
+      dawn_wire::SerializedWGPUDevicePropertiesSize(
+          requested_device_properties);
+  DCHECK_NE(0u, serialized_device_properties_size);
+
+  // Both transfer_buffer and c2s_buffer_ are created with transfer_buffer_,
+  // so we need to make c2s_buffer_ clean before transferring
+  // requested_device_properties with transfer_buffer.
+  Flush();
+  ScopedTransferBufferPtr transfer_buffer(serialized_device_properties_size,
+                                          helper_, transfer_buffer_);
+  dawn_wire::SerializeWGPUDeviceProperties(
+      requested_device_properties,
+      reinterpret_cast<char*>(transfer_buffer.address()));
+  helper_->RequestDevice(requested_adapter_id, transfer_buffer.shm_id(),
+                         transfer_buffer.offset(),
+                         serialized_device_properties_size);
+  transfer_buffer.Release();
+  return true;
+#else
+  NOTREACHED();
+  return false;
+#endif
+}
+
 }  // namespace webgpu
 }  // namespace gpu

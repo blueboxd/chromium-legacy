@@ -44,8 +44,8 @@ TEST_F(ServiceWorkerFetchContextImplTest, SkipThrottling) {
   const GURL kScriptUrlToSkipThrottling("https://example.com/skip.js");
   auto context = base::MakeRefCounted<ServiceWorkerFetchContextImpl>(
       blink::mojom::RendererPreferences(), kScriptUrl,
-      /*url_loader_factory_info=*/nullptr,
-      /*script_loader_factory_info=*/nullptr, kScriptUrlToSkipThrottling,
+      /*pending_url_loader_factory=*/nullptr,
+      /*pending_script_loader_factory=*/nullptr, kScriptUrlToSkipThrottling,
       std::make_unique<FakeURLLoaderThrottleProvider>(),
       /*websocket_handshake_throttle_provider=*/nullptr, mojo::NullReceiver(),
       mojo::NullReceiver(),

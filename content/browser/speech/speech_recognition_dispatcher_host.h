@@ -20,7 +20,7 @@
 #include "third_party/blink/public/mojom/speech/speech_recognizer.mojom.h"
 
 namespace network {
-class SharedURLLoaderFactoryInfo;
+class PendingSharedURLLoaderFactory;
 }
 
 namespace content {
@@ -58,8 +58,8 @@ class CONTENT_EXPORT SpeechRecognitionDispatcherHost
       int embedder_render_process_id,
       int embedder_render_frame_id,
       bool filter_profanities,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          shared_url_loader_factory_info,
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          pending_shared_url_loader_factory,
       const std::string& accept_language);
 
   const int render_process_id_;

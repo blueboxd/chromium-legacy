@@ -768,7 +768,7 @@ TEST_F(StructTraitsTest, RenderPass) {
           base::nullopt,
           SurfaceId(FrameSinkId(1337, 1234),
                     LocalSurfaceId(1234, base::UnguessableToken::Create()))),
-      SK_ColorYELLOW, false, false);
+      SK_ColorYELLOW, false);
   // Test non-default values.
   surface_quad->is_reflection = !surface_quad->is_reflection;
   surface_quad->allow_merge = !surface_quad->allow_merge;
@@ -924,7 +924,7 @@ TEST_F(StructTraitsTest, QuadListBasic) {
       render_pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
   primary_surface_quad->SetNew(
       sqs, rect3, rect3, SurfaceRange(fallback_surface_id, primary_surface_id),
-      SK_ColorBLUE, false, false);
+      SK_ColorBLUE, false);
 
   const gfx::Rect rect4(1234, 5678, 9101112, 13141516);
   const ResourceId resource_id4(1337);

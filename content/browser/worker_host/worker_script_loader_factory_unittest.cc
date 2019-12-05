@@ -50,7 +50,7 @@ class WorkerScriptLoaderFactoryTest : public testing::Test {
     mojo::PendingRemote<network::mojom::URLLoaderFactory> factory;
     network_loader_factory_instance_->Clone(
         factory.InitWithNewPipeAndPassReceiver());
-    auto info = std::make_unique<network::WrapperSharedURLLoaderFactoryInfo>(
+    auto info = std::make_unique<network::WrapperPendingSharedURLLoaderFactory>(
         std::move(factory));
     network_loader_factory_ =
         network::SharedURLLoaderFactory::Create(std::move(info));

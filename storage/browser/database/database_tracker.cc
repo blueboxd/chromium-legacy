@@ -101,7 +101,8 @@ DatabaseTracker::DatabaseTracker(
            base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
   if (quota_manager_proxy) {
-    quota_manager_proxy->RegisterClient(new DatabaseQuotaClient(this));
+    quota_manager_proxy->RegisterClient(
+        base::MakeRefCounted<DatabaseQuotaClient>(this));
   }
 }
 

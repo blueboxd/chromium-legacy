@@ -69,6 +69,29 @@ std::string TypeConverter<std::string, arc::mojom::BluetoothAddress>::Convert(
 }
 
 // static
+arc::mojom::BluetoothAddressPtr
+TypeConverter<arc::mojom::BluetoothAddressPtr, bdaddr_t>::Convert(
+    const bdaddr_t& address) {
+  arc::mojom::BluetoothAddressPtr mojo_addr =
+      arc::mojom::BluetoothAddress::New();
+  mojo_addr->address.resize(kAddressSize);
+  std::reverse_copy(std::begin(address.b), std::end(address.b),
+                    std::begin(mojo_addr->address));
+
+  return mojo_addr;
+}
+
+// static
+bdaddr_t TypeConverter<bdaddr_t, arc::mojom::BluetoothAddress>::Convert(
+    const arc::mojom::BluetoothAddress& address) {
+  bdaddr_t ret;
+  std::reverse_copy(std::begin(address.address), std::end(address.address),
+                    std::begin(ret.b));
+
+  return ret;
+}
+
+// static
 arc::mojom::BluetoothSdpAttributePtr
 TypeConverter<arc::mojom::BluetoothSdpAttributePtr,
               bluez::BluetoothServiceAttributeValueBlueZ>::

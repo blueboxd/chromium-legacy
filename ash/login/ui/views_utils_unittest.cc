@@ -66,7 +66,7 @@ TEST_F(ViewsUtilsUnittest, RightLeftStrategySimpleTest) {
   const gfx::Rect bounds(20, 20);
   const gfx::Point result_point(anchor.x() + anchor.width(), anchor.y());
   EXPECT_EQ(result_point,
-            CalculateBubblePositionRigthLeftStrategy(anchor, bubble, bounds));
+            CalculateBubblePositionRightLeftStrategy(anchor, bubble, bounds));
 }
 
 TEST_F(ViewsUtilsUnittest, RightLeftStrategyNotEnoughHeightBottom) {
@@ -76,7 +76,7 @@ TEST_F(ViewsUtilsUnittest, RightLeftStrategyNotEnoughHeightBottom) {
   const gfx::Point result_point(anchor.x() + anchor.width(),
                                 bounds.height() - bubble.height());
   EXPECT_EQ(result_point,
-            CalculateBubblePositionRigthLeftStrategy(anchor, bubble, bounds));
+            CalculateBubblePositionRightLeftStrategy(anchor, bubble, bounds));
 }
 
 TEST_F(ViewsUtilsUnittest, RightLeftStrategyNotEnoughHeightBottomAndTop) {
@@ -85,7 +85,7 @@ TEST_F(ViewsUtilsUnittest, RightLeftStrategyNotEnoughHeightBottomAndTop) {
   const gfx::Rect bounds(20, 20);
   const gfx::Point result_point(anchor.x() + anchor.width(), bounds.y());
   EXPECT_EQ(result_point,
-            CalculateBubblePositionRigthLeftStrategy(anchor, bubble, bounds));
+            CalculateBubblePositionRightLeftStrategy(anchor, bubble, bounds));
 }
 
 TEST_F(ViewsUtilsUnittest, RightLeftStrategyNotEnoughWidthRight) {
@@ -94,7 +94,7 @@ TEST_F(ViewsUtilsUnittest, RightLeftStrategyNotEnoughWidthRight) {
   const gfx::Rect bounds(20, 20);
   const gfx::Point result_point(anchor.x() - bubble.width(), anchor.y());
   EXPECT_EQ(result_point,
-            CalculateBubblePositionRigthLeftStrategy(anchor, bubble, bounds));
+            CalculateBubblePositionRightLeftStrategy(anchor, bubble, bounds));
 }
 
 }  // namespace login_views_utils

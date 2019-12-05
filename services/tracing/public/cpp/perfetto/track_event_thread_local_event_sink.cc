@@ -420,8 +420,9 @@ void TrackEventThreadLocalEventSink::PrepareTrackEvent(
   // between calls to |legacy_event.GetOrCreate()|.
   LazyLegacyEventInitializer legacy_event(track_event);
 
-  // TODO(eseckler): Also convert async events / flow events to corresponding
-  // native TrackEvent types.
+  // TODO(eseckler): Also convert instant / async / flow events to corresponding
+  // native TrackEvent types. Instants & asyncs require using track descriptors
+  // rather than instant event scopes / async event IDs.
   TrackEvent::Type track_event_type;
   switch (phase) {
     case TRACE_EVENT_PHASE_BEGIN:
@@ -429,9 +430,6 @@ void TrackEventThreadLocalEventSink::PrepareTrackEvent(
       break;
     case TRACE_EVENT_PHASE_END:
       track_event_type = TrackEvent::TYPE_SLICE_END;
-      break;
-    case TRACE_EVENT_PHASE_INSTANT:
-      track_event_type = TrackEvent::TYPE_INSTANT;
       break;
     default:
       track_event_type = TrackEvent::TYPE_UNSPECIFIED;

@@ -70,3 +70,9 @@ gen-bundle \
   -primaryURL http://localhost:$NETWORK_TEST_PORT/web_bundle/path_test/in_scope/ \
   -dir path_test_wbn/ \
   -o path_test.wbn
+
+gen-bundle \
+  -version b1 \
+  -primaryURL https://test.example.org/ \
+  -har variants_test.har \
+  -o variants_test.wbn

@@ -169,8 +169,8 @@ class DataReductionProxyService
     return compression_stats_.get();
   }
 
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info()
-      const {
+  std::unique_ptr<network::PendingSharedURLLoaderFactory>
+  pending_url_loader_factory() const {
     return url_loader_factory_->Clone();
   }
 

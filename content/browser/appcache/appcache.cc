@@ -29,11 +29,10 @@ bool AppCache::CheckValidManifestScope(const GURL& manifest_url,
 }
 
 // static
-std::string AppCache::GetManifestScope(
-    base::Optional<std::string> optional_scope,
-    const GURL& manifest_url) {
-  if (optional_scope.has_value()) {
-    std::string scope = manifest_url.Resolve(optional_scope.value()).path();
+std::string AppCache::GetManifestScope(const GURL& manifest_url,
+                                       std::string optional_scope) {
+  if (!optional_scope.empty()) {
+    std::string scope = manifest_url.Resolve(optional_scope).path();
     if (CheckValidManifestScope(manifest_url, scope)) {
       return scope;
     }
@@ -162,9 +161,8 @@ void AppCache::InitializeWithDatabaseRecords(
     const std::vector<AppCacheDatabase::NamespaceRecord>& fallbacks,
     const std::vector<AppCacheDatabase::OnlineWhiteListRecord>& whitelists) {
   DCHECK_EQ(cache_id_, cache_record.cache_id);
-  // TODO(cmp): A later commit will enable this:
-  // manifest_parser_version_ = cache_record.manifest_parser_version;
-  // manifest_scope_ = cache_record.manifest_scope;
+  manifest_parser_version_ = cache_record.manifest_parser_version;
+  manifest_scope_ = cache_record.manifest_scope;
   online_whitelist_all_ = cache_record.online_wildcard;
   update_time_ = cache_record.update_time;
 
@@ -215,6 +213,8 @@ void AppCache::ToDatabaseRecords(
   cache_record->update_time = update_time_;
   cache_record->cache_size = cache_size_;
   cache_record->padding_size = padding_size_;
+  cache_record->manifest_parser_version = manifest_parser_version_;
+  cache_record->manifest_scope = manifest_scope_;
 
   for (const auto& pair : entries_) {
     entries->push_back(AppCacheDatabase::EntryRecord());

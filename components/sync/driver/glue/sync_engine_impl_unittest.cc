@@ -168,7 +168,7 @@ class MockInvalidationService : public invalidation::InvalidationService {
 std::unique_ptr<HttpPostProviderFactory> CreateHttpBridgeFactory() {
   return std::make_unique<HttpBridgeFactory>(
       /*user_agent=*/"",
-      /*url_loader_factory_info=*/nullptr,
+      /*pending_url_loader_factory=*/nullptr,
       /*network_time_update_callback=*/base::DoNothing());
 }
 

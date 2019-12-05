@@ -105,7 +105,8 @@ IndexedDBContextImpl::IndexedDBContextImpl(
   IDB_TRACE("init");
   if (!data_path.empty())
     data_path_ = data_path.Append(kIndexedDBDirectory);
-  quota_manager_proxy->RegisterClient(new IndexedDBQuotaClient(this));
+  quota_manager_proxy->RegisterClient(
+      base::MakeRefCounted<IndexedDBQuotaClient>(this));
 }
 
 IndexedDBFactoryImpl* IndexedDBContextImpl::GetIDBFactory() {

@@ -29,7 +29,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/shared_remote.h"
 #include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 #include "net/base/ip_address.h"
 #include "net/base/network_interfaces.h"
@@ -64,8 +66,7 @@ class PLATFORM_EXPORT P2PSocketDispatcher
   void RemoveNetworkListObserver(
       blink::NetworkListObserver* network_list_observer) override;
 
-  scoped_refptr<network::mojom::blink::ThreadSafeP2PSocketManagerPtr>
-  GetP2PSocketManager();
+  network::mojom::blink::P2PSocketManager* GetP2PSocketManager();
 
  private:
   friend class base::RefCountedThreadSafe<P2PSocketDispatcher>;
@@ -90,9 +91,10 @@ class PLATFORM_EXPORT P2PSocketDispatcher
   scoped_refptr<base::ObserverListThreadSafe<blink::NetworkListObserver>>
       network_list_observers_;
 
-  network::mojom::blink::P2PSocketManagerRequest p2p_socket_manager_request_;
-  scoped_refptr<network::mojom::blink::ThreadSafeP2PSocketManagerPtr>
-      thread_safe_p2p_socket_manager_;
+  mojo::PendingReceiver<network::mojom::blink::P2PSocketManager>
+      p2p_socket_manager_receiver_;
+  mojo::SharedRemote<network::mojom::blink::P2PSocketManager>
+      p2p_socket_manager_;
   base::Lock p2p_socket_manager_lock_;
 
   // Cached from last |NetworkListChanged| call.

@@ -70,14 +70,14 @@ namespace arc {
 ArcBridgeHostImpl::ArcBridgeHostImpl(ArcBridgeService* arc_bridge_service,
                                      mojom::ArcBridgeInstancePtr instance)
     : arc_bridge_service_(arc_bridge_service),
-      binding_(this),
+      receiver_(this),
       instance_(std::move(instance)) {
   DCHECK(arc_bridge_service_);
   DCHECK(instance_.is_bound());
   instance_.set_connection_error_handler(
       base::BindOnce(&ArcBridgeHostImpl::OnClosed, base::Unretained(this)));
   mojom::ArcBridgeHostPtr host_proxy;
-  binding_.Bind(mojo::MakeRequest(&host_proxy));
+  receiver_.Bind(mojo::MakeRequest(&host_proxy));
   instance_->Init(std::move(host_proxy));
 }
 
@@ -364,8 +364,8 @@ void ArcBridgeHostImpl::OnClosed() {
   // Close all mojo channels.
   mojo_channels_.clear();
   instance_.reset();
-  if (binding_.is_bound())
-    binding_.Close();
+  if (receiver_.is_bound())
+    receiver_.reset();
 
   arc_bridge_service_->ObserveAfterArcBridgeClosed();
 }
@@ -375,7 +375,7 @@ void ArcBridgeHostImpl::OnInstanceReady(
     ConnectionHolder<InstanceType, HostType>* holder,
     mojo::InterfacePtr<InstanceType> ptr) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(binding_.is_bound());
+  DCHECK(receiver_.is_bound());
   DCHECK(ptr.is_bound());
 
   // Track |channel|'s lifetime via |mojo_channels_| so that it will be

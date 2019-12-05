@@ -316,12 +316,12 @@ NetworkChannelCreator
 }
 
 NetworkChannelCreator NonBlockingInvalidator::MakeGCMNetworkChannelCreator(
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        url_loader_factory_info,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_url_loader_factory,
     network::NetworkConnectionTracker* network_connection_tracker,
     std::unique_ptr<GCMNetworkChannelDelegate> delegate) {
   return base::Bind(&SyncNetworkChannel::CreateGCMNetworkChannel,
-                    base::Passed(&url_loader_factory_info),
+                    base::Passed(&pending_url_loader_factory),
                     // NetworkConnectionTracker is a global singleton guaranteed
                     // to be alive when this is used.
                     base::Unretained(network_connection_tracker),

@@ -602,7 +602,8 @@ void PopulateBinderMapWithContext(
       base::BindRepeating(&BindTextSuggestionHostForFrame));
 #endif  // defined(OS_ANDROID)
 
-  GetContentClient()->browser()->RegisterBrowserInterfaceBindersForFrame(map);
+  GetContentClient()->browser()->RegisterBrowserInterfaceBindersForFrame(host,
+                                                                         map);
 }
 
 void PopulateBinderMap(RenderFrameHostImpl* host,

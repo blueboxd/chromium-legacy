@@ -426,9 +426,9 @@ bool SecurityOrigin::CanRequest(const KURL& url) const {
   if (target_origin->IsOpaque())
     return false;
 
-  // We call isSameSchemeHostPort here instead of canAccess because we want
-  // to ignore document.domain effects.
-  if (IsSameSchemeHostPort(target_origin.get()))
+  // We call IsSameOriginWith here instead of canAccess because we want to
+  // ignore `document.domain` effects.
+  if (IsSameOriginWith(target_origin.get()))
     return true;
 
   if (SecurityPolicy::IsOriginAccessAllowed(this, target_origin.get()))
@@ -597,7 +597,7 @@ scoped_refptr<SecurityOrigin> SecurityOrigin::Create(const String& protocol,
   return Create(KURL(NullURL(), protocol + "://" + host + port_part + "/"));
 }
 
-bool SecurityOrigin::IsSameSchemeHostPort(const SecurityOrigin* other) const {
+bool SecurityOrigin::IsSameOriginWith(const SecurityOrigin* other) const {
   // This is needed to ensure a local origin considered to have the same scheme,
   // host, and port to itself.
   // TODO(tzik): Make the local origin unique but not opaque, and remove this
@@ -623,10 +623,10 @@ bool SecurityOrigin::IsSameSchemeHostPort(const SecurityOrigin* other) const {
   return true;
 }
 
-bool SecurityOrigin::AreSameSchemeHostPort(const KURL& a, const KURL& b) {
+bool SecurityOrigin::AreSameOrigin(const KURL& a, const KURL& b) {
   scoped_refptr<const SecurityOrigin> origin_a = SecurityOrigin::Create(a);
   scoped_refptr<const SecurityOrigin> origin_b = SecurityOrigin::Create(b);
-  return origin_b->IsSameSchemeHostPort(origin_a.get());
+  return origin_b->IsSameOriginWith(origin_a.get());
 }
 
 const KURL& SecurityOrigin::UrlWithUniqueOpaqueOrigin() {

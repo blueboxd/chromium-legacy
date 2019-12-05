@@ -283,7 +283,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     return;
   }
 
-  if (IsHTMLTextAreaElement(element)) {
+  if (IsA<HTMLTextAreaElement>(element)) {
     // Textarea considers overflow visible as auto.
     style.SetOverflowX(style.OverflowX() == EOverflow::kVisible
                            ? EOverflow::kAuto
@@ -310,7 +310,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     if (IsA<HTMLBRElement>(element) || IsHTMLWBRElement(element) ||
         IsA<HTMLMeterElement>(element) || IsA<HTMLProgressElement>(element) ||
         IsA<HTMLCanvasElement>(element) || IsHTMLMediaElement(element) ||
-        IsHTMLInputElement(element) || IsHTMLTextAreaElement(element) ||
+        IsA<HTMLInputElement>(element) || IsA<HTMLTextAreaElement>(element) ||
         IsA<HTMLSelectElement>(element)) {
       style.SetDisplay(EDisplay::kNone);
     }

@@ -4,7 +4,10 @@
 
 #include "components/exo/shell_surface_util.h"
 
+#include <memory>
+
 #include "base/trace_event/trace_event.h"
+#include "components/exo/permission.h"
 #include "components/exo/shell_surface_base.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
@@ -13,6 +16,8 @@
 #include "ui/events/event.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
+
+DEFINE_UI_CLASS_PROPERTY_TYPE(exo::Permission*)
 
 namespace exo {
 
@@ -23,8 +28,11 @@ DEFINE_UI_CLASS_PROPERTY_KEY(Surface*, kMainSurfaceKey, nullptr)
 // Application Id set by the client.
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kApplicationIdKey, nullptr)
 
-// Application Id set by the client.
+// Startup Id set by the client.
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kStartupIdKey, nullptr)
+
+// Permission object allowing this window to activate itself.
+DEFINE_UI_CLASS_PROPERTY_KEY(exo::Permission*, kPermissionKey, nullptr)
 
 }  // namespace
 
@@ -112,6 +120,43 @@ Surface* GetTargetSurfaceForLocatedEvent(ui::LocatedEvent* event) {
                                        &location_in_target);
     window = parent_window;
   }
+}
+
+namespace {
+
+// An activation-permission object whose lifetime is tied to a window property.
+class ScopedWindowActivationPermission : public Permission {
+ public:
+  ScopedWindowActivationPermission(aura::Window* window,
+                                   base::TimeDelta timeout)
+      : Permission(Permission::Capability::kActivate, timeout),
+        window_(window) {
+    Permission* other = window_->GetProperty(kPermissionKey);
+    if (other) {
+      other->Revoke();
+    }
+    window_->SetProperty(kPermissionKey, reinterpret_cast<Permission*>(this));
+  }
+
+  ~ScopedWindowActivationPermission() override {
+    if (window_->GetProperty(kPermissionKey) == this)
+      window_->ClearProperty(kPermissionKey);
+  }
+
+ private:
+  aura::Window* window_;
+};
+
+}  // namespace
+
+std::unique_ptr<Permission> GrantPermissionToActivate(aura::Window* window,
+                                                      base::TimeDelta timeout) {
+  return std::make_unique<ScopedWindowActivationPermission>(window, timeout);
+}
+
+bool HasPermissionToActivate(aura::Window* window) {
+  Permission* permission = window->GetProperty(kPermissionKey);
+  return permission && permission->Check(Permission::Capability::kActivate);
 }
 
 }  // namespace exo

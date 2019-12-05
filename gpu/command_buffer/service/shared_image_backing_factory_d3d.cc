@@ -8,9 +8,11 @@
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
+#include "gpu/command_buffer/service/shared_image_representation_skia_gl.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/buildflags.h"
@@ -403,6 +405,15 @@ class SharedImageBackingD3D : public SharedImageBacking {
     TRACE_EVENT0("gpu", "SharedImageBackingD3D::ProduceGLTexturePassthrough");
     return std::make_unique<SharedImageRepresentationGLTexturePassthroughD3D>(
         manager, this, tracker, texture_passthrough_);
+  }
+
+  std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker,
+      scoped_refptr<SharedContextState> context_state) override {
+    return SharedImageRepresentationSkiaGL::CreateForPassthrough(
+        ProduceGLTexturePassthrough(manager, tracker), std::move(context_state),
+        manager, this, tracker);
   }
 
  private:

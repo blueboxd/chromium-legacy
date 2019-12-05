@@ -38,7 +38,7 @@ bool FCMSyncNetworkChannel::DeliverIncomingMessage(
     const std::string& payload,
     const std::string& private_topic,
     const std::string& public_topic,
-    const std::string& version) {
+    int64_t version) {
   if (!incoming_receiver_) {
     DLOG(ERROR) << "No receiver for incoming notification";
     return false;

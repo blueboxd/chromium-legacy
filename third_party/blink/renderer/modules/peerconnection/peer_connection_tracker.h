@@ -14,8 +14,8 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/peerconnection/peer_connection_tracker.mojom-blink.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
-#include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_transceiver_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_platform.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
@@ -136,22 +136,21 @@ class MODULES_EXPORT PeerConnectionTracker
   // Example events: "transceiverAdded", "transceiverModified".
   // See peer_connection_tracker_unittest.cc for expected resulting event
   // strings.
-  virtual void TrackAddTransceiver(
-      RTCPeerConnectionHandler* pc_handler,
-      TransceiverUpdatedReason reason,
-      const blink::WebRTCRtpTransceiver& transceiver,
-      size_t transceiver_index);
+  virtual void TrackAddTransceiver(RTCPeerConnectionHandler* pc_handler,
+                                   TransceiverUpdatedReason reason,
+                                   const RTCRtpTransceiverPlatform& transceiver,
+                                   size_t transceiver_index);
   virtual void TrackModifyTransceiver(
       RTCPeerConnectionHandler* pc_handler,
       TransceiverUpdatedReason reason,
-      const blink::WebRTCRtpTransceiver& transceiver,
+      const RTCRtpTransceiverPlatform& transceiver,
       size_t transceiver_index);
   // TODO(hbos): When Plan B is removed this is no longer applicable.
   // https://crbug.com/857004
   virtual void TrackRemoveTransceiver(
       RTCPeerConnectionHandler* pc_handler,
       TransceiverUpdatedReason reason,
-      const blink::WebRTCRtpTransceiver& transceiver,
+      const RTCRtpTransceiverPlatform& transceiver,
       size_t transceiver_index);
 
   // Sends an update when a DataChannel is created.
@@ -236,7 +235,7 @@ class MODULES_EXPORT PeerConnectionTracker
   void TrackTransceiver(const char* callback_type_ending,
                         RTCPeerConnectionHandler* pc_handler,
                         PeerConnectionTracker::TransceiverUpdatedReason reason,
-                        const blink::WebRTCRtpTransceiver& transceiver,
+                        const RTCRtpTransceiverPlatform& transceiver,
                         size_t transceiver_index);
 
   // PeerConnectionTracker implementation.

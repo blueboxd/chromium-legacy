@@ -26,6 +26,7 @@
 #include "extensions/browser/api/runtime/runtime_api_delegate.h"
 #include "extensions/browser/core_extensions_browser_api_provider.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extensions_browser_interface_binders.h"
 #include "extensions/browser/mojo/interface_registration.h"
 #include "extensions/browser/null_app_sorting.h"
 #include "extensions/browser/updater/null_extension_cache.h"
@@ -209,6 +210,13 @@ void CastExtensionsBrowserClient::RegisterExtensionInterfaces(
     content::RenderFrameHost* render_frame_host,
     const Extension* extension) const {
   RegisterInterfacesForExtension(registry, render_frame_host, extension);
+}
+
+void CastExtensionsBrowserClient::RegisterBrowserInterfaceBindersForFrame(
+    service_manager::BinderMapWithContext<content::RenderFrameHost*>* map,
+    content::RenderFrameHost* render_frame_host,
+    const Extension* extension) const {
+  PopulateExtensionFrameBinders(map, render_frame_host, extension);
 }
 
 std::unique_ptr<RuntimeAPIDelegate>

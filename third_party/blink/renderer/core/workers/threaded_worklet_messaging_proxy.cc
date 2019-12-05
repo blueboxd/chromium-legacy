@@ -70,7 +70,7 @@ void ThreadedWorkletMessagingProxy::Initialize(
           base::UnguessableToken::Create(),
           std::make_unique<WorkerSettings>(document->GetSettings()),
           kV8CacheOptionsDefault, module_responses_map,
-          mojo::NullRemote() /*interface_provider*/, mojo::NullRemote(),
+          mojo::NullRemote() /* browser_interface_broker */,
           BeginFrameProviderParams(), nullptr /* parent_feature_policy */,
           document->GetAgentClusterID());
 

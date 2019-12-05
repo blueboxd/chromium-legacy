@@ -18,9 +18,9 @@ MockQuotaManagerProxy::MockQuotaManagerProxy(
       last_notified_delta_(0),
       registered_client_(nullptr) {}
 
-void MockQuotaManagerProxy::RegisterClient(QuotaClient* client) {
+void MockQuotaManagerProxy::RegisterClient(scoped_refptr<QuotaClient> client) {
   DCHECK(!registered_client_);
-  registered_client_ = client;
+  registered_client_ = std::move(client);
 }
 
 void MockQuotaManagerProxy::SimulateQuotaManagerDestroyed() {

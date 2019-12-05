@@ -17,13 +17,16 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "printing/backend/cups_ipp_advanced_caps.h"
 #include "printing/backend/cups_ipp_constants.h"
 #include "printing/backend/cups_printer.h"
 #include "printing/backend/print_backend_consts.h"
 #include "printing/units.h"
 
 #if defined(OS_CHROMEOS)
+#include "base/callback.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/no_destructor.h"
+#include "printing/backend/ipp_handler_map.h"
 #include "printing/printing_features_chromeos.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -337,6 +340,48 @@ bool PinSupported(const CupsOptionProvider& printer) {
   std::vector<base::StringPiece> values =
       printer.GetSupportedOptionValueStrings(kIppPinEncryption);
   return base::Contains(values, kPinEncryptionNone);
+}
+
+// Returns the number of IPP attributes added to |caps| (not necessarily in
+// 1-to-1 correspondence).
+size_t AddAttributes(const CupsOptionProvider& printer,
+                     const char* attr_group_name,
+                     AdvancedCapabilities* caps) {
+  ipp_attribute_t* attr = printer.GetSupportedOptionValues(attr_group_name);
+  if (!attr)
+    return 0;
+
+  int num_options = ippGetCount(attr);
+  static const base::NoDestructor<HandlerMap> handlers(GenerateHandlers());
+  std::vector<std::string> unknown_options;
+  size_t attr_count = 0;
+  for (int i = 0; i < num_options; i++) {
+    const char* option_name = ippGetString(attr, i, nullptr);
+    auto it = handlers->find(option_name);
+    if (it == handlers->end()) {
+      unknown_options.emplace_back(option_name);
+      continue;
+    }
+
+    size_t previous_size = caps->size();
+    // Run the handler that adds items to |caps| based on option type.
+    it->second.Run(printer, option_name, caps);
+    if (caps->size() > previous_size)
+      attr_count++;
+  }
+  if (!unknown_options.empty()) {
+    LOG(WARNING) << "Unknown IPP options: "
+                 << base::JoinString(unknown_options, ", ");
+  }
+  return attr_count;
+}
+
+void ExtractAdvancedCapabilities(const CupsOptionProvider& printer,
+                                 PrinterSemanticCapsAndDefaults* printer_info) {
+  AdvancedCapabilities* options = &printer_info->advanced_capabilities;
+  size_t attr_count = AddAttributes(printer, kIppJobAttributes, options);
+  attr_count += AddAttributes(printer, kIppDocumentAttributes, options);
+  base::UmaHistogramCounts1000("Printing.CUPS.IppAttributesCount", attr_count);
 }
 #endif  // defined(OS_CHROMEOS)
 

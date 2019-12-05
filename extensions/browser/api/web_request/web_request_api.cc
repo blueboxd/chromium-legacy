@@ -696,6 +696,7 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
     content::RenderFrameHost* frame,
     int render_process_id,
     URLLoaderFactoryType type,
+    base::Optional<int64_t> navigation_id,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
         header_client) {
@@ -732,6 +733,7 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
   const bool is_navigation = (type == URLLoaderFactoryType::kNavigation);
   if (is_navigation) {
     DCHECK(frame);
+    DCHECK(navigation_id);
     int tab_id;
     int window_id;
     ExtensionsBrowserClient::Get()->GetTabAndWindowIdForWebContents(
@@ -755,8 +757,9 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
   WebRequestProxyingURLLoaderFactory::StartProxying(
       browser_context, is_navigation ? -1 : render_process_id,
       request_id_generator_, std::move(navigation_ui_data),
-      std::move(proxied_receiver), std::move(target_factory_remote),
-      std::move(header_client_receiver), proxies_.get(), type);
+      std::move(navigation_id), std::move(proxied_receiver),
+      std::move(target_factory_remote), std::move(header_client_receiver),
+      proxies_.get(), type);
   return true;
 }
 

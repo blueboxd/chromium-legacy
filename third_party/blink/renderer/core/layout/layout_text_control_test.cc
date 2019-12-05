@@ -15,7 +15,7 @@ namespace {
 class LayoutTextControlTest : public RenderingTest {
  protected:
   HTMLInputElement* GetHTMLInputElementById(const char* id) {
-    return ToHTMLInputElement(GetDocument().getElementById(id));
+    return To<HTMLInputElement>(GetDocument().getElementById(id));
   }
   // Return the LayoutText from inside an HTMLInputElement's user agent shadow
   // tree.

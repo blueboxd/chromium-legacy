@@ -228,9 +228,10 @@ class LifecycleTest : public testing::Test {
     return !base::CommandLine::ForCurrentProcess()->HasSwitch("single-process");
   }
 
-  test::mojom::LifecycleControlPtr ConnectTo(const std::string& name) {
-    test::mojom::LifecycleControlPtr lifecycle;
-    connector()->BindInterface(name, &lifecycle);
+  mojo::Remote<test::mojom::LifecycleControl> ConnectTo(
+      const std::string& name) {
+    mojo::Remote<test::mojom::LifecycleControl> lifecycle;
+    connector()->BindInterface(name, lifecycle.BindNewPipeAndPassReceiver());
     PingPong(lifecycle.get());
     return lifecycle;
   }
@@ -267,13 +268,14 @@ class LifecycleTest : public testing::Test {
 };
 
 TEST_F(LifecycleTest, Standalone_GracefulQuit) {
-  test::mojom::LifecycleControlPtr lifecycle = ConnectTo(kTestAppName);
+  mojo::Remote<test::mojom::LifecycleControl> lifecycle =
+      ConnectTo(kTestAppName);
 
   EXPECT_TRUE(instances()->HasInstanceForName(kTestAppName));
   EXPECT_EQ(1u, instances()->GetNewInstanceCount());
 
   base::RunLoop loop;
-  lifecycle.set_connection_error_handler(loop.QuitClosure());
+  lifecycle.set_disconnect_handler(loop.QuitClosure());
   lifecycle->GracefulQuit();
   loop.Run();
 
@@ -288,13 +290,14 @@ TEST_F(LifecycleTest, Standalone_Crash) {
     return;
   }
 
-  test::mojom::LifecycleControlPtr lifecycle = ConnectTo(kTestAppName);
+  mojo::Remote<test::mojom::LifecycleControl> lifecycle =
+      ConnectTo(kTestAppName);
 
   EXPECT_TRUE(instances()->HasInstanceForName(kTestAppName));
   EXPECT_EQ(1u, instances()->GetNewInstanceCount());
 
   base::RunLoop loop;
-  lifecycle.set_connection_error_handler(loop.QuitClosure());
+  lifecycle.set_disconnect_handler(loop.QuitClosure());
   lifecycle->Crash();
   loop.Run();
 
@@ -304,13 +307,14 @@ TEST_F(LifecycleTest, Standalone_Crash) {
 }
 
 TEST_F(LifecycleTest, Standalone_CloseServiceManagerConnection) {
-  test::mojom::LifecycleControlPtr lifecycle = ConnectTo(kTestAppName);
+  mojo::Remote<test::mojom::LifecycleControl> lifecycle =
+      ConnectTo(kTestAppName);
 
   EXPECT_TRUE(instances()->HasInstanceForName(kTestAppName));
   EXPECT_EQ(1u, instances()->GetNewInstanceCount());
 
   base::RunLoop loop;
-  lifecycle.set_connection_error_handler(loop.QuitClosure());
+  lifecycle.set_disconnect_handler(loop.QuitClosure());
   lifecycle->CloseServiceManagerConnection();
 
   instances()->WaitForInstanceDestruction();
@@ -320,7 +324,8 @@ TEST_F(LifecycleTest, Standalone_CloseServiceManagerConnection) {
 }
 
 TEST_F(LifecycleTest, PackagedApp_GracefulQuit) {
-  test::mojom::LifecycleControlPtr lifecycle = ConnectTo(kTestPackageAppNameA);
+  mojo::Remote<test::mojom::LifecycleControl> lifecycle =
+      ConnectTo(kTestPackageAppNameA);
 
   // There should be two new instances - one for the app and one for the package
   // that vended it.
@@ -329,7 +334,7 @@ TEST_F(LifecycleTest, PackagedApp_GracefulQuit) {
   EXPECT_EQ(2u, instances()->GetNewInstanceCount());
 
   base::RunLoop loop;
-  lifecycle.set_connection_error_handler(loop.QuitClosure());
+  lifecycle.set_disconnect_handler(loop.QuitClosure());
   lifecycle->GracefulQuit();
   loop.Run();
 
@@ -345,7 +350,8 @@ TEST_F(LifecycleTest, PackagedApp_Crash) {
     return;
   }
 
-  test::mojom::LifecycleControlPtr lifecycle = ConnectTo(kTestPackageAppNameA);
+  mojo::Remote<test::mojom::LifecycleControl> lifecycle =
+      ConnectTo(kTestPackageAppNameA);
 
   // There should be two new instances - one for the app and one for the package
   // that vended it.
@@ -354,7 +360,7 @@ TEST_F(LifecycleTest, PackagedApp_Crash) {
   EXPECT_EQ(2u, instances()->GetNewInstanceCount());
 
   base::RunLoop loop;
-  lifecycle.set_connection_error_handler(loop.QuitClosure());
+  lifecycle.set_disconnect_handler(loop.QuitClosure());
   lifecycle->Crash();
   loop.Run();
 
@@ -372,11 +378,11 @@ TEST_F(LifecycleTest, PackagedApp_CrashCrashesOtherProvidedApp) {
     return;
   }
 
-  test::mojom::LifecycleControlPtr lifecycle_a =
+  mojo::Remote<test::mojom::LifecycleControl> lifecycle_a =
       ConnectTo(kTestPackageAppNameA);
-  test::mojom::LifecycleControlPtr lifecycle_b =
+  mojo::Remote<test::mojom::LifecycleControl> lifecycle_b =
       ConnectTo(kTestPackageAppNameB);
-  test::mojom::LifecycleControlPtr lifecycle_package =
+  mojo::Remote<test::mojom::LifecycleControl> lifecycle_package =
       ConnectTo(kTestPackageName);
 
   // There should be three instances, one for each packaged app and the package
@@ -390,9 +396,9 @@ TEST_F(LifecycleTest, PackagedApp_CrashCrashesOtherProvidedApp) {
   base::RunLoop loop;
   base::RepeatingClosure quit_on_last = base::BarrierClosure(
       static_cast<int>(instance_count), loop.QuitClosure());
-  lifecycle_a.set_connection_error_handler(quit_on_last);
-  lifecycle_b.set_connection_error_handler(quit_on_last);
-  lifecycle_package.set_connection_error_handler(quit_on_last);
+  lifecycle_a.set_disconnect_handler(quit_on_last);
+  lifecycle_b.set_disconnect_handler(quit_on_last);
+  lifecycle_package.set_disconnect_handler(quit_on_last);
 
   // Now crash one of the packaged apps.
   lifecycle_a->Crash();
@@ -408,11 +414,11 @@ TEST_F(LifecycleTest, PackagedApp_CrashCrashesOtherProvidedApp) {
 // When a single package provides multiple apps out of one process, crashing one
 // app crashes all.
 TEST_F(LifecycleTest, PackagedApp_GracefulQuitPackageQuitsAll) {
-  test::mojom::LifecycleControlPtr lifecycle_a =
+  mojo::Remote<test::mojom::LifecycleControl> lifecycle_a =
       ConnectTo(kTestPackageAppNameA);
-  test::mojom::LifecycleControlPtr lifecycle_b =
+  mojo::Remote<test::mojom::LifecycleControl> lifecycle_b =
       ConnectTo(kTestPackageAppNameB);
-  test::mojom::LifecycleControlPtr lifecycle_package =
+  mojo::Remote<test::mojom::LifecycleControl> lifecycle_package =
       ConnectTo(kTestPackageName);
 
   // There should be three instances, one for each packaged app and the package
@@ -426,9 +432,9 @@ TEST_F(LifecycleTest, PackagedApp_GracefulQuitPackageQuitsAll) {
   base::RunLoop loop;
   base::RepeatingClosure quit_on_last = base::BarrierClosure(
       static_cast<int>(instance_count), loop.QuitClosure());
-  lifecycle_a.set_connection_error_handler(quit_on_last);
-  lifecycle_b.set_connection_error_handler(quit_on_last);
-  lifecycle_package.set_connection_error_handler(quit_on_last);
+  lifecycle_a.set_disconnect_handler(quit_on_last);
+  lifecycle_b.set_disconnect_handler(quit_on_last);
+  lifecycle_package.set_disconnect_handler(quit_on_last);
 
   // Now quit the package. All the packaged apps should close.
   lifecycle_package->GracefulQuit();

@@ -24,18 +24,9 @@ KnownInterceptionDisclosureUI::KnownInterceptionDisclosureUI(
       kChromeUIConnectionMonitoringDetectedHost);
 
   html_source->AddLocalizedString("title", IDS_KNOWN_INTERCEPTION_TITLE);
-  html_source->AddLocalizedString("pageSubtitle",
-                                  IDS_KNOWN_INTERCEPTION_SUBTITLE);
-  html_source->AddLocalizedString("pageDescription",
-                                  IDS_KNOWN_INTERCEPTION_DESCRIPTION);
-  html_source->AddLocalizedString("pageMeaningSubheading",
-                                  IDS_KNOWN_INTERCEPTION_MEANING_SUBHEADING);
-  html_source->AddLocalizedString("pageMeaningDescription",
-                                  IDS_KNOWN_INTERCEPTION_MEANING_DESCRIPTION);
-  html_source->AddLocalizedString("pageCauseSubheading",
-                                  IDS_KNOWN_INTERCEPTION_CAUSE_SUBHEADING);
-  html_source->AddLocalizedString("pageCauseDescription",
-                                  IDS_KNOWN_INTERCEPTION_CAUSE_DESCRIPTION);
+  html_source->AddLocalizedString("pageHeader", IDS_KNOWN_INTERCEPTION_HEADER);
+  html_source->AddLocalizedString("pageBody1", IDS_KNOWN_INTERCEPTION_BODY1);
+  html_source->AddLocalizedString("pageBody2", IDS_KNOWN_INTERCEPTION_BODY2);
 
   html_source->AddResourcePath("interstitial_core.css",
                                IDR_SECURITY_INTERSTITIAL_CORE_CSS);

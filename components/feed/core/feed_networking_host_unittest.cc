@@ -32,10 +32,10 @@
 namespace feed {
 
 using base::TimeDelta;
-using testing::ElementsAre;
+using network::PendingSharedURLLoaderFactory;
 using network::SharedURLLoaderFactory;
-using network::SharedURLLoaderFactoryInfo;
 using network::TestURLLoaderFactory;
+using testing::ElementsAre;
 
 namespace {
 

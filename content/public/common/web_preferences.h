@@ -345,6 +345,10 @@ struct CONTENT_EXPORT WebPreferences {
       lazy_image_loading_distance_thresholds_px;
   std::map<net::EffectiveConnectionType, int> lazy_image_first_k_fully_load;
 
+  // Setting to false disables upgrades to HTTPS for HTTP resources in HTTPS
+  // sites.
+  bool allow_mixed_content_upgrades;
+
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for
   // the embedder to use the same default value.

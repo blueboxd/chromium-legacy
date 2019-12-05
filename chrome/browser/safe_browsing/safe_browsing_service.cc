@@ -48,7 +48,7 @@
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
+#include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"
 #include "services/network/public/cpp/features.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
 
@@ -285,7 +285,8 @@ void SafeBrowsingService::SetDatabaseManagerForTest(
 }
 
 void SafeBrowsingService::StartOnIOThread(
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory) {
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        url_loader_factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (enabled_)
     return;
@@ -320,7 +321,7 @@ void SafeBrowsingService::Start() {
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &SafeBrowsingService::StartOnIOThread, this,
-          std::make_unique<network::CrossThreadSharedURLLoaderFactoryInfo>(
+          std::make_unique<network::CrossThreadPendingSharedURLLoaderFactory>(
               GetURLLoaderFactory())));
 }
 

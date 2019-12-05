@@ -59,7 +59,7 @@ class FCMInvalidationListener : public InvalidationListener,
   void Invalidate(const std::string& payload,
                   const std::string& private_topic,
                   const std::string& public_topic,
-                  const std::string& version) override;
+                  int64_t version) override;
   void InformTokenReceived(const std::string& token) override;
 
   // AckHandler implementation.

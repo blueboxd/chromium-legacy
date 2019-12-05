@@ -321,7 +321,7 @@ Request* Request::CreateRequestWithRequestOrString(
       if ((parsed_referrer.ProtocolIsAbout() &&
            parsed_referrer.Host().IsEmpty() &&
            parsed_referrer.GetPath() == "client") ||
-          !origin->IsSameSchemeHostPort(
+          !origin->IsSameOriginWith(
               SecurityOrigin::Create(parsed_referrer).get())) {
         // If |parsedReferrer|'s host is empty
         // it's cannot-be-a-base-URL flag must be set

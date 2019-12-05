@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/arc/bluetooth/arc_bluetooth_bridge.h"
 
 #include <bluetooth/bluetooth.h>
+#include <bluetooth/rfcomm.h>
 #include <fcntl.h>
 #include <stddef.h>
 #include <sys/socket.h>
@@ -26,6 +27,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -2724,5 +2726,259 @@ ArcBluetoothBridge::GattConnection::GattConnection(
     ArcBluetoothBridge::GattConnection&&) = default;
 ArcBluetoothBridge::GattConnection& ArcBluetoothBridge::GattConnection::
 operator=(ArcBluetoothBridge::GattConnection&&) = default;
+
+namespace {
+
+constexpr int kMinRfcommChannelNum = 1;
+constexpr int kMaxRfcommChannelNum = 30;
+
+base::ScopedFD OpenRfcommSocket(int32_t optval) {
+  base::ScopedFD sock(socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM));
+  if (!sock.is_valid()) {
+    PLOG(ERROR) << "Failed to open bluetooth socket.";
+    return {};
+  }
+  if (setsockopt(sock.get(), SOL_RFCOMM, RFCOMM_LM, &optval, sizeof(optval)) ==
+      -1) {
+    PLOG(ERROR) << "Failed to setopt() on socket.";
+    return {};
+  }
+  if (fcntl(sock.get(), F_SETFL, O_NONBLOCK | fcntl(sock.get(), F_GETFL)) ==
+      -1) {
+    PLOG(ERROR) << "Failed to fcntl() on socket.";
+    return {};
+  }
+  return sock;
+}
+
+}  // namespace
+
+void ArcBluetoothBridge::RfcommListen(int32_t channel,
+                                      int32_t optval,
+                                      RfcommListenCallback callback) {
+  // |channel|=0 means selecting a available channel automatically.
+  if (channel != 0 &&
+      (channel < kMinRfcommChannelNum || channel > kMaxRfcommChannelNum)) {
+    LOG(ERROR) << "Invalid channel number";
+    std::move(callback).Run(
+        mojom::BluetoothStatus::FAIL, /*channel=*/0,
+        mojo::PendingReceiver<mojom::RfcommListeningSocketClient>());
+    return;
+  }
+  uint8_t listen_channel = static_cast<uint8_t>(channel);
+  auto sock_wrapper = RfcommCreateListenSocket(optval, &listen_channel);
+  if (!sock_wrapper) {
+    std::move(callback).Run(
+        mojom::BluetoothStatus::FAIL, /*channel=*/0,
+        mojo::PendingReceiver<mojom::RfcommListeningSocketClient>());
+    return;
+  }
+  std::move(callback).Run(mojom::BluetoothStatus::SUCCESS, listen_channel,
+                          mojo::MakeRequest(&sock_wrapper->remote));
+
+  sock_wrapper->remote.set_connection_error_handler(
+      base::BindOnce(&ArcBluetoothBridge::RfcommCloseListeningSocket,
+                     weak_factory_.GetWeakPtr(), sock_wrapper.get()));
+  listening_sockets_.insert(std::move(sock_wrapper));
+}
+
+void ArcBluetoothBridge::RfcommCloseListeningSocket(
+    RfcommListeningSocket* ptr) {
+  auto itr = listening_sockets_.find(ptr);
+  listening_sockets_.erase(itr);
+}
+
+void ArcBluetoothBridge::RfcommConnect(mojom::BluetoothAddressPtr remote_addr,
+                                       int32_t channel,
+                                       int32_t optval,
+                                       RfcommConnectCallback callback) {
+  if (channel < kMinRfcommChannelNum || channel > kMaxRfcommChannelNum) {
+    LOG(ERROR) << "Invalid channel number";
+    std::move(callback).Run(mojom::BluetoothStatus::FAIL,
+                            mojom::RfcommConnectingSocketClientRequest());
+    return;
+  }
+
+  auto sock_wrapper = RfcommCreateConnectSocket(
+      std::move(remote_addr), static_cast<uint8_t>(channel), optval);
+  if (!sock_wrapper) {
+    std::move(callback).Run(mojom::BluetoothStatus::FAIL,
+                            mojom::RfcommConnectingSocketClientRequest());
+    return;
+  }
+
+  std::move(callback).Run(mojom::BluetoothStatus::SUCCESS,
+                          mojo::MakeRequest(&sock_wrapper->remote));
+  sock_wrapper->remote.set_connection_error_handler(
+      base::BindOnce(&ArcBluetoothBridge::RfcommCloseConnectingSocket,
+                     weak_factory_.GetWeakPtr(), sock_wrapper.get()));
+  connecting_sockets_.insert(std::move(sock_wrapper));
+}
+
+void ArcBluetoothBridge::RfcommCloseConnectingSocket(
+    RfcommConnectingSocket* ptr) {
+  auto itr = connecting_sockets_.find(ptr);
+  connecting_sockets_.erase(itr);
+}
+
+std::unique_ptr<ArcBluetoothBridge::RfcommListeningSocket>
+ArcBluetoothBridge::RfcommCreateListenSocket(int32_t optval, uint8_t* channel) {
+  base::ScopedFD sock = OpenRfcommSocket(optval);
+  if (!sock.is_valid()) {
+    LOG(ERROR) << "Failed to open listen socket.";
+    return nullptr;
+  }
+
+  DCHECK(channel);
+  struct sockaddr_rc my_addr = {};
+  my_addr.rc_family = AF_BLUETOOTH;
+  my_addr.rc_channel = *channel;
+
+  if (bind(sock.get(), reinterpret_cast<const struct sockaddr*>(&my_addr),
+           sizeof(my_addr)) == -1) {
+    PLOG(ERROR) << "Failed to bind()";
+    return nullptr;
+  }
+  if (listen(sock.get(), /*backlog=*/1) == -1) {
+    PLOG(ERROR) << "Failed to listen()";
+    return nullptr;
+  }
+
+  socklen_t addr_len = sizeof(my_addr);
+  if (getsockname(sock.get(), reinterpret_cast<struct sockaddr*>(&my_addr),
+                  &addr_len) == -1) {
+    PLOG(ERROR) << "Failed to getsockname()";
+    return nullptr;
+  }
+
+  auto sock_wrapper = std::make_unique<RfcommListeningSocket>();
+  sock_wrapper->controller = base::FileDescriptorWatcher::WatchReadable(
+      sock.get(),
+      base::BindRepeating(&ArcBluetoothBridge::OnRfcommListeningSocketReady,
+                          weak_factory_.GetWeakPtr(), sock_wrapper.get()));
+  sock_wrapper->file = std::move(sock);
+
+  *channel = my_addr.rc_channel;
+  return sock_wrapper;
+}
+
+void ArcBluetoothBridge::OnRfcommListeningSocketReady(
+    ArcBluetoothBridge::RfcommListeningSocket* sock_wrapper) {
+  struct sockaddr_rc sa;
+  socklen_t addr_len = sizeof(sa);
+  base::ScopedFD accept_fd(accept(sock_wrapper->file.get(),
+                                  reinterpret_cast<struct sockaddr*>(&sa),
+                                  &addr_len));
+  if (!accept_fd.is_valid()) {
+    PLOG(ERROR) << "Failed to accept()";
+    return;
+  }
+  if (fcntl(accept_fd.get(), F_SETFL,
+            O_NONBLOCK | fcntl(accept_fd.get(), F_GETFL)) == -1) {
+    PLOG(ERROR) << "Failed to fnctl()";
+    return;
+  }
+
+  mojo::ScopedHandle handle =
+      mojo::WrapPlatformHandle(mojo::PlatformHandle(std::move(accept_fd)));
+
+  // Tells Android we successfully accept() a new connection.
+  auto connection = mojom::BluetoothRfcommConnection::New();
+  connection->sock = std::move(handle);
+  connection->addr = mojom::BluetoothAddress::From<bdaddr_t>(sa.rc_bdaddr);
+  connection->channel = sa.rc_channel;
+  sock_wrapper->remote->OnAccepted(std::move(connection));
+}
+
+std::unique_ptr<ArcBluetoothBridge::RfcommConnectingSocket>
+ArcBluetoothBridge::RfcommCreateConnectSocket(mojom::BluetoothAddressPtr addr,
+                                              uint8_t channel,
+                                              int32_t optval) {
+  base::ScopedFD sock = OpenRfcommSocket(optval);
+  if (!sock.is_valid()) {
+    LOG(ERROR) << "Failed to open connect socket.";
+    return nullptr;
+  }
+
+  struct sockaddr_rc sa = {};
+  sa.rc_family = AF_BLUETOOTH;
+  sa.rc_bdaddr = addr->To<bdaddr_t>();
+  sa.rc_channel = channel;
+  int ret = HANDLE_EINTR(connect(
+      sock.get(), reinterpret_cast<const struct sockaddr*>(&sa), sizeof(sa)));
+
+  auto sock_wrapper =
+      std::make_unique<ArcBluetoothBridge::RfcommConnectingSocket>();
+  if (ret == 0) {
+    // connect() returns success immediately.
+    sock_wrapper->file = std::move(sock);
+    PostTask(FROM_HERE,
+             base::BindOnce(&ArcBluetoothBridge::OnRfcommConnectingSocketReady,
+                            weak_factory_.GetWeakPtr(), sock_wrapper.get()));
+    return sock_wrapper;
+  }
+  if (errno != EINPROGRESS) {
+    PLOG(ERROR) << "Failed to connect.";
+    return nullptr;
+  }
+
+  sock_wrapper->controller = base::FileDescriptorWatcher::WatchWritable(
+      sock.get(),
+      base::BindRepeating(&ArcBluetoothBridge::OnRfcommConnectingSocketReady,
+                          weak_factory_.GetWeakPtr(), sock_wrapper.get()));
+  sock_wrapper->file = std::move(sock);
+  return sock_wrapper;
+}
+
+void ArcBluetoothBridge::OnRfcommConnectingSocketReady(
+    ArcBluetoothBridge::RfcommConnectingSocket* sock_wrapper) {
+  // When connect() is ready, we will transfer this fd to Android, and Android
+  // is responsible for closing it.
+  base::ScopedFD fd = std::move(sock_wrapper->file);
+
+  // Checks whether connect() succeeded.
+  int err = 0;
+  socklen_t len = sizeof(err);
+  int ret = getsockopt(fd.get(), SOL_SOCKET, SO_ERROR, &err, &len);
+  if (ret != 0 || err != 0) {
+    PLOG(ERROR) << "Failed to connect. err=" << err;
+    sock_wrapper->remote->OnConnectFailed();
+    return;
+  }
+
+  // Gets peer address.
+  struct sockaddr_rc sa;
+  socklen_t sa_len = sizeof(sa);
+  if (getpeername(fd.get(), reinterpret_cast<sockaddr*>(&sa), &sa_len) == -1) {
+    PLOG(ERROR) << "Failed to getpeername().";
+    sock_wrapper->remote->OnConnectFailed();
+    return;
+  }
+
+  // Gets our channel.
+  struct sockaddr_rc our_sa;
+  socklen_t our_sa_len = sizeof(sa);
+  if (getsockname(fd.get(), reinterpret_cast<sockaddr*>(&our_sa),
+                  &our_sa_len) == -1) {
+    PLOG(ERROR) << "Failed to getsockname()";
+    sock_wrapper->remote->OnConnectFailed();
+    return;
+  }
+
+  mojo::ScopedHandle handle =
+      mojo::WrapPlatformHandle(mojo::PlatformHandle(std::move(fd)));
+
+  // Notifies Android.
+  auto connection = mojom::BluetoothRfcommConnection::New();
+  connection->sock = std::move(handle);
+  connection->addr = mojom::BluetoothAddress::From<bdaddr_t>(sa.rc_bdaddr);
+  connection->channel = our_sa.rc_channel;
+  sock_wrapper->remote->OnConnected(std::move(connection));
+}
+
+ArcBluetoothBridge::RfcommListeningSocket::RfcommListeningSocket() = default;
+ArcBluetoothBridge::RfcommListeningSocket::~RfcommListeningSocket() = default;
+ArcBluetoothBridge::RfcommConnectingSocket::RfcommConnectingSocket() = default;
+ArcBluetoothBridge::RfcommConnectingSocket::~RfcommConnectingSocket() = default;
 
 }  // namespace arc

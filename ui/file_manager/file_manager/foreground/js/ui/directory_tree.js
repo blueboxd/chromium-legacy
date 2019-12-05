@@ -1847,9 +1847,6 @@ class DirectoryTree extends cr.ui.Tree {
   constructor() {
     super();
 
-    /** @type {Element} the containing DOM element */
-    this.container_ = null;
-
     /** @type {NavigationListModel} */
     this.dataModel_ = null;
 
@@ -1887,10 +1884,6 @@ class DirectoryTree extends cr.ui.Tree {
       directoryModel, volumeManager, metadataModel, fileOperationManager,
       fakeEntriesVisible) {
     cr.ui.Tree.prototype.decorate.call(this);
-
-    if (directorytree.FILES_NG_ENABLED) {
-      this.container_ = document.querySelector('.dialog-navigation-list');
-    }
 
     this.sequence_ = 0;
     this.directoryModel_ = directoryModel;
@@ -2299,24 +2292,21 @@ class DirectoryTree extends cr.ui.Tree {
   }
 
   /**
-   * Updates the UI after the layout has changed, due to splitter, or window
-   * resize. In the FILES_NG_ENABLED case, set tree clipped attribute state.
+   * Updates the UI after the layout has changed, due to resize events from
+   * the splitter or from the DOM window.
    */
   relayout() {
-    if (directorytree.FILES_NG_ENABLED) {
-      this.setTreeClippedAttributeState_();
-    }
-
+    this.setTreeClippedAttribute_();
     cr.dispatchSimpleEvent(this, 'relayout', true);
   }
 
   /**
-   * Sets the tree clipped attribute state from the this.container_ element's
-   * computed style width.
+   * Sets the tree 'clipped' attribute. TODO(crbug.com/992819): the breakpoint
+   * in the design is unspecified. Punt: use 135px for now.
    * @private
    */
-  setTreeClippedAttributeState_() {
-    const width = parseFloat(getComputedStyle(this.container_).width);
+  setTreeClippedAttribute_() {
+    const width = parseFloat(window.getComputedStyle(this).width);
     this.toggleAttribute('clipped', width < 135);
   }
 

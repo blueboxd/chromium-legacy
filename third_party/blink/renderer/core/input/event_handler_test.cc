@@ -556,7 +556,7 @@ TEST_F(EventHandlerTest, ShadowChildCanOverrideUserSelectText) {
 
 TEST_F(EventHandlerTest, InputFieldsCanStartSelection) {
   SetHtmlInnerHTML("<input value='blabla'>");
-  auto* const field = ToHTMLInputElement(GetDocument().body()->firstChild());
+  auto* const field = To<HTMLInputElement>(GetDocument().body()->firstChild());
   Element* const text = field->InnerEditorElement();
   HitTestLocation location(
       text->GetLayoutObject()->AbsoluteBoundingBoxRect().Center());
@@ -574,8 +574,8 @@ TEST_F(EventHandlerTest, ReadOnlyInputDoesNotInheritUserSelect) {
       "<div style='user-select: none'>"
       "<input id='sample' readonly value='blabla'>"
       "</div>");
-  HTMLInputElement* const input =
-      ToHTMLInputElement(GetDocument().getElementById("sample"));
+  auto* const input =
+      To<HTMLInputElement>(GetDocument().getElementById("sample"));
   Node* const text = input->InnerEditorElement()->firstChild();
 
   HitTestLocation location(

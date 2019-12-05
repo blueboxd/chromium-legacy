@@ -44,8 +44,8 @@ TEST_F(EditorTest, copyGeneratedPassword) {
   const char* body_content = "<input type='password' id='password'></input>";
   SetBodyContent(body_content);
 
-  HTMLInputElement& element =
-      ToHTMLInputElement(*GetDocument().getElementById("password"));
+  auto& element =
+      To<HTMLInputElement>(*GetDocument().getElementById("password"));
 
   const String kPasswordValue = "secret";
   element.focus();
@@ -63,8 +63,8 @@ TEST_F(EditorTest, CopyVisibleSelection) {
   const char* body_content = "<input id=hiding value=HEY>";
   SetBodyContent(body_content);
 
-  HTMLInputElement& text_control =
-      ToHTMLInputElement(*GetDocument().getElementById("hiding"));
+  auto& text_control =
+      To<HTMLInputElement>(*GetDocument().getElementById("hiding"));
   text_control.select();
 
   ExecuteCopy();
@@ -79,12 +79,12 @@ TEST_F(EditorTest, DontCopyHiddenSelections) {
       "<input id=hiding value=HEY>";
   SetBodyContent(body_content);
 
-  HTMLInputElement& text_control =
-      ToHTMLInputElement(*GetDocument().getElementById("hiding"));
+  auto& text_control =
+      To<HTMLInputElement>(*GetDocument().getElementById("hiding"));
   text_control.select();
 
-  HTMLInputElement& checkbox =
-      ToHTMLInputElement(*GetDocument().getElementById("checkbox"));
+  auto& checkbox =
+      To<HTMLInputElement>(*GetDocument().getElementById("checkbox"));
   checkbox.focus();
 
   ExecuteCopy();
@@ -97,8 +97,8 @@ TEST_F(EditorTest, ReplaceSelection) {
   const char* body_content = "<input id=text value='HELLO'>";
   SetBodyContent(body_content);
 
-  HTMLInputElement& text_control =
-      ToHTMLInputElement(*GetDocument().getElementById("text"));
+  auto& text_control =
+      To<HTMLInputElement>(*GetDocument().getElementById("text"));
   text_control.select();
   text_control.SetSelectionRange(2, 2);
 

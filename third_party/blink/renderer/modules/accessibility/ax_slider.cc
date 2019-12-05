@@ -121,7 +121,7 @@ bool AXSlider::OnNativeSetValueAction(const String& value) {
 }
 
 HTMLInputElement* AXSlider::GetInputElement() const {
-  return ToHTMLInputElement(layout_object_->GetNode());
+  return To<HTMLInputElement>(layout_object_->GetNode());
 }
 
 AXSliderThumb::AXSliderThumb(AXObjectCacheImpl& ax_object_cache)

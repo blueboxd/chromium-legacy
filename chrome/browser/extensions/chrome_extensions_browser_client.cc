@@ -56,6 +56,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
+#include "extensions/browser/extensions_browser_interface_binders.h"
 #include "extensions/browser/mojo/interface_registration.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/browser/url_request_util.h"
@@ -334,6 +335,14 @@ void ChromeExtensionsBrowserClient::RegisterExtensionInterfaces(
     const Extension* extension) const {
   RegisterInterfacesForExtension(registry, render_frame_host, extension);
   RegisterChromeInterfacesForExtension(registry, render_frame_host, extension);
+}
+
+void ChromeExtensionsBrowserClient::RegisterBrowserInterfaceBindersForFrame(
+    service_manager::BinderMapWithContext<content::RenderFrameHost*>* map,
+    content::RenderFrameHost* render_frame_host,
+    const Extension* extension) const {
+  PopulateExtensionFrameBinders(map, render_frame_host, extension);
+  PopulateChromeFrameBindersForExtension(map, render_frame_host, extension);
 }
 
 std::unique_ptr<RuntimeAPIDelegate>

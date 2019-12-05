@@ -63,7 +63,7 @@ void DidGetGlobalClientUsageForLimitedGlobalClientUsage(
 
 ClientUsageTracker::ClientUsageTracker(
     UsageTracker* tracker,
-    QuotaClient* client,
+    scoped_refptr<QuotaClient> client,
     blink::mojom::StorageType type,
     SpecialStoragePolicy* special_storage_policy)
     : client_(client),

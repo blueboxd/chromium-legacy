@@ -33,6 +33,7 @@
 namespace {
 
 bool g_auto_accept_bookmark_app_for_testing = false;
+bool g_auto_check_open_in_window_for_testing = false;
 
 }  // namespace
 
@@ -94,6 +95,10 @@ BookmarkAppConfirmationView::BookmarkAppConfirmationView(
   layout->SkipColumns(1);
   open_as_window_checkbox_ =
       layout->AddView(std::move(open_as_window_checkbox));
+
+  if (g_auto_check_open_in_window_for_testing) {
+    open_as_window_checkbox_->SetChecked(true);
+  }
 
   title_tf_->SelectAll(true);
   chrome::RecordDialogCreation(
@@ -164,8 +169,10 @@ void ShowBookmarkAppDialog(content::WebContents* web_contents,
   }
 }
 
-void SetAutoAcceptBookmarkAppDialogForTesting(bool auto_accept) {
+void SetAutoAcceptBookmarkAppDialogForTesting(bool auto_accept,
+                                              bool auto_open_in_window) {
   g_auto_accept_bookmark_app_for_testing = auto_accept;
+  g_auto_check_open_in_window_for_testing = auto_open_in_window;
 }
 
 }  // namespace chrome

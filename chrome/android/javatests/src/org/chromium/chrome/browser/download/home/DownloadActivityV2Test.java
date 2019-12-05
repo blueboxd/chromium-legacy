@@ -21,6 +21,8 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.AllOf.allOf;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -28,7 +30,7 @@ import android.support.test.espresso.action.ViewActions;
 import android.support.test.filters.MediumTest;
 
 import org.hamcrest.Matcher;
-import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -36,10 +38,10 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.Callback;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.home.filter.FilterCoordinator;
-import org.chromium.chrome.browser.download.home.list.UiUtils;
 import org.chromium.chrome.browser.download.home.rename.RenameUtils;
 import org.chromium.chrome.browser.download.home.toolbar.DownloadHomeToolbar;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
@@ -56,6 +58,8 @@ import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.offline_items_collection.RenameResult;
+import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.components.url_formatter.UrlFormatterJni;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -72,6 +76,10 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
     private Tracker mTracker;
     @Mock
     private SnackbarManager mSnackbarManager;
+    @Rule
+    public JniMocker mJniMocker = new JniMocker();
+    @Mock
+    private UrlFormatter.Natives mUrlFormatterJniMock;
 
     private ModalDialogManager.Presenter mAppModalPresenter;
 
@@ -81,15 +89,13 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
 
     private StubbedOfflineContentProvider mStubbedOfflineContentProvider;
 
-    @BeforeClass
-    public static void setUpBeforeActivityLaunched() {
-        UiUtils.setDisableUrlFormattingForTests(true);
-    }
-
     @Override
     public void setUpTest() throws Exception {
         super.setUpTest();
         MockitoAnnotations.initMocks(this);
+        mJniMocker.mock(UrlFormatterJni.TEST_HOOKS, mUrlFormatterJniMock);
+        when(mUrlFormatterJniMock.formatUrlForSecurityDisplayOmitScheme(anyString()))
+                .then(inv -> inv.getArgument(0));
 
         Map<String, Boolean> features = new HashMap<>();
         features.put(ChromeFeatureList.DOWNLOADS_LOCATION_CHANGE, true);

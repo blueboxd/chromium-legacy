@@ -303,13 +303,11 @@ bool CastContentRendererClient::IsSupportedBitstreamAudioCodec(
            supported_bitstream_audio_codecs_info_.codecs));
 }
 
-blink::WebPrescientNetworking*
-CastContentRendererClient::GetPrescientNetworking() {
-  if (!web_prescient_networking_impl_) {
-    web_prescient_networking_impl_ =
-        std::make_unique<network_hints::WebPrescientNetworkingImpl>();
-  }
-  return web_prescient_networking_impl_.get();
+std::unique_ptr<blink::WebPrescientNetworking>
+CastContentRendererClient::CreatePrescientNetworking(
+    content::RenderFrame* render_frame) {
+  return std::make_unique<network_hints::WebPrescientNetworkingImpl>(
+      render_frame);
 }
 
 bool CastContentRendererClient::DeferMediaLoad(

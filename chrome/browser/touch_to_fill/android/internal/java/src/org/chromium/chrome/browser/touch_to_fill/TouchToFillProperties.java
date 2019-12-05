@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.touch_to_fill;
 import android.graphics.Bitmap;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
@@ -45,7 +46,26 @@ class TouchToFillProperties {
      * Properties for a credential entry in TouchToFill sheet.
      */
     static class CredentialProperties {
-        static final PropertyModel.WritableObjectPropertyKey<Bitmap> FAVICON =
+        static class FaviconOrFallback {
+            final String mUrl;
+            final @Nullable Bitmap mIcon;
+            final int mFallbackColor;
+            final boolean mIsFallbackColorDefault;
+            final int mIconType;
+            final int mIconSize;
+
+            FaviconOrFallback(String originUrl, @Nullable Bitmap icon, int fallbackColor,
+                    boolean isFallbackColorDefault, int iconType, int iconSize) {
+                mUrl = originUrl;
+                mIcon = icon;
+                mFallbackColor = fallbackColor;
+                mIsFallbackColorDefault = isFallbackColorDefault;
+                mIconType = iconType;
+                mIconSize = iconSize;
+            }
+        }
+        static final PropertyModel
+                .WritableObjectPropertyKey<FaviconOrFallback> FAVICON_OR_FALLBACK =
                 new PropertyModel.WritableObjectPropertyKey<>("favicon");
         static final PropertyModel.ReadableObjectPropertyKey<Credential> CREDENTIAL =
                 new PropertyModel.ReadableObjectPropertyKey<>("credential");
@@ -56,7 +76,7 @@ class TouchToFillProperties {
                 new PropertyModel.ReadableObjectPropertyKey<>("on_click_listener");
 
         static final PropertyKey[] ALL_KEYS = {
-                FAVICON, CREDENTIAL, FORMATTED_ORIGIN, ON_CLICK_LISTENER};
+                FAVICON_OR_FALLBACK, CREDENTIAL, FORMATTED_ORIGIN, ON_CLICK_LISTENER};
 
         private CredentialProperties() {}
     }

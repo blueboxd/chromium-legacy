@@ -12,7 +12,6 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.JustNowProvider;
@@ -30,13 +29,16 @@ import org.chromium.chrome.browser.download.home.glue.OfflineContentProviderGlue
 import org.chromium.chrome.browser.download.home.glue.ThumbnailRequestGlue;
 import org.chromium.chrome.browser.download.home.list.DateOrderedListCoordinator.DateOrderedListObserver;
 import org.chromium.chrome.browser.download.home.list.DateOrderedListCoordinator.DeleteController;
-import org.chromium.chrome.browser.download.home.list.mutator.DateComparator;
+import org.chromium.chrome.browser.download.home.list.mutator.CardPaginator;
 import org.chromium.chrome.browser.download.home.list.mutator.DateLabelAdder;
 import org.chromium.chrome.browser.download.home.list.mutator.DateOrderedListMutator;
 import org.chromium.chrome.browser.download.home.list.mutator.DateOrderedListMutator.LabelAdder;
-import org.chromium.chrome.browser.download.home.list.mutator.NoopLabelAdder;
+import org.chromium.chrome.browser.download.home.list.mutator.DateOrderedListMutator.Sorter;
+import org.chromium.chrome.browser.download.home.list.mutator.DateSorter;
+import org.chromium.chrome.browser.download.home.list.mutator.DateSorterForCards;
+import org.chromium.chrome.browser.download.home.list.mutator.GroupCardLabelAdder;
+import org.chromium.chrome.browser.download.home.list.mutator.ListItemPropertySetter;
 import org.chromium.chrome.browser.download.home.list.mutator.Paginator;
-import org.chromium.chrome.browser.download.home.list.mutator.ScoreComparator;
 import org.chromium.chrome.browser.download.home.metrics.OfflineItemStartupLogger;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils.ViewAction;
@@ -53,7 +55,7 @@ import org.chromium.components.offline_items_collection.VisualsCallback;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -117,11 +119,14 @@ class DateOrderedListMediator {
     private final TypeOfflineItemFilter mTypeFilter;
     private final SearchOfflineItemFilter mSearchFilter;
 
-    private final Comparator<OfflineItem> mDateComparator;
-    private final Comparator<OfflineItem> mScoreComparator;
-    private final LabelAdder mDateLabelAdder;
-    private final LabelAdder mNoopLabelAdder;
     private final Paginator mPaginator;
+    private final CardPaginator mCardPaginator;
+
+    private final Sorter mDefaultDateSorter;
+    private final LabelAdder mDefaultDateLabelAdder;
+
+    private final Sorter mPrefetchSorter;
+    private final LabelAdder mPrefetchLabelAdder;
 
     /**
      * A selection observer that correctly updates the selection state for each item in the list.
@@ -195,13 +200,16 @@ class DateOrderedListMediator {
         mTypeFilter = new TypeOfflineItemFilter(mSearchFilter);
 
         JustNowProvider justNowProvider = new JustNowProvider(config);
-        mDateComparator = new DateComparator(justNowProvider);
-        mScoreComparator = new ScoreComparator();
-        mDateLabelAdder = new DateLabelAdder(config, justNowProvider);
-        mNoopLabelAdder = new NoopLabelAdder();
         mPaginator = new Paginator();
-        mListMutator = new DateOrderedListMutator(
-                mTypeFilter, mModel, justNowProvider, mDateComparator, mDateLabelAdder, mPaginator);
+        mCardPaginator = new CardPaginator();
+        mDefaultDateSorter = new DateSorter(justNowProvider);
+        mDefaultDateLabelAdder = new DateLabelAdder(config, justNowProvider);
+        mPrefetchSorter = new DateSorterForCards();
+        mPrefetchLabelAdder = new GroupCardLabelAdder(mCardPaginator);
+
+        mListMutator =
+                new DateOrderedListMutator(mTypeFilter, mModel, justNowProvider, mDefaultDateSorter,
+                        mDefaultDateLabelAdder, new ListItemPropertySetter(mUiConfig), mPaginator);
 
         new OfflineItemStartupLogger(config, mInvalidStateFilter);
 
@@ -225,6 +233,8 @@ class DateOrderedListMediator {
                 mUiConfig.isRenameEnabled ? this::onRenameItem : null);
         mModel.getProperties().set(
                 ListProperties.CALLBACK_PAGINATION_CLICK, mListMutator::loadMorePages);
+        mModel.getProperties().set(
+                ListProperties.CALLBACK_GROUP_PAGINATION_CLICK, this::loadMoreItemsOnCard);
     }
 
     /** Tears down this mediator. */
@@ -240,15 +250,16 @@ class DateOrderedListMediator {
      */
     public void onFilterTypeSelected(@FilterType int filter) {
         mPaginator.reset();
-        Comparator<OfflineItem> comparator = mDateComparator;
-        LabelAdder labelAdder = mDateLabelAdder;
+        mCardPaginator.reset();
+
+        Sorter sorter = mDefaultDateSorter;
+        LabelAdder labelAdder = mDefaultDateLabelAdder;
         if (filter == FilterType.PREFETCHED) {
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.OFFLINE_HOME)) {
-                comparator = mScoreComparator;
-            }
-            labelAdder = mNoopLabelAdder;
+            sorter = mPrefetchSorter;
+            labelAdder = mPrefetchLabelAdder;
         }
-        mListMutator.setMutators(comparator, labelAdder);
+
+        mListMutator.setMutators(sorter, labelAdder);
         try (AnimationDisableClosable closeable = new AnimationDisableClosable()) {
             mTypeFilter.onFilterSelected(filter);
         }
@@ -309,6 +320,11 @@ class DateOrderedListMediator {
      */
     public OfflineItemFilterSource getEmptySource() {
         return mTypeFilter;
+    }
+
+    private void loadMoreItemsOnCard(android.util.Pair<Date, String> dateAndDomain) {
+        mCardPaginator.loadMore(dateAndDomain);
+        mListMutator.reload();
     }
 
     private void onSelection(@Nullable ListItem item) {

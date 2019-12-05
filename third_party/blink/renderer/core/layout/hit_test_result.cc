@@ -294,7 +294,7 @@ const AtomicString& HitTestResult::AltDisplayString() const {
   if (auto* image = DynamicTo<HTMLImageElement>(*inner_node_or_image_map_image))
     return image->FastGetAttribute(html_names::kAltAttr);
 
-  if (auto* input = ToHTMLInputElementOrNull(*inner_node_or_image_map_image))
+  if (auto* input = DynamicTo<HTMLInputElement>(*inner_node_or_image_map_image))
     return input->Alt();
 
   return g_null_atom;
@@ -335,14 +335,15 @@ KURL HitTestResult::AbsoluteImageURL() const {
   // even if they don't have a LayoutImage (e.g. because the image didn't load
   // and we are using an alt container). For other elements we don't create alt
   // containers so ensure they contain a loaded image.
+  auto* html_input_element =
+      DynamicTo<HTMLInputElement>(inner_node_or_image_map_image);
   if (IsA<HTMLImageElement>(*inner_node_or_image_map_image) ||
-      (IsHTMLInputElement(*inner_node_or_image_map_image) &&
-       ToHTMLInputElement(inner_node_or_image_map_image)->type() ==
-           input_type_names::kImage))
+      (html_input_element &&
+       html_input_element->type() == input_type_names::kImage))
     url_string = To<Element>(*inner_node_or_image_map_image).ImageSourceURL();
   else if ((inner_node_or_image_map_image->GetLayoutObject() &&
             inner_node_or_image_map_image->GetLayoutObject()->IsImage()) &&
-           (IsHTMLEmbedElement(*inner_node_or_image_map_image) ||
+           (IsA<HTMLEmbedElement>(*inner_node_or_image_map_image) ||
             IsA<HTMLObjectElement>(*inner_node_or_image_map_image) ||
             IsA<SVGImageElement>(*inner_node_or_image_map_image)))
     url_string = To<Element>(*inner_node_or_image_map_image).ImageSourceURL();
@@ -407,10 +408,10 @@ bool HitTestResult::IsContentEditable() const {
   if (!inner_node_)
     return false;
 
-  if (auto* textarea = ToHTMLTextAreaElementOrNull(*inner_node_))
+  if (auto* textarea = DynamicTo<HTMLTextAreaElement>(*inner_node_))
     return !textarea->IsDisabledOrReadOnly();
 
-  if (auto* input = ToHTMLInputElementOrNull(*inner_node_))
+  if (auto* input = DynamicTo<HTMLInputElement>(*inner_node_))
     return !input->IsDisabledOrReadOnly() && input->IsTextField();
 
   return HasEditableStyle(*inner_node_);

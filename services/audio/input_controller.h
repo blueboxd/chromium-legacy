@@ -66,6 +66,26 @@ class InputController final : public StreamMonitor {
     STREAM_ERROR,  // = 3
   };
 
+#if defined(AUDIO_POWER_MONITORING)
+  // Used to log a silence report (see OnData).
+  // Elements in this enum should not be deleted or rearranged; the only
+  // permitted operation is to add new elements before SILENCE_STATE_MAX and
+  // update SILENCE_STATE_MAX.
+  // Possible silence state transitions:
+  //           SILENCE_STATE_AUDIO_AND_SILENCE
+  //               ^                  ^
+  // SILENCE_STATE_ONLY_AUDIO   SILENCE_STATE_ONLY_SILENCE
+  //               ^                  ^
+  //            SILENCE_STATE_NO_MEASUREMENT
+  enum SilenceState {
+    SILENCE_STATE_NO_MEASUREMENT = 0,
+    SILENCE_STATE_ONLY_AUDIO = 1,
+    SILENCE_STATE_ONLY_SILENCE = 2,
+    SILENCE_STATE_AUDIO_AND_SILENCE = 3,
+    SILENCE_STATE_MAX = SILENCE_STATE_AUDIO_AND_SILENCE
+  };
+#endif
+
   // An event handler that receives events from the InputController. The
   // following methods are all called on the audio thread.
   class EventHandler {
@@ -165,26 +185,6 @@ class InputController final : public StreamMonitor {
     CAPTURE_STARTUP_RESULT_MAX = CAPTURE_STARTUP_STOPPED_EARLY,
   };
 
-#if defined(AUDIO_POWER_MONITORING)
-  // Used to log a silence report (see OnData).
-  // Elements in this enum should not be deleted or rearranged; the only
-  // permitted operation is to add new elements before SILENCE_STATE_MAX and
-  // update SILENCE_STATE_MAX.
-  // Possible silence state transitions:
-  //           SILENCE_STATE_AUDIO_AND_SILENCE
-  //               ^                  ^
-  // SILENCE_STATE_ONLY_AUDIO   SILENCE_STATE_ONLY_SILENCE
-  //               ^                  ^
-  //            SILENCE_STATE_NO_MEASUREMENT
-  enum SilenceState {
-    SILENCE_STATE_NO_MEASUREMENT = 0,
-    SILENCE_STATE_ONLY_AUDIO = 1,
-    SILENCE_STATE_ONLY_SILENCE = 2,
-    SILENCE_STATE_AUDIO_AND_SILENCE = 3,
-    SILENCE_STATE_MAX = SILENCE_STATE_AUDIO_AND_SILENCE
-  };
-#endif
-
 #if defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
   class ProcessingHelper final : public mojom::AudioProcessorControls,
                                  public Snoopable::Snooper {
@@ -283,6 +283,9 @@ class InputController final : public StreamMonitor {
                        int* mic_volume_percent);
 
   void CheckMutedState();
+
+  // Called once at first audio callback.
+  void ReportIsAlive();
 
   static StreamType ParamsToStreamType(const media::AudioParameters& params);
 

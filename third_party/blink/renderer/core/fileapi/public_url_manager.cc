@@ -95,7 +95,7 @@ void PublicURLManager::Revoke(const KURL& url) {
   if (!url.ProtocolIs("blob") || url.HasFragmentIdentifier())
     return;
   // Don't support revoking cross-origin blob URLs.
-  if (!SecurityOrigin::Create(url)->IsSameSchemeHostPort(
+  if (!SecurityOrigin::Create(url)->IsSameOriginWith(
           GetExecutionContext()->GetSecurityOrigin()))
     return;
 

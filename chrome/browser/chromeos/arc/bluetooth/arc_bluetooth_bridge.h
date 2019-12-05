@@ -9,12 +9,16 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/containers/unique_ptr_adapters.h"
+#include "base/files/file.h"
+#include "base/files/file_descriptor_watcher_posix.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/arc/bluetooth/arc_bluetooth_task_queue.h"
@@ -306,6 +310,15 @@ class ArcBluetoothBridge
   void RemoveSdpRecord(uint32_t service_handle,
                        RemoveSdpRecordCallback callback) override;
 
+  // Bluetooth Mojo host interface - Bluetooth RFCOMM functions
+  void RfcommListen(int32_t channel,
+                    int32_t optval,
+                    RfcommListenCallback callback) override;
+  void RfcommConnect(mojom::BluetoothAddressPtr remote_addr,
+                     int32_t channel,
+                     int32_t optval,
+                     RfcommConnectCallback callback) override;
+
   // Set up or disable multiple advertising.
   void ReserveAdvertisementHandle(
       ReserveAdvertisementHandleCallback callback) override;
@@ -505,6 +518,49 @@ class ArcBluetoothBridge
 
   void SendDevice(const device::BluetoothDevice* device) const;
 
+  // Data structures for RFCOMM listening/connecting sockets that live in
+  // Chrome.
+  struct RfcommListeningSocket {
+    mojom::RfcommListeningSocketClientPtr remote;
+    base::ScopedFD file;
+    std::unique_ptr<base::FileDescriptorWatcher::Controller> controller;
+    RfcommListeningSocket();
+    ~RfcommListeningSocket();
+  };
+  struct RfcommConnectingSocket {
+    mojom::RfcommConnectingSocketClientPtr remote;
+    base::ScopedFD file;
+    std::unique_ptr<base::FileDescriptorWatcher::Controller> controller;
+    RfcommConnectingSocket();
+    ~RfcommConnectingSocket();
+  };
+
+  // Creates a bluetooth socket with socket option |optval|, and then bind()
+  // and listen() with requested RFCOMM |channel| number. The actual channel
+  // number will be filled in |channel| as the return value. Returns a
+  // RfcommListeningSocket that holds the socket.
+  std::unique_ptr<RfcommListeningSocket> RfcommCreateListenSocket(
+      int32_t optval,
+      uint8_t* channel);
+  // Creates a bluetooth socket with socket option |optval|, and then calls
+  // connect() to (|addr|, |channel|). This connect() call is non-blocking.
+  // Returns a RfcommConnectingSocket that holds the socket.
+  std::unique_ptr<RfcommConnectingSocket> RfcommCreateConnectSocket(
+      mojom::BluetoothAddressPtr addr,
+      uint8_t channel,
+      int32_t optval);
+
+  // Closes RFCOMM sockets. Releases the corresponding resources.
+  void RfcommCloseListeningSocket(RfcommListeningSocket* socket);
+  void RfcommCloseConnectingSocket(RfcommConnectingSocket* socket);
+
+  // Called when the listening socket is ready to accept().
+  void OnRfcommListeningSocketReady(
+      ArcBluetoothBridge::RfcommListeningSocket* socket);
+  // Called when the connecting socket is ready.
+  void OnRfcommConnectingSocketReady(
+      ArcBluetoothBridge::RfcommConnectingSocket* socket);
+
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
   scoped_refptr<bluez::BluetoothAdapterBlueZ> bluetooth_adapter_;
@@ -572,6 +628,12 @@ class ArcBluetoothBridge
       advertisements_;
   ArcBluetoothTaskQueue advertisement_queue_;
   ArcBluetoothTaskQueue discovery_queue_;
+
+  // Rfcomm sockets that live in Chrome.
+  std::set<std::unique_ptr<RfcommListeningSocket>, base::UniquePtrComparator>
+      listening_sockets_;
+  std::set<std::unique_ptr<RfcommConnectingSocket>, base::UniquePtrComparator>
+      connecting_sockets_;
 
   THREAD_CHECKER(thread_checker_);
 

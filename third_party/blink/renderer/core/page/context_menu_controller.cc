@@ -164,7 +164,7 @@ static int ComputeEditFlags(Document& selected_document, Editor& editor) {
 
 static ContextMenuDataInputFieldType ComputeInputFieldType(
     HitTestResult& result) {
-  if (auto* input = ToHTMLInputElementOrNull(result.InnerNode())) {
+  if (auto* input = DynamicTo<HTMLInputElement>(result.InnerNode())) {
     if (input->type() == input_type_names::kPassword)
       return ContextMenuDataInputFieldType::kPassword;
     if (input->type() == input_type_names::kNumber)
@@ -321,7 +321,7 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
     if (media_element->ShouldShowControls())
       data.media_flags |= WebContextMenuData::kMediaControls;
   } else if (IsA<HTMLObjectElement>(*result.InnerNode()) ||
-             IsHTMLEmbedElement(*result.InnerNode())) {
+             IsA<HTMLEmbedElement>(*result.InnerNode())) {
     LayoutObject* object = result.InnerNode()->GetLayoutObject();
     if (object && object->IsLayoutEmbeddedContent()) {
       WebPluginContainerImpl* plugin_view =

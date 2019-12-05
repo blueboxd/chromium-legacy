@@ -13,6 +13,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/gcm_driver/gcm_driver.h"
@@ -72,18 +73,20 @@ std::string UnpackPrivateTopic(base::StringPiece private_topic) {
   }
 }
 
-InvalidationParsingStatus ParseIncommingMessage(
+InvalidationParsingStatus ParseIncomingMessage(
     const gcm::IncomingMessage& message,
     std::string* payload,
     std::string* private_topic,
     std::string* public_topic,
-    std::string* version) {
+    int64_t* version) {
   *payload = GetValueFromMessage(message, kPayloadKey);
-  *version = GetValueFromMessage(message, kVersionKey);
+  std::string version_str = GetValueFromMessage(message, kVersionKey);
 
-  // Version must always be there.
-  if (version->empty())
+  // Version must always be there, and be an integer.
+  if (version_str.empty())
     return InvalidationParsingStatus::kVersionEmpty;
+  if (!base::StringToInt64(version_str, version))
+    return InvalidationParsingStatus::kVersionInvalid;
 
   *public_topic = GetValueFromMessage(message, kPublicTopic);
 
@@ -238,9 +241,9 @@ void FCMNetworkHandler::OnMessage(const std::string& app_id,
   std::string payload;
   std::string private_topic;
   std::string public_topic;
-  std::string version;
+  int64_t version = 0;
 
-  InvalidationParsingStatus status = ParseIncommingMessage(
+  InvalidationParsingStatus status = ParseIncomingMessage(
       message, &payload, &private_topic, &public_topic, &version);
   UMA_HISTOGRAM_ENUMERATION("FCMInvalidations.FCMMessageStatus", status);
 

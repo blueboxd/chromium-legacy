@@ -195,7 +195,7 @@ class AppCacheStorageImplTest : public testing::Test {
     }
 
     // Not needed for our tests.
-    void RegisterClient(storage::QuotaClient* client) override {}
+    void RegisterClient(scoped_refptr<storage::QuotaClient> client) override {}
     void NotifyOriginInUse(const url::Origin& origin) override {}
     void NotifyOriginNoLongerInUse(const url::Origin& origin) override {}
     void SetUsageCacheEnabled(storage::QuotaClient::ID client_id,
@@ -509,6 +509,8 @@ class AppCacheStorageImplTest : public testing::Test {
     group_ = base::MakeRefCounted<AppCacheGroup>(storage(), kManifestUrl,
                                                  storage()->NewGroupId());
     cache_ = base::MakeRefCounted<AppCache>(storage(), storage()->NewCacheId());
+    cache_->set_manifest_parser_version(0);
+    cache_->set_manifest_scope("/");
     cache_->AddEntry(kEntryUrl,
                      AppCacheEntry(AppCacheEntry::MASTER, 1, kDefaultEntrySize,
                                    /*padding_size=*/0));
@@ -559,6 +561,8 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // And a newest unstored complete cache.
     cache2_ = base::MakeRefCounted<AppCache>(storage(), 2);
+    cache2_->set_manifest_parser_version(0);
+    cache2_->set_manifest_scope("/");
     cache2_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::EXPLICIT, 1,
                                                kDefaultEntrySize + 100,
                                                kDefaultEntryPadding + 1000));
@@ -609,6 +613,8 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // Change the cache.
     base::Time now = base::Time::Now();
+    cache_->set_manifest_parser_version(0);
+    cache_->set_manifest_scope("/");
     cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::EXPLICIT,
                                               /*response_id=*/1,
                                               /*response_size=*/100,
@@ -673,6 +679,8 @@ class AppCacheStorageImplTest : public testing::Test {
     group_ = base::MakeRefCounted<AppCacheGroup>(storage(), kManifestUrl,
                                                  storage()->NewGroupId());
     cache_ = base::MakeRefCounted<AppCache>(storage(), storage()->NewCacheId());
+    cache_->set_manifest_parser_version(0);
+    cache_->set_manifest_scope("/");
     cache_->AddEntry(kManifestUrl, AppCacheEntry(AppCacheEntry::MANIFEST,
                                                  /*response_id=*/1,
                                                  /*response_size=*/kTooBig,
@@ -696,6 +704,8 @@ class AppCacheStorageImplTest : public testing::Test {
     group_ = base::MakeRefCounted<AppCacheGroup>(storage(), kManifestUrl,
                                                  storage()->NewGroupId());
     cache_ = base::MakeRefCounted<AppCache>(storage(), storage()->NewCacheId());
+    cache_->set_manifest_parser_version(0);
+    cache_->set_manifest_scope("/");
     cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::EXPLICIT,
                                               /*response_id=*/1,
                                               /*response_size=*/1,
@@ -1593,6 +1603,8 @@ class AppCacheStorageImplTest : public testing::Test {
       cache_record.update_time = kZeroTime;
       cache_record.cache_size = kDefaultEntrySize;
       cache_record.padding_size = 0;
+      cache_record.manifest_parser_version = 0;
+      cache_record.manifest_scope = std::string("/");
       EXPECT_TRUE(db.InsertCache(&cache_record));
       AppCacheDatabase::EntryRecord entry_record;
       entry_record.cache_id = 1;
@@ -1762,6 +1774,8 @@ class AppCacheStorageImplTest : public testing::Test {
       cache_record.update_time = kZeroTime;
       cache_record.cache_size = kDefaultEntrySize;
       cache_record.padding_size = kDefaultEntryPadding;
+      cache_record.manifest_parser_version = 0;
+      cache_record.manifest_scope = std::string("/");
       EXPECT_TRUE(database()->InsertCache(&cache_record));
       AppCacheDatabase::EntryRecord entry_record;
       entry_record.cache_id = cache_id;

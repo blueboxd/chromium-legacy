@@ -41,8 +41,9 @@ namespace {
 // Version 6 - 2013-09-20 - https://crrev.com/23503069 (unsupported)
 // Version 7 - 2015-07-09 - https://crrev.com/879393002
 // Version 8 - 2019-03-18 - https://crrev.com/c/1488059
-const int kCurrentVersion = 8;
-const int kCompatibleVersion = 8;
+// Version 9 - 2019-11-25 - https://crrev.com/c/1935034
+const int kCurrentVersion = 9;
+const int kCompatibleVersion = 9;
 const bool kCreateIfNeeded = true;
 const bool kDontCreate = false;
 
@@ -87,8 +88,10 @@ const TableInfo kTables[] = {
      " group_id INTEGER,"
      " online_wildcard INTEGER CHECK(online_wildcard IN (0, 1)),"
      " update_time INTEGER,"
-     " cache_size INTEGER,"      // intentionally not normalized
-     " padding_size INTEGER)"},  // intentionally not normalized
+     " cache_size INTEGER,"    // intentionally not normalized
+     " padding_size INTEGER,"  // intentionally not normalized
+     " manifest_parser_version INTEGER,"
+     " manifest_scope TEXT)"},
 
     {kEntriesTable,
      "(cache_id INTEGER,"
@@ -216,6 +219,12 @@ AppCacheDatabase::GroupRecord::GroupRecord(const GroupRecord& other) = default;
 
 AppCacheDatabase::GroupRecord::~GroupRecord() {
 }
+
+AppCacheDatabase::CacheRecord::CacheRecord() = default;
+
+AppCacheDatabase::CacheRecord::CacheRecord(const CacheRecord& other) = default;
+
+AppCacheDatabase::CacheRecord::~CacheRecord() {}
 
 AppCacheDatabase::NamespaceRecord::NamespaceRecord()
     : cache_id(0) {
@@ -512,7 +521,7 @@ bool AppCacheDatabase::FindCache(int64_t cache_id, CacheRecord* record) {
 
   static const char kSql[] =
       "SELECT cache_id, group_id, online_wildcard, update_time, cache_size, "
-      "padding_size"
+      "padding_size, manifest_parser_version, manifest_scope"
       " FROM Caches WHERE cache_id = ?";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -533,7 +542,7 @@ bool AppCacheDatabase::FindCacheForGroup(int64_t group_id,
 
   static const char kSql[] =
       "SELECT cache_id, group_id, online_wildcard, update_time, cache_size, "
-      "padding_size"
+      "padding_size, manifest_parser_version, manifest_scope"
       "  FROM Caches WHERE group_id = ?";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -567,8 +576,9 @@ bool AppCacheDatabase::InsertCache(const CacheRecord* record) {
 
   static const char kSql[] =
       "INSERT INTO Caches (cache_id, group_id, online_wildcard,"
-      "                    update_time, cache_size, padding_size)"
-      "  VALUES(?, ?, ?, ?, ?, ?)";
+      "                    update_time, cache_size, padding_size,"
+      "                    manifest_parser_version, manifest_scope)"
+      "  VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, record->cache_id);
@@ -579,6 +589,10 @@ bool AppCacheDatabase::InsertCache(const CacheRecord* record) {
   statement.BindInt64(4, record->cache_size);
   DCHECK_GE(record->padding_size, 0);
   statement.BindInt64(5, record->padding_size);
+  statement.BindInt64(6, record->manifest_parser_version);
+  DCHECK_NE(record->manifest_parser_version, -1);
+  statement.BindString(7, record->manifest_scope);
+  DCHECK_NE(record->manifest_scope, "");
 
   return statement.Run();
 }
@@ -1011,6 +1025,8 @@ void AppCacheDatabase::ReadCacheRecord(
       base::Time::FromInternalValue(statement.ColumnInt64(3));
   record->cache_size = statement.ColumnInt64(4);
   record->padding_size = statement.ColumnInt64(5);
+  record->manifest_parser_version = statement.ColumnInt64(6);
+  record->manifest_scope = statement.ColumnString(7);
 }
 
 void AppCacheDatabase::ReadEntryRecord(
@@ -1172,18 +1188,44 @@ bool AppCacheDatabase::UpgradeSchema() {
   if (meta_table_->GetVersionNumber() < 7)
     return DeleteExistingAndCreateNewDatabase();
 
-  sql::Transaction transaction(db_.get());
-  if (!transaction.Begin())
-    return false;
-  if (!db_->Execute("ALTER TABLE Caches ADD COLUMN padding_size INTEGER"))
-    return false;
-  if (!db_->Execute("ALTER TABLE Entries ADD COLUMN padding_size INTEGER"))
-    return false;
-  meta_table_->SetVersionNumber(8);
-  meta_table_->SetCompatibleVersionNumber(8);
-  if (!AppCacheBackfillerVersion8(db_.get()).BackfillPaddingSizes())
-    return false;
-  return transaction.Commit();
+  // Version 8 adds padding_size.
+  if (meta_table_->GetVersionNumber() < 8) {
+    sql::Transaction transaction(db_.get());
+    if (!transaction.Begin())
+      return false;
+    if (!db_->Execute("ALTER TABLE Caches ADD COLUMN padding_size INTEGER"))
+      return false;
+    if (!db_->Execute("ALTER TABLE Entries ADD COLUMN padding_size INTEGER"))
+      return false;
+    meta_table_->SetVersionNumber(8);
+    meta_table_->SetCompatibleVersionNumber(8);
+    if (!AppCacheBackfillerVersion8(db_.get()).BackfillPaddingSizes())
+      return false;
+    if (!transaction.Commit())
+      return false;
+  }
+
+  // Version 9 adds manifest_parser_version and manifest_scope.
+  if (meta_table_->GetVersionNumber() < 9) {
+    sql::Transaction transaction(db_.get());
+    if (!transaction.Begin())
+      return false;
+    if (!db_->Execute(
+            "ALTER TABLE Caches ADD COLUMN manifest_parser_version INTEGER"))
+      return false;
+    if (!db_->Execute("ALTER TABLE Caches ADD COLUMN manifest_scope TEXT"))
+      return false;
+    meta_table_->SetVersionNumber(9);
+    meta_table_->SetCompatibleVersionNumber(9);
+    if (!AppCacheBackfillerVersion9(db_.get())
+             .BackfillManifestParserVersionAndScope()) {
+      return false;
+    }
+    if (!transaction.Commit())
+      return false;
+  }
+
+  return true;
 }
 
 void AppCacheDatabase::ResetConnectionAndTables() {

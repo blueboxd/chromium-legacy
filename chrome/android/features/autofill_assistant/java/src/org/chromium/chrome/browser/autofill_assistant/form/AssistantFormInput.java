@@ -7,9 +7,11 @@ package org.chromium.chrome.browser.autofill_assistant.form;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.autofill_assistant.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -95,5 +97,22 @@ public abstract class AssistantFormInput {
                         delegate.onLinkClicked(link);
                     }
                 });
+    }
+
+    protected void hideIfEmpty(TextView view) {
+        view.setVisibility(view.length() == 0 ? View.GONE : View.VISIBLE);
+    }
+
+    protected void setMinimumHeight(View view, TextView line1, TextView line2) {
+        if (line1.length() == 0 && line2.length() == 0) {
+            view.setMinimumHeight(view.getContext().getResources().getDimensionPixelSize(
+                    R.dimen.autofill_assistant_form_line_height_1));
+        } else if (line2.length() == 0) {
+            view.setMinimumHeight(view.getContext().getResources().getDimensionPixelSize(
+                    R.dimen.autofill_assistant_form_line_height_2));
+        } else {
+            view.setMinimumHeight(view.getContext().getResources().getDimensionPixelSize(
+                    R.dimen.autofill_assistant_form_line_height_3));
+        }
     }
 }

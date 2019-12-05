@@ -20,6 +20,12 @@
         <item name="android:layout_marginStart">8dp</item>
         <item name="android:layout_marginTop">8dp</item>
     </style>
+    <style name="PaginationHeaderText" tools:ignore="UnusedResources">
+        <item name="android:paddingTop">0dp</item>
+        <item name="android:paddingBottom">0dp</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.BlueButtonText2</item>
+    </style>
 
     <!-- Download Home V2 Snowflake Contender Styles -->
     <style name="TinyCircularProgress">
@@ -62,6 +68,13 @@
         <item name="android:layout_height">60dp</item>
         <item name="android:background">@drawable/circular_progress_bar_background_large</item>
         <item name="android:src">@drawable/ic_play_arrow_white_36dp</item>
+        <item name="android:tint">@color/modern_grey_800</item>
+    </style>
+    <style name="SmallMediaPlayButton">
+        <item name="android:layout_width">40dp</item>
+        <item name="android:layout_height">40dp</item>
+        <item name="android:background">@drawable/circular_progress_bar_background_small</item>
+        <item name="android:src">@drawable/ic_play_arrow_white_24dp</item>
         <item name="android:tint">@color/modern_grey_800</item>
     </style>
 </resources>

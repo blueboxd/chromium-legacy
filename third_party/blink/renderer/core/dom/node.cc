@@ -1661,6 +1661,16 @@ void Node::DetachLayoutTree(bool performing_reattach) {
   if (GetLayoutObject())
     GetLayoutObject()->DestroyAndCleanupAnonymousWrappers();
   SetLayoutObject(nullptr);
+  if (!performing_reattach) {
+    // We are clearing the ComputedStyle for elements, which means we should not
+    // need to recalc style. Also, this way we can detect if we need to remove
+    // this Node as a StyleRecalcRoot if this detach is because the node is
+    // removed from the flat tree. That is necessary because we are not allowed
+    // to have a style recalc root outside the flat tree when traversing the
+    // flat tree for style recalc (see StyleRecalcRoot::RemovedFromFlatTree()).
+    ClearNeedsStyleRecalc();
+    ClearChildNeedsStyleRecalc();
+  }
 }
 
 const ComputedStyle* Node::VirtualEnsureComputedStyle(
@@ -3223,7 +3233,7 @@ bool Node::IsEffectiveRootScroller() const {
 }
 
 WebPluginContainerImpl* Node::GetWebPluginContainer() const {
-  if (!IsA<HTMLObjectElement>(this) && !IsHTMLEmbedElement(this)) {
+  if (!IsA<HTMLObjectElement>(this) && !IsA<HTMLEmbedElement>(this)) {
     return nullptr;
   }
 
@@ -3277,6 +3287,14 @@ void Node::FlatTreeParentChanged() {
   // We also need to force a layout tree re-attach since the layout tree parent
   // box may have changed.
   SetForceReattachLayoutTree();
+}
+
+void Node::RemovedFromFlatTree() {
+  // This node was previously part of the flat tree, but due to slot re-
+  // assignment it no longer is. We need to detach the layout tree and notify
+  // the StyleEngine in case the StyleRecalcRoot is removed from the flat tree.
+  DetachLayoutTree();
+  GetDocument().GetStyleEngine().RemovedFromFlatTree(*this);
 }
 
 Node* Node::TrustedTypesCheckForScriptNode(

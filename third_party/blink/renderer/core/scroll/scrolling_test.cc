@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
@@ -75,6 +76,121 @@ TEST_F(FractionalScrollSimTest, GetBoundingClientRectAtFractional) {
   const float kOneLayoutUnit = 1.f / kFixedPointDenominator;
   EXPECT_NEAR(LayoutUnit(800.f - 700.5f), rect->left(), kOneLayoutUnit);
   EXPECT_NEAR(LayoutUnit(600.f - 500.6f), rect->top(), kOneLayoutUnit);
+}
+
+TEST_F(FractionalScrollSimTest, NoRepaintOnScrollFromSubpixel) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 4000px;
+      }
+
+      #container {
+        will-change:transform;
+        margin-top: 300px;
+      }
+
+      #child {
+        height: 100px;
+        width: 100px;
+        transform: translateY(-0.5px);
+        background-color: coral;
+      }
+
+      #fixed {
+        position: fixed;
+        top: 0;
+        width: 100px;
+        height: 20px;
+        background-color: dodgerblue
+      }
+    </style>
+
+    <!-- Need fixed element because of PLSA::UpdateCompositingLayersAfterScroll
+         will invalidate compositing due to potential overlap changes. -->
+    <div id="fixed"></div>
+    <div id="container">
+        <div id="child"></div>
+    </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  auto* container_layer =
+      ToLayoutBoxModelObject(
+          GetDocument().getElementById("container")->GetLayoutObject())
+          ->Layer()
+          ->GraphicsLayerBacking();
+  container_layer->ResetTrackedRasterInvalidations();
+  GetDocument().View()->SetTracksRasterInvalidations(true);
+
+  // Scroll on the layout viewport.
+  GetDocument().View()->GetScrollableArea()->SetScrollOffset(
+      FloatSize(0.f, 100.5f), kProgrammaticScroll, kScrollBehaviorInstant);
+
+  Compositor().BeginFrame();
+  EXPECT_FALSE(
+      container_layer->GetRasterInvalidationTracking()->HasInvalidations());
+
+  GetDocument().View()->SetTracksRasterInvalidations(false);
+}
+
+// Verifies that the sticky constraints are correctly computed when the scroll
+// offset is fractional. Ensures any kind of layout unit snapping is
+// consistent.
+TEST_F(FractionalScrollSimTest, StickyDoesntOscillate) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      #sticky {
+        position: sticky; top: 0; width: 100px; height: 100px;
+      }
+      body {
+        margin: 0;
+        height: 300vh;
+      }
+      #padding {
+        height: 8px;
+        width: 100%;
+      }
+    </style>
+    <div id='padding'></div>
+    <div id='sticky'></div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  const float kOneLayoutUnitF = LayoutUnit::Epsilon();
+  Element* sticky = GetDocument().getElementById("sticky");
+
+  // Try sub-layout-unit scroll offsets. The sticky box shouldn't move.
+  for (int i = 0; i < 3; ++i) {
+    GetDocument().View()->GetScrollableArea()->ScrollBy(
+        ScrollOffset(0.f, kOneLayoutUnitF / 4.f), kProgrammaticScroll);
+    Compositor().BeginFrame();
+    EXPECT_EQ(8, sticky->getBoundingClientRect()->top());
+  }
+
+  // This offset is specifically chosen since it doesn't land on a LayoutUnit
+  // boundary and reproduced https://crbug.com/1010961.
+  GetDocument().View()->GetScrollableArea()->SetScrollOffset(
+      FloatSize(0.f, 98.8675308f), kProgrammaticScroll, kScrollBehaviorInstant);
+  Compositor().BeginFrame();
+  EXPECT_EQ(0, sticky->getBoundingClientRect()->top());
+
+  // Incrementally scroll from here, making sure the sticky position remains
+  // fixed.
+  for (int i = 0; i < 4; ++i) {
+    GetDocument().View()->GetScrollableArea()->ScrollBy(
+        ScrollOffset(0.f, kOneLayoutUnitF / 3.f), kProgrammaticScroll);
+    Compositor().BeginFrame();
+    EXPECT_EQ(0, sticky->getBoundingClientRect()->top());
+  }
 }
 
 class ScrollAnimatorSimTest : public SimTest {};

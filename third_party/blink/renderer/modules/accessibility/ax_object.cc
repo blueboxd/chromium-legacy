@@ -784,8 +784,8 @@ ax::mojom::CheckedState AXObject::CheckedState() const {
     if (IsNativeCheckboxInMixedState(node))
       return ax::mojom::CheckedState::kMixed;
 
-    if (IsHTMLInputElement(*node) &&
-        ToHTMLInputElement(*node).ShouldAppearChecked()) {
+    auto* html_input_element = DynamicTo<HTMLInputElement>(node);
+    if (html_input_element && html_input_element->ShouldAppearChecked()) {
       return ax::mojom::CheckedState::kTrue;
     }
   }
@@ -794,10 +794,10 @@ ax::mojom::CheckedState AXObject::CheckedState() const {
 }
 
 bool AXObject::IsNativeCheckboxInMixedState(const Node* node) {
-  if (!IsHTMLInputElement(node))
+  const auto* input = DynamicTo<HTMLInputElement>(node);
+  if (!input)
     return false;
 
-  const HTMLInputElement* input = ToHTMLInputElement(node);
   const auto inputType = input->type();
   if (inputType != input_type_names::kCheckbox)
     return false;

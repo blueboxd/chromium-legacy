@@ -246,7 +246,8 @@ cr.define('settings_privacy_page', function() {
 
       if (!cr.isChromeOS) {
         test('signinAllowedToggle', function() {
-          const toggle = page.$.signinAllowedToggle;
+          const toggle = page.$$('#signinAllowedToggle');
+          assertVisible(toggle, true);
 
           page.syncStatus = {signedIn: false};
           // Check initial setup.
@@ -360,6 +361,7 @@ cr.define('settings_privacy_page', function() {
 
         // Unloaded elements will not be present in the DOM
         assertFalse(!!page.$$('#syncLinkRow'));
+        assertFalse(!!page.$$('#signinAllowedToggle'));
 
         assertVisible(page.$$('#safeBrowsingToggle'), true);
         assertVisible(page.$$('#safeBrowsingReportingToggle'), true);

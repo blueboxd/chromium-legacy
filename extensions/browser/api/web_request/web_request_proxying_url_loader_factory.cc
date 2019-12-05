@@ -149,7 +149,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
                                     : nullptr,
       routing_id_, request_for_info, factory_->IsForDownload(),
       !(options_ & network::mojom::kURLLoadOptionSynchronous),
-      factory_->IsForServiceWorkerScript()));
+      factory_->IsForServiceWorkerScript(), factory_->navigation_id_));
 
   current_request_uses_header_client_ =
       factory_->url_loader_header_client_receiver_.is_bound() &&
@@ -937,6 +937,7 @@ WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
     int render_process_id,
     scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
     std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
+    base::Optional<int64_t> navigation_id,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
     mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory_remote,
     mojo::PendingReceiver<network::mojom::TrustedURLLoaderHeaderClient>
@@ -947,6 +948,7 @@ WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
       render_process_id_(render_process_id),
       request_id_generator_(std::move(request_id_generator)),
       navigation_ui_data_(std::move(navigation_ui_data)),
+      navigation_id_(std::move(navigation_id)),
       proxies_(proxies),
       loader_factory_type_(loader_factory_type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -976,6 +978,7 @@ void WebRequestProxyingURLLoaderFactory::StartProxying(
     int render_process_id,
     scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
     std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
+    base::Optional<int64_t> navigation_id,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
     mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory_remote,
     mojo::PendingReceiver<network::mojom::TrustedURLLoaderHeaderClient>
@@ -986,9 +989,9 @@ void WebRequestProxyingURLLoaderFactory::StartProxying(
 
   auto proxy = std::make_unique<WebRequestProxyingURLLoaderFactory>(
       browser_context, render_process_id, std::move(request_id_generator),
-      std::move(navigation_ui_data), std::move(loader_receiver),
-      std::move(target_factory_remote), std::move(header_client_receiver),
-      proxies, loader_factory_type);
+      std::move(navigation_ui_data), std::move(navigation_id),
+      std::move(loader_receiver), std::move(target_factory_remote),
+      std::move(header_client_receiver), proxies, loader_factory_type);
 
   proxies->AddProxy(std::move(proxy));
 }

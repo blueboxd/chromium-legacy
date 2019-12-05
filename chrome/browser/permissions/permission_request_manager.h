@@ -82,10 +82,16 @@ class PermissionRequestManager
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  bool ShouldCurrentRequestUseQuietUI();
-  QuietUiReason ReasonForUsingQuietUi();
+  // Notification permission requests might use a quiet UI when the
+  // "quiet-notification-prompts" feature is enabled. This is done either
+  // directly by the user in notifications settings, or via automatic logic that
+  // might trigger the current request to use the quiet UI.
+  bool ShouldCurrentRequestUseQuietUI() const;
+  // If |ShouldCurrentRequestUseQuietUI| return true, this will provide a reason
+  // as to why the quiet UI needs to be used.
+  QuietUiReason ReasonForUsingQuietUi() const;
 
-  bool IsRequestInProgress();
+  bool IsRequestInProgress() const;
 
   // Do NOT use this methods in production code. Use this methods in browser
   // tests that need to accept or deny permissions when requested in

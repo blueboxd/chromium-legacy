@@ -36,8 +36,6 @@
 
 namespace blink {
 
-class WebLocalFrame;
-
 class WebPrescientNetworking {
  public:
   virtual ~WebPrescientNetworking() = default;
@@ -46,9 +44,7 @@ class WebPrescientNetworking {
   // the host resolution latency.
   virtual void PrefetchDNS(const WebString& hostname) {}
 
-  virtual void Preconnect(blink::WebLocalFrame* web_local_frame,
-                          const WebURL& url,
-                          const bool allow_credentials) {}
+  virtual void Preconnect(const WebURL& url, bool allow_credentials) {}
 };
 
 }  // namespace blink

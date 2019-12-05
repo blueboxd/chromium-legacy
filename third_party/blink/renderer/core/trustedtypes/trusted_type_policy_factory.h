@@ -17,6 +17,7 @@ class ExceptionState;
 class ScriptState;
 class ScriptValue;
 class TrustedHTML;
+class TrustedScript;
 class TrustedTypePolicy;
 class TrustedTypePolicyOptions;
 
@@ -43,6 +44,8 @@ class CORE_EXPORT TrustedTypePolicyFactory final : public ScriptWrappable,
   bool isURL(ScriptState*, const ScriptValue&);
 
   TrustedHTML* emptyHTML() const;
+
+  TrustedScript* emptyScript() const;
 
   String getPropertyType(const String& tagName,
                          const String& propertyName) const;
@@ -73,6 +76,7 @@ class CORE_EXPORT TrustedTypePolicyFactory final : public ScriptWrappable,
                                                            const ScriptValue&);
 
   Member<TrustedHTML> empty_html_;
+  Member<TrustedScript> empty_script_;
   HeapHashMap<String, Member<TrustedTypePolicy>> policy_map_;
 
   bool hadAssignmentError = false;

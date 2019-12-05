@@ -23,10 +23,6 @@ storage::QuotaClient::ID CacheStorageQuotaClient::id() const {
   return GetIDFromOwner(owner_);
 }
 
-void CacheStorageQuotaClient::OnQuotaManagerDestroyed() {
-  delete this;
-}
-
 void CacheStorageQuotaClient::GetOriginUsage(const url::Origin& origin,
                                              blink::mojom::StorageType type,
                                              GetUsageCallback callback) {

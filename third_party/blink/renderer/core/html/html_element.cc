@@ -1118,7 +1118,7 @@ TextDirection HTMLElement::DirectionalityIfhasDirAutoAttribute(
 }
 
 TextDirection HTMLElement::Directionality() const {
-  if (auto* input_element = ToHTMLInputElementOrNull(*this)) {
+  if (auto* input_element = DynamicTo<HTMLInputElement>(*this)) {
     bool has_strong_directionality;
     TextDirection text_direction = DetermineDirectionality(
         input_element->value(), &has_strong_directionality);

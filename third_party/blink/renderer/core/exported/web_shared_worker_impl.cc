@@ -32,7 +32,6 @@
 
 #include <memory>
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
@@ -159,7 +158,6 @@ void WebSharedWorkerImpl::StartWorkerContext(
     const base::UnguessableToken& appcache_host_id,
     const base::UnguessableToken& devtools_worker_token,
     mojo::ScopedMessagePipeHandle content_settings_handle,
-    mojo::ScopedMessagePipeHandle interface_provider,
     mojo::ScopedMessagePipeHandle browser_interface_broker,
     bool pause_worker_context_on_start) {
   DCHECK(IsMainThread());
@@ -223,8 +221,6 @@ void WebSharedWorkerImpl::StartWorkerContext(
       nullptr /* origin_trial_tokens */, devtools_worker_token,
       std::move(worker_settings), kV8CacheOptionsDefault,
       nullptr /* worklet_module_response_map */,
-      mojo::PendingRemote<service_manager::mojom::blink::InterfaceProvider>(
-          std::move(interface_provider), 0u),
       mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>(
           std::move(browser_interface_broker),
           mojom::blink::BrowserInterfaceBroker::Version_),

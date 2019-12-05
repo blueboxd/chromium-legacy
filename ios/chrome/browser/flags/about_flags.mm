@@ -592,6 +592,12 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"infobar-overlay-ui", flag_descriptions::kInfobarOverlayUIName,
      flag_descriptions::kInfobarOverlayUIDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kInfobarOverlayUI)},
+    {"autofill-save-card-infobar-edit-support",
+     flag_descriptions::kAutofillSaveCardInfobarEditSupportName,
+     flag_descriptions::kAutofillSaveCardInfobarEditSupportDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillSaveCardInfobarEditSupport)},
 };
 
 // Add all switches from experimental flags to |command_line|.

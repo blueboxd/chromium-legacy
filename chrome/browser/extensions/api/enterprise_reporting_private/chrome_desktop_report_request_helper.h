@@ -33,7 +33,7 @@ void StoreDeviceData(const std::string& id,
                      base::OnceCallback<void(bool)> callback);
 
 // Retrieves the data associated with the identifier |id|. Calls |callback| on
-// completion with the data retreived if the second parameter is true.
+// completion with the data retrieved if the second parameter is true.
 void RetrieveDeviceData(
     const std::string& id,
     base::OnceCallback<void(const std::string&, bool)> callback);

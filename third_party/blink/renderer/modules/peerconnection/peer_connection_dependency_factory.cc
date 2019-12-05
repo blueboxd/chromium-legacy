@@ -142,7 +142,7 @@ PeerConnectionDependencyFactory::CreateRTCPeerConnectionHandler(
   // Save histogram data so we can see how much PeerConnection is used.
   // The histogram counts the number of calls to the JS API
   // RTCPeerConnection.
-  UpdateWebRTCMethodCount(blink::WebRTCAPIName::kRTCPeerConnection);
+  UpdateWebRTCMethodCount(RTCAPIName::kRTCPeerConnection);
 
   return std::make_unique<RTCPeerConnectionHandler>(client, this, task_runner);
 }

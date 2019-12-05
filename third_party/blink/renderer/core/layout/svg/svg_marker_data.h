@@ -23,7 +23,6 @@
 #include "third_party/blink/renderer/platform/graphics/path.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -63,16 +62,27 @@ class SVGMarkerDataBuilder {
   STACK_ALLOCATED();
 
  public:
-  SVGMarkerDataBuilder(Vector<MarkerPosition>& positions)
-      : positions_(positions), element_index_(0) {}
+  explicit SVGMarkerDataBuilder(Vector<MarkerPosition>& positions)
+      : positions_(positions),
+        element_index_(0),
+        last_moveto_index_(0),
+        last_element_type_(kPathElementMoveToPoint) {}
 
   void Build(const Path&);
 
  private:
   static void UpdateFromPathElement(void* info, const PathElement*);
-  void PathIsDone();
 
-  double CurrentAngle(SVGMarkerType type) const;
+  enum AngleType {
+    kBisecting,
+    kInbound,
+    kOutbound,
+  };
+
+  double CurrentAngle(AngleType) const;
+  AngleType DetermineAngleType(bool ends_subpath) const;
+
+  void OutputPendingMarker(SVGMarkerType marker_type, bool ends_subpath);
 
   struct SegmentData {
     FloatSize start_tangent;  // Tangent in the start point of the segment.
@@ -89,10 +99,13 @@ class SVGMarkerDataBuilder {
 
   Vector<MarkerPosition>& positions_;
   unsigned element_index_;
+  unsigned last_moveto_index_;
+  PathElementType last_element_type_;
   FloatPoint origin_;
   FloatPoint subpath_start_;
   FloatSize in_slope_;
   FloatSize out_slope_;
+  FloatSize last_moveto_out_slope_;
 };
 
 }  // namespace blink

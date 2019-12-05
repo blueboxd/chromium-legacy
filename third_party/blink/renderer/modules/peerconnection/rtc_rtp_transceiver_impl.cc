@@ -336,9 +336,9 @@ void RTCRtpTransceiverImpl::set_state(RtpTransceiverState transceiver_state,
   internal_->set_state(std::move(transceiver_state), update_mode);
 }
 
-blink::WebRTCRtpTransceiverImplementationType
+RTCRtpTransceiverPlatformImplementationType
 RTCRtpTransceiverImpl::ImplementationType() const {
-  return blink::WebRTCRtpTransceiverImplementationType::kFullTransceiver;
+  return RTCRtpTransceiverPlatformImplementationType::kFullTransceiver;
 }
 
 uintptr_t RTCRtpTransceiverImpl::Id() const {
@@ -361,7 +361,7 @@ std::unique_ptr<blink::RTCRtpSenderPlatform> RTCRtpTransceiverImpl::Sender()
   return internal_->content_sender()->ShallowCopy();
 }
 
-std::unique_ptr<blink::WebRTCRtpReceiver> RTCRtpTransceiverImpl::Receiver()
+std::unique_ptr<RTCRtpReceiverPlatform> RTCRtpTransceiverImpl::Receiver()
     const {
   return internal_->content_receiver()->ShallowCopy();
 }

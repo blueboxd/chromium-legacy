@@ -590,6 +590,8 @@ void UserMediaRequest::Fail(WebUserMediaRequest::Error name,
 }
 
 void UserMediaRequest::ContextDestroyed(ExecutionContext*) {
+  if (!is_resolved_)
+    blink::WebRtcLogMessage("UMR::ContextDestroyed. Request not resolved.");
   if (controller_) {
     controller_->CancelUserMediaRequest(this);
     if (!is_resolved_) {

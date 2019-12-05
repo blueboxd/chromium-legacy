@@ -39,6 +39,7 @@ class GPUAdapter final : public ScriptWrappable, public DawnObjectBase {
 
  private:
   String name_;
+  uint32_t adapter_service_id_;
   WGPUDeviceProperties adapter_properties_;
 
   DISALLOW_COPY_AND_ASSIGN(GPUAdapter);

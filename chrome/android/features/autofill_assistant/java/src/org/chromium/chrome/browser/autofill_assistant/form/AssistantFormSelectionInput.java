@@ -59,12 +59,12 @@ class AssistantFormSelectionInput extends AssistantFormInput {
         for (int i = 0; i < mChoices.size(); i++) {
             AssistantFormSelectionChoice choice = mChoices.get(i);
 
-
             int index = i; // needed for the lambda.
             View choiceView;
             if (mAllowMultipleChoices) {
-                choiceView =
-                        inflater.inflate(R.layout.autofill_assistant_form_checkbox, checkboxList);
+                choiceView = inflater.inflate(R.layout.autofill_assistant_form_checkbox,
+                        checkboxList, /* attachToRoot= */ false);
+                checkboxList.addView(choiceView);
 
                 CheckBox checkBox = choiceView.findViewById(R.id.checkbox);
                 checkBox.setOnCheckedChangeListener(
@@ -96,6 +96,7 @@ class AssistantFormSelectionInput extends AssistantFormInput {
             hideIfEmpty(choiceLabel);
             hideIfEmpty(descriptionLine1);
             hideIfEmpty(descriptionLine2);
+            setMinimumHeight(choiceView, descriptionLine1, descriptionLine2);
         }
         if (mAllowMultipleChoices) {
             checkboxList.setVisibility(View.VISIBLE);
@@ -103,9 +104,5 @@ class AssistantFormSelectionInput extends AssistantFormInput {
             radiobuttonList.setVisibility(View.VISIBLE);
         }
         return root;
-    }
-
-    private void hideIfEmpty(TextView view) {
-        view.setVisibility(view.length() == 0 ? View.GONE : View.VISIBLE);
     }
 }

@@ -96,6 +96,10 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
     // TODO(sreejakshetty): Initialize ScopedFeatureLists from test constructor.
     EnableFeatureAndSetParams(features::kBackForwardCache,
                               "TimeToLiveInBackForwardCacheInSeconds", "3600");
+#if defined(OS_ANDROID)
+    EnableFeatureAndSetParams(features::kBackForwardCache,
+                              "process_binding_strength", "NORMAL");
+#endif
     SetupFeaturesAndParameters();
 
     command_line->AppendSwitchASCII(
@@ -325,28 +329,27 @@ std::initializer_list<RenderFrameHostImpl*> Elements(
   return t;
 }
 
-// Execute a custom callback when two RenderFrameHosts are swapped. This is
+// Execute a custom callback when navigation is ready to commit. This is
 // useful for simulating race conditions happening when a page enters the
 // BackForwardCache and receive inflight messages sent when it wasn't frozen
 // yet.
-class RenderFrameHostChangedCallback : public WebContentsObserver {
+class ReadyToCommitNavigationCallback : public WebContentsObserver {
  public:
-  RenderFrameHostChangedCallback(
+  ReadyToCommitNavigationCallback(
       WebContents* content,
-      base::OnceCallback<void(RenderFrameHost*, RenderFrameHost*)> callback)
+      base::OnceCallback<void(NavigationHandle*)> callback)
       : WebContentsObserver(content), callback_(std::move(callback)) {}
 
  private:
   // WebContentsObserver:
-  void RenderFrameHostChanged(RenderFrameHost* old_host,
-                              RenderFrameHost* new_host) override {
+  void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override {
     if (callback_)
-      std::move(callback_).Run(old_host, new_host);
+      std::move(callback_).Run(navigation_handle);
   }
 
-  base::OnceCallback<void(RenderFrameHost*, RenderFrameHost*)> callback_;
+  base::OnceCallback<void(NavigationHandle*)> callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(RenderFrameHostChangedCallback);
+  DISALLOW_COPY_AND_ASSIGN(ReadyToCommitNavigationCallback);
 };
 
 class FirstVisuallyNonEmptyPaintObserver : public WebContentsObserver {
@@ -1936,17 +1939,17 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // 3) Execute JavaScript on A when restoring A.
   // Execute JavaScript after committing but before swapping happens on the
   // renderer.
-  RenderFrameHostChangedCallback host_changed_callback(
-      web_contents(),
-      base::BindOnce(
-          [](RenderFrameHostImpl* rfh_a,
-             RenderFrameDeletedObserver* delete_observer_rfh_a,
-             RenderFrameHost* old_host, RenderFrameHost* new_host) {
-            EXPECT_FALSE(delete_observer_rfh_a->deleted());
-            EXPECT_EQ(rfh_a, new_host);
-            ExecuteScriptAsync(new_host, "console.log('hi');");
-          },
-          rfh_a, &delete_observer_rfh_a));
+  ReadyToCommitNavigationCallback host_changed_callback(
+      web_contents(), base::BindOnce(
+                          [](RenderFrameHostImpl* rfh_a,
+                             RenderFrameDeletedObserver* delete_observer_rfh_a,
+                             NavigationHandle* navigation_handle) {
+                            EXPECT_FALSE(delete_observer_rfh_a->deleted());
+                            EXPECT_EQ(rfh_a,
+                                      navigation_handle->GetRenderFrameHost());
+                            ExecuteScriptAsync(rfh_a, "console.log('hi');");
+                          },
+                          rfh_a, &delete_observer_rfh_a));
 
   // Wait for two navigations to finish. The first one is the BackForwardCache
   // navigation, the other is the reload caused by the eviction.
@@ -4651,6 +4654,59 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // 3) Navigate back and expect the page to be restored from bfcache.
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+}
+
+namespace {
+
+class ExecJsInDidFinishNavigation : public WebContentsObserver {
+ public:
+  ExecJsInDidFinishNavigation(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override {
+    if (!navigation_handle->IsInMainFrame() ||
+        !navigation_handle->HasCommitted() ||
+        navigation_handle->IsSameDocument()) {
+      return;
+    }
+
+    ExecuteScriptAsync(navigation_handle->GetRenderFrameHost(),
+                       "var foo = 42;");
+  }
+};
+
+}  // namespace
+
+// This test checks that the message posted from DidFinishNavigation
+// (ExecuteScriptAsync) is received after the message restoring the page from
+// the back-forward cache (PageMsg_RestorePageFromBackForwardCache).
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       MessageFromDidFinishNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  EXPECT_TRUE(ExecJs(rfh_a, "window.alive = 'I am alive';"));
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+
+  ExecJsInDidFinishNavigation observer(shell()->web_contents());
+
+  // 3) Go back to A. Expect the page to be restored from the cache.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ("I am alive", EvalJs(rfh_a, "window.alive"));
+
+  // Make sure that the javascript execution requested from DidFinishNavigation
+  // did not result in eviction. If the document was evicted, the document
+  // would be reloaded - check that it didn't happen and the tab is not
+  // loading.
+  EXPECT_FALSE(web_contents()->IsLoading());
+
   EXPECT_EQ(rfh_a, current_frame_host());
 }
 
@@ -4684,4 +4740,37 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WebMidiNotCached) {
       FROM_HERE);
 }
 
+#if defined(OS_ANDROID)
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       ChildImportanceTestForBackForwardCachedPagesTest) {
+  web_contents()->SetMainFrameImportance(ChildProcessImportance::MODERATE);
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  ASSERT_FALSE(delete_observer_rfh_a.deleted());
+
+  // 3) Verify the importance of page after entering back-forward cache to be
+  // "NORMAL".
+  EXPECT_EQ(ChildProcessImportance::NORMAL,
+            rfh_a->GetProcess()->GetEffectiveImportance());
+
+  // 4) Go back to A.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // 5) Verify the importance was restored correctly after page leaves
+  // back-forward cache.
+  EXPECT_EQ(ChildProcessImportance::MODERATE,
+            rfh_a->GetProcess()->GetEffectiveImportance());
+}
+#endif
 }  // namespace content

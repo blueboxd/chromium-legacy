@@ -10,6 +10,12 @@
     void setBindGroup(unsigned long index, GPUBindGroup bindGroup,
                       optional sequence<unsigned long> dynamicOffsets = []);
 
+    [RaisesException] void setBindGroup(
+        unsigned long index, GPUBindGroup bindGroup,
+        [ AllowShared, FlexibleArrayBufferView ] Uint32Array dynamicOffsetsData,
+        unsigned long long dynamicOffsetsDataStart,
+        unsigned long dynamicOffsetsDataLength);
+
     void pushDebugGroup(DOMString groupLabel);
     void popDebugGroup();
     void insertDebugMarker(DOMString markerLabel);

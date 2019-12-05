@@ -30,8 +30,6 @@
 #include <memory>
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/service_manager/public/mojom/interface_provider.mojom-blink-forward.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
@@ -47,10 +45,6 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
-
-namespace service_manager {
-class InterfaceProvider;
-}
 
 namespace blink {
 
@@ -126,7 +120,6 @@ class CORE_EXPORT WorkerGlobalScope
   const SecurityContext& GetSecurityContext() const final { return *this; }
   void AddConsoleMessageImpl(ConsoleMessage*, bool discard_duplicates) final;
   bool IsSecureContext(String& error_message) const override;
-  service_manager::InterfaceProvider* GetInterfaceProvider() final;
   BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() final;
 
   OffscreenFontSelector* GetFontSelector() { return font_selector_; }
@@ -257,8 +250,6 @@ class CORE_EXPORT WorkerGlobalScope
   int last_pending_error_event_id_ = 0;
 
   Member<OffscreenFontSelector> font_selector_;
-
-  service_manager::InterfaceProvider interface_provider_;
 
   blink::BrowserInterfaceBrokerProxy browser_interface_broker_proxy_;
 

@@ -51,6 +51,8 @@ const char kPlayIntentPrefix[] =
     "https://play.google.com/store/apps/details?id=";
 const char kPlayStorePackage[] = "com.android.vending";
 
+constexpr bool kAddAppsToQuickLaunchBarByDefault = false;
+
 std::string ExtractQueryValueForName(const GURL& url, const std::string& name) {
   for (net::QueryIterator it(url); !it.IsAtEnd(); it.Advance()) {
     if (it.GetKey() == name)
@@ -58,6 +60,8 @@ std::string ExtractQueryValueForName(const GURL& url, const std::string& name) {
   }
   return std::string();
 }
+#else
+constexpr bool kAddAppsToQuickLaunchBarByDefault = true;
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace
@@ -756,7 +760,7 @@ void WebAppInstallTask::OnShortcutsCreated(
   if (ShouldStopInstall())
     return;
 
-  bool add_to_quick_launch_bar = true;
+  bool add_to_quick_launch_bar = kAddAppsToQuickLaunchBarByDefault;
   if (install_params_)
     add_to_quick_launch_bar = install_params_->add_to_quick_launch_bar;
 

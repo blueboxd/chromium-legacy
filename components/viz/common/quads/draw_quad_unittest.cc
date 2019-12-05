@@ -279,20 +279,17 @@ TEST(DrawQuadTest, CopySurfaceDrawQuad) {
 
   CREATE_QUAD_NEW(SurfaceDrawQuad, visible_rect,
                   SurfaceRange(fallback_surface_id, primary_surface_id),
-                  SK_ColorWHITE, /*stretch_content_to_fill_bounds=*/true,
-                  /*ignores_input_event=*/true);
+                  SK_ColorWHITE, /*stretch_content_to_fill_bounds=*/true);
   EXPECT_EQ(DrawQuad::Material::kSurfaceContent, copy_quad->material);
   EXPECT_EQ(visible_rect, copy_quad->visible_rect);
   EXPECT_EQ(primary_surface_id, copy_quad->surface_range.end());
   EXPECT_EQ(fallback_surface_id, *copy_quad->surface_range.start());
   EXPECT_TRUE(copy_quad->stretch_content_to_fill_bounds);
-  EXPECT_TRUE(copy_quad->ignores_input_event);
 
   CREATE_QUAD_ALL(SurfaceDrawQuad,
                   SurfaceRange(fallback_surface_id, primary_surface_id),
                   SK_ColorWHITE, /*stretch_content_to_fill_bounds=*/false,
-                  /*ignores_input_event=*/false, /*is_reflection=*/false,
-                  /*allow_merge=*/true);
+                  /*is_reflection=*/false, /*allow_merge=*/true);
   EXPECT_EQ(DrawQuad::Material::kSurfaceContent, copy_quad->material);
   EXPECT_EQ(primary_surface_id, copy_quad->surface_range.end());
   EXPECT_EQ(fallback_surface_id, *copy_quad->surface_range.start());
@@ -593,8 +590,7 @@ TEST_F(DrawQuadIteratorTest, SurfaceDrawQuad) {
   CREATE_SHARED_STATE();
   CREATE_QUAD_NEW(SurfaceDrawQuad, visible_rect,
                   SurfaceRange(base::nullopt, surface_id), SK_ColorWHITE,
-                  /*stretch_content_to_fill_bounds=*/false,
-                  /*ignores_input_event=*/false);
+                  /*stretch_content_to_fill_bounds=*/false);
   EXPECT_EQ(0, IterateAndCount(quad_new));
 }
 

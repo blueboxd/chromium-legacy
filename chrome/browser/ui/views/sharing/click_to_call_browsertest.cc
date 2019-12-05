@@ -58,14 +58,10 @@ enum class ClickToCallPolicy {
 
 }  // namespace
 
-// Browser tests for the Click To Call feature.
-class ClickToCallBrowserTest : public SharingBrowserTest {
+// Base browser tests for the Click To Call feature.
+class BaseClickToCallBrowserTest : public SharingBrowserTest {
  public:
-  ClickToCallBrowserTest() {
-    feature_list_.InitAndEnableFeature(kClickToCallUI);
-  }
-
-  ~ClickToCallBrowserTest() override {}
+  ~BaseClickToCallBrowserTest() override {}
 
   std::string GetTestPageURL() const override {
     return std::string(kTestPageURL);
@@ -86,9 +82,17 @@ class ClickToCallBrowserTest : public SharingBrowserTest {
   std::string HistogramName(const char* suffix) {
     return base::StrCat({"Sharing.ClickToCall", suffix});
   }
+};
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(ClickToCallBrowserTest);
+// Browser tests for the Click To Call feature.
+class ClickToCallBrowserTest : public BaseClickToCallBrowserTest {
+ public:
+  ClickToCallBrowserTest() {
+    feature_list_.InitAndEnableFeature(kClickToCallUI);
+  }
+
+ protected:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 // TODO(himanshujaju): Add UI checks.
@@ -309,14 +313,8 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
       {HistogramName("PhoneNumberDigits.RightClickSelection.Showing"), 1},
       {HistogramName("PhoneNumberLength"), 1},
       {HistogramName("PhoneNumberLength.RightClickSelection.Showing"), 1},
-      {HistogramName(
-           "PhoneNumberRegexVariantResult.LowConfidenceModified.Showing"),
-       1},
-      {HistogramName("ContextMenuPhoneNumberParsingDelay"), 2},
+      {HistogramName("ContextMenuPhoneNumberParsingDelay"), 1},
       {HistogramName("ContextMenuPhoneNumberParsingDelay.Simple"), 1},
-      {HistogramName(
-           "ContextMenuPhoneNumberParsingDelay.LowConfidenceModified"),
-       1},
   };
   EXPECT_THAT(histograms.GetTotalCountsForPrefix(HistogramName("")),
               testing::ContainerEq(expected_counts));
@@ -331,10 +329,6 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
   histograms.ExpectUniqueSample(
       HistogramName("PhoneNumberLength.RightClickSelection.Showing"),
       /*sample=*/9, /*count=*/1);
-  histograms.ExpectUniqueSample(
-      HistogramName(
-          "PhoneNumberRegexVariantResult.LowConfidenceModified.Showing"),
-      /*sample=*/PhoneNumberRegexVariantResult::kBothMatch, /*count=*/1);
 
   // Send the number to the device in the context menu.
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE,
@@ -348,9 +342,6 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
       {HistogramName("PhoneNumberDigits.RightClickSelection.Sending"), 1},
       {HistogramName("PhoneNumberLength"), 2},
       {HistogramName("PhoneNumberLength.RightClickSelection.Sending"), 1},
-      {HistogramName(
-           "PhoneNumberRegexVariantResult.LowConfidenceModified.Sending"),
-       1},
   });
   expected_counts[HistogramName("PhoneNumberDigits")] = 2;
   expected_counts[HistogramName("PhoneNumberLength")] = 2;
@@ -371,11 +362,6 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
   histograms.ExpectUniqueSample(
       HistogramName("PhoneNumberLength.RightClickSelection.Sending"),
       /*sample=*/9,
-      /*count=*/1);
-  histograms.ExpectUniqueSample(
-      HistogramName(
-          "PhoneNumberRegexVariantResult.LowConfidenceModified.Sending"),
-      /*sample=*/PhoneNumberRegexVariantResult::kBothMatch,
       /*count=*/1);
 }
 
@@ -621,3 +607,54 @@ INSTANTIATE_TEST_SUITE_P(All,
                          ::testing::Values(ClickToCallPolicy::kNotConfigured,
                                            ClickToCallPolicy::kFalse,
                                            ClickToCallPolicy::kTrue));
+
+class ClickToCallBrowserTestDetectionV2 : public BaseClickToCallBrowserTest {
+ public:
+  ClickToCallBrowserTestDetectionV2() {
+    feature_list_.InitWithFeatures({kClickToCallUI, kClickToCallDetectionV2},
+                                   {});
+  }
+
+ protected:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTestDetectionV2,
+                       ContextMenu_HighlightedText_Histograms) {
+  base::HistogramTester histograms;
+  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL,
+       sync_pb::SharingSpecificFields::UNKNOWN);
+
+  // Trigger a context menu for a selection with 8 digits and 9 characters.
+  std::unique_ptr<TestRenderViewContextMenu> menu =
+      InitContextMenu(GURL(kNonTelUrl), kLinkText, "1234-5678");
+  // RegexVariantResult is logged on a thread pool.
+  base::ThreadPoolInstance::Get()->FlushForTesting();
+
+  histograms.ExpectTotalCount(
+      HistogramName("ContextMenuPhoneNumberParsingDelay"), 2);
+  histograms.ExpectTotalCount(
+      HistogramName("ContextMenuPhoneNumberParsingDelay.LowConfidenceModified"),
+      1);
+  histograms.ExpectUniqueSample(
+      HistogramName(
+          "PhoneNumberRegexVariantResult.LowConfidenceModified.Showing"),
+      /*sample=*/PhoneNumberRegexVariantResult::kBothMatch, /*count=*/1);
+
+  // Send the number to the device in the context menu.
+  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE,
+                       0);
+  // RegexVariantResult is logged on a thread pool.
+  base::ThreadPoolInstance::Get()->FlushForTesting();
+
+  histograms.ExpectTotalCount(
+      HistogramName("ContextMenuPhoneNumberParsingDelay"), 2);
+  histograms.ExpectTotalCount(
+      HistogramName("ContextMenuPhoneNumberParsingDelay.LowConfidenceModified"),
+      1);
+  histograms.ExpectUniqueSample(
+      HistogramName(
+          "PhoneNumberRegexVariantResult.LowConfidenceModified.Sending"),
+      /*sample=*/PhoneNumberRegexVariantResult::kBothMatch,
+      /*count=*/1);
+}

@@ -351,9 +351,10 @@ DragOperation DragController::DragEnteredOrUpdated(DragData* drag_data,
 static HTMLInputElement* AsFileInput(Node* node) {
   DCHECK(node);
   for (; node; node = node->OwnerShadowHost()) {
-    if (IsHTMLInputElement(*node) &&
-        ToHTMLInputElement(node)->type() == input_type_names::kFile)
-      return ToHTMLInputElement(node);
+    auto* html_input_element = DynamicTo<HTMLInputElement>(node);
+    if (html_input_element &&
+        html_input_element->type() == input_type_names::kFile)
+      return html_input_element;
   }
   return nullptr;
 }

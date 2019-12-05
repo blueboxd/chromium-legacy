@@ -40,20 +40,6 @@ trichrome_synchronized_proguard =
     enable_trichrome_synchronized_proguard && !is_java_debug
 
 template("trichrome_library_apk_tmpl") {
-  # TODO(https://crbug.com/1027573): Remove this when all targets are explicit
-  # about their configuration.
-  if (android_64bit_target_cpu) {
-    _is_64_bit_browser =
-        defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser
-    if (_is_64_bit_browser) {
-      _include_32_bit_webview = defined(invoker.include_32_bit_webview) &&
-                                invoker.include_32_bit_webview
-    } else {
-      _include_64_bit_webview = !defined(invoker.include_64_bit_webview) ||
-                                invoker.include_64_bit_webview
-    }
-  }
-
   android_apk(target_name) {
     forward_variables_from(invoker,
                            [
@@ -95,14 +81,14 @@ template("trichrome_library_apk_tmpl") {
     version_name = chrome_version_name
 
     if (android_64bit_target_cpu) {
-      if (_is_64_bit_browser) {
-        if (_include_32_bit_webview) {
+      if (invoker.is_64_bit_browser) {
+        if (invoker.include_32_bit_webview) {
           version_code = trichrome_64_32_version_code
         } else {
           version_code = trichrome_64_version_code
         }
       } else {
-        if (_include_64_bit_webview) {
+        if (invoker.include_64_bit_webview) {
           version_code = trichrome_32_64_version_code
         } else {
           version_code = trichrome_32_version_code
@@ -141,15 +127,15 @@ template("trichrome_library_apk_tmpl") {
       # (crashpad and linker), and an opposite-bitness placeholder library to
       # ensure that the library is treated as multiarch and gets its Java code
       # precompiled for both architectures.
-      if (_is_64_bit_browser) {
+      if (invoker.is_64_bit_browser) {
         shared_libraries = [ "//chrome/android:libmonochrome_64" ]
         _include_primary_support = true
-        if (_include_32_bit_webview && build_apk_secondary_abi) {
+        if (invoker.include_32_bit_webview && build_apk_secondary_abi) {
           # TODO(cjgrant): This dummy lib shouldn't be conditional on build_apk_secondary_abi.
           secondary_native_lib_placeholders = [ "libdummy.so" ]
         }
       } else {
-        if (_include_64_bit_webview) {
+        if (invoker.include_64_bit_webview) {
           native_lib_placeholders = [ "libdummy.so" ]
         }
         if (build_apk_secondary_abi) {

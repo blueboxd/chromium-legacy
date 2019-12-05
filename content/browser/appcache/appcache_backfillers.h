@@ -24,14 +24,6 @@ class AppCacheBackfillerVersion8 {
   bool BackfillPaddingSizes();
 
  private:
-  // Iterates over each Cache record; execute |callable| on each iteration.
-  //
-  // ForEachCallable: (int64_t cache_id, int64_t group_id) -> bool.
-  //
-  // Returns whether the database queries succeeded.
-  template <typename ForEachCallable>
-  bool ForEachCache(const ForEachCallable& callable);
-
   // Iterates over each Entry record for a cache; execute |callable| on each
   // iteration.
   //
@@ -52,6 +44,37 @@ class AppCacheBackfillerVersion8 {
   // Updates the padding size of the Cache record identified by |cache_id|.
   // Returns whether the database statement succeeded.
   bool UpdateCachePaddingSize(int64_t padding_size, int64_t cache_id);
+
+  // The AppCacheDatabase instance being backfilled.
+  sql::Database* const db_;
+};
+
+// Backfills an AppCache database after it has been migrated to version 9.
+class AppCacheBackfillerVersion9 {
+ public:
+  // |db| must outlive this instance.
+  AppCacheBackfillerVersion9(sql::Database* db) : db_(db) {}
+
+  // Populates the |manifest_parser_version| and |manifest_scope| columns in the
+  // Groups table.
+  //
+  // These columns were added in version 9 of the schema.
+  bool BackfillManifestParserVersionAndScope();
+
+ private:
+  // Updates the manifest_parser version value of the Cache record identified by
+  // |cache_id|.
+  // Returns whether the database statement succeeded.
+  bool UpdateCacheManifestParserVersion(int64_t cache_id,
+                                        int64_t manifest_parser_version);
+
+  // Updates the manifest_scope value of the Cache record identified by
+  // |cache_id|.
+  // Returns whether the database statement succeeded.
+  bool UpdateCacheManifestScope(int64_t cache_id,
+                                const std::string& manifest_scope);
+
+  base::Optional<std::string> GetManifestUrlForGroup(int64_t group_id);
 
   // The AppCacheDatabase instance being backfilled.
   sql::Database* const db_;

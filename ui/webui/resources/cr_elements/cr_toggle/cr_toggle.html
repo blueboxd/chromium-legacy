@@ -9,11 +9,12 @@
       :host {
         --cr-toggle-checked-bar-color: var(--google-blue-600);
         --cr-toggle-checked-button-color: var(--google-blue-600);
-        --cr-toggle-checked-ink-color: var(--google-blue-600);
-        --cr-toggle-ripple-opacity: .15;
+        --cr-toggle-checked-ripple-color:
+            rgba(var(--google-blue-600-rgb), .2);
         --cr-toggle-unchecked-bar-color: var(--google-grey-400);
         --cr-toggle-unchecked-button-color: white;
-        --cr-toggle-unchecked-ink-color: var(--google-grey-600);
+        --cr-toggle-unchecked-ripple-color:
+            rgba(var(--google-grey-600-rgb), .15);
         cursor: pointer;
         display: block;
         min-width: 34px;
@@ -26,22 +27,24 @@
         :host {
           --cr-toggle-checked-bar-color: var(--google-blue-refresh-300);
           --cr-toggle-checked-button-color: var(--google-blue-refresh-300);
-          --cr-toggle-checked-ink-color: var(--google-blue-refresh-300);
-          --cr-toggle-ripple-opacity: .4;
+          --cr-toggle-checked-ripple-color:
+              rgba(var(--google-blue-refresh-300-rgb), .4);
           --cr-toggle-unchecked-bar-color: var(--google-grey-refresh-500);
           --cr-toggle-unchecked-button-color: var(--google-grey-refresh-300);
-          --cr-toggle-unchecked-ink-color: var(--google-grey-refresh-300);
+          --cr-toggle-unchecked-ripple-color:
+              rgba(var(--google-grey-refresh-300-rgb), .4);
         }
       }
       /* Keep the prefers-color-scheme and [dark] rules the same. */
       :host([dark]) {
         --cr-toggle-checked-bar-color: var(--google-blue-refresh-300);
         --cr-toggle-checked-button-color: var(--google-blue-refresh-300);
-        --cr-toggle-checked-ink-color: var(--google-blue-refresh-300);
-        --cr-toggle-ripple-opacity: .4;
+        --cr-toggle-checked-ripple-color:
+            rgba(var(--google-blue-refresh-300-rgb), .4);
         --cr-toggle-unchecked-bar-color: var(--google-grey-refresh-500);
         --cr-toggle-unchecked-button-color: var(--google-grey-refresh-300);
-        --cr-toggle-unchecked-ink-color: var(--google-grey-refresh-300);
+        --cr-toggle-unchecked-ripple-color:
+            rgba(var(--google-grey-refresh-300-rgb), .4);
       }
 
       :host([disabled]) {
@@ -70,7 +73,7 @@
       #knob {
         background-color: var(--cr-toggle-unchecked-button-color);
         border-radius: 50%;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .4);
         display: block;
         height: 16px;
         position: relative;
@@ -89,8 +92,8 @@
       }
 
       paper-ripple {
-        --paper-ripple-opacity: var(--cr-toggle-ripple-opacity);
-        color: var(--cr-toggle-unchecked-ink-color);
+        --paper-ripple-opacity: 1;
+        color: var(--cr-toggle-unchecked-ripple-color);
         height: 40px;
         left: -12px;
         pointer-events: none;
@@ -99,19 +102,13 @@
         width: 40px;
       }
 
+      :host([checked]) paper-ripple {
+        color: var(--cr-toggle-checked-ripple-color);
+      }
+
       :host-context([dir=rtl]) paper-ripple {
         left: auto;
         right: -12px;
-      }
-
-      :host([checked]) paper-ripple {
-        color: var(--cr-toggle-checked-ink-color);
-      }
-
-      @media (prefers-color-scheme: light) {
-        :host([checked]) paper-ripple {
-          --paper-ripple-opacity: 0.2;
-        }
       }
     </style>
     <span id="bar"></span>

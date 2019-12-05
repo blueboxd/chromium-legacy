@@ -127,12 +127,12 @@ DataTypeController::TypeMap BuildDataTypeControllerMap(
 
 std::unique_ptr<HttpPostProviderFactory> CreateHttpBridgeFactory(
     const std::string& user_agent,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        url_loader_factory_info,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_url_loader_factory,
     const NetworkTimeUpdateCallback& network_time_update_callback) {
-  return std::make_unique<HttpBridgeFactory>(user_agent,
-                                             std::move(url_loader_factory_info),
-                                             network_time_update_callback);
+  return std::make_unique<HttpBridgeFactory>(
+      user_agent, std::move(pending_url_loader_factory),
+      network_time_update_callback);
 }
 
 }  // namespace

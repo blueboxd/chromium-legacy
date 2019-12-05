@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_SERVICES_ASSISTANT_ASSISTANT_STATE_PROXY_H_
 #define CHROMEOS_SERVICES_ASSISTANT_ASSISTANT_STATE_PROXY_H_
 
+#include <memory>
 #include <string>
 
 #include "ash/public/cpp/assistant/assistant_state_base.h"

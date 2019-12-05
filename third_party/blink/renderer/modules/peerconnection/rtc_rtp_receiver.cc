@@ -28,7 +28,7 @@
 namespace blink {
 
 RTCRtpReceiver::RTCRtpReceiver(RTCPeerConnection* pc,
-                               std::unique_ptr<WebRTCRtpReceiver> receiver,
+                               std::unique_ptr<RTCRtpReceiverPlatform> receiver,
                                MediaStreamTrack* track,
                                MediaStreamVector streams)
     : pc_(pc),
@@ -134,7 +134,7 @@ ScriptPromise RTCRtpReceiver::getStats(ScriptState* script_state) {
   return promise;
 }
 
-WebRTCRtpReceiver* RTCRtpReceiver::web_receiver() {
+RTCRtpReceiverPlatform* RTCRtpReceiver::platform_receiver() {
   return receiver_.get();
 }
 

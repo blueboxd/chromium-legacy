@@ -26,6 +26,7 @@ class AwContentSettingsClient : public content::RenderFrameObserver,
   // blink::WebContentSettingsClient implementation.
   bool AllowRunningInsecureContent(bool enabled_per_settings,
                                    const blink::WebURL& url) override;
+  bool ShouldAutoupgradeMixedContent() override;
 
   DISALLOW_COPY_AND_ASSIGN(AwContentSettingsClient);
 };

@@ -14,13 +14,6 @@
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace {
-
-// Path to the relevant help center page.
-const char kHelpPath[] = "answer/6098869";
-
-}  // namespace
-
 namespace security_interstitials {
 
 BlockedInterceptionUI::BlockedInterceptionUI(const GURL& request_url,
@@ -77,12 +70,13 @@ void BlockedInterceptionUI::PopulateStringsForHTML(
       l10n_util::GetStringUTF16(IDS_SSL_OVERRIDABLE_SAFETY_BUTTON));
   load_time_data->SetString("finalParagraph", std::string());
 
+  // Reuse the strings from the WebUI page.
   load_time_data->SetString(
       "primaryParagraph",
-      l10n_util::GetStringUTF16(IDS_BLOCKED_INTERCEPTION_PRIMARY_PARAGRAPH));
+      l10n_util::GetStringUTF16(IDS_KNOWN_INTERCEPTION_BODY1));
   load_time_data->SetString(
       "explanationParagraph",
-      l10n_util::GetStringUTF16(IDS_BLOCKED_INTERCEPTION_EXPLANATION));
+      l10n_util::GetStringUTF16(IDS_KNOWN_INTERCEPTION_BODY2));
 
   load_time_data->SetString(
       "finalParagraph", l10n_util::GetStringFUTF16(
@@ -114,26 +108,7 @@ void BlockedInterceptionUI::HandleCommand(SecurityInterstitialCommand command) {
     case CMD_OPEN_WHITEPAPER:
       controller_->OpenExtendedReportingWhitepaper(true);
       break;
-    case CMD_OPEN_HELP_CENTER: {
-      controller_->metrics_helper()->RecordUserInteraction(
-          security_interstitials::MetricsHelper::SHOW_LEARN_MORE);
-
-      // Add cert error code as a ref to support URL, this is used to expand the
-      // right section if the user is redirected to chrome://connection-help.
-      GURL::Replacements replacements;
-      // This has to be stored in a separate variable, otherwise asan throws a
-      // use-after-scope error
-      std::string cert_error_string =
-          base::UTF16ToUTF8(base::FormatNumber(cert_error_));
-      replacements.SetRefStr(cert_error_string);
-      // If |support_url_| is invalid, use the default help center url.
-      controller_->OpenUrlInNewForegroundTab(
-          controller_->GetBaseHelpCenterUrl()
-              .Resolve(kHelpPath)
-              .ReplaceComponents(replacements));
-      break;
-    }
-
+    case CMD_OPEN_HELP_CENTER:
     case CMD_DONT_PROCEED:
     case CMD_RELOAD:
     case CMD_OPEN_DATE_SETTINGS:

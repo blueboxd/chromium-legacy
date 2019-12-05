@@ -126,13 +126,13 @@ IN_PROC_BROWSER_TEST_F(StoragePartititionImplBrowsertest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   base::ScopedAllowBlockingForTesting allow_blocking;
-  auto shared_url_loader_factory_info =
+  auto pending_shared_url_loader_factory =
       BrowserContext::GetDefaultStoragePartition(
           shell()->web_contents()->GetBrowserContext())
           ->GetURLLoaderFactoryForBrowserProcessIOThread();
 
   auto factory_owner = IOThreadSharedURLLoaderFactoryOwner::Create(
-      std::move(shared_url_loader_factory_info));
+      std::move(pending_shared_url_loader_factory));
 
   EXPECT_EQ(net::OK, factory_owner->LoadBasicRequestOnIOThread(GetTestURL()));
 }
@@ -141,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(StoragePartititionImplBrowsertest,
 // |StoragePartition::GetURLLoaderFactoryForBrowserProcessIOThread()| doesn't
 // crash if it's called after the StoragePartition is deleted.
 IN_PROC_BROWSER_TEST_F(StoragePartititionImplBrowsertest,
-                       BrowserIOFactoryInfoAfterStoragePartitionGone) {
+                       BrowserIOPendingFactoryAfterStoragePartitionGone) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   base::ScopedAllowBlockingForTesting allow_blocking;
@@ -149,13 +149,13 @@ IN_PROC_BROWSER_TEST_F(StoragePartititionImplBrowsertest,
       std::make_unique<ShellBrowserContext>(true);
   auto* partition =
       BrowserContext::GetDefaultStoragePartition(browser_context.get());
-  auto shared_url_loader_factory_info =
+  auto pending_shared_url_loader_factory =
       partition->GetURLLoaderFactoryForBrowserProcessIOThread();
 
   browser_context.reset();
 
   auto factory_owner = IOThreadSharedURLLoaderFactoryOwner::Create(
-      std::move(shared_url_loader_factory_info));
+      std::move(pending_shared_url_loader_factory));
 
   EXPECT_EQ(net::ERR_FAILED,
             factory_owner->LoadBasicRequestOnIOThread(GetTestURL()));

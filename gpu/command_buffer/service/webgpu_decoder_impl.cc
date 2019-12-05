@@ -241,7 +241,6 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   bool HasPollingWork() const override { return true; }
 
   void PerformPollingWork() override {
-    DCHECK(wgpu_device_);
     DCHECK(wire_serializer_);
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("gpu.dawn"),
                  "WebGPUDecoderImpl::PerformPollingWork");
@@ -395,7 +394,9 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
 
   int32_t GetPreferredAdapterIndex(PowerPreference power_preference) const;
 
-  error::Error InitDawnDeviceAndSetWireServer(int32_t requested_adapter_index);
+  error::Error InitDawnDeviceAndSetWireServer(
+      int32_t requested_adapter_index,
+      const WGPUDeviceProperties& requested_device_properties);
 
   std::unique_ptr<SharedImageRepresentationFactory>
       shared_image_representation_factory_;
@@ -475,7 +476,8 @@ ContextResult WebGPUDecoderImpl::Initialize() {
 }
 
 error::Error WebGPUDecoderImpl::InitDawnDeviceAndSetWireServer(
-    int32_t requested_adapter_index) {
+    int32_t requested_adapter_index,
+    const WGPUDeviceProperties& request_device_properties) {
   DCHECK_LE(0, requested_adapter_index);
 
   // TODO(jiawei.shao@intel.com): support multiple Dawn devices.
@@ -486,6 +488,12 @@ error::Error WebGPUDecoderImpl::InitDawnDeviceAndSetWireServer(
 
   DCHECK_LT(static_cast<size_t>(requested_adapter_index),
             dawn_adapters_.size());
+
+  dawn_native::DeviceDescriptor device_descriptor;
+  if (request_device_properties.textureCompressionBC) {
+    device_descriptor.requiredExtensions.push_back("texture_compression_bc");
+  }
+
   wgpu_device_ = dawn_adapters_[requested_adapter_index].CreateDevice();
   if (wgpu_device_ == nullptr) {
     return error::kLostContext;
@@ -672,8 +680,40 @@ error::Error WebGPUDecoderImpl::HandleRequestAdapter(
       static_cast<uint32_t>(c.request_adapter_serial),
       static_cast<uint32_t>(requested_adapter_index), adapter);
 
-  // TODO(jiawei.shao@intel.com): support creating device with device descriptor
-  return InitDawnDeviceAndSetWireServer(requested_adapter_index);
+  return error::kNoError;
+}
+
+error::Error WebGPUDecoderImpl::HandleRequestDevice(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile webgpu::cmds::RequestDevice& c =
+      *static_cast<const volatile webgpu::cmds::RequestDevice*>(cmd_data);
+
+  uint32_t adapter_service_id = static_cast<uint32_t>(c.adapter_service_id);
+  uint32_t request_device_properties_shm_id =
+      static_cast<uint32_t>(c.request_device_properties_shm_id);
+  uint32_t request_device_properties_shm_offset =
+      static_cast<uint32_t>(c.request_device_properties_shm_offset);
+  uint32_t request_device_properties_size =
+      static_cast<uint32_t>(c.request_device_properties_size);
+
+  WGPUDeviceProperties device_properties = {};
+  if (!request_device_properties_size) {
+    return InitDawnDeviceAndSetWireServer(adapter_service_id,
+                                          device_properties);
+  }
+
+  const volatile char* shm_device_properties =
+      GetSharedMemoryAs<const volatile char*>(
+          request_device_properties_shm_id,
+          request_device_properties_shm_offset, request_device_properties_size);
+  if (!shm_device_properties) {
+    return error::kOutOfBounds;
+  }
+
+  dawn_wire::DeserializeWGPUDeviceProperties(&device_properties,
+                                             shm_device_properties);
+  return InitDawnDeviceAndSetWireServer(adapter_service_id, device_properties);
 }
 
 error::Error WebGPUDecoderImpl::HandleDawnCommands(

@@ -1109,7 +1109,7 @@ void LocalFrameView::AddPartToUpdate(LayoutEmbeddedObject& object) {
   // Tell the DOM element that it needs a Plugin update.
   Node* node = object.GetNode();
   DCHECK(node);
-  if (IsA<HTMLObjectElement>(*node) || IsHTMLEmbedElement(*node))
+  if (IsA<HTMLObjectElement>(*node) || IsA<HTMLEmbedElement>(*node))
     ToHTMLPlugInElement(node)->SetNeedsPluginUpdate(true);
 
   part_update_set_.insert(&object);

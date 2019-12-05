@@ -271,9 +271,9 @@ class WebBundleBrowserTestBase : public ContentBrowserTest {
   WebBundleBrowserTestBase() = default;
   ~WebBundleBrowserTestBase() override = default;
 
-  void NavigateToBundleAndWaitForTitle(const GURL& test_data_url,
-                                       const GURL& expected_commit_url,
-                                       base::StringPiece ascii_title) {
+  void NavigateAndWaitForTitle(const GURL& test_data_url,
+                               const GURL& expected_commit_url,
+                               base::StringPiece ascii_title) {
     base::string16 expected_title = base::ASCIIToUTF16(ascii_title);
     TitleWatcher title_watcher(shell()->web_contents(), expected_title);
     EXPECT_TRUE(NavigateToURL(shell()->web_contents(), test_data_url,
@@ -283,8 +283,7 @@ class WebBundleBrowserTestBase : public ContentBrowserTest {
 
   void NavigateToBundleAndWaitForReady(const GURL& test_data_url,
                                        const GURL& expected_commit_url) {
-    NavigateToBundleAndWaitForTitle(test_data_url, expected_commit_url,
-                                    "Ready");
+    NavigateAndWaitForTitle(test_data_url, expected_commit_url, "Ready");
   }
 
   void RunTestScript(const std::string& script) {
@@ -428,9 +427,11 @@ class WebBundleTrustableFileBrowserTestBase : public WebBundleBrowserTestBase {
   }
 
   const GURL& test_data_url() const { return test_data_url_; }
+  const GURL& empty_page_url() const { return empty_page_url_; }
 
   ContentBrowserClient* original_client_ = nullptr;
   GURL test_data_url_;
+  GURL empty_page_url_;
 
  private:
   TestBrowserClient browser_client_;
@@ -453,12 +454,16 @@ class WebBundleTrustableFileBrowserTest
     if (GetParam() == TestFilePathMode::kNormalFilePath) {
       test_data_url_ =
           net::FilePathToFileURL(GetTestDataPath("web_bundle_browsertest.wbn"));
+      empty_page_url_ =
+          net::FilePathToFileURL(GetTestDataPath("empty_page.html"));
       return;
     }
 #if defined(OS_ANDROID)
     DCHECK_EQ(TestFilePathMode::kContentURI, GetParam());
     test_data_url_ =
         CopyFileAndGetContentUri(GetTestDataPath("web_bundle_browsertest.wbn"));
+    empty_page_url_ =
+        CopyFileAndGetContentUri(GetTestDataPath("empty_page.html"));
 #endif  // OS_ANDROID
   }
   ~WebBundleTrustableFileBrowserTest() override = default;
@@ -523,6 +528,14 @@ IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest, Navigations) {
 
   // Move to page 2.
   ExecuteScriptAndWaitForTitle("history.forward();", "Page 2");
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
+            GURL(kTestPage2Url));
+
+  // Move out of the Web Bundle.
+  NavigateAndWaitForTitle(empty_page_url(), empty_page_url(), "Empty Page");
+
+  // Back to the page 2.
+  ExecuteScriptAndWaitForTitle("history.back();", "Page 2");
   EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
             GURL(kTestPage2Url));
 }
@@ -665,6 +678,18 @@ IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, Navigations) {
   EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
             web_bundle_utils::GetSynthesizedUrlForWebBundle(
                 test_data_url, GURL(kTestPage2Url)));
+
+  const GURL empty_page_url =
+      GetTestUrlForFile(GetTestDataPath("empty_page.html"));
+
+  // Move out of the Web Bundle.
+  NavigateAndWaitForTitle(empty_page_url, empty_page_url, "Empty Page");
+
+  // Back to the page 2 in the Web Bundle.
+  ExecuteScriptAndWaitForTitle("history.back();", "Page 2");
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
+            web_bundle_utils::GetSynthesizedUrlForWebBundle(
+                test_data_url, GURL(kTestPage2Url)));
 }
 
 IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, NavigationWithHash) {
@@ -792,11 +817,10 @@ IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, DataDecoderRestart) {
       {GURL(kTestPageUrl), GURL(kTestPage1Url), GURL(kTestPage2Url)},
       test_file_path);
   const GURL test_data_url = GetTestUrlForFile(test_file_path);
-  NavigateToBundleAndWaitForTitle(
-      test_data_url,
-      web_bundle_utils::GetSynthesizedUrlForWebBundle(test_data_url,
-                                                      GURL(kTestPageUrl)),
-      kTestPageUrl);
+  NavigateAndWaitForTitle(test_data_url,
+                          web_bundle_utils::GetSynthesizedUrlForWebBundle(
+                              test_data_url, GURL(kTestPageUrl)),
+                          kTestPageUrl);
 
   EXPECT_EQ(1, mock_factory.GetParserCreationCount());
   mock_factory.SimulateParserDisconnect();
@@ -873,6 +897,39 @@ IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, ParseResponseCrash) {
       console_delegate.message());
 }
 
+IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, Variants) {
+  const GURL test_data_url =
+      GetTestUrlForFile(GetTestDataPath("variants_test.wbn"));
+  NavigateToBundleAndWaitForReady(
+      test_data_url, web_bundle_utils::GetSynthesizedUrlForWebBundle(
+                         test_data_url, GURL(kTestPageUrl)));
+  ExecuteScriptAndWaitForTitle(R"(
+    (async function() {
+      const headers = {Accept: 'application/octet-stream'};
+      const resp = await fetch('/data', {headers});
+      const data = await resp.json();
+      document.title = data.text;
+    })();)",
+                               "octet-stream");
+  ExecuteScriptAndWaitForTitle(R"(
+    (async function() {
+      const headers = {Accept: 'application/json'};
+      const resp = await fetch('/data', {headers});
+      const data = await resp.json();
+      document.title = data.text;
+    })();)",
+                               "json");
+  ExecuteScriptAndWaitForTitle(R"(
+    (async function() {
+      const headers = {Accept: 'foo/bar'};
+      const resp = await fetch('/data', {headers});
+      const data = await resp.json();
+      document.title = data.text;
+    })();)",
+                               "octet-stream");
+  // TODO(crbug/1029406): Test Accept-Language negotiation.
+}
+
 INSTANTIATE_TEST_SUITE_P(WebBundleFileBrowserTest,
                          WebBundleFileBrowserTest,
                          testing::Values(TestFilePathMode::kNormalFilePath
@@ -944,6 +1001,71 @@ class WebBundleNetworkBrowserTest : public WebBundleBrowserTestBase {
       console_delegate.Wait();
     EXPECT_FALSE(console_delegate.messages().empty());
     EXPECT_EQ(expected_console_error, console_delegate.message());
+  }
+
+  void RunHistoryNavigationErrorTest(
+      const std::string& first_headers,
+      const std::string& first_contents,
+      const std::string& subsequent_headers,
+      const std::string& subsequent_contents,
+      const std::string& expected_error_message) {
+    scoped_refptr<base::RefCountedData<bool>> is_first_call =
+        base::MakeRefCounted<base::RefCountedData<bool>>(true);
+    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+        [](const std::string& relative_url,
+           scoped_refptr<base::RefCountedData<bool>> is_first_call,
+           const std::string& first_headers, const std::string& first_contents,
+           const std::string& subsequent_headers,
+           const std::string& subsequent_contents,
+           const net::test_server::HttpRequest& request)
+            -> std::unique_ptr<net::test_server::HttpResponse> {
+          if (request.relative_url != relative_url)
+            return nullptr;
+          if (is_first_call->data) {
+            is_first_call->data = false;
+            return std::make_unique<net::test_server::RawHttpResponse>(
+                first_headers, first_contents);
+          } else {
+            return std::make_unique<net::test_server::RawHttpResponse>(
+                subsequent_headers, subsequent_contents);
+          }
+        },
+        "/web_bundle/path_test/in_scope/path_test.wbn",
+        std::move(is_first_call), first_headers, first_contents,
+        subsequent_headers, subsequent_contents));
+    ASSERT_TRUE(embedded_test_server()->Start(kNetworkTestPort));
+    NavigateToBundleAndWaitForReady(
+        GURL(base::StringPrintf(
+            "http://localhost:%d/web_bundle/path_test/in_scope/path_test.wbn",
+            kNetworkTestPort)),
+        GURL(base::StringPrintf(
+            "http://localhost:%d/web_bundle/path_test/in_scope/",
+            kNetworkTestPort)));
+    NavigateToURLAndWaitForTitle(
+        GURL(base::StringPrintf(
+            "http://localhost:%d/web_bundle/path_test/out_scope/page.html",
+            kNetworkTestPort)),
+        "Out scope page from server / out scope script from server");
+
+    WebContents* web_contents = shell()->web_contents();
+    ConsoleObserverDelegate console_delegate(web_contents, "*");
+    web_contents->SetDelegate(&console_delegate);
+
+    base::RunLoop run_loop;
+    FinishNavigationObserver finish_navigation_observer(web_contents,
+                                                        run_loop.QuitClosure());
+    EXPECT_TRUE(ExecuteScript(web_contents, "history.back();"));
+
+    run_loop.Run();
+    ASSERT_TRUE(finish_navigation_observer.error_code());
+    EXPECT_EQ(net::ERR_INVALID_WEB_BUNDLE,
+              *finish_navigation_observer.error_code());
+
+    if (console_delegate.messages().empty())
+      console_delegate.Wait();
+
+    EXPECT_FALSE(console_delegate.messages().empty());
+    EXPECT_EQ(expected_error_message, console_delegate.message());
   }
 
   static GURL GetTestUrl(const std::string& host) {
@@ -1218,6 +1340,151 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, Navigations) {
           "http://localhost:%d/web_bundle/path_test/in_scope/page.html",
           kNetworkTestPort)),
       "In scope page from server / in scope script from server");
+}
+
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, HistoryNavigations) {
+  const std::string test_bundle = GetTestFile("path_test.wbn");
+  RegisterRequestHandler(
+      "/web_bundle/path_test/in_scope/path_test.wbn",
+      base::StringPrintf("HTTP/1.1 200 OK\n"
+                         "Content-Type:application/webbundle\n"
+                         "Content-Length: %" PRIuS "\n",
+                         test_bundle.size()),
+      test_bundle);
+  ASSERT_TRUE(embedded_test_server()->Start(kNetworkTestPort));
+
+  NavigateToBundleAndWaitForReady(
+      GURL(base::StringPrintf(
+          "http://localhost:%d/web_bundle/path_test/in_scope/path_test.wbn",
+          kNetworkTestPort)),
+      GURL(base::StringPrintf(
+          "http://localhost:%d/web_bundle/path_test/in_scope/",
+          kNetworkTestPort)));
+
+  NavigateToURLAndWaitForTitle(
+      GURL(base::StringPrintf(
+          "http://localhost:%d/web_bundle/path_test/in_scope/page.html",
+          kNetworkTestPort)),
+      "In scope page in Web Bundle / in scope script in Web Bundle");
+
+  NavigateToURLAndWaitForTitle(
+      GURL(base::StringPrintf(
+          "http://localhost:%d/web_bundle/path_test/in_scope/",
+          kNetworkTestPort)),
+      "Ready");
+
+  ExecuteScriptAndWaitForTitle(
+      "history.back();",
+      "In scope page in Web Bundle / in scope script in Web Bundle");
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
+            GURL(base::StringPrintf(
+                "http://localhost:%d/web_bundle/path_test/in_scope/page.html",
+                kNetworkTestPort)));
+
+  NavigateToURLAndWaitForTitle(
+      GURL(base::StringPrintf(
+          "http://localhost:%d/web_bundle/path_test/out_scope/page.html",
+          kNetworkTestPort)),
+      "Out scope page from server / out scope script from server");
+
+  ExecuteScriptAndWaitForTitle(
+      "history.back();",
+      "In scope page in Web Bundle / in scope script in Web Bundle");
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
+            GURL(base::StringPrintf(
+                "http://localhost:%d/web_bundle/path_test/in_scope/page.html",
+                kNetworkTestPort)));
+}
+
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
+                       HistoryNavigationError_UnexpectedContentType) {
+  const std::string test_bundle = GetTestFile("path_test.wbn");
+  RunHistoryNavigationErrorTest(
+      base::StringPrintf("HTTP/1.1 200 OK\n"
+                         "Content-Type:application/webbundle\n"
+                         "Cache-Control:no-store\n"
+                         "Content-Length: %" PRIuS "\n",
+                         test_bundle.size()),
+      test_bundle,
+      base::StringPrintf("HTTP/1.1 200 OK\n"
+                         "Content-Type:application/foo_bar\n"
+                         "Cache-Control:no-store\n"
+                         "Content-Length: %" PRIuS "\n",
+                         test_bundle.size()),
+      test_bundle, "Unexpected content type.");
+}
+
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
+                       HistoryNavigationError_UnexpectedRedirect) {
+  const std::string test_bundle = GetTestFile("path_test.wbn");
+  RunHistoryNavigationErrorTest(
+      base::StringPrintf("HTTP/1.1 200 OK\n"
+                         "Content-Type:application/webbundle\n"
+                         "Cache-Control:no-store\n"
+                         "Content-Length: %" PRIuS "\n",
+                         test_bundle.size()),
+      test_bundle,
+      "HTTP/1.1 302 OK\n"
+      "Location:/web_bundle/empty_page.html\n",
+      "", "Unexpected redirect.");
+}
+
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
+                       HistoryNavigationError_InvalidContentLength) {
+  const std::string test_bundle = GetTestFile("path_test.wbn");
+  RunHistoryNavigationErrorTest(
+      base::StringPrintf("HTTP/1.1 200 OK\n"
+                         "Content-Type:application/webbundle\n"
+                         "Cache-Control:no-store\n"
+                         "Content-Length: %" PRIuS "\n",
+                         test_bundle.size()),
+      test_bundle,
+      "HTTP/1.1 200 OK\n"
+      "Content-Type:application/webbundle\n"
+      "Cache-Control:no-store\n",
+      test_bundle,
+      "Web Bundle response must have valid Content-Length header.");
+}
+
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
+                       HistoryNavigationError_ReadMetadataFailure) {
+  const std::string test_bundle = GetTestFile("path_test.wbn");
+  const std::string invalid_bundle = GetTestFile("invalid_web_bundle.wbn");
+  RunHistoryNavigationErrorTest(
+      base::StringPrintf("HTTP/1.1 200 OK\n"
+                         "Content-Type:application/webbundle\n"
+                         "Cache-Control:no-store\n"
+                         "Content-Length: %" PRIuS "\n",
+                         test_bundle.size()),
+      test_bundle,
+      base::StringPrintf("HTTP/1.1 200 OK\n"
+                         "Content-Type:application/webbundle\n"
+                         "Cache-Control:no-store\n"
+                         "Content-Length: %" PRIuS "\n",
+                         invalid_bundle.size()),
+      invalid_bundle,
+      "Failed to read metadata of Web Bundle file: Wrong magic bytes.");
+}
+
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
+                       HistoryNavigationError_ExpectedUrlNotFound) {
+  const std::string test_bundle = GetTestFile("path_test.wbn");
+  const std::string other_bundle =
+      GetTestFile("web_bundle_browsertest_network.wbn");
+  RunHistoryNavigationErrorTest(
+      base::StringPrintf("HTTP/1.1 200 OK\n"
+                         "Content-Type:application/webbundle\n"
+                         "Cache-Control:no-store\n"
+                         "Content-Length: %" PRIuS "\n",
+                         test_bundle.size()),
+      test_bundle,
+      base::StringPrintf("HTTP/1.1 200 OK\n"
+                         "Content-Type:application/webbundle\n"
+                         "Cache-Control:no-store\n"
+                         "Content-Length: %" PRIuS "\n",
+                         other_bundle.size()),
+      other_bundle,
+      "The expected URL resource is not found in the web bundle.");
 }
 
 }  // namespace content

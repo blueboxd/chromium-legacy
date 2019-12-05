@@ -38,7 +38,7 @@ class ClientUsageTracker;
 class COMPONENT_EXPORT(STORAGE_BROWSER) UsageTracker
     : public QuotaTaskObserver {
  public:
-  UsageTracker(const std::vector<QuotaClient*>& clients,
+  UsageTracker(const std::vector<scoped_refptr<QuotaClient>>& clients,
                blink::mojom::StorageType type,
                SpecialStoragePolicy* special_storage_policy);
   ~UsageTracker() override;

@@ -221,7 +221,7 @@ extern const char PLATFORM_EXPORT kFreezableTaskTypesListParam[];
 // enabled.
 const base::Feature kBlinkSchedulerDisableAntiStarvationForPriorities{
     "BlinkSchedulerDisableAntiStarvationForPriorities",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable setting high priority database task type from field trial parameters.
 const base::Feature kHighPriorityDatabaseTaskType{

@@ -773,8 +773,7 @@ TEST_F(DisplayTest, BackdropFilterTest) {
       quad1->SetNew(shared_quad_state1, /*rect=*/sub_surface_rect,
                     /*visible_rect=*/sub_surface_rect,
                     SurfaceRange(base::nullopt, sub_surface_id1), SK_ColorBLACK,
-                    /*stretch_content_to_fill_bounds=*/false,
-                    /*has_pointer_events_none=*/false);
+                    /*stretch_content_to_fill_bounds=*/false);
       quad1->allow_merge = false;
 
       // Embed sub surface 2, with damage.
@@ -791,8 +790,7 @@ TEST_F(DisplayTest, BackdropFilterTest) {
       quad2->SetNew(shared_quad_state2, /*rect=*/rect1,
                     /*visible_rect=*/rect1,
                     SurfaceRange(base::nullopt, sub_surface_id2), SK_ColorBLACK,
-                    /*stretch_content_to_fill_bounds=*/false,
-                    /*has_pointer_events_none=*/false);
+                    /*stretch_content_to_fill_bounds=*/false);
       quad2->allow_merge = false;
 
       pass_list.push_back(std::move(pass));
@@ -3481,8 +3479,7 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
     quad2->SetNew(shared_quad_state2, rect2 /* rect */,
                   rect2 /* visible_rect */,
                   SurfaceRange(base::nullopt, sub_surface_id), SK_ColorBLACK,
-                  false /* stretch_content_to_fill_bounds */,
-                  false /* has_pointer_events_none */);
+                  false /* stretch_content_to_fill_bounds */);
 
     pass_list.push_back(std::move(pass));
     SubmitCompositorFrame(&pass_list, local_surface_id);

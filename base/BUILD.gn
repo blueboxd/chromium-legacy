@@ -1544,6 +1544,8 @@ jumbo_component("base") {
       "fuchsia/filtered_service_directory.h",
       "fuchsia/fuchsia_logging.cc",
       "fuchsia/fuchsia_logging.h",
+      "fuchsia/intl_profile_watcher.cc",
+      "fuchsia/intl_profile_watcher.h",
       "fuchsia/scoped_service_binding.cc",
       "fuchsia/scoped_service_binding.h",
       "fuchsia/service_directory.cc",
@@ -1592,7 +1594,7 @@ jumbo_component("base") {
       "threading/platform_thread_posix.cc",
       "threading/thread_local_storage_posix.cc",
       "time/time_conversion_posix.cc",
-      "time/time_exploded_posix.cc",
+      "time/time_exploded_icu.cc",
       "time/time_fuchsia.cc",
       "timer/hi_res_timer_manager_posix.cc",
     ]
@@ -1614,10 +1616,11 @@ jumbo_component("base") {
       "//third_party/fuchsia-sdk/sdk:async-loop-cpp",
       "//third_party/fuchsia-sdk/sdk:async-loop-default",
       "//third_party/fuchsia-sdk/sdk:fidl",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-deprecatedtimezone",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-intl",
       "//third_party/fuchsia-sdk/sdk:fuchsia-sys",
       "//third_party/fuchsia-sdk/sdk:syslog",
       "//third_party/fuchsia-sdk/sdk:vfs_cpp",
+      "//third_party/icu",
     ]
   }
 
@@ -3039,6 +3042,7 @@ test("base_unittests") {
       "files/file_descriptor_watcher_posix_unittest.cc",
       "fuchsia/file_utils_unittest.cc",
       "fuchsia/filtered_service_directory_unittest.cc",
+      "fuchsia/intl_profile_watcher_unittest.cc",
       "fuchsia/scoped_service_binding_unittest.cc",
       "fuchsia/service_directory_test_base.cc",
       "fuchsia/service_directory_test_base.h",
@@ -3057,6 +3061,7 @@ test("base_unittests") {
       "//third_party/fuchsia-sdk/sdk:async",
       "//third_party/fuchsia-sdk/sdk:async-default",
       "//third_party/fuchsia-sdk/sdk:fdio",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-intl",
       "//third_party/fuchsia-sdk/sdk:fuchsia-logger",
       "//third_party/fuchsia-sdk/sdk:fuchsia-sys",
       "//third_party/fuchsia-sdk/sdk:sys_cpp",

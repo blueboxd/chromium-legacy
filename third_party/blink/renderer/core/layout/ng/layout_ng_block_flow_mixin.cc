@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_box_utils.h"
@@ -361,17 +362,25 @@ PositionWithAffinity LayoutNGBlockFlowMixin<Base>::PositionForPoint(
   if (!Base::ChildrenInline())
     return LayoutBlock::PositionForPoint(point);
 
-  if (!PaintFragment())
-    return Base::CreatePositionWithAffinity(0);
+  if (const NGPaintFragment* paint_fragment = PaintFragment()) {
+    // The given offset is relative to this |LayoutBlockFlow|. Convert to the
+    // contents offset.
+    PhysicalOffset point_in_contents = point;
+    Base::OffsetForContents(point_in_contents);
+    if (const PositionWithAffinity position =
+            paint_fragment->PositionForPoint(point_in_contents))
+      return position;
+  } else if (const NGFragmentItems* items = Base::FragmentItems()) {
+    // The given offset is relative to this |LayoutBlockFlow|. Convert to the
+    // contents offset.
+    PhysicalOffset point_in_contents = point;
+    Base::OffsetForContents(point_in_contents);
+    NGInlineCursor cursor(*items);
+    if (const PositionWithAffinity position =
+            cursor.PositionForPoint(point_in_contents))
+      return position;
+  }
 
-  // The given offset is relative to this |LayoutBlockFlow|. Convert to the
-  // contents offset.
-  PhysicalOffset point_in_contents = point;
-  Base::OffsetForContents(point_in_contents);
-  const PositionWithAffinity ng_position =
-      PaintFragment()->PositionForPoint(point_in_contents);
-  if (ng_position.IsNotNull())
-    return ng_position;
   return Base::CreatePositionWithAffinity(0);
 }
 

@@ -96,11 +96,12 @@ void VideoDecoderProxy::ConnectToMediaService() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!interface_factory_remote_);
 
-  media::mojom::MediaServicePtr media_service;
+  mojo::Remote<media::mojom::MediaService> media_service;
   // TODO(slan): Use the BrowserContext Connector instead.
   // See https://crbug.com/638950.
-  GetSystemConnector()->BindInterface(media::mojom::kMediaServiceName,
-                                      &media_service);
+  GetSystemConnector()->BindInterface(
+      media::mojom::kMediaServiceName,
+      media_service.BindNewPipeAndPassReceiver());
 
   mojo::PendingRemote<service_manager::mojom::InterfaceProvider> interfaces;
   ignore_result(interfaces.InitWithNewPipeAndPassReceiver());

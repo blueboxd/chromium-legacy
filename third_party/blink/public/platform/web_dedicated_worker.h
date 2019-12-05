@@ -18,7 +18,6 @@ class WebDedicatedWorker {
 
   // Called when content::DedicatedWorkerHost is created in the browser process.
   virtual void OnWorkerHostCreated(
-      mojo::ScopedMessagePipeHandle interface_provider,
       mojo::ScopedMessagePipeHandle browser_interface_broker) = 0;
 
   // Called when content::DedicatedWorkerHost started loading the main worker

@@ -31,13 +31,6 @@ class TouchToFillViewImpl : public TouchToFillView {
       const password_manager::UiCredential& credential) override;
   void OnDismiss() override;
 
-  // Called from Java via JNI:
-  void FetchFavicon(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jstring>& j_credential_origin,
-      const base::android::JavaParamRef<jstring>& j_frame_origin,
-      jint desized_size_in_pixel,
-      const base::android::JavaParamRef<jobject>& j_callback);
   void OnCredentialSelected(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& credential);

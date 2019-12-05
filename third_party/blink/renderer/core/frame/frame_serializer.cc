@@ -398,7 +398,7 @@ void FrameSerializer::AddResourceForElement(Document& document,
     }
     ImageResourceContent* cached_image = image->CachedImage();
     AddImageToResources(cached_image, document.CompleteURL(image_url_value));
-  } else if (const auto* input = ToHTMLInputElementOrNull(element)) {
+  } else if (const auto* input = DynamicTo<HTMLInputElement>(element)) {
     if (input->type() == input_type_names::kImage && input->ImageLoader()) {
       KURL image_url = input->Src();
       ImageResourceContent* cached_image = input->ImageLoader()->GetContent();

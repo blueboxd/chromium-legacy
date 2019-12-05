@@ -3668,7 +3668,7 @@ void Document::open(Document* entered_document,
   // If |document|'s origin is not same origin to the origin of the responsible
   // document specified by the entry settings object, then throw a
   // "SecurityError" DOMException.
-  if (entered_document && !GetSecurityOrigin()->IsSameSchemeHostPort(
+  if (entered_document && !GetSecurityOrigin()->IsSameOriginWith(
                               entered_document->GetSecurityOrigin())) {
     exception_state.ThrowSecurityError(
         "Can only call open() on same-origin documents.");
@@ -4296,7 +4296,7 @@ void Document::DispatchUnloadEvents(
 
   if (load_event_progress_ <= kUnloadEventInProgress) {
     Element* current_focused_element = FocusedElement();
-    if (auto* input = ToHTMLInputElementOrNull(current_focused_element))
+    if (auto* input = DynamicTo<HTMLInputElement>(current_focused_element))
       input->EndEditing();
     if (load_event_progress_ < kPageHideInProgress) {
       load_event_progress_ = kPageHideInProgress;
@@ -4458,7 +4458,7 @@ void Document::write(const String& text,
     return;
   }
 
-  if (entered_document && !GetSecurityOrigin()->IsSameSchemeHostPort(
+  if (entered_document && !GetSecurityOrigin()->IsSameOriginWith(
                               entered_document->GetSecurityOrigin())) {
     exception_state.ThrowSecurityError(
         "Can only call write() on same-origin documents.");
@@ -6172,7 +6172,7 @@ const KURL Document::SiteForCookies() const {
 ScriptPromise Document::hasStorageAccess(ScriptState* script_state) const {
   const bool has_access =
       TopFrameOrigin() &&
-      GetSecurityOrigin()->IsSameSchemeHostPort(TopFrameOrigin().get());
+      GetSecurityOrigin()->IsSameOriginWith(TopFrameOrigin().get());
   ScriptPromiseResolver* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 

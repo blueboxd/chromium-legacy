@@ -25,10 +25,6 @@
 namespace ash {
 namespace {
 
-// Duration of the back button's opacity animation.
-constexpr auto kBackButtonOpacityAnimationDuration =
-    base::TimeDelta::FromMilliseconds(200);
-
 bool IsTabletMode() {
   return Shell::Get()->tablet_mode_controller() &&
          Shell::Get()->tablet_mode_controller()->InTabletMode();
@@ -204,7 +200,6 @@ ShelfNavigationWidget::ShelfNavigationWidget(Shelf* shelf,
       delegate_(new ShelfNavigationWidget::Delegate(shelf, shelf_view)),
       bounds_animator_(std::make_unique<views::BoundsAnimator>(delegate_)) {
   DCHECK(shelf_);
-  bounds_animator_->SetAnimationDuration(kBackButtonOpacityAnimationDuration);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
   ShelfConfig::Get()->AddObserver(this);
@@ -318,6 +313,17 @@ void ShelfNavigationWidget::OnShelfConfigUpdated() {
 
 void ShelfNavigationWidget::UpdateLayout() {
   bool is_back_button_shown = IsBackButtonShown();
+  // Use the same duration for all parts of the upcoming animation.
+  const auto animation_duration =
+      ShelfConfig::Get()->shelf_animation_duration();
+  bounds_animator_->SetAnimationDuration(animation_duration);
+
+  ui::ScopedLayerAnimationSettings nav_animation_setter(
+      GetNativeView()->layer()->GetAnimator());
+  nav_animation_setter.SetTransitionDuration(animation_duration);
+  nav_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
+  nav_animation_setter.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
 
   SetBounds(shelf_->shelf_layout_manager()->GetNavigationBounds());
 
@@ -329,7 +335,7 @@ void ShelfNavigationWidget::UpdateLayout() {
                                         : views::View::FocusBehavior::NEVER);
   ui::ScopedLayerAnimationSettings settings(
       GetBackButton()->layer()->GetAnimator());
-  settings.SetTransitionDuration(kBackButtonOpacityAnimationDuration);
+  settings.SetTransitionDuration(animation_duration);
   settings.AddObserver(this);
   GetBackButton()->layer()->SetOpacity(is_back_button_shown ? 1 : 0);
 

@@ -7,6 +7,7 @@ include_rules = [
   "+components/safe_browsing/buildflags.h",
   "+components/safe_browsing/common/safe_browsing_prefs.h",
   "+components/safe_browsing/features.h",
+  "+components/signin/public",
   "+components/sync/base",
   "+components/sync/driver",
   "+components/sync/engine",
@@ -51,11 +52,5 @@ specific_include_rules = {
   ],
   "http_credentials_cleaner_unittest\.cc": [
     "+services/network",
-  ],
-  "password_sync_util\.cc": [
-    "+components/signin/public",
-  ],
-  "sync_username_test_base\.h": [
-    "+components/signin/public",
   ],
 }

@@ -40,7 +40,7 @@ class OneShotTimer;
 }  // namespace base
 
 namespace network {
-class SharedURLLoaderFactoryInfo;
+class PendingSharedURLLoaderFactory;
 }  // namespace network
 
 namespace power_manager {
@@ -67,8 +67,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
       public AssistantManagerService::StateObserver {
  public:
   Service(mojo::PendingReceiver<mojom::AssistantService> receiver,
-          std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-              url_loader_factory_info,
+          std::unique_ptr<network::PendingSharedURLLoaderFactory>
+              pending_url_loader_factory,
           PrefService* profile_prefs);
   ~Service() override;
 
@@ -201,7 +201,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   std::unique_ptr<ServiceContext> context_;
 
   // non-null until |assistant_manager_service_| is created.
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info_;
+  std::unique_ptr<network::PendingSharedURLLoaderFactory>
+      pending_url_loader_factory_;
 
   // User profile preferences.
   PrefService* const profile_prefs_;

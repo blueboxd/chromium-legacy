@@ -110,4 +110,24 @@ void StyleRecalcRoot::RootRemoved(ContainerNode& parent) {
   Clear();
 }
 
+void StyleRecalcRoot::RemovedFromFlatTree(const Node& node) {
+  if (!RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled())
+    return;
+  if (!GetRootNode())
+    return;
+  if (GetRootNode()->IsDocumentNode())
+    return;
+  // If the recalc root is the removed node, or if it's a descendant of the root
+  // node, the recalc flags will be cleared in DetachLayoutTree() since
+  // performing_reattach=false. If that's the case, call RootRemoved() below to
+  // make sure we don't have a recalc root outside the flat tree, which is not
+  // allowed with FlatTreeStyleRecalc enabled.
+  if (GetRootNode()->NeedsStyleRecalc() ||
+      GetRootNode()->ChildNeedsStyleRecalc()) {
+    return;
+  }
+  DCHECK(node.parentElement());
+  RootRemoved(*node.parentElement());
+}
+
 }  // namespace blink

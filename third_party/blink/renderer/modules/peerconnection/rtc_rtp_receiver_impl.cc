@@ -265,7 +265,7 @@ void RTCRtpReceiverImpl::set_state(RtpReceiverState state) {
   internal_->set_state(std::move(state));
 }
 
-std::unique_ptr<blink::WebRTCRtpReceiver> RTCRtpReceiverImpl::ShallowCopy()
+std::unique_ptr<RTCRtpReceiverPlatform> RTCRtpReceiverImpl::ShallowCopy()
     const {
   return std::make_unique<RTCRtpReceiverImpl>(*this);
 }
@@ -318,16 +318,16 @@ void RTCRtpReceiverImpl::SetJitterBufferMinimumDelay(
 }
 
 RTCRtpReceiverOnlyTransceiver::RTCRtpReceiverOnlyTransceiver(
-    std::unique_ptr<blink::WebRTCRtpReceiver> receiver)
+    std::unique_ptr<RTCRtpReceiverPlatform> receiver)
     : receiver_(std::move(receiver)) {
   DCHECK(receiver_);
 }
 
 RTCRtpReceiverOnlyTransceiver::~RTCRtpReceiverOnlyTransceiver() {}
 
-blink::WebRTCRtpTransceiverImplementationType
+RTCRtpTransceiverPlatformImplementationType
 RTCRtpReceiverOnlyTransceiver::ImplementationType() const {
-  return blink::WebRTCRtpTransceiverImplementationType::kPlanBReceiverOnly;
+  return RTCRtpTransceiverPlatformImplementationType::kPlanBReceiverOnly;
 }
 
 uintptr_t RTCRtpReceiverOnlyTransceiver::Id() const {
@@ -346,7 +346,7 @@ RTCRtpReceiverOnlyTransceiver::Sender() const {
   return nullptr;
 }
 
-std::unique_ptr<blink::WebRTCRtpReceiver>
+std::unique_ptr<RTCRtpReceiverPlatform>
 RTCRtpReceiverOnlyTransceiver::Receiver() const {
   return receiver_->ShallowCopy();
 }

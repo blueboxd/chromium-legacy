@@ -661,7 +661,7 @@ void ServiceWorkerContainer::DispatchMessageEvent(
     const SecurityOrigin* target_origin =
         GetExecutionContext()->GetSecurityOrigin();
     if (!msg.sender_origin ||
-        !msg.sender_origin->IsSameSchemeHostPort(target_origin)) {
+        !msg.sender_origin->IsSameOriginWith(target_origin)) {
       event = MessageEvent::CreateError(
           GetExecutionContext()->GetSecurityOrigin()->ToString(),
           service_worker);

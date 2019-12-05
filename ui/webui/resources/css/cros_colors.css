@@ -28,10 +28,12 @@ html {
   --cros-menu-button-outline-color-focused: var(--google-blue-600);
 
   /* TODO(crbug.com/1018654): Extract more unified 'inactive' colors */
-  --cros-toggle-color: var(--cros-default-button-color);
+  --cros-toggle-color-rgb: var(--cros-default-button-color-rgb);
+  --cros-toggle-color: rgb(var(--cros-toggle-color-rgb));
   --cros-toggle-bg-color-inactive: var(--google-grey-400);
   --cros-toggle-button-color-inactive: #fff;
-  --cros-toggle-ink-color-inactive: var(--google-grey-600);
+  --cros-toggle-ripple-color: rgba(var(--cros-toggle-color-rgb), .2);
+  --cros-toggle-ripple-color-inactive: rgba(var(--google-grey-600-rgb), .15);
 
   --cros-radio-button-color-rgb: var(--cros-default-button-color-rgb);
   --cros-radio-button-color: rgb(var(--cros-radio-button-color-rgb));

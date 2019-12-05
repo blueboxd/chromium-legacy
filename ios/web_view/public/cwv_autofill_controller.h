@@ -83,12 +83,6 @@ CWV_EXPORT
 - (void)checkIfPreviousAndNextFieldsAreAvailableForFocusWithCompletionHandler:
     (void (^)(BOOL previous, BOOL next))completionHandler;
 
-// Finds all non-empty (at least 1 field) forms in the current page.
-// |completionHandler| will be called with an array if successful, nil
-// otherwise.
-- (void)findAllFormsWithCompletionHandler:
-    (void (^)(NSArray<CWVAutofillForm*>* _Nullable forms))completionHandler;
-
 @end
 
 NS_ASSUME_NONNULL_END

@@ -19,6 +19,7 @@
 #include "mojo/public/cpp/system/file_data_source.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/url_util.h"
+#include "third_party/blink/public/common/web_package/signed_exchange_request_matcher.h"
 
 namespace content {
 
@@ -178,11 +179,13 @@ void WebBundleReader::ReadMetadata(MetadataCallback callback) {
                                         std::move(callback)));
 }
 
-void WebBundleReader::ReadResponse(const GURL& url, ResponseCallback callback) {
+void WebBundleReader::ReadResponse(
+    const network::ResourceRequest& resource_request,
+    ResponseCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_NE(state_, State::kInitial);
 
-  auto it = entries_.find(net::SimplifyUrlForRequest(url));
+  auto it = entries_.find(net::SimplifyUrlForRequest(resource_request.url));
   if (it == entries_.end() || it->second->response_locations.empty()) {
     PostTask(
         FROM_HERE,
@@ -193,22 +196,47 @@ void WebBundleReader::ReadResponse(const GURL& url, ResponseCallback callback) {
                 "Not found in Web Bundle file.")));
     return;
   }
+  const data_decoder::mojom::BundleIndexValuePtr& entry = it->second;
+
+  size_t response_index = 0;
+  if (!entry->variants_value.empty()) {
+    // Select the best variant for the request.
+    // TODO(crbug/1029406): Plumb |accept_langs| from prefs in a follow up CL.
+    blink::SignedExchangeRequestMatcher matcher(resource_request.headers,
+                                                "" /* accept_langs */);
+    auto found = matcher.FindBestMatchingIndex(entry->variants_value);
+    if (!found || *found >= entry->response_locations.size()) {
+      PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              std::move(callback), nullptr,
+              data_decoder::mojom::BundleResponseParseError::New(
+                  data_decoder::mojom::BundleParseErrorType::
+                      kParserInternalError,
+                  "Cannot find a response that matches request headers.")));
+      return;
+    }
+    response_index = *found;
+  }
+  auto response_location = entry->response_locations[response_index].Clone();
 
   if (state_ == State::kDisconnected) {
     // Try reconnecting, if not attempted yet.
     if (pending_read_responses_.empty())
       Reconnect();
-    pending_read_responses_.emplace_back(url, std::move(callback));
+    pending_read_responses_.emplace_back(std::move(response_location),
+                                         std::move(callback));
     return;
   }
 
-  // For now, this always reads the first response in |response_locations|.
-  // TODO(crbug.com/966753): This method should take request headers and choose
-  // the most suitable response based on the variant matching algorithm
-  // (https://tools.ietf.org/html/draft-ietf-httpbis-variants-05#section-4).
+  ReadResponseInternal(std::move(response_location), std::move(callback));
+}
+
+void WebBundleReader::ReadResponseInternal(
+    data_decoder::mojom::BundleResponseLocationPtr location,
+    ResponseCallback callback) {
   parser_->ParseResponse(
-      it->second->response_locations[0]->offset,
-      it->second->response_locations[0]->length,
+      location->offset, location->length,
       base::BindOnce(&WebBundleReader::OnResponseParsed, base::Unretained(this),
                      std::move(callback)));
 }
@@ -266,7 +294,7 @@ void WebBundleReader::DidReconnect(base::Optional<std::string> error) {
   parser_->SetDisconnectCallback(base::BindOnce(
       &WebBundleReader::OnParserDisconnected, base::Unretained(this)));
   for (auto& pair : read_tasks)
-    ReadResponse(pair.first, std::move(pair.second));
+    ReadResponseInternal(std::move(pair.first), std::move(pair.second));
 }
 
 void WebBundleReader::ReadResponseBody(

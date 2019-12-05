@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.download.home.list.mutator;
 
-import androidx.annotation.VisibleForTesting;
-
 import org.chromium.base.CollectionUtil;
 import org.chromium.chrome.browser.download.home.JustNowProvider;
 import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterObserver;
@@ -17,7 +15,6 @@ import org.chromium.components.offline_items_collection.OfflineItem;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -30,7 +27,19 @@ import java.util.List;
  */
 public class DateOrderedListMutator implements OfflineItemFilterObserver {
     /**
-     * Given a sorted list of {@link OfflineItem}, generates a list of {@link ListItem} with
+     * Sorts a list of {@link ListItem}.
+     */
+    public interface Sorter {
+        /**
+         * Sorts a given list as per display requirements.
+         * @param list The input list to be sorted.
+         * @return The sorted output list.
+         */
+        ArrayList<ListItem> sort(ArrayList<ListItem> list);
+    }
+
+    /**
+     * Given a sorted list of offline items, generates a list of {@link ListItem} with
      * appropriate labels inserted at the right positions as per the display requirements.
      */
     public interface LabelAdder {
@@ -39,49 +48,51 @@ public class DateOrderedListMutator implements OfflineItemFilterObserver {
          * @param sortedList The input list to be displayed.
          * @return The output list to be displayed on screen.
          */
-        List<ListItem> addLabels(List<OfflineItem> sortedList);
+        List<ListItem> addLabels(List<ListItem> sortedList);
     }
 
     private final OfflineItemFilterSource mSource;
     private final JustNowProvider mJustNowProvider;
     private final ListItemModel mModel;
     private final Paginator mPaginator;
-    private final ArrayList<OfflineItem> mSortedItems = new ArrayList<>();
+    private ArrayList<ListItem> mSortedItems = new ArrayList<>();
 
-    private Comparator<OfflineItem> mComparator;
+    private Sorter mSorter;
     private LabelAdder mLabelAdder;
+    private ListItemPropertySetter mPropertySetter;
 
     /**
      * Creates an DateOrderedList instance that will reflect {@code source}.
      * @param source The source of data for this list.
      * @param model  The model that will be the storage for the updated list.
      * @param justNowProvider The provider for Just Now section.
-     * @param comparator The default comparator to be used for list item comparison
+     * @param sorter The default sorter to use for sorting the list.
      * @param labelAdder The label adder used for producing the final list.
      * @param paginator The paginator to handle pagination.
      */
     public DateOrderedListMutator(OfflineItemFilterSource source, ListItemModel model,
-            JustNowProvider justNowProvider, Comparator<OfflineItem> comparator,
-            LabelAdder labelAdder, Paginator paginator) {
+            JustNowProvider justNowProvider, Sorter sorter, LabelAdder labelAdder,
+            ListItemPropertySetter propertySetter, Paginator paginator) {
         mSource = source;
         mModel = model;
         mJustNowProvider = justNowProvider;
+        mPropertySetter = propertySetter;
         mPaginator = paginator;
         mSource.addObserver(this);
-        setMutators(comparator, labelAdder);
+        setMutators(sorter, labelAdder);
         onItemsAdded(mSource.getItems());
     }
 
     /**
      * Called when the desired sorting order has changed.
-     * @param comparator The comparator to use for list item comparison.
+     * @param sorter The sorter to use for sorting the list.
      * @param labelAdder The label adder used for producing the final list.
      */
-    public void setMutators(Comparator<OfflineItem> comparator, LabelAdder labelAdder) {
-        if (mComparator == comparator && mLabelAdder == labelAdder) return;
-        mComparator = comparator;
+    public void setMutators(Sorter sorter, LabelAdder labelAdder) {
+        if (mSorter == sorter && mLabelAdder == labelAdder) return;
+        mSorter = sorter;
         mLabelAdder = labelAdder;
-        Collections.sort(mSortedItems, mComparator);
+        mSortedItems = mSorter.sort(mSortedItems);
     }
 
     /**
@@ -92,12 +103,19 @@ public class DateOrderedListMutator implements OfflineItemFilterObserver {
         pushItemsToModel();
     }
 
+    /** Called to reload the list and display. */
+    public void reload() {
+        pushItemsToModel();
+    }
+
     // OfflineItemFilterObserver implementation.
     @Override
     public void onItemsAdded(Collection<OfflineItem> items) {
-        ArrayList<OfflineItem> itemsToAdd = new ArrayList<>(items);
-        Collections.sort(itemsToAdd, mComparator);
-        mergeList(mSortedItems, itemsToAdd, mComparator);
+        for (OfflineItem offlineItem : items) {
+            OfflineItemListItem listItem = new OfflineItemListItem(offlineItem);
+            mSortedItems.add(listItem);
+        }
+        mSortedItems = mSorter.sort(mSortedItems);
         pushItemsToModel();
     }
 
@@ -105,7 +123,8 @@ public class DateOrderedListMutator implements OfflineItemFilterObserver {
     public void onItemsRemoved(Collection<OfflineItem> items) {
         for (OfflineItem itemToRemove : items) {
             for (int i = 0; i < mSortedItems.size(); i++) {
-                if (itemToRemove.id.equals(mSortedItems.get(i).id)) mSortedItems.remove(i);
+                OfflineItem offlineItem = ((OfflineItemListItem) mSortedItems.get(i)).item;
+                if (itemToRemove.id.equals(offlineItem.id)) mSortedItems.remove(i);
             }
         }
         pushItemsToModel();
@@ -125,7 +144,9 @@ public class DateOrderedListMutator implements OfflineItemFilterObserver {
             onItemsAdded(CollectionUtil.newArrayList(item));
         } else {
             for (int i = 0; i < mSortedItems.size(); i++) {
-                if (item.id.equals(mSortedItems.get(i).id)) mSortedItems.set(i, item);
+                if (item.id.equals(((OfflineItemListItem) mSortedItems.get(i)).item.id)) {
+                    mSortedItems.set(i, new OfflineItemListItem(item));
+                }
             }
             updateModelListItem(item);
         }
@@ -149,31 +170,10 @@ public class DateOrderedListMutator implements OfflineItemFilterObserver {
 
     private void pushItemsToModel() {
         // TODO(shaktisahu): Add paginated list after finalizing UX.
-        mModel.set(mLabelAdder.addLabels(mSortedItems));
+
+        List<ListItem> listItems = mLabelAdder.addLabels(mSortedItems);
+        mPropertySetter.setProperties(listItems);
+        mModel.set(listItems);
         mModel.dispatchLastEvent();
-    }
-
-    /**
-     * Merges two sorted lists list1 and list2 and places the result in list1.
-     * @param list1 The first list, which is also the output.
-     * @param list2 The second list.
-     * @param comparator The comparison function to use.
-     */
-    @VisibleForTesting
-    void mergeList(
-            List<OfflineItem> list1, List<OfflineItem> list2, Comparator<OfflineItem> comparator) {
-        int index1 = 0;
-        int index2 = 0;
-
-        while (index2 < list2.size()) {
-            OfflineItem itemToAdd = list2.get(index2);
-            boolean foundInsertionPoint =
-                    index1 == list1.size() || comparator.compare(itemToAdd, list1.get(index1)) < 0;
-            if (foundInsertionPoint) {
-                list1.add(index1, itemToAdd);
-                index2++;
-            }
-            index1++;
-        }
     }
 }

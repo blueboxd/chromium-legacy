@@ -49,8 +49,8 @@ class SpeechRecognizer::EventListener
       public content::SpeechRecognitionEventListener {
  public:
   EventListener(const base::WeakPtr<SpeechRecognizerDelegate>& delegate,
-                std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-                    shared_url_loader_factory_info,
+                std::unique_ptr<network::PendingSharedURLLoaderFactory>
+                    pending_shared_url_loader_factory,
                 const std::string& accept_language,
                 const std::string& locale);
 
@@ -98,9 +98,9 @@ class SpeechRecognizer::EventListener
   base::WeakPtr<SpeechRecognizerDelegate> delegate_;
 
   // All remaining members only accessed from the IO thread.
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-      shared_url_loader_factory_info_;
-  // Initialized from |shared_url_loader_factory_info_| on first use.
+  std::unique_ptr<network::PendingSharedURLLoaderFactory>
+      pending_shared_url_loader_factory_;
+  // Initialized from |pending_shared_url_loader_factory_| on first use.
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
   const std::string accept_language_;
   std::string locale_;
@@ -115,13 +115,13 @@ class SpeechRecognizer::EventListener
 
 SpeechRecognizer::EventListener::EventListener(
     const base::WeakPtr<SpeechRecognizerDelegate>& delegate,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        shared_url_loader_factory_info,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_shared_url_loader_factory,
     const std::string& accept_language,
     const std::string& locale)
     : delegate_(delegate),
-      shared_url_loader_factory_info_(
-          std::move(shared_url_loader_factory_info)),
+      pending_shared_url_loader_factory_(
+          std::move(pending_shared_url_loader_factory)),
       accept_language_(accept_language),
       locale_(locale),
       session_(kInvalidSessionId) {
@@ -148,9 +148,9 @@ void SpeechRecognizer::EventListener::StartOnIOThread(
   config.filter_profanities = true;
   config.accept_language = accept_language_;
   if (!shared_url_loader_factory_) {
-    DCHECK(shared_url_loader_factory_info_);
+    DCHECK(pending_shared_url_loader_factory_);
     shared_url_loader_factory_ = network::SharedURLLoaderFactory::Create(
-        std::move(shared_url_loader_factory_info_));
+        std::move(pending_shared_url_loader_factory_));
   }
   config.shared_url_loader_factory = shared_url_loader_factory_;
   config.event_listener = weak_factory_.GetWeakPtr();
@@ -290,14 +290,14 @@ void SpeechRecognizer::EventListener::OnAudioEnd(int session_id) {}
 
 SpeechRecognizer::SpeechRecognizer(
     const base::WeakPtr<SpeechRecognizerDelegate>& delegate,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        shared_url_loader_factory_info,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_shared_url_loader_factory,
     const std::string& accept_language,
     const std::string& locale)
     : delegate_(delegate),
       speech_event_listener_(
           new EventListener(delegate,
-                            std::move(shared_url_loader_factory_info),
+                            std::move(pending_shared_url_loader_factory),
                             accept_language,
                             locale)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

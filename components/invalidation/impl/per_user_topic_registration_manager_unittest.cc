@@ -200,7 +200,8 @@ TEST_F(PerUserTopicRegistrationManagerTest,
 
   auto per_user_topic_registration_manager = BuildRegistrationManager();
 
-  EXPECT_TRUE(per_user_topic_registration_manager->GetRegisteredIds().empty());
+  EXPECT_TRUE(per_user_topic_registration_manager->GetRegisteredTopicsForTest()
+                  .empty());
 
   // Empty response body should result in no succesfull registrations.
   std::string response_body;
@@ -216,14 +217,16 @@ TEST_F(PerUserTopicRegistrationManagerTest,
 
   // The response didn't contain non-empty topic name. So nothing was
   // registered.
-  EXPECT_TRUE(per_user_topic_registration_manager->GetRegisteredIds().empty());
+  EXPECT_TRUE(per_user_topic_registration_manager->GetRegisteredTopicsForTest()
+                  .empty());
 }
 
 TEST_F(PerUserTopicRegistrationManagerTest, ShouldUpdateRegisteredTopics) {
   auto ids = GetSequenceOfTopics(kInvalidationObjectIdsCount);
 
   auto per_user_topic_registration_manager = BuildRegistrationManager();
-  ASSERT_TRUE(per_user_topic_registration_manager->GetRegisteredIds().empty());
+  ASSERT_TRUE(per_user_topic_registration_manager->GetRegisteredTopicsForTest()
+                  .empty());
 
   AddCorrectSubscriptionResponce();
 
@@ -232,7 +235,7 @@ TEST_F(PerUserTopicRegistrationManagerTest, ShouldUpdateRegisteredTopics) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(TopicSetFromTopics(ids),
-            per_user_topic_registration_manager->GetRegisteredIds());
+            per_user_topic_registration_manager->GetRegisteredTopicsForTest());
   EXPECT_TRUE(
       per_user_topic_registration_manager->HaveAllRequestsFinishedForTest());
 
@@ -248,7 +251,8 @@ TEST_F(PerUserTopicRegistrationManagerTest, ShouldRepeatRequestsOnFailure) {
   auto ids = GetSequenceOfTopics(kInvalidationObjectIdsCount);
 
   auto per_user_topic_registration_manager = BuildRegistrationManager();
-  ASSERT_TRUE(per_user_topic_registration_manager->GetRegisteredIds().empty());
+  ASSERT_TRUE(per_user_topic_registration_manager->GetRegisteredTopicsForTest()
+                  .empty());
 
   AddCorrectSubscriptionResponce(
       /* private_topic */ std::string(), kFakeInstanceIdToken,
@@ -258,7 +262,8 @@ TEST_F(PerUserTopicRegistrationManagerTest, ShouldRepeatRequestsOnFailure) {
       ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(per_user_topic_registration_manager->GetRegisteredIds().empty());
+  EXPECT_TRUE(per_user_topic_registration_manager->GetRegisteredTopicsForTest()
+                  .empty());
   EXPECT_FALSE(
       per_user_topic_registration_manager->HaveAllRequestsFinishedForTest());
 }
@@ -267,7 +272,8 @@ TEST_F(PerUserTopicRegistrationManagerTest, ShouldRepeatRequestsOnForbidden) {
   auto ids = GetSequenceOfTopics(kInvalidationObjectIdsCount);
 
   auto per_user_topic_registration_manager = BuildRegistrationManager();
-  ASSERT_TRUE(per_user_topic_registration_manager->GetRegisteredIds().empty());
+  ASSERT_TRUE(per_user_topic_registration_manager->GetRegisteredTopicsForTest()
+                  .empty());
 
   AddCorrectSubscriptionResponce(
       /* private_topic */ std::string(), kFakeInstanceIdToken,
@@ -277,7 +283,8 @@ TEST_F(PerUserTopicRegistrationManagerTest, ShouldRepeatRequestsOnForbidden) {
       ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(per_user_topic_registration_manager->GetRegisteredIds().empty());
+  EXPECT_TRUE(per_user_topic_registration_manager->GetRegisteredTopicsForTest()
+                  .empty());
   EXPECT_TRUE(
       per_user_topic_registration_manager->HaveAllRequestsFinishedForTest());
 }
@@ -289,13 +296,14 @@ TEST_F(PerUserTopicRegistrationManagerTest,
   AddCorrectSubscriptionResponce();
 
   auto per_user_topic_registration_manager = BuildRegistrationManager();
-  EXPECT_TRUE(per_user_topic_registration_manager->GetRegisteredIds().empty());
+  EXPECT_TRUE(per_user_topic_registration_manager->GetRegisteredTopicsForTest()
+                  .empty());
 
   per_user_topic_registration_manager->UpdateRegisteredTopics(
       ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(TopicSetFromTopics(ids),
-            per_user_topic_registration_manager->GetRegisteredIds());
+            per_user_topic_registration_manager->GetRegisteredTopicsForTest());
 
   // Disable some ids.
   auto disabled_ids = GetSequenceOfTopics(3);
@@ -330,7 +338,8 @@ TEST_F(PerUserTopicRegistrationManagerTest,
 
   auto per_user_topic_registration_manager = BuildRegistrationManager();
 
-  EXPECT_TRUE(per_user_topic_registration_manager->GetRegisteredIds().empty());
+  EXPECT_TRUE(per_user_topic_registration_manager->GetRegisteredTopicsForTest()
+                  .empty());
 
   AddCorrectSubscriptionResponce("old-token-topic");
 
@@ -339,7 +348,7 @@ TEST_F(PerUserTopicRegistrationManagerTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(TopicSetFromTopics(ids),
-            per_user_topic_registration_manager->GetRegisteredIds());
+            per_user_topic_registration_manager->GetRegisteredTopicsForTest());
 
   for (const auto& id : ids) {
     const base::Value* topics = GetRegisteredTopics();
@@ -366,7 +375,7 @@ TEST_F(PerUserTopicRegistrationManagerTest,
                         ->GetDictionary(kActiveRegistrationTokens)
                         ->FindStringKey(kProjectId));
   EXPECT_EQ(TopicSetFromTopics(ids),
-            per_user_topic_registration_manager->GetRegisteredIds());
+            per_user_topic_registration_manager->GetRegisteredTopicsForTest());
 
   for (const auto& id : ids) {
     const base::Value* topics = GetRegisteredTopics();
@@ -386,13 +395,14 @@ TEST_F(PerUserTopicRegistrationManagerTest,
   AddCorrectSubscriptionResponce();
 
   auto per_user_topic_registration_manager = BuildRegistrationManager();
-  EXPECT_TRUE(per_user_topic_registration_manager->GetRegisteredIds().empty());
+  EXPECT_TRUE(per_user_topic_registration_manager->GetRegisteredTopicsForTest()
+                  .empty());
 
   per_user_topic_registration_manager->UpdateRegisteredTopics(
       ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(TopicSetFromTopics(ids),
-            per_user_topic_registration_manager->GetRegisteredIds());
+            per_user_topic_registration_manager->GetRegisteredTopicsForTest());
 
   // Disable some ids.
   auto disabled_ids = GetSequenceOfTopics(3);
@@ -431,13 +441,14 @@ TEST_F(
   AddCorrectSubscriptionResponce();
 
   auto per_user_topic_registration_manager = BuildRegistrationManager();
-  ASSERT_TRUE(per_user_topic_registration_manager->GetRegisteredIds().empty());
+  ASSERT_TRUE(per_user_topic_registration_manager->GetRegisteredTopicsForTest()
+                  .empty());
 
   per_user_topic_registration_manager->UpdateRegisteredTopics(
       ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(TopicSetFromTopics(ids),
-            per_user_topic_registration_manager->GetRegisteredIds());
+            per_user_topic_registration_manager->GetRegisteredTopicsForTest());
   EXPECT_EQ(observed_state(), SubscriptionChannelState::ENABLED);
 
   // Disable some ids.
@@ -469,13 +480,14 @@ TEST_F(PerUserTopicRegistrationManagerTest,
   AddCorrectSubscriptionResponce();
 
   auto per_user_topic_registration_manager = BuildRegistrationManager();
-  ASSERT_TRUE(per_user_topic_registration_manager->GetRegisteredIds().empty());
+  ASSERT_TRUE(per_user_topic_registration_manager->GetRegisteredTopicsForTest()
+                  .empty());
 
   per_user_topic_registration_manager->UpdateRegisteredTopics(
       ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(TopicSetFromTopics(ids),
-            per_user_topic_registration_manager->GetRegisteredIds());
+            per_user_topic_registration_manager->GetRegisteredTopicsForTest());
   EXPECT_EQ(observed_state(), SubscriptionChannelState::ENABLED);
 
   // Disable some ids.

@@ -236,7 +236,6 @@ class AssistantServiceTest : public testing::Test {
   mojo::Remote<mojom::AssistantService> remote_service_;
 
   FullyInitializedAssistantState assistant_state_;
-
   FakeIdentityAccessor fake_identity_accessor_;
   FakeAssistantClient fake_assistant_client_{&assistant_state_};
   FakeDeviceActions fake_device_actions_;

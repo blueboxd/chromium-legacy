@@ -870,13 +870,18 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // or speculative RenderFrameHost (that has not committed) should be avoided.
   void SetVisibilityForChildViews(bool visible);
 
+  const base::UnguessableToken& frame_token() const { return frame_token_; }
+  const base::UnguessableToken& GetTopFrameToken() const;
+
   // Returns an unguessable token for this RFHI.  This provides a temporary way
   // to identify a RenderFrameHost that's compatible with IPC.  Else, one needs
   // to send pid + RoutingID, but one cannot send pid.  One can get it from the
   // channel, but this makes it much harder to get wrong.
   // Once media switches to mojo, we should be able to remove this in favor of
   // sending a mojo overlay factory.
-  const base::UnguessableToken& GetOverlayRoutingToken();
+  const base::UnguessableToken& GetOverlayRoutingToken() const {
+    return frame_token_;
+  }
 
   // Binds the receiver end of the InterfaceProvider interface through which
   // services provided by this RenderFrameHost are exposed to the corresponding
@@ -1214,7 +1219,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return has_committed_any_navigation_;
   }
 
-  std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+  std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
   CreateCrossOriginPrefetchLoaderFactoryBundle();
 
   const AppCacheNavigationHandle* GetAppCacheNavigationHandle() const {
@@ -1245,6 +1250,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
       ShouldSwapBrowsingInstance reason) {
     browsing_instance_not_swapped_reason_ = reason;
   }
+
+  // Returns the parent RenderFrameHost, potentially going through nested
+  // WebContents. Returns nullptr for top-level RenderFrameHosts in topmost
+  // WebContents.
+  RenderFrameHostImpl* ParentOrOuterDelegateFrame();
 
   base::WeakPtr<RenderFrameHostImpl> GetWeakPtr();
 
@@ -1303,7 +1313,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       network::mojom::URLResponseHeadPtr response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
           subresource_loader_factories,
       base::Optional<std::vector<::content::mojom::TransferrableURLLoaderPtr>>
           subresource_overrides,
@@ -1321,7 +1331,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       bool has_stale_copy_in_cache,
       int32_t error_code,
       const base::Optional<std::string>& error_page_content,
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
           subresource_loader_factories);
 
   // The Build*Callback functions below are responsible for building the
@@ -1872,7 +1882,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params) const;
 
   // Creates URLLoaderFactory objects for |isolated_world_origins|.
-  blink::URLLoaderFactoryBundleInfo::OriginMap
+  blink::PendingURLLoaderFactoryBundle::OriginMap
   CreateURLLoaderFactoriesForIsolatedWorlds(
       const url::Origin& main_world_origin,
       const base::flat_set<url::Origin>& isolated_world_origins);
@@ -2391,9 +2401,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   std::unique_ptr<DroppedInterfaceRequestLogger>
       dropped_interface_request_logger_;
 
-  // IPC-friendly token that represents this host for AndroidOverlays, if we
-  // have created one yet.
-  base::Optional<base::UnguessableToken> overlay_routing_token_;
+  // IPC-friendly token that represents this host.
+  const base::UnguessableToken frame_token_ = base::UnguessableToken::Create();
 
   viz::mojom::InputTargetClient* input_target_client_ = nullptr;
   mojo::Remote<mojom::FrameInputHandler> frame_input_handler_;

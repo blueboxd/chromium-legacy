@@ -1209,6 +1209,12 @@ LayoutSize LayoutBox::ScrolledContentOffset() const {
   return LayoutSize(GetScrollableArea()->GetScrollOffset());
 }
 
+LayoutSize LayoutBox::PixelSnappedScrolledContentOffset() const {
+  DCHECK(HasOverflowClip());
+  DCHECK(GetScrollableArea());
+  return LayoutSize(GetScrollableArea()->ScrollOffsetInt());
+}
+
 PhysicalRect LayoutBox::ClippingRect(const PhysicalOffset& location) const {
   PhysicalRect result(PhysicalRect::InfiniteIntRect());
   if (ShouldClipOverflow())
@@ -3352,10 +3358,11 @@ bool LayoutBox::SizesLogicalWidthToFitContent(
 }
 
 bool LayoutBox::AutoWidthShouldFitContent() const {
-  return GetNode() && (IsHTMLInputElement(*GetNode()) ||
-                       IsA<HTMLSelectElement>(*GetNode()) ||
-                       IsA<HTMLButtonElement>(*GetNode()) ||
-                       IsHTMLTextAreaElement(*GetNode()) || IsRenderedLegend());
+  return GetNode() &&
+         (IsHTMLInputElement(*GetNode()) ||
+          IsA<HTMLSelectElement>(*GetNode()) ||
+          IsA<HTMLButtonElement>(*GetNode()) ||
+          IsA<HTMLTextAreaElement>(*GetNode()) || IsRenderedLegend());
 }
 
 void LayoutBox::ComputeMarginsForDirection(MarginDirection flow_direction,

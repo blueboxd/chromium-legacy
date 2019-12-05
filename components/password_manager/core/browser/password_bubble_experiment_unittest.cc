@@ -11,6 +11,8 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -28,6 +30,7 @@ class PasswordManagerPasswordBubbleExperimentTest : public testing::Test {
  public:
   PasswordManagerPasswordBubbleExperimentTest() {
     RegisterPrefs(pref_service_.registry());
+    signin::IdentityManager::RegisterProfilePrefs(pref_service_.registry());
   }
 
   PrefService* prefs() { return &pref_service_; }
@@ -56,12 +59,17 @@ TEST_F(PasswordManagerPasswordBubbleExperimentTest,
     bool was_already_clicked;
     bool is_sync_allowed;
     bool is_first_setup_complete;
+    bool is_signin_allowed;
     int current_shown_count;
     bool result;
   } kTestData[] = {
-      {false, true, false, 0, true},   {false, true, false, 5, false},
-      {true, true, false, 0, false},   {true, true, false, 10, false},
-      {false, false, false, 0, false}, {false, true, true, 0, false},
+      {false, true, false, true, 0, true},
+      {false, true, false, true, 5, false},
+      {true, true, false, true, 0, false},
+      {true, true, false, true, 10, false},
+      {false, false, false, true, 0, false},
+      {false, true, true, true, 0, false},
+      {false, true, false, false, 0, false},
   };
   for (const auto& test_case : kTestData) {
     SCOPED_TRACE(testing::Message("#test_case = ") << (&test_case - kTestData));
@@ -80,12 +88,17 @@ TEST_F(PasswordManagerPasswordBubbleExperimentTest,
             ? syncer::SyncService::TransportState::ACTIVE
             : syncer::SyncService::TransportState::
                   PENDING_DESIRED_CONFIGURATION);
-
+    prefs()->SetBoolean(prefs::kSigninAllowed, test_case.is_signin_allowed);
+#if defined(OS_CHROMEOS)
+    EXPECT_FALSE(ShouldShowChromeSignInPasswordPromo(prefs(), sync_service()));
+#else
     EXPECT_EQ(test_case.result,
               ShouldShowChromeSignInPasswordPromo(prefs(), sync_service()));
+#endif
   }
 }
 
+#if !defined(OS_CHROMEOS)
 TEST_F(PasswordManagerPasswordBubbleExperimentTest, ReviveSignInPasswordPromo) {
   sync_service()->SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
   sync_service()->SetFirstSetupComplete(false);
@@ -99,6 +112,7 @@ TEST_F(PasswordManagerPasswordBubbleExperimentTest, ReviveSignInPasswordPromo) {
   // The state is to be reset.
   EXPECT_TRUE(ShouldShowChromeSignInPasswordPromo(prefs(), sync_service()));
 }
+#endif
 
 TEST_F(PasswordManagerPasswordBubbleExperimentTest, IsSmartLockUser) {
   constexpr struct {

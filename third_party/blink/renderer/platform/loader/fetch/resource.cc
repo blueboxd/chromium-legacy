@@ -831,7 +831,7 @@ Resource::MatchStatus Resource::CanReuse(const FetchParameters& params) const {
 
 
   // Don't reuse an existing resource when the source origin is different.
-  if (!existing_origin->IsSameSchemeHostPort(new_origin.get()))
+  if (!existing_origin->IsSameOriginWith(new_origin.get()))
     return MatchStatus::kUnknownFailure;
 
   // securityOrigin has more complicated checks which callers are responsible

@@ -25,6 +25,8 @@ namespace {
 
 constexpr int kDefaultDismissalsBeforeBlock = 3;
 constexpr int kDefaultIgnoresBeforeBlock = 4;
+constexpr int kDefaultDismissalsBeforeBlockWithQuietUi = 1;
+constexpr int kDefaultIgnoresBeforeBlockWithQuietUi = 2;
 constexpr int kDefaultEmbargoDays = 7;
 
 // The number of times that users may explicitly dismiss a permission prompt
@@ -34,6 +36,16 @@ int g_dismissals_before_block = kDefaultDismissalsBeforeBlock;
 // The number of times that users may ignore a permission prompt from an origin
 // before it is automatically blocked.
 int g_ignores_before_block = kDefaultIgnoresBeforeBlock;
+
+// The number of times that users may dismiss a permission prompt that uses the
+// quiet UI from an origin before it is automatically blocked.
+int g_dismissals_before_block_with_quiet_ui =
+    kDefaultDismissalsBeforeBlockWithQuietUi;
+
+// The number of times that users may ignore a permission prompt that uses the
+// quiet UI from an origin before it is automatically blocked.
+int g_ignores_before_block_with_quiet_ui =
+    kDefaultIgnoresBeforeBlockWithQuietUi;
 
 // The number of days that an origin will stay under embargo for a requested
 // permission due to repeated dismissals.
@@ -179,6 +191,14 @@ const char PermissionDecisionAutoBlocker::kPromptIgnoreCountKey[] =
     "ignore_count";
 
 // static
+const char PermissionDecisionAutoBlocker::kPromptDismissCountWithQuietUiKey[] =
+    "dismiss_count_quiet_ui";
+
+// static
+const char PermissionDecisionAutoBlocker::kPromptIgnoreCountWithQuietUiKey[] =
+    "ignore_count_quiet_ui";
+
+// static
 const char PermissionDecisionAutoBlocker::kPermissionDismissalEmbargoKey[] =
     "dismissal_embargo_days";
 
@@ -230,6 +250,14 @@ void PermissionDecisionAutoBlocker::UpdateFromVariations() {
   std::string ignores_before_block_value =
       variations::GetVariationParamValueByFeature(
           features::kBlockPromptsIfIgnoredOften, kPromptIgnoreCountKey);
+  std::string dismissals_before_block_value_with_quiet_ui =
+      variations::GetVariationParamValueByFeature(
+          features::kBlockPromptsIfDismissedOften,
+          kPromptDismissCountWithQuietUiKey);
+  std::string ignores_before_block_value_with_quiet_ui =
+      variations::GetVariationParamValueByFeature(
+          features::kBlockPromptsIfIgnoredOften,
+          kPromptIgnoreCountWithQuietUiKey);
   std::string dismissal_embargo_days_value =
       variations::GetVariationParamValueByFeature(
           features::kBlockPromptsIfDismissedOften,
@@ -244,6 +272,12 @@ void PermissionDecisionAutoBlocker::UpdateFromVariations() {
                            kDefaultDismissalsBeforeBlock);
   UpdateValueFromVariation(ignores_before_block_value, &g_ignores_before_block,
                            kDefaultIgnoresBeforeBlock);
+  UpdateValueFromVariation(dismissals_before_block_value_with_quiet_ui,
+                           &g_dismissals_before_block_with_quiet_ui,
+                           kDefaultDismissalsBeforeBlockWithQuietUi);
+  UpdateValueFromVariation(ignores_before_block_value_with_quiet_ui,
+                           &g_ignores_before_block_with_quiet_ui,
+                           kDefaultIgnoresBeforeBlockWithQuietUi);
   UpdateValueFromVariation(dismissal_embargo_days_value,
                            &g_dismissal_embargo_days, kDefaultEmbargoDays);
   UpdateValueFromVariation(ignore_embargo_days_value, &g_ignore_embargo_days,
@@ -272,9 +306,16 @@ int PermissionDecisionAutoBlocker::GetIgnoreCount(
 
 bool PermissionDecisionAutoBlocker::RecordDismissAndEmbargo(
     const GURL& url,
-    ContentSettingsType permission) {
+    ContentSettingsType permission,
+    bool dismissed_prompt_was_quiet) {
   int current_dismissal_count = RecordActionInWebsiteSettings(
       url, permission, kPromptDismissCountKey, profile_);
+
+  int current_dismissal_count_with_quiet_ui =
+      dismissed_prompt_was_quiet
+          ? RecordActionInWebsiteSettings(
+                url, permission, kPromptDismissCountWithQuietUiKey, profile_)
+          : -1;
 
   // TODO(dominickn): ideally we would have a method
   // PermissionContextBase::ShouldEmbargoAfterRepeatedDismissals() to specify
@@ -286,26 +327,50 @@ bool PermissionDecisionAutoBlocker::RecordDismissAndEmbargo(
   // For now, only plugins are explicitly opted out. We should think about how
   // to make this nicer once PermissionQueueController is removed.
   if (base::FeatureList::IsEnabled(features::kBlockPromptsIfDismissedOften) &&
-      permission != ContentSettingsType::PLUGINS &&
-      current_dismissal_count >= g_dismissals_before_block) {
-    PlaceUnderEmbargo(url, permission, kPermissionDismissalEmbargoKey);
-    return true;
+      permission != ContentSettingsType::PLUGINS) {
+    if (current_dismissal_count >= g_dismissals_before_block) {
+      PlaceUnderEmbargo(url, permission, kPermissionDismissalEmbargoKey);
+      return true;
+    }
+
+    if (current_dismissal_count_with_quiet_ui >=
+        g_dismissals_before_block_with_quiet_ui) {
+      DCHECK_EQ(permission, ContentSettingsType::NOTIFICATIONS);
+      PlaceUnderEmbargo(url, permission, kPermissionDismissalEmbargoKey);
+      return true;
+    }
   }
   return false;
 }
 
 bool PermissionDecisionAutoBlocker::RecordIgnoreAndEmbargo(
     const GURL& url,
-    ContentSettingsType permission) {
+    ContentSettingsType permission,
+    bool ignored_prompt_was_quiet) {
   int current_ignore_count = RecordActionInWebsiteSettings(
       url, permission, kPromptIgnoreCountKey, profile_);
 
+  int current_ignore_count_with_quiet_ui =
+      ignored_prompt_was_quiet
+          ? RecordActionInWebsiteSettings(
+                url, permission, kPromptIgnoreCountWithQuietUiKey, profile_)
+          : -1;
+
   if (base::FeatureList::IsEnabled(features::kBlockPromptsIfIgnoredOften) &&
-      permission != ContentSettingsType::PLUGINS &&
-      current_ignore_count >= g_ignores_before_block) {
-    PlaceUnderEmbargo(url, permission, kPermissionIgnoreEmbargoKey);
-    return true;
+      permission != ContentSettingsType::PLUGINS) {
+    if (current_ignore_count >= g_ignores_before_block) {
+      PlaceUnderEmbargo(url, permission, kPermissionIgnoreEmbargoKey);
+      return true;
+    }
+
+    if (current_ignore_count_with_quiet_ui >=
+        g_ignores_before_block_with_quiet_ui) {
+      DCHECK_EQ(permission, ContentSettingsType::NOTIFICATIONS);
+      PlaceUnderEmbargo(url, permission, kPermissionIgnoreEmbargoKey);
+      return true;
+    }
   }
+
   return false;
 }
 

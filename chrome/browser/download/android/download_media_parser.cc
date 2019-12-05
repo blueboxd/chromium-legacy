@@ -269,9 +269,10 @@ DownloadMediaParser::GetMediaInterfaceFactory() {
     mojo::PendingRemote<service_manager::mojom::InterfaceProvider> interfaces;
     media_interface_provider_ = std::make_unique<media::MediaInterfaceProvider>(
         interfaces.InitWithNewPipeAndPassReceiver());
-    media::mojom::MediaServicePtr media_service;
+    mojo::Remote<media::mojom::MediaService> media_service;
     content::GetSystemConnector()->BindInterface(
-        media::mojom::kMediaServiceName, &media_service);
+        media::mojom::kMediaServiceName,
+        media_service.BindNewPipeAndPassReceiver());
     media_service->CreateInterfaceFactory(
         media_interface_factory_.BindNewPipeAndPassReceiver(),
         std::move(interfaces));

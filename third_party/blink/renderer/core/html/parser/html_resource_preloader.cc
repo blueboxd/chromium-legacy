@@ -56,11 +56,10 @@ static void PreconnectHost(LocalFrame* local_frame, PreloadRequest* request) {
   if (!host.IsValid() || !host.ProtocolIsInHTTPFamily())
     return;
   WebPrescientNetworking* web_prescient_networking =
-      Platform::Current()->PrescientNetworking();
+      local_frame->PrescientNetworking();
   if (web_prescient_networking) {
     web_prescient_networking->Preconnect(
-        WebLocalFrameImpl::FromFrame(local_frame), host,
-        request->CrossOrigin() != kCrossOriginAttributeAnonymous);
+        host, request->CrossOrigin() != kCrossOriginAttributeAnonymous);
   }
 }
 

@@ -88,7 +88,7 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
   }
 
   // network::SharedURLLoaderFactory implementation:
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
+  std::unique_ptr<network::PendingSharedURLLoaderFactory> Clone() override {
     NOTREACHED();
     return nullptr;
   }

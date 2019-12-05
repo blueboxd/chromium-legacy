@@ -5,7 +5,7 @@
 #include "chrome/browser/ssl/blocked_interception_blocking_page.h"
 
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
-#include "chrome/browser/ssl/chrome_ssl_blocking_page.h"
+#include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
 #include "chrome/browser/ssl/ssl_error_controller_client.h"
 #include "components/security_interstitials/content/cert_report_helper.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
@@ -80,7 +80,7 @@ BlockedInterceptionBlockingPage::BlockedInterceptionBlockingPage(
                                                             cert_error,
                                                             ssl_info,
                                                             controller())) {
-  ChromeSSLBlockingPage::DoChromeSpecificSetup(this);
+  ChromeSecurityBlockingPageFactory::DoChromeSpecificSetup(this);
 }
 
 BlockedInterceptionBlockingPage::~BlockedInterceptionBlockingPage() = default;

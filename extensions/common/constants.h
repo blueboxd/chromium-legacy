@@ -235,6 +235,9 @@ extern const char kScreensaverNocturneAppId[];
 // The extension id of an alternate Demo Mode screensaver app.
 extern const char kScreensaverAltAppId[];
 
+// The extension id of an kukui Demo Mode screensaver app.
+extern const char kScreensaverKukuiAppId[];
+
 // Returns true if this app is part of the "system UI". Generally this is UI
 // that that on other operating systems would be considered part of the OS,
 // for example the file manager.

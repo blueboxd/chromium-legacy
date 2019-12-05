@@ -162,7 +162,8 @@ WebRequestInfoInitParams::WebRequestInfoInitParams(
     const network::ResourceRequest& request,
     bool is_download,
     bool is_async,
-    bool is_service_worker_script)
+    bool is_service_worker_script,
+    base::Optional<int64_t> navigation_id)
     : id(request_id),
       url(request.url),
       site_for_cookies(request.site_for_cookies),
@@ -175,13 +176,16 @@ WebRequestInfoInitParams::WebRequestInfoInitParams(
       type(static_cast<content::ResourceType>(request.resource_type)),
       is_async(is_async),
       extra_request_headers(request.headers),
-      is_service_worker_script(is_service_worker_script) {
+      is_service_worker_script(is_service_worker_script),
+      navigation_id(std::move(navigation_id)) {
   if (url.SchemeIsWSOrWSS())
     web_request_type = WebRequestResourceType::WEB_SOCKET;
   else if (is_download)
     web_request_type = WebRequestResourceType::OTHER;
   else
     web_request_type = ToWebRequestResourceType(type);
+
+  DCHECK_EQ(is_navigation_request, navigation_id.has_value());
 
   InitializeWebViewAndFrameData(navigation_ui_data.get());
 
@@ -239,7 +243,8 @@ WebRequestInfo::WebRequestInfo(WebRequestInfoInitParams params)
       web_view_instance_id(params.web_view_instance_id),
       web_view_rules_registry_id(params.web_view_rules_registry_id),
       web_view_embedder_process_id(params.web_view_embedder_process_id),
-      is_service_worker_script(params.is_service_worker_script) {}
+      is_service_worker_script(params.is_service_worker_script),
+      navigation_id(std::move(params.navigation_id)) {}
 
 WebRequestInfo::~WebRequestInfo() = default;
 

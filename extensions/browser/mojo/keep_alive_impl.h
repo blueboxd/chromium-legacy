@@ -30,8 +30,8 @@ class KeepAliveImpl : public KeepAlive, public ExtensionRegistryObserver {
   // |receiver|. When the receiver closes its pipe, the keep alive ends.
   static void Create(content::BrowserContext* browser_context,
                      const Extension* extension,
-                     mojo::PendingReceiver<KeepAlive> receiver,
-                     content::RenderFrameHost* render_frame_host);
+                     content::RenderFrameHost* render_frame_host,
+                     mojo::PendingReceiver<KeepAlive> receiver);
 
  private:
   KeepAliveImpl(content::BrowserContext* context,

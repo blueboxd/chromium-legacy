@@ -74,6 +74,12 @@ const char kAutofillSaveCardDismissOnNavigationDescription[] =
     "Dismisses the Save Card Infobar on a user initiated Navigation, other "
     "than one caused by submitted form.";
 
+const char kAutofillSaveCardInfobarEditSupportName[] =
+    "Save Card Infobar Edit Support";
+const char kAutofillSaveCardInfobarEditSupportDescription[] =
+    "When enabled and saving a credit card to Google Payments, a dialog is "
+    "displayed that allows editing the card info before confirming save.";
+
 const char kAutofillShowAllSuggestionsOnPrefilledFormsName[] =
     "Enable showing all suggestions when focusing prefilled field";
 const char kAutofillShowAllSuggestionsOnPrefilledFormsDescription[] =

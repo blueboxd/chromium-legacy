@@ -940,8 +940,8 @@ PhysicalOffset PaintLayer::ComputeOffsetFromAncestor(
   PhysicalOffset result = GetLayoutObject().LocalToAncestorPoint(
       PhysicalOffset(), &ancestor_object, kIgnoreTransforms);
   if (ancestor_object.UsesCompositedScrolling()) {
-    result +=
-        PhysicalOffset(ToLayoutBox(ancestor_object).ScrolledContentOffset());
+    result += PhysicalOffset(
+        ToLayoutBox(ancestor_object).PixelSnappedScrolledContentOffset());
   }
   return result;
 }
@@ -1544,7 +1544,8 @@ static inline const PaintLayer* AccumulateOffsetTowardsAncestor(
   } else if (layer->GetLayoutObject().IsInFlowPositioned()) {
     location += layer->GetLayoutObject().OffsetForInFlowPosition();
   }
-  location -= PhysicalOffset(containing_layer->ScrolledContentOffset());
+  location -=
+      PhysicalOffset(containing_layer->PixelSnappedScrolledContentOffset());
 
   return containing_layer;
 }
@@ -3287,9 +3288,9 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
   }
 }
 
-LayoutSize PaintLayer::ScrolledContentOffset() const {
+LayoutSize PaintLayer::PixelSnappedScrolledContentOffset() const {
   if (GetLayoutObject().HasOverflowClip())
-    return GetLayoutBox()->ScrolledContentOffset();
+    return GetLayoutBox()->PixelSnappedScrolledContentOffset();
   return LayoutSize();
 }
 

@@ -288,7 +288,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 @interface MainController () <AppURLLoadingServiceDelegate,
                               BrowserStateStorageSwitching,
                               PrefObserverDelegate,
-                              SettingsNavigationControllerDelegate,
                               TabSwitcherDelegate,
                               WebStateListObserving> {
   IBOutlet UIWindow* _window;
@@ -2180,22 +2179,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                              WebStateList::kInvalidIndex;
 }
 
-#pragma mark - SettingsNavigationControllerDelegate
-
-- (void)closeSettings {
-  [self closeSettingsUI];
-}
-
-- (void)settingsWasDismissed {
-  [self.settingsNavigationController cleanUpSettings];
-  self.settingsNavigationController = nil;
-}
-
-- (id<ApplicationCommands, BrowserCommands>)dispatcherForSettings {
-  // Assume that settings always wants the dispatcher from the main BVC.
-  return self.mainBVC.dispatcher;
-}
-
 #pragma mark - ApplicationCommands helpers
 
 - (void)startVoiceSearchInCurrentBVC {
@@ -2213,11 +2196,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 - (BOOL)currentPageIsIncognito {
   return [self currentBrowserState] -> IsOffTheRecord();
-}
-
-// This method is temporarily both required in the scene controller and here.
-- (void)closeSettingsUI {
-  [self closeSettingsAnimated:YES completion:nullptr];
 }
 
 // This method is temporarily both required in the scene controller and here.

@@ -20,6 +20,7 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/test/test_keyboard_controller_observer.h"
 #include "ash/public/cpp/test/test_new_window_delegate.h"
+#include "ash/public/cpp/test/test_photo_controller.h"
 #include "ash/public/cpp/test/test_system_tray_client.h"
 #include "ash/session/test_pref_service_provider.h"
 #include "ash/session/test_session_controller_client.h"
@@ -178,6 +179,8 @@ void AshTestHelper::SetUp(const InitParams& init_params,
 
   system_tray_client_ = std::make_unique<TestSystemTrayClient>();
   shell->system_tray_model()->SetClient(system_tray_client_.get());
+
+  photo_controller_ = std::make_unique<TestPhotoController>();
 
   if (init_params.start_session)
     session_controller_client_->CreatePredefinedUserSessions(1);

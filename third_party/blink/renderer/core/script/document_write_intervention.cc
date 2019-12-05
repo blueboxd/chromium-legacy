@@ -217,9 +217,9 @@ void PossiblyFetchBlockedDocWriteScript(
 
   EmitErrorBlocked(resource->Url(), element_document);
 
-  FetchParameters params = options.CreateFetchParameters(
+  FetchParameters params(options.CreateFetchParameters(
       resource->Url(), element_document.GetSecurityOrigin(), cross_origin,
-      resource->Encoding(), FetchParameters::kIdleLoad);
+      resource->Encoding(), FetchParameters::kIdleLoad));
   AddHeader(&params);
   ScriptResource::Fetch(params, element_document.Fetcher(), nullptr,
                         ScriptResource::kNoStreaming);

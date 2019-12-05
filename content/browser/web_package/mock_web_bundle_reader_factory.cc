@@ -209,7 +209,7 @@ class MockWebBundleReaderFactoryImpl final : public MockWebBundleReaderFactory {
 
   void ReadAndFullfillResponse(
       WebBundleReader* reader,
-      const GURL& url,
+      const network::ResourceRequest& resource_request,
       data_decoder::mojom::BundleResponseLocationPtr expected_parse_args,
       data_decoder::mojom::BundleResponsePtr response,
       WebBundleReader::ResponseCallback callback) override {
@@ -218,16 +218,16 @@ class MockWebBundleReaderFactoryImpl final : public MockWebBundleReaderFactory {
 
     base::RunLoop run_loop;
     reader->ReadResponse(
-        url, base::BindOnce(
-                 [](base::OnceClosure quit_closure,
-                    WebBundleReader::ResponseCallback callback,
-                    data_decoder::mojom::BundleResponsePtr response,
-                    data_decoder::mojom::BundleResponseParseErrorPtr error) {
-                   std::move(callback).Run(std::move(response),
-                                           std::move(error));
-                   std::move(quit_closure).Run();
-                 },
-                 run_loop.QuitClosure(), std::move(callback)));
+        resource_request,
+        base::BindOnce(
+            [](base::OnceClosure quit_closure,
+               WebBundleReader::ResponseCallback callback,
+               data_decoder::mojom::BundleResponsePtr response,
+               data_decoder::mojom::BundleResponseParseErrorPtr error) {
+              std::move(callback).Run(std::move(response), std::move(error));
+              std::move(quit_closure).Run();
+            },
+            run_loop.QuitClosure(), std::move(callback)));
 
     factory_->RunResponseCallback(std::move(expected_parse_args),
                                   std::move(response));

@@ -51,6 +51,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/inter_process_time_ticks_converter.h"
+#include "content/common/page_messages.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/swapped_out_messages.h"
@@ -408,14 +409,19 @@ void RenderViewHostImpl::EnterBackForwardCache() {
   FrameTree* frame_tree = GetDelegate()->GetFrameTree();
   frame_tree->UnregisterRenderViewHost(this);
   is_in_back_forward_cache_ = true;
+  // TODO(altimin, dcheng): This should be a ViewMsg.
+  Send(new PageMsg_PutPageIntoBackForwardCache(GetRoutingID()));
 }
 
-void RenderViewHostImpl::LeaveBackForwardCache() {
+void RenderViewHostImpl::LeaveBackForwardCache(
+    base::TimeTicks navigation_start) {
   FrameTree* frame_tree = GetDelegate()->GetFrameTree();
   // At this point, the frames |this| RenderViewHostImpl belongs to are
   // guaranteed to be committed, so it should be reused going forward.
   frame_tree->RegisterRenderViewHost(this);
   is_in_back_forward_cache_ = false;
+  Send(new PageMsg_RestorePageFromBackForwardCache(GetRoutingID(),
+                                                   navigation_start));
 }
 
 bool RenderViewHostImpl::IsRenderViewLive() {

@@ -25,7 +25,7 @@ static bool CanHaveGeneratedChildren(const LayoutObject& layout_object) {
   // We'll write the code assuming any other button types that might emerge in
   // the future can also have children.
   if (layout_object.IsLayoutButton())
-    return !IsHTMLInputElement(*layout_object.GetNode());
+    return !IsA<HTMLInputElement>(*layout_object.GetNode());
 
   return layout_object.CanHaveChildren();
 }

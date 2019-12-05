@@ -109,8 +109,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
             SurfaceRange(base::nullopt,
                          SurfaceId(FrameSinkId(1, i),
                                    LocalSurfaceId(i, child_tokens[i - 1]))),
-            SK_ColorWHITE, /*stretch_content_to_fill_bounds=*/false,
-            /*ignores_input_event=*/false);
+            SK_ColorWHITE, /*stretch_content_to_fill_bounds=*/false);
       }
 
       frame_builder.AddRenderPass(std::move(pass));
@@ -138,8 +137,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
               SurfaceId(FrameSinkId(1, num_surfaces),
                         LocalSurfaceId(num_surfaces,
                                        child_tokens[num_surfaces - 1]))),
-          SK_ColorWHITE, /*stretch_content_to_fill_bounds=*/false,
-          /*ignores_input_event=*/false);
+          SK_ColorWHITE, /*stretch_content_to_fill_bounds=*/false);
 
       pass->output_rect = gfx::Rect(0, 0, 100, 100);
 

@@ -259,13 +259,13 @@ class FCMInvalidationListenerTest : public testing::Test {
   }
 
   void RegisterAndFireInvalidate(const Topic& topic,
-                                 const std::string version,
+                                 int64_t version,
                                  const std::string& payload) {
     FireInvalidate(topic, version, payload);
   }
 
   void FireInvalidate(const Topic& topic,
-                      const std::string version,
+                      int64_t version,
                       const std::string& payload) {
     listener_.Invalidate(payload, topic, topic, version);
   }
@@ -311,8 +311,7 @@ class FCMInvalidationListenerTest : public testing::Test {
 TEST_F(FCMInvalidationListenerTest, InvalidateNoPayload) {
   const Topic& topic = kBookmarksTopic_;
 
-  RegisterAndFireInvalidate(topic, base::NumberToString(kVersion1),
-                            std::string());
+  RegisterAndFireInvalidate(topic, kVersion1, std::string());
 
   ASSERT_EQ(1U, GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
@@ -326,8 +325,7 @@ TEST_F(FCMInvalidationListenerTest, InvalidateNoPayload) {
 TEST_F(FCMInvalidationListenerTest, InvalidateEmptyPayload) {
   const Topic& topic = kBookmarksTopic_;
 
-  RegisterAndFireInvalidate(topic, base::NumberToString(kVersion1),
-                            std::string());
+  RegisterAndFireInvalidate(topic, kVersion1, std::string());
 
   ASSERT_EQ(1U, GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
@@ -340,7 +338,7 @@ TEST_F(FCMInvalidationListenerTest, InvalidateEmptyPayload) {
 TEST_F(FCMInvalidationListenerTest, InvalidateWithPayload) {
   const Topic& topic = kPreferencesTopic_;
 
-  RegisterAndFireInvalidate(topic, base::NumberToString(kVersion1), kPayload1);
+  RegisterAndFireInvalidate(topic, kVersion1, kPayload1);
 
   ASSERT_EQ(1U, GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
@@ -354,7 +352,7 @@ TEST_F(FCMInvalidationListenerTest, ManyInvalidations_NoDrop) {
   const Topic& topic = kPreferencesTopic_;
   int64_t initial_version = kVersion1;
   for (int64_t i = initial_version; i < initial_version + kRepeatCount; ++i) {
-    RegisterAndFireInvalidate(topic, base::NumberToString(i), kPayload1);
+    RegisterAndFireInvalidate(topic, i, kPayload1);
   }
   ASSERT_EQ(static_cast<size_t>(kRepeatCount), GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
@@ -373,7 +371,7 @@ TEST_F(FCMInvalidationListenerTest, InvalidateBeforeRegistration_Simple) {
 
   EXPECT_EQ(0U, GetInvalidationCount(topic));
 
-  FireInvalidate(topic, base::NumberToString(kVersion1), kPayload1);
+  FireInvalidate(topic, kVersion1, kPayload1);
 
   ASSERT_EQ(0U, GetInvalidationCount(topic));
 
@@ -400,7 +398,7 @@ TEST_F(FCMInvalidationListenerTest, InvalidateBeforeRegistration_Drop) {
 
   int64_t initial_version = kVersion1;
   for (int64_t i = initial_version; i < initial_version + kRepeatCount; ++i) {
-    FireInvalidate(topic, base::NumberToString(i), kPayload1);
+    FireInvalidate(topic, i, kPayload1);
   }
 
   EnableNotifications();
@@ -415,14 +413,14 @@ TEST_F(FCMInvalidationListenerTest, InvalidateBeforeRegistration_Drop) {
 TEST_F(FCMInvalidationListenerTest, InvalidateVersion) {
   const Topic& topic = kPreferencesTopic_;
 
-  RegisterAndFireInvalidate(topic, base::NumberToString(kVersion2), kPayload2);
+  RegisterAndFireInvalidate(topic, kVersion2, kPayload2);
 
   ASSERT_EQ(1U, GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
   EXPECT_EQ(kVersion2, GetVersion(topic));
   EXPECT_EQ(kPayload2, GetPayload(topic));
 
-  FireInvalidate(topic, base::NumberToString(kVersion1), kPayload1);
+  FireInvalidate(topic, kVersion1, kPayload1);
 
   ASSERT_EQ(2U, GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
@@ -433,14 +431,14 @@ TEST_F(FCMInvalidationListenerTest, InvalidateVersion) {
 
 // Test a simple scenario for multiple IDs.
 TEST_F(FCMInvalidationListenerTest, InvalidateMultipleIds) {
-  RegisterAndFireInvalidate(kBookmarksTopic_, "3", std::string());
+  RegisterAndFireInvalidate(kBookmarksTopic_, 3, std::string());
   ASSERT_EQ(1U, GetInvalidationCount(kBookmarksTopic_));
   ASSERT_FALSE(IsUnknownVersion(kBookmarksTopic_));
   EXPECT_EQ(3, GetVersion(kBookmarksTopic_));
   EXPECT_EQ("", GetPayload(kBookmarksTopic_));
 
   // kExtensionId is not registered, so the invalidation should not get through.
-  FireInvalidate(kExtensionsTopic_, "2", std::string());
+  FireInvalidate(kExtensionsTopic_, 2, std::string());
   ASSERT_EQ(0U, GetInvalidationCount(kExtensionsTopic_));
 }
 

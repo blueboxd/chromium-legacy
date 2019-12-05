@@ -5,13 +5,12 @@
 package org.chromium.chrome.browser.download.home.list;
 
 import androidx.annotation.IntDef;
-import androidx.annotation.StringRes;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.filter.Filters.FilterType;
 import org.chromium.chrome.browser.download.home.list.ListItem.OfflineItemListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.ViewListItem;
+import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
 import org.chromium.components.offline_items_collection.OfflineItemState;
@@ -26,24 +25,33 @@ import java.util.List;
 /** Utility methods for representing {@link ListItem}s in a {@link RecyclerView} list. */
 public class ListUtils {
     /** The potential types of list items that could be displayed. */
-    @IntDef({ViewType.DATE, ViewType.IN_PROGRESS, ViewType.GENERIC, ViewType.VIDEO, ViewType.IMAGE,
-            ViewType.IMAGE_FULL_WIDTH, ViewType.CUSTOM_VIEW, ViewType.PREFETCH,
+    @IntDef({ViewType.DATE, ViewType.IN_PROGRESS, ViewType.GENERIC, ViewType.VIDEO, ViewType.AUDIO,
+            ViewType.IMAGE, ViewType.IMAGE_FULL_WIDTH, ViewType.CUSTOM_VIEW,
             ViewType.SECTION_HEADER, ViewType.IN_PROGRESS_VIDEO, ViewType.IN_PROGRESS_IMAGE,
-            ViewType.PAGINATION_HEADER})
+            ViewType.PREFETCH_ARTICLE, ViewType.GROUP_CARD_ITEM, ViewType.GROUP_CARD_HEADER,
+            ViewType.GROUP_CARD_FOOTER, ViewType.PAGINATION_HEADER, ViewType.GROUP_CARD_DIVIDER_TOP,
+            ViewType.GROUP_CARD_DIVIDER_MIDDLE, ViewType.GROUP_CARD_DIVIDER_BOTTOM})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ViewType {
         int DATE = 0;
         int IN_PROGRESS = 1;
         int GENERIC = 2;
         int VIDEO = 3;
-        int IMAGE = 4;
-        int IMAGE_FULL_WIDTH = 5;
-        int CUSTOM_VIEW = 6;
-        int PREFETCH = 7;
+        int AUDIO = 4;
+        int IMAGE = 5;
+        int IMAGE_FULL_WIDTH = 6;
+        int CUSTOM_VIEW = 7;
         int SECTION_HEADER = 8;
         int IN_PROGRESS_VIDEO = 9;
         int IN_PROGRESS_IMAGE = 10;
-        int PAGINATION_HEADER = 11;
+        int PREFETCH_ARTICLE = 11;
+        int GROUP_CARD_ITEM = 12;
+        int GROUP_CARD_HEADER = 13;
+        int GROUP_CARD_FOOTER = 14;
+        int GROUP_CARD_DIVIDER_TOP = 15;
+        int GROUP_CARD_DIVIDER_MIDDLE = 16;
+        int GROUP_CARD_DIVIDER_BOTTOM = 17;
+        int PAGINATION_HEADER = 18;
     }
 
     /**
@@ -80,9 +88,27 @@ public class ListUtils {
         if (item instanceof ViewListItem) return ViewType.CUSTOM_VIEW;
         if (item instanceof ListItem.SectionHeaderListItem) return ViewType.SECTION_HEADER;
         if (item instanceof ListItem.PaginationListItem) return ViewType.PAGINATION_HEADER;
+        if (item instanceof ListItem.CardHeaderListItem) {
+            return ViewType.GROUP_CARD_HEADER;
+        }
+        if (item instanceof ListItem.CardFooterListItem) {
+            return ViewType.GROUP_CARD_FOOTER;
+        }
+
+        if (item instanceof ListItem.CardDividerListItem) {
+            switch (((ListItem.CardDividerListItem) item).position) {
+                case TOP:
+                    return ViewType.GROUP_CARD_DIVIDER_TOP;
+                case MIDDLE:
+                    return ViewType.GROUP_CARD_DIVIDER_MIDDLE;
+                case BOTTOM:
+                    return ViewType.GROUP_CARD_DIVIDER_BOTTOM;
+            }
+        }
 
         if (item instanceof OfflineItemListItem) {
             OfflineItemListItem offlineItem = (OfflineItemListItem) item;
+            if (offlineItem.isGrouped) return ViewType.GROUP_CARD_ITEM;
 
             boolean inProgress = offlineItem.item.state == OfflineItemState.IN_PROGRESS
                     || offlineItem.item.state == OfflineItemState.PAUSED
@@ -94,7 +120,13 @@ public class ListUtils {
                 return inProgress ? ViewType.IN_PROGRESS : ViewType.GENERIC;
             }
 
-            if (offlineItem.item.isSuggested) return ViewType.PREFETCH;
+            if (offlineItem.item.isSuggested) {
+                if (offlineItem.item.filter == OfflineItemFilter.PAGE) {
+                    return ViewType.PREFETCH_ARTICLE;
+                } else if (offlineItem.item.filter == OfflineItemFilter.AUDIO) {
+                    return ViewType.AUDIO;
+                }
+            }
 
             switch (offlineItem.item.filter) {
                 case OfflineItemFilter.VIDEO:
@@ -116,26 +148,10 @@ public class ListUtils {
         return ViewType.GENERIC;
     }
 
-    /**
-     * @return The id of the string to be displayed as the section header for the given filter.
-     */
-    public static @StringRes int getTextForSection(int filter) {
-        switch (filter) {
-            case OfflineItemFilter.PAGE:
-                return R.string.download_manager_ui_pages;
-            case OfflineItemFilter.IMAGE:
-                return R.string.download_manager_ui_images;
-            case OfflineItemFilter.VIDEO:
-                return R.string.download_manager_ui_video;
-            case OfflineItemFilter.AUDIO:
-                return R.string.download_manager_ui_audio;
-            case OfflineItemFilter.OTHER:
-                return R.string.download_manager_ui_other;
-            case OfflineItemFilter.DOCUMENT:
-                return R.string.download_manager_ui_documents;
-            default:
-                return R.string.download_manager_ui_all_downloads;
-        }
+    /** @return Whether the given {@link ListItem} can be grouped inside a card. */
+    public static boolean canGroup(ListItem listItem) {
+        if (!(listItem instanceof OfflineItemListItem)) return false;
+        return LegacyHelpers.isLegacyContentIndexedItem(((OfflineItemListItem) listItem).item.id);
     }
 
     /**

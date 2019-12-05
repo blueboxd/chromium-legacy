@@ -14,6 +14,7 @@
 #include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/trace_event/traced_value.h"
@@ -260,6 +261,8 @@ class CC_EXPORT FrameSequenceTracker {
 
   bool ShouldIgnoreBeginFrameSource(uint64_t source_id) const;
 
+  bool ShouldIgnoreSequence(uint64_t sequence_number) const;
+
   // Report related metrics: throughput, checkboarding...
   void ReportMetrics();
 
@@ -304,6 +307,11 @@ class CC_EXPORT FrameSequenceTracker {
   // scheduled to report histogram.
   base::TimeTicks first_frame_timestamp_;
 
+  // A frame that is ignored at ReportSubmitFrame should never be presented.
+  // TODO(xidachen): this should not be necessary. Some webview tests seem to
+  // present a frame even if it is ignored by ReportSubmitFrame.
+  base::flat_set<uint32_t> ignored_frame_tokens_;
+
   // Report the throughput metrics every 5 seconds.
   const base::TimeDelta time_delta_to_report_ = base::TimeDelta::FromSeconds(5);
 
@@ -324,6 +332,10 @@ class CC_EXPORT FrameSequenceTracker {
   // Note that |frame_sequence_trace_| is only defined and populated
   // when DCHECK is on.
   std::stringstream frame_sequence_trace_;
+
+  // If ReportBeginImplFrame is never called on a arg, then ReportBeginMainFrame
+  // should ignore that arg.
+  base::flat_set<std::pair<uint64_t, uint64_t>> impl_frames_;
 #endif
 };
 

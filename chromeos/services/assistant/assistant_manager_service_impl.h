@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/cpp/ambient/ambient_mode_state.h"
 #include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/synchronization/lock.h"
@@ -46,7 +47,7 @@ class AssistantManagerInternal;
 }  // namespace assistant_client
 
 namespace network {
-class SharedURLLoaderFactoryInfo;
+class PendingSharedURLLoaderFactory;
 }  // namespace network
 
 namespace chromeos {
@@ -94,20 +95,21 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
       public assistant_client::DeviceStateListener,
       public assistant_client::MediaManager::Listener,
       public media_session::mojom::MediaControllerObserver,
-      public mojom::AppListEventSubscriber {
+      public mojom::AppListEventSubscriber,
+      public ash::AmbientModeStateObserver {
  public:
   // |service| owns this class and must outlive this class.
   AssistantManagerServiceImpl(
       mojom::Client* client,
       ServiceContext* context,
       std::unique_ptr<AssistantManagerServiceDelegate> delegate,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          url_loader_factory_info,
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          pending_url_loader_factory,
       bool is_signed_out_mode);
 
   ~AssistantManagerServiceImpl() override;
 
-  // assistant::AssistantManagerService overrides
+  // assistant::AssistantManagerService overrides:
   void Start(const base::Optional<std::string>& access_token,
              bool enable_hotword) override;
   void Stop() override;
@@ -181,7 +183,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
           recognition_result) override;
   void OnRespondingStarted(bool is_error_response) override;
 
-  // AssistantManagerDelegate overrides
+  // AssistantManagerDelegate overrides:
   assistant_client::ActionModule::Result HandleModifySettingClientOp(
       const std::string& modify_setting_args_proto) override;
   bool IsSettingSupported(const std::string& setting_id) override;
@@ -199,6 +201,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   // mojom::AppListEventSubscriber overrides:
   void OnAndroidAppListRefreshed(
       std::vector<mojom::AndroidAppInfoPtr> apps_info) override;
+
+  // ash::AmbientModeStateObserver overrides:
+  void OnAmbientModeEnabled(bool enabled) override;
 
   void UpdateInternalOptions(
       assistant_client::AssistantManagerInternal* assistant_manager_internal);

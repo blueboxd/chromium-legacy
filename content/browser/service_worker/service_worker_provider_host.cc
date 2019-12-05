@@ -187,8 +187,6 @@ bool ServiceWorkerProviderHost::IsProviderForServiceWorker() const {
 
 void ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
     int process_id,
-    mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
-        interface_provider_receiver,
     mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
         broker_receiver) {
   DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, worker_process_id_);
@@ -196,18 +194,7 @@ void ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
   DCHECK(IsProviderForServiceWorker());
   SetWorkerProcessId(process_id);
 
-  interface_provider_receiver_.Bind(FilterRendererExposedInterfaces(
-      blink::mojom::kNavigation_ServiceWorkerSpec, process_id,
-      std::move(interface_provider_receiver)));
-
   broker_receiver_.Bind(std::move(broker_receiver));
-}
-
-void ServiceWorkerProviderHost::GetInterface(
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  DCHECK(IsProviderForServiceWorker());
 }
 
 void ServiceWorkerProviderHost::CreateQuicTransportConnector(

@@ -89,8 +89,7 @@ class ServiceWorkerVersion;
 //
 // TODO(https://crbug.com/931087): Rename this to ServiceWorkerHost.
 class CONTENT_EXPORT ServiceWorkerProviderHost
-    : public base::SupportsWeakPtr<ServiceWorkerProviderHost>,
-      public service_manager::mojom::InterfaceProvider {
+    : public base::SupportsWeakPtr<ServiceWorkerProviderHost> {
  public:
   // Used to pre-create a ServiceWorkerProviderHost for a navigation. The
   // ServiceWorkerProviderContext will later be created in the renderer, should
@@ -143,7 +142,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
           container_remote);
 
-  ~ServiceWorkerProviderHost() override;
+  ~ServiceWorkerProviderHost();
 
   // May return nullptr.
   RenderProcessHost* GetProcessHost() {
@@ -167,8 +166,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // the worker.
   void CompleteStartWorkerPreparation(
       int process_id,
-      mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
-          interface_provider_receiver,
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           broker_receiver);
 
@@ -196,11 +193,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       scoped_refptr<ServiceWorkerVersion> running_hosted_version,
       base::WeakPtr<ServiceWorkerContextCore> context);
 
-  // service_manager::mojom::InterfaceProvider:
-  // For service worker execution contexts.
-  void GetInterface(const std::string& interface_name,
-                    mojo::ScopedMessagePipeHandle interface_pipe) override;
-
   // For service worker execution contexts. Sets the process ID of the service
   // worker execution context.
   void SetWorkerProcessId(int process_id);
@@ -215,8 +207,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   const scoped_refptr<ServiceWorkerVersion> running_hosted_version_;
 
   // For service worker execution contexts.
-  mojo::Receiver<service_manager::mojom::InterfaceProvider>
-      interface_provider_receiver_{this};
   BrowserInterfaceBrokerImpl<ServiceWorkerProviderHost,
                              const ServiceWorkerVersionInfo&>
       broker_{this};

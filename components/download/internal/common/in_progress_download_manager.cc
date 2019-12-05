@@ -83,8 +83,8 @@ void OnUrlDownloadHandlerCreated(
 void BeginResourceDownload(
     std::unique_ptr<DownloadUrlParameters> params,
     std::unique_ptr<network::ResourceRequest> request,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        url_loader_factory_info,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_url_loader_factory,
     const URLSecurityPolicy& url_security_policy,
     bool is_new_download,
     base::WeakPtr<InProgressDownloadManager> download_manager,
@@ -99,7 +99,7 @@ void BeginResourceDownload(
       ResourceDownloader::BeginDownload(
           download_manager, std::move(params), std::move(request),
           network::SharedURLLoaderFactory::Create(
-              std::move(url_loader_factory_info)),
+              std::move(pending_url_loader_factory)),
           url_security_policy, site_url, tab_url, tab_referrer_url,
           is_new_download, false, std::move(connector), is_background_mode,
           main_task_runner)
@@ -123,8 +123,8 @@ void CreateDownloadHandlerForNavigation(
     network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        url_loader_factory_info,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_url_loader_factory,
     const URLSecurityPolicy& url_security_policy,
     std::unique_ptr<service_manager::Connector> connector,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner) {
@@ -137,7 +137,7 @@ void CreateDownloadHandlerForNavigation(
           std::move(response_head), std::move(response_body),
           std::move(url_loader_client_endpoints),
           network::SharedURLLoaderFactory::Create(
-              std::move(url_loader_factory_info)),
+              std::move(pending_url_loader_factory)),
           url_security_policy, std::move(connector), main_task_runner)
           .release(),
       base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
@@ -293,8 +293,8 @@ DownloadItem* InProgressDownloadManager::GetDownloadByGuid(
 
 void InProgressDownloadManager::BeginDownload(
     std::unique_ptr<DownloadUrlParameters> params,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        url_loader_factory_info,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_url_loader_factory,
     bool is_new_download,
     const GURL& site_url,
     const GURL& tab_url,
@@ -305,7 +305,7 @@ void InProgressDownloadManager::BeginDownload(
       FROM_HERE,
       base::BindOnce(
           &BeginResourceDownload, std::move(params), std::move(request),
-          std::move(url_loader_factory_info), url_security_policy_,
+          std::move(pending_url_loader_factory), url_security_policy_,
           is_new_download, weak_factory_.GetWeakPtr(), site_url, tab_url,
           tab_referrer_url, connector_ ? connector_->Clone() : nullptr,
           !delegate_ /* is_background_mode */,
@@ -324,8 +324,8 @@ void InProgressDownloadManager::InterceptDownloadFromNavigation(
     network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        url_loader_factory_info) {
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_url_loader_factory) {
   GetIOTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -334,7 +334,7 @@ void InProgressDownloadManager::InterceptDownloadFromNavigation(
           site_url, tab_url, tab_referrer_url, std::move(url_chain),
           std::move(cert_status), std::move(response_head),
           std::move(response_body), std::move(url_loader_client_endpoints),
-          std::move(url_loader_factory_info), url_security_policy_,
+          std::move(pending_url_loader_factory), url_security_policy_,
           connector_ ? connector_->Clone() : nullptr,
           base::ThreadTaskRunnerHandle::Get()));
 }

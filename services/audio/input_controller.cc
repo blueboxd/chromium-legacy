@@ -61,6 +61,22 @@ void LogMicrophoneMuteResult(MicrophoneMuteResult result) {
                             MICROPHONE_MUTE_MAX + 1);
 }
 
+const char* SilenceStateToString(InputController::SilenceState state) {
+  switch (state) {
+    case InputController::SILENCE_STATE_NO_MEASUREMENT:
+      return "SILENCE_STATE_NO_MEASUREMENT";
+    case InputController::SILENCE_STATE_ONLY_AUDIO:
+      return "SILENCE_STATE_ONLY_AUDIO";
+    case InputController::SILENCE_STATE_ONLY_SILENCE:
+      return "SILENCE_STATE_ONLY_SILENCE";
+    case InputController::SILENCE_STATE_AUDIO_AND_SILENCE:
+      return "SILENCE_STATE_AUDIO_AND_SILENCE";
+    default:
+      NOTREACHED();
+  }
+  return "INVALID";
+}
+
 // Helper method which calculates the average power of an audio bus. Unit is in
 // dBFS, where 0 dBFS corresponds to all channels and samples equal to 1.0.
 float AveragePower(const media::AudioBus& buffer) {
@@ -314,6 +330,13 @@ class InputController::AudioCallback
     TRACE_EVENT1("audio", "InputController::OnData", "capture time (ms)",
                  (capture_time - base::TimeTicks()).InMillisecondsF());
 
+    if (!received_callback_) {
+      // Mark the stream as alive at first audio callback. Currently only used
+      // for logging purposes.
+      task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(&InputController::ReportIsAlive, weak_controller_));
+    }
     received_callback_ = true;
 
     DeliverDataToSyncWriter(source, capture_time, volume);
@@ -564,8 +587,12 @@ void InputController::Close() {
 
 #if defined(AUDIO_POWER_MONITORING)
   // Send UMA stats if enabled.
-  if (power_measurement_is_enabled_)
+  if (power_measurement_is_enabled_) {
     LogSilenceState(silence_state_);
+    log_string = base::StringPrintf("%s(silence_state=%s)", kLogStringPrefix,
+                                    SilenceStateToString(silence_state_));
+    handler_->OnLog(log_string);
+  }
 #endif
 
   max_volume_ = 0.0;
@@ -685,6 +712,9 @@ void InputController::DoCreate(media::AudioManager* audio_manager,
   // functionality to modify the input volume slider. One such example is
   // Windows XP.
   power_measurement_is_enabled_ &= agc_is_supported;
+  handler_->OnLog(
+      base::StringPrintf("AIC::DoCreate => (power_measurement_is_enabled=%d)",
+                         power_measurement_is_enabled_));
 #else
   stream->SetAutomaticGainControl(enable_agc);
 #endif
@@ -866,6 +896,13 @@ void InputController::CheckMutedState() {
         base::StringPrintf("AIC::OnMuted({is_muted=%d})", is_muted_);
     handler_->OnLog(log_string);
   }
+}
+
+void InputController::ReportIsAlive() {
+  DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
+  DCHECK(stream_);
+  // Don't store any state, just log the event for now.
+  handler_->OnLog("AIC::OnData => (stream is alive)");
 }
 
 #if defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)

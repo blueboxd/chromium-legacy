@@ -1,8 +1,8 @@
 # If you're doing anything interesting to these, please get a review for an
 # OWNER.
-per-file test_browser_window.*=*
-per-file testing_browser_process.*=*
-per-file testing_profile.*=*
+per-file test_browser_window*=*
+per-file testing_browser_process*=*
+per-file testing_profile*=*
 
 per-file javascript_browser_test.*=dtseng@chromium.org
 per-file js2gtest.*=dtseng@chromium.org

@@ -18,7 +18,7 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace network {
-class SharedURLLoaderFactoryInfo;
+class PendingSharedURLLoaderFactory;
 class SharedURLLoaderFactory;
 }  // namespace network
 
@@ -62,8 +62,8 @@ class URLLoaderFactoryGetter
   // Called on the UI thread to get an info that holds a reference to this
   // URLLoaderFactoryGetter, which can be used to construct a similar
   // SharedURLLoaderFactory as returned from |GetNetworkFactory()| on IO thread.
-  CONTENT_EXPORT std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-  GetNetworkFactoryInfo();
+  CONTENT_EXPORT std::unique_ptr<network::PendingSharedURLLoaderFactory>
+  GetPendingNetworkFactory();
 
   // Called on the IO thread. The factory obtained from here can only be used
   // from the browser process. It must NOT be sent to a renderer process. It has
@@ -110,7 +110,7 @@ class URLLoaderFactoryGetter
   CONTENT_EXPORT void FlushNetworkInterfaceOnIOThreadForTesting();
 
  private:
-  class URLLoaderFactoryForIOThreadInfo;
+  class PendingURLLoaderFactoryForIOThread;
   class URLLoaderFactoryForIOThread;
 
   friend class base::DeleteHelper<URLLoaderFactoryGetter>;

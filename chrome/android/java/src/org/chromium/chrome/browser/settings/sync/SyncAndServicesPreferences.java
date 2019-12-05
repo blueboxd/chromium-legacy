@@ -63,6 +63,7 @@ import org.chromium.chrome.browser.sync.ui.PassphraseDialogFragment;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.signin.metrics.SignoutReason;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -570,7 +571,10 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
             // TODO(https://crbug.com/873116): Pass the correct reason for the signout.
             IdentityServicesProvider.getSigninManager().signOut(
                     SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS,
-                    () -> IdentityServicesProvider.getSigninManager().signIn(account, null), false);
+                    ()
+                            -> IdentityServicesProvider.getSigninManager().signIn(
+                                    SigninAccessPoint.SYNC_ERROR_CARD, account, null),
+                    false);
             return;
         }
 

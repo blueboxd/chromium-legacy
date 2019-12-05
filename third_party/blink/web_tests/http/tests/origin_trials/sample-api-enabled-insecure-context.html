@@ -4,10 +4,11 @@
 <!-- TODO(iclelland): Generate this sample token during the build. The token
   below will expire in 2033, but it would be better to always have a token which
   is guaranteed to be valid when the tests are run. -->
-<!-- Generate this token with the command:
-generate_token.py http://127.0.0.1:8000 Frobulate -expire-timestamp=2000000000
+<!-- NOTE: The token must match the UNAUTHENTICATED_ORIGIN used in the test.
+  Generate this token with the command:
+generate_token.py http://example.test:8000 Frobulate -expire-timestamp=2000000000
 -->
-<meta http-equiv="origin-trial" content="AlCoOPbezqtrGMzSzbLQC4c+oPqO6yuioemcBPjgcXajF8jtmZr4B8tJRPAARPbsX6hDeVyXCKHzEJfpBXvZgQEAAABReyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiRnJvYnVsYXRlIiwgImV4cGlyeSI6IDIwMDAwMDAwMDB9" />
+<meta http-equiv="origin-trial" content="AssYG8Dct5/L5padhnjY6g63QMKaEchk64tb7jpY54iNXQdEKSKB5f1w2dR+6sFB1Flxp/xni7S1HOpe8Wh9VwcAAABUeyJvcmlnaW4iOiAiaHR0cDovL2V4YW1wbGUudGVzdDo4MDAwIiwgImZlYXR1cmUiOiAiRnJvYnVsYXRlIiwgImV4cGlyeSI6IDIwMDAwMDAwMDB9" />
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="../resources/get-host-info.js"></script>

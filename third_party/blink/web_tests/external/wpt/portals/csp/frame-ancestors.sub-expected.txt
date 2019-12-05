@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Violation report status OK. assert_equals: No such report. expected "" but got "false"
+Harness: the test ran to completion.
+

@@ -81,6 +81,8 @@ struct PRINTING_EXPORT AdvancedCapability {
   std::vector<AdvancedCapabilityValue> values;
 };
 
+using AdvancedCapabilities = std::vector<AdvancedCapability>;
+
 #endif  // defined(OS_CHROMEOS)
 
 struct PRINTING_EXPORT PrinterSemanticCapsAndDefaults {
@@ -115,7 +117,7 @@ struct PRINTING_EXPORT PrinterSemanticCapsAndDefaults {
 
 #if defined(OS_CHROMEOS)
   bool pin_supported = false;
-  std::vector<AdvancedCapability> advanced_capabilities;
+  AdvancedCapabilities advanced_capabilities;
 #endif  // defined(OS_CHROMEOS)
 };
 

@@ -321,7 +321,7 @@ TEST_P(PerUserTopicRegistrationRequestParamTest,
   EXPECT_EQ(status.code, StatusCode::FAILED_NON_RETRIABLE);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          PerUserTopicRegistrationRequestParamTest,
                          testing::Values(net::HTTP_BAD_REQUEST,
                                          net::HTTP_FORBIDDEN,

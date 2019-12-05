@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -226,7 +227,7 @@ class DeviceStatusCollector : public StatusCollector,
 
   // Callbacks from chromeos::VersionLoader.
   void OnOSVersion(const std::string& version);
-  void OnOSFirmware(const std::string& version);
+  void OnOSFirmware(std::pair<const std::string&, const std::string&> version);
   void OnTpmVersion(
       const chromeos::CryptohomeClient::TpmVersionInfo& tpm_version_info);
 
@@ -335,6 +336,7 @@ class DeviceStatusCollector : public StatusCollector,
 
   std::string os_version_;
   std::string firmware_version_;
+  std::string firmware_fetch_error_;
   chromeos::CryptohomeClient::TpmVersionInfo tpm_version_info_;
 
   struct ResourceUsage {

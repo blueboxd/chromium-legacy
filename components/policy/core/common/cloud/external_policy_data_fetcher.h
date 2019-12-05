@@ -26,7 +26,7 @@ class SequencedTaskRunner;
 }
 
 namespace network {
-class SharedURLLoaderFactoryInfo;
+class PendingSharedURLLoaderFactory;
 class SharedURLLoaderFactory;
 }
 
@@ -98,7 +98,8 @@ class POLICY_EXPORT ExternalPolicyDataFetcher {
   const scoped_refptr<base::SequencedTaskRunner> job_task_runner_;
 
   // The information for the lazy creation of |cloned_url_loader_factory_|.
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info_;
+  std::unique_ptr<network::PendingSharedURLLoaderFactory>
+      pending_url_loader_factory_;
   // The cloned factory that can be used from |task_runner_|. It's created
   // lazily, as our constructor runs on a difference sequence.
   scoped_refptr<network::SharedURLLoaderFactory> cloned_url_loader_factory_;

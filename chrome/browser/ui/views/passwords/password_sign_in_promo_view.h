@@ -18,11 +18,6 @@ class PasswordSignInPromoView : public views::View {
   explicit PasswordSignInPromoView(ManagePasswordsBubbleModel* model);
   ~PasswordSignInPromoView() override;
 
-  bool Accept();
-  bool Cancel();
-  int GetDialogButtons() const;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const;
-
  private:
   // Delegate for the personalized sync promo view used when desktop identity
   // consistency is enabled.

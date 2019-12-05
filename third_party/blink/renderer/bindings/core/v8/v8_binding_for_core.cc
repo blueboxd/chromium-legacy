@@ -718,7 +718,10 @@ void ToFlexibleArrayBufferView(v8::Isolate* isolate,
                                v8::Local<v8::Value> value,
                                FlexibleArrayBufferView& result,
                                void* storage) {
-  DCHECK(value->IsArrayBufferView());
+  if (!value->IsArrayBufferView()) {
+    result.Clear();
+    return;
+  }
   v8::Local<v8::ArrayBufferView> buffer = value.As<v8::ArrayBufferView>();
   if (!storage) {
     result.SetFull(V8ArrayBufferView::ToImpl(buffer));

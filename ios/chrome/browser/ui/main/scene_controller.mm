@@ -73,7 +73,8 @@ enum class EnterTabSwitcherSnapshotResult {
 
 }  // namespace
 
-@interface SceneController () <UserFeedbackDataSource>
+@interface SceneController () <UserFeedbackDataSource,
+                               SettingsNavigationControllerDelegate>
 
 // A flag that keeps track of the UI initialization for the controlled scene.
 @property(nonatomic, assign) BOOL hasInitializedUI;
@@ -197,9 +198,8 @@ enum class EnterTabSwitcherSnapshotResult {
   Browser* browser =
       self.mainController.interfaceProvider.mainInterface.browser;
   self.mainController.settingsNavigationController =
-      [SettingsNavigationController
-          autofillProfileControllerForBrowser:browser
-                                     delegate:self.mainController];
+      [SettingsNavigationController autofillProfileControllerForBrowser:browser
+                                                               delegate:self];
   [baseViewController
       presentViewController:self.mainController.settingsNavigationController
                    animated:YES
@@ -219,11 +219,10 @@ enum class EnterTabSwitcherSnapshotResult {
     Browser* browser =
         self.mainController.interfaceProvider.mainInterface.browser;
     self.mainController.settingsNavigationController =
-        [SettingsNavigationController
-            userFeedbackControllerForBrowser:browser
-                                    delegate:self.mainController
-                          feedbackDataSource:self
-                                  dispatcher:self];
+        [SettingsNavigationController userFeedbackControllerForBrowser:browser
+                                                              delegate:self
+                                                    feedbackDataSource:self
+                                                            dispatcher:self];
     [baseViewController
         presentViewController:self.mainController.settingsNavigationController
                      animated:YES
@@ -337,9 +336,8 @@ enum class EnterTabSwitcherSnapshotResult {
       self.mainController.interfaceProvider.mainInterface.browser;
 
   self.mainController.settingsNavigationController =
-      [SettingsNavigationController
-          mainSettingsControllerForBrowser:browser
-                                  delegate:self.mainController];
+      [SettingsNavigationController mainSettingsControllerForBrowser:browser
+                                                            delegate:self];
   [baseViewController
       presentViewController:self.mainController.settingsNavigationController
                    animated:YES
@@ -372,9 +370,8 @@ enum class EnterTabSwitcherSnapshotResult {
   Browser* browser =
       self.mainController.interfaceProvider.mainInterface.browser;
   self.mainController.settingsNavigationController =
-      [SettingsNavigationController
-          accountsControllerForBrowser:browser
-                              delegate:self.mainController];
+      [SettingsNavigationController accountsControllerForBrowser:browser
+                                                        delegate:self];
   [baseViewController
       presentViewController:self.mainController.settingsNavigationController
                    animated:YES
@@ -403,9 +400,8 @@ enum class EnterTabSwitcherSnapshotResult {
   Browser* browser =
       self.mainController.interfaceProvider.mainInterface.browser;
   self.mainController.settingsNavigationController =
-      [SettingsNavigationController
-          googleServicesControllerForBrowser:browser
-                                    delegate:self.mainController];
+      [SettingsNavigationController googleServicesControllerForBrowser:browser
+                                                              delegate:self];
 
   [baseViewController
       presentViewController:self.mainController.settingsNavigationController
@@ -427,9 +423,8 @@ enum class EnterTabSwitcherSnapshotResult {
   Browser* browser =
       self.mainController.interfaceProvider.mainInterface.browser;
   self.mainController.settingsNavigationController =
-      [SettingsNavigationController
-          syncPassphraseControllerForBrowser:browser
-                                    delegate:self.mainController];
+      [SettingsNavigationController syncPassphraseControllerForBrowser:browser
+                                                              delegate:self];
   [baseViewController
       presentViewController:self.mainController.settingsNavigationController
                    animated:YES
@@ -449,9 +444,8 @@ enum class EnterTabSwitcherSnapshotResult {
   Browser* browser =
       self.mainController.interfaceProvider.mainInterface.browser;
   self.mainController.settingsNavigationController =
-      [SettingsNavigationController
-          savePasswordsControllerForBrowser:browser
-                                   delegate:self.mainController];
+      [SettingsNavigationController savePasswordsControllerForBrowser:browser
+                                                             delegate:self];
   [baseViewController
       presentViewController:self.mainController.settingsNavigationController
                    animated:YES
@@ -472,9 +466,8 @@ enum class EnterTabSwitcherSnapshotResult {
       self.mainController.interfaceProvider.mainInterface.browser;
 
   self.mainController.settingsNavigationController =
-      [SettingsNavigationController
-          autofillProfileControllerForBrowser:browser
-                                     delegate:self.mainController];
+      [SettingsNavigationController autofillProfileControllerForBrowser:browser
+                                                               delegate:self];
   [baseViewController
       presentViewController:self.mainController.settingsNavigationController
                    animated:YES
@@ -497,7 +490,7 @@ enum class EnterTabSwitcherSnapshotResult {
   self.mainController.settingsNavigationController =
       [SettingsNavigationController
           autofillCreditCardControllerForBrowser:browser
-                                        delegate:self.mainController];
+                                        delegate:self];
   [baseViewController
       presentViewController:self.mainController.settingsNavigationController
                    animated:YES
@@ -571,10 +564,6 @@ enum class EnterTabSwitcherSnapshotResult {
 
 #pragma mark - ApplicationCommandsHelpers
 
-- (BOOL)currentPageIsIncognito {
-  return self.mainController.currentBrowserState->IsOffTheRecord();
-}
-
 - (void)openUrlFromSettings:(OpenNewTabCommand*)command {
   DCHECK([command fromChrome]);
   UrlLoadParams params = UrlLoadParams::InNewTab([command URL]);
@@ -625,6 +614,26 @@ enum class EnterTabSwitcherSnapshotResult {
       IdentityManagerFactory::GetForBrowserState(browserState);
   std::string username = identity_manager->GetPrimaryAccountInfo().email;
   return username.empty() ? nil : base::SysUTF8ToNSString(username);
+}
+
+- (BOOL)currentPageIsIncognito {
+  return self.mainController.currentBrowserState->IsOffTheRecord();
+}
+
+#pragma mark - SettingsNavigationControllerDelegate
+
+- (void)closeSettings {
+  [self closeSettingsUI];
+}
+
+- (void)settingsWasDismissed {
+  [self.mainController.settingsNavigationController cleanUpSettings];
+  self.mainController.settingsNavigationController = nil;
+}
+
+- (id<ApplicationCommands, BrowserCommands>)dispatcherForSettings {
+  // Assume that settings always wants the dispatcher from the main BVC.
+  return self.mainController.mainBVC.dispatcher;
 }
 
 @end

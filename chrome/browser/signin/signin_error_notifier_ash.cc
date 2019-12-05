@@ -85,7 +85,23 @@ SigninErrorNotifier::SigninErrorNotifier(SigninErrorController* controller,
       device_account_notification_id_ + kSecondaryAccountNotificationIdSuffix;
 
   error_controller_->AddObserver(this);
+  const AccountId account_id =
+      multi_user_util::GetAccountIdFromProfile(profile_);
+  if (TokenHandleUtil::HasToken(account_id)) {
+    token_handle_util_ = std::make_unique<TokenHandleUtil>();
+    token_handle_util_->CheckToken(
+        account_id, base::Bind(&SigninErrorNotifier::OnTokenHandleCheck,
+                               weak_factory_.GetWeakPtr()));
+  }
   OnErrorChanged();
+}
+
+void SigninErrorNotifier::OnTokenHandleCheck(
+    const AccountId& account_id,
+    TokenHandleUtil::TokenHandleStatus status) {
+  if (status != TokenHandleUtil::INVALID)
+    return;
+  HandleDeviceAccountError();
 }
 
 SigninErrorNotifier::~SigninErrorNotifier() {
@@ -143,12 +159,17 @@ void SigninErrorNotifier::HandleDeviceAccountError() {
   if (service->signout_required_after_supervision_enabled())
     return;
 
+  const AccountId account_id =
+      multi_user_util::GetAccountIdFromProfile(profile_);
   // We need to save the flag in the local state because
   // TokenHandleUtil::CheckToken might fail on the login screen due to lack of
   // network connectivity.
   user_manager::UserManager::Get()->SaveForceOnlineSignin(
-      multi_user_util::GetAccountIdFromProfile(profile_),
-      true /* force_online_signin */);
+      account_id, true /* force_online_signin */);
+
+  // We need to remove the handle so it won't be checked next time session is
+  // started.
+  TokenHandleUtil::DeleteHandle(account_id);
 
   // Add an accept button to sign the user out.
   message_center::RichNotificationData data;

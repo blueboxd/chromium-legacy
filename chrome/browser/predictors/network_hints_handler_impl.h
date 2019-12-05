@@ -8,6 +8,10 @@
 #include "base/memory/weak_ptr.h"
 #include "components/network_hints/common/network_hints.mojom.h"
 
+namespace content {
+class RenderFrameHost;
+}
+
 namespace predictors {
 class PreconnectManager;
 
@@ -17,20 +21,19 @@ class NetworkHintsHandlerImpl
   ~NetworkHintsHandlerImpl() override;
 
   static void Create(
-      int32_t render_process_id,
+      content::RenderFrameHost* frame_host,
       mojo::PendingReceiver<network_hints::mojom::NetworkHintsHandler>
           receiver);
 
   // network_hints::mojom::NetworkHintsHandler methods:
   void PrefetchDNS(const std::vector<std::string>& names) override;
-  void Preconnect(int32_t render_frame_id,
-                  const GURL& url,
-                  bool allow_credentials) override;
+  void Preconnect(const GURL& url, bool allow_credentials) override;
 
  private:
-  explicit NetworkHintsHandlerImpl(int32_t render_process_id);
+  explicit NetworkHintsHandlerImpl(content::RenderFrameHost* frame_host);
 
-  int32_t render_process_id_;
+  const int32_t render_process_id_;
+  const int32_t render_frame_id_;
   base::WeakPtr<PreconnectManager> preconnect_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkHintsHandlerImpl);

@@ -17,12 +17,12 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_channel_proxy.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 namespace content {
 
-// A helper interface which owns an associated interface binding on the IO
+// A helper interface which owns an associated interface receiver on the IO
 // thread. Subclassess of BrowserMessageFilter may use this to simplify
 // the transition to Mojo interfaces.
 //
@@ -47,7 +47,7 @@ namespace content {
 //   };
 //
 // The remote side of an IPC channel can request the |mojom::Foo| associated
-// interface and use it would use any other associated interface proxy. Messages
+// interface and use it would use any other associated remote proxy. Messages
 // received for |mojom::Foo| on the local side of the channel will retain FIFO
 // with respect to classical IPC messages received via OnMessageReceived().
 //
@@ -60,11 +60,11 @@ class BrowserAssociatedInterface {
       : internal_state_(new InternalState(impl)) {
     filter->AddAssociatedInterface(
         Interface::Name_,
-        base::BindRepeating(&InternalState::BindRequest, internal_state_),
-        base::BindOnce(&InternalState::ClearBindings, internal_state_));
+        base::BindRepeating(&InternalState::BindReceiver, internal_state_),
+        base::BindOnce(&InternalState::ClearReceivers, internal_state_));
   }
 
-  ~BrowserAssociatedInterface() { internal_state_->ClearBindings(); }
+  ~BrowserAssociatedInterface() { internal_state_->ClearReceivers(); }
 
  private:
   friend class TestDriverMessageFilter;
@@ -72,24 +72,24 @@ class BrowserAssociatedInterface {
   class InternalState : public base::RefCountedThreadSafe<InternalState> {
    public:
     explicit InternalState(Interface* impl)
-        : impl_(impl), bindings_(base::in_place) {}
+        : impl_(impl), receivers_(base::in_place) {}
 
-    void ClearBindings() {
+    void ClearReceivers() {
       if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
         base::PostTask(FROM_HERE, {BrowserThread::IO},
-                       base::BindOnce(&InternalState::ClearBindings, this));
+                       base::BindOnce(&InternalState::ClearReceivers, this));
         return;
       }
-      bindings_.reset();
+      receivers_.reset();
     }
 
-    void BindRequest(mojo::ScopedInterfaceEndpointHandle handle) {
+    void BindReceiver(mojo::ScopedInterfaceEndpointHandle handle) {
       DCHECK_CURRENTLY_ON(BrowserThread::IO);
-      // If this interface has already been shut down we drop the request.
-      if (!bindings_)
+      // If this interface has already been shut down we drop the receiver.
+      if (!receivers_)
         return;
-      bindings_->AddBinding(impl_, mojo::AssociatedInterfaceRequest<Interface>(
-                                       std::move(handle)));
+      receivers_->Add(
+          impl_, mojo::PendingAssociatedReceiver<Interface>(std::move(handle)));
     }
 
    private:
@@ -99,7 +99,7 @@ class BrowserAssociatedInterface {
     ~InternalState() {}
 
     Interface* impl_;
-    base::Optional<mojo::AssociatedBindingSet<Interface>> bindings_;
+    base::Optional<mojo::AssociatedReceiverSet<Interface>> receivers_;
 
     DISALLOW_COPY_AND_ASSIGN(InternalState);
   };

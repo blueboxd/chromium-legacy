@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 15
+// Next MinVersion: 16
 
 module arc.mojom;
 
@@ -286,7 +286,37 @@ struct BluetoothCreateSdpRecordResult {
   uint32 service_handle;
 };
 
-// Next Method ID: 45
+// BluetoothRfcommConnection contains the information for a new RFCOMM
+// connection. Since we cannot get socket (or peer) name on the transferred
+// socket on Android side, we also need to pass the peer address and channel
+// number.
+struct BluetoothRfcommConnection {
+  handle sock;
+  BluetoothAddress addr;
+  int32 channel;
+};
+
+// The mojo connection represents a listening socket.
+// Next Method ID: 1
+interface RfcommListeningSocketClient {
+  // Called when accept() succeeds. |channel| in |connection| is the peer
+  // channel number.
+  OnAccepted@0(BluetoothRfcommConnection connection);
+};
+
+// The mojo connection represents a connecting (not connected yet) socket.
+// After connect() either succeeds or fails, Android is responsible for closing
+// this mojo connection.
+// Next Method ID: 2
+interface RfcommConnectingSocketClient {
+  // Called when connect() succeeds. |channel| in |connection| is the channel
+  // number on our side.
+  OnConnected@0(BluetoothRfcommConnection connection);
+  // Called when connect() fails.
+  OnConnectFailed@1();
+};
+
+// Next Method ID: 47
 // Deprecated Method ID: 4, 5, 6, 7, 20, 21
 interface BluetoothHost {
   EnableAdapter@0() => (BluetoothAdapterState state);
@@ -393,6 +423,24 @@ interface BluetoothHost {
       => (BluetoothGattStatus status);
   [MinVersion=8] DisableAdvertisement@43(int32 adv_handle)
       => (BluetoothGattStatus status);
+
+  // RFCOMM functions
+  // Opens a bluetooth socket with socket option |optval|, and then bind() and
+  // listen() with the requested RFCOMM |channel| number. When |channel| = 0,
+  // we will select a channel number automatically.  If this process succeeds,
+  // returns SUCCESS in |status|, the actual listening channel in |channel|,
+  // and a new mojo connection which represents the listening socket.
+  [MinVersion=15] RfcommListen@45(int32 channel, int32 optval)
+      => (BluetoothStatus status, int32 channel,
+          RfcommListeningSocketClient&? client);
+  // Opens a bluetooth socket with socket option |optval|, and then connect()
+  // to (|remote_addr|, |channel|). If this process succeeds, returns SUCCESS
+  // in |status| and a new mojo connection which holds the connecting socket.
+  // Unlike in RfcommListen(), |channel| here could not be 0, since this is the
+  // peer channel number.
+  [MinVersion=15] RfcommConnect@46(BluetoothAddress remote_addr,
+                                   int32 channel, int32 optval)
+      => (BluetoothStatus status, RfcommConnectingSocketClient&? client);
 };
 
 // Next Method ID: 22

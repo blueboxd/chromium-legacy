@@ -139,7 +139,7 @@ TEST(FileInputTypeTest, DropTouchesNoPopupOpeningObserver) {
   Document& doc = page_holder->GetDocument();
 
   doc.body()->SetInnerHTMLFromString("<input type=file webkitdirectory>");
-  auto& input = *ToHTMLInputElement(doc.body()->firstChild());
+  auto& input = *To<HTMLInputElement>(doc.body()->firstChild());
 
   base::RunLoop run_loop;
   MockFileChooser chooser(doc.GetFrame()->GetBrowserInterfaceBroker(),

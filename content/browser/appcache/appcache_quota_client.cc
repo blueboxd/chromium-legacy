@@ -67,13 +67,6 @@ void AppCacheQuotaClient::OnQuotaManagerDestroyed() {
     current_delete_request_callback_.Reset();
     GetServiceDeleteCallback()->Cancel();
   }
-
-  // Wait to delete until NotifyAppCacheDestroyed is done running, otherwise
-  // just delete now.
-  if (keep_alive_)
-    keep_alive_ = false;
-  else
-    delete this;
 }
 
 void AppCacheQuotaClient::GetOriginUsage(const url::Origin& origin,
@@ -88,9 +81,9 @@ void AppCacheQuotaClient::GetOriginUsage(const url::Origin& origin,
   }
 
   if (!appcache_is_ready_) {
-    pending_batch_requests_.push_back(
-        base::BindOnce(&AppCacheQuotaClient::GetOriginUsage, AsWeakPtr(),
-                       origin, type, std::move(callback)));
+    pending_batch_requests_.push_back(base::BindOnce(
+        &AppCacheQuotaClient::GetOriginUsage, base::RetainedRef(this), origin,
+        type, std::move(callback)));
     return;
   }
 
@@ -148,9 +141,9 @@ void AppCacheQuotaClient::DeleteOriginData(const url::Origin& origin,
   }
 
   if (!appcache_is_ready_ || !current_delete_request_callback_.is_null()) {
-    pending_serial_requests_.push_back(
-        base::BindOnce(&AppCacheQuotaClient::DeleteOriginData, AsWeakPtr(),
-                       origin, type, std::move(callback)));
+    pending_serial_requests_.push_back(base::BindOnce(
+        &AppCacheQuotaClient::DeleteOriginData, base::RetainedRef(this), origin,
+        type, std::move(callback)));
     return;
   }
 
@@ -195,9 +188,9 @@ void AppCacheQuotaClient::GetOriginsHelper(StorageType type,
   }
 
   if (!appcache_is_ready_) {
-    pending_batch_requests_.push_back(
-        base::BindOnce(&AppCacheQuotaClient::GetOriginsHelper, AsWeakPtr(),
-                       type, opt_host, std::move(callback)));
+    pending_batch_requests_.push_back(base::BindOnce(
+        &AppCacheQuotaClient::GetOriginsHelper, base::RetainedRef(this), type,
+        opt_host, std::move(callback)));
     return;
   }
 
@@ -248,7 +241,7 @@ AppCacheQuotaClient::GetServiceDeleteCallback() {
         std::make_unique<net::CancelableCompletionRepeatingCallback>(
             base::BindRepeating(
                 &AppCacheQuotaClient::DidDeleteAppCachesForOrigin,
-                AsWeakPtr()));
+                base::RetainedRef(this)));
   }
   return service_delete_callback_.get();
 }
@@ -264,8 +257,6 @@ void AppCacheQuotaClient::NotifyAppCacheReady() {
 
 void AppCacheQuotaClient::NotifyAppCacheDestroyed() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Keep this object alive for the duration of this method.
-  keep_alive_ = true;
 
   service_ = nullptr;
   service_is_destroyed_ = true;
@@ -281,15 +272,8 @@ void AppCacheQuotaClient::NotifyAppCacheDestroyed() {
     GetServiceDeleteCallback()->Cancel();
   }
 
-  // It's possible one of the pending callbacks was holding the last reference
-  // to QuotaManager, which means QuotaManager gets destroyed when those
-  // callbacks are run. If this happened, OnQuotaManagerDestroyed() will have
-  // set |keep_alive_| to false and we can delete now. Otherwise, let
-  // OnQuotaManagerDestroyed() delete this object when it's run.
-  if (keep_alive_)
-    keep_alive_ = false;
-  else
-    delete this;
+  if (service_delete_callback_)
+    service_delete_callback_.reset();
 }
 
 }  // namespace content

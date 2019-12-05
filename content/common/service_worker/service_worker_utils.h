@@ -16,7 +16,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/resource_type.h"
 #include "net/http/http_request_headers.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/fetch/fetch_api_request_headers_map.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
@@ -75,14 +75,14 @@ class ServiceWorkerUtils {
       network::mojom::FetchResponseSource source);
 
   struct CONTENT_EXPORT ResourceResponseHeadAndMetadata {
-    ResourceResponseHeadAndMetadata(network::ResourceResponseHead head,
+    ResourceResponseHeadAndMetadata(network::mojom::URLResponseHeadPtr head,
                                     std::vector<uint8_t> metadata);
     ResourceResponseHeadAndMetadata(ResourceResponseHeadAndMetadata&& other);
     ResourceResponseHeadAndMetadata(
         const ResourceResponseHeadAndMetadata& other) = delete;
     ~ResourceResponseHeadAndMetadata();
 
-    network::ResourceResponseHead head;
+    network::mojom::URLResponseHeadPtr head;
     std::vector<uint8_t> metadata;
   };
 

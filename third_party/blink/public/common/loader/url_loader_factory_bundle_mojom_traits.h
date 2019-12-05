@@ -18,8 +18,8 @@ namespace mojo {
 template <>
 struct BLINK_COMMON_EXPORT
     StructTraits<blink::mojom::URLLoaderFactoryBundleDataView,
-                 std::unique_ptr<blink::URLLoaderFactoryBundleInfo>> {
-  using BundleInfoType = std::unique_ptr<blink::URLLoaderFactoryBundleInfo>;
+                 std::unique_ptr<blink::PendingURLLoaderFactoryBundle>> {
+  using BundleInfoType = std::unique_ptr<blink::PendingURLLoaderFactoryBundle>;
 
   static bool IsNull(const BundleInfoType& bundle) { return !bundle; }
 
@@ -31,11 +31,11 @@ struct BLINK_COMMON_EXPORT
   static mojo::PendingRemote<network::mojom::URLLoaderFactory> appcache_factory(
       BundleInfoType& bundle);
 
-  static blink::URLLoaderFactoryBundleInfo::SchemeMap scheme_specific_factories(
-      BundleInfoType& bundle);
+  static blink::PendingURLLoaderFactoryBundle::SchemeMap
+  scheme_specific_factories(BundleInfoType& bundle);
 
-  static blink::URLLoaderFactoryBundleInfo::OriginMap isolated_world_factories(
-      BundleInfoType& bundle);
+  static blink::PendingURLLoaderFactoryBundle::OriginMap
+  isolated_world_factories(BundleInfoType& bundle);
 
   static bool bypass_redirect_checks(BundleInfoType& bundle);
 

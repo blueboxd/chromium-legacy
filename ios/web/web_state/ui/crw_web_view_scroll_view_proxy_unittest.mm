@@ -389,4 +389,111 @@ TEST_F(CRWWebViewScrollViewProxyTest, RespondsToSelector) {
       [webViewScrollViewProxy_ respondsToSelector:@selector(containsString:)]);
 }
 
+// Tests delegate method forwarding to [webViewScrollViewProxy_
+// asUIScrollView].delegate when:
+//   - [webViewScrollViewProxy_ asUIScrollView].delegate is not nil
+//   - CRWWebViewScrollViewDelegateProxy implements the method
+//
+// Expects that a method call to the delegate of the underlying scroll view is
+// forwarded to [webViewScrollViewProxy_ asUIScrollView].delegate.
+TEST_F(CRWWebViewScrollViewProxyTest,
+       ProxyDelegateMethodForwardingForImplementedMethod) {
+  UIScrollView* underlying_scroll_view = [[UIScrollView alloc] init];
+  [webViewScrollViewProxy_ setScrollView:underlying_scroll_view];
+
+  id<UIScrollViewDelegate> mock_proxy_delegate =
+      OCMProtocolMock(@protocol(UIScrollViewDelegate));
+  [webViewScrollViewProxy_ asUIScrollView].delegate = mock_proxy_delegate;
+
+  UIView* mock_view = OCMClassMock([UIView class]);
+  OCMExpect([mock_proxy_delegate
+      scrollViewWillBeginZooming:[webViewScrollViewProxy_ asUIScrollView]
+                        withView:mock_view]);
+
+  EXPECT_TRUE([underlying_scroll_view.delegate
+      respondsToSelector:@selector(scrollViewWillBeginZooming:withView:)]);
+  [underlying_scroll_view.delegate
+      scrollViewWillBeginZooming:underlying_scroll_view
+                        withView:mock_view];
+
+  EXPECT_OCMOCK_VERIFY(static_cast<id>(mock_proxy_delegate));
+  [webViewScrollViewProxy_ setScrollView:nil];
+}
+
+// Tests delegate method forwarding to [webViewScrollViewProxy_
+// asUIScrollView].delegate when:
+//   - [webViewScrollViewProxy_ asUIScrollView].delegate is not nil
+//   - CRWWebViewScrollViewDelegateProxy does *not* implement the method
+//
+// Expects that a method call to the delegate of the underlying scroll view is
+// forwarded to [webViewScrollViewProxy_ asUIScrollView].delegate.
+TEST_F(CRWWebViewScrollViewProxyTest,
+       ProxyDelegateMethodForwardingForUnimplementedMethod) {
+  UIScrollView* underlying_scroll_view = [[UIScrollView alloc] init];
+  [webViewScrollViewProxy_ setScrollView:underlying_scroll_view];
+
+  id<UIScrollViewDelegate> mock_proxy_delegate =
+      OCMProtocolMock(@protocol(UIScrollViewDelegate));
+  [webViewScrollViewProxy_ asUIScrollView].delegate = mock_proxy_delegate;
+
+  UIView* mock_view = OCMClassMock([UIView class]);
+  OCMExpect(
+      [mock_proxy_delegate
+          viewForZoomingInScrollView:[webViewScrollViewProxy_ asUIScrollView]])
+      .andReturn(mock_view);
+
+  EXPECT_TRUE([underlying_scroll_view.delegate
+      respondsToSelector:@selector(viewForZoomingInScrollView:)]);
+  EXPECT_EQ(mock_view, [underlying_scroll_view.delegate
+                           viewForZoomingInScrollView:underlying_scroll_view]);
+
+  EXPECT_OCMOCK_VERIFY(static_cast<id>(mock_proxy_delegate));
+  [webViewScrollViewProxy_ setScrollView:nil];
+}
+
+// Tests delegate method forwarding to [webViewScrollViewProxy_
+// asUIScrollView].delegate when:
+//   - [webViewScrollViewProxy_ asUIScrollView].delegate is nil
+//   - CRWWebViewScrollViewDelegateProxy implements the method
+//
+// Expects that the delegate of the underlying scroll view responds to the
+// method but does nothing.
+TEST_F(CRWWebViewScrollViewProxyTest,
+       ProxyDelegateMethodForwardingForImplementedMethodWhenDelegateIsNil) {
+  UIScrollView* underlying_scroll_view = [[UIScrollView alloc] init];
+  [webViewScrollViewProxy_ setScrollView:underlying_scroll_view];
+
+  [webViewScrollViewProxy_ asUIScrollView].delegate = nil;
+
+  EXPECT_TRUE([underlying_scroll_view.delegate
+      respondsToSelector:@selector(scrollViewWillBeginZooming:withView:)]);
+  UIView* mock_view = OCMClassMock([UIView class]);
+  // Expects that nothing happens by calling this.
+  [underlying_scroll_view.delegate
+      scrollViewWillBeginZooming:underlying_scroll_view
+                        withView:mock_view];
+
+  [webViewScrollViewProxy_ setScrollView:nil];
+}
+
+// Tests delegate method forwarding to [webViewScrollViewProxy_
+// asUIScrollView].delegate when:
+//   - [webViewScrollViewProxy_ asUIScrollView].delegate is nil
+//   - CRWWebViewScrollViewDelegateProxy does *not* implement the method
+//
+// Expects that the delegate of the underlying scroll view does *not* respond to
+// the method.
+TEST_F(CRWWebViewScrollViewProxyTest,
+       ProxyDelegateMethodForwardingForUnimplementedMethodWhenDelegateIsNil) {
+  UIScrollView* underlying_scroll_view = [[UIScrollView alloc] init];
+  [webViewScrollViewProxy_ setScrollView:underlying_scroll_view];
+
+  [webViewScrollViewProxy_ asUIScrollView].delegate = nil;
+
+  EXPECT_FALSE([underlying_scroll_view.delegate
+      respondsToSelector:@selector(viewForZoomingInScrollView:)]);
+
+  [webViewScrollViewProxy_ setScrollView:nil];
+}
+
 }  // namespace

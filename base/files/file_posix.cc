@@ -405,11 +405,11 @@ File File::Duplicate() const {
 
   SCOPED_FILE_TRACE("Duplicate");
 
-  PlatformFile other_fd = HANDLE_EINTR(dup(GetPlatformFile()));
-  if (other_fd == -1)
+  ScopedPlatformFile other_fd(HANDLE_EINTR(dup(GetPlatformFile())));
+  if (!other_fd.is_valid())
     return File(File::GetLastFileError());
 
-  return File(other_fd, async());
+  return File(std::move(other_fd), async());
 }
 
 // Static.

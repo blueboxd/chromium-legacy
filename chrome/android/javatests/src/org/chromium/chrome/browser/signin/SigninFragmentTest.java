@@ -3,11 +3,17 @@
 // found in the LICENSE file.
 package org.chromium.chrome.browser.signin;
 
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
+
 import android.accounts.Account;
 import android.support.test.InstrumentationRegistry;
 import android.view.View;
 
 import androidx.test.filters.LargeTest;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -74,6 +80,15 @@ public class SigninFragmentTest {
                     mSyncTestRule.getActivity(), SigninAccessPoint.BOOKMARK_MANAGER, account.name);
         });
         mRenderTestRule.render(view, "signin_fragment_default_account");
+    }
+
+    @Test
+    @MediumTest
+    public void testSigninFragmentWithDefaultFlow() {
+        SigninActivityLauncher.get().launchActivity(
+                mSyncTestRule.getActivity(), SigninAccessPoint.SETTINGS);
+        onView(withId(R.id.positive_button)).check(matches(withText(R.string.signin_add_account)));
+        onView(withId(R.id.negative_button)).check(matches(withText(R.string.cancel)));
     }
 
     private View getSigninFragmentViewAfterStartingActivity(Runnable activityTrigger) {

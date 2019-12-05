@@ -28,7 +28,7 @@
 
 namespace network {
 class NetworkConnectionTracker;
-class SharedURLLoaderFactoryInfo;
+class PendingSharedURLLoaderFactory;
 }  // namespace network
 
 // TODO(crbug.com/1029481): Part of the legacy implementation of invalidations,
@@ -146,8 +146,8 @@ class INVALIDATION_EXPORT SyncNetworkChannel
   static std::unique_ptr<SyncNetworkChannel> CreatePushClientChannel(
       const notifier::NotifierOptions& notifier_options);
   static std::unique_ptr<SyncNetworkChannel> CreateGCMNetworkChannel(
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          url_loader_factory_info,
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          pending_url_loader_factory,
       network::NetworkConnectionTracker* network_connection_tracker,
       std::unique_ptr<GCMNetworkChannelDelegate> delegate);
 

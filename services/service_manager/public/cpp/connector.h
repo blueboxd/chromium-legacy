@@ -131,9 +131,7 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Connector {
                mojo::PendingReceiver<Interface> receiver,
                mojom::BindInterfacePriority priority =
                    mojom::BindInterfacePriority::kImportant) {
-    BindInterface(filter,
-                  mojo::InterfaceRequest<Interface>(std::move(receiver)),
-                  priority);
+    BindInterface(filter, std::move(receiver), priority);
   }
 
   // A variant of the above which constructs a simple ServiceFilter by service
@@ -159,9 +157,7 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Connector {
   void Connect(const ServiceFilter& filter,
                mojo::PendingReceiver<Interface> receiver,
                BindInterfaceCallback callback) {
-    BindInterface(filter,
-                  mojo::InterfaceRequest<Interface>(std::move(receiver)),
-                  std::move(callback));
+    BindInterface(filter, std::move(receiver), std::move(callback));
   }
   // DEPRECATED: Prefer |Connect()| above. |BindInterface()| uses deprecated
   // InterfaceRequest and InterfacePtr types.
@@ -188,9 +184,9 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Connector {
   // of |BindInterface()| here are sufficient for all use cases.
   template <typename Interface>
   void BindInterface(const ServiceFilter& filter,
-                     mojo::InterfaceRequest<Interface> request,
+                     mojo::PendingReceiver<Interface> receiver,
                      BindInterfaceCallback callback = {}) {
-    BindInterface(filter, Interface::Name_, request.PassMessagePipe(),
+    BindInterface(filter, Interface::Name_, receiver.PassPipe(),
                   mojom::BindInterfacePriority::kImportant,
                   std::move(callback));
   }
@@ -210,16 +206,16 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Connector {
 
   template <typename Interface>
   void BindInterface(const std::string& service_name,
-                     mojo::InterfaceRequest<Interface> request) {
+                     mojo::PendingReceiver<Interface> receiver) {
     return BindInterface(ServiceFilter::ByName(service_name),
-                         std::move(request));
+                         std::move(receiver));
   }
 
   template <typename Interface>
   void BindInterface(const ServiceFilter& filter,
-                     mojo::InterfaceRequest<Interface> request,
+                     mojo::PendingReceiver<Interface> receiver,
                      mojom::BindInterfacePriority priority) {
-    return BindInterface(filter, Interface::Name_, request.PassMessagePipe(),
+    return BindInterface(filter, Interface::Name_, receiver.PassPipe(),
                          priority, {});
   }
 

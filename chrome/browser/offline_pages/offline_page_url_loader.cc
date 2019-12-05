@@ -19,7 +19,7 @@
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace offline_pages {
 
@@ -262,9 +262,9 @@ void OfflinePageURLLoader::OnReceiveResponse(
     return;
   }
 
-  network::ResourceResponseHead response_head;
-  response_head.request_start = base::TimeTicks::Now();
-  response_head.response_start = response_head.request_start;
+  auto response_head = network::mojom::URLResponseHead::New();
+  response_head->request_start = base::TimeTicks::Now();
+  response_head->response_start = response_head->request_start;
 
   scoped_refptr<net::HttpResponseHeaders> redirect_headers =
       request_handler_->GetRedirectHeaders();
@@ -272,19 +272,19 @@ void OfflinePageURLLoader::OnReceiveResponse(
     std::string redirected_url;
     bool is_redirect = redirect_headers->IsRedirect(&redirected_url);
     DCHECK(is_redirect);
-    response_head.headers = redirect_headers;
-    response_head.encoded_data_length = 0;
+    response_head->headers = redirect_headers;
+    response_head->encoded_data_length = 0;
     client_->OnReceiveRedirect(
         CreateRedirectInfo(GURL(redirected_url),
                            redirect_headers->response_code()),
-        response_head);
+        std::move(response_head));
     return;
   }
 
-  response_head.mime_type = "multipart/related";
-  response_head.content_length = file_size;
+  response_head->mime_type = "multipart/related";
+  response_head->content_length = file_size;
 
-  client_->OnReceiveResponse(response_head);
+  client_->OnReceiveResponse(std::move(response_head));
   client_->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
 
   producer_handle_ = std::move(pipe.producer_handle);

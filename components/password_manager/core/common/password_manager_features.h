@@ -33,7 +33,8 @@ extern const base::Feature kPasswordEditingAndroid;
 extern const base::Feature kPasswordImport;
 extern const base::Feature kPasswordManagerOnboardingAndroid;
 extern const base::Feature kPasswordSaveIllustration;
-extern const base::Feature kUsernameFirstFlow;
+extern const base::Feature kUsernameFirstFlowFilling;
+extern const base::Feature kUsernameFirstFlowSaving;
 extern const base::Feature kStickyBubble;
 
 // Field trial and corresponding parameters.

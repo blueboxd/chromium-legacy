@@ -28,6 +28,8 @@
 
 #include "base/auto_reset.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
@@ -1176,10 +1178,21 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   loader_ = MakeGarbageCollected<ThreadableLoader>(execution_context, this,
                                                    resource_loader_options);
   loader_->SetTimeout(timeout_);
+  base::TimeTicks start_time = base::TimeTicks::Now();
   loader_->Start(request);
 
-  if (!async_)
+  if (!async_) {
+    base::TimeDelta blocking_time = base::TimeTicks::Now() - start_time;
+    if (execution_context.IsDocument()) {
+      UMA_HISTOGRAM_MEDIUM_TIMES("XHR.Sync.BlockingTime.MainThread",
+                                 blocking_time);
+    } else {
+      UMA_HISTOGRAM_MEDIUM_TIMES("XHR.Sync.BlockingTime.WorkerThread",
+                                 blocking_time);
+    }
+
     ThrowForLoadFailureIfNeeded(exception_state, String());
+  }
 }
 
 void XMLHttpRequest::abort() {

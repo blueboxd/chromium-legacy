@@ -204,9 +204,17 @@ TEST_F(NavigationItemTest, UpdateUserAgentType) {
   EXPECT_EQ(UserAgentType::MOBILE, item_->GetUserAgentType());
 
   // Regular HTTP URL does not reset DESKTOP User Agent to MOBILE.
-  item_->SetUserAgentType(UserAgentType::DESKTOP);
+  item_->SetUserAgentType(UserAgentType::DESKTOP,
+                          /*update_inherited_user_agent =*/true);
   item_->SetURL(user_agent_url);
   EXPECT_EQ(UserAgentType::DESKTOP, item_->GetUserAgentType());
+  EXPECT_EQ(UserAgentType::DESKTOP, item_->GetUserAgentForInheritance());
+
+  // Reset the UserAgentType to Mobile, without updating the inheritance.
+  item_->SetUserAgentType(UserAgentType::MOBILE,
+                          /*update_inherited_user_agent =*/false);
+  EXPECT_EQ(UserAgentType::MOBILE, item_->GetUserAgentType());
+  EXPECT_EQ(UserAgentType::DESKTOP, item_->GetUserAgentForInheritance());
 }
 
 }  // namespace

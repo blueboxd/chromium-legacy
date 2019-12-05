@@ -750,14 +750,15 @@ PrefetchedSignedExchangeCache::GetInfoListForNavigation(
     // same origin.
     if (outer_url_origin.IsSameOriginWith(
             url::Origin::Create(exchange->outer_url()))) {
-      mojo::PendingRemote<network::mojom::URLLoaderFactory> loader_factory_info;
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          pending_loader_factory;
       new SubresourceSignedExchangeURLLoaderFactory(
-          loader_factory_info.InitWithNewPipeAndPassReceiver(),
+          pending_loader_factory.InitWithNewPipeAndPassReceiver(),
           exchange->Clone(), request_initiator_site_lock);
       info_list.emplace_back(mojom::PrefetchedSignedExchangeInfo::New(
           exchange->outer_url(), *exchange->header_integrity(),
           exchange->inner_url(), *exchange->inner_response(),
-          std::move(loader_factory_info)));
+          std::move(pending_loader_factory)));
     }
     ++exchanges_it;
   }

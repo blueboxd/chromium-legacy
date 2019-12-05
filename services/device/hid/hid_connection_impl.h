@@ -29,13 +29,6 @@ class HidConnectionImpl : public mojom::HidConnection,
       mojo::PendingRemote<mojom::HidConnectionClient> connection_client,
       mojo::PendingRemote<mojom::HidConnectionWatcher> watcher);
 
-  HidConnectionImpl(
-      scoped_refptr<device::HidConnection> connection,
-      mojo::PendingReceiver<mojom::HidConnection> receiver,
-      mojo::PendingRemote<mojom::HidConnectionClient> connection_client,
-      mojo::PendingRemote<mojom::HidConnectionWatcher> watcher);
-  ~HidConnectionImpl() final;
-
   // HidConnection::Client implementation:
   void OnInputReport(scoped_refptr<base::RefCountedBytes> buffer,
                      size_t size) override;
@@ -52,6 +45,14 @@ class HidConnectionImpl : public mojom::HidConnection,
                          SendFeatureReportCallback callback) override;
 
  private:
+  friend class HidConnectionImplTest;
+
+  HidConnectionImpl(
+      scoped_refptr<device::HidConnection> connection,
+      mojo::PendingReceiver<mojom::HidConnection> receiver,
+      mojo::PendingRemote<mojom::HidConnectionClient> connection_client,
+      mojo::PendingRemote<mojom::HidConnectionWatcher> watcher);
+  ~HidConnectionImpl() final;
   void OnRead(ReadCallback callback,
               bool success,
               scoped_refptr<base::RefCountedBytes> buffer,

@@ -16,7 +16,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.CREDENTIAL;
-import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FAVICON;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FAVICON_OR_FALLBACK;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FORMATTED_ORIGIN;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.ON_CLICK_LISTENER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.DISMISS_HANDLER;
@@ -41,14 +41,16 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordHistogramJni;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.favicon.IconType;
+import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillComponent.UserAction;
+import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FaviconOrFallback;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ItemType;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
@@ -84,13 +86,15 @@ public class TouchToFillControllerTest {
     private UrlFormatter.Natives mUrlFormatterJniMock;
     @Mock
     private TouchToFillComponent.Delegate mMockDelegate;
+    @Mock
+    private LargeIconBridge mMockIconBridge;
 
     @Mock
     private RecordHistogram.Natives mMockRecordHistogram;
 
     // Can't be local, as it has to be initialized by initMocks.
     @Captor
-    private ArgumentCaptor<Callback<Bitmap>> mCallbackArgumentCaptor;
+    private ArgumentCaptor<LargeIconBridge.LargeIconCallback> mCallbackArgumentCaptor;
 
     private final TouchToFillMediator mMediator = new TouchToFillMediator();
     private final PropertyModel mModel =
@@ -109,7 +113,7 @@ public class TouchToFillControllerTest {
         when(mUrlFormatterJniMock.formatUrlForSecurityDisplayOmitScheme(anyString()))
                 .then(inv -> formatForSecurityDisplay(inv.getArgument(0)));
 
-        mMediator.initialize(mMockDelegate, mModel, DESIRED_FAVICON_SIZE);
+        mMediator.initialize(mMockDelegate, mModel, mMockIconBridge, DESIRED_FAVICON_SIZE);
     }
 
     @Test
@@ -136,25 +140,20 @@ public class TouchToFillControllerTest {
         assertThat(itemList.size(), is(4));
         assertThat(itemList.get(1).type, is(ItemType.CREDENTIAL));
         assertThat(itemList.get(1).model.get(CREDENTIAL), is(ANA));
-        assertThat(itemList.get(1).model.get(FAVICON), is(nullValue()));
+        assertThat(itemList.get(1).model.get(FAVICON_OR_FALLBACK), is(nullValue()));
         assertThat(itemList.get(2).type, is(ItemType.CREDENTIAL));
         assertThat(itemList.get(2).model.get(CREDENTIAL), is(CARL));
-        assertThat(itemList.get(2).model.get(FAVICON), is(nullValue()));
+        assertThat(itemList.get(2).model.get(FAVICON_OR_FALLBACK), is(nullValue()));
         assertThat(itemList.get(3).type, is(ItemType.CREDENTIAL));
         assertThat(itemList.get(3).model.get(CREDENTIAL), is(BOB));
-        assertThat(itemList.get(3).model.get(FAVICON), is(nullValue()));
+        assertThat(itemList.get(3).model.get(FAVICON_OR_FALLBACK), is(nullValue()));
 
-        verify(mMockDelegate)
-                .fetchFavicon(
-                        eq("https://m.a.xyz/"), eq(TEST_URL), eq(DESIRED_FAVICON_SIZE), any());
-        verify(mMockDelegate)
-                .fetchFavicon(eq(TEST_URL), eq(TEST_URL), eq(DESIRED_FAVICON_SIZE), any());
-        verify(mMockDelegate)
-                .fetchFavicon(
-                        eq(TEST_SUBDOMAIN_URL), eq(TEST_URL), eq(DESIRED_FAVICON_SIZE), any());
-        verify(mMockDelegate)
-                .fetchFavicon(
-                        eq(BOB.getOriginUrl()), eq(TEST_URL), eq(DESIRED_FAVICON_SIZE), any());
+        verify(mMockIconBridge)
+                .getLargeIconForUrl(eq(CARL.getOriginUrl()), eq(DESIRED_FAVICON_SIZE), any());
+        verify(mMockIconBridge)
+                .getLargeIconForUrl(eq(ANA.getOriginUrl()), eq(DESIRED_FAVICON_SIZE), any());
+        verify(mMockIconBridge)
+                .getLargeIconForUrl(eq(BOB.getOriginUrl()), eq(DESIRED_FAVICON_SIZE), any());
     }
 
     @Test
@@ -164,17 +163,23 @@ public class TouchToFillControllerTest {
         assertThat(itemList.size(), is(2));
         assertThat(itemList.get(1).type, is(ItemType.CREDENTIAL));
         assertThat(itemList.get(1).model.get(CREDENTIAL), is(CARL));
-        assertThat(itemList.get(1).model.get(FAVICON), is(nullValue()));
+        assertThat(itemList.get(1).model.get(FAVICON_OR_FALLBACK), is(nullValue()));
 
         // ANA and CARL both have TEST_URL as their origin URL
-        verify(mMockDelegate)
-                .fetchFavicon(eq(TEST_URL), eq(TEST_URL), eq(DESIRED_FAVICON_SIZE),
-                        mCallbackArgumentCaptor.capture());
-        Callback<Bitmap> callback = mCallbackArgumentCaptor.getValue();
+        verify(mMockIconBridge)
+                .getLargeIconForUrl(
+                        eq(TEST_URL), eq(DESIRED_FAVICON_SIZE), mCallbackArgumentCaptor.capture());
+        LargeIconBridge.LargeIconCallback callback = mCallbackArgumentCaptor.getValue();
         Bitmap bitmap = Bitmap.createBitmap(
                 DESIRED_FAVICON_SIZE, DESIRED_FAVICON_SIZE, Bitmap.Config.ARGB_8888);
-        callback.onResult(bitmap);
-        assertThat(itemList.get(1).model.get(FAVICON), is(bitmap));
+        callback.onLargeIconAvailable(bitmap, 333, true, IconType.FAVICON);
+        FaviconOrFallback iconData = itemList.get(1).model.get(FAVICON_OR_FALLBACK);
+        assertThat(iconData.mIcon, is(bitmap));
+        assertThat(iconData.mUrl, is(TEST_URL));
+        assertThat(iconData.mIconSize, is(DESIRED_FAVICON_SIZE));
+        assertThat(iconData.mFallbackColor, is(333));
+        assertThat(iconData.mIsFallbackColorDefault, is(true));
+        assertThat(iconData.mIconType, is(IconType.FAVICON));
     }
 
     @Test
@@ -196,7 +201,7 @@ public class TouchToFillControllerTest {
         assertThat(itemList.size(), is(2));
         assertThat(itemList.get(1).type, is(ItemType.CREDENTIAL));
         assertThat(itemList.get(1).model.get(CREDENTIAL), is(ANA));
-        assertThat(itemList.get(1).model.get(FAVICON), is(nullValue()));
+        assertThat(itemList.get(1).model.get(FAVICON_OR_FALLBACK), is(nullValue()));
 
         // Showing the sheet a second time should replace all changed credentials.
         mMediator.showCredentials(TEST_URL, true, Collections.singletonList(BOB));
@@ -204,7 +209,7 @@ public class TouchToFillControllerTest {
         assertThat(itemList.size(), is(2));
         assertThat(itemList.get(1).type, is(ItemType.CREDENTIAL));
         assertThat(itemList.get(1).model.get(CREDENTIAL), is(BOB));
-        assertThat(itemList.get(1).model.get(FAVICON), is(nullValue()));
+        assertThat(itemList.get(1).model.get(FAVICON_OR_FALLBACK), is(nullValue()));
     }
 
     @Test

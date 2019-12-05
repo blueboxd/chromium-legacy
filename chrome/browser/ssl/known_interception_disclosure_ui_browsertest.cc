@@ -15,9 +15,8 @@ using KnownInterceptionDisclosureUITest = InProcessBrowserTest;
 // Tests that the chrome://connection-monitoring-detected WebUI page shows the
 // expected title and strings.
 IN_PROC_BROWSER_TEST_F(KnownInterceptionDisclosureUITest, PageDisplaysStrings) {
-  constexpr char kPageTitle[] = "Monitoring Detected";
-  constexpr char kBodyText[] =
-      "has detected that your connection is being monitored";
+  constexpr char kTabTitle[] = "Monitoring Detected";
+  constexpr char kBodyText[] = "Your activity on the web";
 
   ui_test_utils::NavigateToURL(
       browser(),
@@ -26,7 +25,7 @@ IN_PROC_BROWSER_TEST_F(KnownInterceptionDisclosureUITest, PageDisplaysStrings) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  EXPECT_EQ(base::ASCIIToUTF16(kPageTitle), contents->GetTitle());
+  EXPECT_EQ(base::ASCIIToUTF16(kTabTitle), contents->GetTitle());
   EXPECT_GE(ui_test_utils::FindInPage(contents, base::ASCIIToUTF16(kBodyText),
                                       true, true, nullptr, nullptr),
             1);

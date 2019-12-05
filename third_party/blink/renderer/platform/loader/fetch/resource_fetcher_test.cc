@@ -956,8 +956,8 @@ TEST_F(ResourceFetcherTest, StaleWhileRevalidate) {
 
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
-  fetch_params = FetchParameters(resource_request);
-  Resource* new_resource = MockResource::Fetch(fetch_params, fetcher, nullptr);
+  FetchParameters fetch_params2 = FetchParameters(resource_request);
+  Resource* new_resource = MockResource::Fetch(fetch_params2, fetcher, nullptr);
   EXPECT_EQ(resource, new_resource);
   platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   EXPECT_TRUE(resource->IsLoaded());
@@ -971,7 +971,7 @@ TEST_F(ResourceFetcherTest, StaleWhileRevalidate) {
   RegisterMockedURLLoadWithCustomResponse(
       url, test::PlatformTestDataPath(kTestResourceFilename),
       WrappedResourceResponse(revalidate_response));
-  new_resource = MockResource::Fetch(fetch_params, fetcher, nullptr);
+  new_resource = MockResource::Fetch(fetch_params2, fetcher, nullptr);
   EXPECT_EQ(resource, new_resource);
   EXPECT_TRUE(GetMemoryCache()->Contains(resource));
   static_cast<scheduler::FakeTaskRunner*>(fetcher->GetTaskRunner().get())

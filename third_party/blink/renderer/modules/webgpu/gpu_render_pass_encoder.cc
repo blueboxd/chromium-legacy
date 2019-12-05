@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_pass_encoder.h"
 
 #include "third_party/blink/renderer/bindings/modules/v8/double_sequence_or_gpu_color_dict.h"
+#include "third_party/blink/renderer/core/typed_arrays/typed_flexible_array_buffer_view.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_bind_group.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_buffer.h"
@@ -41,6 +42,27 @@ void GPURenderPassEncoder::setBindGroup(
   GetProcs().renderPassEncoderSetBindGroup(
       GetHandle(), index, bindGroup->GetHandle(), dynamicOffsets.size(),
       dynamicOffsets.data());
+}
+
+void GPURenderPassEncoder::setBindGroup(
+    uint32_t index,
+    GPUBindGroup* bind_group,
+    const FlexibleUint32ArrayView& dynamic_offsets_data,
+    uint64_t dynamic_offsets_data_start,
+    uint32_t dynamic_offsets_data_length,
+    ExceptionState& exception_state) {
+  if (!ValidateSetBindGroupDynamicOffsets(
+          dynamic_offsets_data, dynamic_offsets_data_start,
+          dynamic_offsets_data_length, exception_state)) {
+    return;
+  }
+
+  const uint32_t* data =
+      dynamic_offsets_data.DataMaybeOnStack() + dynamic_offsets_data_start;
+
+  GetProcs().renderPassEncoderSetBindGroup(GetHandle(), index,
+                                           bind_group->GetHandle(),
+                                           dynamic_offsets_data_length, data);
 }
 
 void GPURenderPassEncoder::pushDebugGroup(String groupLabel) {

@@ -6,8 +6,11 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "base/test/scoped_feature_list.h"
+#include "ios/web/common/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
 #include "ui/base/device_form_factor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -89,6 +92,71 @@ TEST_F(UserAgentTest, DesktopUserAgentForProduct) {
   EXPECT_EQ(kDesktopUserAgent,
             BuildUserAgentFromProduct(web::UserAgentType::DESKTOP,
                                       "my_product_name"));
+}
+
+// Tests the default user agent for different views.
+TEST_F(UserAgentTest, DefaultUserAgent) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kDefaultToDesktopOnIPad);
+
+  UITraitCollection* regular_vertical_size_class = [UITraitCollection
+      traitCollectionWithVerticalSizeClass:UIUserInterfaceSizeClassRegular];
+  UITraitCollection* regular_horizontal_size_class = [UITraitCollection
+      traitCollectionWithHorizontalSizeClass:UIUserInterfaceSizeClassRegular];
+  UITraitCollection* compact_vertical_size_class = [UITraitCollection
+      traitCollectionWithVerticalSizeClass:UIUserInterfaceSizeClassCompact];
+  UITraitCollection* compact_horizontal_size_class = [UITraitCollection
+      traitCollectionWithHorizontalSizeClass:UIUserInterfaceSizeClassCompact];
+
+  UIView* view = [[UIView alloc] init];
+  UITraitCollection* original_traits = view.traitCollection;
+
+  UITraitCollection* regular_regular =
+      [UITraitCollection traitCollectionWithTraitsFromCollections:@[
+        original_traits, regular_vertical_size_class,
+        regular_horizontal_size_class
+      ]];
+  UITraitCollection* regular_compact =
+      [UITraitCollection traitCollectionWithTraitsFromCollections:@[
+        original_traits, regular_vertical_size_class,
+        compact_horizontal_size_class
+      ]];
+  UITraitCollection* compact_regular =
+      [UITraitCollection traitCollectionWithTraitsFromCollections:@[
+        original_traits, compact_vertical_size_class,
+        regular_horizontal_size_class
+      ]];
+  UITraitCollection* compact_compact =
+      [UITraitCollection traitCollectionWithTraitsFromCollections:@[
+        original_traits, compact_vertical_size_class,
+        compact_horizontal_size_class
+      ]];
+
+  // Check that desktop is returned for Regular x Regular.
+  id mock_regular_regular_view = OCMClassMock([UIView class]);
+  OCMStub([mock_regular_regular_view traitCollection])
+      .andReturn(regular_regular);
+  EXPECT_EQ(web::UserAgentType::DESKTOP,
+            web::GetDefaultUserAgent(mock_regular_regular_view));
+
+  // Check that mobile is returned for all other combinations.
+  id mock_regular_compact_view = OCMClassMock([UIView class]);
+  OCMStub([mock_regular_compact_view traitCollection])
+      .andReturn(regular_compact);
+  EXPECT_EQ(web::UserAgentType::MOBILE,
+            web::GetDefaultUserAgent(mock_regular_compact_view));
+
+  id mock_compact_regular_view = OCMClassMock([UIView class]);
+  OCMStub([mock_compact_regular_view traitCollection])
+      .andReturn(compact_regular);
+  EXPECT_EQ(web::UserAgentType::MOBILE,
+            web::GetDefaultUserAgent(mock_compact_regular_view));
+
+  id mock_compact_compact_view = OCMClassMock([UIView class]);
+  OCMStub([mock_compact_compact_view traitCollection])
+      .andReturn(compact_compact);
+  EXPECT_EQ(web::UserAgentType::MOBILE,
+            web::GetDefaultUserAgent(mock_compact_compact_view));
 }
 
 }  // namespace web

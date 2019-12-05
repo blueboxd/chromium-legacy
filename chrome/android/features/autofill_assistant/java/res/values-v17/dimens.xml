@@ -27,6 +27,9 @@
     <dimen name="autofill_assistant_toolbar_vertical_padding">8dp</dimen>
     <dimen name="autofill_assistant_toolbar_swipe_handle_height">4dp</dimen>
     <dimen name="autofill_assistant_choicelist_edit_button_size">20dp</dimen>
+    <!-- The padding should match half of autofill_assistant_minimum_touch_target_size -
+         24dp (size of the counter button). -->
+    <dimen name="autofill_assistant_form_counter_button_padding">12dp</dimen>
     <dimen name="autofill_assistant_minimum_touch_target_size">48dp</dimen>
 
     <dimen name="autofill_assistant_payment_request_choice_top_bottom_padding">8dp</dimen>
@@ -40,4 +43,8 @@
     <!-- Payment method needs slightly more padding to because of vendor logo. in summary/expanded part. -->
     <dimen name="autofill_assistant_payment_request_payment_method_title_padding">4dp</dimen>
     <dimen name="autofill_assistant_payment_request_column_spacing">8dp</dimen>
+
+    <dimen name="autofill_assistant_form_line_height_1">48dp</dimen>
+    <dimen name="autofill_assistant_form_line_height_2">64dp</dimen>
+    <dimen name="autofill_assistant_form_line_height_3">88dp</dimen>
 </resources>

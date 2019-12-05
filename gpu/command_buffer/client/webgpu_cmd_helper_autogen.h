@@ -51,4 +51,16 @@ void RequestAdapter(uint32_t request_adapter_serial,
   }
 }
 
+void RequestDevice(uint32_t adapter_service_id,
+                   uint32_t request_device_properties_shm_id,
+                   uint32_t request_device_properties_shm_offset,
+                   uint32_t request_device_properties_size) {
+  webgpu::cmds::RequestDevice* c = GetCmdSpace<webgpu::cmds::RequestDevice>();
+  if (c) {
+    c->Init(adapter_service_id, request_device_properties_shm_id,
+            request_device_properties_shm_offset,
+            request_device_properties_size);
+  }
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_WEBGPU_CMD_HELPER_AUTOGEN_H_

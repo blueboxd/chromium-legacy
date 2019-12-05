@@ -321,7 +321,7 @@ void SharedWorkerServiceImpl::StartWorker(
     const SharedWorkerInstance& instance,
     base::WeakPtr<SharedWorkerHost> host,
     const blink::MessagePortChannel& message_port,
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
         subresource_loader_factories,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
     blink::mojom::ControllerServiceWorkerInfoPtr controller,

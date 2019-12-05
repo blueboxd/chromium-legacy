@@ -24,26 +24,6 @@
 
 namespace ash {
 
-namespace {
-
-class TestPhotoController : public PhotoController {
- public:
-  TestPhotoController() = default;
-  ~TestPhotoController() override = default;
-
-  // PhotoController:
-  void GetNextImage(PhotoController::PhotoDownloadCallback callback) override {
-    gfx::ImageSkia image =
-        gfx::test::CreateImageSkia(/*width=*/10, /*height=*/10);
-    std::move(callback).Run(image);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestPhotoController);
-};
-
-}  // namespace
-
 class AmbientContainerViewTest : public AshTestBase {
  public:
   AmbientContainerViewTest()
@@ -53,7 +33,6 @@ class AmbientContainerViewTest : public AshTestBase {
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
         chromeos::features::kAmbientModeFeature);
-    photo_controller_ = std::make_unique<TestPhotoController>();
     AshTestBase::SetUp();
   }
 
@@ -73,7 +52,6 @@ class AmbientContainerViewTest : public AshTestBase {
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
-  std::unique_ptr<TestPhotoController> photo_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(AmbientContainerViewTest);
 };

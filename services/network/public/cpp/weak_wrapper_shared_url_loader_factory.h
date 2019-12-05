@@ -42,7 +42,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) WeakWrapperSharedURLLoaderFactory
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
   void Clone(mojo::PendingReceiver<mojom::URLLoaderFactory> receiver) override;
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;
+  std::unique_ptr<network::PendingSharedURLLoaderFactory> Clone() override;
 
  private:
   ~WeakWrapperSharedURLLoaderFactory() override;

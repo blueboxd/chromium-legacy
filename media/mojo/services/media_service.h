@@ -12,9 +12,9 @@
 #include "media/mojo/mojom/interface_factory.mojom.h"
 #include "media/mojo/mojom/media_service.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -41,7 +41,7 @@ class MEDIA_MOJO_EXPORT MediaService : public service_manager::Service,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
   void OnDisconnected() final;
 
-  void Create(mojom::MediaServiceRequest request);
+  void Create(mojo::PendingReceiver<mojom::MediaService> receiver);
 
   void CreateInterfaceFactory(
       mojo::PendingReceiver<mojom::InterfaceFactory> receiver,
@@ -62,7 +62,7 @@ class MEDIA_MOJO_EXPORT MediaService : public service_manager::Service,
   mojo::UniqueReceiverSet<mojom::InterfaceFactory> interface_factory_receivers_;
 
   service_manager::BinderRegistry registry_;
-  mojo::BindingSet<mojom::MediaService> bindings_;
+  mojo::ReceiverSet<mojom::MediaService> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaService);
 };

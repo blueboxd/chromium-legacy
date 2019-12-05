@@ -10,7 +10,7 @@
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
 #include "chrome/browser/interstitials/enterprise_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ssl/chrome_ssl_blocking_page.h"
+#include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
 #include "chrome/browser/ssl/ssl_error_controller_client.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/security_interstitials/content/cert_report_helper.h"
@@ -87,7 +87,7 @@ BadClockBlockingPage::BadClockBlockingPage(
                                                            time_triggered,
                                                            clock_state,
                                                            controller())) {
-  ChromeSSLBlockingPage::DoChromeSpecificSetup(this);
+  ChromeSecurityBlockingPageFactory::DoChromeSpecificSetup(this);
 }
 
 BadClockBlockingPage::~BadClockBlockingPage() = default;

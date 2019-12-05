@@ -515,9 +515,9 @@ url::Origin GetOriginForURLLoaderFactory(
   return result;
 }
 
-std::unique_ptr<blink::URLLoaderFactoryBundleInfo> CloneFactoryBundle(
+std::unique_ptr<blink::PendingURLLoaderFactoryBundle> CloneFactoryBundle(
     scoped_refptr<blink::URLLoaderFactoryBundle> bundle) {
-  return base::WrapUnique(static_cast<blink::URLLoaderFactoryBundleInfo*>(
+  return base::WrapUnique(static_cast<blink::PendingURLLoaderFactoryBundle*>(
       bundle->Clone().release()));
 }
 
@@ -925,6 +925,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
   GetProcess()->AddRoute(routing_id_, this);
   g_routing_id_frame_map.Get().emplace(
       GlobalFrameRoutingId(GetProcess()->GetID(), routing_id_), this);
+  g_token_frame_map.Get().insert(std::make_pair(frame_token_, this));
   site_instance_->AddObserver(this);
   process_->AddObserver(this);
   GetSiteInstance()->IncrementActiveFrameCount();
@@ -1032,8 +1033,7 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
                                           base::nullopt);
   }
 
-  if (overlay_routing_token_)
-    g_token_frame_map.Get().erase(*overlay_routing_token_);
+  g_token_frame_map.Get().erase(frame_token_);
 
   site_instance_->RemoveObserver(this);
   process_->RemoveObserver(this);
@@ -1157,13 +1157,12 @@ ui::AXTreeID RenderFrameHostImpl::GetAXTreeID() {
   return ax_tree_id();
 }
 
-const base::UnguessableToken& RenderFrameHostImpl::GetOverlayRoutingToken() {
-  if (!overlay_routing_token_) {
-    overlay_routing_token_ = base::UnguessableToken::Create();
-    g_token_frame_map.Get().emplace(*overlay_routing_token_, this);
+const base::UnguessableToken& RenderFrameHostImpl::GetTopFrameToken() const {
+  const RenderFrameHostImpl* frame = this;
+  while (frame->parent_) {
+    frame = frame->parent_;
   }
-
-  return *overlay_routing_token_;
+  return frame->frame_token();
 }
 
 void RenderFrameHostImpl::AudioContextPlaybackStarted(int audio_context_id) {
@@ -1442,9 +1441,9 @@ void RenderFrameHostImpl::MarkIsolatedWorldsAsRequiringSeparateURLLoaderFactory(
   //    bundle before).
   if (push_to_renderer_now && insertion_took_place &&
       has_committed_any_navigation_) {
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
         subresource_loader_factories =
-            std::make_unique<blink::URLLoaderFactoryBundleInfo>();
+            std::make_unique<blink::PendingURLLoaderFactoryBundle>();
     subresource_loader_factories->pending_isolated_world_factories() =
         CreateURLLoaderFactoriesForIsolatedWorlds(last_committed_origin_,
                                                   isolated_world_origins);
@@ -1463,11 +1462,11 @@ bool RenderFrameHostImpl::IsSandboxed(blink::WebSandboxFlags flags) {
   return static_cast<int>(active_sandbox_flags_) & static_cast<int>(flags);
 }
 
-blink::URLLoaderFactoryBundleInfo::OriginMap
+blink::PendingURLLoaderFactoryBundle::OriginMap
 RenderFrameHostImpl::CreateURLLoaderFactoriesForIsolatedWorlds(
     const url::Origin& main_world_origin,
     const base::flat_set<url::Origin>& isolated_world_origins) {
-  blink::URLLoaderFactoryBundleInfo::OriginMap result;
+  blink::PendingURLLoaderFactoryBundle::OriginMap result;
   for (const url::Origin& isolated_world_origin : isolated_world_origins) {
     mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote;
     CreateNetworkServiceDefaultFactoryAndObserve(
@@ -2631,7 +2630,6 @@ void RenderFrameHostImpl::DidCommitBackForwardCacheNavigation(
   CHECK(request != navigation_requests_.end());
 
   std::unique_ptr<NavigationRequest> owned_request = std::move(request->second);
-  base::TimeTicks navigation_start = owned_request->NavigationStart();
   navigation_requests_.erase(committing_navigation_request);
 
   // During a normal (uncached) navigation, is_loading_ is set to true in
@@ -2647,10 +2645,6 @@ void RenderFrameHostImpl::DidCommitBackForwardCacheNavigation(
   DidCommitNavigationInternal(std::move(owned_request),
                               std::move(validated_params),
                               /*is_same_document_navigation=*/false);
-
-  // Now that the restored frame has been committed, unfreeze it.
-  frame_tree_node()->render_manager()->UnfreezeCurrentFrameHost(
-      navigation_start);
 
   // The page is already loaded since it came from the cache, so fire the stop
   // loading event.
@@ -3329,11 +3323,11 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
         default_factory_remote.InitWithNewPipeAndPassReceiver());
   }
 
-  std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+  std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
       subresource_loader_factories =
-          std::make_unique<blink::URLLoaderFactoryBundleInfo>(
+          std::make_unique<blink::PendingURLLoaderFactoryBundle>(
               std::move(default_factory_remote),
-              blink::URLLoaderFactoryBundleInfo::SchemeMap(),
+              blink::PendingURLLoaderFactoryBundle::SchemeMap(),
               CreateURLLoaderFactoriesForIsolatedWorlds(
                   last_committed_origin_,
                   isolated_worlds_requiring_separate_url_loader_factory_),
@@ -4244,8 +4238,7 @@ void RenderFrameHostImpl::OnRequestOverlayRoutingToken() {
   // Make sure that we have a token.
   GetOverlayRoutingToken();
 
-  Send(new FrameMsg_SetOverlayRoutingToken(routing_id_,
-                                           *overlay_routing_token_));
+  Send(new FrameMsg_SetOverlayRoutingToken(routing_id_, frame_token_));
 }
 
 void RenderFrameHostImpl::BindInterfaceProviderReceiver(
@@ -4283,7 +4276,7 @@ void RenderFrameHostImpl::ShowCreatedWindow(int pending_widget_routing_id,
                                disposition, initial_rect, user_gesture);
 }
 
-std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
 RenderFrameHostImpl::CreateCrossOriginPrefetchLoaderFactoryBundle() {
   DCHECK(base::FeatureList::IsEnabled(
       network::features::kPrefetchMainResourceNetworkIsolationKey));
@@ -4298,9 +4291,9 @@ RenderFrameHostImpl::CreateCrossOriginPrefetchLoaderFactoryBundle() {
       base::nullopt /* network_isolation_key */,
       pending_default_factory.InitWithNewPipeAndPassReceiver());
 
-  return std::make_unique<blink::URLLoaderFactoryBundleInfo>(
+  return std::make_unique<blink::PendingURLLoaderFactoryBundle>(
       std::move(pending_default_factory),
-      blink::URLLoaderFactoryBundleInfo::SchemeMap(),
+      blink::PendingURLLoaderFactoryBundle::SchemeMap(),
       CreateURLLoaderFactoriesForIsolatedWorlds(
           last_committed_origin_,
           isolated_worlds_requiring_separate_url_loader_factory_),
@@ -5244,12 +5237,12 @@ void RenderFrameHostImpl::CommitNavigation(
 
   url::Origin main_world_origin_for_url_loader_factory =
       GetOriginForURLLoaderFactory(navigation_request);
-  std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+  std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
       subresource_loader_factories;
   if ((!is_same_document || is_first_navigation) && !is_srcdoc) {
     recreate_default_url_loader_factory_after_network_service_crash_ = false;
     subresource_loader_factories =
-        std::make_unique<blink::URLLoaderFactoryBundleInfo>();
+        std::make_unique<blink::PendingURLLoaderFactoryBundle>();
     BrowserContext* browser_context = GetSiteInstance()->GetBrowserContext();
 
     // NOTE: On Network Service navigations, we want to ensure that a frame is
@@ -5271,8 +5264,8 @@ void RenderFrameHostImpl::CommitNavigation(
               browser_context, this, GetProcess()->GetID(),
               ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
               main_world_origin_for_url_loader_factory,
-              &appcache_proxied_receiver, nullptr /* header_client */,
-              nullptr /* bypass_redirect_checks */,
+              base::nullopt /* navigation_id */, &appcache_proxied_receiver,
+              nullptr /* header_client */, nullptr /* bypass_redirect_checks */,
               nullptr /* factory_override */);
       if (use_proxy) {
         appcache_remote->Clone(std::move(appcache_proxied_receiver));
@@ -5312,7 +5305,8 @@ void RenderFrameHostImpl::CommitNavigation(
       GetContentClient()->browser()->WillCreateURLLoaderFactory(
           browser_context, this, GetProcess()->GetID(),
           ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
-          main_world_origin_for_url_loader_factory, &factory_receiver,
+          main_world_origin_for_url_loader_factory,
+          base::nullopt /* navigation_id */, &factory_receiver,
           nullptr /* header_client */, nullptr /* bypass_redirect_checks */,
           nullptr /* factory_override */);
       CreateWebUIURLLoaderBinding(this, scheme, std::move(factory_receiver));
@@ -5435,7 +5429,8 @@ void RenderFrameHostImpl::CommitNavigation(
       GetContentClient()->browser()->WillCreateURLLoaderFactory(
           browser_context, this, GetProcess()->GetID(),
           ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
-          main_world_origin_for_url_loader_factory, &factory_receiver,
+          main_world_origin_for_url_loader_factory,
+          base::nullopt /* navigation_id */, &factory_receiver,
           nullptr /* header_client */, nullptr /* bypass_redirect_checks */,
           nullptr /* factory_override */);
       // Keep DevTools proxy last, i.e. closest to the network.
@@ -5485,7 +5480,7 @@ void RenderFrameHostImpl::CommitNavigation(
       }
     }
 
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
         factory_bundle_for_prefetch;
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         prefetch_loader_factory;
@@ -5628,17 +5623,17 @@ void RenderFrameHostImpl::FailedNavigation(
   // later on.
   url::Origin origin = url::Origin();
 
-  std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+  std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
       subresource_loader_factories;
   mojo::PendingRemote<network::mojom::URLLoaderFactory> default_factory_remote;
   bool bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
       origin, origin, network_isolation_key_,
       default_factory_remote.InitWithNewPipeAndPassReceiver());
   subresource_loader_factories =
-      std::make_unique<blink::URLLoaderFactoryBundleInfo>(
+      std::make_unique<blink::PendingURLLoaderFactoryBundle>(
           std::move(default_factory_remote),
-          blink::URLLoaderFactoryBundleInfo::SchemeMap(),
-          blink::URLLoaderFactoryBundleInfo::OriginMap(),
+          blink::PendingURLLoaderFactoryBundle::SchemeMap(),
+          blink::PendingURLLoaderFactoryBundle::OriginMap(),
           bypass_redirect_checks);
 
   mojom::NavigationClient* navigation_client =
@@ -6102,6 +6097,7 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
     network::mojom::URLLoaderFactoryParamsPtr params =
         network::mojom::URLLoaderFactoryParams::New();
     params->process_id = GetProcess()->GetID();
+    params->top_frame_id = GetTopFrameToken();
     storage_partition->GetNetworkContext()->CreateURLLoaderFactory(
         network_service_disconnect_handler_holder_.BindNewPipeAndPassReceiver(),
         std::move(params));
@@ -6127,8 +6123,8 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       context, this, GetProcess()->GetID(),
       ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource, origin,
-      &default_factory_receiver, &header_client, &bypass_redirect_checks,
-      &factory_override);
+      base::nullopt /* navigation_id */, &default_factory_receiver,
+      &header_client, &bypass_redirect_checks, &factory_override);
 
   // Keep DevTools proxy last, i.e. closest to the network.
   devtools_instrumentation::WillCreateURLLoaderFactory(
@@ -6153,15 +6149,16 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
     GetProcess()->CreateURLLoaderFactory(
         origin, main_world_origin, cross_origin_embedder_policy_, &preferences,
         network_isolation_key.value(), std::move(header_client),
-        std::move(factory_receiver), std::move(factory_override));
+        GetTopFrameToken(), std::move(factory_receiver),
+        std::move(factory_override));
   } else {
     // The ability to create a trusted URLLoaderFactory is not exposed on
     // RenderProcessHost's public API.
     static_cast<RenderProcessHostImpl*>(GetProcess())
         ->CreateTrustedURLLoaderFactory(
             origin, main_world_origin, cross_origin_embedder_policy_,
-            &preferences, std::move(header_client), std::move(factory_receiver),
-            std::move(factory_override));
+            &preferences, std::move(header_client), GetTopFrameToken(),
+            std::move(factory_receiver), std::move(factory_override));
   }
 
   if (!factory_callback_is_null) {
@@ -7345,7 +7342,7 @@ void RenderFrameHostImpl::SendCommitNavigation(
     network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
         subresource_loader_factories,
     base::Optional<std::vector<::content::mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
@@ -7390,7 +7387,7 @@ void RenderFrameHostImpl::SendCommitFailedNavigation(
     bool has_stale_copy_in_cache,
     int32_t error_code,
     const base::Optional<std::string>& error_page_content,
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
         subresource_loader_factories) {
   DCHECK(navigation_client && navigation_request);
   navigation_client->CommitFailedNavigation(
@@ -7981,6 +7978,21 @@ bool RenderFrameHostImpl::IsBackForwardCacheDisabled() const {
 
 bool RenderFrameHostImpl::IsDOMContentLoaded() {
   return dom_content_loaded_;
+}
+
+RenderFrameHostImpl* RenderFrameHostImpl::ParentOrOuterDelegateFrame() {
+  // Find the parent in the FrameTree (iframe).
+  if (parent_)
+    return parent_;
+
+  // Find the parent in the WebContentsTree (GuestView or Portal).
+  FrameTreeNode* frame_in_embedder =
+      frame_tree_node()->render_manager()->GetOuterDelegateNode();
+  if (frame_in_embedder)
+    return frame_in_embedder->current_frame_host()->GetParent();
+
+  // No parent found.
+  return nullptr;
 }
 
 }  // namespace content

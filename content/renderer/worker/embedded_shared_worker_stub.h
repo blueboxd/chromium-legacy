@@ -16,7 +16,6 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
@@ -39,7 +38,7 @@ class WebSharedWorker;
 
 namespace blink {
 class MessagePortChannel;
-class URLLoaderFactoryBundleInfo;
+class PendingURLLoaderFactoryBundle;
 }  // namespace blink
 
 namespace content {
@@ -70,13 +69,11 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
           service_worker_provider_info,
       const base::UnguessableToken& appcache_host_id,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-          subresource_loader_factory_bundle_info,
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+          pending_subresource_loader_factory_bundle,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       mojo::PendingRemote<blink::mojom::SharedWorkerHost> host,
       mojo::PendingReceiver<blink::mojom::SharedWorker> receiver,
-      mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-          interface_provider,
       mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker);
   ~EmbeddedSharedWorkerStub() override;

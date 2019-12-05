@@ -29,6 +29,7 @@ include_rules = [
     "+base/metrics/sparse_histogram.h",
     "+base/numerics/checked_math.h",
     "+base/numerics/safe_conversions.h",
+    "+base/process/memory.h",
     "+base/rand_util.h",
     "+base/run_loop.h",
     "+base/strings/pattern.h",

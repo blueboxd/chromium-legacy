@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/field_info_manager.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "components/password_manager/core/browser/field_info_table.h"
 #include "components/password_manager/core/browser/password_store.h"
 
@@ -39,6 +40,8 @@ void FieldInfoManagerImpl::OnGetPasswordStoreResults(
 
 void FieldInfoManagerImpl::OnGetAllFieldInfo(
     std::vector<FieldInfo> field_infos) {
+  base::UmaHistogramCounts100("PasswordManager.FieldInfoTableRows",
+                              field_infos.size());
   for (const auto& field : field_infos) {
     field_types_[std::make_pair(field.form_signature, field.field_signature)] =
         field.field_type;

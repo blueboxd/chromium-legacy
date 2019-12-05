@@ -16,6 +16,7 @@ from .code_node import SequenceNode
 from .code_node import SymbolScopeNode
 from .code_node import TextNode
 from .codegen_context import CodeGenContext
+from .codegen_expr import expr_from_exposure
 from .codegen_format import format_template as _format
 from .codegen_utils import enclose_with_namespace
 from .codegen_utils import make_copyright_header
@@ -258,7 +259,17 @@ if ({_1}()) {{
   }}
 }}\
 """)
-        body.append(T(_format(pattern, _1=_1, _2=_2, _3=_3)))
+        node = T(_format(pattern, _1=_1, _2=_2, _3=_3))
+
+        conditional = expr_from_exposure(member.exposure)
+        if not conditional.is_always_true:
+            node = SequenceNode([
+                T(_format("if ({}) {{", conditional.to_text())),
+                node,
+                T("}"),
+            ])
+
+        body.append(node)
 
     body.append(T("return true;"))
 
@@ -411,38 +422,47 @@ def make_fill_own_dict_member(key_index, member):
 
     T = TextNode
 
-    member_set_func = _blink_member_name(member).set_api
-
-    node = SequenceNode()
-
     pattern = """
 if (!v8_dictionary->Get(current_context, member_names[{_1}].Get(${isolate}))
          .ToLocal(&v8_memer)) {{
   ${exception_state}.RethrowV8Exception(try_block.Exception());
   return;
 }}"""
-    node.append(T(_format(pattern, _1=key_index)))
+    get_v8_value_node = T(_format(pattern, _1=key_index))
 
-    internal_node = SymbolScopeNode()
-    internal_node.register_code_symbol(
+    api_call_node = SymbolScopeNode()
+    api_call_node.register_code_symbol(
         make_v8_to_blink_value("blink_value", "v8_value", member.idl_type))
-    internal_node.append(
-        T(_format("{_1}(${blink_value});", _1=member_set_func)))
-    node.extend([
+    _1 = _blink_member_name(member).set_api
+    api_call_node.append(T(_format("{_1}(${blink_value});", _1=_1)))
+
+    throw_if_required_member_is_missing_node = None
+    if member.is_required:
+        pattern = """\
+${exception_state}.ThrowTypeError(
+    ExceptionMessages::FailedToGet(
+        "{_1}", "${{dictionary.identifier}}",
+        "Required member is undefined."));
+"""
+        throw_if_required_member_is_missing_node = T(
+            _format(pattern, _1=member.identifier))
+
+    node = SequenceNode([
+        get_v8_value_node,
         T("if (!v8_value->IsUndefined()) {"),
-        internal_node,
+        api_call_node,
+        T("} else {") if throw_if_required_member_is_missing_node else None,
+        throw_if_required_member_is_missing_node,
         T("}"),
     ])
 
-    if member.is_required:
-        pattern = """\
-else {{
-  ${exception_state}.ThrowTypeError(
-      ExceptionMessages::FailedToGet(
-          "{_1}", "${{dictionary.identifier}}",
-          "Required member is undefined."));
-}}"""
-        node.append(T(_format(pattern, _1=member.identifier)))
+    conditional = expr_from_exposure(member.exposure)
+    if not conditional.is_always_true:
+        node = SequenceNode([
+            T(_format("if ({}) {{", conditional.to_text())),
+            node,
+            T("}"),
+        ])
 
     return node
 
@@ -481,7 +501,7 @@ def make_dict_trace_def(cg_context):
 
 
 def generate_dictionaries(web_idl_database, output_dirs):
-    dictionary = web_idl_database.find("InternalDictionary")
+    dictionary = web_idl_database.find("MediaDecodingConfiguration")
     filename = "example_dictionary.cc"
     filepath = os.path.join(output_dirs['core'], filename)
 

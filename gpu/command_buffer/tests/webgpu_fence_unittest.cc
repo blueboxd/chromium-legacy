@@ -53,6 +53,8 @@ TEST_F(WebGPUFenceTest, InitialValue) {
     LOG(ERROR) << "Test skipped";
     return;
   }
+  constexpr uint32_t kAdapterID = 0;
+  webgpu()->RequestDevice(kAdapterID, nullptr);
   wgpu::Device device = wgpu::Device::Acquire(webgpu()->GetDefaultDevice());
   wgpu::Queue queue = device.CreateQueue();
   {
@@ -73,6 +75,8 @@ TEST_F(WebGPUFenceTest, GetCompletedValue) {
     LOG(ERROR) << "Test skipped";
     return;
   }
+  constexpr uint32_t kAdapterID = 0;
+  webgpu()->RequestDevice(kAdapterID, nullptr);
   wgpu::Device device = wgpu::Device::Acquire(webgpu()->GetDefaultDevice());
   wgpu::Queue queue = device.CreateQueue();
   wgpu::FenceDescriptor fence_desc{nullptr, nullptr, 0};
@@ -89,6 +93,8 @@ TEST_F(WebGPUFenceTest, OnCompletion) {
     LOG(ERROR) << "Test skipped";
     return;
   }
+  constexpr uint32_t kAdapterID = 0;
+  webgpu()->RequestDevice(kAdapterID, nullptr);
   wgpu::Device device = wgpu::Device::Acquire(webgpu()->GetDefaultDevice());
   wgpu::Queue queue = device.CreateQueue();
   wgpu::FenceDescriptor fence_desc{nullptr, nullptr, 0};
@@ -108,6 +114,8 @@ TEST_F(WebGPUFenceTest, SignalManyTimes) {
     LOG(ERROR) << "Test skipped";
     return;
   }
+  constexpr uint32_t kAdapterID = 0;
+  webgpu()->RequestDevice(kAdapterID, nullptr);
   wgpu::Device device = wgpu::Device::Acquire(webgpu()->GetDefaultDevice());
   wgpu::Queue queue = device.CreateQueue();
   wgpu::FenceDescriptor fence_desc{nullptr, nullptr, 0};

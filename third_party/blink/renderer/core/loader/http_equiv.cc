@@ -36,7 +36,7 @@ bool IsFirstPartyOrigin(Frame* frame, const KURL& url) {
       .Top()
       .GetSecurityContext()
       ->GetSecurityOrigin()
-      ->IsSameSchemeHostPort(SecurityOrigin::Create(url).get());
+      ->IsSameOriginWith(SecurityOrigin::Create(url).get());
 }
 
 // Returns true if execution of scripts from the url are allowed. Compared to

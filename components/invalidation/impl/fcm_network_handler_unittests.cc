@@ -19,6 +19,7 @@
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
+#include "components/invalidation/impl/network_channel.h"
 #include "components/invalidation/impl/status.h"
 #include "google_apis/gcm/engine/account_mapping.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -37,11 +38,6 @@ namespace syncer {
 namespace {
 
 const char kInvalidationsAppId[] = "com.google.chrome.fcm.invalidations";
-using TokenCallback = base::RepeatingCallback<void(const std::string& message)>;
-using MessageCallback = base::RepeatingCallback<void(const std::string&,
-                                                     const std::string&,
-                                                     const std::string&,
-                                                     const std::string&)>;
 
 base::Time GetDummyNow() {
   base::Time out_time;
@@ -52,7 +48,7 @@ base::Time GetDummyNow() {
 gcm::IncomingMessage CreateValidMessage() {
   gcm::IncomingMessage message;
   message.data["payload"] = "payload";
-  message.data["version"] = "version";
+  message.data["version"] = "42";
   message.sender_id = "private_topic";
   return message;
 }
@@ -195,11 +191,8 @@ class MockInstanceIDDriver : public InstanceIDDriver {
 
 class MockOnTokenCallback {
  public:
-  // Workaround for gMock's lack of support for movable-only arguments.
-  void WrappedRun(const std::string& token) { Run(token); }
-
   TokenCallback Get() {
-    return base::BindRepeating(&MockOnTokenCallback::WrappedRun,
+    return base::BindRepeating(&MockOnTokenCallback::Run,
                                base::Unretained(this));
   }
 
@@ -208,16 +201,8 @@ class MockOnTokenCallback {
 
 class MockOnMessageCallback {
  public:
-  // Workaround for gMock's lack of support for movable-only arguments.
-  void WrappedRun(const std::string& payload,
-                  const std::string& private_topic_name,
-                  const std::string& public_topic_name,
-                  const std::string& version) {
-    Run(payload, private_topic_name, public_topic_name, version);
-  }
-
   MessageCallback Get() {
-    return base::BindRepeating(&MockOnMessageCallback::WrappedRun,
+    return base::BindRepeating(&MockOnMessageCallback::Run,
                                base::Unretained(this));
   }
 
@@ -225,7 +210,7 @@ class MockOnMessageCallback {
                void(const std::string&,
                     const std::string&,
                     const std::string&,
-                    const std::string&));
+                    int64_t));
 };
 
 ACTION_TEMPLATE(InvokeCallbackArgument,
@@ -350,11 +335,10 @@ TEST_F(FCMNetworkHandlerTest, ShouldInvokeMessageCallbackOnValidMessage) {
 
   std::unique_ptr<FCMNetworkHandler> handler =
       MakeHandlerReadyForMessage(mock_on_message_callback.Get());
-  EXPECT_CALL(mock_on_message_callback,
-              Run("payload", "private_topic", "", "version"))
+  EXPECT_CALL(mock_on_message_callback, Run("payload", "private_topic", "", 42))
       .Times(1);
   EXPECT_CALL(mock_on_message_callback,
-              Run("payload", "private_topic", "public_topic", "version"))
+              Run("payload", "private_topic", "public_topic", 42))
       .Times(1);
   handler->OnMessage(kInvalidationsAppId, message);
   message.data["external_name"] = "public_topic";
@@ -385,6 +369,25 @@ TEST_F(FCMNetworkHandlerTest,
       testing::ElementsAre(base::Bucket(
           static_cast<int>(InvalidationParsingStatus::kVersionEmpty) /* min */,
           1 /* count */)));
+}
+
+TEST_F(FCMNetworkHandlerTest,
+       ShouldNotInvokeMessageCallbackOnMessageWithInvalidVersion) {
+  base::HistogramTester histogram_tester;
+  MockOnMessageCallback mock_on_message_callback;
+  gcm::IncomingMessage message = CreateValidMessage();
+  // Set version to something that's not a valid number.
+  message.data["version"] = "notanumber";
+
+  std::unique_ptr<FCMNetworkHandler> handler =
+      MakeHandlerReadyForMessage(mock_on_message_callback.Get());
+  EXPECT_CALL(mock_on_message_callback, Run(_, _, _, _)).Times(0);
+  handler->OnMessage(kInvalidationsAppId, message);
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("FCMInvalidations.FCMMessageStatus"),
+      testing::ElementsAre(base::Bucket(
+          /*min=*/static_cast<int>(InvalidationParsingStatus::kVersionInvalid),
+          /*count=*/1)));
 }
 
 TEST_F(FCMNetworkHandlerTest,

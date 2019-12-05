@@ -33,8 +33,8 @@ namespace device {
 namespace {
 base::LazyInstance<CustomLocationProviderCallback>::Leaky
     g_custom_location_provider_callback = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<std::unique_ptr<network::SharedURLLoaderFactoryInfo>>::Leaky
-    g_url_loader_factory_info = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<std::unique_ptr<network::PendingSharedURLLoaderFactory>>::
+    Leaky g_pending_url_loader_factory = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<std::string>::Leaky g_api_key = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
@@ -50,7 +50,7 @@ void GeolocationProviderImpl::SetGeolocationConfiguration(
     const CustomLocationProviderCallback& custom_location_provider_getter,
     bool use_gms_core_location_provider) {
   if (url_loader_factory)
-    g_url_loader_factory_info.Get() = url_loader_factory->Clone();
+    g_pending_url_loader_factory.Get() = url_loader_factory->Clone();
   g_api_key.Get() = api_key;
   g_custom_location_provider_callback.Get() = custom_location_provider_getter;
   if (use_gms_core_location_provider) {
@@ -232,9 +232,9 @@ void GeolocationProviderImpl::Init() {
       &GeolocationProviderImpl::OnLocationUpdate, base::Unretained(this));
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
-  if (g_url_loader_factory_info.Get()) {
+  if (g_pending_url_loader_factory.Get()) {
     url_loader_factory = network::SharedURLLoaderFactory::Create(
-        std::move(g_url_loader_factory_info.Get()));
+        std::move(g_pending_url_loader_factory.Get()));
   }
 
   DCHECK(!net::NetworkChangeNotifier::CreateIfNeeded())

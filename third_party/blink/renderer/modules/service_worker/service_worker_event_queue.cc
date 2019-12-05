@@ -80,61 +80,92 @@ void ServiceWorkerEventQueue::Start() {
                                   WTF::Unretained(this)));
 }
 
-void ServiceWorkerEventQueue::PushTask(std::unique_ptr<Task> task) {
-  DCHECK(task->type != Task::Type::Pending || did_idle_timeout());
-  bool can_start_processing_tasks =
-      !processing_tasks_ && task->type != Task::Type::Pending;
-  task_queue_.emplace_back(std::move(task));
-  if (!can_start_processing_tasks)
+void ServiceWorkerEventQueue::EnqueueNormal(
+    StartCallback start_callback,
+    AbortCallback abort_callback,
+    base::Optional<base::TimeDelta> custom_timeout) {
+  EnqueueEvent(std::make_unique<Event>(
+      Event::Type::Normal, std::move(start_callback), std::move(abort_callback),
+      std::move(custom_timeout)));
+}
+
+void ServiceWorkerEventQueue::EnqueuePending(
+    StartCallback start_callback,
+    AbortCallback abort_callback,
+    base::Optional<base::TimeDelta> custom_timeout) {
+  EnqueueEvent(std::make_unique<Event>(
+      Event::Type::Pending, std::move(start_callback),
+      std::move(abort_callback), std::move(custom_timeout)));
+}
+
+void ServiceWorkerEventQueue::EnqueueOffline(
+    StartCallback start_callback,
+    AbortCallback abort_callback,
+    base::Optional<base::TimeDelta> custom_timeout) {
+  EnqueueEvent(std::make_unique<ServiceWorkerEventQueue::Event>(
+      ServiceWorkerEventQueue::Event::Type::Offline, std::move(start_callback),
+      std::move(abort_callback), std::move(custom_timeout)));
+}
+
+bool ServiceWorkerEventQueue::CanStartEvent(const Event& event) const {
+  if (!HasInflightEvent())
+    return true;
+  if (event.type == Event::Type::Offline)
+    return running_offline_events_;
+  return !running_offline_events_;
+}
+
+void ServiceWorkerEventQueue::EnqueueEvent(std::unique_ptr<Event> event) {
+  DCHECK(event->type != Event::Type::Pending || did_idle_timeout());
+  bool can_start_processing_events =
+      !processing_events_ && event->type != Event::Type::Pending;
+  queue_.emplace_back(std::move(event));
+  if (!can_start_processing_events)
     return;
   if (did_idle_timeout()) {
     idle_time_ = base::TimeTicks();
     did_idle_timeout_ = false;
   }
-  ProcessTasks();
+  ProcessEvents();
 }
 
-void ServiceWorkerEventQueue::ProcessTasks() {
-  DCHECK(!processing_tasks_);
-  processing_tasks_ = true;
-  while (!task_queue_.IsEmpty()) {
-    StartTask(task_queue_.TakeFirst());
+void ServiceWorkerEventQueue::ProcessEvents() {
+  DCHECK(!processing_events_);
+  processing_events_ = true;
+  while (!queue_.IsEmpty() && CanStartEvent(*queue_.front())) {
+    StartEvent(queue_.TakeFirst());
   }
-  processing_tasks_ = false;
+  processing_events_ = false;
 
   // We have to check HasInflightEvent() and may trigger
-  // OnNoInflightEvent() here because StartTask() can call EndEvent()
+  // OnNoInflightEvent() here because StartEvent() can call EndEvent()
   // synchronously, and EndEvent() never triggers OnNoInflightEvent()
-  // while ProcessTasks() is running.
+  // while ProcessEvents() is running.
   if (!HasInflightEvent())
     OnNoInflightEvent();
 }
 
-void ServiceWorkerEventQueue::StartTask(std::unique_ptr<Task> task) {
-  int event_id = StartEvent(std::move(task->abort_callback),
-                            task->custom_timeout.value_or(kEventTimeout));
-  std::move(task->start_callback).Run(event_id);
-}
-
-int ServiceWorkerEventQueue::StartEvent(AbortCallback abort_callback,
-                                        base::TimeDelta timeout) {
+void ServiceWorkerEventQueue::StartEvent(std::unique_ptr<Event> event) {
+  DCHECK(CanStartEvent(*event));
+  running_offline_events_ = event->type == Event::Type::Offline;
   idle_time_ = base::TimeTicks();
   const int event_id = NextEventId();
-  auto add_result = id_event_map_.insert(
+  DCHECK(!HasEvent(event_id));
+  id_event_map_.insert(
       event_id, std::make_unique<EventInfo>(
-                    tick_clock_->NowTicks() + timeout,
-                    WTF::Bind(std::move(abort_callback), event_id)));
-  DCHECK(add_result.is_new_entry);
-  return event_id;
+                    tick_clock_->NowTicks() +
+                        event->custom_timeout.value_or(kEventTimeout),
+                    WTF::Bind(std::move(event->abort_callback), event_id)));
+  std::move(event->start_callback).Run(event_id);
 }
 
 void ServiceWorkerEventQueue::EndEvent(int event_id) {
   DCHECK(HasEvent(event_id));
   id_event_map_.erase(event_id);
-  // Check |processing_tasks_| here because EndEvent() can be called
-  // synchronously in StartTask(). We don't want to trigger
-  // OnNoInflightEvent() while ProcessTasks() is running.
-  if (!processing_tasks_ && !HasInflightEvent())
+  // Check |processing_events_| here because EndEvent() can be called
+  // synchronously in StartEvent(). We don't want to trigger
+  // OnNoInflightEvent() while ProcessEvents() is running.
+  if (!processing_events_ && !HasInflightEvent())
     OnNoInflightEvent();
 }
 
@@ -199,6 +230,13 @@ bool ServiceWorkerEventQueue::MaybeTriggerIdleTimer() {
 
 void ServiceWorkerEventQueue::OnNoInflightEvent() {
   DCHECK(!HasInflightEvent());
+  running_offline_events_ = false;
+  // There might be events in the queue because offline (or non-offline) events
+  // can be enqueued during running non-offline (or offline) events.
+  if (!queue_.IsEmpty()) {
+    ProcessEvents();
+    return;
+  }
   idle_time_ = tick_clock_->NowTicks() + kIdleDelay;
   MaybeTriggerIdleTimer();
 }
@@ -207,8 +245,8 @@ bool ServiceWorkerEventQueue::HasInflightEvent() const {
   return !id_event_map_.IsEmpty() || num_of_stay_awake_tokens_ > 0;
 }
 
-ServiceWorkerEventQueue::Task::Task(
-    ServiceWorkerEventQueue::Task::Type type,
+ServiceWorkerEventQueue::Event::Event(
+    ServiceWorkerEventQueue::Event::Type type,
     StartCallback start_callback,
     AbortCallback abort_callback,
     base::Optional<base::TimeDelta> custom_timeout)
@@ -217,7 +255,7 @@ ServiceWorkerEventQueue::Task::Task(
       abort_callback(std::move(abort_callback)),
       custom_timeout(custom_timeout) {}
 
-ServiceWorkerEventQueue::Task::~Task() = default;
+ServiceWorkerEventQueue::Event::~Event() = default;
 
 ServiceWorkerEventQueue::EventInfo::EventInfo(
     base::TimeTicks expiration_time,

@@ -37,6 +37,8 @@ void AppCacheTestHelper::AddGroupAndCache(AppCacheServiceImpl*
                                   ++group_id_);
   AppCache* appcache = new AppCache(
       appcache_service->storage(), ++appcache_id_);
+  appcache->set_manifest_parser_version(0);
+  appcache->set_manifest_scope("/");
   AppCacheEntry entry(AppCacheEntry::MANIFEST,
                                 ++response_id_);
   appcache->AddEntry(manifest_url, entry);

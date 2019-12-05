@@ -52,13 +52,13 @@ RadioNodeList::RadioNodeList(ContainerNode& owner_node,
 RadioNodeList::~RadioNodeList() = default;
 
 static inline HTMLInputElement* ToRadioButtonInputElement(Element& element) {
-  if (!IsHTMLInputElement(element))
+  auto* input_element = DynamicTo<HTMLInputElement>(&element);
+  if (!input_element)
     return nullptr;
-  HTMLInputElement& input_element = ToHTMLInputElement(element);
-  if (input_element.type() != input_type_names::kRadio ||
-      input_element.value().IsEmpty())
+  if (input_element->type() != input_type_names::kRadio ||
+      input_element->value().IsEmpty())
     return nullptr;
-  return &input_element;
+  return input_element;
 }
 
 String RadioNodeList::value() const {
@@ -121,8 +121,9 @@ bool RadioNodeList::ElementMatches(const Element& element) const {
   if (!IsA<HTMLObjectElement>(element) && !element.IsFormControlElement())
     return false;
 
-  if (IsHTMLInputElement(element) &&
-      ToHTMLInputElement(element).type() == input_type_names::kImage)
+  auto* html_input_element = DynamicTo<HTMLInputElement>(&element);
+  if (html_input_element &&
+      html_input_element->type() == input_type_names::kImage)
     return false;
 
   return CheckElementMatchesRadioNodeListFilter(element);

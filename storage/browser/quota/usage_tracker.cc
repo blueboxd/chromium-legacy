@@ -32,11 +32,12 @@ void StripUsageWithBreakdownCallback(
 
 }  // namespace
 
-UsageTracker::UsageTracker(const std::vector<QuotaClient*>& clients,
-                           blink::mojom::StorageType type,
-                           SpecialStoragePolicy* special_storage_policy)
+UsageTracker::UsageTracker(
+    const std::vector<scoped_refptr<QuotaClient>>& clients,
+    blink::mojom::StorageType type,
+    SpecialStoragePolicy* special_storage_policy)
     : type_(type) {
-  for (auto* client : clients) {
+  for (const auto& client : clients) {
     if (client->DoesSupport(type)) {
       client_tracker_map_[client->id()] = std::make_unique<ClientUsageTracker>(
           this, client, type, special_storage_policy);

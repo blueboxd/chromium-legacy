@@ -76,7 +76,6 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker {
       const base::UnguessableToken& appcache_host_id,
       const base::UnguessableToken& devtools_worker_token,
       mojo::ScopedMessagePipeHandle content_settings_handle,
-      mojo::ScopedMessagePipeHandle interface_provider,
       mojo::ScopedMessagePipeHandle browser_interface_broker,
       bool pause_worker_context_on_start) override;
   void Connect(MessagePortChannel) override;

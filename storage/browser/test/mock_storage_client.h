@@ -44,7 +44,6 @@ class MockStorageClient : public QuotaClient {
                     const MockOriginData* mock_data,
                     QuotaClient::ID id,
                     size_t mock_data_size);
-  ~MockStorageClient() override;
 
   // To add or modify mock data in this client.
   void AddOriginAndNotify(const url::Origin& origin,
@@ -61,7 +60,7 @@ class MockStorageClient : public QuotaClient {
 
   // QuotaClient methods.
   QuotaClient::ID id() const override;
-  void OnQuotaManagerDestroyed() override;
+  void OnQuotaManagerDestroyed() override {}
   void GetOriginUsage(const url::Origin& origin,
                       StorageType type,
                       GetUsageCallback callback) override;
@@ -76,6 +75,8 @@ class MockStorageClient : public QuotaClient {
   bool DoesSupport(StorageType type) const override;
 
  private:
+  ~MockStorageClient() override;
+
   void RunGetOriginUsage(const url::Origin& origin,
                          StorageType type,
                          GetUsageCallback callback);

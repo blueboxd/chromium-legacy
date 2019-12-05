@@ -61,7 +61,7 @@ void HTMLImageLoader::NoImageResourceToLoad() {
 
   if (auto* image = DynamicTo<HTMLImageElement>(GetElement()))
     image->EnsureCollapsedOrFallbackContent();
-  else if (auto* input = ToHTMLInputElementOrNull(GetElement()))
+  else if (auto* input = DynamicTo<HTMLInputElement>(GetElement()))
     input->EnsureFallbackContent();
 }
 
@@ -78,7 +78,7 @@ void HTMLImageLoader::ImageNotifyFinished(ImageResourceContent*) {
       image->EnsurePrimaryContent();
   }
 
-  if (auto* input = ToHTMLInputElementOrNull(*element)) {
+  if (auto* input = DynamicTo<HTMLInputElement>(*element)) {
     if (load_error)
       input->EnsureFallbackContent();
     else

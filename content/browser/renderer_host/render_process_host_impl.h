@@ -246,6 +246,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const net::NetworkIsolationKey& network_isolation_key,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
           header_client,
+      const base::Optional<base::UnguessableToken>& top_frame_token,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       network::mojom::URLLoaderFactoryOverridePtr factory_override) override;
 
@@ -293,6 +294,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const WebPreferences* preferences,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
           header_client,
+      const base::Optional<base::UnguessableToken>& top_frame_token,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       network::mojom::URLLoaderFactoryOverridePtr factory_override);
 
@@ -905,6 +907,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const base::Optional<net::NetworkIsolationKey>& network_isolation_key,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
           header_client,
+      const base::Optional<base::UnguessableToken>& top_frame_token,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       bool is_trusted,
       network::mojom::URLLoaderFactoryOverridePtr factory_override);

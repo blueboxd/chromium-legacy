@@ -473,7 +473,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(TestCase("directoryTreeHorizontalScroll"),
                       TestCase("directoryTreeExpandHorizontalScroll"),
-                      TestCase("directoryTreeVerticalScroll")));
+                      TestCase("directoryTreeVerticalScroll"),
+                      TestCase("directoryTreeClippedWindowResize"),
+                      TestCase("directoryTreeClippedSplitterResize")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DirectoryTreeContextMenu, /* directory_tree_context_menu.js */

@@ -14,7 +14,7 @@ void ResourceTimingInfo::AddRedirect(const ResourceResponse& redirect_response,
   redirect_chain_.push_back(redirect_response);
   if (has_cross_origin_redirect_)
     return;
-  bool cross_origin = !SecurityOrigin::AreSameSchemeHostPort(
+  bool cross_origin = !SecurityOrigin::AreSameOrigin(
       redirect_response.CurrentRequestUrl(), new_url);
   if (cross_origin) {
     has_cross_origin_redirect_ = true;

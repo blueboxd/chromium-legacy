@@ -11,18 +11,11 @@
 
 #include "base/containers/span.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task/cancelable_task_tracker.h"
 #include "base/util/type_safety/pass_key.h"
 #include "chrome/browser/touch_to_fill/touch_to_fill_view.h"
 #include "chrome/browser/touch_to_fill/touch_to_fill_view_factory.h"
-#include "components/favicon_base/favicon_types.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/gfx/native_widget_types.h"
-#include "url/gurl.h"
-
-namespace favicon {
-class FaviconService;
-}  // namespace favicon
 
 namespace password_manager {
 class PasswordManagerDriver;
@@ -50,8 +43,7 @@ class TouchToFillController {
   // No-op constructor for tests.
   explicit TouchToFillController(
       util::PassKey<class TouchToFillControllerTest>);
-  TouchToFillController(ChromePasswordManagerClient* web_contents,
-                        favicon::FaviconService* favicon_service);
+  explicit TouchToFillController(ChromePasswordManagerClient* web_contents);
   TouchToFillController(const TouchToFillController&) = delete;
   TouchToFillController& operator=(const TouchToFillController&) = delete;
   ~TouchToFillController();
@@ -76,13 +68,6 @@ class TouchToFillController {
   // The web page view containing the focused field.
   gfx::NativeView GetNativeView();
 
-  // Obtains a favicon for the origin and invokes the callback with a favicon
-  // image or with an empty image if a favicon could not be retrieved.
-  void FetchFavicon(const GURL& credential_origin,
-                    const GURL& frame_origin,
-                    int desired_size_in_pixel,
-                    base::OnceCallback<void(const gfx::Image&)> callback);
-
 #if defined(UNIT_TEST)
   void set_view(std::unique_ptr<TouchToFillView> view) {
     view_ = std::move(view);
@@ -97,13 +82,7 @@ class TouchToFillController {
   // OnCredentialSelected() or OnDismissed() gets called.
   base::WeakPtr<password_manager::PasswordManagerDriver> driver_;
 
-  // The favicon service used to retrieve icons for a given origin.
-  favicon::FaviconService* favicon_service_ = nullptr;
-
   ukm::SourceId source_id_ = ukm::kInvalidSourceId;
-
-  // Used to track requested favicons. On destruction, requests are cancelled.
-  base::CancelableTaskTracker favicon_tracker_;
 
   // View used to communicate with the Android frontend. Lazily instantiated so
   // that it can be injected by tests.

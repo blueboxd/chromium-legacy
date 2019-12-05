@@ -243,11 +243,11 @@ void ServiceWorkerContextWrapper::Init(
       base::CreateSequencedTaskRunner(
           {base::ThreadPool(), base::MayBlock(),
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
-  std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-      non_network_loader_factory_bundle_info_for_update_check;
+  std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+      non_network_pending_loader_factory_bundle_for_update_check;
   if (blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled()) {
-    non_network_loader_factory_bundle_info_for_update_check =
-        CreateNonNetworkURLLoaderFactoryBundleInfoForUpdateCheck(
+    non_network_pending_loader_factory_bundle_for_update_check =
+        CreateNonNetworkPendingURLLoaderFactoryBundleForUpdateCheck(
             storage_partition_->browser_context());
   }
 
@@ -260,7 +260,8 @@ void ServiceWorkerContextWrapper::Init(
           base::RetainedRef(special_storage_policy),
           base::RetainedRef(blob_context),
           base::RetainedRef(loader_factory_getter),
-          std::move(non_network_loader_factory_bundle_info_for_update_check)));
+          std::move(
+              non_network_pending_loader_factory_bundle_for_update_check)));
 
   // The watcher also runs or posts a core thread task which must run after
   // InitOnCoreThread(), so start it after posting that task above.
@@ -1469,19 +1470,20 @@ void ServiceWorkerContextWrapper::InitOnCoreThread(
     storage::SpecialStoragePolicy* special_storage_policy,
     ChromeBlobStorageContext* blob_context,
     URLLoaderFactoryGetter* loader_factory_getter,
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-        non_network_loader_factory_bundle_info_for_update_check) {
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+        non_network_pending_loader_factory_bundle_for_update_check) {
   DCHECK_CURRENTLY_ON(GetCoreThreadId());
   DCHECK(!context_core_);
 
   if (quota_manager_proxy) {
-    quota_manager_proxy->RegisterClient(new ServiceWorkerQuotaClient(this));
+    quota_manager_proxy->RegisterClient(
+        base::MakeRefCounted<ServiceWorkerQuotaClient>(this));
   }
 
   context_core_ = std::make_unique<ServiceWorkerContextCore>(
       user_data_directory, std::move(database_task_runner), quota_manager_proxy,
       special_storage_policy, loader_factory_getter,
-      std::move(non_network_loader_factory_bundle_info_for_update_check),
+      std::move(non_network_pending_loader_factory_bundle_for_update_check),
       core_observer_list_.get(), this);
 }
 
@@ -1795,8 +1797,9 @@ ServiceWorkerContextCore* ServiceWorkerContextWrapper::context() {
   return context_core_.get();
 }
 
-std::unique_ptr<blink::URLLoaderFactoryBundleInfo> ServiceWorkerContextWrapper::
-    CreateNonNetworkURLLoaderFactoryBundleInfoForUpdateCheck(
+std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+ServiceWorkerContextWrapper::
+    CreateNonNetworkPendingURLLoaderFactoryBundleForUpdateCheck(
         BrowserContext* browser_context) {
   DCHECK(blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled());
   ContentBrowserClient::NonNetworkURLLoaderFactoryMap non_network_factories;
@@ -1805,7 +1808,8 @@ std::unique_ptr<blink::URLLoaderFactoryBundleInfo> ServiceWorkerContextWrapper::
       ->RegisterNonNetworkServiceWorkerUpdateURLLoaderFactories(
           browser_context, &non_network_factories);
 
-  auto factory_bundle = std::make_unique<blink::URLLoaderFactoryBundleInfo>();
+  auto factory_bundle =
+      std::make_unique<blink::PendingURLLoaderFactoryBundle>();
   for (auto& pair : non_network_factories) {
     const std::string& scheme = pair.first;
     std::unique_ptr<network::mojom::URLLoaderFactory> factory =
@@ -1864,8 +1868,9 @@ void ServiceWorkerContextWrapper::SetUpLoaderFactoryForUpdateCheckOnUI(
       storage_partition_->browser_context(), /*frame=*/nullptr,
       ChildProcessHost::kInvalidUniqueID,
       ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerScript,
-      url::Origin::Create(scope), &pending_receiver, &header_client,
-      &bypass_redirect_checks, /*factory_override=*/nullptr);
+      url::Origin::Create(scope), /*navigation_id=*/base::nullopt,
+      &pending_receiver, &header_client, &bypass_redirect_checks,
+      /*factory_override=*/nullptr);
   if (header_client) {
     NavigationURLLoaderImpl::CreateURLLoaderFactoryWithHeaderClient(
         std::move(header_client), std::move(pending_receiver),
@@ -1910,13 +1915,13 @@ void ServiceWorkerContextWrapper::DidSetUpLoaderFactoryForUpdateCheck(
 
   // Clone context()->loader_factory_bundle_for_update_check() and set up the
   // default factory.
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+  std::unique_ptr<network::PendingSharedURLLoaderFactory>
       loader_factory_bundle_info =
           context()->loader_factory_bundle_for_update_check()->Clone();
-  static_cast<blink::URLLoaderFactoryBundleInfo*>(
+  static_cast<blink::PendingURLLoaderFactoryBundle*>(
       loader_factory_bundle_info.get())
       ->pending_default_factory() = std::move(remote);
-  static_cast<blink::URLLoaderFactoryBundleInfo*>(
+  static_cast<blink::PendingURLLoaderFactoryBundle*>(
       loader_factory_bundle_info.get())
       ->set_bypass_redirect_checks(bypass_redirect_checks);
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory =

@@ -63,7 +63,7 @@ class URLLoaderFactory : public mojom::URLLoaderFactory {
   void Clone(mojo::PendingReceiver<mojom::URLLoaderFactory> receiver) override;
 
   static constexpr int kMaxKeepaliveConnections = 2048;
-  static constexpr int kMaxKeepaliveConnectionsPerProcess = 256;
+  static constexpr int kMaxKeepaliveConnectionsPerTopLevelFrame = 256;
   static constexpr int kMaxTotalKeepaliveRequestSize = 512 * 1024;
 
  private:

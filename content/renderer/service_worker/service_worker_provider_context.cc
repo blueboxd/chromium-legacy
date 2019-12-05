@@ -35,7 +35,8 @@ void CreateSubresourceLoaderFactoryForProviderContext(
     mojo::PendingRemote<blink::mojom::ControllerServiceWorker>
         remote_controller,
     const std::string& client_id,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory_info,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_fallback_factory,
     mojo::PendingReceiver<blink::mojom::ControllerServiceWorkerConnector>
         connector_receiver,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
@@ -50,7 +51,8 @@ void CreateSubresourceLoaderFactoryForProviderContext(
   connector->AddBinding(std::move(connector_receiver));
   ServiceWorkerSubresourceLoaderFactory::Create(
       std::move(connector),
-      network::SharedURLLoaderFactory::Create(std::move(fallback_factory_info)),
+      network::SharedURLLoaderFactory::Create(
+          std::move(pending_fallback_factory)),
       std::move(receiver), std::move(task_runner),
       std::move(worker_timing_callback_task_runner),
       std::move(worker_timing_callback));

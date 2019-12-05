@@ -34,7 +34,16 @@
 #include "base/mac/foundation_util.h"
 #endif
 
-#if defined(OS_ANDROID) || (defined(OS_LINUX) && !defined(IS_CHROMECAST))
+#if defined(OS_FUCHSIA)
+#include "base/fuchsia/intl_profile_watcher.h"
+#endif
+
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
+#include "third_party/icu/source/common/unicode/unistr.h"
+#endif
+
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
+    (defined(OS_LINUX) && !defined(IS_CHROMECAST))
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #endif
 
@@ -266,6 +275,19 @@ void InitializeIcuTimeZone() {
   string16 zone_id = android::GetDefaultTimeZoneId();
   icu::TimeZone::adoptDefault(icu::TimeZone::createTimeZone(
       icu::UnicodeString(FALSE, zone_id.data(), zone_id.length())));
+#elif defined(OS_FUCHSIA)
+  // The platform-specific mechanisms used by ICU's detectHostTimeZone() to
+  // determine the default timezone will not work on Fuchsia. Therefore,
+  // proactively set the default system.
+  // This is also required by TimeZoneMonitorFuchsia::ProfileMayHaveChanged(),
+  // which uses the current default to detect whether the time zone changed in
+  // the new profile.
+  // If the system time zone cannot be obtained or is not understood by ICU,
+  // the "unknown" time zone will be returned by createTimeZone() and used.
+  std::string zone_id =
+      fuchsia::IntlProfileWatcher::GetPrimaryTimeZoneIdForIcuInitialization();
+  icu::TimeZone::adoptDefault(
+      icu::TimeZone::createTimeZone(icu::UnicodeString::fromUTF8(zone_id)));
 #elif defined(OS_LINUX) && !defined(IS_CHROMECAST)
   // To respond to the timezone change properly, the default timezone
   // cache in ICU has to be populated on starting up.

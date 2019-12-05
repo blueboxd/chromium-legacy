@@ -78,6 +78,12 @@ Polymer({
         return loadTimeData.getBoolean('enableInsecureContentContentSetting');
       }
     },
+
+    /** @private */
+    storagePressureFlagEnabled_: {
+      type: Boolean,
+      value: () => loadTimeData.getBoolean('enableStoragePressureUI'),
+    },
   },
 
   listeners: {
@@ -219,7 +225,11 @@ Polymer({
    */
   onConfirmClearStorage_: function(e) {
     e.preventDefault();
-    this.$.confirmClearStorage.showModal();
+    if (this.storagePressureFlagEnabled_) {
+      this.$.confirmClearStorageNew.showModal();
+    } else {
+      this.$.confirmClearStorage.showModal();
+    }
   },
 
   /**

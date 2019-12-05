@@ -378,6 +378,45 @@ class TextNode(CodeNode):
         CodeNode.__init__(self, template_text=template_text)
 
 
+class CompositeNode(CodeNode):
+    """
+    Represents a composition of multiple code nodes.  Composition will be done
+    by using |CodeNode.gensym| so that it won't contaminate a namespace of the
+    template variables.
+    """
+
+    def __init__(self, template_format_str, *args, **kwargs):
+        """
+        Args:
+            template_format_str: A format string that is used to produce the
+                template text.
+            args:
+            kwargs: Arguments to be passed to |format_template|.  Not
+                necessarily be CodeNode, but also anything renderable can be
+                passed in.
+        """
+        assert isinstance(template_format_str, str)
+        gensym_args = []
+        gensym_kwargs = {}
+        template_vars = {}
+        for arg in args:
+            assert isinstance(arg, (CodeNode, int, long, str))
+            gensym = CodeNode.gensym()
+            gensym_args.append("${{{}}}".format(gensym))
+            template_vars[gensym] = arg
+        for key, value in kwargs.iteritems():
+            assert isinstance(key, (int, long, str))
+            assert isinstance(value, (CodeNode, int, long, str))
+            gensym = CodeNode.gensym()
+            gensym_kwargs[key] = "${{{}}}".format(gensym)
+            template_vars[gensym] = value
+        template_text = format_template(template_format_str, *gensym_args,
+                                        **gensym_kwargs)
+
+        CodeNode.__init__(
+            self, template_text=template_text, template_vars=template_vars)
+
+
 class ListNode(CodeNode):
     """
     Represents a list of nodes.

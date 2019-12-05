@@ -11,14 +11,17 @@
 #include "base/time/time.h"
 #include "media/audio/simple_sources.h"
 #include "media/base/audio_bus.h"
+#include "media/base/video_color_space.h"
 #include "media/base/video_frame.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/modules/mediarecorder/fake_encoded_video_frame.h"
 #include "third_party/blink/renderer/modules/mediarecorder/media_recorder.h"
 #include "third_party/blink/renderer/modules/mediarecorder/media_recorder_handler.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_registry.h"
+#include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_source.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
@@ -27,10 +30,12 @@
 
 using ::testing::_;
 using ::testing::AtLeast;
+using ::testing::Ge;
 using ::testing::Gt;
 using ::testing::InSequence;
 using ::testing::Lt;
 using ::testing::Mock;
+using ::testing::Return;
 using ::testing::TestWithParam;
 using ::testing::ValuesIn;
 
@@ -142,10 +147,14 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams> {
     media_recorder_handler_->SetAudioFormatForTesting(params);
   }
 
+  void AddVideoTrack() {
+    video_source_ = registry_.AddVideoTrack(kTestVideoTrackId);
+  }
+
   void AddTracks() {
     // Avoid issues with non-parameterized tests by calling this outside of ctr.
     if (GetParam().has_video)
-      registry_.AddVideoTrack(kTestVideoTrackId);
+      AddVideoTrack();
     if (GetParam().has_audio)
       registry_.AddAudioTrack(kTestAudioTrackId);
   }
@@ -172,6 +181,8 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams> {
 
   // For generating test AudioBuses
   media::SineWaveAudioSource audio_source_;
+
+  MockMediaStreamVideoSource* video_source_ = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaRecorderHandlerTest);
@@ -502,5 +513,91 @@ TEST_P(MediaRecorderHandlerTest, ActualMimeType) {
   EXPECT_CALL(*recorder, WriteData(_, _, true, _)).Times(1);
   media_recorder_handler_ = nullptr;
 }
+
+struct MediaRecorderPassthroughTestParams {
+  const char* mime_type;
+  media::VideoCodec codec;
+};
+
+static const MediaRecorderPassthroughTestParams
+    kMediaRecorderPassthroughTestParams[] = {
+        {"video/webm;codecs=vp8", media::kCodecVP8},
+        {"video/webm;codecs=vp9", media::kCodecVP9},
+#if BUILDFLAG(RTC_USE_H264)
+        {"video/x-matroska;codecs=avc1", media::kCodecH264},
+#endif
+};
+
+class MediaRecorderHandlerPassthroughTest
+    : public TestWithParam<MediaRecorderPassthroughTestParams> {
+ public:
+  MediaRecorderHandlerPassthroughTest() {
+    registry_.Init();
+    video_source_ = registry_.AddVideoTrack(kTestVideoTrackId);
+    ON_CALL(*video_source_, SupportsEncodedOutput).WillByDefault(Return(true));
+    media_recorder_handler_ = MakeGarbageCollected<MediaRecorderHandler>(
+        scheduler::GetSingleThreadTaskRunnerForTesting());
+    EXPECT_FALSE(media_recorder_handler_->recording_);
+  }
+
+  ~MediaRecorderHandlerPassthroughTest() {
+    registry_.reset();
+    ThreadState::Current()->CollectAllGarbageForTesting();
+  }
+
+  void OnVideoFrameForTesting(scoped_refptr<EncodedVideoFrame> frame) {
+    media_recorder_handler_->OnEncodedVideoFrameForTesting(
+        std::move(frame), base::TimeTicks::Now());
+  }
+
+  ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
+  MockMediaStreamRegistry registry_;
+  MockMediaStreamVideoSource* video_source_ = 0;
+  Persistent<MediaRecorderHandler> media_recorder_handler_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MediaRecorderHandlerPassthroughTest);
+};
+
+TEST_P(MediaRecorderHandlerPassthroughTest, PassesThrough) {
+  // Setup the mock video source to allow for passthrough recording.
+  EXPECT_CALL(*video_source_, OnEncodedSinkEnabled);
+  EXPECT_CALL(*video_source_, OnEncodedSinkDisabled);
+
+  V8TestingScope scope;
+  auto* recorder = MakeGarbageCollected<MockMediaRecorder>(scope);
+  media_recorder_handler_->Initialize(recorder, registry_.test_stream(), "", "",
+                                      0, 0);
+  media_recorder_handler_->Start(0);
+
+  const size_t kFrameSize = 42;
+  auto frame = FakeEncodedVideoFrame::Builder()
+                   .WithKeyFrame(true)
+                   .WithCodec(GetParam().codec)
+                   .WithData(std::string(kFrameSize, 'P'))
+                   .BuildRefPtr();
+  {
+    base::RunLoop run_loop;
+    base::Closure quit_closure = run_loop.QuitClosure();
+    EXPECT_CALL(*recorder, WriteData(_, _, _, _)).Times(AtLeast(1));
+    EXPECT_CALL(*recorder, WriteData(_, Ge(kFrameSize), _, _))
+        .Times(1)
+        .WillOnce(RunClosure5(std::move(quit_closure)));
+    OnVideoFrameForTesting(frame);
+    run_loop.Run();
+  }
+  EXPECT_EQ(media_recorder_handler_->ActualMimeType(), GetParam().mime_type);
+  Mock::VerifyAndClearExpectations(this);
+
+  media_recorder_handler_->Stop();
+
+  // Expect a last call on destruction.
+  EXPECT_CALL(*recorder, WriteData(_, _, true, _)).Times(1);
+  media_recorder_handler_ = nullptr;
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         MediaRecorderHandlerPassthroughTest,
+                         ValuesIn(kMediaRecorderPassthroughTestParams));
 
 }  // namespace blink

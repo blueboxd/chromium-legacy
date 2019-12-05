@@ -7,9 +7,23 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_device_descriptor.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_extensions.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_request_adapter_options.h"
 
 namespace blink {
+
+namespace {
+WGPUDeviceProperties AsDawnType(const GPUDeviceDescriptor* descriptor) {
+  DCHECK_NE(nullptr, descriptor);
+
+  WGPUDeviceProperties requested_device_properties = {};
+  requested_device_properties.textureCompressionBC =
+      descriptor->extensions()->textureCompressionBC();
+
+  return requested_device_properties;
+}
+}  // anonymous namespace
 
 // static
 GPUAdapter* GPUAdapter::Create(
@@ -28,6 +42,7 @@ GPUAdapter::GPUAdapter(
     scoped_refptr<DawnControlClientHolder> dawn_control_client)
     : DawnObjectBase(dawn_control_client),
       name_(name),
+      adapter_service_id_(adapter_service_id),
       adapter_properties_(properties) {}
 
 const String& GPUAdapter::name() const {
@@ -41,12 +56,17 @@ ScriptValue GPUAdapter::extensions(ScriptState* script_state) const {
   return object_builder.GetScriptValue();
 }
 
-// TODO(jiawei.shao@intel.com) request device with adapter_server_id
 ScriptPromise GPUAdapter::requestDevice(ScriptState* script_state,
                                         const GPUDeviceDescriptor* descriptor) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
+  WGPUDeviceProperties requested_device_properties = AsDawnType(descriptor);
+  GetInterface()->RequestDevice(adapter_service_id_,
+                                &requested_device_properties);
+
+  // TODO(jiawei.shao@intel.com): create GPUDevice in the callback of
+  // GetInterface()->RequestDevice().
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   GPUDevice* device = GPUDevice::Create(
       execution_context, GetDawnControlClient(), this, descriptor);

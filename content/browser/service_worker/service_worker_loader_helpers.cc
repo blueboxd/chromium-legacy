@@ -17,7 +17,7 @@ namespace content {
 namespace service_worker_loader_helpers {
 
 std::unique_ptr<net::HttpResponseInfo> CreateHttpResponseInfoAndCheckHeaders(
-    const network::ResourceResponseHead& response_head,
+    const network::mojom::URLResponseHead& response_head,
     blink::ServiceWorkerStatusCode* out_service_worker_status,
     network::URLLoaderCompletionStatus* out_completion_status,
     std::string* out_error_message) {

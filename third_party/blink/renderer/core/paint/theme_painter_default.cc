@@ -346,8 +346,7 @@ bool ThemePainterDefault::PaintSliderTrack(const LayoutObject& o,
     i.context.Translate(-unzoomed_rect.X(), -unzoomed_rect.Y());
   }
 
-  const Node* node = o.GetNode();
-  auto* input = ToHTMLInputElementOrNull(node);
+  auto* input = DynamicTo<HTMLInputElement>(o.GetNode());
   extra_params.slider.thumb_x = 0;
   extra_params.slider.thumb_y = 0;
   if (input) {

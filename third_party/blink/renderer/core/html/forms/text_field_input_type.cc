@@ -59,7 +59,7 @@ namespace blink {
 class DataListIndicatorElement final : public HTMLDivElement {
  private:
   inline HTMLInputElement* HostInput() const {
-    return ToHTMLInputElement(OwnerShadowHost());
+    return To<HTMLInputElement>(OwnerShadowHost());
   }
 
   LayoutObject* CreateLayoutObject(const ComputedStyle&,

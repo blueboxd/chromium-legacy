@@ -19,9 +19,9 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace previews {
 
@@ -36,7 +36,7 @@ enum class ServingLoaderResult {
 using ResultCallback =
     base::OnceCallback<void(ServingLoaderResult,
                             base::Optional<net::RedirectInfo> redirect_info,
-                            scoped_refptr<network::ResourceResponse> response)>;
+                            network::mojom::URLResponseHeadPtr response)>;
 
 using RequestHandler = base::OnceCallback<void(
     const network::ResourceRequest& resource_request,
@@ -123,7 +123,7 @@ class PreviewsLitePageRedirectServingURLLoader
   // Once the LitePage response is received and is ready to be served, the
   // response info related to the request. When this becomes populated, the
   // network URL Loader calls are paused.
-  scoped_refptr<network::ResourceResponse> resource_response_;
+  network::mojom::URLResponseHeadPtr resource_response_;
 
   // The frame tree node id associated with the request. Used to get the
   // BrowserContext on the UI thread for the request.

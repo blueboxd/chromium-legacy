@@ -327,6 +327,10 @@ void FrameSequenceTracker::ReportBeginImplFrame(
   if (ShouldIgnoreBeginFrameSource(args.source_id))
     return;
 
+#if DCHECK_IS_ON()
+  if (args.type == viz::BeginFrameArgs::NORMAL)
+    impl_frames_.insert(std::make_pair(args.source_id, args.sequence_number));
+#endif
   TRACKER_TRACE_STREAM << 'b';
   UpdateTrackedFrameData(&begin_impl_frame_data_, args.source_id,
                          args.sequence_number);
@@ -345,6 +349,16 @@ void FrameSequenceTracker::ReportBeginMainFrame(
   if (ShouldIgnoreBeginFrameSource(args.source_id))
     return;
 
+  if (ShouldIgnoreSequence(args.sequence_number))
+    return;
+
+#if DCHECK_IS_ON()
+  if (args.type == viz::BeginFrameArgs::NORMAL) {
+    DCHECK(impl_frames_.contains(
+        std::make_pair(args.source_id, args.sequence_number)));
+  }
+#endif
+
   TRACKER_TRACE_STREAM << 'B';
   TRACKER_TRACE_STREAM << "(" << begin_main_frame_data_.previous_sequence << ","
                        << args.sequence_number << ")";
@@ -361,14 +375,10 @@ void FrameSequenceTracker::ReportSubmitFrame(
     bool has_missing_content,
     const viz::BeginFrameAck& ack,
     const viz::BeginFrameArgs& origin_args) {
-  if (termination_status_ != TerminationStatus::kActive)
-    return;
-
-  if (ShouldIgnoreBeginFrameSource(ack.source_id))
-    return;
-
-  if (begin_impl_frame_data_.previous_sequence == 0 ||
-      ack.sequence_number < begin_impl_frame_data_.previous_sequence) {
+  if (termination_status_ != TerminationStatus::kActive ||
+      ShouldIgnoreBeginFrameSource(ack.source_id) ||
+      ShouldIgnoreSequence(ack.sequence_number)) {
+    ignored_frame_tokens_.insert(frame_token);
     return;
   }
 
@@ -416,6 +426,9 @@ void FrameSequenceTracker::ReportFramePresented(
     // before this sequence started. So ignore these.
     return;
   }
+
+  if (ignored_frame_tokens_.contains(frame_token))
+    return;
 
   TRACKER_TRACE_STREAM << 'P';
 
@@ -489,10 +502,9 @@ void FrameSequenceTracker::ReportImplFrameCausedNoDamage(
 
   // It is possible that this is called before a begin-impl-frame has been
   // dispatched for this frame-sequence. In such cases, ignore this call.
-  if (begin_impl_frame_data_.previous_sequence == 0 ||
-      ack.sequence_number < begin_impl_frame_data_.previous_sequence) {
+  if (ShouldIgnoreSequence(ack.sequence_number))
     return;
-  }
+
   TRACKER_TRACE_STREAM << 'n';
   DCHECK_GT(impl_throughput_.frames_expected, 0u) << TRACKER_DCHECK_MSG;
   DCHECK_GT(impl_throughput_.frames_expected, impl_throughput_.frames_produced)
@@ -511,6 +523,10 @@ void FrameSequenceTracker::ReportMainFrameCausedNoDamage(
   if (ShouldIgnoreBeginFrameSource(args.source_id))
     return;
 
+  // ReportBeginMainFrame could be called without ReportBeginImplFrame, in that
+  // case we should ignore this call.
+  if (ShouldIgnoreSequence(args.sequence_number))
+    return;
   // It is possible that this is called before a begin-main-frame has been
   // dispatched for this frame-sequence. In such cases, ignore this call.
   if (begin_main_frame_data_.previous_sequence == 0 ||
@@ -558,6 +574,15 @@ bool FrameSequenceTracker::ShouldIgnoreBeginFrameSource(
   if (begin_impl_frame_data_.previous_source == 0)
     return false;
   return source_id != begin_impl_frame_data_.previous_source;
+}
+
+// This check ensures that when ReportBeginMainFrame, or ReportSubmitFrame, or
+// ReportFramePresented is called for a particular arg, the ReportBeginImplFrame
+// is been called already.
+bool FrameSequenceTracker::ShouldIgnoreSequence(
+    uint64_t sequence_number) const {
+  return begin_impl_frame_data_.previous_sequence == 0 ||
+         sequence_number < begin_impl_frame_data_.previous_sequence;
 }
 
 std::unique_ptr<base::trace_event::TracedValue>

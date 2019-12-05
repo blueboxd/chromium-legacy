@@ -60,14 +60,14 @@ class SingleRequestURLLoaderFactory::HandlerState
   DISALLOW_COPY_AND_ASSIGN(HandlerState);
 };
 
-class SingleRequestURLLoaderFactory::FactoryInfo
-    : public network::SharedURLLoaderFactoryInfo {
+class SingleRequestURLLoaderFactory::PendingFactory
+    : public network::PendingSharedURLLoaderFactory {
  public:
-  explicit FactoryInfo(scoped_refptr<HandlerState> state)
+  explicit PendingFactory(scoped_refptr<HandlerState> state)
       : state_(std::move(state)) {}
-  ~FactoryInfo() override = default;
+  ~PendingFactory() override = default;
 
-  // SharedURLLoaderFactoryInfo:
+  // PendingSharedURLLoaderFactory:
   scoped_refptr<network::SharedURLLoaderFactory> CreateFactory() override {
     return new SingleRequestURLLoaderFactory(std::move(state_));
   }
@@ -75,7 +75,7 @@ class SingleRequestURLLoaderFactory::FactoryInfo
  private:
   scoped_refptr<HandlerState> state_;
 
-  DISALLOW_COPY_AND_ASSIGN(FactoryInfo);
+  DISALLOW_COPY_AND_ASSIGN(PendingFactory);
 };
 
 SingleRequestURLLoaderFactory::SingleRequestURLLoaderFactory(
@@ -100,9 +100,9 @@ void SingleRequestURLLoaderFactory::Clone(
   receivers_.Add(this, std::move(receiver), this);
 }
 
-std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+std::unique_ptr<network::PendingSharedURLLoaderFactory>
 SingleRequestURLLoaderFactory::Clone() {
-  return std::make_unique<FactoryInfo>(state_);
+  return std::make_unique<PendingFactory>(state_);
 }
 
 SingleRequestURLLoaderFactory::SingleRequestURLLoaderFactory(

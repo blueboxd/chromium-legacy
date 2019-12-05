@@ -545,7 +545,7 @@ class QuotaManager::OriginDataDeleter : public QuotaTask {
   void Run() override {
     error_count_ = 0;
     remaining_clients_ = manager()->clients_.size();
-    for (auto* client : manager()->clients_) {
+    for (const auto& client : manager()->clients_) {
       if (quota_client_mask_ & client->id()) {
         static int tracing_id = 0;
         TRACE_EVENT_ASYNC_BEGIN2(
@@ -632,7 +632,7 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
   void Run() override {
     error_count_ = 0;
     remaining_clients_ = manager()->clients_.size();
-    for (auto* client : manager()->clients_) {
+    for (const auto& client : manager()->clients_) {
       client->GetOriginsForHost(
           type_, host_,
           base::BindOnce(&HostDataDeleter::DidGetOriginsForHost,
@@ -728,7 +728,7 @@ class QuotaManager::StorageCleanupHelper : public QuotaTask {
 
     // This may synchronously trigger |callback_| at the end of the for loop,
     // make sure we do nothing after this block.
-    for (auto* client : manager()->clients_) {
+    for (const auto& client : manager()->clients_) {
       if (quota_client_mask_ & client->id()) {
         client->PerformStorageCleanup(type_, barrier);
       } else {
@@ -1217,7 +1217,7 @@ bool QuotaManager::ResetUsageTracker(StorageType type) {
 
 QuotaManager::~QuotaManager() {
   proxy_->manager_ = nullptr;
-  for (auto* client : clients_)
+  for (const auto& client : clients_)
     client->OnQuotaManagerDestroyed();
   if (database_)
     db_runner_->DeleteSoon(FROM_HERE, database_.release());
@@ -1293,10 +1293,10 @@ void QuotaManager::DidBootstrapDatabase(
   GetLRUOrigin(StorageType::kTemporary, std::move(did_get_origin_callback));
 }
 
-void QuotaManager::RegisterClient(QuotaClient* client) {
+void QuotaManager::RegisterClient(scoped_refptr<QuotaClient> client) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!database_.get());
-  clients_.push_back(client);
+  clients_.push_back(std::move(client));
 }
 
 UsageTracker* QuotaManager::GetUsageTracker(StorageType type) const {

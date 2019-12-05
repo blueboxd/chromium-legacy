@@ -44,7 +44,7 @@ TEST_F(HTMLEmbedElementTest, FallbackState) {
 
   auto* embed_element = GetElementById("fce");
   ASSERT_TRUE(embed_element);
-  HTMLEmbedElement* embed = ToHTMLEmbedElement(embed_element);
+  auto* embed = To<HTMLEmbedElement>(embed_element);
 
   UpdateAllLifecyclePhasesForTest();
 

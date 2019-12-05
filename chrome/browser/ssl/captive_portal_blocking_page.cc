@@ -14,7 +14,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
-#include "chrome/browser/ssl/chrome_ssl_blocking_page.h"
+#include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
 #include "chrome/browser/ssl/ssl_error_controller_client.h"
 #include "components/captive_portal/captive_portal_detector.h"
 #include "components/captive_portal/captive_portal_metrics.h"
@@ -91,7 +91,7 @@ CaptivePortalBlockingPage::CaptivePortalBlockingPage(
       ssl_info_(ssl_info) {
   captive_portal::CaptivePortalMetrics::LogCaptivePortalBlockingPageEvent(
       captive_portal::CaptivePortalMetrics::SHOW_ALL);
-  ChromeSSLBlockingPage::DoChromeSpecificSetup(this);
+  ChromeSecurityBlockingPageFactory::DoChromeSpecificSetup(this);
 }
 
 CaptivePortalBlockingPage::~CaptivePortalBlockingPage() = default;
@@ -100,7 +100,18 @@ const void* CaptivePortalBlockingPage::GetTypeForTesting() {
   return CaptivePortalBlockingPage::kTypeForTesting;
 }
 
+void CaptivePortalBlockingPage::OverrideWifiInfoForTesting(
+    bool is_wifi_connection,
+    const std::string& wifi_ssid) {
+  is_wifi_info_overridden_for_testing_ = true;
+  is_wifi_connection_for_testing_ = is_wifi_connection;
+  wifi_ssid_for_testing_ = wifi_ssid;
+}
+
 bool CaptivePortalBlockingPage::IsWifiConnection() const {
+  if (is_wifi_info_overridden_for_testing_)
+    return is_wifi_connection_for_testing_;
+
   // |net::NetworkChangeNotifier::GetConnectionType| isn't accurate on Linux
   // and Windows. See https://crbug.com/160537 for details.
   // TODO(meacer): Add heuristics to get a more accurate connection type on
@@ -110,6 +121,9 @@ bool CaptivePortalBlockingPage::IsWifiConnection() const {
 }
 
 std::string CaptivePortalBlockingPage::GetWiFiSSID() const {
+  if (is_wifi_info_overridden_for_testing_)
+    return wifi_ssid_for_testing_;
+
   // On Windows and Mac, |WiFiService| provides an easy to use API to get the
   // currently associated WiFi access point. |WiFiService| isn't available on
   // Linux so |net::GetWifiSSID| is used instead.

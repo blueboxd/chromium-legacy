@@ -115,8 +115,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       storage::QuotaManagerProxy* quota_manager_proxy,
       storage::SpecialStoragePolicy* special_storage_policy,
       URLLoaderFactoryGetter* url_loader_factory_getter,
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-          non_network_loader_factory_bundle_info_for_update_check,
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+          non_network_pending_loader_factory_bundle_for_update_check,
       base::ObserverListThreadSafe<ServiceWorkerContextCoreObserver>*
           observer_list,
       ServiceWorkerContextWrapper* wrapper);

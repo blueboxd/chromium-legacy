@@ -233,7 +233,7 @@ body.playing-result-video #play-result-video {
 }
 
 div.mode-item>span {
-  border-radius: 13px / 50%;
+  border-radius: 16px/50%;
   color: white;
   display: inline-block;
   font-family: 'Roboto', sans-serif;
@@ -274,7 +274,7 @@ body.tab-navigation .mode-item>input:focus::after {
 
 body.tab-navigation .mode-item>input:focus + span::after {
   border: 2px solid rgba(37, 129, 223, 0.7);
-  border-radius: 20px/50%;
+  border-radius: 23px/50%;
   bottom: -7px;
   content: '';
   left: -7px;

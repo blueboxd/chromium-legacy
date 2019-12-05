@@ -283,7 +283,7 @@ void PreviewsLitePageRedirectServingURLLoader::SetUpForwardingClient(
     return;
   }
 
-  forwarding_client_->OnReceiveResponse(resource_response_->head);
+  forwarding_client_->OnReceiveResponse(std::move(resource_response_));
 
   // Resume previously paused network service URLLoader.
   url_loader_receiver_.Resume();
@@ -340,9 +340,8 @@ void PreviewsLitePageRedirectServingURLLoader::OnReceiveResponse(
                             previews::LitePageRedirectServerResponse::kOk);
 
   // Store head and pause new messages until the forwarding client is set up.
-  // Make a deep copy of ResourceResponseHead before passing it cross-thread.
-  resource_response_ = base::MakeRefCounted<network::ResourceResponse>();
-  resource_response_->head = head;
+  // Make a deep copy of URLResponseHead before passing it cross-thread.
+  resource_response_ = std::move(head);
 
   const int64_t ofcl =
       data_reduction_proxy::GetDataReductionProxyOFCL(response_headers);
@@ -366,9 +365,8 @@ void PreviewsLitePageRedirectServingURLLoader::OnReceiveRedirect(
   DCHECK(!forwarding_client_);
 
   // Store head and pause new messages until the forwarding client is set up.
-  // Make a deep copy of ResourceResponseHead before passing it cross-thread.
-  resource_response_ = base::MakeRefCounted<network::ResourceResponse>();
-  resource_response_->head = head;
+  // Make a deep copy of URLResponseHead before passing it cross-thread.
+  resource_response_ = std::move(head);
 
   // If the URL we are redirecting to is the one we started at, we should
   // fallback after checking headers for bypass instructions.
@@ -379,7 +377,8 @@ void PreviewsLitePageRedirectServingURLLoader::OnReceiveRedirect(
     UMA_HISTOGRAM_ENUMERATION(
         "Previews.ServerLitePage.ServerResponse",
         previews::LitePageRedirectServerResponse::kPreviewUnavailable);
-    const net::HttpResponseHeaders* response_headers = head->headers.get();
+    const net::HttpResponseHeaders* response_headers =
+        resource_response_->headers.get();
 
     std::string chrome_proxy_header;
     bool blacklist_host =
@@ -405,7 +404,8 @@ void PreviewsLitePageRedirectServingURLLoader::OnReceiveRedirect(
       previews::LitePageRedirectServerResponse::kRedirect);
 
   std::move(result_callback_)
-      .Run(ServingLoaderResult::kRedirect, redirect_info, resource_response_);
+      .Run(ServingLoaderResult::kRedirect, redirect_info,
+           std::move(resource_response_));
 }
 
 void PreviewsLitePageRedirectServingURLLoader::OnUploadProgress(

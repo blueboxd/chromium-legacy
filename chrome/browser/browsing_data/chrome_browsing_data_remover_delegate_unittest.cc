@@ -575,12 +575,12 @@ class RemovePermissionPromptCountsTest {
   }
 
   bool RecordIgnoreAndEmbargo(const GURL& url, ContentSettingsType permission) {
-    return autoblocker_->RecordIgnoreAndEmbargo(url, permission);
+    return autoblocker_->RecordIgnoreAndEmbargo(url, permission, false);
   }
 
   bool RecordDismissAndEmbargo(const GURL& url,
                                ContentSettingsType permission) {
-    return autoblocker_->RecordDismissAndEmbargo(url, permission);
+    return autoblocker_->RecordDismissAndEmbargo(url, permission, false);
   }
 
   void CheckEmbargo(const GURL& url,

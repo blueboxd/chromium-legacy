@@ -101,8 +101,8 @@ class TestDriverMessageFilter
 
   void OnFilterRemoved() override {
     // Check that the bindings are cleared by
-    // BrowserAssociatedInterface::ClearBindings() callbacks.
-    EXPECT_FALSE(internal_state_->bindings_.has_value());
+    // BrowserAssociatedInterface::ClearReceivers() callbacks.
+    EXPECT_FALSE(internal_state_->receivers_.has_value());
   }
 
   // mojom::BrowserAssociatedInterfaceTestDriver:

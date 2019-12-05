@@ -919,7 +919,6 @@ TEST_F(AXTreeSourceArcTest, OnWindowStateChangedEvent) {
 
 TEST_F(AXTreeSourceArcTest, OnFocusEvent) {
   auto event = AXEventData::New();
-  event->source_id = 2;  // node2.
   event->task_id = 1;
   event->event_type = AXEventType::VIEW_FOCUSED;
 
@@ -936,28 +935,41 @@ TEST_F(AXTreeSourceArcTest, OnFocusEvent) {
   SetProperty(root, AXIntListProperty::CHILD_NODE_IDS,
               std::vector<int>({1, 2}));
   SetProperty(root, AXBooleanProperty::IMPORTANCE, true);
+  root->collection_info = AXCollectionInfoData::New();
+  root->collection_info->row_count = 2;
+  root->collection_info->column_count = 1;
 
   event->node_data.emplace_back(AXNodeInfoData::New());
   AXNodeInfoData* node1 = event->node_data.back().get();
   node1->id = 1;
   SetProperty(node1, AXBooleanProperty::IMPORTANCE, true);
   SetProperty(node1, AXBooleanProperty::ACCESSIBILITY_FOCUSED, true);
+  SetProperty(node1, AXBooleanProperty::VISIBLE_TO_USER, true);
   SetProperty(node1, AXStringProperty::TEXT, "sample string1.");
 
   event->node_data.emplace_back(AXNodeInfoData::New());
   AXNodeInfoData* node2 = event->node_data.back().get();
   node2->id = 2;
   SetProperty(node2, AXBooleanProperty::IMPORTANCE, true);
+  SetProperty(node1, AXBooleanProperty::VISIBLE_TO_USER, true);
   SetProperty(node2, AXStringProperty::TEXT, "sample string2.");
 
-  CallNotifyAccessibilityEvent(event.get());
-  ui::AXTreeData data;
-
   // Chrome should focus to node2, even if node1 has 'focus' in Android.
+  event->source_id = node2->id;
+  CallNotifyAccessibilityEvent(event.get());
+
+  ui::AXTreeData data;
   EXPECT_TRUE(CallGetTreeData(&data));
   EXPECT_EQ(node2->id, data.focus_id);
 
-  EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kFocus));
+  // Chrome should focus to node2, even if Android sends focus on List.
+  event->source_id = root->id;
+  CallNotifyAccessibilityEvent(event.get());
+
+  EXPECT_TRUE(CallGetTreeData(&data));
+  EXPECT_EQ(node1->id, data.focus_id);
+
+  EXPECT_EQ(2, GetDispatchedEventCount(ax::mojom::Event::kFocus));
 }
 
 TEST_F(AXTreeSourceArcTest, SerializeAndUnserialize) {

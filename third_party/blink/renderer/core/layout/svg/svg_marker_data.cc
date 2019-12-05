@@ -19,6 +19,8 @@
 
 #include "third_party/blink/renderer/core/layout/svg/svg_marker_data.h"
 
+#include "third_party/blink/renderer/platform/wtf/vector.h"
+
 namespace blink {
 
 static double BisectingAngle(double in_angle, double out_angle) {
@@ -30,7 +32,8 @@ static double BisectingAngle(double in_angle, double out_angle) {
 
 void SVGMarkerDataBuilder::Build(const Path& path) {
   path.Apply(this, SVGMarkerDataBuilder::UpdateFromPathElement);
-  PathIsDone();
+  const bool kEndsSubpath = true;
+  OutputPendingMarker(kEndMarker, kEndsSubpath);
 }
 
 void SVGMarkerDataBuilder::UpdateFromPathElement(void* info,
@@ -38,28 +41,51 @@ void SVGMarkerDataBuilder::UpdateFromPathElement(void* info,
   static_cast<SVGMarkerDataBuilder*>(info)->UpdateFromPathElement(*element);
 }
 
-void SVGMarkerDataBuilder::PathIsDone() {
-  float angle = clampTo<float>(CurrentAngle(kEndMarker));
-  positions_.push_back(MarkerPosition(kEndMarker, origin_, angle));
-}
-
-double SVGMarkerDataBuilder::CurrentAngle(SVGMarkerType type) const {
+double SVGMarkerDataBuilder::CurrentAngle(AngleType type) const {
   // For details of this calculation, see:
   // http://www.w3.org/TR/SVG/single-page.html#painting-MarkerElement
   double in_angle = rad2deg(FloatPoint(in_slope_).SlopeAngleRadians());
   double out_angle = rad2deg(FloatPoint(out_slope_).SlopeAngleRadians());
-
   switch (type) {
-    case kStartMarker:
+    case kOutbound:
       return out_angle;
-    case kMidMarker:
+    case kBisecting:
       return BisectingAngle(in_angle, out_angle);
-    case kEndMarker:
+    case kInbound:
       return in_angle;
   }
+}
 
-  NOTREACHED();
-  return 0;
+SVGMarkerDataBuilder::AngleType SVGMarkerDataBuilder::DetermineAngleType(
+    bool ends_subpath) const {
+  // If this is closing the path, (re)compute the angle to be the one bisecting
+  // the in-slope of the 'close' and the out-slope of the 'move to'.
+  if (last_element_type_ == kPathElementCloseSubpath)
+    return kBisecting;
+  // If this is the end of an open subpath (closed subpaths handled above),
+  // use the in-slope.
+  if (ends_subpath)
+    return kInbound;
+  // If |last_element_type_| is a 'move to', apply the same rule as for a
+  // "start" marker. If needed we will backpatch the angle later.
+  if (last_element_type_ == kPathElementMoveToPoint)
+    return kOutbound;
+  // Else use the bisecting angle.
+  return kBisecting;
+}
+
+void SVGMarkerDataBuilder::OutputPendingMarker(SVGMarkerType marker_type,
+                                               bool ends_subpath) {
+  // When closing a subpath, update the current out-slope to be that of the
+  // 'move to' command.
+  if (last_element_type_ == kPathElementCloseSubpath)
+    out_slope_ = last_moveto_out_slope_;
+  AngleType type = DetermineAngleType(ends_subpath);
+  float angle = clampTo<float>(CurrentAngle(type));
+  // When closing a subpath, backpatch the first marker on that subpath.
+  if (last_element_type_ == kPathElementCloseSubpath)
+    positions_[last_moveto_index_].angle = angle;
+  positions_.push_back(MarkerPosition(marker_type, origin_, angle));
 }
 
 void SVGMarkerDataBuilder::ComputeQuadTangents(SegmentData& data,
@@ -114,11 +140,15 @@ void SVGMarkerDataBuilder::UpdateFromPathElement(const PathElement& element) {
   // First update the outgoing slope for the previous element.
   out_slope_ = segment_data.start_tangent;
 
+  // Save the out-slope for the new subpath.
+  if (last_element_type_ == kPathElementMoveToPoint)
+    last_moveto_out_slope_ = out_slope_;
+
   // Record the marker for the previous element.
+  bool starts_new_subpath = element.type == kPathElementMoveToPoint;
   if (element_index_ > 0) {
-    SVGMarkerType marker_type = element_index_ == 1 ? kStartMarker : kMidMarker;
-    float angle = clampTo<float>(CurrentAngle(marker_type));
-    positions_.push_back(MarkerPosition(marker_type, origin_, angle));
+    OutputPendingMarker(element_index_ == 1 ? kStartMarker : kMidMarker,
+                        starts_new_subpath);
   }
 
   // Update the incoming slope for this marker position.
@@ -127,11 +157,16 @@ void SVGMarkerDataBuilder::UpdateFromPathElement(const PathElement& element) {
   // Update marker position.
   origin_ = segment_data.position;
 
-  // If this is a 'move to' segment, save the point for use with 'close'.
-  if (element.type == kPathElementMoveToPoint)
+  // If this is a 'move to' segment, save the point for use with 'close', and
+  // the the index in the list to allow backpatching the angle on 'close'.
+  if (starts_new_subpath) {
     subpath_start_ = element.points[0];
-  else if (element.type == kPathElementCloseSubpath)
+    last_moveto_index_ = positions_.size();
+  } else if (element.type == kPathElementCloseSubpath) {
     subpath_start_ = FloatPoint();
+  }
+
+  last_element_type_ = element.type;
 
   ++element_index_;
 }

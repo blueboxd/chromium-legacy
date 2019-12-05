@@ -217,6 +217,7 @@ bool IsValidUserFormSection(
   }
   return true;
 }
+
 }  // namespace
 
 namespace autofill_assistant {

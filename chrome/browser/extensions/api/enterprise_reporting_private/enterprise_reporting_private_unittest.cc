@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/policy/fake_browser_dm_token_storage.h"
+#include "chrome/common/extensions/api/enterprise_reporting_private.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -25,6 +26,9 @@
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::WithArgs;
+
+namespace enterprise_reporting_private =
+    ::extensions::api::enterprise_reporting_private;
 
 namespace extensions {
 namespace {
@@ -286,5 +290,29 @@ TEST_F(EnterpriseReportingPrivateGetPersistentSecretFunctionTest, GetSecret) {
 }
 
 #endif  // defined(OS_WIN)
+
+using EnterpriseReportingPrivateGetDeviceInfoTest = ExtensionApiUnittest;
+
+TEST_F(EnterpriseReportingPrivateGetDeviceInfoTest, GetDeviceInfoStub) {
+  auto function =
+      base::MakeRefCounted<EnterpriseReportingPrivateGetDeviceInfoFunction>();
+  std::unique_ptr<base::Value> device_info_value =
+      RunFunctionAndReturnValue(function.get(), "[]");
+  ASSERT_TRUE(device_info_value.get());
+
+  enterprise_reporting_private::DeviceInfo info;
+  ASSERT_TRUE(enterprise_reporting_private::DeviceInfo::Populate(
+      *device_info_value, &info));
+
+  EXPECT_EQ("stubOS", info.os_name);
+  EXPECT_EQ("0.0.0.0", info.os_version);
+  EXPECT_EQ("midnightshift", info.device_host_name);
+  EXPECT_EQ("topshot", info.device_model);
+  EXPECT_EQ("twirlchange", info.serial_number);
+  EXPECT_EQ(enterprise_reporting_private::SETTING_VALUE_ENABLED,
+            info.screen_lock_secured);
+  EXPECT_EQ(enterprise_reporting_private::SETTING_VALUE_DISABLED,
+            info.disk_encrypted);
+}
 
 }  // namespace extensions

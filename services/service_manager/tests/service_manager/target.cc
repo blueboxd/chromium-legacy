@@ -4,6 +4,7 @@
 
 #include "base/macros.h"
 #include "base/task/single_thread_task_executor.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
@@ -23,9 +24,10 @@ class Target : public service_manager::Service {
  private:
   // service_manager::Service:
   void OnStart() override {
-    service_manager::test::mojom::CreateInstanceTestPtr service;
+    mojo::Remote<service_manager::test::mojom::CreateInstanceTest> service;
     service_binding_.GetConnector()->BindInterface(
-        service_manager::kTestServiceName, &service);
+        service_manager::kTestServiceName,
+        service.BindNewPipeAndPassReceiver());
     service->SetTargetIdentity(service_binding_.identity());
   }
 

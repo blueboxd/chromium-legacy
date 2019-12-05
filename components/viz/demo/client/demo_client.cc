@@ -120,8 +120,7 @@ viz::CompositorFrame DemoClient::CreateFrame(const viz::BeginFrameArgs& args) {
                   /*rect=*/gfx::Rect(child_bounds.size()),
                   /*visible_rect=*/gfx::Rect(child_bounds.size()),
                   viz::SurfaceRange(surface_id), SK_ColorGRAY,
-                  /*stretch_content_to_fill_bounds=*/false,
-                  /*ignores_input_event=*/false);
+                  /*stretch_content_to_fill_bounds=*/false);
   }
 
   // Add a solid-color draw-quad for the big rectangle covering the entire

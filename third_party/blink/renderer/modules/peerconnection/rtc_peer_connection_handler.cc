@@ -27,7 +27,6 @@
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
-#include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -46,6 +45,7 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_legacy_stats.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_sender_platform.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_transceiver_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_request.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
@@ -1116,7 +1116,7 @@ bool RTCPeerConnectionHandler::InitializeForTest(
   return true;
 }
 
-blink::WebVector<std::unique_ptr<blink::WebRTCRtpTransceiver>>
+blink::WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>>
 RTCPeerConnectionHandler::CreateOffer(
     blink::RTCSessionDescriptionRequest* request,
     const blink::WebMediaConstraints& options) {
@@ -1131,7 +1131,7 @@ RTCPeerConnectionHandler::CreateOffer(
   return CreateOfferInternal(request, std::move(webrtc_options));
 }
 
-blink::WebVector<std::unique_ptr<blink::WebRTCRtpTransceiver>>
+blink::WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>>
 RTCPeerConnectionHandler::CreateOffer(
     blink::RTCSessionDescriptionRequest* request,
     blink::RTCOfferOptionsPlatform* options) {
@@ -1146,7 +1146,7 @@ RTCPeerConnectionHandler::CreateOffer(
   return CreateOfferInternal(request, std::move(webrtc_options));
 }
 
-std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>>
+std::vector<std::unique_ptr<RTCRtpTransceiverPlatform>>
 RTCPeerConnectionHandler::CreateOfferInternal(
     blink::RTCSessionDescriptionRequest* request,
     webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options) {
@@ -1168,7 +1168,7 @@ RTCPeerConnectionHandler::CreateOfferInternal(
   DCHECK(transceiver_state_surfacer.is_initialized());
 
   auto transceiver_states = transceiver_state_surfacer.ObtainStates();
-  std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>> transceivers;
+  std::vector<std::unique_ptr<RTCRtpTransceiverPlatform>> transceivers;
   for (auto& transceiver_state : transceiver_states) {
     auto transceiver = CreateOrUpdateTransceiver(
         std::move(transceiver_state), blink::TransceiverStateUpdateMode::kAll);
@@ -1659,7 +1659,7 @@ void RTCPeerConnectionHandler::GetStats(
                                 exposed_group_ids));
 }
 
-webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
+webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
 RTCPeerConnectionHandler::AddTransceiverWithTrack(
     const blink::WebMediaStreamTrack& web_track,
     const webrtc::RtpTransceiverInit& init) {
@@ -1688,9 +1688,9 @@ RTCPeerConnectionHandler::AddTransceiverWithTrack(
   auto transceiver =
       CreateOrUpdateTransceiver(std::move(transceiver_states[0]),
                                 blink::TransceiverStateUpdateMode::kAll);
-  std::unique_ptr<blink::WebRTCRtpTransceiver> web_transceiver =
+  std::unique_ptr<RTCRtpTransceiverPlatform> platform_transceiver =
       std::move(transceiver);
-  return web_transceiver;
+  return platform_transceiver;
 }
 
 void RTCPeerConnectionHandler::AddTransceiverWithTrackOnSignalingThread(
@@ -1708,7 +1708,7 @@ void RTCPeerConnectionHandler::AddTransceiverWithTrackOnSignalingThread(
                                          track_adapter_map_, transceivers);
 }
 
-webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
+webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
 RTCPeerConnectionHandler::AddTransceiverWithKind(
     std::string kind,
     const webrtc::RtpTransceiverInit& init) {
@@ -1743,9 +1743,9 @@ RTCPeerConnectionHandler::AddTransceiverWithKind(
   auto transceiver =
       CreateOrUpdateTransceiver(std::move(transceiver_states[0]),
                                 blink::TransceiverStateUpdateMode::kAll);
-  std::unique_ptr<blink::WebRTCRtpTransceiver> web_transceiver =
+  std::unique_ptr<RTCRtpTransceiverPlatform> platform_transceiver =
       std::move(transceiver);
-  return std::move(web_transceiver);
+  return std::move(platform_transceiver);
 }
 
 void RTCPeerConnectionHandler::AddTransceiverWithMediaTypeOnSignalingThread(
@@ -1763,7 +1763,7 @@ void RTCPeerConnectionHandler::AddTransceiverWithMediaTypeOnSignalingThread(
                                          track_adapter_map_, transceivers);
 }
 
-webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
+webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
 RTCPeerConnectionHandler::AddTrack(
     const blink::WebMediaStreamTrack& track,
     const blink::WebVector<blink::WebMediaStream>& streams) {
@@ -1805,7 +1805,7 @@ RTCPeerConnectionHandler::AddTrack(
   DCHECK_EQ(transceiver_states.size(), 1u);
   auto transceiver_state = std::move(transceiver_states[0]);
 
-  std::unique_ptr<blink::WebRTCRtpTransceiver> web_transceiver;
+  std::unique_ptr<RTCRtpTransceiverPlatform> platform_transceiver;
   if (configuration_.sdp_semantics == webrtc::SdpSemantics::kPlanB) {
     // Plan B: Create sender only.
     DCHECK(transceiver_state.sender_state());
@@ -1816,20 +1816,20 @@ RTCPeerConnectionHandler::AddTrack(
     DCHECK(sender_state.is_initialized());
     rtp_senders_.push_back(std::make_unique<blink::RTCRtpSenderImpl>(
         native_peer_connection_, track_adapter_map_, std::move(sender_state)));
-    web_transceiver = std::make_unique<blink::RTCRtpSenderOnlyTransceiver>(
+    platform_transceiver = std::make_unique<blink::RTCRtpSenderOnlyTransceiver>(
         std::make_unique<blink::RTCRtpSenderImpl>(*rtp_senders_.back().get()));
   } else {
     DCHECK_EQ(configuration_.sdp_semantics, webrtc::SdpSemantics::kUnifiedPlan);
     // Unified Plan: Create or recycle a transceiver.
     auto transceiver = CreateOrUpdateTransceiver(
         std::move(transceiver_state), blink::TransceiverStateUpdateMode::kAll);
-    web_transceiver = std::move(transceiver);
+    platform_transceiver = std::move(transceiver);
   }
   if (peer_connection_tracker_) {
-    size_t transceiver_index = GetTransceiverIndex(*web_transceiver.get());
+    size_t transceiver_index = GetTransceiverIndex(*platform_transceiver.get());
     peer_connection_tracker_->TrackAddTransceiver(
         this, PeerConnectionTracker::TransceiverUpdatedReason::kAddTrack,
-        *web_transceiver.get(), transceiver_index);
+        *platform_transceiver.get(), transceiver_index);
   }
   for (const auto& stream_id : rtp_senders_.back()->state().stream_ids()) {
     if (GetLocalStreamUsageCount(rtp_senders_, stream_id) == 1u) {
@@ -1838,7 +1838,7 @@ RTCPeerConnectionHandler::AddTrack(
           ->IncrementStreamCounter();
     }
   }
-  return web_transceiver;
+  return platform_transceiver;
 }
 
 void RTCPeerConnectionHandler::AddTrackOnSignalingThread(
@@ -1873,15 +1873,15 @@ void RTCPeerConnectionHandler::AddTrackOnSignalingThread(
       native_peer_connection_, track_adapter_map_, std::move(transceivers));
 }
 
-webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
+webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
 RTCPeerConnectionHandler::RemoveTrack(blink::RTCRtpSenderPlatform* web_sender) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::RemoveTrack");
   if (configuration_.sdp_semantics == webrtc::SdpSemantics::kPlanB) {
     if (RemoveTrackPlanB(web_sender)) {
       // In Plan B, null indicates success.
-      std::unique_ptr<blink::WebRTCRtpTransceiver> web_transceiver = nullptr;
-      return std::move(web_transceiver);
+      std::unique_ptr<RTCRtpTransceiverPlatform> platform_transceiver = nullptr;
+      return std::move(platform_transceiver);
     }
     // TODO(hbos): Surface RTCError from third_party/webrtc when
     // peerconnectioninterface.h is updated. https://crbug.com/webrtc/9534
@@ -1924,7 +1924,7 @@ bool RTCPeerConnectionHandler::RemoveTrackPlanB(
   return true;
 }
 
-webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
+webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
 RTCPeerConnectionHandler::RemoveTrackUnifiedPlan(
     blink::RTCRtpSenderPlatform* web_sender) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
@@ -1967,9 +1967,9 @@ RTCPeerConnectionHandler::RemoveTrackUnifiedPlan(
         this, PeerConnectionTracker::TransceiverUpdatedReason::kRemoveTrack,
         *transceiver.get(), transceiver_index);
   }
-  std::unique_ptr<blink::WebRTCRtpTransceiver> web_transceiver =
+  std::unique_ptr<RTCRtpTransceiverPlatform> platform_transceiver =
       std::move(transceiver);
-  return web_transceiver;
+  return platform_transceiver;
 }
 
 void RTCPeerConnectionHandler::RemoveTrackUnifiedPlanOnSignalingThread(
@@ -2301,7 +2301,7 @@ void RTCPeerConnectionHandler::OnModifyTransceivers(
     std::vector<blink::RtpTransceiverState> transceiver_states,
     bool is_remote_description) {
   DCHECK_EQ(configuration_.sdp_semantics, webrtc::SdpSemantics::kUnifiedPlan);
-  std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>> web_transceivers(
+  std::vector<std::unique_ptr<RTCRtpTransceiverPlatform>> platform_transceivers(
       transceiver_states.size());
   PeerConnectionTracker::TransceiverUpdatedReason update_reason =
       !is_remote_description ? PeerConnectionTracker::TransceiverUpdatedReason::
@@ -2330,7 +2330,7 @@ void RTCPeerConnectionHandler::OnModifyTransceivers(
     }
 
     // Update the transceiver.
-    web_transceivers[i] = CreateOrUpdateTransceiver(
+    platform_transceivers[i] = CreateOrUpdateTransceiver(
         std::move(transceiver_states[i]),
         blink::TransceiverStateUpdateMode::kSetDescription);
 
@@ -2338,13 +2338,15 @@ void RTCPeerConnectionHandler::OnModifyTransceivers(
     // chrome://webrtc-internals if new or modified.
     if (peer_connection_tracker_ &&
         (transceiver_is_new || transceiver_was_modified)) {
-      size_t transceiver_index = GetTransceiverIndex(*web_transceivers[i]);
+      size_t transceiver_index = GetTransceiverIndex(*platform_transceivers[i]);
       if (transceiver_is_new) {
         peer_connection_tracker_->TrackAddTransceiver(
-            this, update_reason, *web_transceivers[i].get(), transceiver_index);
+            this, update_reason, *platform_transceivers[i].get(),
+            transceiver_index);
       } else if (transceiver_was_modified) {
         peer_connection_tracker_->TrackModifyTransceiver(
-            this, update_reason, *web_transceivers[i].get(), transceiver_index);
+            this, update_reason, *platform_transceivers[i].get(),
+            transceiver_index);
       }
     }
   }
@@ -2358,7 +2360,7 @@ void RTCPeerConnectionHandler::OnModifyTransceivers(
   }
   previous_transceiver_ids_ = ids;
   if (!is_closed_) {
-    client_->DidModifyTransceivers(std::move(web_transceivers),
+    client_->DidModifyTransceivers(std::move(platform_transceivers),
                                    removed_transceivers, is_remote_description);
   }
 }
@@ -2497,27 +2499,26 @@ RTCPeerConnectionHandler::FindTransceiver(uintptr_t id) {
 }
 
 size_t RTCPeerConnectionHandler::GetTransceiverIndex(
-    const blink::WebRTCRtpTransceiver& web_transceiver) {
-  if (web_transceiver.ImplementationType() ==
-      blink::WebRTCRtpTransceiverImplementationType::kFullTransceiver) {
+    const RTCRtpTransceiverPlatform& platform_transceiver) {
+  if (platform_transceiver.ImplementationType() ==
+      RTCRtpTransceiverPlatformImplementationType::kFullTransceiver) {
     for (size_t i = 0; i < rtp_transceivers_.size(); ++i) {
-      if (web_transceiver.Id() == rtp_transceivers_[i]->Id())
+      if (platform_transceiver.Id() == rtp_transceivers_[i]->Id())
         return i;
     }
-  } else if (web_transceiver.ImplementationType() ==
-             blink::WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly) {
-    const auto web_sender = web_transceiver.Sender();
+  } else if (platform_transceiver.ImplementationType() ==
+             RTCRtpTransceiverPlatformImplementationType::kPlanBSenderOnly) {
+    const auto web_sender = platform_transceiver.Sender();
     for (size_t i = 0; i < rtp_senders_.size(); ++i) {
       if (web_sender->Id() == rtp_senders_[i]->Id())
         return i;
     }
   } else {
-    RTC_DCHECK(
-        web_transceiver.ImplementationType() ==
-        blink::WebRTCRtpTransceiverImplementationType::kPlanBReceiverOnly);
-    const auto web_receiver = web_transceiver.Receiver();
+    RTC_DCHECK(platform_transceiver.ImplementationType() ==
+               RTCRtpTransceiverPlatformImplementationType::kPlanBReceiverOnly);
+    const auto platform_receiver = platform_transceiver.Receiver();
     for (size_t i = 0; i < rtp_receivers_.size(); ++i) {
-      if (web_receiver->Id() == rtp_receivers_[i]->Id())
+      if (platform_receiver->Id() == rtp_receivers_[i]->Id())
         return i;
     }
   }

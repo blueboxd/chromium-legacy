@@ -161,6 +161,7 @@ class MockRenderProcessHost : public RenderProcessHost {
       const net::NetworkIsolationKey& network_isolation_key,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
           header_client,
+      const base::Optional<base::UnguessableToken>& top_frame_token,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       network::mojom::URLLoaderFactoryOverridePtr factory_override) override;
 

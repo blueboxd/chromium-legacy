@@ -1271,14 +1271,16 @@ Response InspectorDOMAgent::setFileInputFiles(
   Response response = AssertNode(node_id, backend_node_id, object_id, node);
   if (!response.isSuccess())
     return response;
-  if (!IsHTMLInputElement(*node) ||
-      ToHTMLInputElement(*node).type() != input_type_names::kFile)
+
+  auto* html_input_element = DynamicTo<HTMLInputElement>(node);
+  if (!html_input_element ||
+      html_input_element->type() != input_type_names::kFile)
     return Response::Error("Node is not a file input element");
 
   Vector<String> paths;
   for (const String& file : *files)
     paths.push_back(file);
-  ToHTMLInputElement(node)->SetFilesFromPaths(paths);
+  To<HTMLInputElement>(node)->SetFilesFromPaths(paths);
   return Response::OK();
 }
 

@@ -161,7 +161,8 @@ void WKBasedNavigationManagerImpl::AddTransientItem(const GURL& url) {
   // only entry in back/forward history.
   if (item) {
     DCHECK(item->GetUserAgentType() != UserAgentType::NONE);
-    transient_item_->SetUserAgentType(item->GetUserAgentType());
+    transient_item_->SetUserAgentType(item->GetUserAgentForInheritance(),
+                                      /*update_inherited_user_agent =*/true);
   }
 }
 

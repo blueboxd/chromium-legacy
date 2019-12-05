@@ -221,7 +221,7 @@ bool IsDuplicateName(const std::string& locale_name) {
     "en",
     "en_001",
     "en_150",
-    "pt", // pt-BR and pt-PT are used.
+    "pt",  // pt-BR and pt-PT are used.
     "zh",
     "zh_hans_cn",
     "zh_hant_hk",
@@ -232,8 +232,9 @@ bool IsDuplicateName(const std::string& locale_name) {
 
   // Skip all the es_Foo other than es_419 for now.
   if (base::StartsWith(locale_name, "es_",
-                       base::CompareCase::INSENSITIVE_ASCII))
+                       base::CompareCase::INSENSITIVE_ASCII)) {
     return !base::EndsWith(locale_name, "419", base::CompareCase::SENSITIVE);
+  }
   for (const char* duplicate_name : kDuplicateNames) {
     if (base::EqualsCaseInsensitiveASCII(duplicate_name, locale_name))
       return true;
@@ -339,10 +340,7 @@ std::string GetLanguage(const std::string& locale) {
 // and generic locale fallback based on ICU/CLDR.
 bool CheckAndResolveLocale(const std::string& locale,
                            std::string* resolved_locale) {
-#if defined(OS_MACOSX)
-  NOTIMPLEMENTED();
-  return false;
-#else
+#if !defined(OS_MACOSX)
   if (IsLocaleAvailable(locale)) {
     *resolved_locale = locale;
     return true;
@@ -407,11 +405,11 @@ bool CheckAndResolveLocale(const std::string& locale,
   struct {
     const char* source;
     const char* dest;
-  } alias_map[] = {
+  } static constexpr kAliasMap[] = {
       {"en", "en-US"}, {"iw", "he"},  {"no", "nb"},
       {"pt", "pt-BR"}, {"tl", "fil"}, {"zh", "zh-CN"},
   };
-  for (const auto& alias : alias_map) {
+  for (const auto& alias : kAliasMap) {
     if (base::LowerCaseEqualsASCII(lang, alias.source)) {
       std::string tmp_locale(alias.dest);
       if (IsLocaleAvailable(tmp_locale)) {
@@ -420,14 +418,15 @@ bool CheckAndResolveLocale(const std::string& locale,
       }
     }
   }
+#else
+  NOTIMPLEMENTED();
+#endif  // !defined(OS_MACOSX)
 
   return false;
-#endif
 }
 
-std::string GetApplicationLocaleInternal(const std::string& pref_locale) {
 #if defined(OS_MACOSX)
-
+std::string GetApplicationLocaleInternalMac(const std::string& pref_locale) {
   // Use any override (Cocoa for the browser), otherwise use the preference
   // passed to the function.
   std::string app_locale = l10n_util::GetLocaleOverride();
@@ -440,9 +439,11 @@ std::string GetApplicationLocaleInternal(const std::string& pref_locale) {
     app_locale = "en-US";
 
   return app_locale;
+}
+#endif
 
-#else
-
+#if !defined(OS_MACOSX)
+std::string GetApplicationLocaleInternalNonMac(const std::string& pref_locale) {
   std::string resolved_locale;
   std::vector<std::string> candidates;
 
@@ -452,7 +453,6 @@ std::string GetApplicationLocaleInternal(const std::string& pref_locale) {
   // process decided to use.
 
 #if defined(OS_WIN)
-
   // First, try the preference value.
   if (!pref_locale.empty())
     candidates.push_back(base::i18n::GetCanonicalLocale(pref_locale));
@@ -468,18 +468,14 @@ std::string GetApplicationLocaleInternal(const std::string& pref_locale) {
     // If no override was set, defer to ICU
     candidates.push_back(base::i18n::GetConfiguredLocale());
   }
-
 #elif defined(OS_ANDROID)
-
   // Try pref_locale first.
   if (!pref_locale.empty())
     candidates.push_back(base::i18n::GetCanonicalLocale(pref_locale));
 
   // On Android, query java.util.Locale for the default locale.
   candidates.push_back(base::android::GetDefaultLocaleString());
-
 #elif defined(USE_GLIB) && !defined(OS_CHROMEOS)
-
   // GLib implements correct environment variable parsing with
   // the precedence order: LANGUAGE, LC_ALL, LC_MESSAGES and LANG.
   // We used to use our custom parsing code along with ICU for this purpose.
@@ -489,18 +485,15 @@ std::string GetApplicationLocaleInternal(const std::string& pref_locale) {
   DCHECK(languages);  // A valid pointer is guaranteed.
   DCHECK(*languages);  // At least one entry, "C", is guaranteed.
 
-  for (; *languages != NULL; ++languages) {
+  for (; *languages; ++languages) {
     candidates.push_back(base::i18n::GetCanonicalLocale(*languages));
   }
-
 #else
-
   // By default, use the application locale preference. This applies to ChromeOS
   // and linux systems without glib.
   if (!pref_locale.empty())
     candidates.push_back(pref_locale);
-
-#endif
+#endif  // defined(OS_WIN)
 
   std::vector<std::string>::const_iterator i = candidates.begin();
   for (; i != candidates.end(); ++i) {
@@ -511,12 +504,18 @@ std::string GetApplicationLocaleInternal(const std::string& pref_locale) {
 
   // Fallback on en-US.
   const std::string fallback_locale("en-US");
-  if (IsLocaleAvailable(fallback_locale)) {
+  if (IsLocaleAvailable(fallback_locale))
     return fallback_locale;
-  }
 
   return std::string();
+}
+#endif  // !defined(OS_MACOSX)
 
+std::string GetApplicationLocaleInternal(const std::string& pref_locale) {
+#if defined(OS_MACOSX)
+  return GetApplicationLocaleInternalMac(pref_locale);
+#else
+  return GetApplicationLocaleInternalNonMac(pref_locale);
 #endif
 }
 
@@ -598,7 +597,7 @@ base::string16 GetDisplayNameForLocale(const std::string& locale,
     DCHECK(U_SUCCESS(error));
     display_name.resize(actual_size);
   }
-#endif
+#endif  // defined(OS_IOS)
 
   // Add directional markup so parentheses are properly placed.
   if (is_for_ui && base::i18n::IsRTL())
@@ -651,15 +650,15 @@ bool IsValidLocaleSyntax(const std::string& locale) {
     prefix = locale.substr(0, split_point);
 
     size_t equals_loc = keywords.find("=");
-    if (equals_loc == std::string::npos ||
-        equals_loc < 1 || equals_loc > keywords.size() - 2)
+    if (equals_loc == 0 || equals_loc == std::string::npos ||
+        equals_loc > keywords.size() - 2) {
       return false;
+    }
   }
 
   // Check that all characters before the at-sign are alphanumeric or
   // underscore.
-  for (size_t i = 0; i < prefix.size(); i++) {
-    char ch = prefix[i];
+  for (char ch : prefix) {
     if (!base::IsAsciiAlpha(ch) && !base::IsAsciiDigit(ch) && ch != '_')
       return false;
   }
@@ -682,8 +681,8 @@ bool IsValidLocaleSyntax(const std::string& locale) {
   // delimiters into one.)
   int token_len = 0;
   int token_index = 0;
-  for (size_t i = 0; i < prefix.size(); i++) {
-    if (prefix[i] != '_') {
+  for (char ch : prefix) {
+    if (ch != '_') {
       token_len++;
       continue;
     }
@@ -694,11 +693,10 @@ bool IsValidLocaleSyntax(const std::string& locale) {
     token_index++;
     token_len = 0;
   }
-  if (token_index == 0 && (token_len < 1 || token_len > 3)) {
+  if (token_index == 0 && (token_len < 1 || token_len > 3))
     return false;
-  } else if (token_len < 1 || token_len > 8) {
+  if (token_len < 1 || token_len > 8)
     return false;
-  }
 
   return true;
 }
@@ -786,26 +784,22 @@ std::string GetStringFUTF8(int message_id,
 
 base::string16 GetStringFUTF16(int message_id,
                                const base::string16& a) {
-  std::vector<base::string16> replacements;
-  replacements.push_back(a);
-  return GetStringFUTF16(message_id, replacements, NULL);
+  std::vector<base::string16> replacements = {a};
+  return GetStringFUTF16(message_id, replacements, nullptr);
 }
 
 base::string16 GetStringFUTF16(int message_id,
                                const base::string16& a,
                                const base::string16& b) {
-  return GetStringFUTF16(message_id, a, b, NULL);
+  return GetStringFUTF16(message_id, a, b, nullptr);
 }
 
 base::string16 GetStringFUTF16(int message_id,
                                const base::string16& a,
                                const base::string16& b,
                                const base::string16& c) {
-  std::vector<base::string16> replacements;
-  replacements.push_back(a);
-  replacements.push_back(b);
-  replacements.push_back(c);
-  return GetStringFUTF16(message_id, replacements, NULL);
+  std::vector<base::string16> replacements = {a, b, c};
+  return GetStringFUTF16(message_id, replacements, nullptr);
 }
 
 base::string16 GetStringFUTF16(int message_id,
@@ -813,12 +807,8 @@ base::string16 GetStringFUTF16(int message_id,
                                const base::string16& b,
                                const base::string16& c,
                                const base::string16& d) {
-  std::vector<base::string16> replacements;
-  replacements.push_back(a);
-  replacements.push_back(b);
-  replacements.push_back(c);
-  replacements.push_back(d);
-  return GetStringFUTF16(message_id, replacements, NULL);
+  std::vector<base::string16> replacements = {a, b, c, d};
+  return GetStringFUTF16(message_id, replacements, nullptr);
 }
 
 base::string16 GetStringFUTF16(int message_id,
@@ -827,13 +817,8 @@ base::string16 GetStringFUTF16(int message_id,
                                const base::string16& c,
                                const base::string16& d,
                                const base::string16& e) {
-  std::vector<base::string16> replacements;
-  replacements.push_back(a);
-  replacements.push_back(b);
-  replacements.push_back(c);
-  replacements.push_back(d);
-  replacements.push_back(e);
-  return GetStringFUTF16(message_id, replacements, NULL);
+  std::vector<base::string16> replacements = {a, b, c, d, e};
+  return GetStringFUTF16(message_id, replacements, nullptr);
 }
 
 base::string16 GetStringFUTF16(int message_id,
@@ -841,10 +826,9 @@ base::string16 GetStringFUTF16(int message_id,
                                size_t* offset) {
   DCHECK(offset);
   std::vector<size_t> offsets;
-  std::vector<base::string16> replacements;
-  replacements.push_back(a);
+  std::vector<base::string16> replacements = {a};
   base::string16 result = GetStringFUTF16(message_id, replacements, &offsets);
-  DCHECK(offsets.size() == 1);
+  DCHECK_EQ(1u, offsets.size());
   *offset = offsets[0];
   return result;
 }
@@ -853,9 +837,7 @@ base::string16 GetStringFUTF16(int message_id,
                                const base::string16& a,
                                const base::string16& b,
                                std::vector<size_t>* offsets) {
-  std::vector<base::string16> replacements;
-  replacements.push_back(a);
-  replacements.push_back(b);
+  std::vector<base::string16> replacements = {a, b};
   return GetStringFUTF16(message_id, replacements, offsets);
 }
 

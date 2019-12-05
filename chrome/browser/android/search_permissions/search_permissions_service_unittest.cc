@@ -476,12 +476,12 @@ TEST_F(SearchPermissionsServiceTest, Embargo) {
   GURL google_aus_url(kGoogleAusURL);
   PermissionDecisionAutoBlocker* auto_blocker =
       PermissionDecisionAutoBlocker::GetForProfile(profile());
-  auto_blocker->RecordDismissAndEmbargo(google_aus_url,
-                                        ContentSettingsType::GEOLOCATION);
-  auto_blocker->RecordDismissAndEmbargo(google_aus_url,
-                                        ContentSettingsType::GEOLOCATION);
-  auto_blocker->RecordDismissAndEmbargo(google_aus_url,
-                                        ContentSettingsType::GEOLOCATION);
+  auto_blocker->RecordDismissAndEmbargo(
+      google_aus_url, ContentSettingsType::GEOLOCATION, false);
+  auto_blocker->RecordDismissAndEmbargo(
+      google_aus_url, ContentSettingsType::GEOLOCATION, false);
+  auto_blocker->RecordDismissAndEmbargo(
+      google_aus_url, ContentSettingsType::GEOLOCATION, false);
   PermissionResult result = auto_blocker->GetEmbargoResult(
       GURL(kGoogleAusURL), ContentSettingsType::GEOLOCATION);
   EXPECT_EQ(result.source, PermissionStatusSource::MULTIPLE_DISMISSALS);

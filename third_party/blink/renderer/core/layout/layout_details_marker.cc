@@ -60,7 +60,7 @@ bool LayoutDetailsMarker::IsOpen() const {
     if (auto* details = DynamicTo<HTMLDetailsElement>(node))
       return details->FastHasAttribute(html_names::kOpenAttr);
 
-    if (IsHTMLInputElement(*node))
+    if (IsA<HTMLInputElement>(*node))
       return true;
   }
 

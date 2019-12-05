@@ -53,7 +53,7 @@ enum class KeepaliveBlockStatus {
 }  // namespace
 
 constexpr int URLLoaderFactory::kMaxKeepaliveConnections;
-constexpr int URLLoaderFactory::kMaxKeepaliveConnectionsPerProcess;
+constexpr int URLLoaderFactory::kMaxKeepaliveConnectionsPerTopLevelFrame;
 constexpr int URLLoaderFactory::kMaxTotalKeepaliveRequestSize;
 
 URLLoaderFactory::URLLoaderFactory(
@@ -70,16 +70,20 @@ URLLoaderFactory::URLLoaderFactory(
   DCHECK_NE(mojom::kInvalidProcessId, params_->process_id);
   DCHECK(!params_->factory_override);
 
+  if (!params_->top_frame_id) {
+    params_->top_frame_id = base::UnguessableToken::Create();
+  }
+
   if (context_->network_service()) {
     context_->network_service()->keepalive_statistics_recorder()->Register(
-        params_->process_id);
+        *params_->top_frame_id);
   }
 }
 
 URLLoaderFactory::~URLLoaderFactory() {
   if (context_->network_service()) {
     context_->network_service()->keepalive_statistics_recorder()->Unregister(
-        params_->process_id);
+        *params_->top_frame_id);
   }
 }
 
@@ -146,7 +150,9 @@ void URLLoaderFactory::CreateLoaderAndStart(
     keepalive_request_size = url_size + headers_size;
 
     KeepaliveBlockStatus block_status = KeepaliveBlockStatus::kNotBlocked;
+    const auto& top_frame_id = *params_->top_frame_id;
     const auto& recorder = *keepalive_statistics_recorder;
+
     if (!context_->CanCreateLoader(params_->process_id)) {
       // We already checked this, but we have this here for histogram.
       DCHECK(exhausted);
@@ -154,23 +160,23 @@ void URLLoaderFactory::CreateLoaderAndStart(
     } else if (recorder.num_inflight_requests() >= kMaxKeepaliveConnections) {
       exhausted = true;
       block_status = KeepaliveBlockStatus::kBlockedDueToNumberOfRequests;
-    } else if (recorder.NumInflightRequestsPerProcess(params_->process_id) >=
-               kMaxKeepaliveConnectionsPerProcess) {
+    } else if (recorder.NumInflightRequestsPerTopLevelFrame(top_frame_id) >=
+               kMaxKeepaliveConnectionsPerTopLevelFrame) {
       exhausted = true;
       block_status =
-          KeepaliveBlockStatus::kBlockedDueToNumberOfRequestsPerProcess;
-    } else if (recorder.GetTotalRequestSizePerProcess(params_->process_id) +
+          KeepaliveBlockStatus::kBlockedDueToNumberOfRequestsPerTopLevelFrame;
+    } else if (recorder.GetTotalRequestSizePerTopLevelFrame(top_frame_id) +
                    keepalive_request_size >
                kMaxTotalKeepaliveRequestSize) {
       exhausted = true;
       block_status =
           KeepaliveBlockStatus::kBlockedDueToTotalSizeOfUrlAndHeaders;
-    } else if (recorder.GetTotalRequestSizePerProcess(params_->process_id) +
+    } else if (recorder.GetTotalRequestSizePerTopLevelFrame(top_frame_id) +
                    keepalive_request_size >
                384 * 1024) {
       block_status =
           KeepaliveBlockStatus::kNotBlockedButUrlAndHeadersExceeds384kb;
-    } else if (recorder.GetTotalRequestSizePerProcess(params_->process_id) +
+    } else if (recorder.GetTotalRequestSizePerTopLevelFrame(top_frame_id) +
                    keepalive_request_size >
                256 * 1024) {
       block_status =

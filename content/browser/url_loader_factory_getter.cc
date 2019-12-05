@@ -29,26 +29,26 @@ base::LazyInstance<URLLoaderFactoryGetter::GetNetworkFactoryCallback>::Leaky
     g_get_network_factory_callback = LAZY_INSTANCE_INITIALIZER;
 }
 
-class URLLoaderFactoryGetter::URLLoaderFactoryForIOThreadInfo
-    : public network::SharedURLLoaderFactoryInfo {
+class URLLoaderFactoryGetter::PendingURLLoaderFactoryForIOThread
+    : public network::PendingSharedURLLoaderFactory {
  public:
-  URLLoaderFactoryForIOThreadInfo() = default;
-  explicit URLLoaderFactoryForIOThreadInfo(
+  PendingURLLoaderFactoryForIOThread() = default;
+  explicit PendingURLLoaderFactoryForIOThread(
       scoped_refptr<URLLoaderFactoryGetter> factory_getter)
       : factory_getter_(std::move(factory_getter)) {}
-  ~URLLoaderFactoryForIOThreadInfo() override = default;
+  ~PendingURLLoaderFactoryForIOThread() override = default;
 
   scoped_refptr<URLLoaderFactoryGetter>& url_loader_factory_getter() {
     return factory_getter_;
   }
 
  protected:
-  // SharedURLLoaderFactoryInfo implementation.
+  // PendingSharedURLLoaderFactory implementation.
   scoped_refptr<network::SharedURLLoaderFactory> CreateFactory() override;
 
   scoped_refptr<URLLoaderFactoryGetter> factory_getter_;
 
-  DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryForIOThreadInfo);
+  DISALLOW_COPY_AND_ASSIGN(PendingURLLoaderFactoryForIOThread);
 };
 
 class URLLoaderFactoryGetter::URLLoaderFactoryForIOThread
@@ -64,7 +64,7 @@ class URLLoaderFactoryGetter::URLLoaderFactoryForIOThread
   }
 
   explicit URLLoaderFactoryForIOThread(
-      std::unique_ptr<URLLoaderFactoryForIOThreadInfo> info)
+      std::unique_ptr<PendingURLLoaderFactoryForIOThread> info)
       : factory_getter_(std::move(info->url_loader_factory_getter())),
         is_corb_enabled_(false) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -98,7 +98,7 @@ class URLLoaderFactoryGetter::URLLoaderFactoryForIOThread
   }
 
   // SharedURLLoaderFactory implementation:
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
+  std::unique_ptr<network::PendingSharedURLLoaderFactory> Clone() override {
     NOTREACHED() << "This isn't supported. If you need a SharedURLLoaderFactory"
                     " on the UI thread, get it from StoragePartition.";
     return nullptr;
@@ -115,8 +115,8 @@ class URLLoaderFactoryGetter::URLLoaderFactoryForIOThread
 };
 
 scoped_refptr<network::SharedURLLoaderFactory>
-URLLoaderFactoryGetter::URLLoaderFactoryForIOThreadInfo::CreateFactory() {
-  auto other = std::make_unique<URLLoaderFactoryForIOThreadInfo>();
+URLLoaderFactoryGetter::PendingURLLoaderFactoryForIOThread::CreateFactory() {
+  auto other = std::make_unique<PendingURLLoaderFactoryForIOThread>();
   other->factory_getter_ = std::move(factory_getter_);
 
   return base::MakeRefCounted<URLLoaderFactoryForIOThread>(std::move(other));
@@ -165,9 +165,9 @@ URLLoaderFactoryGetter::GetNetworkFactoryWithCORBEnabled() {
       base::WrapRefCounted(this), true);
 }
 
-std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-URLLoaderFactoryGetter::GetNetworkFactoryInfo() {
-  return std::make_unique<URLLoaderFactoryForIOThreadInfo>(
+std::unique_ptr<network::PendingSharedURLLoaderFactory>
+URLLoaderFactoryGetter::GetPendingNetworkFactory() {
+  return std::make_unique<PendingURLLoaderFactoryForIOThread>(
       base::WrapRefCounted(this));
 }
 

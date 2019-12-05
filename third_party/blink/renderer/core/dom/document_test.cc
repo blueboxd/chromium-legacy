@@ -879,8 +879,7 @@ TEST_F(DocumentTest, ValidationMessageCleanup) {
       "window.onunload = function() {"
       "document.querySelector('input').reportValidity(); };");
   GetDocument().body()->AppendChild(script);
-  HTMLInputElement* input =
-      ToHTMLInputElement(GetDocument().body()->firstChild());
+  auto* input = To<HTMLInputElement>(GetDocument().body()->firstChild());
   DVLOG(0) << GetDocument().body()->OuterHTMLAsString();
 
   // Sanity check.

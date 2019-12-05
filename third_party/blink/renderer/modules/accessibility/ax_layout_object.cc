@@ -164,8 +164,8 @@ static bool IsImageOrAltText(LayoutBoxModelObject* box, Node* node) {
     return true;
   if (IsA<HTMLImageElement>(node))
     return true;
-  if (IsHTMLInputElement(node) &&
-      ToHTMLInputElement(node)->HasFallbackContent())
+  auto* html_input_element = DynamicTo<HTMLInputElement>(node);
+  if (html_input_element && html_input_element->HasFallbackContent())
     return true;
   return false;
 }
@@ -208,7 +208,7 @@ ax::mojom::Role AXLayoutObject::NativeRoleIgnoringAria() const {
   if (css_box && IsImageOrAltText(css_box, node)) {
     if (node && node->IsLink())
       return ax::mojom::Role::kImageMap;
-    if (IsHTMLInputElement(node))
+    if (IsA<HTMLInputElement>(node))
       return ButtonRoleType();
     if (IsSVGImage())
       return ax::mojom::Role::kSvgRoot;
@@ -1461,7 +1461,7 @@ String AXLayoutObject::StringValue() const {
   // exception of checkboxes and radio buttons (which would return "on"), and
   // buttons which will return their name.
   // https://html.spec.whatwg.org/C/#dom-input-value
-  if (const auto* input = ToHTMLInputElementOrNull(GetNode())) {
+  if (const auto* input = DynamicTo<HTMLInputElement>(GetNode())) {
     if (input->type() != input_type_names::kButton &&
         input->type() != input_type_names::kCheckbox &&
         input->type() != input_type_names::kImage &&
@@ -2240,15 +2240,17 @@ bool AXLayoutObject::OnNativeSetValueAction(const String& string) {
     return false;
 
   LayoutBoxModelObject* layout_object = ToLayoutBoxModelObject(layout_object_);
-  if (layout_object->IsTextField() && IsHTMLInputElement(*GetNode())) {
-    ToHTMLInputElement(*GetNode())
-        .setValue(string, TextFieldEventBehavior::kDispatchInputAndChangeEvent);
+  auto* html_input_element = DynamicTo<HTMLInputElement>(*GetNode());
+  if (html_input_element && layout_object->IsTextField()) {
+    html_input_element->setValue(
+        string, TextFieldEventBehavior::kDispatchInputAndChangeEvent);
     return true;
   }
 
-  if (layout_object->IsTextArea() && IsHTMLTextAreaElement(*GetNode())) {
-    ToHTMLTextAreaElement(*GetNode())
-        .setValue(string, TextFieldEventBehavior::kDispatchInputAndChangeEvent);
+  if (auto* text_area_element = DynamicTo<HTMLTextAreaElement>(*GetNode())) {
+    DCHECK(layout_object->IsTextArea());
+    text_area_element->setValue(
+        string, TextFieldEventBehavior::kDispatchInputAndChangeEvent);
     return true;
   }
 
@@ -3099,9 +3101,10 @@ void AXLayoutObject::AddListMarker() {
 }
 
 void AXLayoutObject::AddPopupChildren() {
-  if (!IsHTMLInputElement(GetNode()))
+  auto* html_input_element = DynamicTo<HTMLInputElement>(GetNode());
+  if (!html_input_element)
     return;
-  if (AXObject* ax_popup = ToHTMLInputElement(GetNode())->PopupRootAXObject())
+  if (AXObject* ax_popup = html_input_element->PopupRootAXObject())
     children_.push_back(ax_popup);
 }
 

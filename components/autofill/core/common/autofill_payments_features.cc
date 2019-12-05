@@ -73,6 +73,10 @@ const base::Feature kAutofillNoLocalSaveOnUploadSuccess{
 const base::Feature kAutofillSaveCardDismissOnNavigation{
     "AutofillSaveCardDismissOnNavigation", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When enabled, the Save Card infobar supports editing before submitting.
+const base::Feature kAutofillSaveCardInfobarEditSupport{
+    "AutofillSaveCardInfobarEditSupport", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls offering credit card upload to Google Payments. Cannot ever be
 // ENABLED_BY_DEFAULT because it's a country-specific whitelist. There are
 // countries we simply can't turn this on for, and they change over time, so

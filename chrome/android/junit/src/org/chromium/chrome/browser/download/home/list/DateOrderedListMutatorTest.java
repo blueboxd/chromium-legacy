@@ -28,9 +28,10 @@ import org.chromium.chrome.browser.download.home.StableIds;
 import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterSource;
 import org.chromium.chrome.browser.download.home.list.ListItem.OfflineItemListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.SectionHeaderListItem;
-import org.chromium.chrome.browser.download.home.list.mutator.DateComparator;
 import org.chromium.chrome.browser.download.home.list.mutator.DateLabelAdder;
 import org.chromium.chrome.browser.download.home.list.mutator.DateOrderedListMutator;
+import org.chromium.chrome.browser.download.home.list.mutator.DateSorter;
+import org.chromium.chrome.browser.download.home.list.mutator.ListItemPropertySetter;
 import org.chromium.chrome.browser.download.home.list.mutator.Paginator;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
@@ -889,16 +890,16 @@ public class DateOrderedListMutatorTest {
             }
         };
         return new DateOrderedListMutator(mSource, mModel, justNowProvider,
-                new DateComparator(justNowProvider), new DateLabelAdder(config, justNowProvider),
-                new Paginator());
+                new DateSorter(justNowProvider), new DateLabelAdder(config, justNowProvider),
+                new ListItemPropertySetter(config), new Paginator());
     }
 
     private DateOrderedListMutator createMutatorWithJustNowProvider() {
         DownloadManagerUiConfig config = new DownloadManagerUiConfig.Builder().build();
         JustNowProvider justNowProvider = new JustNowProvider(config);
         return new DateOrderedListMutator(mSource, mModel, justNowProvider,
-                new DateComparator(justNowProvider), new DateLabelAdder(config, justNowProvider),
-                new Paginator());
+                new DateSorter(justNowProvider), new DateLabelAdder(config, justNowProvider),
+                new ListItemPropertySetter(config), new Paginator());
     }
 
     private static void assertDatesAreEqual(Date date, Calendar calendar) {
@@ -921,14 +922,14 @@ public class DateOrderedListMutatorTest {
         assertDatesAreEqual(sectionHeader.date, calendar);
         Assert.assertEquals(
                 SectionHeaderListItem.generateStableId(calendar.getTimeInMillis()), item.stableId);
-        Assert.assertEquals(sectionHeader.showDivider, showDivider);
+        Assert.assertEquals(sectionHeader.showTopDivider, showDivider);
     }
 
     private static void assertJustNowSection(ListItem item, boolean showDivider) {
         Assert.assertTrue(item instanceof SectionHeaderListItem);
         SectionHeaderListItem sectionHeader = (SectionHeaderListItem) item;
         Assert.assertTrue(sectionHeader.isJustNow);
-        Assert.assertEquals(sectionHeader.showDivider, showDivider);
+        Assert.assertEquals(sectionHeader.showTopDivider, showDivider);
         Assert.assertEquals(StableIds.JUST_NOW_SECTION, item.stableId);
     }
 }

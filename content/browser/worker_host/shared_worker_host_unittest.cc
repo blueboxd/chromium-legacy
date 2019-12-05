@@ -91,7 +91,7 @@ class SharedWorkerHostTest : public testing::Test {
     ASSERT_EQ(MOJO_RESULT_OK, rv);
     main_script_load_params->response_body = std::move(consumer_handle);
     auto subresource_loader_factories =
-        std::make_unique<blink::URLLoaderFactoryBundleInfo>();
+        std::make_unique<blink::PendingURLLoaderFactoryBundle>();
 
     base::Optional<SubresourceLoaderParams> subresource_loader_params =
         SubresourceLoaderParams();

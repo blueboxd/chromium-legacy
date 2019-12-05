@@ -336,10 +336,6 @@ bool WorkerGlobalScope::IsSecureContext(String& error_message) const {
   return false;
 }
 
-service_manager::InterfaceProvider* WorkerGlobalScope::GetInterfaceProvider() {
-  return &interface_provider_;
-}
-
 BrowserInterfaceBrokerProxy& WorkerGlobalScope::GetBrowserInterfaceBroker() {
   return browser_interface_broker_proxy_;
 }
@@ -482,15 +478,9 @@ WorkerGlobalScope::WorkerGlobalScope(
       creation_params->outside_content_security_policy_headers);
   SetWorkerSettings(std::move(creation_params->worker_settings));
 
-  // TODO(sammc): Require a valid |creation_params->interface_provider| once all
-  // worker types provide a valid |creation_params->interface_provider|.
-  if (creation_params->interface_provider.is_valid()) {
-    interface_provider_.Bind(
-        mojo::PendingRemote<service_manager::mojom::InterfaceProvider>(
-            creation_params->interface_provider.PassPipe(),
-            service_manager::mojom::InterfaceProvider::Version_));
-  }
-
+  // TODO(sammc): Require a valid |creation_params->browser_interface_broker|
+  // once all worker types provide a valid
+  // |creation_params->browser_interface_broker|.
   if (creation_params->browser_interface_broker.is_valid()) {
     auto pipe = creation_params->browser_interface_broker.PassPipe();
     browser_interface_broker_proxy_.Bind(
@@ -524,7 +514,7 @@ NOINLINE void WorkerGlobalScope::InitializeURL(const KURL& url) {
   if (GetSecurityOrigin()->IsOpaque()) {
     DCHECK(SecurityOrigin::Create(url)->IsOpaque());
   } else {
-    DCHECK(GetSecurityOrigin()->IsSameSchemeHostPort(
+    DCHECK(GetSecurityOrigin()->IsSameOriginWith(
         SecurityOrigin::Create(url).get()));
   }
   url_ = url;

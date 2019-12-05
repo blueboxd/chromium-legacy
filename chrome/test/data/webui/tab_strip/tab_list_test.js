@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://tab-strip/tab_list.js';
-
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
+import {setScrollAnimationEnabledForTesting} from 'chrome://tab-strip/tab_list.js';
 import {TabStripEmbedderProxy} from 'chrome://tab-strip/tab_strip_embedder_proxy.js';
 import {TabsApiProxy} from 'chrome://tab-strip/tabs_api_proxy.js';
 
@@ -124,6 +123,8 @@ suite('TabList', () => {
     });
     testTabStripEmbedderProxy.setVisible(true);
     TabStripEmbedderProxy.instance_ = testTabStripEmbedderProxy;
+
+    setScrollAnimationEnabledForTesting(false);
 
     tabList = document.createElement('tabstrip-tab-list');
     document.body.appendChild(tabList);

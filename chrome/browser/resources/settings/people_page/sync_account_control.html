@@ -11,6 +11,8 @@
 <link rel="import" href="sync_browser_proxy.html">
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../icons.html">
+<link rel="import" href="../prefs/prefs.html">
+<link rel="import" href="../prefs/prefs_behavior.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
 
@@ -149,8 +151,10 @@
         </div>
         <div class="secondary">[[subLabel_]]</div>
       </div>
-      <cr-button class="action-button" on-click="onSigninTap_"
-          disabled="[[syncStatus.firstSetupInProgress]]" id="sign-in"
+      <cr-button class="action-button" on-click="onSigninTap_" id="sign-in"
+          disabled="[[shouldDisableSyncButton_(showSetupButtons_,
+                  syncStatus.firstSetupInProgress,
+                  prefs.signin.allowed_on_next_startup.value)]]"
           hidden="[[shouldShowAvatarRow_]]">
         $i18n{peopleSignIn}
       </cr-button>
@@ -194,7 +198,9 @@
         <div class="separator" hidden="[[syncStatus.signedIn]]"></div>
         <cr-button id="sync-button" class="action-button"
             hidden="[[syncStatus.signedIn]]" on-click="onSyncButtonTap_"
-            disabled="[[syncStatus.firstSetupInProgress]]">
+            disabled="[[shouldDisableSyncButton_(showSetupButtons_,
+                    syncStatus.firstSetupInProgress,
+                    prefs.signin.allowed_on_next_startup.value)]]">
           $i18n{peopleSignIn}
         </cr-button>
         <cr-button id="turn-off"

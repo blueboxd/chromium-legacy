@@ -41,10 +41,10 @@ class CONTENT_EXPORT SingleRequestURLLoaderFactory
       override;
   void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
       override;
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;
+  std::unique_ptr<network::PendingSharedURLLoaderFactory> Clone() override;
 
  private:
-  class FactoryInfo;
+  class PendingFactory;
   class HandlerState;
 
   explicit SingleRequestURLLoaderFactory(scoped_refptr<HandlerState> state);

@@ -107,10 +107,10 @@ class MODULES_EXPORT RTCPeerConnectionHandler
                       server_configuration,
                   const blink::WebMediaConstraints& options) override;
 
-  blink::WebVector<std::unique_ptr<blink::WebRTCRtpTransceiver>> CreateOffer(
+  blink::WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
       blink::RTCSessionDescriptionRequest* request,
       const blink::WebMediaConstraints& options) override;
-  blink::WebVector<std::unique_ptr<blink::WebRTCRtpTransceiver>> CreateOffer(
+  blink::WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
       blink::RTCSessionDescriptionRequest* request,
       blink::RTCOfferOptionsPlatform* options) override;
 
@@ -147,16 +147,16 @@ class MODULES_EXPORT RTCPeerConnectionHandler
   void GetStats(blink::WebRTCStatsReportCallback callback,
                 const blink::WebVector<webrtc::NonStandardGroupId>&
                     exposed_group_ids) override;
-  webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
+  webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
   AddTransceiverWithTrack(const blink::WebMediaStreamTrack& web_track,
                           const webrtc::RtpTransceiverInit& init) override;
-  webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
+  webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
   AddTransceiverWithKind(std::string kind,
                          const webrtc::RtpTransceiverInit& init) override;
-  webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>> AddTrack(
+  webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>> AddTrack(
       const blink::WebMediaStreamTrack& web_track,
       const blink::WebVector<blink::WebMediaStream>& web_streams) override;
-  webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>> RemoveTrack(
+  webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>> RemoveTrack(
       blink::RTCRtpSenderPlatform* web_sender) override;
 
   scoped_refptr<webrtc::DataChannelInterface> CreateDataChannel(
@@ -296,13 +296,13 @@ class MODULES_EXPORT RTCPeerConnectionHandler
       webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpSenderInterface>>*
           error_or_sender);
   bool RemoveTrackPlanB(blink::RTCRtpSenderPlatform* web_sender);
-  webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
+  webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
   RemoveTrackUnifiedPlan(blink::RTCRtpSenderPlatform* web_sender);
   void RemoveTrackUnifiedPlanOnSignalingThread(
       rtc::scoped_refptr<webrtc::RtpSenderInterface> sender,
       blink::TransceiverStateSurfacer* transceiver_state_surfacer,
       bool* result);
-  std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>> CreateOfferInternal(
+  std::vector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOfferInternal(
       blink::RTCSessionDescriptionRequest* request,
       webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options);
   void CreateOfferOnSignalingThread(
@@ -316,14 +316,14 @@ class MODULES_EXPORT RTCPeerConnectionHandler
   std::vector<std::unique_ptr<blink::RTCRtpTransceiverImpl>>::iterator
   FindTransceiver(uintptr_t id);
   // For full transceiver implementations, returns the index of
-  // |rtp_transceivers_| that correspond to |web_transceiver|.
+  // |rtp_transceivers_| that correspond to |platform_transceiver|.
   // For sender-only transceiver implementations, returns the index of
-  // |rtp_senders_| that correspond to |web_transceiver.Sender()|.
+  // |rtp_senders_| that correspond to |platform_transceiver.Sender()|.
   // For receiver-only transceiver implementations, returns the index of
-  // |rtp_receivers_| that correspond to |web_transceiver.Receiver()|.
+  // |rtp_receivers_| that correspond to |platform_transceiver.Receiver()|.
   // NOTREACHED()-crashes if no correspondent is found.
   size_t GetTransceiverIndex(
-      const blink::WebRTCRtpTransceiver& web_transceiver);
+      const RTCRtpTransceiverPlatform& platform_transceiver);
   std::unique_ptr<blink::RTCRtpTransceiverImpl> CreateOrUpdateTransceiver(
       blink::RtpTransceiverState transceiver_state,
       blink::TransceiverStateUpdateMode update_mode);

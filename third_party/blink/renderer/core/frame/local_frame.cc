@@ -49,6 +49,7 @@
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_content_capture_client.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/content_capture/content_capture_manager.h"
@@ -84,6 +85,7 @@
 #include "third_party/blink/renderer/core/frame/report.h"
 #include "third_party/blink/renderer/core/frame/reporting_context.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
 #include "third_party/blink/renderer/core/html/plugin_document.h"
@@ -1806,6 +1808,20 @@ void LocalFrame::DidChangeVisibleToHitTesting() {
        child = child->Tree().NextSibling()) {
     child->UpdateVisibleToHitTesting();
   }
+}
+
+WebPrescientNetworking* LocalFrame::PrescientNetworking() {
+  if (!prescient_networking_) {
+    prescient_networking_ = WebLocalFrameImpl::FromFrame(this)
+                                ->Client()
+                                ->CreatePrescientNetworking();
+  }
+  return prescient_networking_.get();
+}
+
+void LocalFrame::SetPrescientNetworkingForTesting(
+    std::unique_ptr<WebPrescientNetworking> prescient_networking) {
+  prescient_networking_ = std::move(prescient_networking);
 }
 
 mojom::blink::LocalFrameHost& LocalFrame::GetLocalFrameHostRemote() {

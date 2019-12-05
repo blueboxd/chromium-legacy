@@ -80,7 +80,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  int64_t GetOriginUsage(storage::QuotaClient* client,
+  int64_t GetOriginUsage(scoped_refptr<storage::QuotaClient> client,
                          const url::Origin& origin,
                          StorageType type) {
     usage_ = -1;
@@ -95,8 +95,9 @@ class IndexedDBQuotaClientTest : public testing::Test {
     return usage_;
   }
 
-  const std::set<url::Origin>& GetOriginsForType(storage::QuotaClient* client,
-                                                 StorageType type) {
+  const std::set<url::Origin>& GetOriginsForType(
+      scoped_refptr<storage::QuotaClient> client,
+      StorageType type) {
     origins_.clear();
     base::RunLoop loop;
     client->GetOriginsForType(
@@ -109,9 +110,10 @@ class IndexedDBQuotaClientTest : public testing::Test {
     return origins_;
   }
 
-  const std::set<url::Origin>& GetOriginsForHost(storage::QuotaClient* client,
-                                                 StorageType type,
-                                                 const std::string& host) {
+  const std::set<url::Origin>& GetOriginsForHost(
+      scoped_refptr<storage::QuotaClient> client,
+      StorageType type,
+      const std::string& host) {
     origins_.clear();
     base::RunLoop loop;
     client->GetOriginsForHost(
@@ -124,9 +126,10 @@ class IndexedDBQuotaClientTest : public testing::Test {
     return origins_;
   }
 
-  blink::mojom::QuotaStatusCode DeleteOrigin(storage::QuotaClient* client,
-                                             const url::Origin& origin,
-                                             StorageType type) {
+  blink::mojom::QuotaStatusCode DeleteOrigin(
+      scoped_refptr<storage::QuotaClient> client,
+      const url::Origin& origin,
+      StorageType type) {
     delete_status_ = blink::mojom::QuotaStatusCode::kUnknown;
     base::RunLoop loop;
     client->DeleteOriginData(
@@ -172,81 +175,81 @@ class IndexedDBQuotaClientTest : public testing::Test {
 };
 
 TEST_F(IndexedDBQuotaClientTest, GetOriginUsage) {
-  IndexedDBQuotaClient client(idb_context());
+  auto client = base::MakeRefCounted<IndexedDBQuotaClient>(idb_context());
 
   AddFakeIndexedDB(kOriginA, 6);
   AddFakeIndexedDB(kOriginB, 3);
-  EXPECT_EQ(6, GetOriginUsage(&client, kOriginA, kTemp));
-  EXPECT_EQ(0, GetOriginUsage(&client, kOriginA, kPerm));
-  EXPECT_EQ(3, GetOriginUsage(&client, kOriginB, kTemp));
-  EXPECT_EQ(0, GetOriginUsage(&client, kOriginB, kPerm));
+  EXPECT_EQ(6, GetOriginUsage(client, kOriginA, kTemp));
+  EXPECT_EQ(0, GetOriginUsage(client, kOriginA, kPerm));
+  EXPECT_EQ(3, GetOriginUsage(client, kOriginB, kTemp));
+  EXPECT_EQ(0, GetOriginUsage(client, kOriginB, kPerm));
 
   AddFakeIndexedDB(kOriginA, 1000);
-  EXPECT_EQ(1000, GetOriginUsage(&client, kOriginA, kTemp));
-  EXPECT_EQ(0, GetOriginUsage(&client, kOriginA, kPerm));
-  EXPECT_EQ(3, GetOriginUsage(&client, kOriginB, kTemp));
-  EXPECT_EQ(0, GetOriginUsage(&client, kOriginB, kPerm));
+  EXPECT_EQ(1000, GetOriginUsage(client, kOriginA, kTemp));
+  EXPECT_EQ(0, GetOriginUsage(client, kOriginA, kPerm));
+  EXPECT_EQ(3, GetOriginUsage(client, kOriginB, kTemp));
+  EXPECT_EQ(0, GetOriginUsage(client, kOriginB, kPerm));
 }
 
 TEST_F(IndexedDBQuotaClientTest, GetOriginsForHost) {
-  IndexedDBQuotaClient client(idb_context());
+  auto client = base::MakeRefCounted<IndexedDBQuotaClient>(idb_context());
 
   EXPECT_EQ(kOriginA.host(), kOriginB.host());
   EXPECT_NE(kOriginA.host(), kOriginOther.host());
 
   std::set<url::Origin> origins =
-      GetOriginsForHost(&client, kTemp, kOriginA.host());
+      GetOriginsForHost(client, kTemp, kOriginA.host());
   EXPECT_TRUE(origins.empty());
 
   AddFakeIndexedDB(kOriginA, 1000);
-  origins = GetOriginsForHost(&client, kTemp, kOriginA.host());
+  origins = GetOriginsForHost(client, kTemp, kOriginA.host());
   EXPECT_EQ(origins.size(), 1ul);
   EXPECT_TRUE(origins.find(kOriginA) != origins.end());
 
   AddFakeIndexedDB(kOriginB, 1000);
-  origins = GetOriginsForHost(&client, kTemp, kOriginA.host());
+  origins = GetOriginsForHost(client, kTemp, kOriginA.host());
   EXPECT_EQ(origins.size(), 2ul);
   EXPECT_TRUE(origins.find(kOriginA) != origins.end());
   EXPECT_TRUE(origins.find(kOriginB) != origins.end());
 
-  EXPECT_TRUE(GetOriginsForHost(&client, kPerm, kOriginA.host()).empty());
-  EXPECT_TRUE(GetOriginsForHost(&client, kTemp, kOriginOther.host()).empty());
+  EXPECT_TRUE(GetOriginsForHost(client, kPerm, kOriginA.host()).empty());
+  EXPECT_TRUE(GetOriginsForHost(client, kTemp, kOriginOther.host()).empty());
 }
 
 TEST_F(IndexedDBQuotaClientTest, GetOriginsForType) {
-  IndexedDBQuotaClient client(idb_context());
+  auto client = base::MakeRefCounted<IndexedDBQuotaClient>(idb_context());
 
-  EXPECT_TRUE(GetOriginsForType(&client, kTemp).empty());
-  EXPECT_TRUE(GetOriginsForType(&client, kPerm).empty());
+  EXPECT_TRUE(GetOriginsForType(client, kTemp).empty());
+  EXPECT_TRUE(GetOriginsForType(client, kPerm).empty());
 
   AddFakeIndexedDB(kOriginA, 1000);
-  std::set<url::Origin> origins = GetOriginsForType(&client, kTemp);
+  std::set<url::Origin> origins = GetOriginsForType(client, kTemp);
   EXPECT_EQ(origins.size(), 1ul);
   EXPECT_TRUE(origins.find(kOriginA) != origins.end());
 
-  EXPECT_TRUE(GetOriginsForType(&client, kPerm).empty());
+  EXPECT_TRUE(GetOriginsForType(client, kPerm).empty());
 }
 
 TEST_F(IndexedDBQuotaClientTest, DeleteOrigin) {
-  IndexedDBQuotaClient client(idb_context());
+  auto client = base::MakeRefCounted<IndexedDBQuotaClient>(idb_context());
 
   AddFakeIndexedDB(kOriginA, 1000);
   AddFakeIndexedDB(kOriginB, 50);
-  EXPECT_EQ(1000, GetOriginUsage(&client, kOriginA, kTemp));
-  EXPECT_EQ(50, GetOriginUsage(&client, kOriginB, kTemp));
+  EXPECT_EQ(1000, GetOriginUsage(client, kOriginA, kTemp));
+  EXPECT_EQ(50, GetOriginUsage(client, kOriginB, kTemp));
 
   blink::mojom::QuotaStatusCode delete_status =
-      DeleteOrigin(&client, kOriginA, kTemp);
+      DeleteOrigin(client, kOriginA, kTemp);
   EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk, delete_status);
-  EXPECT_EQ(0, GetOriginUsage(&client, kOriginA, kTemp));
-  EXPECT_EQ(50, GetOriginUsage(&client, kOriginB, kTemp));
+  EXPECT_EQ(0, GetOriginUsage(client, kOriginA, kTemp));
+  EXPECT_EQ(50, GetOriginUsage(client, kOriginB, kTemp));
 
   // IndexedDB only supports temporary storage; requests to delete other types
   // are no-ops, but should not fail.
-  delete_status = DeleteOrigin(&client, kOriginA, kPerm);
+  delete_status = DeleteOrigin(client, kOriginA, kPerm);
   EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk, delete_status);
 
-  delete_status = DeleteOrigin(&client, kOriginA, kSync);
+  delete_status = DeleteOrigin(client, kOriginA, kSync);
   EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk, delete_status);
 }
 

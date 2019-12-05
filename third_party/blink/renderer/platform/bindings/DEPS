@@ -8,6 +8,7 @@ include_rules = [
     # Dependencies.
     "+gin/public",
     "+third_party/blink/renderer/platform/wtf/cross_thread_functional.h",
+    "+third_party/blink/renderer/platform/crypto.h",
     "+third_party/blink/renderer/platform/heap",
     "+third_party/blink/renderer/platform/instrumentation/instance_counters.h",
     "+third_party/blink/renderer/platform/instrumentation",

@@ -135,6 +135,19 @@ expect_failure = (skip_worker) => {
   }
 };
 
+// These tests verify that any gated parts of the API are not available for a
+// deprecation trial.
+expect_failure_deprecation = (skip_worker) => {
+
+  test(() => {
+    expect_member_fails('deprecationAttribute');
+  }, 'Deprecation attribute should not exist, with trial disabled');
+
+  if (!skip_worker) {
+    fetch_tests_from_worker(new Worker('resources/deprecation-disabled-worker.js'));
+  }
+};
+
 // These tests verify that any gated parts of the API are not available for an
 // implied trial.
 expect_failure_implied = (skip_worker) => {
@@ -183,6 +196,22 @@ expect_success = () => {
     }, 'Constant should exist on interface and return value');
 
   fetch_tests_from_worker(new Worker('resources/enabled-worker.js'));
+};
+
+// These tests verify that the API functions correctly with a deprecation trial
+// that is enabled.
+expect_success_deprecation = (opt_description_suffix, skip_worker) => {
+  var description_suffix = opt_description_suffix || '';
+
+  test(() => {
+    expect_member('deprecationAttribute', (testObject) => {
+      return testObject.deprecationAttribute;
+    });
+  }, 'Deprecation attribute should exist on object and return value' + description_suffix);
+
+  if (!skip_worker) {
+    fetch_tests_from_worker(new Worker('resources/deprecation-enabled-worker.js'));
+  }
 };
 
 // These tests verify that the API functions correctly with an implied trial
@@ -301,6 +330,10 @@ expect_success_bindings = (insecure_context) => {
     // between [RuntimeEnabled] or [SecureContext] preventing exposure of
     // IDL members. These tests at least ensure IDL members are not exposed in
     // insecure contexts, regardless of reason.
+    test(() => {
+      expect_member_fails('normalAttribute');
+    }, 'Attribute should not exist in insecure context');
+
     test(() => {
         expect_member_fails('secureAttribute');
       }, 'Secure attribute should not exist');

@@ -570,6 +570,10 @@ PhysicalOffset LayoutView::OffsetForFixedPosition() const {
                            : PhysicalOffset();
 }
 
+PhysicalOffset LayoutView::PixelSnappedOffsetForFixedPosition() const {
+  return PhysicalOffset(FlooredIntPoint(OffsetForFixedPosition()));
+}
+
 void LayoutView::AbsoluteQuads(Vector<FloatQuad>& quads,
                                MapCoordinatesFlags mode) const {
   quads.push_back(LocalRectToAbsoluteQuad(

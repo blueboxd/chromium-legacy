@@ -108,7 +108,7 @@ void WebURLLoaderMock::LoadSynchronously(
 void WebURLLoaderMock::LoadAsynchronously(const WebURLRequest& request,
                                           WebURLLoaderClient* client) {
   DCHECK(client);
-  DCHECK(factory_->IsMockedURL(request.Url()));
+  DCHECK(factory_->IsMockedURL(request.Url())) << request.Url();
   client_ = client;
   factory_->LoadAsynchronouly(request, this);
 }

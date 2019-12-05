@@ -103,7 +103,7 @@ PhysicalRect BoxModelObjectPainter::AdjustRectForScrolledContent(
 
   // Adjust the paint rect to reflect a scrolled content box with borders at
   // the ends.
-  PhysicalOffset offset(this_box.ScrolledContentOffset());
+  PhysicalOffset offset(this_box.PixelSnappedScrolledContentOffset());
   scrolled_paint_rect.Move(-offset);
   LayoutRectOutsets border = AdjustedBorderOutsets(info);
   scrolled_paint_rect.SetWidth(border.Left() + this_box.ScrollWidth() +

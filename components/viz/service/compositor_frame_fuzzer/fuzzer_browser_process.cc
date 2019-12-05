@@ -141,8 +141,7 @@ CompositorFrame FuzzerBrowserProcess::BuildBrowserUICompositorFrame(
                        gfx::Rect(kRendererFrameSize),
                        SurfaceRange(base::nullopt, renderer_surface_id),
                        SK_ColorWHITE,
-                       /*stretch_content_to_fill_bounds=*/false,
-                       /*ignores_input_event=*/false);
+                       /*stretch_content_to_fill_bounds=*/false);
 
   auto* toolbar_sqs = pass->CreateAndAppendSharedQuadState();
   toolbar_sqs->SetAll(

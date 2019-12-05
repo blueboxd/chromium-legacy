@@ -117,8 +117,13 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
   if (event_data->event_type == AXEventType::VIEW_FOCUSED) {
     AccessibilityInfoDataWrapper* focused_node =
         GetFromId(event_data->source_id);
-    if (focused_node)
-      focused_id_ = event_data->source_id;
+    if (focused_node) {
+      // Sometimes Android sets focus on unfocusable node, e.g. ListView.
+      AccessibilityInfoDataWrapper* adjusted_node =
+          FindFirstFocusableNode(focused_node);
+      focused_id_ = IsValid(adjusted_node) ? adjusted_node->GetId()
+                                           : event_data->source_id;
+    }
   } else if (event_data->event_type == AXEventType::WINDOW_STATE_CHANGED) {
     // When accessibility window changed, a11y event of WINDOW_CONTENT_CHANGED
     // is fired from Android multiple times.

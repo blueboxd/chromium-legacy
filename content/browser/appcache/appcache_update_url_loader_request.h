@@ -76,6 +76,10 @@ class AppCacheUpdateJob::UpdateURLLoaderRequest
   // called.  For non-HTTP requests, this method returns -1.
   int GetResponseCode() const;
 
+  // Fetch the X-AppCache-Allowed response header and return the scope based
+  // on the header.
+  std::string GetAppCacheAllowedHeader() const;
+
   // Get the HTTP response info in its entirety.
   const net::HttpResponseInfo& GetResponseInfo() const;
 

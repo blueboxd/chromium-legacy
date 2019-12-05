@@ -88,11 +88,12 @@ information on how to deploy policy settings to Chrome.
     entry for the new policy in `tools/metrics/histograms/enums.xml` in the
     EnterprisePolicies enum. You need to check the result manually.
 10. Add a test that verifies that the policy is being enforced in
-    `chrome/browser/policy/policy_browsertest.cc`. Ideally, your test would set
-    the policy, fire up the browser, and interact with the browser just as a
-    user would do to check whether the policy takes effect. This significantly
-    helps Chrome QA which otherwise has to test your new policy for each Chrome
-    release.
+    `chrome/browser/policy/<area>_policy_browsertest.cc` (see
+    https://crbug.com/1002483 about per-area test files for policy browser
+    tests). Ideally, your test would set the policy, fire up the browser, and
+    interact with the browser just as a user would do to check whether
+    the policy takes effect. This significantly helps Chrome QA which otherwise
+    has to test your new policy for each Chrome release.
 11. Manually testing your policy.
     -   Windows: The simplest way to test is to write the registry keys manually
         to `Software\Policies\Chromium` (for Chromium builds) or

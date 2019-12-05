@@ -41,8 +41,8 @@ AffiliationBackend::~AffiliationBackend() {
 }
 
 void AffiliationBackend::Initialize(
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        url_loader_factory_info,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_url_loader_factory,
     network::NetworkConnectionTracker* network_connection_tracker,
     const base::FilePath& db_path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -56,10 +56,10 @@ void AffiliationBackend::Initialize(
   // return value here. See: https://crbug.com/478831.
   cache_.reset(new AffiliationDatabase());
   cache_->Init(db_path);
-  DCHECK(url_loader_factory_info);
+  DCHECK(pending_url_loader_factory);
   DCHECK(!url_loader_factory_);
   url_loader_factory_ = network::SharedURLLoaderFactory::Create(
-      std::move(url_loader_factory_info));
+      std::move(pending_url_loader_factory));
 }
 
 void AffiliationBackend::GetAffiliationsAndBranding(

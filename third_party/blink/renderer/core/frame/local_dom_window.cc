@@ -609,7 +609,7 @@ void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
     // the timer was scheduled.
     const SecurityOrigin* security_origin = document()->GetSecurityOrigin();
     bool valid_target =
-        intended_target_origin->IsSameSchemeHostPort(security_origin);
+        intended_target_origin->IsSameOriginWith(security_origin);
 
     if (!valid_target) {
       String message = ExceptionMessages::FailedToExecute(
@@ -640,7 +640,7 @@ void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
     const SecurityOrigin* target_security_origin =
         document()->GetSecurityOrigin();
 
-    if (!sender_security_origin->IsSameSchemeHostPort(target_security_origin)) {
+    if (!sender_security_origin->IsSameOriginWith(target_security_origin)) {
       event = MessageEvent::CreateError(event->origin(), event->source());
     }
   }
@@ -655,8 +655,7 @@ void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
     } else {
       scoped_refptr<SecurityOrigin> sender_origin =
           SecurityOrigin::Create(sender);
-      if (!sender_origin->IsSameSchemeHostPort(
-              document()->GetSecurityOrigin())) {
+      if (!sender_origin->IsSameOriginWith(document()->GetSecurityOrigin())) {
         UseCounter::Count(
             document(),
             WebFeature::kMessageEventSharedArrayBufferSameAgentCluster);

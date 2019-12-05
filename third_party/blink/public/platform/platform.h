@@ -59,7 +59,6 @@
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
 #include "third_party/blink/public/platform/web_gesture_device.h"
-#include "third_party/blink/public/platform/web_rtc_api_name.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_error.h"
@@ -107,7 +106,6 @@ class WebDedicatedWorker;
 class WebGraphicsContext3DProvider;
 class WebLocalFrame;
 class WebMediaCapabilitiesClient;
-class WebPrescientNetworking;
 class WebPublicSuffixList;
 class WebSandboxSupport;
 class WebSecurityOrigin;
@@ -286,9 +284,6 @@ class BLINK_PLATFORM_EXPORT Platform {
       scoped_refptr<network::SharedURLLoaderFactory> factory) {
     return nullptr;
   }
-
-  // May return null.
-  virtual WebPrescientNetworking* PrescientNetworking() { return nullptr; }
 
   // Returns the User-Agent string.
   virtual WebString UserAgent() { return WebString(); }

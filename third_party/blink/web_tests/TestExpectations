@@ -356,9 +356,7 @@ crbug.com/1018273 [ Mac ] paint/overflow/composited-scroll-vertical-rl.html [ Fa
 crbug.com/1025019 compositing/overflow/scroller-with-border-radius.html [ Crash ]
 crbug.com/1025019 virtual/prefer_compositing_to_lcd_text/compositing/overflow/scroller-with-border-radius.html [ Crash ]
 
-crbug.com/583097 crbug.com/633012 [ Linux ] external/wpt/svg/painting/marker-orient-001.svg [ Failure ]
-crbug.com/583097 crbug.com/633012 [ Mac ] external/wpt/svg/painting/marker-orient-001.svg [ Failure ]
-crbug.com/583097 crbug.com/633012 [ Win ] external/wpt/svg/painting/marker-orient-001.svg [ Failure ]
+crbug.com/583097 external/wpt/svg/painting/marker-orient-001.svg [ Failure ]
 
 # ====== Paint team owned tests to here ======
 
@@ -3999,27 +3997,6 @@ crbug.com/457718 external/wpt/css/css-pseudo/marker-content-011.tentative.html [
 crbug.com/457718 external/wpt/css/css-pseudo/marker-font-variant-numeric-normal.html [ Failure ]
 crbug.com/457718 external/wpt/css/css-pseudo/marker-list-style-position.html [ Failure ]
 
-crbug.com/917554 external/wpt/upgrade-insecure-requests/gen/top.meta/upgrade/fetch/cross-http-downgrade.no-redirect.https.html [ Crash ]
-crbug.com/917554 external/wpt/upgrade-insecure-requests/gen/top.meta/upgrade/fetch/same-http-downgrade.no-redirect.https.html [ Crash ]
-crbug.com/917554 external/wpt/upgrade-insecure-requests/gen/worker-classic-data.meta/upgrade/fetch/cross-http-downgrade.no-redirect.https.html [ Crash ]
-crbug.com/917554 external/wpt/upgrade-insecure-requests/gen/worker-classic-data.meta/upgrade/fetch/same-http-downgrade.no-redirect.https.html [ Crash ]
-crbug.com/917554 external/wpt/upgrade-insecure-requests/gen/iframe-blank-inherit.meta/upgrade/fetch/cross-http-downgrade.no-redirect.https.html [ Crash ]
-crbug.com/917554 external/wpt/upgrade-insecure-requests/gen/iframe-blank-inherit.meta/upgrade/fetch/same-http-downgrade.no-redirect.https.html [ Crash ]
-crbug.com/917554 external/wpt/upgrade-insecure-requests/gen/srcdoc-inherit.meta/upgrade/fetch/cross-http-downgrade.no-redirect.https.html [ Crash ]
-crbug.com/917554 external/wpt/upgrade-insecure-requests/gen/srcdoc-inherit.meta/upgrade/fetch/same-http-downgrade.no-redirect.https.html [ Crash ]
-crbug.com/917554 external/wpt/upgrade-insecure-requests/gen/top.http-rp/upgrade/fetch/cross-http-downgrade.no-redirect.https.html [ Crash Timeout ]
-crbug.com/917554 external/wpt/upgrade-insecure-requests/gen/top.http-rp/upgrade/fetch/same-http-downgrade.no-redirect.https.html [ Crash Timeout ]
-crbug.com/917554 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/top.meta/upgrade/fetch/cross-http-downgrade.no-redirect.https.html [ Crash ]
-crbug.com/917554 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/top.meta/upgrade/fetch/same-http-downgrade.no-redirect.https.html [ Crash ]
-crbug.com/917554 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/worker-classic-data.meta/upgrade/fetch/cross-http-downgrade.no-redirect.https.html [ Crash ]
-crbug.com/917554 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/worker-classic-data.meta/upgrade/fetch/same-http-downgrade.no-redirect.https.html [ Crash ]
-crbug.com/917554 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/iframe-blank-inherit.meta/upgrade/fetch/cross-http-downgrade.no-redirect.https.html [ Crash ]
-crbug.com/917554 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/iframe-blank-inherit.meta/upgrade/fetch/same-http-downgrade.no-redirect.https.html [ Crash ]
-crbug.com/917554 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/srcdoc-inherit.meta/upgrade/fetch/cross-http-downgrade.no-redirect.https.html [ Crash ]
-crbug.com/917554 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/srcdoc-inherit.meta/upgrade/fetch/same-http-downgrade.no-redirect.https.html [ Crash ]
-crbug.com/917554 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/top.http-rp/upgrade/fetch/cross-http-downgrade.no-redirect.https.html [ Crash Timeout ]
-crbug.com/917554 virtual/omt-worker-fetch/external/wpt/upgrade-insecure-requests/gen/top.http-rp/upgrade/fetch/same-http-downgrade.no-redirect.https.html [ Crash Timeout ]
-
 # iframe tests time out if the request is blocked as mixed content.
 crbug.com/1001374 external/wpt/upgrade-insecure-requests/gen/iframe-blank-inherit.meta/unset/iframe-tag/cross-http-downgrade.downgrade.https.html [ Timeout ]
 crbug.com/1001374 external/wpt/upgrade-insecure-requests/gen/iframe-blank-inherit.meta/unset/iframe-tag/cross-http-downgrade.no-redirect.https.html [ Timeout ]
@@ -6007,7 +5984,6 @@ crbug.com/993790 external/wpt/document-policy/required-policy/required-document-
 crbug.com/993790 external/wpt/document-policy/required-policy/required-document-policy.html [ Failure ]
 
 # Temporary suppression to allow devtools-frontend changes
-crbug.com/1025667 http/tests/devtools/inspector-backend-commands.js [ Pass Failure ]
 crbug.com/1029489 http/tests/devtools/elements/elements-linkify-attributes.js [ Pass Failure ]
 crbug.com/1030258 http/tests/devtools/resource-har-conversion.js [ Pass Failure ]
 

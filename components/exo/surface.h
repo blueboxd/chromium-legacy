@@ -35,7 +35,7 @@ namespace base {
 namespace trace_event {
 class TracedValue;
 }
-}
+}  // namespace base
 
 namespace gfx {
 class GpuFence;
@@ -277,6 +277,9 @@ class Surface final : public ui::PropertyHandler {
 
   // Sets the |surface_hierarchy_content_bounds_|.
   void SetSurfaceHierarchyContentBoundsForTest(const gfx::Rect& content_bounds);
+
+  // Requests that this surface should be made active (i.e. foregrounded).
+  void RequestActivation();
 
  private:
   struct State {

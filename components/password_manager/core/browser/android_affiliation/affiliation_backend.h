@@ -34,7 +34,7 @@ class Time;
 
 namespace network {
 class NetworkConnectionTracker;
-class SharedURLLoaderFactoryInfo;
+class PendingSharedURLLoaderFactory;
 }  // namespace network
 
 namespace password_manager {
@@ -70,8 +70,8 @@ class AffiliationBackend : public FacetManagerHost,
 
   // Performs the I/O-heavy part of initialization. The database used to cache
   // affiliation information locally will be opened/created at |db_path|.
-  void Initialize(std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-                      url_loader_factory_info,
+  void Initialize(std::unique_ptr<network::PendingSharedURLLoaderFactory>
+                      pending_url_loader_factory,
                   network::NetworkConnectionTracker* network_connection_tracker,
                   const base::FilePath& db_path);
 

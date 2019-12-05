@@ -1121,9 +1121,9 @@ void LocalFrameClientImpl::TransferUserActivationFrom(
 }
 
 void LocalFrameClientImpl::UpdateSubresourceFactory(
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) {
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle> pending_factory) {
   DCHECK(web_frame_->Client());
-  web_frame_->Client()->UpdateSubresourceFactory(std::move(info));
+  web_frame_->Client()->UpdateSubresourceFactory(std::move(pending_factory));
 }
 
 }  // namespace blink

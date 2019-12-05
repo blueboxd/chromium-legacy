@@ -661,7 +661,7 @@ bool ThreadableLoader::RedirectReceived(
           SecurityOrigin::Create(original_url);
       scoped_refptr<const SecurityOrigin> new_origin =
           SecurityOrigin::Create(new_url);
-      if (!original_origin->IsSameSchemeHostPort(new_origin.get()))
+      if (!original_origin->IsSameOriginWith(new_origin.get()))
         security_origin_ = SecurityOrigin::CreateUniqueOpaque();
     }
 

@@ -995,7 +995,7 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   if (resource_request.HttpMethod() != http_names::kGET &&
       resource_request.HttpMethod() != http_names::kHEAD &&
       resource_request.RequestorOrigin() &&
-      !resource_request.RequestorOrigin()->IsSameSchemeHostPort(
+      !resource_request.RequestorOrigin()->IsSameOriginWith(
           properties_->GetFetchClientSettingsObject().GetSecurityOrigin())) {
     resource_request.SetHttpOriginIfNeeded(
         properties_->GetFetchClientSettingsObject().GetSecurityOrigin());

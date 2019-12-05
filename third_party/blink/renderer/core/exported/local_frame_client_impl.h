@@ -290,7 +290,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void TransferUserActivationFrom(LocalFrame* source_frame) override;
 
   void UpdateSubresourceFactory(
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) override;
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle> pending_factory)
+      override;
 
  private:
   bool IsLocalFrameClientImpl() const override { return true; }

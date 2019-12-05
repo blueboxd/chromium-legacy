@@ -79,7 +79,8 @@ void LegacyNavigationManagerImpl::AddTransientItem(const GURL& url) {
   // See https://crbug.com/822908 for details.
   if (item) {
     DCHECK(item->GetUserAgentType() != UserAgentType::NONE);
-    GetTransientItem()->SetUserAgentType(item->GetUserAgentType());
+    GetTransientItem()->SetUserAgentType(item->GetUserAgentForInheritance(),
+                                         /*update_inherited_user_agent =*/true);
   }
 }
 

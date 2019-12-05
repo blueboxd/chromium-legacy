@@ -431,7 +431,7 @@ void ResourceDispatcher::StartSync(
     std::unique_ptr<RequestPeer> peer) {
   CheckSchemeForReferrerPolicy(*request);
 
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> factory_info =
+  std::unique_ptr<network::PendingSharedURLLoaderFactory> pending_factory =
       url_loader_factory->Clone();
   base::WaitableEvent redirect_or_response_event(
       base::WaitableEvent::ResetPolicy::MANUAL,
@@ -451,7 +451,7 @@ void ResourceDispatcher::StartSync(
       FROM_HERE,
       base::BindOnce(&SyncLoadContext::StartAsyncWithWaitableEvent,
                      std::move(request), routing_id, task_runner,
-                     traffic_annotation, std::move(factory_info),
+                     traffic_annotation, std::move(pending_factory),
                      std::move(throttles), base::Unretained(response),
                      base::Unretained(&redirect_or_response_event),
                      base::Unretained(terminate_sync_load_event_), timeout,

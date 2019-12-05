@@ -40,7 +40,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/data_url_loader_factory.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
-#include "content/browser/download/network_download_url_loader_factory_info.h"
+#include "content/browser/download/network_download_pending_url_loader_factory.h"
 #include "content/browser/file_system/file_system_url_loader_factory.h"
 #include "content/browser/loader/file_url_loader_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -222,10 +222,10 @@ base::FilePath GetTemporaryDownloadDirectory() {
 }
 #endif
 
-std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-CreateSharedURLLoaderFactoryInfo(StoragePartitionImpl* storage_partition,
-                                 RenderFrameHost* rfh,
-                                 bool is_download) {
+std::unique_ptr<network::PendingSharedURLLoaderFactory>
+CreatePendingSharedURLLoaderFactory(StoragePartitionImpl* storage_partition,
+                                    RenderFrameHost* rfh,
+                                    bool is_download) {
   mojo::PendingRemote<network::mojom::URLLoaderFactory> proxy_factory_remote;
   mojo::PendingReceiver<network::mojom::URLLoaderFactory>
       proxy_factory_receiver;
@@ -250,30 +250,31 @@ CreateSharedURLLoaderFactoryInfo(StoragePartitionImpl* storage_partition,
         rfh->GetSiteInstance()->GetBrowserContext(), rfh,
         rfh->GetProcess()->GetID(),
         ContentBrowserClient::URLLoaderFactoryType::kDownload, url::Origin(),
-        &maybe_proxy_factory_receiver, nullptr /* header_client */,
-        nullptr /* bypass_redirect_checks */, nullptr /* factory_override */);
+        base::nullopt /* navigation_id */, &maybe_proxy_factory_receiver,
+        nullptr /* header_client */, nullptr /* bypass_redirect_checks */,
+        nullptr /* factory_override */);
 
     // If anyone above indicated that they care about proxying, pass the
-    // intermediate pipe along to the NetworkDownloadURLLoaderFactoryInfo.
+    // intermediate pipe along to the NetworkDownloadPendingURLLoaderFactory.
     if (should_proxy) {
       proxy_factory_remote = std::move(maybe_proxy_factory_remote);
       proxy_factory_receiver = std::move(maybe_proxy_factory_receiver);
     }
   }
 
-  return std::make_unique<NetworkDownloadURLLoaderFactoryInfo>(
+  return std::make_unique<NetworkDownloadPendingURLLoaderFactory>(
       storage_partition->url_loader_factory_getter(),
       std::move(proxy_factory_remote), std::move(proxy_factory_receiver));
 }
 
-std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-CreateSharedURLLoaderFactoryInfoFromURLLoaderFactory(
+std::unique_ptr<network::PendingSharedURLLoaderFactory>
+CreatePendingSharedURLLoaderFactoryFromURLLoaderFactory(
     std::unique_ptr<network::mojom::URLLoaderFactory> factory) {
   mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote;
   mojo::MakeSelfOwnedReceiver(std::move(factory),
                               factory_remote.InitWithNewPipeAndPassReceiver());
 
-  return std::make_unique<network::WrapperSharedURLLoaderFactoryInfo>(
+  return std::make_unique<network::WrapperPendingSharedURLLoaderFactory>(
       std::move(factory_remote));
 }
 
@@ -1203,8 +1204,8 @@ void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
       tab_url, tab_referrer_url, std::move(url_chain), std::move(cert_status),
       std::move(response_head), std::move(response_body),
       std::move(url_loader_client_endpoints),
-      CreateSharedURLLoaderFactoryInfo(storage_partition, render_frame_host,
-                                       false));
+      CreatePendingSharedURLLoaderFactory(storage_partition, render_frame_host,
+                                          false));
 }
 
 void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
@@ -1236,13 +1237,14 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
   }
 
   DCHECK_EQ(params->url().SchemeIsBlob(), bool{blob_url_loader_factory});
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info;
+  std::unique_ptr<network::PendingSharedURLLoaderFactory>
+      pending_url_loader_factory;
   if (blob_url_loader_factory) {
     DCHECK(params->url().SchemeIsBlob());
-    url_loader_factory_info = blob_url_loader_factory->Clone();
+    pending_url_loader_factory = blob_url_loader_factory->Clone();
   } else if (params->url().SchemeIsFile()) {
-    url_loader_factory_info =
-        CreateSharedURLLoaderFactoryInfoFromURLLoaderFactory(
+    pending_url_loader_factory =
+        CreatePendingSharedURLLoaderFactoryFromURLLoaderFactory(
             std::make_unique<FileURLLoaderFactory>(
                 browser_context_->GetPath(),
                 browser_context_->GetSharedCorsOriginAccessList(),
@@ -1256,8 +1258,8 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
         CreateWebUIURLLoader(rfh, params->url().scheme(),
                              base::flat_set<std::string>()),
         url_loader_factory_remote.InitWithNewPipeAndPassReceiver());
-    url_loader_factory_info =
-        CreateSharedURLLoaderFactoryInfoFromURLLoaderFactory(
+    pending_url_loader_factory =
+        CreatePendingSharedURLLoaderFactoryFromURLLoaderFactory(
             CreateWebUIURLLoader(rfh, params->url().scheme(),
                                  base::flat_set<std::string>()));
   } else if (rfh && params->url().SchemeIsFileSystem()) {
@@ -1274,14 +1276,14 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
           browser_context_, site_url, true, &storage_domain, &partition_name,
           &in_memory);
     }
-    url_loader_factory_info =
-        CreateSharedURLLoaderFactoryInfoFromURLLoaderFactory(
+    pending_url_loader_factory =
+        CreatePendingSharedURLLoaderFactoryFromURLLoaderFactory(
             CreateFileSystemURLLoaderFactory(
                 rfh->GetProcess()->GetID(), rfh->GetFrameTreeNodeId(),
                 storage_partition->GetFileSystemContext(), storage_domain));
   } else if (params->url().SchemeIs(url::kDataScheme)) {
-    url_loader_factory_info =
-        CreateSharedURLLoaderFactoryInfoFromURLLoaderFactory(
+    pending_url_loader_factory =
+        CreatePendingSharedURLLoaderFactoryFromURLLoaderFactory(
             std::make_unique<DataURLLoaderFactory>(params->url()));
   } else if (rfh && !IsURLHandledByNetworkService(params->url())) {
     ContentBrowserClient::NonNetworkURLLoaderFactoryMap
@@ -1297,8 +1299,8 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
       DLOG(ERROR) << "No URLLoaderFactory found to download " << params->url();
       return;
     } else {
-      url_loader_factory_info =
-          CreateSharedURLLoaderFactoryInfoFromURLLoaderFactory(
+      pending_url_loader_factory =
+          CreatePendingSharedURLLoaderFactoryFromURLLoaderFactory(
               std::move(it->second));
     }
   } else {
@@ -1306,12 +1308,12 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
         static_cast<StoragePartitionImpl*>(
             BrowserContext::GetStoragePartitionForSite(browser_context_,
                                                        site_url));
-    url_loader_factory_info =
-        CreateSharedURLLoaderFactoryInfo(storage_partition, rfh, true);
+    pending_url_loader_factory =
+        CreatePendingSharedURLLoaderFactory(storage_partition, rfh, true);
   }
 
   in_progress_manager_->BeginDownload(
-      std::move(params), std::move(url_loader_factory_info), is_new_download,
+      std::move(params), std::move(pending_url_loader_factory), is_new_download,
       site_url, tab_url, tab_referrer_url);
 }
 

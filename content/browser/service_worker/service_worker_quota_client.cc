@@ -57,10 +57,6 @@ QuotaClient::ID ServiceWorkerQuotaClient::id() const {
   return QuotaClient::kServiceWorker;
 }
 
-void ServiceWorkerQuotaClient::OnQuotaManagerDestroyed() {
-  delete this;
-}
-
 void ServiceWorkerQuotaClient::GetOriginUsage(const url::Origin& origin,
                                               StorageType type,
                                               GetUsageCallback callback) {

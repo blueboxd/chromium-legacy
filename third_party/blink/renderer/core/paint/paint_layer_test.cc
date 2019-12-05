@@ -211,8 +211,9 @@ TEST_P(PaintLayerTest, CompositedScrollingNoNeedsRepaint) {
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_EQ(PhysicalOffset(0, 0),
             content_layer->LocationWithoutPositionOffset());
-  EXPECT_EQ(LayoutSize(1000, 1000),
-            content_layer->ContainingLayer()->ScrolledContentOffset());
+  EXPECT_EQ(
+      LayoutSize(1000, 1000),
+      content_layer->ContainingLayer()->PixelSnappedScrolledContentOffset());
   EXPECT_FALSE(content_layer->SelfNeedsRepaint());
   EXPECT_FALSE(scroll_layer->SelfNeedsRepaint());
   UpdateAllLifecyclePhasesForTest();
@@ -244,8 +245,9 @@ TEST_P(PaintLayerTest, NonCompositedScrollingNeedsRepaint) {
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_EQ(PhysicalOffset(0, 0),
             content_layer->LocationWithoutPositionOffset());
-  EXPECT_EQ(LayoutSize(1000, 1000),
-            content_layer->ContainingLayer()->ScrolledContentOffset());
+  EXPECT_EQ(
+      LayoutSize(1000, 1000),
+      content_layer->ContainingLayer()->PixelSnappedScrolledContentOffset());
 
   EXPECT_TRUE(scroll_layer->SelfNeedsRepaint());
   EXPECT_FALSE(content_layer->SelfNeedsRepaint());
@@ -1616,7 +1618,7 @@ TEST_P(PaintLayerTest, FloatLayerUnderInlineLayerScrolled) {
   EXPECT_EQ(PhysicalOffset(100, 100),
             span->GetLayoutObject().OffsetForInFlowPosition());
   EXPECT_EQ(LayoutSize(0, 400),
-            span->ContainingLayer()->ScrolledContentOffset());
+            span->ContainingLayer()->PixelSnappedScrolledContentOffset());
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
     EXPECT_EQ(PhysicalOffset(0, 0), floating->LocationWithoutPositionOffset());
     EXPECT_EQ(PhysicalOffset(50, 50),
@@ -1629,7 +1631,7 @@ TEST_P(PaintLayerTest, FloatLayerUnderInlineLayerScrolled) {
     EXPECT_EQ(PhysicalOffset(50, 50),
               floating->GetLayoutObject().OffsetForInFlowPosition());
     EXPECT_EQ(LayoutSize(0, 400),
-              floating->ContainingLayer()->ScrolledContentOffset());
+              floating->ContainingLayer()->PixelSnappedScrolledContentOffset());
     EXPECT_EQ(PhysicalOffset(-50, -50),
               floating->VisualOffsetFromAncestor(span));
     EXPECT_EQ(PhysicalOffset(50, -350),
@@ -1894,7 +1896,7 @@ TEST_P(PaintLayerTest, ColumnSpanLayerUnderExtraLayerScrolled) {
             spanner->GetLayoutObject().OffsetForInFlowPosition());
 
   EXPECT_EQ(LayoutSize(200, 0),
-            spanner->ContainingLayer()->ScrolledContentOffset());
+            spanner->ContainingLayer()->PixelSnappedScrolledContentOffset());
   EXPECT_EQ(PhysicalOffset(0, 0), extra_layer->LocationWithoutPositionOffset());
   EXPECT_EQ(PhysicalOffset(100, 100),
             extra_layer->GetLayoutObject().OffsetForInFlowPosition());

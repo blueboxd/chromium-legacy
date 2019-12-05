@@ -1029,6 +1029,8 @@ class WebRtcEventLogManagerTestPolicy : public WebRtcEventLogManagerTestBase {
 
     WebRtcEventLogManagerTestBase::SetUp();
   }
+
+  void TestManagedProfileAfterBeingExplicitlySet(bool explicitly_set_value);
 };
 
 class WebRtcEventLogManagerTestUploadSuppressionDisablingFlag
@@ -3991,6 +3993,35 @@ TEST_F(WebRtcEventLogManagerTestPolicy,
   EXPECT_EQ(StartRemoteLogging(key), allow_remote_logging);
 }
 #endif
+
+void WebRtcEventLogManagerTestPolicy::TestManagedProfileAfterBeingExplicitlySet(
+    bool explicitly_set_value) {
+  SetUp(true);  // Feature generally enabled (kill-switch not engaged).
+
+  auto profile = CreateBrowserContext("name", true /* is_managed_profile */,
+                                      false /* has_device_level_policies */,
+                                      base::nullopt);
+
+  auto rph = std::make_unique<MockRenderProcessHost>(profile.get());
+  const auto key = GetPeerConnectionKey(rph.get(), kLid);
+
+  ASSERT_TRUE(PeerConnectionAdded(key));
+  ASSERT_TRUE(PeerConnectionSessionIdSet(key));
+
+  profile->GetPrefs()->SetBoolean(prefs::kWebRtcEventLogCollectionAllowed,
+                                  explicitly_set_value);
+  EXPECT_EQ(StartRemoteLogging(key), explicitly_set_value);
+}
+
+TEST_F(WebRtcEventLogManagerTestPolicy,
+       ManagedProfileAllowsRemoteLoggingAfterBeingExplicitlyEnabled) {
+  TestManagedProfileAfterBeingExplicitlySet(true);
+}
+
+TEST_F(WebRtcEventLogManagerTestPolicy,
+       ManagedProfileDisallowsRemoteLoggingAfterBeingDisabled) {
+  TestManagedProfileAfterBeingExplicitlySet(false);
+}
 
 // #1 and #2 differ in the order of AddPeerConnection and the changing of
 // the pref value.

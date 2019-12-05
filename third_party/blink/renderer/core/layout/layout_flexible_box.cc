@@ -291,7 +291,7 @@ bool LayoutFlexibleBox::HitTestChildren(
 
   PhysicalOffset scrolled_offset = accumulated_offset;
   if (HasOverflowClip())
-    scrolled_offset -= PhysicalOffset(ScrolledContentOffset());
+    scrolled_offset -= PhysicalOffset(PixelSnappedScrolledContentOffset());
 
   for (LayoutBox* child = LastChildBox(); child;
        child = child->PreviousSiblingBox()) {

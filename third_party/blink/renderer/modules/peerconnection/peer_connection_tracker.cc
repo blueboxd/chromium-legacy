@@ -155,7 +155,7 @@ static String SerializeSender(const String& indent,
 }
 
 static String SerializeReceiver(const String& indent,
-                                const blink::WebRTCRtpReceiver& receiver) {
+                                const RTCRtpReceiverPlatform& receiver) {
   StringBuilder result;
   result.Append("{\n");
   // track:'id',
@@ -175,9 +175,9 @@ static String SerializeReceiver(const String& indent,
 }
 
 static String SerializeTransceiver(
-    const blink::WebRTCRtpTransceiver& transceiver) {
+    const RTCRtpTransceiverPlatform& transceiver) {
   if (transceiver.ImplementationType() ==
-      blink::WebRTCRtpTransceiverImplementationType::kFullTransceiver) {
+      RTCRtpTransceiverPlatformImplementationType::kFullTransceiver) {
     StringBuilder result;
     result.Append("{\n");
     // mid:'foo',
@@ -212,11 +212,11 @@ static String SerializeTransceiver(
     return result.ToString();
   }
   if (transceiver.ImplementationType() ==
-      blink::WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly) {
+      RTCRtpTransceiverPlatformImplementationType::kPlanBSenderOnly) {
     return SerializeSender("", *transceiver.Sender());
   }
   DCHECK(transceiver.ImplementationType() ==
-         blink::WebRTCRtpTransceiverImplementationType::kPlanBReceiverOnly);
+         RTCRtpTransceiverPlatformImplementationType::kPlanBReceiverOnly);
   return SerializeReceiver("", *transceiver.Receiver());
 }
 
@@ -886,7 +886,7 @@ void PeerConnectionTracker::TrackAddIceCandidate(
 void PeerConnectionTracker::TrackAddTransceiver(
     RTCPeerConnectionHandler* pc_handler,
     PeerConnectionTracker::TransceiverUpdatedReason reason,
-    const blink::WebRTCRtpTransceiver& transceiver,
+    const RTCRtpTransceiverPlatform& transceiver,
     size_t transceiver_index) {
   TrackTransceiver("Added", pc_handler, reason, transceiver, transceiver_index);
 }
@@ -894,7 +894,7 @@ void PeerConnectionTracker::TrackAddTransceiver(
 void PeerConnectionTracker::TrackModifyTransceiver(
     RTCPeerConnectionHandler* pc_handler,
     PeerConnectionTracker::TransceiverUpdatedReason reason,
-    const blink::WebRTCRtpTransceiver& transceiver,
+    const RTCRtpTransceiverPlatform& transceiver,
     size_t transceiver_index) {
   TrackTransceiver("Modified", pc_handler, reason, transceiver,
                    transceiver_index);
@@ -903,7 +903,7 @@ void PeerConnectionTracker::TrackModifyTransceiver(
 void PeerConnectionTracker::TrackRemoveTransceiver(
     RTCPeerConnectionHandler* pc_handler,
     PeerConnectionTracker::TransceiverUpdatedReason reason,
-    const blink::WebRTCRtpTransceiver& transceiver,
+    const RTCRtpTransceiverPlatform& transceiver,
     size_t transceiver_index) {
   TrackTransceiver("Removed", pc_handler, reason, transceiver,
                    transceiver_index);
@@ -913,7 +913,7 @@ void PeerConnectionTracker::TrackTransceiver(
     const char* callback_type_ending,
     RTCPeerConnectionHandler* pc_handler,
     PeerConnectionTracker::TransceiverUpdatedReason reason,
-    const blink::WebRTCRtpTransceiver& transceiver,
+    const RTCRtpTransceiverPlatform& transceiver,
     size_t transceiver_index) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
   int id = GetLocalIDForHandler(pc_handler);
@@ -921,10 +921,10 @@ void PeerConnectionTracker::TrackTransceiver(
     return;
   String callback_type;
   if (transceiver.ImplementationType() ==
-      blink::WebRTCRtpTransceiverImplementationType::kFullTransceiver) {
+      RTCRtpTransceiverPlatformImplementationType::kFullTransceiver) {
     callback_type = "transceiver";
   } else if (transceiver.ImplementationType() ==
-             blink::WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly) {
+             RTCRtpTransceiverPlatformImplementationType::kPlanBSenderOnly) {
     callback_type = "sender";
   } else {
     callback_type = "receiver";
@@ -936,15 +936,14 @@ void PeerConnectionTracker::TrackTransceiver(
   result.Append(GetTransceiverUpdatedReasonString(reason));
   result.Append("\n\n");
   if (transceiver.ImplementationType() ==
-      blink::WebRTCRtpTransceiverImplementationType::kFullTransceiver) {
+      RTCRtpTransceiverPlatformImplementationType::kFullTransceiver) {
     result.Append("getTransceivers()");
   } else if (transceiver.ImplementationType() ==
-             blink::WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly) {
+             RTCRtpTransceiverPlatformImplementationType::kPlanBSenderOnly) {
     result.Append("getSenders()");
   } else {
-    DCHECK_EQ(
-        transceiver.ImplementationType(),
-        blink::WebRTCRtpTransceiverImplementationType::kPlanBReceiverOnly);
+    DCHECK_EQ(transceiver.ImplementationType(),
+              RTCRtpTransceiverPlatformImplementationType::kPlanBReceiverOnly);
     result.Append("getReceivers()");
   }
   result.Append(String("[" + String::Number(transceiver_index) + "]:"));

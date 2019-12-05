@@ -85,7 +85,6 @@ class CORE_EXPORT DedicatedWorker final
   // Implements WebDedicatedWorker.
   // Called only when PlzDedicatedWorker is enabled.
   void OnWorkerHostCreated(
-      mojo::ScopedMessagePipeHandle interface_provider,
       mojo::ScopedMessagePipeHandle browser_interface_broker) override;
   void OnScriptLoadStarted() override;
   void OnScriptLoadStartFailed() override;
@@ -135,9 +134,6 @@ class CORE_EXPORT DedicatedWorker final
 
   // Used for tracking cross-debugger calls.
   v8_inspector::V8StackTraceId v8_stack_trace_id_;
-
-  mojo::PendingRemote<service_manager::mojom::blink::InterfaceProvider>
-      interface_provider_;
 
   mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>
       browser_interface_broker_;

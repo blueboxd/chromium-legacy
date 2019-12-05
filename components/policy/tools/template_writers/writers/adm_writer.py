@@ -144,7 +144,8 @@ class AdmWriter(gpo_editor_writer.GpoEditorWriter):
           value_text = 'NUMERIC ' + str(item['value'])
         else:
           value_text = '"' + item['value'] + '"'
-        string_id = self._Escape(item['name'] + '_DropDown')
+        string_id = self._Escape(policy['name'] + '_' + item['name'] +
+                                 '_DropDown')
         builder.AddLine('NAME !!%s VALUE %s' % (string_id, value_text))
         self._AddGuiString(string_id, item['caption'])
       builder.AddLine('END ITEMLIST', -1)

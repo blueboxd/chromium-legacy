@@ -72,7 +72,7 @@ void HTMLFormControlElementTest::SetUp() {
 TEST_F(HTMLFormControlElementTest, customValidationMessageTextDirection) {
   SetHtmlInnerHTML("<body><input pattern='abc' value='def' id=input></body>");
 
-  HTMLInputElement* input = ToHTMLInputElement(GetElementById("input"));
+  auto* input = To<HTMLInputElement>(GetElementById("input"));
   input->setCustomValidity(
       String::FromUTF8("\xD8\xB9\xD8\xB1\xD8\xA8\xD9\x89"));
   input->setAttribute(
@@ -122,7 +122,7 @@ TEST_F(HTMLFormControlElementTest, UpdateValidationMessageSkippedIfPrinting) {
   GetPage().SetValidationMessageClientForTesting(validation_message_client);
   Page::OrdinaryPages().insert(&GetPage());
 
-  HTMLInputElement* input = ToHTMLInputElement(GetElementById("input"));
+  auto* input = To<HTMLInputElement>(GetElementById("input"));
   ScopedPagePauser pauser;  // print() pauses the page.
   input->reportValidity();
   EXPECT_FALSE(validation_message_client->IsValidationMessageVisible(*input));

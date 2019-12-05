@@ -67,7 +67,7 @@ class MockSharedURLLoaderFactory final
   }
 
   // network::SharedURLLoaderFactory:
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
+  std::unique_ptr<network::PendingSharedURLLoaderFactory> Clone() override {
     NOTREACHED();
     return nullptr;
   }
@@ -81,11 +81,11 @@ class MockSharedURLLoaderFactory final
 };
 
 // Returns MockSharedURLLoaderFactory.
-class MockSharedURLLoaderFactoryInfo final
-    : public network::SharedURLLoaderFactoryInfo {
+class MockPendingSharedURLLoaderFactory final
+    : public network::PendingSharedURLLoaderFactory {
  public:
-  MockSharedURLLoaderFactoryInfo() = default;
-  ~MockSharedURLLoaderFactoryInfo() override = default;
+  MockPendingSharedURLLoaderFactory() = default;
+  ~MockPendingSharedURLLoaderFactory() override = default;
 
  protected:
   scoped_refptr<network::SharedURLLoaderFactory> CreateFactory() override {
@@ -93,7 +93,7 @@ class MockSharedURLLoaderFactoryInfo final
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockSharedURLLoaderFactoryInfo);
+  DISALLOW_COPY_AND_ASSIGN(MockPendingSharedURLLoaderFactory);
 };
 
 class FakeNavigationClient : public mojom::NavigationClient {
@@ -113,7 +113,7 @@ class FakeNavigationClient : public mojom::NavigationClient {
       network::mojom::URLResponseHeadPtr response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
           subresource_loader_factories,
       base::Optional<std::vector<::content::mojom::TransferrableURLLoaderPtr>>
           subresource_overrides,
@@ -133,7 +133,7 @@ class FakeNavigationClient : public mojom::NavigationClient {
       bool has_stale_copy_in_cache,
       int error_code,
       const base::Optional<std::string>& error_page_content,
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle> subresource_loaders,
       CommitFailedNavigationCallback callback) override {
     std::move(callback).Run(nullptr, nullptr);
   }
@@ -228,9 +228,10 @@ void ServiceWorkerRemoteProviderEndpoint::BindForWindow(
       navigation_client_.BindNewPipeAndPassReceiver());
   navigation_client_->CommitNavigation(
       CreateCommonNavigationParams(), CreateCommitNavigationParams(),
-      network::ResourceResponseHead(), mojo::ScopedDataPipeConsumerHandle(),
-      nullptr, nullptr, base::nullopt, nullptr, std::move(info),
-      mojo::NullRemote(), base::UnguessableToken::Create(),
+      network::mojom::URLResponseHead::New(),
+      mojo::ScopedDataPipeConsumerHandle(), nullptr, nullptr, base::nullopt,
+      nullptr, std::move(info), mojo::NullRemote(),
+      base::UnguessableToken::Create(),
       base::BindOnce(
           [](std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
                  validated_params,
@@ -340,7 +341,6 @@ CreateProviderHostForServiceWorkerContext(
 
   host->CompleteStartWorkerPreparation(
       process_id,
-      provider_info->interface_provider.InitWithNewPipeAndPassReceiver(),
       provider_info->browser_interface_broker.InitWithNewPipeAndPassReceiver());
   output_endpoint->BindForServiceWorker(std::move(provider_info));
   return host;

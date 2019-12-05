@@ -206,7 +206,7 @@ void ChromeClient::MouseDidMoveOverElement(LocalFrame& frame,
   if (!result.GetScrollbar() && result.InnerNode() &&
       result.InnerNode()->GetDocument().IsDNSPrefetchEnabled()) {
     WebPrescientNetworking* web_prescient_networking =
-        Platform::Current()->PrescientNetworking();
+        frame.PrescientNetworking();
     if (web_prescient_networking) {
       web_prescient_networking->PrefetchDNS(result.AbsoluteLinkURL().Host());
     }

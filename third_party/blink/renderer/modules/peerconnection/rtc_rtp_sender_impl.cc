@@ -506,9 +506,9 @@ RTCRtpSenderOnlyTransceiver::RTCRtpSenderOnlyTransceiver(
 
 RTCRtpSenderOnlyTransceiver::~RTCRtpSenderOnlyTransceiver() {}
 
-blink::WebRTCRtpTransceiverImplementationType
+RTCRtpTransceiverPlatformImplementationType
 RTCRtpSenderOnlyTransceiver::ImplementationType() const {
-  return blink::WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly;
+  return RTCRtpTransceiverPlatformImplementationType::kPlanBSenderOnly;
 }
 
 uintptr_t RTCRtpSenderOnlyTransceiver::Id() const {
@@ -526,8 +526,8 @@ RTCRtpSenderOnlyTransceiver::Sender() const {
   return sender_->ShallowCopy();
 }
 
-std::unique_ptr<blink::WebRTCRtpReceiver>
-RTCRtpSenderOnlyTransceiver::Receiver() const {
+std::unique_ptr<RTCRtpReceiverPlatform> RTCRtpSenderOnlyTransceiver::Receiver()
+    const {
   NOTIMPLEMENTED();
   return nullptr;
 }

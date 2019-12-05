@@ -43,12 +43,12 @@ void WeakWrapperSharedURLLoaderFactory::Clone(
   factory()->Clone(std::move(receiver));
 }
 
-std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+std::unique_ptr<network::PendingSharedURLLoaderFactory>
 WeakWrapperSharedURLLoaderFactory::Clone() {
   mojo::PendingRemote<mojom::URLLoaderFactory> factory_remote;
   if (factory())
     factory()->Clone(factory_remote.InitWithNewPipeAndPassReceiver());
-  return std::make_unique<WrapperSharedURLLoaderFactoryInfo>(
+  return std::make_unique<WrapperPendingSharedURLLoaderFactory>(
       std::move(factory_remote));
 }
 

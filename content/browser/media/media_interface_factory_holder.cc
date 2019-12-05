@@ -31,12 +31,13 @@ media::mojom::InterfaceFactory* MediaInterfaceFactoryHolder::Get() {
 }
 
 void MediaInterfaceFactoryHolder::ConnectToMediaService() {
-  media::mojom::MediaServicePtr media_service;
+  mojo::Remote<media::mojom::MediaService> media_service;
 
   // TODO(slan): Use the BrowserContext Connector instead. See crbug.com/638950.
   service_manager::Connector* connector =
       ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(service_name_, &media_service);
+  connector->BindInterface(service_name_,
+                           media_service.BindNewPipeAndPassReceiver());
 
   media_service->CreateInterfaceFactory(
       interface_factory_remote_.BindNewPipeAndPassReceiver(),

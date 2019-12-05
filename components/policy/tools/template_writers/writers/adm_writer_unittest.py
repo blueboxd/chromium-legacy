@@ -508,8 +508,8 @@ IntPolicy_Part="Caption of policy."
         PART !!EnumPolicy_Part  DROPDOWNLIST
           VALUENAME "EnumPolicy"
           ITEMLIST
-            NAME !!ProxyServerDisabled_DropDown VALUE NUMERIC 0
-            NAME !!ProxyServerAutoDetect_DropDown VALUE NUMERIC 1
+            NAME !!EnumPolicy_ProxyServerDisabled_DropDown VALUE NUMERIC 0
+            NAME !!EnumPolicy_ProxyServerAutoDetect_DropDown VALUE NUMERIC 1
           END ITEMLIST
         END PART
       END POLICY
@@ -530,8 +530,8 @@ IntPolicy_Part="Caption of policy."
         PART !!EnumPolicy_Part  DROPDOWNLIST
           VALUENAME "EnumPolicy"
           ITEMLIST
-            NAME !!ProxyServerDisabled_DropDown VALUE NUMERIC 0
-            NAME !!ProxyServerAutoDetect_DropDown VALUE NUMERIC 1
+            NAME !!EnumPolicy_ProxyServerDisabled_DropDown VALUE NUMERIC 0
+            NAME !!EnumPolicy_ProxyServerAutoDetect_DropDown VALUE NUMERIC 1
           END ITEMLIST
         END PART
       END POLICY
@@ -551,8 +551,8 @@ EnumPolicy_Explain="Description of policy.\\n\\n\
 Reference: \
 https://cloud.google.com/docs/chrome-enterprise/policies/?policy=EnumPolicy"
 EnumPolicy_Part="Caption of policy."
-ProxyServerDisabled_DropDown="Option1"
-ProxyServerAutoDetect_DropDown="Option2"
+EnumPolicy_ProxyServerDisabled_DropDown="Option1"
+EnumPolicy_ProxyServerAutoDetect_DropDown="Option2"
 ''')
     self.CompareOutputs(output, expected_output)
 
@@ -595,8 +595,8 @@ ProxyServerAutoDetect_DropDown="Option2"
         PART !!EnumPolicy_Part  DROPDOWNLIST
           VALUENAME "EnumPolicy"
           ITEMLIST
-            NAME !!ProxyServerDisabled_DropDown VALUE "one"
-            NAME !!ProxyServerAutoDetect_DropDown VALUE "two"
+            NAME !!EnumPolicy_ProxyServerDisabled_DropDown VALUE "one"
+            NAME !!EnumPolicy_ProxyServerAutoDetect_DropDown VALUE "two"
           END ITEMLIST
         END PART
       END POLICY
@@ -617,8 +617,8 @@ ProxyServerAutoDetect_DropDown="Option2"
         PART !!EnumPolicy_Part  DROPDOWNLIST
           VALUENAME "EnumPolicy"
           ITEMLIST
-            NAME !!ProxyServerDisabled_DropDown VALUE "one"
-            NAME !!ProxyServerAutoDetect_DropDown VALUE "two"
+            NAME !!EnumPolicy_ProxyServerDisabled_DropDown VALUE "one"
+            NAME !!EnumPolicy_ProxyServerAutoDetect_DropDown VALUE "two"
           END ITEMLIST
         END PART
       END POLICY
@@ -638,8 +638,8 @@ EnumPolicy_Explain="Description of policy.\\n\\n\
 Reference: \
 https://cloud.google.com/docs/chrome-enterprise/policies/?policy=EnumPolicy"
 EnumPolicy_Part="Caption of policy."
-ProxyServerDisabled_DropDown="Option1"
-ProxyServerAutoDetect_DropDown="Option2"
+EnumPolicy_ProxyServerDisabled_DropDown="Option1"
+EnumPolicy_ProxyServerAutoDetect_DropDown="Option2"
 ''')
     self.CompareOutputs(output, expected_output)
 
@@ -1136,8 +1136,8 @@ Policy2_Part="Caption of policy2."
     self.CompareOutputs(output, expected_output)
 
   def testDuplicatedStringEnumPolicy(self):
-    # Verifies that duplicated enum constants get merged, and that
-    # string constants get escaped.
+    # Verifies that duplicated enum constants with different descriptions are
+    # allowed.
     policy_json = '''
       {
         'policy_definitions': [
@@ -1181,7 +1181,7 @@ Policy2_Part="Caption of policy2."
         PART !!EnumPolicy_A_Part  DROPDOWNLIST
           VALUENAME "EnumPolicy.A"
           ITEMLIST
-            NAME !!tls1_2_DropDown VALUE "tls1.2"
+            NAME !!EnumPolicy_A_tls1_2_DropDown VALUE "tls1.2"
           END ITEMLIST
         END PART
       END POLICY
@@ -1195,7 +1195,7 @@ Policy2_Part="Caption of policy2."
         PART !!EnumPolicy_B_Part  DROPDOWNLIST
           VALUENAME "EnumPolicy.B"
           ITEMLIST
-            NAME !!tls1_2_DropDown VALUE "tls1.2"
+            NAME !!EnumPolicy_B_tls1_2_DropDown VALUE "tls1.2"
           END ITEMLIST
         END PART
       END POLICY
@@ -1222,12 +1222,13 @@ EnumPolicy_A_Explain="Description of policy A.\\n\\n\
 Reference: \
 https://cloud.google.com/docs/chrome-enterprise/policies/?policy=EnumPolicy.A"
 EnumPolicy_A_Part="Caption of policy A."
-tls1_2_DropDown="tls1.2"
+EnumPolicy_A_tls1_2_DropDown="tls1.2"
 EnumPolicy_B_Policy="Caption of policy B."
 EnumPolicy_B_Explain="Description of policy B.\\n\\n\
 Reference: \
 https://cloud.google.com/docs/chrome-enterprise/policies/?policy=EnumPolicy.B"
 EnumPolicy_B_Part="Caption of policy B."
+EnumPolicy_B_tls1_2_DropDown="tls1.2"
 ''')
     self.CompareOutputs(output, expected_output)
 

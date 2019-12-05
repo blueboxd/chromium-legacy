@@ -40,8 +40,8 @@ class ConnectivityCheckerImpl
   // Connectivity checking and initialization will run on task_runner.
   static scoped_refptr<ConnectivityCheckerImpl> Create(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          url_loader_factory_info,
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          pending_url_loader_factory,
       network::NetworkConnectionTracker* network_connection_tracker);
 
   // ConnectivityChecker implementation:
@@ -56,8 +56,8 @@ class ConnectivityCheckerImpl
 
  private:
   // Initializes ConnectivityChecker
-  void Initialize(std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-                      url_loader_factory_info);
+  void Initialize(std::unique_ptr<network::PendingSharedURLLoaderFactory>
+                      pending_url_loader_factory);
 
   // network::NetworkConnectionTracker::NetworkConnectionObserver
   // implementation:

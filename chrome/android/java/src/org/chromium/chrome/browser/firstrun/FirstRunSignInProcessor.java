@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
 import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.metrics.SigninAccessPoint;
 
 /**
  * A helper to perform all necessary steps for the automatic FRE sign in.
@@ -84,7 +85,7 @@ public final class FirstRunSignInProcessor {
         }
 
         final boolean setUp = getFirstRunFlowSignInSetup();
-        signinManager.signIn(account, new SignInCallback() {
+        signinManager.signIn(SigninAccessPoint.START_PAGE, account, new SignInCallback() {
             @Override
             public void onSignInComplete() {
                 UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(true);

@@ -64,6 +64,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerMac
       const base::string16& deleted_text,
       const base::string16& inserted_text) const;
 
+  void AnnounceActiveDescendant(BrowserAccessibility* node) const;
+
   // Keeps track of any edits that have been made by the user during a tree
   // update. Used by NSAccessibilityValueChangedNotification.
   // Maps AXNode IDs to value attribute changes.

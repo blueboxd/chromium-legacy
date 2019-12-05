@@ -4,7 +4,9 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 
+#include "third_party/blink/renderer/core/editing/inline_box_traversal.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_position.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -350,6 +352,55 @@ void NGFragmentItem::RecalcInkOverflow(
 void NGFragmentItem::SetDeltaToNextForSameLayoutObject(wtf_size_t delta) {
   DCHECK_NE(delta, 0u);
   delta_to_next_for_same_layout_object_ = delta;
+}
+
+PositionWithAffinity NGFragmentItem::PositionForPointInText(
+    const PhysicalOffset& point,
+    const NGInlineCursor& cursor) const {
+  DCHECK_EQ(Type(), kText);
+  DCHECK_EQ(cursor.CurrentItem(), this);
+  const unsigned text_offset = TextOffsetForPoint(point, cursor.Items());
+  const NGCaretPosition unadjusted_position{
+      cursor, NGCaretPositionType::kAtTextOffset, text_offset};
+  if (RuntimeEnabledFeatures::BidiCaretAffinityEnabled())
+    return unadjusted_position.ToPositionInDOMTreeWithAffinity();
+  if (text_offset > StartOffset() && text_offset < EndOffset())
+    return unadjusted_position.ToPositionInDOMTreeWithAffinity();
+  return BidiAdjustment::AdjustForHitTest(unadjusted_position)
+      .ToPositionInDOMTreeWithAffinity();
+}
+
+unsigned NGFragmentItem::TextOffsetForPoint(
+    const PhysicalOffset& point,
+    const NGFragmentItems& items) const {
+  DCHECK_EQ(Type(), kText);
+  const ComputedStyle& style = Style();
+  const LayoutUnit& point_in_line_direction =
+      style.IsHorizontalWritingMode() ? point.left : point.top;
+  if (const ShapeResultView* shape_result = TextShapeResult()) {
+    // TODO(layout-dev): Move caret logic out of ShapeResult into separate
+    // support class for code health and to avoid this copy.
+    return shape_result->CreateShapeResult()->CaretOffsetForHitTest(
+               point_in_line_direction.ToFloat(), Text(items), BreakGlyphs) +
+           StartOffset();
+  }
+
+  // Flow control fragments such as forced line break, tabulation, soft-wrap
+  // opportunities, etc. do not have ShapeResult.
+  DCHECK(IsFlowControl());
+
+  // Zero-inline-size objects such as newline always return the start offset.
+  LogicalSize size = Size().ConvertToLogical(style.GetWritingMode());
+  if (!size.inline_size)
+    return StartOffset();
+
+  // Sized objects such as tabulation returns the next offset if the given point
+  // is on the right half.
+  LayoutUnit inline_offset = IsLtr(ResolvedDirection())
+                                 ? point_in_line_direction
+                                 : size.inline_size - point_in_line_direction;
+  DCHECK_EQ(1u, TextLength());
+  return inline_offset <= size.inline_size / 2 ? StartOffset() : EndOffset();
 }
 
 NGFragmentItem::ItemsForLayoutObject NGFragmentItem::ItemsFor(

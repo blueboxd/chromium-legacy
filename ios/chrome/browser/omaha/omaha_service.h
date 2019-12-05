@@ -21,7 +21,7 @@ class DictionaryValue;
 
 namespace network {
 class SharedURLLoaderFactory;
-class SharedURLLoaderFactoryInfo;
+class PendingSharedURLLoaderFactory;
 class SimpleURLLoader;
 }  // namespace network
 
@@ -39,8 +39,8 @@ class OmahaService {
 
   // Starts the service. Also set the |URLLoaderFactory| necessary to
   // access the Omaha server. This method should only be called once.
-  static void Start(std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-                        url_loader_factory_info,
+  static void Start(std::unique_ptr<network::PendingSharedURLLoaderFactory>
+                        pending_url_loader_factory,
                     const UpgradeRecommendedCallback& callback);
 
   // Returns debug information about the omaha service.
@@ -155,7 +155,8 @@ class OmahaService {
 
   // To communicate with the Omaha server.
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info_;
+  std::unique_ptr<network::PendingSharedURLLoaderFactory>
+      pending_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // The timer that call this object back when needed.

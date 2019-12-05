@@ -509,6 +509,9 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
   web_prefs->scroll_top_left_interop_enabled =
       Java_AwSettings_getScrollTopLeftInteropEnabledLocked(env, obj);
 
+  web_prefs->allow_mixed_content_upgrades =
+      Java_AwSettings_getAllowMixedContentAutoupgradesLocked(env, obj);
+
   bool is_dark_mode;
   switch (Java_AwSettings_getForceDarkModeLocked(env, obj)) {
     case ForceDarkMode::FORCE_DARK_OFF:

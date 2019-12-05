@@ -41,17 +41,25 @@ struct CompressionTaskParams;
 class PLATFORM_EXPORT ParkableStringImpl final
     : public RefCounted<ParkableStringImpl> {
  public:
-  enum class ParkableState { kParkable, kNotParkable };
   enum class ParkingMode { kIfCompressedDataExists, kAlways };
   enum class AgeOrParkResult {
     kSuccessOrTransientFailure,
     kNonTransientFailure
   };
 
-  // Not all parkable strings can actually be parked. If |parkable| is
-  // kNotParkable, then one cannot call |Park()|, and the underlying StringImpl
-  // will not move.
-  ParkableStringImpl(scoped_refptr<StringImpl>&& impl, ParkableState parkable);
+  constexpr static size_t kDigestSize = 32;  // SHA256.
+  using SecureDigest = Vector<uint8_t, kDigestSize>;
+  // Computes a secure hash of a |string|, to be passed to |MakeParkable()|.
+  static std::unique_ptr<SecureDigest> HashString(StringImpl* string);
+
+  // Not all ParkableStringImpls are actually parkable.
+  static scoped_refptr<ParkableStringImpl> MakeNonParkable(
+      scoped_refptr<StringImpl>&& impl);
+  // |digest| is as returned by |HashString()|, hence not nullptr.
+  static scoped_refptr<ParkableStringImpl> MakeParkable(
+      scoped_refptr<StringImpl>&& impl,
+      std::unique_ptr<SecureDigest> digest);
+
   ~ParkableStringImpl();
 
   void Lock();
@@ -93,7 +101,7 @@ class PLATFORM_EXPORT ParkableStringImpl final
   // Returns true iff the string can be parked. This does not mean that the
   // string can be parked now, merely that it is eligible to be parked at some
   // point.
-  bool may_be_parked() const { return may_be_parked_; }
+  bool may_be_parked() const { return !!digest_; }
   // Returns true if the string is parked.
   bool is_parked() const;
   // Returns whether synchronous parking is possible, that is the string was
@@ -111,16 +119,22 @@ class PLATFORM_EXPORT ParkableStringImpl final
     return is_young_;
   }
 
+  // Must only be called on parkable ParkableStringImpls.
+  SecureDigest* digest() const {
+    AssertOnValidThread();
+    DCHECK(digest_);
+    return digest_.get();
+  }
+
  private:
   enum class State : uint8_t;
   enum class Status : uint8_t;
   friend class ParkableStringManager;
 
-  unsigned GetHash() const { return hash_; }
-
-  // Both functions below can be expensive (i.e. trigger unparking).
-  bool Equal(const ParkableStringImpl& rhs) const;
-  bool Equal(const scoped_refptr<StringImpl> rhs) const;
+  // |digest| is as returned by calling HashString() on |impl|, or nullptr for
+  // a non-parkable instance.
+  ParkableStringImpl(scoped_refptr<StringImpl>&& impl,
+                     std::unique_ptr<SecureDigest> digest);
 
 #if defined(ADDRESS_SANITIZER)
   // See |CompressInBackground()|. Doesn't make the string young.
@@ -136,7 +150,6 @@ class PLATFORM_EXPORT ParkableStringImpl final
   void ParkInternal(ParkingMode mode);
   void Unpark();
   String UnparkInternal() const;
-  String ToStringTransient() const;
   // Called on the main thread after compression is done.
   // |params| is the same as the one passed to |CompressInBackground()|,
   // |compressed| is the compressed data, nullptr if compression failed.
@@ -162,6 +175,7 @@ class PLATFORM_EXPORT ParkableStringImpl final
   State state_;
   String string_;
   std::unique_ptr<Vector<uint8_t>> compressed_;
+  const std::unique_ptr<SecureDigest> digest_;
 
   // A string can either be "young" or "old". It starts young, and transitions
   // are:
@@ -173,11 +187,8 @@ class PLATFORM_EXPORT ParkableStringImpl final
   // bitfield with a mutex, but this is correct here, as the other members are
   // const (and never change).
   bool is_young_ : 1 GUARDED_BY(mutex_);
-
-  const bool may_be_parked_ : 1;
   const bool is_8bit_ : 1;
   const unsigned length_;
-  const wtf_size_t hash_;
 
 #if DCHECK_IS_ON()
   const base::PlatformThreadId owning_thread_;

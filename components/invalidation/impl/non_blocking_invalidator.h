@@ -30,7 +30,7 @@ class SingleThreadTaskRunner;
 
 namespace network {
 class NetworkConnectionTracker;
-class SharedURLLoaderFactoryInfo;
+class PendingSharedURLLoaderFactory;
 }  // namespace network
 
 namespace syncer {
@@ -78,8 +78,8 @@ class INVALIDATION_EXPORT NonBlockingInvalidator
   static NetworkChannelCreator MakePushClientChannelCreator(
       const notifier::NotifierOptions& notifier_options);
   static NetworkChannelCreator MakeGCMNetworkChannelCreator(
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          url_loader_factory_info,
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          pending_url_loader_factory,
       network::NetworkConnectionTracker* network_connection_tracker,
       std::unique_ptr<GCMNetworkChannelDelegate> delegate);
 

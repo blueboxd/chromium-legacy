@@ -19,10 +19,10 @@ NetworkHintsHandlerImpl::~NetworkHintsHandlerImpl() = default;
 
 // static
 void NetworkHintsHandlerImpl::Create(
-    int32_t render_process_id,
+    content::RenderFrameHost* frame_host,
     mojo::PendingReceiver<network_hints::mojom::NetworkHintsHandler> receiver) {
   mojo::MakeSelfOwnedReceiver(
-      base::WrapUnique(new NetworkHintsHandlerImpl(render_process_id)),
+      base::WrapUnique(new NetworkHintsHandlerImpl(frame_host)),
       std::move(receiver));
 }
 
@@ -33,8 +33,7 @@ void NetworkHintsHandlerImpl::PrefetchDNS(
   preconnect_manager_->StartPreresolveHosts(names);
 }
 
-void NetworkHintsHandlerImpl::Preconnect(int32_t render_frame_id,
-                                         const GURL& url,
+void NetworkHintsHandlerImpl::Preconnect(const GURL& url,
                                          bool allow_credentials) {
   if (!preconnect_manager_)
     return;
@@ -48,7 +47,7 @@ void NetworkHintsHandlerImpl::Preconnect(int32_t render_frame_id,
   // will result in at least some cross-site information leakage.
 
   content::RenderFrameHost* render_frame_host =
-      content::RenderFrameHost::FromID(render_process_id_, render_frame_id);
+      content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
   if (!render_frame_host)
     return;
 
@@ -56,11 +55,12 @@ void NetworkHintsHandlerImpl::Preconnect(int32_t render_frame_id,
       url, allow_credentials, render_frame_host->GetNetworkIsolationKey());
 }
 
-NetworkHintsHandlerImpl::NetworkHintsHandlerImpl(int32_t render_process_id)
-    : render_process_id_(render_process_id) {
+NetworkHintsHandlerImpl::NetworkHintsHandlerImpl(
+    content::RenderFrameHost* frame_host)
+    : render_process_id_(frame_host->GetProcess()->GetID()),
+      render_frame_id_(frame_host->GetRoutingID()) {
   // Get the PreconnectManager for this process.
-  auto* render_process_host =
-      content::RenderProcessHost::FromID(render_process_id);
+  auto* render_process_host = frame_host->GetProcess();
   auto* profile =
       Profile::FromBrowserContext(render_process_host->GetBrowserContext());
   auto* loading_predictor =

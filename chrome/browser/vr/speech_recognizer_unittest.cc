@@ -76,7 +76,7 @@ class FakeSharedURLLoaderFactory : public network::SharedURLLoaderFactory {
   }
 
   // network::SharedURLLoaderFactory:
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
+  std::unique_ptr<network::PendingSharedURLLoaderFactory> Clone() override {
     NOTREACHED();
     return nullptr;
   }
@@ -92,22 +92,22 @@ class FakeSharedURLLoaderFactory : public network::SharedURLLoaderFactory {
 };
 
 // Returns a SharedURLLoaderFactory that hangs.
-class FakeSharedURLLoaderFactoryInfo
-    : public network::SharedURLLoaderFactoryInfo {
+class FakePendingSharedURLLoaderFactory
+    : public network::PendingSharedURLLoaderFactory {
  public:
-  FakeSharedURLLoaderFactoryInfo() {}
-  ~FakeSharedURLLoaderFactoryInfo() override {}
+  FakePendingSharedURLLoaderFactory() {}
+  ~FakePendingSharedURLLoaderFactory() override {}
 
  protected:
   friend class network::SharedURLLoaderFactory;
 
-  // network::SharedURLLoaderFactoryInfo:
+  // network::PendingSharedURLLoaderFactory:
   scoped_refptr<network::SharedURLLoaderFactory> CreateFactory() override {
     return base::MakeRefCounted<FakeSharedURLLoaderFactory>();
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FakeSharedURLLoaderFactoryInfo);
+  DISALLOW_COPY_AND_ASSIGN(FakePendingSharedURLLoaderFactory);
 };
 
 class FakeSpeechRecognitionManager : public content::SpeechRecognitionManager {
@@ -264,7 +264,7 @@ class SpeechRecognizerTest : public testing::Test {
         speech_recognizer_(new SpeechRecognizer(
             delegate_.get(),
             ui_.get(),
-            std::make_unique<FakeSharedURLLoaderFactoryInfo>(),
+            std::make_unique<FakePendingSharedURLLoaderFactory>(),
             "en" /* accept_language */,
             "en" /* locale */)) {
     SpeechRecognizer::SetManagerForTest(fake_speech_recognition_manager_.get());

@@ -175,14 +175,14 @@ std::unique_ptr<SyncNetworkChannel> SyncNetworkChannel::CreatePushClientChannel(
 }
 
 std::unique_ptr<SyncNetworkChannel> SyncNetworkChannel::CreateGCMNetworkChannel(
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        url_loader_factory_info,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_url_loader_factory,
     network::NetworkConnectionTracker* network_connection_tracker,
     std::unique_ptr<GCMNetworkChannelDelegate> delegate) {
-  DCHECK(url_loader_factory_info);
+  DCHECK(pending_url_loader_factory);
   return std::make_unique<GCMNetworkChannel>(
       network::SharedURLLoaderFactory::Create(
-          std::move(url_loader_factory_info)),
+          std::move(pending_url_loader_factory)),
       network_connection_tracker, std::move(delegate));
 }
 

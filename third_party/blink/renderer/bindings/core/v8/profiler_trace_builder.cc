@@ -176,8 +176,8 @@ bool ProfilerTraceBuilder::ShouldIncludeStackFrame(
 
   auto origin = SecurityOrigin::Create(script_url);
   // TODO(acomminos): Consider easing this check based on optional headers.
-  bool allowed = script_shared_cross_origin ||
-                 origin->IsSameSchemeHostPort(allowed_origin_);
+  bool allowed =
+      script_shared_cross_origin || origin->IsSameOriginWith(allowed_origin_);
   script_same_origin_cache_.Set(script_id, allowed);
   return allowed;
 }

@@ -304,6 +304,8 @@ PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
         password_dropdown_->GetPreferredSize().height(), this);
 #endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
   }
+
+  DialogDelegate::SetFootnoteView(CreateFooterView());
 }
 
 views::View* PasswordPendingView::GetUsernameTextfieldForTest() const {
@@ -313,8 +315,6 @@ views::View* PasswordPendingView::GetUsernameTextfieldForTest() const {
 PasswordPendingView::~PasswordPendingView() = default;
 
 bool PasswordPendingView::Accept() {
-  if (sign_in_promo_)
-    return sign_in_promo_->Accept();
   UpdateUsernameAndPasswordInModel();
   model()->OnSaveClicked();
   if (model()->ReplaceToShowPromotionIfNeeded()) {
@@ -325,8 +325,6 @@ bool PasswordPendingView::Accept() {
 }
 
 bool PasswordPendingView::Cancel() {
-  if (sign_in_promo_)
-    return sign_in_promo_->Cancel();
   UpdateUsernameAndPasswordInModel();
   if (is_update_bubble_) {
     model()->OnNopeUpdateClicked();
@@ -370,18 +368,6 @@ void PasswordPendingView::OnContentChanged(
   }
 }
 
-std::unique_ptr<views::View> PasswordPendingView::CreateFootnoteView() {
-  if (sign_in_promo_ || !model()->ShouldShowFooter())
-    return nullptr;
-  auto label = std::make_unique<views::Label>(
-      l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_FOOTER),
-      ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
-      views::style::STYLE_SECONDARY);
-  label->SetMultiLine(true);
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  return label;
-}
-
 gfx::Size PasswordPendingView::CalculatePreferredSize() const {
   const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
                         DISTANCE_BUBBLE_PREFERRED_WIDTH) -
@@ -403,18 +389,13 @@ views::View* PasswordPendingView::GetInitiallyFocusedView() {
 
 int PasswordPendingView::GetDialogButtons() const {
   if (sign_in_promo_)
-    return sign_in_promo_->GetDialogButtons();
+    return ui::DIALOG_BUTTON_NONE;
 
   return PasswordBubbleViewBase::GetDialogButtons();
 }
 
 base::string16 PasswordPendingView::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  // TODO(pbos): Generalize the different promotion classes to not store and
-  // ask each different possible promo.
-  if (sign_in_promo_)
-    return sign_in_promo_->GetDialogButtonLabel(button);
-
   int message = 0;
   if (button == ui::DIALOG_BUTTON_OK) {
     message = model()->IsCurrentStateUpdate()
@@ -483,6 +464,9 @@ void PasswordPendingView::UpdateUsernameAndPasswordInModel() {
 }
 
 void PasswordPendingView::ReplaceWithPromo() {
+#if defined(OS_CHROMEOS)
+  NOTREACHED();
+#else
   RemoveAllChildViews(true);
   username_dropdown_ = nullptr;
   password_dropdown_ = nullptr;
@@ -504,4 +488,17 @@ void PasswordPendingView::ReplaceWithPromo() {
   DialogModelChanged();
 
   SizeToContents();
+#endif  // defined(OS_CHROMEOS)
+}
+
+std::unique_ptr<views::View> PasswordPendingView::CreateFooterView() {
+  if (!model()->ShouldShowFooter())
+    return nullptr;
+  auto label = std::make_unique<views::Label>(
+      l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_FOOTER),
+      ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
+      views::style::STYLE_SECONDARY);
+  label->SetMultiLine(true);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  return label;
 }

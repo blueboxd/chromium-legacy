@@ -55,7 +55,29 @@ class ASH_EXPORT LoginBaseBubbleView : public views::View,
   void Layout() override;
   void OnBlur() override;
 
+ protected:
+  enum class PositioningStrategy {
+    // Try to show bubble on the right side of the anchor, if there is no space
+    // show on the left side.
+    kShowOnRightSideOrLeftSide,
+    // Try to show bubble on the left side of the anchor, if there is no space
+    // show on the right side.
+    kShowOnLeftSideOrRightSide,
+  };
+  // Returns calculated position using default positioning strategies.
+  gfx::Point CalculatePositionUsingDefaultStrategy(PositioningStrategy strategy,
+                                                   int horizontal_padding,
+                                                   int vertical_padding) const;
+
+  // Return area where bubble could be shown in.
+  gfx::Rect GetBoundsAvailableToShowBubble() const;
+
  private:
+  // Return bounds of the anchors root view. This bounds excludes virtual
+  // keyboard.
+  gfx::Rect GetRootViewBounds() const;
+  // Return bounds of working area. This bounds excludes shelf.
+  gfx::Rect GetWorkArea() const;
   void ScheduleAnimation(bool visible);
 
   views::View* anchor_view_;

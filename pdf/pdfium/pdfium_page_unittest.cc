@@ -33,6 +33,28 @@ TEST(PDFiumPageHelperDeathTest, ToPDFiumRotation) {
 #endif
 }
 
+void CompareTextRuns(
+    const pp::PDF::PrivateAccessibilityTextRunInfo& expected_text_run,
+    const pp::PDF::PrivateAccessibilityTextRunInfo actual_text_run) {
+  EXPECT_EQ(expected_text_run.len, actual_text_run.len);
+  CompareRect(expected_text_run.bounds, actual_text_run.bounds);
+  EXPECT_EQ(expected_text_run.direction, actual_text_run.direction);
+
+  const pp::PDF::PrivateAccessibilityTextStyleInfo& expected_style =
+      expected_text_run.style;
+  const pp::PDF::PrivateAccessibilityTextStyleInfo& actual_style =
+      actual_text_run.style;
+
+  EXPECT_EQ(expected_style.font_name, actual_style.font_name);
+  EXPECT_EQ(expected_style.font_weight, actual_style.font_weight);
+  EXPECT_EQ(expected_style.render_mode, actual_style.render_mode);
+  EXPECT_EQ(expected_style.font_size, actual_style.font_size);
+  EXPECT_EQ(expected_style.fill_color, actual_style.fill_color);
+  EXPECT_EQ(expected_style.stroke_color, actual_style.stroke_color);
+  EXPECT_EQ(expected_style.is_italic, actual_style.is_italic);
+  EXPECT_EQ(expected_style.is_bold, actual_style.is_bold);
+}
+
 }  // namespace
 
 using PDFiumPageTest = PDFiumTestBase;
@@ -264,23 +286,9 @@ TEST_F(PDFiumPageTextTest, GetTextRunInfo) {
   for (const auto& expected_text_run : expected_text_runs) {
     text_run_info_result = engine->GetTextRunInfo(0, current_char_index);
     ASSERT_TRUE(text_run_info_result.has_value());
-    const auto& text_run_info = text_run_info_result.value();
-    EXPECT_EQ(expected_text_run.len, text_run_info.len);
-    CompareRect(expected_text_run.bounds, text_run_info.bounds);
-    const pp::PDF::PrivateAccessibilityTextStyleInfo& expected_style =
-        expected_text_run.style;
-    const pp::PDF::PrivateAccessibilityTextStyleInfo& text_run_info_style =
-        text_run_info.style;
-    EXPECT_EQ(expected_text_run.direction, text_run_info.direction);
-    EXPECT_EQ(expected_style.font_name, text_run_info_style.font_name);
-    EXPECT_EQ(expected_style.font_weight, text_run_info_style.font_weight);
-    EXPECT_EQ(expected_style.render_mode, text_run_info_style.render_mode);
-    EXPECT_EQ(expected_style.font_size, text_run_info_style.font_size);
-    EXPECT_EQ(expected_style.fill_color, text_run_info_style.fill_color);
-    EXPECT_EQ(expected_style.stroke_color, text_run_info_style.stroke_color);
-    EXPECT_EQ(expected_style.is_italic, text_run_info_style.is_italic);
-    EXPECT_EQ(expected_text_run.style.is_bold, text_run_info_style.is_bold);
-    current_char_index += text_run_info.len;
+    const auto& actual_text_run = text_run_info_result.value();
+    CompareTextRuns(expected_text_run, actual_text_run);
+    current_char_index += actual_text_run.len;
   }
 
   // Test char index outside char range returns nullopt
@@ -332,21 +340,9 @@ TEST_F(PDFiumPageTextTest, TestHighlightTextRunInfo) {
     base::Optional<pp::PDF::PrivateAccessibilityTextRunInfo>
         text_run_info_result = engine->GetTextRunInfo(0, current_char_index);
     ASSERT_TRUE(text_run_info_result.has_value());
-    const auto& text_run_info = text_run_info_result.value();
-
-    EXPECT_EQ(expected_text_run.len, text_run_info.len);
-    CompareRect(expected_text_run.bounds, text_run_info.bounds);
-    EXPECT_EQ(expected_text_run.direction, text_run_info.direction);
-    EXPECT_EQ(kExpectedStyle.font_name, text_run_info.style.font_name);
-    EXPECT_EQ(kExpectedStyle.font_weight, text_run_info.style.font_weight);
-    EXPECT_EQ(kExpectedStyle.render_mode, text_run_info.style.render_mode);
-    EXPECT_EQ(kExpectedStyle.font_size, text_run_info.style.font_size);
-    EXPECT_EQ(kExpectedStyle.fill_color, text_run_info.style.fill_color);
-    EXPECT_EQ(kExpectedStyle.stroke_color, text_run_info.style.stroke_color);
-    EXPECT_EQ(kExpectedStyle.is_italic, text_run_info.style.is_italic);
-    EXPECT_EQ(kExpectedStyle.is_bold, text_run_info.style.is_bold);
-
-    current_char_index += text_run_info.len;
+    const auto& actual_text_run = text_run_info_result.value();
+    CompareTextRuns(expected_text_run, actual_text_run);
+    current_char_index += actual_text_run.len;
   }
 }
 

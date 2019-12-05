@@ -11,6 +11,9 @@
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_request.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/content_security_policy/csp_context.h"
 #include "content/common/content_security_policy/csp_source_list.h"
 #include "content/public/browser/browser_thread.h"
@@ -136,9 +139,6 @@ std::unique_ptr<NavigationThrottle> AncestorThrottle::MaybeCreateThrottleFor(
     NavigationHandle* handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (handle->IsInMainFrame())
-    return nullptr;
-
   return std::unique_ptr<NavigationThrottle>(new AncestorThrottle(handle));
 }
 
@@ -172,9 +172,17 @@ AncestorThrottle::WillProcessResponse() {
 NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
     LoggingDisposition logging,
     bool is_response_check) {
-  DCHECK(!navigation_handle()->IsInMainFrame());
-
   NavigationRequest* request = NavigationRequest::From(navigation_handle());
+
+  bool is_portal = request->frame_tree_node()
+                       ->current_frame_host()
+                       ->GetRenderViewHost()
+                       ->GetDelegate()
+                       ->IsPortal();
+  if (request->IsInMainFrame() && !is_portal) {
+    // Allow main frame navigations.
+    return NavigationThrottle::PROCEED;
+  }
 
   // Downloads should be exempt from checking for X-Frame-Options, so
   // proceed if this is a download.
@@ -205,8 +213,13 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
           policies);
       csp_context.SetSelf(url::Origin::Create(navigation_handle()->GetURL()));
 
-      // Check CSP frame-ancestor against every parent.
-      RenderFrameHostImpl* parent = request->GetParentFrame();
+      // Check CSP frame-ancestors against every parent.
+      // We enforce frame-ancestors in the outer delegate for portals, but not
+      // for other uses of inner/outer WebContents (GuestViews).
+      RenderFrameHostImpl* parent =
+          is_portal
+              ? request->GetRenderFrameHost()->ParentOrOuterDelegateFrame()
+              : request->GetRenderFrameHost()->GetParent();
       while (parent) {
         if (!csp_context.IsAllowedByCsp(
                 CSPDirective::FrameAncestors,
@@ -217,7 +230,11 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
                 navigation_handle()->IsFormSubmission())) {
           return NavigationThrottle::BLOCK_RESPONSE;
         }
-        parent = parent->GetParent();
+        if (parent->GetRenderViewHost()->GetDelegate()->IsPortal()) {
+          parent = parent->ParentOrOuterDelegateFrame();
+        } else {
+          parent = parent->GetParent();
+        }
       }
       return NavigationThrottle::PROCEED;
     }

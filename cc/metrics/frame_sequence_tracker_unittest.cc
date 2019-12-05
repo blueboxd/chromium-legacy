@@ -176,6 +176,24 @@ class FrameSequenceTrackerTest : public testing::Test {
     return collection_.removal_trackers_.size();
   }
 
+  uint64_t BeginImplFrameDataPreviousSequence() const {
+    return tracker_->begin_impl_frame_data_.previous_sequence;
+  }
+  uint64_t BeginMainFrameDataPreviousSequence() const {
+    return tracker_->begin_main_frame_data_.previous_sequence;
+  }
+
+  base::flat_set<uint32_t> IgnoredFrameTokens() const {
+    return tracker_->ignored_frame_tokens_;
+  }
+
+  FrameSequenceTracker::ThroughputData ImplThroughput() const {
+    return tracker_->impl_throughput_;
+  }
+  FrameSequenceTracker::ThroughputData MainThroughput() const {
+    return tracker_->main_throughput_;
+  }
+
  protected:
   uint32_t number_of_frames_checkerboarded() const {
     return tracker_->checkerboarding_.frames_checkerboarded;
@@ -363,6 +381,30 @@ TEST_F(FrameSequenceTrackerTest, ReportMetricsAtFixedInterval) {
   collection_.NotifyBeginImplFrame(args);
   EXPECT_EQ(NumberOfTrackers(), 1u);
   EXPECT_EQ(NumberOfRemovalTrackers(), 1u);
+}
+
+TEST_F(FrameSequenceTrackerTest, ReportWithoutBeginImplFrame) {
+  const uint64_t source = 1;
+  uint64_t sequence = 0;
+
+  auto args = CreateBeginFrameArgs(source, ++sequence);
+  collection_.NotifyBeginMainFrame(args);
+
+  EXPECT_EQ(BeginImplFrameDataPreviousSequence(), 0u);
+  // Call to ReportBeginMainFrame should early exit.
+  EXPECT_EQ(BeginMainFrameDataPreviousSequence(), 0u);
+
+  uint32_t frame_token = NextFrameToken();
+  collection_.NotifySubmitFrame(frame_token, false,
+                                viz::BeginFrameAck(args, true), args);
+
+  // Call to ReportSubmitFrame should early exit.
+  EXPECT_TRUE(IgnoredFrameTokens().contains(frame_token));
+
+  gfx::PresentationFeedback feedback;
+  collection_.NotifyFramePresented(frame_token, feedback);
+  EXPECT_EQ(ImplThroughput().frames_produced, 0u);
+  EXPECT_EQ(MainThroughput().frames_produced, 0u);
 }
 
 }  // namespace cc

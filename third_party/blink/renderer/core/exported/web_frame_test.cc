@@ -6999,8 +6999,7 @@ TEST_F(WebFrameTest, SiteForCookiesForRedirect) {
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "first_party_redirect.html");
-  EXPECT_TRUE(
-      SecurityOrigin::AreSameSchemeHostPort(web_view_helper.GetWebView()
+  EXPECT_TRUE(SecurityOrigin::AreSameOrigin(web_view_helper.GetWebView()
                                                 ->MainFrameImpl()
                                                 ->GetDocument()
                                                 .SiteForCookies(),
@@ -11917,8 +11916,7 @@ TEST_F(WebFrameSimTest, ScrollFocusedSelectionIntoView) {
   Compositor().BeginFrame();
   WebView().AdvanceFocus(false);
 
-  HTMLInputElement* input =
-      ToHTMLInputElement(GetDocument().getElementById("target"));
+  auto* input = To<HTMLInputElement>(GetDocument().getElementById("target"));
   input->select();
 
   // Simulate the keyboard being shown and resizing the widget. Cause a scroll

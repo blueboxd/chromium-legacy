@@ -5,8 +5,8 @@
 
 #include "base/logging.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
-#include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_receiver_platform.h"
 
 using testing::_;
 
@@ -37,7 +37,7 @@ void MockWebRTCPeerConnectionHandlerClient::didGenerateICECandidateWorker(
 }
 
 void MockWebRTCPeerConnectionHandlerClient::didAddReceiverWorker(
-    std::unique_ptr<blink::WebRTCRtpReceiver>* web_rtp_receiver) {
+    std::unique_ptr<RTCRtpReceiverPlatform>* web_rtp_receiver) {
   blink::WebVector<blink::WebString> stream_ids =
       (*web_rtp_receiver)->StreamIds();
   DCHECK_EQ(1u, stream_ids.size());
@@ -45,7 +45,7 @@ void MockWebRTCPeerConnectionHandlerClient::didAddReceiverWorker(
 }
 
 void MockWebRTCPeerConnectionHandlerClient::didRemoveReceiverWorker(
-    std::unique_ptr<blink::WebRTCRtpReceiver>* web_rtp_receiver) {
+    std::unique_ptr<RTCRtpReceiverPlatform>* web_rtp_receiver) {
   remote_stream_id_ = blink::WebString();
 }
 

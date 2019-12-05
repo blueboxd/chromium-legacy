@@ -13,8 +13,21 @@ settings.MAX_SIGNIN_PROMO_IMPRESSION = 10;
 
 Polymer({
   is: 'settings-sync-account-control',
-  behaviors: [WebUIListenerBehavior],
+
+  behaviors: [
+    WebUIListenerBehavior,
+    PrefsBehavior,
+  ],
+
   properties: {
+    /**
+     * Preferences state.
+     */
+    prefs: {
+      type: Object,
+      notify: true,
+    },
+
     /**
      * The current sync status, supplied by parent element.
      * @type {!settings.SyncStatus}
@@ -294,6 +307,22 @@ Polymer({
       return syncPasswordsOnlyErrorLabel;
     }
     return syncErrorLabel;
+  },
+
+  /**
+   * Determines if the sync button should be disabled in response to
+   * either a first setup flow or chrome sign-in being disabled.
+   * @return {boolean}
+   * @private
+   */
+  shouldDisableSyncButton_: function() {
+    if (this.hideButtons ||
+        !loadTimeData.getBoolean('privacySettingsRedesignEnabled')) {
+      // Maintain existing behaviour if hidden or flag disabled
+      return this.computeShowSetupButtons_();
+    }
+    return !!this.syncStatus.firstSetupInProgress ||
+        !this.getPref('signin.allowed_on_next_startup').value;
   },
 
   /**

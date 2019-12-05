@@ -27,11 +27,10 @@ class IndexedDBQuotaClient : public storage::QuotaClient {
  public:
   CONTENT_EXPORT explicit IndexedDBQuotaClient(
       IndexedDBContextImpl* indexed_db_context);
-  CONTENT_EXPORT ~IndexedDBQuotaClient() override;
 
   // QuotaClient method overrides
   ID id() const override;
-  void OnQuotaManagerDestroyed() override;
+  void OnQuotaManagerDestroyed() override {}
   CONTENT_EXPORT void GetOriginUsage(const url::Origin& origin,
                                      blink::mojom::StorageType type,
                                      GetUsageCallback callback) override;
@@ -46,6 +45,8 @@ class IndexedDBQuotaClient : public storage::QuotaClient {
   bool DoesSupport(blink::mojom::StorageType type) const override;
 
  private:
+  CONTENT_EXPORT ~IndexedDBQuotaClient() override;
+
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBQuotaClient);

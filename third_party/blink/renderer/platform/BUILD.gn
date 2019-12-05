@@ -532,8 +532,6 @@ jumbo_component("platform") {
     "exported/web_prerendering_support.cc",
     "exported/web_resource_timing_info.cc",
     "exported/web_rtc_peer_connection_handler_client.cc",
-    "exported/web_rtc_rtp_receiver.cc",
-    "exported/web_rtc_rtp_transceiver.cc",
     "exported/web_rtc_stats.cc",
     "exported/web_runtime_features.cc",
     "exported/web_security_origin.cc",
@@ -1227,7 +1225,9 @@ jumbo_component("platform") {
     "mojo/bluetooth_mojom_traits.cc",
     "mojo/bluetooth_mojom_traits.h",
     "mojo/fetch_api_request_headers_mojom_traits.h",
+    "mojo/kurl_mojom_traits.h",
     "mojo/mojo_helper.h",
+    "mojo/security_origin_mojom_traits.h",
     "mojo/string16_mojom_traits.cc",
     "mojo/string16_mojom_traits.h",
     "p2p/empty_network_manager.cc",
@@ -1257,6 +1257,7 @@ jumbo_component("platform") {
     "peerconnection/audio_codec_factory.cc",
     "peerconnection/audio_codec_factory.h",
     "peerconnection/rtc_answer_options_platform.h",
+    "peerconnection/rtc_api_name.h",
     "peerconnection/rtc_dtmf_sender_handler.cc",
     "peerconnection/rtc_dtmf_sender_handler.h",
     "peerconnection/rtc_event_log_output_sink.h",
@@ -1266,10 +1267,14 @@ jumbo_component("platform") {
     "peerconnection/rtc_ice_candidate_platform.h",
     "peerconnection/rtc_legacy_stats.h",
     "peerconnection/rtc_offer_options_platform.h",
+    "peerconnection/rtc_rtp_receiver_platform.cc",
+    "peerconnection/rtc_rtp_receiver_platform.h",
     "peerconnection/rtc_rtp_sender_platform.cc",
     "peerconnection/rtc_rtp_sender_platform.h",
     "peerconnection/rtc_rtp_source.cc",
     "peerconnection/rtc_rtp_source.h",
+    "peerconnection/rtc_rtp_transceiver_platform.cc",
+    "peerconnection/rtc_rtp_transceiver_platform.h",
     "peerconnection/rtc_session_description_platform.cc",
     "peerconnection/rtc_session_description_platform.h",
     "peerconnection/rtc_session_description_request.h",
@@ -1594,6 +1599,20 @@ jumbo_component("platform") {
 
   configs -= [ "//build/config/compiler:default_symbols" ]
   configs += blink_symbols_config
+}
+
+source_set("geometry_mojom_traits") {
+  visibility += [ "//ui/gfx/geometry/mojom:mojom_blink" ]
+
+  sources = [
+    "mojo/geometry_mojom_traits.cc",
+    "mojo/geometry_mojom_traits.h",
+  ]
+
+  public_deps = [
+    "//third_party/blink/public:blink_headers",
+    "//ui/gfx/geometry/mojom:mojom_blink_headers",
+  ]
 }
 
 jumbo_static_library("test_support") {

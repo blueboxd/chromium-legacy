@@ -149,7 +149,7 @@ TextControlInnerEditorElement::CreateInnerEditorStyle() const {
           : EUserModify::kReadWritePlaintextOnly);
   text_block_style->SetDisplay(EDisplay::kBlock);
 
-  if (!IsHTMLTextAreaElement(host)) {
+  if (!IsA<HTMLTextAreaElement>(host)) {
     text_block_style->SetWhiteSpace(EWhiteSpace::kPre);
     text_block_style->SetOverflowWrap(EOverflowWrap::kNormal);
     text_block_style->SetTextOverflow(

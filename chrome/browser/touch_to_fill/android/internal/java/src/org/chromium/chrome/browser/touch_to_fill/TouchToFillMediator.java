@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.touch_to_fill;
 
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.CREDENTIAL;
-import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FAVICON;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FAVICON_OR_FALLBACK;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FORMATTED_ORIGIN;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.ON_CLICK_LISTENER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FIELD_TRIAL_PARAM_SHOW_CONFIRMATION_BUTTON;
@@ -19,6 +19,9 @@ import androidx.annotation.Px;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.browserservices.Origin;
+import org.chromium.chrome.browser.favicon.LargeIconBridge;
+import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillComponent.UserAction;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties;
@@ -45,15 +48,17 @@ class TouchToFillMediator {
 
     private TouchToFillComponent.Delegate mDelegate;
     private PropertyModel mModel;
-    private @Px int mDesiredFaviconSize;
+    private LargeIconBridge mLargeIconBridge;
+    private @Px int mDesiredIconSize;
     private List<Credential> mCredentials;
 
     void initialize(TouchToFillComponent.Delegate delegate, PropertyModel model,
-            @Px int desiredFaviconSize) {
+            LargeIconBridge largeIconBridge, @Px int desiredIconSize) {
         assert delegate != null;
         mDelegate = delegate;
         mModel = model;
-        mDesiredFaviconSize = desiredFaviconSize;
+        mLargeIconBridge = largeIconBridge;
+        mDesiredIconSize = desiredIconSize;
     }
 
     void showCredentials(String url, boolean isOriginSecure, List<Credential> credentials) {
@@ -72,16 +77,39 @@ class TouchToFillMediator {
 
         mCredentials = credentials;
         for (Credential credential : credentials) {
-            final PropertyModel model = createCredentialModel(credential);
+            final PropertyModel model = createModel(credential);
             sheetItems.add(new ListItem(TouchToFillProperties.ItemType.CREDENTIAL, model));
-            mDelegate.fetchFavicon(credential.getOriginUrl(), url, mDesiredFaviconSize,
-                    (bitmap) -> model.set(FAVICON, bitmap));
+            requestIconOrFallbackImage(model, url);
             if (shouldCreateConfirmationButton(credentials)) {
-                sheetItems.add(new ListItem(TouchToFillProperties.ItemType.FILL_BUTTON,
-                        createCredentialModel(credential)));
+                sheetItems.add(new ListItem(TouchToFillProperties.ItemType.FILL_BUTTON, model));
             }
         }
         mModel.set(VISIBLE, true);
+    }
+
+    private void requestIconOrFallbackImage(PropertyModel credentialModel, String url) {
+        Credential credential = credentialModel.get(CREDENTIAL);
+        final String iconOrigin = getIconOrigin(credential.getOriginUrl(), url);
+
+        final LargeIconCallback setIcon = (icon, fallbackColor, hasDefaultColor, type) -> {
+            credentialModel.set(FAVICON_OR_FALLBACK,
+                    new CredentialProperties.FaviconOrFallback(iconOrigin, icon, fallbackColor,
+                            hasDefaultColor, type, mDesiredIconSize));
+        };
+        final LargeIconCallback setIconOrRetry = (icon, fallbackColor, hasDefaultColor, type) -> {
+            if (icon == null && iconOrigin.equals(credential.getOriginUrl())) {
+                mLargeIconBridge.getLargeIconForUrl(url, mDesiredIconSize, setIcon);
+                return; // Unlikely but retry for exact path if there is no icon for the origin.
+            }
+            setIcon.onLargeIconAvailable(icon, fallbackColor, hasDefaultColor, type);
+        };
+        mLargeIconBridge.getLargeIconForUrl(iconOrigin, mDesiredIconSize, setIconOrRetry);
+    }
+
+    private String getIconOrigin(String credentialOrigin, String siteUrl) {
+        final Origin o = Origin.create(credentialOrigin);
+        // TODO(crbug.com/1030230): assert o != null as soon as credential Origin must be valid.
+        return o != null && !o.uri().isOpaque() ? credentialOrigin : siteUrl;
     }
 
     private void onSelectedCredential(Credential credential) {
@@ -127,7 +155,7 @@ class TouchToFillMediator {
                         FIELD_TRIAL_PARAM_SHOW_CONFIRMATION_BUTTON, false);
     }
 
-    private PropertyModel createCredentialModel(Credential credential) {
+    private PropertyModel createModel(Credential credential) {
         return new PropertyModel.Builder(CredentialProperties.ALL_KEYS)
                 .with(CREDENTIAL, credential)
                 .with(ON_CLICK_LISTENER, this::onSelectedCredential)

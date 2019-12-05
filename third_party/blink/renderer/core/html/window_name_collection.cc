@@ -23,7 +23,7 @@ bool WindowNameCollection::ElementMatches(const Element& element) const {
   // Match only images, forms, embeds and objects by name,
   // but anything by id
   if (IsA<HTMLImageElement>(element) || IsA<HTMLFormElement>(element) ||
-      IsHTMLEmbedElement(element) || IsA<HTMLObjectElement>(element)) {
+      IsA<HTMLEmbedElement>(element) || IsA<HTMLObjectElement>(element)) {
     if (element.GetNameAttribute() == name_)
       return true;
   }

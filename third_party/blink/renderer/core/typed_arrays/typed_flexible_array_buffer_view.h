@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/typed_array.h"
 #include "third_party/blink/renderer/core/typed_arrays/flexible_array_buffer_view.h"
 
 namespace blink {

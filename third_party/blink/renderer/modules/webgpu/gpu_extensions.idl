@@ -5,4 +5,5 @@
 // https://gpuweb.github.io/gpuweb/
 
 dictionary GPUExtensions {
+    boolean textureCompressionBC = false;
 };

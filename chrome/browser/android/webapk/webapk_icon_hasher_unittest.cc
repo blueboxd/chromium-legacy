@@ -17,9 +17,9 @@
 #include "content/public/test/browser_task_environment.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -142,14 +142,15 @@ TEST_F(WebApkIconHasherTest, DownloadTimedOut) {
 // prevents the icon URL from being fetched.
 TEST_F(WebApkIconHasherTest, HTTPError) {
   std::string icon_url = "http://www.google.com/404";
-  network::ResourceResponseHead head;
+  auto head = network::mojom::URLResponseHead::New();
   std::string headers("HTTP/1.1 404 Not Found\nContent-type: text/html\n\n");
-  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(headers));
-  head.mime_type = "text/html";
+  head->mime_type = "text/html";
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = 0;
-  test_url_loader_factory()->AddResponse(GURL(icon_url), head, "", status);
+  test_url_loader_factory()->AddResponse(GURL(icon_url), std::move(head), "",
+                                         status);
 
   WebApkIconHasherRunner runner;
   runner.Run(test_url_loader_factory(), GURL(icon_url));

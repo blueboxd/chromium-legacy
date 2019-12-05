@@ -216,8 +216,8 @@ class CORE_EXPORT NGInlineCursor {
   PhysicalOffset LineEndPoint() const;
 
   // Converts the given point, relative to the fragment itself, into a position
-  // in DOM tree.
-  PositionWithAffinity PositionForPoint(const PhysicalOffset&) const;
+  // in DOM tree within the range of |this|.
+  PositionWithAffinity PositionForPoint(const PhysicalOffset&);
 
   //
   // Functions to move the current position.

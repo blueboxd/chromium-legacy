@@ -1566,7 +1566,7 @@ void DocumentLoader::InstallNewDocument(
   bool should_clear_window_name =
       previous_security_origin && frame_->IsMainFrame() &&
       !frame_->Loader().Opener() &&
-      !document->GetSecurityOrigin()->IsSameSchemeHostPort(
+      !document->GetSecurityOrigin()->IsSameOriginWith(
           previous_security_origin);
   if (should_clear_window_name) {
     // TODO(andypaicu): experimentalSetNullName will just record the fact
@@ -1594,7 +1594,7 @@ void DocumentLoader::InstallNewDocument(
     const scoped_refptr<const SecurityOrigin> url_origin =
         SecurityOrigin::Create(Url());
     document->SetDeferredCompositorCommitIsAllowed(
-        initiator_origin->IsSameSchemeHostPort(url_origin.get()) &&
+        initiator_origin->IsSameOriginWith(url_origin.get()) &&
         Url().ProtocolIsInHTTPFamily() && document->IsHTMLDocument());
   } else {
     document->SetDeferredCompositorCommitIsAllowed(false);
@@ -1770,7 +1770,7 @@ void DocumentLoader::ParseAndPersistClientHints(
             .Top()
             .GetSecurityContext()
             ->GetSecurityOrigin()
-            ->IsSameSchemeHostPort(SecurityOrigin::Create(url).get());
+            ->IsSameOriginWith(SecurityOrigin::Create(url).get());
     if (!is_first_party_origin)
       return;
   }

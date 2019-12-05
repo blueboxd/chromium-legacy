@@ -44,6 +44,9 @@ class SurfaceDelegate {
   // Called when surface was requested to set a specific application ID label.
   virtual void OnSetApplicationId(const char* application_id) = 0;
 
+  // Called when the surface's application wants it to be activated.
+  virtual void OnActivationRequested() = 0;
+
  protected:
   virtual ~SurfaceDelegate() {}
 };

@@ -62,38 +62,23 @@ class OnPurgeMemoryListener : public GarbageCollected<OnPurgeMemoryListener>,
 
 }  // namespace
 
-struct ParkableStringManager::ParkableStringImplHash {
-  STATIC_ONLY(ParkableStringImplHash);
+// Compares not the pointers, but the arrays. Uses pointers to save space.
+struct ParkableStringManager::SecureDigestHash {
+  STATIC_ONLY(SecureDigestHash);
 
-  static unsigned GetHash(ParkableStringImpl* key) { return key->GetHash(); }
+  static unsigned GetHash(ParkableStringImpl::SecureDigest* const digest) {
+    // The first bytes of the hash are as good as anything else.
+    return *reinterpret_cast<const unsigned*>(digest->data());
+  }
 
-  static inline bool Equal(const ParkableStringImpl* a,
-                           const ParkableStringImpl* b) {
-    return a->Equal(*b);
+  static inline bool Equal(ParkableStringImpl::SecureDigest* const a,
+                           ParkableStringImpl::SecureDigest* const b) {
+    return a == b ||
+           std::equal(a->data(), a->data() + ParkableStringImpl::kDigestSize,
+                      b->data());
   }
 
   static constexpr bool safe_to_compare_to_empty_or_deleted = false;
-};
-
-struct ParkableStringManager::ParkableStringImplTranslator {
-  STATIC_ONLY(ParkableStringImplTranslator);
-
-  static unsigned GetHash(const scoped_refptr<StringImpl>& string) {
-    return string->GetHash();
-  }
-
-  static bool Equal(const ParkableStringImpl* parkable,
-                    const scoped_refptr<StringImpl>& string) {
-    return parkable->Equal(string);
-  }
-
-  static void Translate(ParkableStringImpl*& new_parkable,
-                        scoped_refptr<StringImpl>&& string,
-                        unsigned hash) {
-    new_parkable = new ParkableStringImpl(
-        std::move(string), ParkableStringImpl::ParkableState::kParkable);
-    DCHECK_EQ(hash, new_parkable->GetHash());
-  }
 };
 
 // static
@@ -170,33 +155,25 @@ scoped_refptr<ParkableStringImpl> ParkableStringManager::Add(
 
   ScheduleAgingTaskIfNeeded();
 
-  scoped_refptr<StringImpl> string_ptr(string);
-  // Hit in either the unparked or parked strings.
-  auto it = unparked_strings_
-                .Find<ParkableStringImplTranslator, scoped_refptr<StringImpl>>(
-                    string_ptr);
-  if (it != unparked_strings_.end())
-    return *it;
+  auto string_impl = string;
+  auto digest = ParkableStringImpl::HashString(string_impl.get());
+  DCHECK(digest.get());
 
-  // This is an "expensive hit", as we unparked then discarded the unparked
-  // representation of a string.
-  //
-  // If this is problematic, we can unpark the string for "free" (since the
-  // incoming) string is unparked and has the same content, or change the
-  // interface. Note that at the same time the hit means that we avoided an
-  // expensive compression task.
-  it = parked_strings_
-           .Find<ParkableStringImplTranslator, scoped_refptr<StringImpl>>(
-               string_ptr);
+  auto it = unparked_strings_.find(digest.get());
+  if (it != unparked_strings_.end())
+    return it->value;
+
+  it = parked_strings_.find(digest.get());
   if (it != parked_strings_.end())
-    return *it;
+    return it->value;
+
+  auto new_parkable = ParkableStringImpl::MakeParkable(std::move(string_impl),
+                                                       std::move(digest));
 
   // No hit, new unparked string.
-  auto add_result =
-      unparked_strings_.AddWithTranslator<ParkableStringImplTranslator,
-                                          scoped_refptr<StringImpl>>(
-          std::move(string_ptr));
-  DCHECK(add_result.is_new_entry);
+  auto insert_result =
+      unparked_strings_.insert(new_parkable->digest(), new_parkable.get());
+  DCHECK(insert_result.is_new_entry);
 
   // Lazy registration because registering too early can cause crashes on Linux,
   // see crbug.com/930117, and registering without any strings is pointless
@@ -221,18 +198,20 @@ scoped_refptr<ParkableStringImpl> ParkableStringManager::Add(
     has_posted_unparking_time_accounting_task_ = true;
   }
 
-  return base::AdoptRef(*add_result.stored_value);
+  return new_parkable;
 }
 
 void ParkableStringManager::Remove(ParkableStringImpl* string) {
   DCHECK(IsMainThread());
   DCHECK(string->may_be_parked());
+  DCHECK(string->digest());
+
   if (string->is_parked()) {
-    auto it = parked_strings_.find(string);
+    auto it = parked_strings_.find(string->digest());
     DCHECK(it != parked_strings_.end());
     parked_strings_.erase(it);
   } else {
-    auto it = unparked_strings_.find(string);
+    auto it = unparked_strings_.find(string->digest());
     DCHECK(it != unparked_strings_.end());
     unparked_strings_.erase(it);
   }
@@ -242,22 +221,22 @@ void ParkableStringManager::OnParked(ParkableStringImpl* newly_parked_string) {
   DCHECK(IsMainThread());
   DCHECK(newly_parked_string->may_be_parked());
   DCHECK(newly_parked_string->is_parked());
-  auto it = unparked_strings_.find(newly_parked_string);
+  auto it = unparked_strings_.find(newly_parked_string->digest());
   DCHECK(it != unparked_strings_.end());
-  DCHECK_EQ(*it, newly_parked_string);
+  DCHECK_EQ(it->value, newly_parked_string);
   unparked_strings_.erase(it);
-  parked_strings_.insert(newly_parked_string);
+  parked_strings_.insert(newly_parked_string->digest(), newly_parked_string);
 }
 
 void ParkableStringManager::OnUnparked(ParkableStringImpl* was_parked_string) {
   DCHECK(IsMainThread());
   DCHECK(was_parked_string->may_be_parked());
   DCHECK(!was_parked_string->is_parked());
-  auto it = parked_strings_.find(was_parked_string);
+  auto it = parked_strings_.find(was_parked_string->digest());
   DCHECK(it != parked_strings_.end());
-  DCHECK_EQ(*it, was_parked_string);
+  DCHECK_EQ(it->value, was_parked_string);
   parked_strings_.erase(it);
-  unparked_strings_.insert(was_parked_string);
+  unparked_strings_.insert(was_parked_string->digest(), was_parked_string);
   ScheduleAgingTaskIfNeeded();
 }
 
@@ -271,8 +250,8 @@ void ParkableStringManager::ParkAll(ParkableStringImpl::ParkingMode mode) {
   DCHECK(CompressionEnabled());
 
   size_t total_size = 0;
-  for (ParkableStringImpl* str : parked_strings_)
-    total_size += str->CharactersSizeInBytes();
+  for (const auto& kv : parked_strings_)
+    total_size += kv.value->CharactersSizeInBytes();
 
   // Parking may be synchronous, need to copy values first.
   // In case of synchronous parking, |ParkableStringImpl::Park()| calls
@@ -376,16 +355,16 @@ void ParkableStringManager::PurgeMemory() {
   // synchronously (and no longer in |unparked_strings_|), or being parked and
   // purging is a no-op.
   if (!IsRendererBackgrounded()) {
-    for (ParkableStringImpl* str : unparked_strings_)
-      str->PurgeMemory();
+    for (const auto& kv : unparked_strings_)
+      kv.value->PurgeMemory();
   }
 }
 
 Vector<ParkableStringImpl*> ParkableStringManager::GetUnparkedStrings() const {
   WTF::Vector<ParkableStringImpl*> unparked;
   unparked.ReserveCapacity(unparked_strings_.size());
-  for (ParkableStringImpl* str : unparked_strings_)
-    unparked.push_back(str);
+  for (const auto& kv : unparked_strings_)
+    unparked.push_back(kv.value);
 
   return unparked;
 }
@@ -393,23 +372,29 @@ Vector<ParkableStringImpl*> ParkableStringManager::GetUnparkedStrings() const {
 ParkableStringManager::Statistics ParkableStringManager::ComputeStatistics()
     const {
   ParkableStringManager::Statistics stats = {};
+  // The digest has an inline capacity set to the digest size, hence sizeof() is
+  // accurate.
+  constexpr size_t kParkableStringImplActualSize =
+      sizeof(ParkableStringImpl) + sizeof(ParkableStringImpl::SecureDigest);
 
-  for (ParkableStringImpl* str : unparked_strings_) {
+  for (const auto& kv : unparked_strings_) {
+    ParkableStringImpl* str = kv.value;
     size_t size = str->CharactersSizeInBytes();
     stats.original_size += size;
     stats.uncompressed_size += size;
-    stats.metadata_size += sizeof(ParkableStringImpl);
+    stats.metadata_size += kParkableStringImplActualSize;
 
     if (str->has_compressed_data())
       stats.overhead_size += str->compressed_size();
   }
 
-  for (ParkableStringImpl* str : parked_strings_) {
+  for (const auto& kv : parked_strings_) {
+    ParkableStringImpl* str = kv.value;
     size_t size = str->CharactersSizeInBytes();
     stats.compressed_original_size += size;
     stats.original_size += size;
     stats.compressed_size += str->compressed_size();
-    stats.metadata_size += sizeof(ParkableStringImpl);
+    stats.metadata_size += kParkableStringImplActualSize;
   }
 
   stats.total_size = stats.uncompressed_size + stats.compressed_size +

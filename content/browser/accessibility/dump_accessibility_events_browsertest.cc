@@ -542,6 +542,15 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsFocusListbox) {
+  RunEventTest(FILE_PATH_LITERAL("focus-listbox.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsFocusListboxMultiselect) {
+  RunEventTest(FILE_PATH_LITERAL("focus-listbox-multiselect.html"));
+}
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsInnerHtmlChange) {
   RunEventTest(FILE_PATH_LITERAL("inner-html-change.html"));
 }

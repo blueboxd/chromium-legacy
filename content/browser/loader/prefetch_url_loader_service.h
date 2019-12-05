@@ -47,7 +47,7 @@ class CONTENT_EXPORT PrefetchURLLoaderService final
   void GetFactory(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       int frame_tree_node_id,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo> factory_info,
+      std::unique_ptr<network::PendingSharedURLLoaderFactory> pending_factory,
       base::WeakPtr<RenderFrameHostImpl> render_frame_host,
       scoped_refptr<PrefetchedSignedExchangeCache>
           prefetched_signed_exchange_cache);

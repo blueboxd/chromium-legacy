@@ -249,7 +249,7 @@ void PerUserTopicRegistrationManager::Init() {
   }
 
   std::vector<std::string> keys_to_remove;
-  // Load registered ids from prefs.
+  // Load registered topics from prefs.
   for (const auto& it : update->DictItems()) {
     Topic topic = it.first;
     std::string private_topic_name;
@@ -431,7 +431,7 @@ void PerUserTopicRegistrationManager::RegistrationFinishedForTopic(
   }
 }
 
-TopicSet PerUserTopicRegistrationManager::GetRegisteredIds() const {
+TopicSet PerUserTopicRegistrationManager::GetRegisteredTopicsForTest() const {
   TopicSet topics;
   for (const auto& t : topic_to_private_topic_)
     topics.insert(t.first);

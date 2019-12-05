@@ -165,11 +165,10 @@ class AssistantBottomBarCoordinator
                 mSuggestionsCoordinator.getView(), model.getSuggestionsModel().getChipsModel());
         hideWhenEmpty(mActionsCoordinator.getView(), model.getActionsModel().getChipsModel());
 
-        // Set the horizontal margins of children. We don't set them on the payment request and the
-        // carousels to allow them to take the full width of the sheet.
+        // Set the horizontal margins of children. We don't set them on the payment request, the
+        // carousels or the form to allow them to take the full width of the sheet.
         setHorizontalMargins(mInfoBoxCoordinator.getView());
         setHorizontalMargins(mDetailsCoordinator.getView());
-        setHorizontalMargins(mFormCoordinator.getView());
 
         controller.addObserver(new EmptyBottomSheetObserver() {
             @Override

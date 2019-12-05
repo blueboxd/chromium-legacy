@@ -8,6 +8,10 @@
 #include "base/macros.h"
 #include "components/network_hints/common/network_hints.mojom.h"
 
+namespace content {
+class RenderFrameHost;
+}
+
 namespace network_hints {
 
 // Simple browser-side handler for DNS prefetch requests.
@@ -18,14 +22,12 @@ class SimpleNetworkHintsHandlerImpl : public mojom::NetworkHintsHandler {
   ~SimpleNetworkHintsHandlerImpl() override;
 
   static void Create(
-      int render_process_id,
+      content::RenderFrameHost* frame_host,
       mojo::PendingReceiver<mojom::NetworkHintsHandler> receiver);
 
   // mojom::NetworkHintsHandler methods:
   void PrefetchDNS(const std::vector<std::string>& names) override;
-  void Preconnect(int render_frame_id,
-                  const GURL& url,
-                  bool allow_credentials) override;
+  void Preconnect(const GURL& url, bool allow_credentials) override;
 
  private:
   int render_process_id_;

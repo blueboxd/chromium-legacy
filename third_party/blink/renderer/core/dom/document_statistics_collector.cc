@@ -123,7 +123,7 @@ void CollectFeatures(Element& root,
     } else if (element.HasTagName(html_names::kFormTag)) {
       features.form_count++;
     } else if (element.HasTagName(html_names::kInputTag)) {
-      const HTMLInputElement& input = ToHTMLInputElement(element);
+      const auto& input = To<HTMLInputElement>(element);
       if (input.type() == input_type_names::kText) {
         features.text_input_count++;
       } else if (input.type() == input_type_names::kPassword) {

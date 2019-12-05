@@ -19,9 +19,9 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/url_request/redirect_info.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 class PrefService;
 
@@ -80,7 +80,7 @@ class PreviewsLitePageRedirectURLLoader : public network::mojom::URLLoader,
   // kRedirect.
   void OnResultDetermined(ServingLoaderResult result,
                           base::Optional<net::RedirectInfo> redirect_info,
-                          scoped_refptr<network::ResourceResponse> response);
+                          network::mojom::URLResponseHeadPtr response);
 
   // Called when the lite page can be successfully served.
   void OnLitePageSuccess();
@@ -91,7 +91,7 @@ class PreviewsLitePageRedirectURLLoader : public network::mojom::URLLoader,
 
   // Called when a redirect (307) is received from the previews server.
   void OnLitePageRedirect(const net::RedirectInfo& redirect_info,
-                          const network::ResourceResponseHead& response_head);
+                          network::mojom::URLResponseHeadPtr response_head);
 
   // The handler when trying to serve the lite page to the user. Serves a
   // redirect to the lite page server URL.
@@ -135,7 +135,8 @@ class PreviewsLitePageRedirectURLLoader : public network::mojom::URLLoader,
 
   // Stores the response when a 307 (redirect) is received from the previews
   // server.
-  network::ResourceResponseHead response_head_;
+  network::mojom::URLResponseHeadPtr response_head_ =
+      network::mojom::URLResponseHead::New();
 
   // Information about the redirect to the lite page server.
   net::RedirectInfo redirect_info_;

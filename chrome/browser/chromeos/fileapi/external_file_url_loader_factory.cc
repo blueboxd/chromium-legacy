@@ -30,8 +30,8 @@
 #include "net/base/io_buffer.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_util.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "storage/browser/file_system/file_stream_reader.h"
 #include "storage/browser/file_system/file_system_backend.h"
 #include "storage/browser/file_system/file_system_context.h"
@@ -258,7 +258,7 @@ class ExternalFileURLLoader : public network::mojom::URLLoader {
     redirect_info.new_method = "GET";
     redirect_info.status_code = 302;
     redirect_info.new_url = redirect_url;
-    client_->OnReceiveRedirect(redirect_info, head_);
+    client_->OnReceiveRedirect(redirect_info, head_.Clone());
     client_.reset();
     MaybeDeleteSelf();
   }
@@ -278,7 +278,7 @@ class ExternalFileURLLoader : public network::mojom::URLLoader {
       return;
     }
     head_.response_start = base::TimeTicks::Now();
-    client_->OnReceiveResponse(head_);
+    client_->OnReceiveResponse(head_.Clone());
     client_->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
 
     data_producer_ = std::make_unique<FileSystemReaderDataPipeProducer>(
@@ -326,7 +326,7 @@ class ExternalFileURLLoader : public network::mojom::URLLoader {
   mojo::Remote<network::mojom::URLLoaderClient> client_;
 
   std::unique_ptr<ExternalFileResolver> resolver_;
-  network::ResourceResponseHead head_;
+  network::mojom::URLResponseHead head_;
   storage::IsolatedContext::ScopedFSHandle isolated_file_system_scope_;
   std::unique_ptr<FileSystemReaderDataPipeProducer> data_producer_;
 

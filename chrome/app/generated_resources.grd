@@ -4691,9 +4691,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS_BUTTON" desc="In Title Case: The label of the 'Manage Passwords' button in the manage-passwords bubble.">
           Manage Passwords
         </message>
-        <message name="IDS_PASSWORD_MANAGER_SIGNIN_PROMO_SIGN_IN" desc="In Title Case: The title of the Sign in button in the bubble promoting Chrome sign-in.">
-          Sign In
-        </message>
       </if>
       <if expr="not use_titlecase">
         <message name="IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_SIGN_IN" desc="The title of the Sign in button in the account chooser when there is one account.">
@@ -4702,13 +4699,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS_BUTTON" desc="The label of the 'Manage passwords' link in the manage-passwords bubble.">
           Manage passwords
         </message>
-        <message name="IDS_PASSWORD_MANAGER_SIGNIN_PROMO_SIGN_IN" desc="The title of the Sign in button in the bubble promoting Chrome sign-in.">
-          Sign in
-        </message>
       </if>
-      <message name="IDS_PASSWORD_MANAGER_SIGNIN_PROMO_LABEL" desc="Promotion text for Chrome sign-in appearing in the password bubble after a password is saved.">
-        To save passwords to your Google Account, turn on sync.
-      </message>
       <!-- Password manager onboarding strings -->
       <message name="IDS_PASSWORD_MANAGER_ONBOARDING_TITLE_A" desc="The title shown in the password manager onboarding dialog.">
         Save your passwords?

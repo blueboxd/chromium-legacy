@@ -20,5 +20,14 @@ std::vector<int> SortByCompleteness(
     const CollectUserDataOptions& collect_user_data_options,
     const std::vector<std::unique_ptr<autofill::AutofillProfile>>& profiles);
 
+// Sorts the given payment instruments by completeness, and returns a vector
+// of payment instrument indices in sorted order. Full payment instruments will
+// be ordered before empty ones, and for equally complete payment instruments,
+// this falls back to sorting based on the full name on the credit card.
+std::vector<int> SortByCompleteness(
+    const CollectUserDataOptions& collect_user_data_options,
+    const std::vector<std::unique_ptr<PaymentInstrument>>& payment_instruments);
+
 }  // namespace autofill_assistant
+
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_USER_DATA_UTIL_H_

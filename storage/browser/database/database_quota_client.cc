@@ -103,10 +103,6 @@ QuotaClient::ID DatabaseQuotaClient::id() const {
   return kDatabase;
 }
 
-void DatabaseQuotaClient::OnQuotaManagerDestroyed() {
-  delete this;
-}
-
 void DatabaseQuotaClient::GetOriginUsage(const url::Origin& origin,
                                          StorageType type,
                                          GetUsageCallback callback) {

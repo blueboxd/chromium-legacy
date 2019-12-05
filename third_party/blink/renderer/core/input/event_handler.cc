@@ -124,7 +124,7 @@ bool ShouldRefetchEventTarget(const MouseEventWithHitTestResults& mev) {
   if (!target_node || !target_node->parentNode())
     return true;
   if (auto* shadow_root = DynamicTo<ShadowRoot>(target_node))
-    return IsHTMLInputElement(shadow_root->host());
+    return IsA<HTMLInputElement>(shadow_root->host());
   return false;
 }
 
@@ -400,8 +400,9 @@ IntPoint EventHandler::DragDataTransferLocationForTesting() {
 }
 
 static bool IsSubmitImage(Node* node) {
-  return IsHTMLInputElement(node) &&
-         ToHTMLInputElement(node)->type() == input_type_names::kImage;
+  auto* html_input_element = DynamicTo<HTMLInputElement>(node);
+  return html_input_element &&
+         html_input_element->type() == input_type_names::kImage;
 }
 
 bool EventHandler::UseHandCursor(Node* node, bool is_over_link) {

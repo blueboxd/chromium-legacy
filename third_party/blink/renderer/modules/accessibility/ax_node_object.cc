@@ -664,7 +664,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (IsA<HTMLTableSectionElement>(*GetNode()))
     return DetermineTableCellRole();
 
-  if (const auto* input = ToHTMLInputElementOrNull(*GetNode())) {
+  if (const auto* input = DynamicTo<HTMLInputElement>(*GetNode())) {
     const AtomicString& type = input->type();
     if (input->DataList() && type != input_type_names::kColor)
       return ax::mojom::Role::kTextFieldWithComboBox;
@@ -731,7 +731,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
                : ax::mojom::Role::kMenuListOption;
   }
 
-  if (IsHTMLTextAreaElement(*GetNode()))
+  if (IsA<HTMLTextAreaElement>(*GetNode()))
     return ax::mojom::Role::kTextField;
 
   if (HeadingLevel())
@@ -941,7 +941,7 @@ bool AXNodeObject::IsMultiline() const {
   }
 
   // Default for <textarea> is true.
-  if (IsHTMLTextAreaElement(*node))
+  if (IsA<HTMLTextAreaElement>(*node))
     return true;
 
   // Default for other edit boxes is false, including for ARIA, says CORE-AAM.
@@ -981,7 +981,7 @@ bool AXNodeObject::IsTextControl() const {
     case ax::mojom::Role::kSpinButton:
       // When it's a native spin button, it behaves like a text box, i.e. users
       // can type in it and navigate around using cursors.
-      if (const auto* input = ToHTMLInputElementOrNull(*GetNode())) {
+      if (const auto* input = DynamicTo<HTMLInputElement>(*GetNode())) {
         return input->IsTextField();
       }
       return false;
@@ -1157,9 +1157,9 @@ bool AXNodeObject::IsImageButton() const {
 }
 
 bool AXNodeObject::IsInputImage() const {
-  Node* node = this->GetNode();
-  if (RoleValue() == ax::mojom::Role::kButton && IsHTMLInputElement(node))
-    return ToHTMLInputElement(*node).type() == input_type_names::kImage;
+  auto* html_input_element = DynamicTo<HTMLInputElement>(this->GetNode());
+  if (html_input_element && RoleValue() == ax::mojom::Role::kButton)
+    return html_input_element->type() == input_type_names::kImage;
 
   return false;
 }
@@ -1227,7 +1227,7 @@ bool AXNodeObject::IsMultiSelectable() const {
 }
 
 bool AXNodeObject::IsNativeCheckboxOrRadio() const {
-  if (const auto* input = ToHTMLInputElementOrNull(GetNode())) {
+  if (const auto* input = DynamicTo<HTMLInputElement>(GetNode())) {
     return input->type() == input_type_names::kCheckbox ||
            input->type() == input_type_names::kRadio;
   }
@@ -1245,7 +1245,7 @@ bool AXNodeObject::IsNativeImage() const {
   if (IsHTMLPlugInElement(*node))
     return true;
 
-  if (const auto* input = ToHTMLInputElementOrNull(*node))
+  if (const auto* input = DynamicTo<HTMLInputElement>(*node))
     return input->type() == input_type_names::kImage;
 
   return false;
@@ -1256,10 +1256,10 @@ bool AXNodeObject::IsNativeTextControl() const {
   if (!node)
     return false;
 
-  if (IsHTMLTextAreaElement(*node))
+  if (IsA<HTMLTextAreaElement>(*node))
     return true;
 
-  if (const auto* input = ToHTMLInputElementOrNull(*node))
+  if (const auto* input = DynamicTo<HTMLInputElement>(*node))
     return input->IsTextField();
 
   return false;
@@ -1283,8 +1283,8 @@ bool AXNodeObject::IsOffScreen() const {
 }
 
 bool AXNodeObject::IsPasswordField() const {
-  Node* node = this->GetNode();
-  if (!IsHTMLInputElement(node))
+  auto* html_input_element = DynamicTo<HTMLInputElement>(this->GetNode());
+  if (!html_input_element)
     return false;
 
   ax::mojom::Role aria_role = AriaRoleAttribute();
@@ -1292,7 +1292,7 @@ bool AXNodeObject::IsPasswordField() const {
       aria_role != ax::mojom::Role::kUnknown)
     return false;
 
-  return ToHTMLInputElement(node)->type() == input_type_names::kPassword;
+  return html_input_element->type() == input_type_names::kPassword;
 }
 
 bool AXNodeObject::IsProgressIndicator() const {
@@ -1312,13 +1312,13 @@ bool AXNodeObject::IsSpinButton() const {
 }
 
 bool AXNodeObject::IsNativeSlider() const {
-  if (const auto* input = ToHTMLInputElementOrNull(GetNode()))
+  if (const auto* input = DynamicTo<HTMLInputElement>(GetNode()))
     return input->type() == input_type_names::kRange;
   return false;
 }
 
 bool AXNodeObject::IsNativeSpinButton() const {
-  if (const auto* input = ToHTMLInputElementOrNull(GetNode()))
+  if (const auto* input = DynamicTo<HTMLInputElement>(GetNode()))
     return input->type() == input_type_names::kNumber;
   return false;
 }
@@ -1382,9 +1382,10 @@ AXRestriction AXNodeObject::Restriction() const {
   }
 
   // Only editable fields can be marked @readonly (unlike @aria-readonly).
-  if (IsHTMLTextAreaElement(*elem) && ToHTMLTextAreaElement(*elem).IsReadOnly())
+  auto* text_area_element = DynamicTo<HTMLTextAreaElement>(*elem);
+  if (text_area_element && text_area_element->IsReadOnly())
     return kRestrictionReadOnly;
-  if (const auto* input = ToHTMLInputElementOrNull(*elem)) {
+  if (const auto* input = DynamicTo<HTMLInputElement>(*elem)) {
     if (input->IsTextField() && input->IsReadOnly())
       return kRestrictionReadOnly;
   }
@@ -1550,9 +1551,8 @@ String AXNodeObject::AutoComplete() const {
       return aria_auto_complete == "none" ? String() : aria_auto_complete;
   }
 
-  if (GetNode() && IsHTMLInputElement(*GetNode())) {
-    HTMLInputElement& input = ToHTMLInputElement(*GetNode());
-    if (input.DataList())
+  if (auto* input = DynamicTo<HTMLInputElement>(GetNode())) {
+    if (input->DataList())
       return "list";
   }
 
@@ -1709,7 +1709,7 @@ AXObject::AXObjectVector AXNodeObject::RadioButtonsInGroup() const {
   if (!node_ || RoleValue() != ax::mojom::Role::kRadioButton)
     return radio_buttons;
 
-  if (auto* node_radio_button = ToHTMLInputElementOrNull(node_.Get())) {
+  if (auto* node_radio_button = DynamicTo<HTMLInputElement>(node_.Get())) {
     HeapVector<Member<HTMLInputElement>> html_radio_buttons =
         FindAllRadioButtonsWithSameName(node_radio_button);
     for (HTMLInputElement* radio_button : html_radio_buttons) {
@@ -1771,7 +1771,7 @@ String AXNodeObject::GetText() const {
     return String();
 
   if (IsNativeTextControl() &&
-      (IsHTMLTextAreaElement(*node) || IsHTMLInputElement(*node))) {
+      (IsA<HTMLTextAreaElement>(*node) || IsHTMLInputElement(*node))) {
     // We should not simply return the "value" attribute because it might be
     // sanitized in some input control types, e.g. email fields. If we do that,
     // then "selectionStart" and "selectionEnd" indices will not match with the
@@ -1784,10 +1784,10 @@ String AXNodeObject::GetText() const {
 }
 
 RGBA32 AXNodeObject::ColorValue() const {
-  if (!IsHTMLInputElement(GetNode()) || !IsColorWell())
+  auto* input = DynamicTo<HTMLInputElement>(GetNode());
+  if (!input || !IsColorWell())
     return AXObject::ColorValue();
 
-  HTMLInputElement* input = ToHTMLInputElement(GetNode());
   const AtomicString& type = input->getAttribute(kTypeAttr);
   if (!EqualIgnoringASCIICase(type, "color"))
     return AXObject::ColorValue();
@@ -1893,7 +1893,7 @@ bool AXNodeObject::ValueForRange(float* out_value) const {
   }
 
   if (IsNativeSlider() || IsNativeSpinButton()) {
-    *out_value = ToHTMLInputElement(*GetNode()).valueAsNumber();
+    *out_value = To<HTMLInputElement>(*GetNode()).valueAsNumber();
     return std::isfinite(*out_value);
   }
 
@@ -1939,7 +1939,7 @@ bool AXNodeObject::MaxValueForRange(float* out_value) const {
   }
 
   if (IsNativeSlider() || IsNativeSpinButton()) {
-    *out_value = static_cast<float>(ToHTMLInputElement(*GetNode()).Maximum());
+    *out_value = static_cast<float>(To<HTMLInputElement>(*GetNode()).Maximum());
     return std::isfinite(*out_value);
   }
 
@@ -1972,7 +1972,7 @@ bool AXNodeObject::MinValueForRange(float* out_value) const {
   }
 
   if (IsNativeSlider() || IsNativeSpinButton()) {
-    *out_value = static_cast<float>(ToHTMLInputElement(*GetNode()).Minimum());
+    *out_value = static_cast<float>(To<HTMLInputElement>(*GetNode()).Minimum());
     return std::isfinite(*out_value);
   }
 
@@ -1999,8 +1999,8 @@ bool AXNodeObject::MinValueForRange(float* out_value) const {
 
 bool AXNodeObject::StepValueForRange(float* out_value) const {
   if (IsNativeSlider() || IsNativeSpinButton()) {
-    Decimal step =
-        ToHTMLInputElement(*GetNode()).CreateStepRange(kRejectAny).Step();
+    auto step =
+        To<HTMLInputElement>(*GetNode()).CreateStepRange(kRejectAny).Step();
     *out_value = step.ToString().ToFloat();
     return std::isfinite(*out_value);
   }
@@ -2047,7 +2047,7 @@ KURL AXNodeObject::Url() const {
   }
 
   if (IsInputImage())
-    return ToHTMLInputElement(GetNode())->Src();
+    return To<HTMLInputElement>(GetNode())->Src();
 
   return KURL();
 }
@@ -2100,7 +2100,7 @@ String AXNodeObject::StringValue() const {
   // exception of checkboxes and radio buttons (which would return "on"), and
   // buttons which will return their name.
   // https://html.spec.whatwg.org/C/#dom-input-value
-  if (const auto* input = ToHTMLInputElementOrNull(node)) {
+  if (const auto* input = DynamicTo<HTMLInputElement>(node)) {
     if (input->type() != input_type_names::kButton &&
         input->type() != input_type_names::kCheckbox &&
         input->type() != input_type_names::kImage &&
@@ -3070,7 +3070,7 @@ String AXNodeObject::NativeTextAlternative(
   String text_alternative;
   AXRelatedObjectVector local_related_objects;
 
-  const HTMLInputElement* input_element = ToHTMLInputElementOrNull(GetNode());
+  const auto* input_element = DynamicTo<HTMLInputElement>(GetNode());
 
   // 5.1/5.5 Text inputs, Other labelable Elements
   // If you change this logic, update AXNodeObject::nameFromLabelElement, too.
@@ -3656,7 +3656,7 @@ String AXNodeObject::Description(ax::mojom::NameFrom name_from,
     }
   }
 
-  const HTMLInputElement* input_element = ToHTMLInputElementOrNull(GetNode());
+  const auto* input_element = DynamicTo<HTMLInputElement>(GetNode());
 
   // value, 5.2.2 from: http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
   if (name_from != ax::mojom::NameFrom::kValue && input_element &&

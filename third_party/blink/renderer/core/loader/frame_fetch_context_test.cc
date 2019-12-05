@@ -1280,8 +1280,8 @@ TEST_F(FrameFetchContextTest, SetFirstPartyCookieWhenDetached) {
 
   SetFirstPartyCookie(request);
 
-  EXPECT_TRUE(SecurityOrigin::AreSameSchemeHostPort(document_url,
-                                                    request.SiteForCookies()));
+  EXPECT_TRUE(
+      SecurityOrigin::AreSameOrigin(document_url, request.SiteForCookies()));
 }
 
 TEST_F(FrameFetchContextTest, TopFrameOrigin) {

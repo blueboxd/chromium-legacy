@@ -27,6 +27,10 @@ LoginChoice::LoginChoice(const LoginChoice& another) = default;
 LoginChoice::~LoginChoice() = default;
 
 PaymentInstrument::PaymentInstrument() = default;
+PaymentInstrument::PaymentInstrument(
+    std::unique_ptr<autofill::CreditCard> _card,
+    std::unique_ptr<autofill::AutofillProfile> _billing_address)
+    : card(std::move(_card)), billing_address(std::move(_billing_address)) {}
 PaymentInstrument::~PaymentInstrument() = default;
 
 UserData::UserData() = default;

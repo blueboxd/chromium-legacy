@@ -61,17 +61,17 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // |provider_context| is used to set up information for using service workers.
   // It can be null if the worker is not allowed to use service workers due to
   // security reasons like sandboxed iframes, insecure origins etc.
-  // |loader_factory_info| is used for regular loading by the worker.
+  // |pending_loader_factory| is used for regular loading by the worker.
   //
   // If the worker is controlled by a service worker, this class makes another
   // loader factory which sends requests to the service worker, and passes
-  // |fallback_factory_info| to that factory to use for network fallback.
+  // |pending_fallback_factory| to that factory to use for network fallback.
   //
-  // |loader_factory_info| and |fallback_factory_info| are different because
-  // |loader_factory_info| can possibly include a default factory like AppCache,
-  // while |fallback_factory_info| should not have such a default factory and
-  // instead go directly to network for http(s) requests.
-  // |fallback_factory_info| might not be simply the direct network factory,
+  // |pending_loader_factory| and |pending_fallback_factory| are different
+  // because |pending_loader_factory| can possibly include a default factory
+  // like AppCache, while |pending_fallback_factory| should not have such a
+  // default factory and instead go directly to network for http(s) requests.
+  // |pending_fallback_factory| might not be simply the direct network factory,
   // because it might additionally support non-NetworkService schemes (e.g.,
   // chrome-extension://).
   static scoped_refptr<WebWorkerFetchContextImpl> Create(
@@ -79,9 +79,10 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
       blink::mojom::RendererPreferences renderer_preferences,
       mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
           watcher_receiver,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          fallback_factory_info,
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          pending_loader_factory,
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          pending_fallback_factory,
       mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
           pending_subresource_loader_updater);
 
@@ -95,9 +96,10 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // instead that takes values passed from the browser process.
   scoped_refptr<WebWorkerFetchContextImpl> CloneForNestedWorker(
       ServiceWorkerProviderContext* service_worker_provider_context,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          fallback_factory_info,
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          pending_loader_factory,
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          pending_fallback_factory,
       mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
           pending_subresource_loader_updater,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
@@ -204,9 +206,10 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
           service_worker_worker_client_registry,
       mojo::PendingRemote<blink::mojom::ServiceWorkerContainerHost>
           service_worker_container_host,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          fallback_factory_info,
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          pending_loader_factory,
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          pending_fallback_factory,
       mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
           pending_subresource_loader_updater,
       std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
@@ -224,9 +227,10 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
           service_worker_worker_client_registry,
       mojo::PendingRemote<blink::mojom::ServiceWorkerContainerHost>
           service_worker_container_host,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          fallback_factory_info,
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          pending_loader_factory,
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          pending_fallback_factory,
       mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
           pending_subresource_loader_updater,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
@@ -241,7 +245,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
 
   // Implements blink::mojom::SubresourceLoaderUpdater.
   void UpdateSubresourceLoaderFactories(
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
           subresource_loader_factories) override;
 
   // Implements blink::mojom::RendererPreferenceWatcher.
@@ -264,9 +268,11 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   mojo::PendingRemote<blink::mojom::ServiceWorkerContainerHost>
       pending_service_worker_container_host_;
   // Consumed on the worker thread to create |loader_factory_|.
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info_;
+  std::unique_ptr<network::PendingSharedURLLoaderFactory>
+      pending_loader_factory_;
   // Consumed on the worker thread to create |fallback_factory_|.
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory_info_;
+  std::unique_ptr<network::PendingSharedURLLoaderFactory>
+      pending_fallback_factory_;
 
   blink::mojom::ControllerServiceWorkerMode controller_service_worker_mode_ =
       blink::mojom::ControllerServiceWorkerMode::kNoController;

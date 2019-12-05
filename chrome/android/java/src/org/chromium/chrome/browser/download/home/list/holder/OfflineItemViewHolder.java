@@ -17,6 +17,7 @@ import androidx.annotation.CallSuper;
 import org.chromium.chrome.browser.download.home.filter.Filters;
 import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.list.ListProperties;
+import org.chromium.chrome.browser.download.home.list.UiUtils;
 import org.chromium.chrome.browser.download.home.list.view.AsyncImageView;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils;
 import org.chromium.chrome.browser.download.home.view.SelectionView;
@@ -50,6 +51,7 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
 
     // flag to hide rename list menu option for offline pages
     private boolean mCanRename;
+    private boolean mCanShare;
 
     /**
      * Creates a new instance of a {@link MoreButtonViewHolder}.
@@ -123,6 +125,7 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
         }
 
         mCanRename = mRenameCallback != null && offlineItem.canRename;
+        mCanShare = UiUtils.canShare(offlineItem);
     }
 
     @Override
@@ -135,7 +138,7 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
     @Override
     public ListMenu getListMenu() {
         ModelList listItems = new ModelList();
-        listItems.add(buildMenuListItem(R.string.share, 0, 0));
+        if (mCanShare) listItems.add(buildMenuListItem(R.string.share, 0, 0));
         if (mCanRename) listItems.add(buildMenuListItem(R.string.rename, 0, 0));
         listItems.add(buildMenuListItem(R.string.delete, 0, 0));
         ListMenu.Delegate delegate = (model) -> {

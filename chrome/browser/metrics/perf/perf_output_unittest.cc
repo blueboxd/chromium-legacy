@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include <utility>
+
 #include "base/files/file.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/task/post_task.h"
@@ -73,11 +75,11 @@ class FakeDebugDaemonClient : public chromeos::FakeDebugDaemonClient {
                      chromeos::DBusMethodCallback<uint64_t> callback) override {
     // We will write perf output to this pipe FD. dup() |file_descriptor|
     // because it is closed after this method returns.
-    base::PlatformFile perf_output_fd = HANDLE_EINTR(dup(file_descriptor));
-    DCHECK_NE(perf_output_fd, -1);
+    base::ScopedPlatformFile perf_output_fd(HANDLE_EINTR(dup(file_descriptor)));
+    ASSERT_NE(perf_output_fd, -1);
 
-    perf_output_file_ = base::File(perf_output_fd, false);
-    EXPECT_TRUE(perf_output_file_.IsValid());
+    perf_output_file_ = base::File(std::move(perf_output_fd));
+    ASSERT_TRUE(perf_output_file_.IsValid());
 
     // Returns a fake perf session ID after calling GetPerfOutputFd.
     task_runner_->PostTask(

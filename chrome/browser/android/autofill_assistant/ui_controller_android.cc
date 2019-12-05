@@ -1246,6 +1246,7 @@ void UiControllerAndroid::OnUserDataChanged(
   if (!state) {
     return;
   }
+  DCHECK(ui_delegate_ != nullptr);
 
   // TODO(crbug.com/806868): Add |setContactDetails|, |setShippingAddress| and
   // |setPaymentMethod|.
@@ -1258,7 +1259,6 @@ void UiControllerAndroid::OnUserDataChanged(
 
   if (field_change == UserData::FieldChange::ALL ||
       field_change == UserData::FieldChange::AVAILABLE_PROFILES) {
-    DCHECK(ui_delegate_ != nullptr);
     const CollectUserDataOptions* collect_user_data_options =
         ui_delegate_->GetCollectUserDataOptions();
     auto jlist =
@@ -1276,9 +1276,14 @@ void UiControllerAndroid::OnUserDataChanged(
 
   if (field_change == UserData::FieldChange::ALL ||
       field_change == UserData::FieldChange::AVAILABLE_PAYMENT_INSTRUMENTS) {
+    const CollectUserDataOptions* collect_user_data_options =
+        ui_delegate_->GetCollectUserDataOptions();
     auto jlist =
         Java_AssistantCollectUserDataModel_createAutofillPaymentMethodList(env);
-    for (const auto& instrument : state->available_payment_instruments) {
+    auto sorted_payment_instrument_indices = SortByCompleteness(
+        *collect_user_data_options, state->available_payment_instruments);
+    for (int index : sorted_payment_instrument_indices) {
+      const auto& instrument = state->available_payment_instruments[index];
       Java_AssistantCollectUserDataModel_addAutofillPaymentMethod(
           env, jlist,
           autofill::PersonalDataManagerAndroid::CreateJavaCreditCardFromNative(

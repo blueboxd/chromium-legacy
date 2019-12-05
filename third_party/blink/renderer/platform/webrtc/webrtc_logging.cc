@@ -25,6 +25,7 @@ void InitWebRtcLogging() {
 }
 
 void WebRtcLogMessage(const std::string& message) {
+  DVLOG(1) << message;
   if (g_webrtc_logging_delegate)
     g_webrtc_logging_delegate->LogMessage(message);
 }

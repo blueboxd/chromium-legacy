@@ -49,7 +49,7 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   using OriginSetByHost = std::map<std::string, std::set<url::Origin>>;
 
   ClientUsageTracker(UsageTracker* tracker,
-                     QuotaClient* client,
+                     scoped_refptr<QuotaClient> client,
                      blink::mojom::StorageType type,
                      SpecialStoragePolicy* special_storage_policy);
   ~ClientUsageTracker() override;
@@ -112,7 +112,7 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
 
   bool IsStorageUnlimited(const url::Origin& origin) const;
 
-  QuotaClient* client_;
+  scoped_refptr<QuotaClient> client_;
   const blink::mojom::StorageType type_;
 
   int64_t global_limited_usage_;

@@ -20,7 +20,6 @@
 #include "chrome/browser/net_benchmarking.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
-#include "chrome/browser/predictors/network_hints_handler_impl.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/content_capture/browser/content_capture_receiver_manager.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
@@ -48,6 +47,12 @@
 #elif defined(OS_WIN)
 #include "chrome/browser/win/conflicts/module_database.h"
 #include "chrome/browser/win/conflicts/module_event_sink_impl.h"
+#endif
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
+#include "chrome/browser/extensions/chrome_extensions_browser_client.h"
+#include "extensions/browser/extensions_browser_client.h"
 #endif
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -195,8 +200,26 @@ void ChromeContentBrowserClient::ExposeInterfacesToMediaService(
 }
 
 void ChromeContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
+    content::RenderFrameHost* render_frame_host,
     service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
   chrome::internal::PopulateChromeFrameBinders(map);
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  if (!web_contents)
+    return;
+  auto* client = extensions::ExtensionsBrowserClient::Get();
+  auto* web_observer = client->GetExtensionWebContentsObserver(web_contents);
+  if (!web_observer)
+    return;
+  const extensions::Extension* extension =
+      web_observer->GetExtensionFromFrame(render_frame_host, false);
+  if (!extension)
+    return;
+  client->RegisterBrowserInterfaceBindersForFrame(map, render_frame_host,
+                                                  extension);
+#endif
 }
 
 void ChromeContentBrowserClient::BindInterfaceRequestFromFrame(
@@ -255,13 +278,6 @@ void ChromeContentBrowserClient::BindHostReceiverForRenderer(
           receiver.As<chrome::mojom::ContentSettingsManager>()) {
     chrome::ContentSettingsManagerImpl::Create(render_process_host,
                                                std::move(host_receiver));
-    return;
-  }
-
-  if (auto host_receiver =
-          receiver.As<network_hints::mojom::NetworkHintsHandler>()) {
-    predictors::NetworkHintsHandlerImpl::Create(render_process_host->GetID(),
-                                                std::move(host_receiver));
     return;
   }
 

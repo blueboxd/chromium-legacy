@@ -315,9 +315,19 @@ bool FetchManager::Loader::WillFollowRedirect(
 void FetchManager::Loader::DidReceiveResponse(
     uint64_t,
     const ResourceResponse& response) {
+  // Verify that we're dealing with the URL we expect (which could be an
+  // HTTPS-upgraded variant of `url_list_.back()`.
+  //
   // TODO(horo): This check could be false when we will use the response url
   // in service worker responses. (crbug.com/553535)
-  DCHECK(response.CurrentRequestUrl() == url_list_.back());
+  DCHECK(
+      response.CurrentRequestUrl() == url_list_.back() ||
+      (response.CurrentRequestUrl().ProtocolIs("https") &&
+       url_list_.back().ProtocolIs("http") &&
+       response.CurrentRequestUrl().Host() == url_list_.back().Host() &&
+       response.CurrentRequestUrl().GetPath() == url_list_.back().GetPath() &&
+       response.CurrentRequestUrl().Query() == url_list_.back().Query()));
+
   ScriptState* script_state = resolver_->GetScriptState();
   ScriptState::Scope scope(script_state);
 

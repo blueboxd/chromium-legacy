@@ -230,6 +230,15 @@ TEST_F(CompositorFrameReportingControllerTest,
       "CompositorLatency.MissedFrame.EndActivateToSubmitCompositorFrame", 0);
 }
 
+TEST_F(CompositorFrameReportingControllerTest, ImplFrameCausedNoDamage) {
+  base::HistogramTester histogram_tester;
+
+  SimulateBeginImplFrame();
+  SimulateBeginImplFrame();
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.MissedFrame.BeginImplFrameToSendBeginMainFrame", 0);
+}
+
 TEST_F(CompositorFrameReportingControllerTest, BlinkBreakdown) {
   base::HistogramTester histogram_tester;
 

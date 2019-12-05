@@ -27,9 +27,7 @@ class MockBGFQuotaManagerProxy : public MockQuotaManagerProxy {
                               base::ThreadTaskRunnerHandle::Get().get()) {}
 
   // Ignore quota client, it is irrelevant for these tests.
-  void RegisterClient(QuotaClient* client) override {
-    delete client;  // Directly delete, to avoid memory leak.
-  }
+  void RegisterClient(scoped_refptr<QuotaClient> client) override {}
 
   void GetUsageAndQuota(base::SequencedTaskRunner* original_task_runner,
                         const url::Origin& origin,

@@ -15,6 +15,7 @@ import static android.support.test.espresso.intent.matcher.IntentMatchers.hasAct
 import static android.support.test.espresso.intent.matcher.IntentMatchers.hasData;
 import static android.support.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static android.support.test.espresso.matcher.ViewMatchers.hasSibling;
+import static android.support.test.espresso.matcher.ViewMatchers.hasTextColor;
 import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isEnabled;
@@ -24,6 +25,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.not;
 
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.hasTintColor;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.startAutofillAssistant;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
@@ -99,8 +101,8 @@ public class AutofillAssistantFormActionTest {
                         .addInputs(FormInputProto.newBuilder().setCounter(
                                 CounterInputProto.newBuilder()
                                         .addCounters(CounterInputProto.Counter.newBuilder()
-                                                             .setMinValue(1)
-                                                             .setMaxValue(9)
+                                                             .setMinValue(0)
+                                                             .setMaxValue(1)
                                                              .setLabel("Counter 1")
                                                              .setDescriptionLine1("$34.00 per item")
                                                              .setDescriptionLine2(
@@ -165,9 +167,25 @@ public class AutofillAssistantFormActionTest {
 
         waitUntilViewMatchesCondition(withText("Continue"), isCompletelyDisplayed());
         // TODO(b/144690738) Remove the isDisplayed() condition.
+        onView(allOf(isDisplayed(), withId(R.id.value),
+                       hasSibling(hasDescendant(withText("Counter 1")))))
+                .check(matches(hasTextColor(R.color.modern_grey_800_alpha_38)));
+        onView(allOf(isDisplayed(), withId(R.id.increase_button),
+                       hasSibling(hasDescendant(withText("Counter 1")))))
+                .check(matches(hasTintColor(R.color.modern_blue_600)));
+        onView(allOf(isDisplayed(), withId(R.id.decrease_button),
+                       hasSibling(hasDescendant(withText("Counter 1")))))
+                .check(matches(hasTintColor(R.color.modern_grey_800_alpha_38)));
         onView(allOf(isDisplayed(), withId(R.id.increase_button),
                        hasSibling(hasDescendant(withText("Counter 1")))))
                 .perform(click());
+        onView(allOf(isDisplayed(), withId(R.id.value),
+                       hasSibling(hasDescendant(withText("Counter 1")))))
+                .check(matches(hasTextColor(R.color.modern_blue_600)));
+        onView(allOf(isDisplayed(), withId(R.id.increase_button),
+                       hasSibling(hasDescendant(withText("Counter 1")))))
+                .check(matches(hasTintColor(R.color.modern_grey_800_alpha_38)));
+        // Decrease button is still disabled due to the minCountersSum requirement.
 
         onView(allOf(isDisplayed(), withId(R.id.expand_label))).perform(click());
         onView(allOf(isDisplayed(), withId(R.id.increase_button),

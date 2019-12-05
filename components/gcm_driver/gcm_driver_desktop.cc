@@ -75,7 +75,8 @@ class GCMDriverDesktop::IOWorker : public GCMClient::Delegate {
       base::RepeatingCallback<void(
           mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>)>
           get_socket_factory_callback,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          pending_loader_factory,
       network::NetworkConnectionTracker* network_connection_tracker,
       const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
   void Start(GCMClient::StartMode start_mode,
@@ -150,7 +151,8 @@ void GCMDriverDesktop::IOWorker::Initialize(
     base::RepeatingCallback<void(
         mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>)>
         get_socket_factory_callback,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_loader_factory,
     network::NetworkConnectionTracker* network_connection_tracker,
     const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner) {
   DCHECK(io_thread_->RunsTasksInCurrentSequence());
@@ -158,7 +160,8 @@ void GCMDriverDesktop::IOWorker::Initialize(
   gcm_client_ = gcm_client_factory->BuildInstance();
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_for_io =
-      network::SharedURLLoaderFactory::Create(std::move(loader_factory_info));
+      network::SharedURLLoaderFactory::Create(
+          std::move(pending_loader_factory));
 
   gcm_client_->Initialize(chrome_build_info, store_path, blocking_task_runner,
                           io_thread_, std::move(get_socket_factory_callback),

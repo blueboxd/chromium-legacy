@@ -100,7 +100,7 @@ class TestQuotaManagerProxy : public storage::QuotaManagerProxy {
   TestQuotaManagerProxy()
       : QuotaManagerProxy(nullptr, nullptr), registered_client_(nullptr) {}
 
-  void RegisterClient(storage::QuotaClient* client) override {
+  void RegisterClient(scoped_refptr<storage::QuotaClient> client) override {
     EXPECT_FALSE(registered_client_);
     registered_client_ = client;
   }
@@ -156,7 +156,7 @@ class TestQuotaManagerProxy : public storage::QuotaManagerProxy {
     modifications_.clear();
   }
 
-  storage::QuotaClient* registered_client_;
+  scoped_refptr<storage::QuotaClient> registered_client_;
 
   // Map from origin to count of access notifications.
   std::map<url::Origin, int> accesses_;

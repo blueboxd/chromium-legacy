@@ -79,7 +79,7 @@
 #include "services/network/cookie_manager.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
-#include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
+#include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"
 #include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/blob/blob_registry_impl.h"
@@ -890,9 +890,9 @@ class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
   }
 
   // SharedURLLoaderFactory implementation:
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
+  std::unique_ptr<network::PendingSharedURLLoaderFactory> Clone() override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    return std::make_unique<network::CrossThreadSharedURLLoaderFactoryInfo>(
+    return std::make_unique<network::CrossThreadPendingSharedURLLoaderFactory>(
         this);
   }
 
@@ -1189,7 +1189,7 @@ void StoragePartitionImpl::Initialize() {
   // QuotaManager prior to the QuotaManager being used. We do them
   // all together here prior to handing out a reference to anything
   // that utilizes the QuotaManager.
-  quota_manager_ = new storage::QuotaManager(
+  quota_manager_ = base::MakeRefCounted<storage::QuotaManager>(
       is_in_memory_, partition_path_,
       base::CreateSingleThreadTaskRunner({BrowserThread::IO}).get(),
       browser_context_->GetSpecialStoragePolicy(),
@@ -1354,10 +1354,10 @@ StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessWithCORBEnabled() {
   return shared_url_loader_factory_for_browser_process_with_corb_;
 }
 
-std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+std::unique_ptr<network::PendingSharedURLLoaderFactory>
 StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessIOThread() {
   DCHECK(initialized_);
-  return url_loader_factory_getter_->GetNetworkFactoryInfo();
+  return url_loader_factory_getter_->GetPendingNetworkFactory();
 }
 
 network::mojom::CookieManager*

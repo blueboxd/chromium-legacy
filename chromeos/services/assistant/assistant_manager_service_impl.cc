@@ -25,6 +25,7 @@
 #include "chromeos/assistant/internal/internal_util.h"
 #include "chromeos/assistant/internal/proto/google3/assistant/api/client_input/warmer_welcome_input.pb.h"
 #include "chromeos/assistant/internal/proto/google3/assistant/api/client_op/device_args.pb.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/services/assistant/assistant_manager_service_delegate.h"
 #include "chromeos/services/assistant/constants.h"
@@ -146,8 +147,8 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     mojom::Client* client,
     ServiceContext* context,
     std::unique_ptr<AssistantManagerServiceDelegate> delegate,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        url_loader_factory_info,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_url_loader_factory,
     bool is_signed_out_mode)
     : client_(client),
       media_session_(std::make_unique<AssistantMediaSession>(client_, this)),
@@ -155,7 +156,7 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
           this,
           assistant::features::IsAppSupportEnabled(),
           assistant::features::IsRoutinesEnabled())),
-      chromium_api_delegate_(std::move(url_loader_factory_info)),
+      chromium_api_delegate_(std::move(pending_url_loader_factory)),
       assistant_settings_manager_(
           std::make_unique<AssistantSettingsManagerImpl>(context, this)),
       context_(context),
@@ -177,6 +178,10 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
 }
 
 AssistantManagerServiceImpl::~AssistantManagerServiceImpl() {
+  auto* ambient_state = ash::AmbientModeState::Get();
+  if (ambient_state)
+    ambient_state->RemoveObserver(this);
+
   background_thread_.Stop();
 }
 
@@ -193,6 +198,17 @@ void AssistantManagerServiceImpl::Start(
 
   EnableHotword(enable_hotword);
 
+  if (chromeos::features::IsAmbientModeEnabled()) {
+    auto* ambient_state = ash::AmbientModeState::Get();
+    DCHECK(ambient_state);
+
+    // Update the support action list in action module when system enters/exits
+    // the Ambient Mode. Some actions such as open URL in the browser will be
+    // disabled in this mode.
+    action_module_->SetAmbientModeEnabled(ambient_state->enabled());
+    ambient_state->AddObserver(this);
+  }
+
   // LibAssistant creation will make file IO and sync wait. Post the creation to
   // background thread to avoid DCHECK.
   background_thread_.task_runner()->PostTaskAndReply(
@@ -208,6 +224,12 @@ void AssistantManagerServiceImpl::Stop() {
   DCHECK_NE(GetState(), State::STARTING);
 
   SetStateAndInformObservers(State::STOPPED);
+
+  if (chromeos::features::IsAmbientModeEnabled()) {
+    auto* ambient_state = ash::AmbientModeState::Get();
+    DCHECK(ambient_state);
+    ambient_state->RemoveObserver(this);
+  }
 
   // When user disables the feature, we also deletes all data.
   if (!assistant_state()->settings_enabled().value() && assistant_manager_)
@@ -1313,6 +1335,10 @@ void AssistantManagerServiceImpl::OnAndroidAppListRefreshed(
                                  app_info->intent});
   }
   display_connection_->OnAndroidAppListRefreshed(android_apps_info);
+}
+
+void AssistantManagerServiceImpl::OnAmbientModeEnabled(bool enabled) {
+  action_module_->SetAmbientModeEnabled(enabled);
 }
 
 void AssistantManagerServiceImpl::UpdateInternalOptions(

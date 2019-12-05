@@ -14,6 +14,7 @@ class CORE_EXPORT StyleRecalcRoot : public StyleTraversalRoot {
 
  public:
   Element& RootElement() const;
+  void RemovedFromFlatTree(const Node& node);
 
  private:
 #if DCHECK_IS_ON()

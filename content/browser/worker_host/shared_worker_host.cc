@@ -136,7 +136,7 @@ void SharedWorkerHost::SetNetworkFactoryForSubresourcesForTesting(
 void SharedWorkerHost::Start(
     mojo::PendingRemote<blink::mojom::SharedWorkerFactory> factory,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
         subresource_loader_factories,
     blink::mojom::ControllerServiceWorkerInfoPtr controller,
     base::WeakPtr<ServiceWorkerObjectHost>
@@ -180,13 +180,6 @@ void SharedWorkerHost::Start(
   content_settings_ = std::make_unique<SharedWorkerContentSettingsProxyImpl>(
       instance_.url(), this, content_settings.InitWithNewPipeAndPassReceiver());
 
-  // Set up interface provider interface.
-  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-      interface_provider;
-  interface_provider_receiver_.Bind(FilterRendererExposedInterfaces(
-      blink::mojom::kNavigation_SharedWorkerSpec, worker_process_id_,
-      interface_provider.InitWithNewPipeAndPassReceiver()));
-
   // Set up BrowserInterfaceBroker interface
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker;
@@ -226,7 +219,7 @@ void SharedWorkerHost::Start(
       std::move(main_script_load_params),
       std::move(subresource_loader_factories), std::move(controller),
       receiver_.BindNewPipeAndPassRemote(), std::move(worker_receiver_),
-      std::move(interface_provider), std::move(browser_interface_broker));
+      std::move(browser_interface_broker));
 
   // |service_worker_remote_object| is an associated interface ptr, so calls
   // can't be made on it until its request endpoint is sent. Now that the
@@ -283,8 +276,8 @@ SharedWorkerHost::CreateNetworkFactoryForSubresources(
       storage_partition_impl->browser_context(),
       /*frame=*/nullptr, worker_process_id_,
       ContentBrowserClient::URLLoaderFactoryType::kWorkerSubResource, origin,
-      &default_factory_receiver, &default_header_client, bypass_redirect_checks,
-      &factory_override);
+      /*navigation_id=*/base::nullopt, &default_factory_receiver,
+      &default_header_client, bypass_redirect_checks, &factory_override);
 
   // TODO(nhiroki): Call devtools_instrumentation::WillCreateURLLoaderFactory()
   // here.
@@ -294,14 +287,14 @@ SharedWorkerHost::CreateNetworkFactoryForSubresources(
     worker_process_host->CreateURLLoaderFactory(
         origin, origin, network::mojom::CrossOriginEmbedderPolicy::kNone,
         nullptr /* preferences */, net::NetworkIsolationKey(origin, origin),
-        std::move(default_header_client), std::move(default_factory_receiver),
-        std::move(factory_override));
+        std::move(default_header_client), base::nullopt /* top_frame_token */,
+        std::move(default_factory_receiver), std::move(factory_override));
   } else {
     mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory;
     worker_process_host->CreateURLLoaderFactory(
         origin, origin, network::mojom::CrossOriginEmbedderPolicy::kNone,
         nullptr /* preferences */, net::NetworkIsolationKey(origin, origin),
-        std::move(default_header_client),
+        std::move(default_header_client), base::nullopt /* top_frame_token */,
         original_factory.InitWithNewPipeAndPassReceiver(),
         std::move(factory_override));
     GetCreateNetworkFactoryCallbackForSharedWorker().Run(
@@ -527,12 +520,6 @@ void SharedWorkerHost::OnWorkerConnectionLost() {
   // This will destroy |this| resulting in client's observing their mojo
   // connection being dropped.
   Destruct();
-}
-
-void SharedWorkerHost::GetInterface(
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 }  // namespace content

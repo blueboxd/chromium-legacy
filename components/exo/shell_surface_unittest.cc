@@ -19,6 +19,7 @@
 #include "components/exo/buffer.h"
 #include "components/exo/client_controlled_shell_surface.h"
 #include "components/exo/display.h"
+#include "components/exo/permission.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/sub_surface.h"
 #include "components/exo/surface.h"
@@ -311,6 +312,41 @@ TEST_F(ShellSurfaceTest, SetApplicationId) {
 
   shell_surface->SetApplicationId(nullptr);
   EXPECT_EQ(nullptr, GetShellApplicationId(window));
+}
+
+TEST_F(ShellSurfaceTest, ActivationPermission) {
+  gfx::Size buffer_size(64, 64);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  surface->Attach(buffer.get());
+  surface->Commit();
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+  ASSERT_TRUE(window);
+
+  // No permission granted so can't activate.
+  EXPECT_FALSE(HasPermissionToActivate(window));
+
+  // Can grant permission.
+  std::unique_ptr<exo::Permission> permission =
+      GrantPermissionToActivate(window, base::TimeDelta::FromDays(1));
+  EXPECT_TRUE(permission->Check(Permission::Capability::kActivate));
+  EXPECT_TRUE(HasPermissionToActivate(window));
+
+  // Overriding the permission revokes the previous one.
+  std::unique_ptr<exo::Permission> permission2 =
+      GrantPermissionToActivate(window, base::TimeDelta::FromDays(2));
+  EXPECT_FALSE(permission->Check(Permission::Capability::kActivate));
+  EXPECT_TRUE(permission2->Check(Permission::Capability::kActivate));
+
+  // The old permission no longer affects the window
+  permission.reset();
+  EXPECT_TRUE(HasPermissionToActivate(window));
+
+  // Deleting the permission revokes.
+  permission2.reset();
+  EXPECT_FALSE(HasPermissionToActivate(window));
 }
 
 TEST_F(ShellSurfaceTest, EmulateOverrideRedirect) {

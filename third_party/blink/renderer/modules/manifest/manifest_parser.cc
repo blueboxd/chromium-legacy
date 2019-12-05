@@ -183,7 +183,7 @@ KURL ManifestParser::ParseURL(const JSONObject* object,
 
   switch (origin_restriction) {
     case ParseURLOriginRestrictions::kSameOriginOnly:
-      if (!SecurityOrigin::AreSameSchemeHostPort(resolved, document_url_)) {
+      if (!SecurityOrigin::AreSameOrigin(resolved, document_url_)) {
         AddErrorInfo("property '" + key +
                      "' ignored, should be same origin as document.");
         return KURL();
@@ -225,7 +225,7 @@ KURL ManifestParser::ParseScope(const JSONObject* object,
   if (scope.IsEmpty())
     return KURL(default_value.BaseAsString());
 
-  if (!SecurityOrigin::AreSameSchemeHostPort(default_value, scope) ||
+  if (!SecurityOrigin::AreSameOrigin(default_value, scope) ||
       !default_value.GetPath().StartsWith(scope.GetPath())) {
     AddErrorInfo(
         "property 'scope' ignored. Start url should be within scope "

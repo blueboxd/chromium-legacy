@@ -77,8 +77,9 @@ void FCMInvalidationService::OnActiveAccountLogin() {
 
 void FCMInvalidationService::OnActiveAccountRefreshTokenUpdated() {
   diagnostic_info_.active_account_token_updated = base::Time::Now();
-  if (!IsStarted() && IsReadyToStart())
+  if (!IsStarted() && IsReadyToStart()) {
     StartInvalidator();
+  }
 }
 
 void FCMInvalidationService::OnActiveAccountLogout() {

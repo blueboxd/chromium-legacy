@@ -143,8 +143,7 @@ class VideoDetectorTest : public testing::Test {
       quad->SetNew(
           shared_quad_state, gfx::Rect(0, 0, 10, 10), gfx::Rect(0, 0, 5, 5),
           SurfaceRange(base::nullopt, frame_sink->last_activated_surface_id()),
-          SK_ColorMAGENTA, /*stretch_content_to_fill_bounds=*/false,
-          /*ignores_input_event=*/false);
+          SK_ColorMAGENTA, /*stretch_content_to_fill_bounds=*/false);
     }
     root_frame_sink_->SubmitCompositorFrame(
         root_frame_sink_->last_activated_local_surface_id(), std::move(frame));

@@ -29,6 +29,7 @@ extern const base::Feature kAutofillEnableVirtualCard;
 extern const base::Feature kAutofillNoLocalSaveOnUnmaskSuccess;
 extern const base::Feature kAutofillNoLocalSaveOnUploadSuccess;
 extern const base::Feature kAutofillSaveCardDismissOnNavigation;
+extern const base::Feature kAutofillSaveCardInfobarEditSupport;
 extern const base::Feature kAutofillUpstream;
 extern const base::Feature kAutofillUpstreamAllowAllEmailDomains;
 extern const base::Feature kAutofillUpstreamAlwaysRequestCardholderName;

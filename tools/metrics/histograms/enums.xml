@@ -18883,6 +18883,7 @@ Called by update_net_error_codes.py.-->
   <int value="649" label="SyncTypesListDisabled"/>
   <int value="650" label="AmbientAuthenticationInPrivateModesEnabled"/>
   <int value="651" label="PaymentMethodQueryEnabled"/>
+  <int value="652" label="StricterMixedContentTreatmentEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -21480,6 +21481,7 @@ Called by update_net_error_codes.py.-->
   <int value="1421" label="ENTERPRISEREPORTINGPRIVATE_GETPERSISTENTSECRET"/>
   <int value="1422" label="ENTERPRISEREPORTINGPRIVATE_GETDEVICEDATA"/>
   <int value="1423" label="ENTERPRISEREPORTINGPRIVATE_SETDEVICEDATA"/>
+  <int value="1424" label="ENTERPRISEREPORTINGPRIVATE_GETDEVICEINFO"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -22331,6 +22333,7 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Public topic empty"/>
   <int value="2" label="Private topic empty"/>
   <int value="3" label="Version empty"/>
+  <int value="4" label="Version invalid"/>
 </enum>
 
 <enum name="FCMInvalidationSubscriptionStatus">
@@ -25649,6 +25652,7 @@ Called by update_net_error_codes.py.-->
   <int value="3111" label="InputElementValueAsDateSetter"/>
   <int value="3112" label="HTMLMetaElementReferrerPolicy"/>
   <int value="3113" label="NonWebbyMixedContent"/>
+  <int value="3114" label="V8SharedArrayBufferConstructed"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -30847,6 +30851,18 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="Dismissed"/>
 </enum>
 
+<enum name="HappinessTrackingSurveyShouldShowSurveyReasons">
+  <int value="0" label="Shown"/>
+  <int value="1" label="Offline"/>
+  <int value="2" label="Last session crashed"/>
+  <int value="3" label="Received survey in current milestone"/>
+  <int value="4" label="Profile too new"/>
+  <int value="5" label="Last survey too recent"/>
+  <int value="6" label="Below probability limit"/>
+  <int value="7" label="Trigger string mismatch"/>
+  <int value="8" label="Not regular browser"/>
+</enum>
+
 <enum name="HeapProfilingMode">
   <int value="0" label="None"/>
   <int value="1" label="Minimal"/>
@@ -34296,6 +34312,14 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
              exceeds 256kb"/>
 </enum>
 
+<enum name="KeepaliveRequestResult">
+  <int value="0" label="OK"/>
+  <int value="1" label="Mojo connection is lost before response arrival"/>
+  <int value="2" label="Mojo connection is lost after response arrival"/>
+  <int value="3" label="Error before response arrival"/>
+  <int value="4" label="Error after response arrival"/>
+</enum>
+
 <enum name="KerberosConfigErrorCode">
   <int value="0" label="Valid"/>
   <int value="1" label="Section nested in group"/>
@@ -37357,6 +37381,7 @@ from previous Chrome versions.
       label="CrossOriginMediaPlaybackRequiresUserGesture:disabled"/>
   <int value="-296179618" label="CookiesWithoutSameSiteMustBeSecure:enabled"/>
   <int value="-295237704" label="EnableRemovingAllThirdPartyCookies:enabled"/>
+  <int value="-291936879" label="UsernameFirstFlowFilling:disabled"/>
   <int value="-290672626" label="enable-asm-wasm"/>
   <int value="-290329565" label="CrosVmCupsProxy:disabled"/>
   <int value="-288316828" label="enable-delegated-renderer"/>
@@ -37937,6 +37962,7 @@ from previous Chrome versions.
   <int value="452139294" label="VrShellExperimentalRendering:enabled"/>
   <int value="452955571" label="EnableFilesystemInIncognito:disabled"/>
   <int value="453102772" label="OfflinePagesLoadSignalCollecting:disabled"/>
+  <int value="454106312" label="UsernameFirstFlowFilling:enabled"/>
   <int value="455698038"
       label="disable-gesture-requirement-for-media-playback"/>
   <int value="455754036" label="MirroringService:disabled"/>
@@ -54836,6 +54862,18 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="Error parsing certificate"/>
 </enum>
 
+<enum name="RTCAPIName">
+  <int value="0" label="GetUserMedia"/>
+  <int value="1" label="PeerConnection00"/>
+  <int value="2" label="DeprecatedPeerConnection"/>
+  <int value="3" label="RTCPeerConnection"/>
+  <int value="4" label="GetMediaDevices"/>
+  <int value="5" label="MediaStreamRecorder"/>
+  <int value="6" label="CanvasCaptureStream"/>
+  <int value="7" label="VideoCaptureStream"/>
+  <int value="8" label="GetDisplayMedia"/>
+</enum>
+
 <enum name="RTCQuicStreamReadIntoResult">
   <int value="0" label="SomeDataWithFin"/>
   <int value="1" label="SomeDataNoFin"/>
@@ -57498,6 +57536,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="24" label="Save card bubble"/>
   <int value="25" label="Manage cards bubble"/>
   <int value="27" label="Sync and Google services settings"/>
+  <int value="28" label="Re-signin from sync error card in settings"/>
+  <int value="29" label="Forced sign-in"/>
+  <int value="30" label="Re-signin after an account rename"/>
 </enum>
 
 <enum name="SigninAccountEquality">
@@ -65768,18 +65809,6 @@ Full version information for the fingerprint enum values:
   <int value="2" label="Medium."/>
   <int value="3" label="Good."/>
   <int value="4" label="Excellent."/>
-</enum>
-
-<enum name="WebRTCAPIName">
-  <int value="0" label="GetUserMedia"/>
-  <int value="1" label="PeerConnection00"/>
-  <int value="2" label="DeprecatedPeerConnection"/>
-  <int value="3" label="RTCPeerConnection"/>
-  <int value="4" label="GetMediaDevices"/>
-  <int value="5" label="MediaStreamRecorder"/>
-  <int value="6" label="CanvasCaptureStream"/>
-  <int value="7" label="VideoCaptureStream"/>
-  <int value="8" label="GetDisplayMedia"/>
 </enum>
 
 <enum name="WebRtcAudioCodecs">

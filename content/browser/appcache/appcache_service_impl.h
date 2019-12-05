@@ -17,6 +17,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "content/browser/appcache/appcache_quota_client.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/common/content_export.h"
@@ -39,7 +40,6 @@ class SpecialStoragePolicy;
 namespace content {
 FORWARD_DECLARE_TEST(AppCacheServiceImplTest, ScheduleReinitialize);
 class AppCacheHost;
-class AppCacheQuotaClient;
 class AppCachePolicy;
 class AppCacheServiceImplTest;
 class AppCacheStorageImplTest;
@@ -147,10 +147,8 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
     return quota_manager_proxy_.get();
   }
 
-  // This WeakPtr should only be checked on the IO thread.
-  base::WeakPtr<AppCacheQuotaClient> quota_client() const {
-    return quota_client_;
-  }
+  // This QuotaClient should only be used on the IO thread.
+  AppCacheQuotaClient* quota_client() const { return quota_client_.get(); }
 
   AppCacheStorage* storage() const { return storage_.get(); }
 
@@ -192,7 +190,7 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
   base::FilePath cache_directory_;
   scoped_refptr<base::SequencedTaskRunner> db_task_runner_;
   AppCachePolicy* appcache_policy_;
-  base::WeakPtr<AppCacheQuotaClient> quota_client_;
+  scoped_refptr<AppCacheQuotaClient> quota_client_;
   std::unique_ptr<AppCacheStorage> storage_;
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;

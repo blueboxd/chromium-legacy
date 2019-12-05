@@ -91,8 +91,8 @@ void SyncLoadContext::StartAsyncWithWaitableEvent(
     int routing_id,
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        url_loader_factory_info,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_url_loader_factory,
     std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
     SyncLoadResponse* response,
     base::WaitableEvent* redirect_or_response_event,
@@ -100,7 +100,7 @@ void SyncLoadContext::StartAsyncWithWaitableEvent(
     base::TimeDelta timeout,
     mojo::PendingRemote<blink::mojom::BlobRegistry> download_to_blob_registry) {
   auto* context = new SyncLoadContext(
-      request.get(), std::move(url_loader_factory_info), response,
+      request.get(), std::move(pending_url_loader_factory), response,
       redirect_or_response_event, abort_event, timeout,
       std::move(download_to_blob_registry), loading_task_runner);
   context->request_id_ = context->resource_dispatcher_->StartAsync(
@@ -112,7 +112,7 @@ void SyncLoadContext::StartAsyncWithWaitableEvent(
 
 SyncLoadContext::SyncLoadContext(
     network::ResourceRequest* request,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory> url_loader_factory,
     SyncLoadResponse* response,
     base::WaitableEvent* redirect_or_response_event,
     base::WaitableEvent* abort_event,

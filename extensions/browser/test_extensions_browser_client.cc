@@ -212,6 +212,11 @@ void TestExtensionsBrowserClient::RegisterExtensionInterfaces(
     content::RenderFrameHost* render_frame_host,
     const Extension* extension) const {}
 
+void TestExtensionsBrowserClient::RegisterBrowserInterfaceBindersForFrame(
+    service_manager::BinderMapWithContext<content::RenderFrameHost*>* map,
+    content::RenderFrameHost* render_frame_host,
+    const Extension* extension) const {}
+
 std::unique_ptr<RuntimeAPIDelegate>
 TestExtensionsBrowserClient::CreateRuntimeAPIDelegate(
     content::BrowserContext* context) const {

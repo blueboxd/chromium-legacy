@@ -375,7 +375,7 @@ bool IntersectionGeometry::ClipToRoot(const LayoutObject* root,
   if (local_ancestor->HasOverflowClip()) {
     intersection_rect.Move(
         -PhysicalOffset(LayoutPoint(local_ancestor->ScrollOrigin()) +
-                        local_ancestor->ScrolledContentOffset()));
+                        local_ancestor->PixelSnappedScrolledContentOffset()));
   }
   LayoutRect root_clip_rect = root_rect.ToLayoutRect();
   // TODO(szager): This flipping seems incorrect because root_rect is already

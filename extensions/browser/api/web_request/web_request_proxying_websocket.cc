@@ -68,7 +68,8 @@ WebRequestProxyingWebSocket::WebRequestProxyingWebSocket(
                                      request,
                                      /*is_download=*/false,
                                      /*is_async=*/true,
-                                     /*is_service_worker_script=*/false)),
+                                     /*is_service_worker_script=*/false,
+                                     /*navigation_id=*/base::nullopt)),
       proxies_(proxies) {
   // base::Unretained is safe here because the callback will be canceled when
   // |shutdown_notifier_| is destroyed, and |proxies_| owns this.

@@ -74,8 +74,6 @@ IndexedDBQuotaClient::~IndexedDBQuotaClient() {}
 
 QuotaClient::ID IndexedDBQuotaClient::id() const { return kIndexedDatabase; }
 
-void IndexedDBQuotaClient::OnQuotaManagerDestroyed() { delete this; }
-
 void IndexedDBQuotaClient::GetOriginUsage(const url::Origin& origin,
                                           StorageType type,
                                           GetUsageCallback callback) {

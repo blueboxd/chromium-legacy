@@ -257,7 +257,7 @@
       <div slot="footer"
           hidden="[[!shouldShowFooter_(syncStatus.signedIn, diceEnabled_)]]">
         <settings-sync-account-control sync-status="[[syncStatus]]"
-            hide-buttons>
+            prefs="{{prefs}}" hide-buttons>
         </settings-sync-account-control>
         <div class="divider"></div>
         <div id="footer-description" on-click="onSyncDescriptionLinkClicked_">

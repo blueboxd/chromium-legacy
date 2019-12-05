@@ -322,11 +322,6 @@ bool RendererBlinkPlatformImpl::IsLinkVisited(uint64_t link_hash) {
   return GetContentClient()->renderer()->IsLinkVisited(link_hash);
 }
 
-blink::WebPrescientNetworking*
-RendererBlinkPlatformImpl::PrescientNetworking() {
-  return GetContentClient()->renderer()->GetPrescientNetworking();
-}
-
 blink::WebString RendererBlinkPlatformImpl::UserAgent() {
   auto* render_thread = RenderThreadImpl::current();
   // RenderThreadImpl is null in some tests.

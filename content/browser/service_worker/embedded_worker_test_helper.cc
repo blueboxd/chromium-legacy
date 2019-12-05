@@ -44,8 +44,9 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
       user_data_directory, std::move(database_task_runner), nullptr, nullptr,
       nullptr, url_loader_factory_getter_.get(),
       blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled()
-          ? wrapper_->CreateNonNetworkURLLoaderFactoryBundleInfoForUpdateCheck(
-                browser_context_.get())
+          ? wrapper_
+                ->CreateNonNetworkPendingURLLoaderFactoryBundleForUpdateCheck(
+                    browser_context_.get())
           : nullptr);
   wrapper_->process_manager()->SetProcessIdForTest(mock_render_process_id());
   wrapper_->process_manager()->SetNewProcessIdForTest(new_render_process_id());

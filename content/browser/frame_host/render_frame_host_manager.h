@@ -299,11 +299,6 @@ class CONTENT_EXPORT RenderFrameHostManager
   void RestoreFromBackForwardCache(
       std::unique_ptr<BackForwardCacheImpl::Entry>);
 
-  // BackForwardCache:
-  // Unfreezes the current frame host. This is called after committing a
-  // navigation to a frame that was restored from the back-forward cache.
-  void UnfreezeCurrentFrameHost(base::TimeTicks navigation_start);
-
   // Deletes any proxy hosts associated with this node. Used during destruction
   // of WebContentsImpl.
   void ResetProxyHosts();

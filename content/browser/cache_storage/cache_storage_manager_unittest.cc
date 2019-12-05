@@ -175,12 +175,12 @@ class MockCacheStorageQuotaManagerProxy : public MockQuotaManagerProxy {
                                     base::SingleThreadTaskRunner* task_runner)
       : MockQuotaManagerProxy(quota_manager, task_runner) {}
 
-  void RegisterClient(QuotaClient* client) override {
-    registered_clients_.push_back(client);
+  void RegisterClient(scoped_refptr<QuotaClient> client) override {
+    registered_clients_.push_back(std::move(client));
   }
 
   void SimulateQuotaManagerDestroyed() override {
-    for (auto* client : registered_clients_) {
+    for (const auto& client : registered_clients_) {
       client->OnQuotaManagerDestroyed();
     }
     registered_clients_.clear();
@@ -191,7 +191,7 @@ class MockCacheStorageQuotaManagerProxy : public MockQuotaManagerProxy {
     DCHECK(registered_clients_.empty());
   }
 
-  std::vector<QuotaClient*> registered_clients_;
+  std::vector<scoped_refptr<QuotaClient>> registered_clients_;
 };
 
 bool IsIndexFileCurrent(const base::FilePath& cache_dir) {
@@ -2435,7 +2435,7 @@ class CacheStorageQuotaClientTest : public CacheStorageManagerTest {
 
   void SetUp() override {
     CacheStorageManagerTest::SetUp();
-    quota_client_ = std::make_unique<CacheStorageQuotaClient>(
+    quota_client_ = base::MakeRefCounted<CacheStorageQuotaClient>(
         cache_manager_, CacheStorageOwner::kCacheAPI);
   }
 
@@ -2500,7 +2500,7 @@ class CacheStorageQuotaClientTest : public CacheStorageManagerTest {
     return quota_client_->DoesSupport(type);
   }
 
-  std::unique_ptr<CacheStorageQuotaClient> quota_client_;
+  scoped_refptr<CacheStorageQuotaClient> quota_client_;
 
   blink::mojom::QuotaStatusCode callback_status_;
   int64_t callback_quota_usage_ = 0;
@@ -2609,7 +2609,7 @@ TEST_F(CacheStorageQuotaClientDiskOnlyTest, QuotaDeleteUnloadedOriginData) {
   // Create a new CacheStorageManager that hasn't yet loaded the origin.
   quota_manager_proxy_->SimulateQuotaManagerDestroyed();
   RecreateStorageManager();
-  quota_client_ = std::make_unique<CacheStorageQuotaClient>(
+  quota_client_ = base::MakeRefCounted<CacheStorageQuotaClient>(
       cache_manager_, CacheStorageOwner::kCacheAPI);
 
   EXPECT_TRUE(QuotaDeleteOriginData(origin1_));

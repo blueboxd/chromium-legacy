@@ -56,7 +56,7 @@ void P2PSocketClientImpl::Init(
 
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
   state_ = STATE_OPENING;
-  dispatcher_->GetP2PSocketManager()->get()->CreateSocket(
+  dispatcher_->GetP2PSocketManager()->CreateSocket(
       type, local_address, network::P2PPortRange(min_port, max_port),
       remote_address, receiver_.BindNewPipeAndPassRemote(),
       socket_.BindNewPipeAndPassReceiver());

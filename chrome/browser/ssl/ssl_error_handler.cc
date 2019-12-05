@@ -29,7 +29,7 @@
 #include "chrome/browser/ssl/blocked_interception_blocking_page.h"
 #include "chrome/browser/ssl/captive_portal_blocking_page.h"
 #include "chrome/browser/ssl/captive_portal_helper.h"
-#include "chrome/browser/ssl/chrome_ssl_blocking_page.h"
+#include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
 #include "chrome/browser/ssl/mitm_software_blocking_page.h"
 #include "chrome/browser/ssl/ssl_error_assistant.h"
 #include "chrome/common/buildflags.h"
@@ -515,9 +515,10 @@ bool SSLErrorHandlerDelegateImpl::IsErrorOverridable() const {
 void SSLErrorHandlerDelegateImpl::ShowCaptivePortalInterstitial(
     const GURL& landing_url) {
   // Show captive portal blocking page. The interstitial owns the blocking page.
-  OnBlockingPageReady(new CaptivePortalBlockingPage(
-      web_contents_, request_url_, landing_url, std::move(ssl_cert_reporter_),
-      ssl_info_, cert_error_));
+  OnBlockingPageReady(
+      ChromeSecurityBlockingPageFactory::CreateCaptivePortalBlockingPage(
+          web_contents_, request_url_, landing_url,
+          std::move(ssl_cert_reporter_), ssl_info_, cert_error_));
 }
 
 void SSLErrorHandlerDelegateImpl::ShowMITMSoftwareInterstitial(
@@ -531,7 +532,7 @@ void SSLErrorHandlerDelegateImpl::ShowMITMSoftwareInterstitial(
 
 void SSLErrorHandlerDelegateImpl::ShowSSLInterstitial(const GURL& support_url) {
   // Show SSL blocking page. The interstitial owns the blocking page.
-  OnBlockingPageReady(ChromeSSLBlockingPage::Create(
+  OnBlockingPageReady(ChromeSecurityBlockingPageFactory::CreateSSLPage(
       web_contents_, cert_error_, ssl_info_, request_url_, options_mask_,
       base::Time::NowFromSystemTime(), support_url,
       std::move(ssl_cert_reporter_)));

@@ -42,7 +42,8 @@ WebBundleHandleTracker::MaybeCreateWebBundleHandle(const GURL& url,
         // reloaded.
         return WebBundleHandle::MaybeCreateForNavigationInfo(
             std::make_unique<WebBundleNavigationInfo>(reader_->source().Clone(),
-                                                      target_inner_url_),
+                                                      target_inner_url_,
+                                                      reader_->GetWeakPtr()),
             frame_tree_node_id);
       }
       break;

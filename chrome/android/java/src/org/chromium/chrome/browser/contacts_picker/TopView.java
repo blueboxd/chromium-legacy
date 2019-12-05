@@ -106,30 +106,35 @@ public class TopView extends RelativeLayout
         textView.setText(R.string.top_view_names_filter_label);
         mNamesFilterChip.setSelected(true);
         mNamesFilterChip.setOnClickListener(this);
+        mNamesFilterChip.setIcon(R.drawable.ic_check_googblue_24dp, false);
 
         mAddressFilterChip = findViewById(R.id.address_filter);
         textView = mAddressFilterChip.getPrimaryTextView();
         textView.setText(R.string.top_view_address_filter_label);
         mAddressFilterChip.setSelected(true);
         mAddressFilterChip.setOnClickListener(this);
+        mAddressFilterChip.setIcon(R.drawable.ic_check_googblue_24dp, false);
 
         mEmailFilterChip = findViewById(R.id.email_filter);
         textView = mEmailFilterChip.getPrimaryTextView();
         textView.setText(R.string.top_view_email_filter_label);
         mEmailFilterChip.setSelected(true);
         mEmailFilterChip.setOnClickListener(this);
+        mEmailFilterChip.setIcon(R.drawable.ic_check_googblue_24dp, false);
 
         mTelephonesFilterChip = findViewById(R.id.tel_filter);
         textView = mTelephonesFilterChip.getPrimaryTextView();
         textView.setText(R.string.top_view_telephone_filter_label);
         mTelephonesFilterChip.setSelected(true);
         mTelephonesFilterChip.setOnClickListener(this);
+        mTelephonesFilterChip.setIcon(R.drawable.ic_check_googblue_24dp, false);
 
         mIconsFilterChip = findViewById(R.id.icon_filter);
         textView = mIconsFilterChip.getPrimaryTextView();
         textView.setText(R.string.top_view_icon_filter_label);
         mIconsFilterChip.setSelected(true);
         mIconsFilterChip.setOnClickListener(this);
+        mIconsFilterChip.setIcon(R.drawable.ic_check_googblue_24dp, false);
     }
 
     @Override
@@ -154,22 +159,28 @@ public class TopView extends RelativeLayout
      */
     public void notifyChipToggled(@PickerAdapter.FilterType int chip) {
         ChipView chipView;
+        int iconResId = 0;
 
         switch (chip) {
             case PickerAdapter.FilterType.NAMES:
                 chipView = mNamesFilterChip;
+                iconResId = R.drawable.names;
                 break;
             case PickerAdapter.FilterType.ADDRESSES:
                 chipView = mAddressFilterChip;
+                iconResId = R.drawable.address;
                 break;
             case PickerAdapter.FilterType.EMAILS:
                 chipView = mEmailFilterChip;
+                iconResId = R.drawable.email;
                 break;
             case PickerAdapter.FilterType.TELEPHONES:
                 chipView = mTelephonesFilterChip;
+                iconResId = R.drawable.telephone;
                 break;
             case PickerAdapter.FilterType.ICONS:
                 chipView = mIconsFilterChip;
+                iconResId = R.drawable.face;
                 break;
             default:
                 assert false;
@@ -177,6 +188,8 @@ public class TopView extends RelativeLayout
         }
 
         chipView.setSelected(!chipView.isSelected());
+        chipView.setIcon(
+                chipView.isSelected() ? R.drawable.ic_check_googblue_24dp : iconResId, true);
         mChipToggledCallback.onChipToggled(chip);
     }
 

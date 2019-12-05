@@ -201,6 +201,7 @@ class AssistantFormCounterInput extends AssistantFormInput {
                     counter.getDescriptionLine2(), mDelegate::onLinkClicked);
             hideIfEmpty(view.mDescriptionLine1View);
             hideIfEmpty(view.mDescriptionLine2View);
+            setMinimumHeight(view.mView, view.mDescriptionLine1View, view.mDescriptionLine2View);
 
             updateLabelAndValue(counter, view);
 
@@ -225,6 +226,9 @@ class AssistantFormCounterInput extends AssistantFormInput {
 
         // Update the value view.
         view.mValueView.setText(Integer.toString(counter.getValue()));
+
+        // Mark non-zero values as "enabled" to give them an active style.
+        view.mValueView.setEnabled(counter.getValue() != 0);
     }
 
     private void updateButtonsState(
@@ -260,9 +264,5 @@ class AssistantFormCounterInput extends AssistantFormInput {
         updateButtonsState(counters, views);
 
         mDelegate.onCounterChanged(counterIndex, counter.getValue());
-    }
-
-    private void hideIfEmpty(TextView view) {
-        view.setVisibility(view.length() == 0 ? View.GONE : View.VISIBLE);
     }
 }

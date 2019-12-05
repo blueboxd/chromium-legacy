@@ -117,7 +117,7 @@ bool IsSelectInDefaultState(const HTMLSelectElement& select) {
 // in its default state if the checked state matches the state of the checked
 // attribute.
 bool IsInDefaultState(const HTMLFormControlElement& form_element) {
-  if (auto* input = ToHTMLInputElementOrNull(form_element)) {
+  if (auto* input = DynamicTo<HTMLInputElement>(form_element)) {
     if (input->type() == input_type_names::kCheckbox ||
         input->type() == input_type_names::kRadio) {
       return input->checked() ==
@@ -145,26 +145,25 @@ HTMLInputElement* FindSuitableSearchInputElement(const HTMLFormElement& form) {
     if (control->IsDisabledFormControl() || control->GetName().IsNull())
       continue;
 
-    if (!IsInDefaultState(*control) || IsHTMLTextAreaElement(*control))
+    if (!IsInDefaultState(*control) || IsA<HTMLTextAreaElement>(*control))
       return nullptr;
 
-    if (IsHTMLInputElement(*control) && control->willValidate()) {
-      const HTMLInputElement& input = ToHTMLInputElement(*control);
-
+    auto* input = DynamicTo<HTMLInputElement>(control);
+    if (input && input->willValidate()) {
       // Return nothing if a file upload field or a password field are
       // found.
-      if (input.type() == input_type_names::kFile ||
-          input.type() == input_type_names::kPassword)
+      if (input->type() == input_type_names::kFile ||
+          input->type() == input_type_names::kPassword)
         return nullptr;
 
-      if (input.IsTextField()) {
+      if (input->IsTextField()) {
         if (text_element) {
           // The auto-complete bar only knows how to fill in one
           // value.  This form has multiple fields; don't treat it as
           // searchable.
           return nullptr;
         }
-        text_element = ToHTMLInputElement(control);
+        text_element = input;
       }
     }
   }

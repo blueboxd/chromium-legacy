@@ -441,15 +441,18 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(URLFetcher* url_fetcher,
   UpdateURLLoaderRequest* request = manifest_fetcher->request();
   int response_code = -1;
   bool is_valid_response_code = false;
-  fetched_manifest_scope_ =
-      AppCache::GetManifestScope(base::Optional<std::string>(), manifest_url_);
+  std::string optional_manifest_scope;
   if (net_error == net::OK) {
     response_code = request->GetResponseCode();
     is_valid_response_code = (response_code / 100 == 2);
 
     std::string mime_type = request->GetMimeType();
     manifest_has_valid_mime_type_ = (mime_type == "text/cache-manifest");
+
+    optional_manifest_scope = request->GetAppCacheAllowedHeader();
   }
+  fetched_manifest_scope_ =
+      AppCache::GetManifestScope(manifest_url_, optional_manifest_scope);
 
   if (is_valid_response_code) {
     manifest_data_ = manifest_fetcher->manifest_data();
@@ -460,6 +463,9 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(URLFetcher* url_fetcher,
     else
       ContinueHandleManifestFetchCompleted(true);
   } else if (response_code == 304 && update_type_ == UPGRADE_ATTEMPT) {
+    // Note: Scope changes aren't considered if the server sends a 304 response.
+    // The response cannot contain a body (per HTTP spec), so we treat these
+    // cases as implying that the scope also hasn't changed.
     ContinueHandleManifestFetchCompleted(false);
   } else if ((response_code == 404 || response_code == 410) &&
              update_type_ == UPGRADE_ATTEMPT) {
@@ -918,13 +924,11 @@ void AppCacheUpdateJob::StoreGroupAndCache() {
   DCHECK_EQ(fetched_manifest_scope_, newest_cache->manifest_scope());
 
   // Verify fetched manifest parser version and scope:
-  // TODO(cmp) -- Enable (1) when values are persisted since at that time we
-  // will be initializing values from the DB that will get version 0.
   // 1. Values must be initialized and valid:
   //    - For parser version, the version must not be -1.
   //    - For scope, the the value must not be the empty string.
-  // DCHECK_NE(fetched_manifest_parser_version_, -1);
-  // DCHECK_NE(fetched_manifest_scope_, "");
+  DCHECK_NE(fetched_manifest_parser_version_, -1);
+  DCHECK_NE(fetched_manifest_scope_, "");
 
   // 2. Check that the UpdateJob value state is correct:
   //    - For parser version, the newly fetched parser version must be greater
@@ -1071,6 +1075,11 @@ void AppCacheUpdateJob::CheckIfManifestChanged() {
     return;
   }
 
+  if (fetched_manifest_scope_ != cached_manifest_scope_) {
+    ContinueHandleManifestFetchCompleted(true);
+    return;
+  }
+
   // Load manifest data from storage to compare against fetched manifest.
   manifest_response_reader_ =
       storage_->CreateResponseReader(manifest_url_, entry->response_id());
@@ -1083,6 +1092,7 @@ void AppCacheUpdateJob::CheckIfManifestChanged() {
 }
 
 void AppCacheUpdateJob::OnManifestDataReadComplete(int result) {
+  DCHECK_EQ(fetched_manifest_scope_, cached_manifest_scope_);
   if (result > 0) {
     loaded_manifest_data_.append(read_manifest_buffer_->data(), result);
     manifest_response_reader_->ReadData(

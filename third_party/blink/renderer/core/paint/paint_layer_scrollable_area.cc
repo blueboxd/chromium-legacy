@@ -2369,7 +2369,7 @@ static bool LayerNodeMayNeedCompositedScrolling(const PaintLayer* layer) {
     if (IsA<HTMLSelectElement>(node))
       return false;
     if (TextControlElement* text_control = EnclosingTextControl(node)) {
-      if (IsHTMLInputElement(text_control)) {
+      if (IsA<HTMLInputElement>(text_control)) {
         return false;
       }
     }

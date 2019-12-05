@@ -33,15 +33,13 @@ class IdentityProvider;
 
 namespace syncer {
 
-// A class that manages the registration of types for server-issued
+// A class that manages the subscription to topics for server-issued
 // notifications.
-// Manages the details of registering types for invalidation. For example,
+// Manages the details of subscribing to topics for invalidations. For example,
 // Chrome Sync uses the ModelTypes (bookmarks, passwords, autofill data) as
-// topics, which will be registered for the invalidations.
-// TODO(crbug.com/1029698): Methods in this class have names which are similar
-// to names in RegistrationManager. As part of clean-up work for removing old
-// RegistrationManger and cachinvalidation library it's worth to revisit methods
-// names in this class.
+// topics.
+// TODO(crbug.com/1029698): Rename this to PerUserTopicSubscriptionManager, and
+// rename its methods accordingly.
 class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
  public:
   class Observer {
@@ -58,8 +56,6 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
       bool migrate_prefs);
 
   virtual ~PerUserTopicRegistrationManager();
-
-  enum class TokenStateOnRegistrationRequest;
 
   // Just calls std::make_unique. For ease of base::Bind'ing
   static std::unique_ptr<PerUserTopicRegistrationManager> Create(
@@ -78,11 +74,10 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  virtual void UpdateRegisteredTopics(const Topics& ids,
+  virtual void UpdateRegisteredTopics(const Topics& topics,
                                       const std::string& token);
 
   virtual void Init();
-  TopicSet GetRegisteredIds() const;
 
   // Classes interested in subscription channel state changes should implement
   // PerUserTopicRegistrationManager::Observer and register here.
@@ -91,15 +86,18 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
 
   base::DictionaryValue CollectDebugData() const;
 
+  virtual base::Optional<Topic> LookupRegisteredPublicTopicByPrivateTopic(
+      const std::string& private_topic) const;
+
+  TopicSet GetRegisteredTopicsForTest() const;
+
   bool HaveAllRequestsFinishedForTest() const {
     return registration_statuses_.empty();
   }
 
-  virtual base::Optional<Topic> LookupRegisteredPublicTopicByPrivateTopic(
-      const std::string& private_topic) const;
-
  private:
   struct RegistrationEntry;
+  enum class TokenStateOnRegistrationRequest;
 
   void DoRegistrationUpdate();
 

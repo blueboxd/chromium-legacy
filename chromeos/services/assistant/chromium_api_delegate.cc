@@ -13,9 +13,9 @@ namespace chromeos {
 namespace assistant {
 
 ChromiumApiDelegate::ChromiumApiDelegate(
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        url_loader_factory_info)
-    : http_connection_factory_(std::move(url_loader_factory_info)) {}
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_url_loader_factory)
+    : http_connection_factory_(std::move(pending_url_loader_factory)) {}
 
 ChromiumApiDelegate::~ChromiumApiDelegate() = default;
 

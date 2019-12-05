@@ -147,7 +147,7 @@ gfx::Point CalculateBubblePositionLeftRightStrategy(gfx::Rect anchor,
   return result.origin();
 }
 
-gfx::Point CalculateBubblePositionRigthLeftStrategy(gfx::Rect anchor,
+gfx::Point CalculateBubblePositionRightLeftStrategy(gfx::Rect anchor,
                                                     gfx::Size bubble,
                                                     gfx::Rect bounds) {
   gfx::Rect result(anchor.x() + anchor.width(), anchor.y(), bubble.width(),

@@ -215,7 +215,7 @@ void PreviewsLitePageRedirectURLLoader::CreateRedirectInformation(
 void PreviewsLitePageRedirectURLLoader::OnResultDetermined(
     ServingLoaderResult result,
     base::Optional<net::RedirectInfo> redirect_info,
-    scoped_refptr<network::ResourceResponse> response) {
+    network::mojom::URLResponseHeadPtr response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!redirect_info || result == ServingLoaderResult::kRedirect);
   DCHECK(!response || result == ServingLoaderResult::kRedirect);
@@ -229,7 +229,7 @@ void PreviewsLitePageRedirectURLLoader::OnResultDetermined(
       OnLitePageFallback();
       return;
     case ServingLoaderResult::kRedirect:
-      OnLitePageRedirect(redirect_info.value(), response->head);
+      OnLitePageRedirect(redirect_info.value(), std::move(response));
       return;
   }
   NOTREACHED();
@@ -262,11 +262,11 @@ void PreviewsLitePageRedirectURLLoader::OnLitePageSuccess() {
 
 void PreviewsLitePageRedirectURLLoader::OnLitePageRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& response_head) {
+    network::mojom::URLResponseHeadPtr response_head) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   redirect_info_ = redirect_info;
 
-  response_head_ = response_head;
+  response_head_ = std::move(response_head);
 
   std::move(callback_).Run(
       nullptr,
@@ -285,8 +285,8 @@ void PreviewsLitePageRedirectURLLoader::StartHandlingRedirectToModifiedRequest(
     mojo::PendingReceiver<network::mojom::URLLoader> receiver,
     mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  response_head_.request_start = base::TimeTicks::Now();
-  response_head_.response_start = response_head_.request_start;
+  response_head_->request_start = base::TimeTicks::Now();
+  response_head_->response_start = response_head_->request_start;
 
   std::string header_string = base::StringPrintf(
       "HTTP/1.1 %i Temporary Redirect\n"
@@ -294,9 +294,9 @@ void PreviewsLitePageRedirectURLLoader::StartHandlingRedirectToModifiedRequest(
       net::HTTP_TEMPORARY_REDIRECT,
       modified_resource_request_.url.spec().c_str());
 
-  response_head_.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  response_head_->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(header_string));
-  response_head_.encoded_data_length = 0;
+  response_head_->encoded_data_length = 0;
 
   StartHandlingRedirect(resource_request, std::move(receiver),
                         std::move(client));
@@ -320,7 +320,7 @@ void PreviewsLitePageRedirectURLLoader::StartHandlingRedirect(
     return;
   }
 
-  client_->OnReceiveRedirect(redirect_info_, response_head_);
+  client_->OnReceiveRedirect(redirect_info_, response_head_->Clone());
 }
 
 void PreviewsLitePageRedirectURLLoader::FollowRedirect(

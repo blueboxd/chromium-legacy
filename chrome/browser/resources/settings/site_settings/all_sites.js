@@ -108,6 +108,12 @@ Polymer({
      * @private
      */
     sortMethod_: String,
+
+    /** @private */
+    storagePressureFlagEnabled_: {
+      type: Boolean,
+      value: () => loadTimeData.getBoolean('enableStoragePressureUI'),
+    },
   },
 
   /** @private {?settings.LocalDataBrowserProxy} */
@@ -133,7 +139,7 @@ Polymer({
       this.selectedItem_ = event.detail;
     });
 
-    if (loadTimeData.getBoolean('enableStoragePressureUI')) {
+    if (this.storagePressureFlagEnabled_) {
       const sortParam = settings.getQueryParameters().get('sort');
       if (Object.values(this.sortMethods_).includes(sortParam)) {
         this.$.sortMethod.value = sortParam;
@@ -396,7 +402,11 @@ Polymer({
    */
   onConfirmClearData_: function(e) {
     e.preventDefault();
-    this.$.confirmClearData.get().showModal();
+    if (this.storagePressureFlagEnabled_) {
+      this.$.confirmClearDataNew.get().showModal();
+    } else {
+      this.$.confirmClearData.get().showModal();
+    }
   },
 
   /** @private */

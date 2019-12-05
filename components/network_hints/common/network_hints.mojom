@@ -14,7 +14,5 @@ interface NetworkHintsHandler {
 
   // This method is called periodically with a hint to preconnect to the origin
   // of the specified url.
-  Preconnect(int32 render_frame_id,
-             url.mojom.Url url,
-             bool allow_credentials);
+  Preconnect(url.mojom.Url url, bool allow_credentials);
 };

@@ -74,31 +74,31 @@ const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     "by Blink, but based on a user initiated navigation."
   )");
 
-void AddErrorMessageToConsole(int frame_tree_node_id,
-                              const std::string& error_message) {
-  WebContents* web_contents =
-      WebContents::FromFrameTreeNodeId(frame_tree_node_id);
-  if (!web_contents)
-    return;
-  web_contents->GetMainFrame()->AddMessageToConsole(
-      blink::mojom::ConsoleMessageLevel::kError, error_message);
+std::string GetMetadataParseErrorMessage(
+    const data_decoder::mojom::BundleMetadataParseErrorPtr& metadata_error) {
+  return std::string("Failed to read metadata of Web Bundle file: ") +
+         metadata_error->message;
 }
 
-void AddMetadataParseErrorMessageToConsole(
+void CompleteWithInvalidWebBundleError(
+    mojo::Remote<network::mojom::URLLoaderClient> client,
     int frame_tree_node_id,
-    const data_decoder::mojom::BundleMetadataParseErrorPtr& metadata_error) {
-  AddErrorMessageToConsole(
-      frame_tree_node_id,
-      std::string("Failed to read metadata of Web Bundle file: ") +
-          metadata_error->message);
+    const std::string& error_message) {
+  WebContents* web_contents =
+      WebContents::FromFrameTreeNodeId(frame_tree_node_id);
+  if (web_contents) {
+    web_contents->GetMainFrame()->AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kError, error_message);
+  }
+  std::move(client)->OnComplete(
+      network::URLLoaderCompletionStatus(net::ERR_INVALID_WEB_BUNDLE));
 }
 
 // A class to provide a network::mojom::URLLoader interface to redirect a
 // request to the Web Bundle to the main resource url.
-class PrimaryURLRedirectLoader final : public network::mojom::URLLoader {
+class RedirectURLLoader final : public network::mojom::URLLoader {
  public:
-  PrimaryURLRedirectLoader(
-      mojo::PendingRemote<network::mojom::URLLoaderClient> client)
+  RedirectURLLoader(mojo::PendingRemote<network::mojom::URLLoaderClient> client)
       : client_(std::move(client)) {}
 
   void OnReadyToRedirect(const network::ResourceRequest& resource_request,
@@ -139,7 +139,7 @@ class PrimaryURLRedirectLoader final : public network::mojom::URLLoader {
 
   mojo::Remote<network::mojom::URLLoaderClient> client_;
 
-  DISALLOW_COPY_AND_ASSIGN(PrimaryURLRedirectLoader);
+  DISALLOW_COPY_AND_ASSIGN(RedirectURLLoader);
 };
 
 // A class to inherit NavigationLoaderInterceptor for a navigation to an
@@ -219,11 +219,9 @@ class InterceptorForFile final : public NavigationLoaderInterceptor {
       data_decoder::mojom::BundleMetadataParseErrorPtr metadata_error) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     if (metadata_error) {
-      AddMetadataParseErrorMessageToConsole(frame_tree_node_id_,
-                                            metadata_error);
-      std::move(forwarding_client_)
-          ->OnComplete(
-              network::URLLoaderCompletionStatus(net::ERR_INVALID_WEB_BUNDLE));
+      CompleteWithInvalidWebBundleError(
+          std::move(forwarding_client_), frame_tree_node_id_,
+          GetMetadataParseErrorMessage(metadata_error));
       return;
     }
     DCHECK(reader_);
@@ -234,7 +232,7 @@ class InterceptorForFile final : public NavigationLoaderInterceptor {
     const GURL new_url = web_bundle_utils::GetSynthesizedUrlForWebBundle(
         request.url, primary_url_);
     auto redirect_loader =
-        std::make_unique<PrimaryURLRedirectLoader>(forwarding_client_.Unbind());
+        std::make_unique<RedirectURLLoader>(forwarding_client_.Unbind());
     redirect_loader->OnReadyToRedirect(request, new_url);
   }
 
@@ -318,9 +316,9 @@ class InterceptorForTrustableFile final : public NavigationLoaderInterceptor {
       mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     if (metadata_error_) {
-      mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
-          ->OnComplete(
-              network::URLLoaderCompletionStatus(net::ERR_INVALID_WEB_BUNDLE));
+      CompleteWithInvalidWebBundleError(
+          mojo::Remote<network::mojom::URLLoaderClient>(std::move(client)),
+          frame_tree_node_id_, GetMetadataParseErrorMessage(metadata_error_));
       return;
     }
 
@@ -348,7 +346,7 @@ class InterceptorForTrustableFile final : public NavigationLoaderInterceptor {
     }
 
     auto redirect_loader =
-        std::make_unique<PrimaryURLRedirectLoader>(std::move(client));
+        std::make_unique<RedirectURLLoader>(std::move(client));
     redirect_loader->OnReadyToRedirect(resource_request, primary_url_);
     mojo::MakeSelfOwnedReceiver(
         std::move(redirect_loader),
@@ -360,7 +358,6 @@ class InterceptorForTrustableFile final : public NavigationLoaderInterceptor {
     DCHECK(!url_loader_factory_);
 
     if (error) {
-      AddMetadataParseErrorMessageToConsole(frame_tree_node_id_, error);
       metadata_error_ = std::move(error);
     } else {
       primary_url_ = reader_->GetPrimaryURL();
@@ -464,27 +461,20 @@ class InterceptorForNetwork final : public NavigationLoaderInterceptor {
                                      (*response_head)->mime_type)) {
       return false;
     }
+    *client_receiver = forwarding_client_.BindNewPipeAndPassReceiver();
 
     auto source = WebBundleSource::MaybeCreateFromNetworkUrl(request.url);
     if (!source) {
-      AddErrorMessageToConsole(
-          frame_tree_node_id_,
+      CompleteWithInvalidWebBundleError(
+          std::move(forwarding_client_), frame_tree_node_id_,
           "Web Bundle response must be served from HTTPS or localhost HTTP.");
-      *client_receiver = forwarding_client_.BindNewPipeAndPassReceiver();
-      std::move(forwarding_client_)
-          ->OnComplete(
-              network::URLLoaderCompletionStatus(net::ERR_INVALID_WEB_BUNDLE));
       return true;
     }
 
     if ((*response_head)->content_length <= 0) {
-      AddErrorMessageToConsole(
-          frame_tree_node_id_,
+      CompleteWithInvalidWebBundleError(
+          std::move(forwarding_client_), frame_tree_node_id_,
           "Web Bundle response must have valid Content-Length header.");
-      *client_receiver = forwarding_client_.BindNewPipeAndPassReceiver();
-      std::move(forwarding_client_)
-          ->OnComplete(
-              network::URLLoaderCompletionStatus(net::ERR_INVALID_WEB_BUNDLE));
       return true;
     }
 
@@ -498,54 +488,44 @@ class InterceptorForNetwork final : public NavigationLoaderInterceptor {
     reader_->ReadMetadata(
         base::BindOnce(&InterceptorForNetwork::OnMetadataReady,
                        weak_factory_.GetWeakPtr(), request));
-    *client_receiver = forwarding_client_.BindNewPipeAndPassReceiver();
     return true;
   }
 
   void OnMetadataReady(network::ResourceRequest request,
                        data_decoder::mojom::BundleMetadataParseErrorPtr error) {
     if (error) {
-      AddMetadataParseErrorMessageToConsole(frame_tree_node_id_, error);
-      std::move(forwarding_client_)
-          ->OnComplete(
-              network::URLLoaderCompletionStatus(net::ERR_INVALID_WEB_BUNDLE));
+      CompleteWithInvalidWebBundleError(std::move(forwarding_client_),
+                                        frame_tree_node_id_,
+                                        GetMetadataParseErrorMessage(error));
       return;
     }
     primary_url_ = reader_->GetPrimaryURL();
     if (!reader_->HasEntry(primary_url_)) {
-      AddErrorMessageToConsole(
-          frame_tree_node_id_,
+      CompleteWithInvalidWebBundleError(
+          std::move(forwarding_client_), frame_tree_node_id_,
           "The primary URL resource is not found in the web bundle.");
-      std::move(forwarding_client_)
-          ->OnComplete(
-              network::URLLoaderCompletionStatus(net::ERR_INVALID_WEB_BUNDLE));
       return;
     }
     if (primary_url_.GetOrigin() != reader_->source().url().GetOrigin()) {
-      AddErrorMessageToConsole(frame_tree_node_id_,
-                               "The origin of primary URL doesn't match with "
-                               "the origin of the web bundle.");
-      std::move(forwarding_client_)
-          ->OnComplete(
-              network::URLLoaderCompletionStatus(net::ERR_INVALID_WEB_BUNDLE));
+      CompleteWithInvalidWebBundleError(
+          std::move(forwarding_client_), frame_tree_node_id_,
+          "The origin of primary URL doesn't match with the origin of the web "
+          "bundle.");
       return;
     }
     if (!reader_->source().IsNavigationPathRestrictionSatisfied(primary_url_)) {
-      AddErrorMessageToConsole(
-          frame_tree_node_id_,
+      CompleteWithInvalidWebBundleError(
+          std::move(forwarding_client_), frame_tree_node_id_,
           base::StringPrintf("Path restriction mismatch: Can't navigate to %s "
                              "in the web bundle served from %s.",
                              primary_url_.spec().c_str(),
                              reader_->source().url().spec().c_str()));
-      std::move(forwarding_client_)
-          ->OnComplete(
-              network::URLLoaderCompletionStatus(net::ERR_INVALID_WEB_BUNDLE));
       return;
     }
     url_loader_factory_ = std::make_unique<WebBundleURLLoaderFactory>(
         reader_, frame_tree_node_id_);
     auto redirect_loader =
-        std::make_unique<PrimaryURLRedirectLoader>(forwarding_client_.Unbind());
+        std::make_unique<RedirectURLLoader>(forwarding_client_.Unbind());
     redirect_loader->OnReadyToRedirect(request, primary_url_);
   }
 
@@ -637,8 +617,8 @@ class InterceptorForTrackedNavigationFromTrustableFileOrFromNetwork final
       mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     url_loader_factory_->CreateLoaderAndStart(
-        std::move(receiver), /*routing_id=*/0, /*request_id=*/0, /*options=*/0,
-        resource_request, std::move(client),
+        std::move(receiver), /*routing_id=*/0, /*request_id=*/0,
+        /*options=*/0, resource_request, std::move(client),
         net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation));
     std::move(done_callback_)
         .Run(resource_request.url, std::move(url_loader_factory_));
@@ -712,7 +692,7 @@ class InterceptorForTrackedNavigationFromFile final
       const GURL new_url = web_bundle_utils::GetSynthesizedUrlForWebBundle(
           web_bundle_url, original_request_url_);
       auto redirect_loader =
-          std::make_unique<PrimaryURLRedirectLoader>(std::move(client));
+          std::make_unique<RedirectURLLoader>(std::move(client));
       redirect_loader->OnReadyToRedirect(resource_request, new_url);
       mojo::MakeSelfOwnedReceiver(
           std::move(redirect_loader),
@@ -744,34 +724,77 @@ class InterceptorForTrackedNavigationFromFile final
   DISALLOW_COPY_AND_ASSIGN(InterceptorForTrackedNavigationFromFile);
 };
 
-// A class to inherit NavigationLoaderInterceptor for the history navigation to
-// a Web Bundle file.
-// - MaybeCreateLoader() is called for the history navigation request. It
-//   continues on CreateURLLoader() to create the loader for the main resource.
-//   - If OnMetadataReady() has not been called yet:
-//       Wait for OnMetadataReady() to be called.
-//   - If OnMetadataReady() was called with an error:
-//       Completes the request with ERR_INVALID_WEB_BUNDLE.
-//   - If OnMetadataReady() was called whthout errors:
-//       Creates the loader for the main resource.
-class InterceptorForNavigationInfo final : public NavigationLoaderInterceptor {
- public:
-  InterceptorForNavigationInfo(
-      std::unique_ptr<WebBundleNavigationInfo> navigation_info,
-      DoneCallback done_callback,
-      int frame_tree_node_id)
-      : reader_(base::MakeRefCounted<WebBundleReader>(
-            navigation_info->source().Clone())),
-        target_inner_url_(navigation_info->target_inner_url()),
-        done_callback_(std::move(done_callback)),
-        frame_tree_node_id_(frame_tree_node_id) {
-    reader_->ReadMetadata(
-        base::BindOnce(&InterceptorForNavigationInfo::OnMetadataReady,
-                       weak_factory_.GetWeakPtr()));
-  }
-  ~InterceptorForNavigationInfo() override {
+// A base class of the following NavigationLoaderInterceptor classes. They are
+// used to intercept history navigation to a Web Bundle.
+//   - InterceptorForHistoryNavigationWithExistingReader:
+//       This class is used when the WebBundleReader for the Web Bundle is still
+//       alive.
+//   - InterceptorForHistoryNavigationFromFileOrFromTrustableFile:
+//       This class is used when the WebBundleReader was already deleted, and
+//       the Web Bundle is a file or a trustable file.
+//   - InterceptorForHistoryNavigationFromNetwork:
+//       This class is used when the WebBundleReader was already deleted, and
+//       the Web Bundle was from network.
+class InterceptorForHistoryNavigation : public NavigationLoaderInterceptor {
+ protected:
+  InterceptorForHistoryNavigation(const GURL& target_inner_url,
+                                  DoneCallback done_callback,
+                                  int frame_tree_node_id)
+      : target_inner_url_(target_inner_url),
+        frame_tree_node_id_(frame_tree_node_id),
+        done_callback_(std::move(done_callback)) {}
+  ~InterceptorForHistoryNavigation() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   }
+
+  void CreateWebBundleURLLoaderFactory(scoped_refptr<WebBundleReader> reader) {
+    DCHECK(reader->HasEntry(target_inner_url_));
+    url_loader_factory_ = std::make_unique<WebBundleURLLoaderFactory>(
+        std::move(reader), frame_tree_node_id_);
+  }
+  void CreateLoaderAndStartAndDone(
+      const network::ResourceRequest& resource_request,
+      mojo::PendingReceiver<network::mojom::URLLoader> receiver,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
+    network::ResourceRequest new_resource_request = resource_request;
+    new_resource_request.url = target_inner_url_;
+    url_loader_factory_->CreateLoaderAndStart(
+        std::move(receiver), /*routing_id=*/0, /*request_id=*/0,
+        /*options=*/0, new_resource_request, std::move(client),
+        net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation));
+    std::move(done_callback_)
+        .Run(target_inner_url_, std::move(url_loader_factory_));
+  }
+
+  const GURL target_inner_url_;
+  const int frame_tree_node_id_;
+  std::unique_ptr<WebBundleURLLoaderFactory> url_loader_factory_;
+  SEQUENCE_CHECKER(sequence_checker_);
+
+ private:
+  DoneCallback done_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(InterceptorForHistoryNavigation);
+};
+
+// A class to inherit NavigationLoaderInterceptor for the history navigation to
+// a Web Bundle when the previous WebBundleReader is still alive.
+// - MaybeCreateLoader() is called for the history navigation request. It
+//   continues on CreateURLLoader() to create the loader for the main resource.
+class InterceptorForHistoryNavigationWithExistingReader final
+    : public InterceptorForHistoryNavigation {
+ public:
+  InterceptorForHistoryNavigationWithExistingReader(
+      scoped_refptr<WebBundleReader> reader,
+      const GURL& target_inner_url,
+      DoneCallback done_callback,
+      int frame_tree_node_id)
+      : InterceptorForHistoryNavigation(target_inner_url,
+                                        std::move(done_callback),
+                                        frame_tree_node_id) {
+    CreateWebBundleURLLoaderFactory(std::move(reader));
+  }
+  ~InterceptorForHistoryNavigationWithExistingReader() override {}
 
  private:
   // NavigationLoaderInterceptor implementation
@@ -780,9 +803,81 @@ class InterceptorForNavigationInfo final : public NavigationLoaderInterceptor {
                          LoaderCallback callback,
                          FallbackCallback fallback_callback) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    std::move(callback).Run(base::MakeRefCounted<SingleRequestURLLoaderFactory>(
-        base::BindOnce(&InterceptorForNavigationInfo::CreateURLLoader,
-                       weak_factory_.GetWeakPtr())));
+    DCHECK_EQ(resource_request.url,
+              url_loader_factory_->reader()->source().is_file()
+                  ? web_bundle_utils::GetSynthesizedUrlForWebBundle(
+                        url_loader_factory_->reader()->source().url(),
+                        target_inner_url_)
+                  : target_inner_url_);
+    std::move(callback).Run(
+        base::MakeRefCounted<SingleRequestURLLoaderFactory>(base::BindOnce(
+            &InterceptorForHistoryNavigationWithExistingReader::CreateURLLoader,
+            weak_factory_.GetWeakPtr())));
+  }
+
+  void CreateURLLoader(
+      const network::ResourceRequest& resource_request,
+      mojo::PendingReceiver<network::mojom::URLLoader> receiver,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DCHECK_EQ(resource_request.url,
+              url_loader_factory_->reader()->source().is_file()
+                  ? web_bundle_utils::GetSynthesizedUrlForWebBundle(
+                        url_loader_factory_->reader()->source().url(),
+                        target_inner_url_)
+                  : target_inner_url_);
+    CreateLoaderAndStartAndDone(resource_request, std::move(receiver),
+                                std::move(client));
+  }
+
+  base::WeakPtrFactory<InterceptorForHistoryNavigationWithExistingReader>
+      weak_factory_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(InterceptorForHistoryNavigationWithExistingReader);
+};
+
+// A class to inherit NavigationLoaderInterceptor for the history navigation to
+// a Web Bundle file or a trustable Web Bundle file when the previous
+// WebBundleReader was deleted.
+// - MaybeCreateLoader() is called for the history navigation request. It
+//   continues on CreateURLLoader() to create the loader for the main resource.
+//   - If OnMetadataReady() has not been called yet:
+//       Wait for OnMetadataReady() to be called.
+//   - If OnMetadataReady() was called with an error:
+//       Completes the request with ERR_INVALID_WEB_BUNDLE.
+//   - If OnMetadataReady() was called whthout errors:
+//       Creates the loader for the main resource.
+class InterceptorForHistoryNavigationFromFileOrFromTrustableFile final
+    : public InterceptorForHistoryNavigation {
+ public:
+  InterceptorForHistoryNavigationFromFileOrFromTrustableFile(
+      std::unique_ptr<WebBundleSource> source,
+      const GURL& target_inner_url,
+      DoneCallback done_callback,
+      int frame_tree_node_id)
+      : InterceptorForHistoryNavigation(target_inner_url,
+                                        std::move(done_callback),
+                                        frame_tree_node_id),
+        reader_(base::MakeRefCounted<WebBundleReader>(std::move(source))) {
+    reader_->ReadMetadata(base::BindOnce(
+        &InterceptorForHistoryNavigationFromFileOrFromTrustableFile::
+            OnMetadataReady,
+        weak_factory_.GetWeakPtr()));
+  }
+  ~InterceptorForHistoryNavigationFromFileOrFromTrustableFile() override {}
+
+ private:
+  // NavigationLoaderInterceptor implementation
+  void MaybeCreateLoader(const network::ResourceRequest& resource_request,
+                         BrowserContext* browser_context,
+                         LoaderCallback callback,
+                         FallbackCallback fallback_callback) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    std::move(callback).Run(
+        base::MakeRefCounted<SingleRequestURLLoaderFactory>(base::BindOnce(
+            &InterceptorForHistoryNavigationFromFileOrFromTrustableFile::
+                CreateURLLoader,
+            weak_factory_.GetWeakPtr())));
   }
 
   void CreateURLLoader(
@@ -791,9 +886,9 @@ class InterceptorForNavigationInfo final : public NavigationLoaderInterceptor {
       mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     if (metadata_error_) {
-      mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
-          ->OnComplete(
-              network::URLLoaderCompletionStatus(net::ERR_INVALID_WEB_BUNDLE));
+      CompleteWithInvalidWebBundleError(
+          mojo::Remote<network::mojom::URLLoaderClient>(std::move(client)),
+          frame_tree_node_id_, GetMetadataParseErrorMessage(metadata_error_));
       return;
     }
 
@@ -803,15 +898,8 @@ class InterceptorForNavigationInfo final : public NavigationLoaderInterceptor {
       pending_client_ = std::move(client);
       return;
     }
-
-    network::ResourceRequest new_resource_request = resource_request;
-    new_resource_request.url = target_inner_url_;
-    url_loader_factory_->CreateLoaderAndStart(
-        std::move(receiver), /*routing_id=*/0, /*request_id=*/0, /*options=*/0,
-        new_resource_request, std::move(client),
-        net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation));
-    std::move(done_callback_)
-        .Run(target_inner_url_, std::move(url_loader_factory_));
+    CreateLoaderAndStartAndDone(resource_request, std::move(receiver),
+                                std::move(client));
   }
 
   void OnMetadataReady(data_decoder::mojom::BundleMetadataParseErrorPtr error) {
@@ -819,11 +907,9 @@ class InterceptorForNavigationInfo final : public NavigationLoaderInterceptor {
     DCHECK(!url_loader_factory_);
 
     if (error) {
-      AddMetadataParseErrorMessageToConsole(frame_tree_node_id_, error);
       metadata_error_ = std::move(error);
     } else {
-      url_loader_factory_ = std::make_unique<WebBundleURLLoaderFactory>(
-          std::move(reader_), frame_tree_node_id_);
+      CreateWebBundleURLLoaderFactory(std::move(reader_));
     }
 
     if (pending_receiver_) {
@@ -834,22 +920,224 @@ class InterceptorForNavigationInfo final : public NavigationLoaderInterceptor {
   }
 
   scoped_refptr<WebBundleReader> reader_;
-  const GURL target_inner_url_;
-  DoneCallback done_callback_;
-  const int frame_tree_node_id_;
 
   network::ResourceRequest pending_resource_request_;
   mojo::PendingReceiver<network::mojom::URLLoader> pending_receiver_;
   mojo::PendingRemote<network::mojom::URLLoaderClient> pending_client_;
 
-  std::unique_ptr<WebBundleURLLoaderFactory> url_loader_factory_;
   data_decoder::mojom::BundleMetadataParseErrorPtr metadata_error_;
 
-  SEQUENCE_CHECKER(sequence_checker_);
+  base::WeakPtrFactory<
+      InterceptorForHistoryNavigationFromFileOrFromTrustableFile>
+      weak_factory_{this};
 
-  base::WeakPtrFactory<InterceptorForNavigationInfo> weak_factory_{this};
+  DISALLOW_COPY_AND_ASSIGN(
+      InterceptorForHistoryNavigationFromFileOrFromTrustableFile);
+};
 
-  DISALLOW_COPY_AND_ASSIGN(InterceptorForNavigationInfo);
+// A class to inherit NavigationLoaderInterceptor for the history navigation to
+// a Web Bundle from network when the previous WebBundleReader was deleted.
+// The overridden methods of NavigationLoaderInterceptor are called in the
+// following sequence:
+// [1] MaybeCreateLoader() is called for the history navigation request. It
+//     continues on StartRedirectResponse() to redirect to the Web Bundle URL.
+// [2] MaybeCreateLoader() is called again for the Web Bundle request. It calls
+//     the |callback| with a null RequestHandler.
+//     If server returned a redirect response instead of the Web Bundle,
+//     MaybeCreateLoader() is called again for the redirected new URL, in such
+//     it continues on StartErrorResponseForUnexpectedRedirect() and returns an
+//     error.
+//     Note that the Web Bundle URL should be loaded as cache-preferring load,
+//     but it may still go to the server if the Bundle is served with
+//     "no-store".
+// [3] MaybeCreateLoaderForResponse() is called for all navigation responses.
+//     - If the response mime type is not "application/webbundle", this means
+//       the server response is not a Web Bundle. So handles as an error.
+//     - If the Content-Length header is not a positive value, handles as an
+//       error.
+//     - Otherwise starts reading the metadata and returns true. Once the
+//       metadata is read, OnMetadataReady() is called, and a redirect loader is
+//       created to redirect the navigation request to the target inner URL.
+// [4] MaybeCreateLoader() is called again for target inner URL. It continues
+//     on StartResponse() to create the loader for the main resource.
+class InterceptorForHistoryNavigationFromNetwork final
+    : public InterceptorForHistoryNavigation {
+ public:
+  InterceptorForHistoryNavigationFromNetwork(
+      std::unique_ptr<WebBundleSource> source,
+      const GURL& target_inner_url,
+      DoneCallback done_callback,
+      int frame_tree_node_id)
+      : InterceptorForHistoryNavigation(target_inner_url,
+                                        std::move(done_callback),
+                                        frame_tree_node_id),
+        source_(std::move(source)) {
+    DCHECK(source_->IsNavigationPathRestrictionSatisfied(target_inner_url_));
+  }
+  ~InterceptorForHistoryNavigationFromNetwork() override {}
+
+ private:
+  enum class State {
+    kInitial,
+    kRedirectedToWebBundle,
+    kWebBundleRecieved,
+    kMetadataReady,
+  };
+
+  // NavigationLoaderInterceptor implementation
+  void MaybeCreateLoader(
+      const network::ResourceRequest& tentative_resource_request,
+      BrowserContext* browser_context,
+      LoaderCallback callback,
+      FallbackCallback fallback_callback) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    switch (state_) {
+      case State::kInitial:
+        DCHECK_EQ(tentative_resource_request.url, target_inner_url_);
+        std::move(callback).Run(base::MakeRefCounted<
+                                SingleRequestURLLoaderFactory>(base::BindOnce(
+            &InterceptorForHistoryNavigationFromNetwork::StartRedirectResponse,
+            weak_factory_.GetWeakPtr())));
+        return;
+      case State::kRedirectedToWebBundle:
+        DCHECK(!reader_);
+        if (tentative_resource_request.url != source_->url()) {
+          std::move(callback).Run(
+              base::MakeRefCounted<SingleRequestURLLoaderFactory>(
+                  base::BindOnce(&InterceptorForHistoryNavigationFromNetwork::
+                                     StartErrorResponseForUnexpectedRedirect,
+                                 weak_factory_.GetWeakPtr())));
+        } else {
+          std::move(callback).Run({});
+        }
+        return;
+      case State::kWebBundleRecieved:
+        NOTREACHED();
+        return;
+      case State::kMetadataReady:
+        std::move(callback).Run(
+            base::MakeRefCounted<SingleRequestURLLoaderFactory>(base::BindOnce(
+                &InterceptorForHistoryNavigationFromNetwork::StartResponse,
+                weak_factory_.GetWeakPtr())));
+    }
+  }
+
+  bool MaybeCreateLoaderForResponse(
+      const network::ResourceRequest& request,
+      network::mojom::URLResponseHeadPtr* response_head,
+      mojo::ScopedDataPipeConsumerHandle* response_body,
+      mojo::PendingRemote<network::mojom::URLLoader>* loader,
+      mojo::PendingReceiver<network::mojom::URLLoaderClient>* client_receiver,
+      blink::ThrottlingURLLoader* url_loader,
+      bool* skip_other_interceptors,
+      bool* will_return_and_handle_unsafe_redirect) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DCHECK_EQ(State::kRedirectedToWebBundle, state_);
+    DCHECK_EQ(source_->url(), request.url);
+    state_ = State::kWebBundleRecieved;
+    *client_receiver = forwarding_client_.BindNewPipeAndPassReceiver();
+    if ((*response_head)->mime_type !=
+        web_bundle_utils::kWebBundleFileMimeTypeWithoutParameters) {
+      CompleteWithInvalidWebBundleError(std::move(forwarding_client_),
+                                        frame_tree_node_id_,
+                                        "Unexpected content type.");
+      return true;
+    }
+    if ((*response_head)->content_length <= 0) {
+      CompleteWithInvalidWebBundleError(
+          std::move(forwarding_client_), frame_tree_node_id_,
+          "Web Bundle response must have valid Content-Length header.");
+      return true;
+    }
+
+    // TODO(crbug.com/1018640): Check the special HTTP response header if we
+    // decided to require one for WBN navigation.
+
+    WebContents* web_contents =
+        WebContents::FromFrameTreeNodeId(frame_tree_node_id_);
+    DCHECK(web_contents);
+    BrowserContext* browser_context = web_contents->GetBrowserContext();
+    DCHECK(browser_context);
+    reader_ = base::MakeRefCounted<WebBundleReader>(
+        std::move(source_), (*response_head)->content_length,
+        std::move(*response_body), url_loader->Unbind(),
+        BrowserContext::GetBlobStorageContext(browser_context));
+    reader_->ReadMetadata(base::BindOnce(
+        &InterceptorForHistoryNavigationFromNetwork::OnMetadataReady,
+        weak_factory_.GetWeakPtr(), request));
+    return true;
+  }
+
+  void OnMetadataReady(network::ResourceRequest request,
+                       data_decoder::mojom::BundleMetadataParseErrorPtr error) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DCHECK_EQ(State::kWebBundleRecieved, state_);
+    state_ = State::kMetadataReady;
+    if (error) {
+      CompleteWithInvalidWebBundleError(std::move(forwarding_client_),
+                                        frame_tree_node_id_,
+                                        GetMetadataParseErrorMessage(error));
+      return;
+    }
+    if (!reader_->HasEntry(target_inner_url_)) {
+      CompleteWithInvalidWebBundleError(
+          std::move(forwarding_client_), frame_tree_node_id_,
+          "The expected URL resource is not found in the web bundle.");
+      return;
+    }
+    CreateWebBundleURLLoaderFactory(reader_);
+    auto redirect_loader =
+        std::make_unique<RedirectURLLoader>(forwarding_client_.Unbind());
+    redirect_loader->OnReadyToRedirect(request, target_inner_url_);
+  }
+
+  void StartRedirectResponse(
+      const network::ResourceRequest& resource_request,
+      mojo::PendingReceiver<network::mojom::URLLoader> receiver,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DCHECK_EQ(State::kInitial, state_);
+    state_ = State::kRedirectedToWebBundle;
+    auto redirect_loader =
+        std::make_unique<RedirectURLLoader>(std::move(client));
+    redirect_loader->OnReadyToRedirect(resource_request, source_->url());
+    mojo::MakeSelfOwnedReceiver(
+        std::move(redirect_loader),
+        mojo::PendingReceiver<network::mojom::URLLoader>(std::move(receiver)));
+  }
+
+  void StartErrorResponseForUnexpectedRedirect(
+      const network::ResourceRequest& resource_request,
+      mojo::PendingReceiver<network::mojom::URLLoader> receiver,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DCHECK_EQ(State::kRedirectedToWebBundle, state_);
+    DCHECK_NE(source_->url(), resource_request.url);
+    CompleteWithInvalidWebBundleError(
+        mojo::Remote<network::mojom::URLLoaderClient>(std::move(client)),
+        frame_tree_node_id_, "Unexpected redirect.");
+  }
+
+  void StartResponse(
+      const network::ResourceRequest& resource_request,
+      mojo::PendingReceiver<network::mojom::URLLoader> receiver,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DCHECK_EQ(State::kMetadataReady, state_);
+    CreateLoaderAndStartAndDone(resource_request, std::move(receiver),
+                                std::move(client));
+  }
+
+  State state_ = State::kInitial;
+  std::unique_ptr<WebBundleSource> source_;
+  scoped_refptr<WebBundleReader> reader_;
+
+  mojo::Remote<network::mojom::URLLoaderClient> forwarding_client_;
+
+  base::WeakPtrFactory<InterceptorForHistoryNavigationFromNetwork>
+      weak_factory_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(InterceptorForHistoryNavigationFromNetwork);
 };
 
 }  // namespace
@@ -924,16 +1212,35 @@ std::unique_ptr<WebBundleHandle> WebBundleHandle::CreateForTrackedNavigation(
 std::unique_ptr<WebBundleHandle> WebBundleHandle::MaybeCreateForNavigationInfo(
     std::unique_ptr<WebBundleNavigationInfo> navigation_info,
     int frame_tree_node_id) {
-  // Currently history navigation is not supported for web bundles from network.
-  // TODO(crbug.com/1018640): Implement this.
-  if (navigation_info->source().is_network())
-    return nullptr;
   auto handle = base::WrapUnique(new WebBundleHandle());
-  handle->SetInterceptor(std::make_unique<InterceptorForNavigationInfo>(
-      std::move(navigation_info),
-      base::BindOnce(&WebBundleHandle::OnWebBundleFileLoaded,
-                     handle->weak_factory_.GetWeakPtr()),
-      frame_tree_node_id));
+  if (navigation_info->GetReader()) {
+    scoped_refptr<WebBundleReader> reader = navigation_info->GetReader().get();
+    handle->SetInterceptor(
+        std::make_unique<InterceptorForHistoryNavigationWithExistingReader>(
+            std::move(reader), navigation_info->target_inner_url(),
+            base::BindOnce(&WebBundleHandle::OnWebBundleFileLoaded,
+                           handle->weak_factory_.GetWeakPtr()),
+            frame_tree_node_id));
+  } else if (navigation_info->source().is_network()) {
+    handle->SetInterceptor(
+        std::make_unique<InterceptorForHistoryNavigationFromNetwork>(
+            navigation_info->source().Clone(),
+            navigation_info->target_inner_url(),
+            base::BindOnce(&WebBundleHandle::OnWebBundleFileLoaded,
+                           handle->weak_factory_.GetWeakPtr()),
+            frame_tree_node_id));
+  } else {
+    DCHECK(navigation_info->source().is_trusted_file() ||
+           navigation_info->source().is_file());
+    handle->SetInterceptor(
+        std::make_unique<
+            InterceptorForHistoryNavigationFromFileOrFromTrustableFile>(
+            navigation_info->source().Clone(),
+            navigation_info->target_inner_url(),
+            base::BindOnce(&WebBundleHandle::OnWebBundleFileLoaded,
+                           handle->weak_factory_.GetWeakPtr()),
+            frame_tree_node_id));
+  }
   return handle;
 }
 
@@ -980,7 +1287,8 @@ void WebBundleHandle::OnWebBundleFileLoaded(
   if (source->is_file())
     base_url_override_ = target_inner_url;
   navigation_info_ = std::make_unique<WebBundleNavigationInfo>(
-      std::move(source), target_inner_url);
+      std::move(source), target_inner_url,
+      url_loader_factory->reader()->GetWeakPtr());
   url_loader_factory_ = std::move(url_loader_factory);
 }
 

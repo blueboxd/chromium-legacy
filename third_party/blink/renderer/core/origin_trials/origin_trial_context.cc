@@ -272,7 +272,6 @@ void OriginTrialContext::AddFeature(OriginTrialFeature feature) {
 }
 
 bool OriginTrialContext::IsFeatureEnabled(OriginTrialFeature feature) const {
-
   if (enabled_features_.Contains(feature) ||
       navigation_activated_features_.Contains(feature)) {
     return true;
@@ -305,19 +304,6 @@ bool OriginTrialContext::EnableTrialFromToken(const SecurityOrigin* origin,
                                               const String& token) {
   DCHECK(!token.IsEmpty());
 
-  // Origin trials are only enabled for secure origins
-  //  - For worklets, they are currently spec'd to not be secure, given their
-  //    scope has unique origin:
-  //    https://drafts.css-houdini.org/worklets/#script-settings-for-worklets
-  //  - For the purpose of origin trials, we consider worklets as running in the
-  //    same context as the originating document. Thus, the special logic here
-  //    to validate the token against the document context.
-  if (!is_secure) {
-    TokenValidationResultHistogram().Count(
-        static_cast<int>(OriginTrialTokenStatus::kInsecure));
-    return false;
-  }
-
   if (!trial_token_validator_) {
     TokenValidationResultHistogram().Count(
         static_cast<int>(OriginTrialTokenStatus::kNotSupported));
@@ -334,17 +320,25 @@ bool OriginTrialContext::EnableTrialFromToken(const SecurityOrigin* origin,
     String trial_name =
         String::FromUTF8(trial_name_str.data(), trial_name_str.size());
     if (origin_trials::IsTrialValid(trial_name)) {
-      for (OriginTrialFeature feature :
-           origin_trials::FeaturesForTrial(trial_name)) {
-        if (origin_trials::FeatureEnabledForOS(feature)) {
-          valid = true;
-          enabled_features_.insert(feature);
-          // Also enable any features implied by this feature.
-          for (OriginTrialFeature implied_feature :
-               origin_trials::GetImpliedFeatures(feature)) {
-            enabled_features_.insert(implied_feature);
+      // Origin trials are only enabled for secure origins. The only exception
+      // is for deprecation trials.
+      if (is_secure ||
+          origin_trials::IsTrialEnabledForInsecureContext(trial_name)) {
+        for (OriginTrialFeature feature :
+             origin_trials::FeaturesForTrial(trial_name)) {
+          if (origin_trials::FeatureEnabledForOS(feature)) {
+            valid = true;
+            enabled_features_.insert(feature);
+            // Also enable any features implied by this feature.
+            for (OriginTrialFeature implied_feature :
+                 origin_trials::GetImpliedFeatures(feature)) {
+              enabled_features_.insert(implied_feature);
+            }
           }
         }
+      } else {
+        // Insecure origin and trial is restricted to secure origins.
+        token_result = OriginTrialTokenStatus::kInsecure;
       }
     }
   }
@@ -360,6 +354,10 @@ void OriginTrialContext::Trace(blink::Visitor* visitor) {
 const SecurityOrigin* OriginTrialContext::GetSecurityOrigin() {
   const SecurityOrigin* origin;
   CHECK(context_);
+  // Determines the origin to be validated against tokens:
+  //  - For the purpose of origin trials, we consider worklets as running in the
+  //    same context as the originating document. Thus, the special logic here
+  //    to use the origin from the document context.
   if (auto* scope = DynamicTo<WorkletGlobalScope>(context_.Get()))
     origin = scope->DocumentSecurityOrigin();
   else
@@ -370,6 +368,13 @@ const SecurityOrigin* OriginTrialContext::GetSecurityOrigin() {
 bool OriginTrialContext::IsSecureContext() {
   bool is_secure = false;
   CHECK(context_);
+  // Determines if this is a secure context:
+  //  - For worklets, they are currently spec'd to not be secure, given their
+  //    scope has unique origin:
+  //    https://drafts.css-houdini.org/worklets/#script-settings-for-worklets
+  //  - For the purpose of origin trials, we consider worklets as running in the
+  //    same context as the originating document. Thus, the special logic here
+  //    to check the secure status of the document context.
   if (auto* scope = DynamicTo<WorkletGlobalScope>(context_.Get())) {
     is_secure = scope->DocumentSecureContext();
   } else {

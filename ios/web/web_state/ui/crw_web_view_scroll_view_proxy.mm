@@ -31,6 +31,9 @@
     CRBProtocolObservers<CRWWebViewScrollViewProxyObserver>* observers;
 @property(nonatomic, weak) UIScrollView* underlyingScrollView;
 
+// This exists for compatibility with UIScrollView (see -asUIScrollView).
+@property(nonatomic, weak) id<UIScrollViewDelegate> delegate;
+
 // Returns the key paths that need to be observed for UIScrollView.
 + (NSArray*)scrollViewObserverKeyPaths;
 
@@ -282,7 +285,7 @@
 
 #pragma mark - Forwards unimplemented UIScrollView methods
 
-- (nullable NSMethodSignature*)methodSignatureForSelector:(SEL)sel {
+- (NSMethodSignature*)methodSignatureForSelector:(SEL)sel {
   // Called when this proxy is accessed through -asUIScrollView and the method
   // is not implemented in this class. Do not call [self.underlyingScrollView
   // methodSignatureForSelector:] here instead because self.underlyingScrollView

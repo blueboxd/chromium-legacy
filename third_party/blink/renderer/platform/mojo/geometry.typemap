@@ -24,7 +24,10 @@ deps = [
 ]
 
 public_deps = [
-  "//third_party/blink/renderer/platform/mojo:geometry_mojom_traits",
+  "//third_party/blink/public:blink_headers",
+  "//third_party/blink/renderer/platform:geometry_mojom_traits",
+  "//ui/gfx/geometry",
+  "//ui/gfx/geometry/mojom:mojom_traits",
 ]
 
 # TODO(zqzhang): ideally, gfx.mojom.Size should be mapped into ::blink::IntSize.

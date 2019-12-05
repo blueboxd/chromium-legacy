@@ -17,11 +17,12 @@ class ServiceWorkerContextWrapper;
 
 class ServiceWorkerQuotaClient : public storage::QuotaClient {
  public:
-  ~ServiceWorkerQuotaClient() override;
+  CONTENT_EXPORT explicit ServiceWorkerQuotaClient(
+      ServiceWorkerContextWrapper* context);
 
   // QuotaClient method overrides
   ID id() const override;
-  void OnQuotaManagerDestroyed() override;
+  void OnQuotaManagerDestroyed() override {}
   void GetOriginUsage(const url::Origin& origin,
                       blink::mojom::StorageType type,
                       GetUsageCallback callback) override;
@@ -41,8 +42,7 @@ class ServiceWorkerQuotaClient : public storage::QuotaClient {
   friend class ServiceWorkerContextWrapper;
   friend class ServiceWorkerQuotaClientTest;
 
-  CONTENT_EXPORT explicit ServiceWorkerQuotaClient(
-      ServiceWorkerContextWrapper* context);
+  ~ServiceWorkerQuotaClient() override;
 
   scoped_refptr<ServiceWorkerContextWrapper> context_;
 

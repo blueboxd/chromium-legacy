@@ -2746,7 +2746,7 @@ void WebViewImpl::PerformPluginAction(const PluginAction& action,
   HitTestResult result =
       HitTestResultForRootFramePos(PhysicalOffset(IntPoint(location)));
   Node* node = result.InnerNode();
-  if (!IsA<HTMLObjectElement>(*node) && !IsHTMLEmbedElement(*node))
+  if (!IsA<HTMLObjectElement>(*node) && !IsA<HTMLEmbedElement>(*node))
     return;
 
   LayoutObject* object = node->GetLayoutObject();

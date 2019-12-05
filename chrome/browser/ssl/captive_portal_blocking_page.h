@@ -49,11 +49,14 @@ class CaptivePortalBlockingPage : public SSLBlockingPageBase {
   // InterstitialPageDelegate method:
   const void* GetTypeForTesting() override;
 
- protected:
-  // Returns true if the connection is a Wi-Fi connection. Virtual for tests.
-  virtual bool IsWifiConnection() const;
-  // Returns the SSID of the connected Wi-Fi network, if any. Virtual for tests.
-  virtual std::string GetWiFiSSID() const;
+  void OverrideWifiInfoForTesting(bool is_wifi_connection,
+                                  const std::string& wifi_ssid);
+
+ private:
+  // Returns true if the connection is a Wi-Fi connection.
+  bool IsWifiConnection() const;
+  // Returns the SSID of the connected Wi-Fi network, if any.
+  std::string GetWiFiSSID() const;
 
   // SecurityInterstitialPage methods:
   bool ShouldCreateNewNavigation() const override;
@@ -64,12 +67,15 @@ class CaptivePortalBlockingPage : public SSLBlockingPageBase {
   void CommandReceived(const std::string& command) override;
   void OverrideEntry(content::NavigationEntry* entry) override;
 
- private:
   // URL of the login page, opened when the user clicks the "Connect" button.
   // If empty, the default captive portal detection URL for the platform will be
   // used.
   const GURL login_url_;
   const net::SSLInfo ssl_info_;
+
+  bool is_wifi_info_overridden_for_testing_ = false;
+  bool is_wifi_connection_for_testing_ = false;
+  std::string wifi_ssid_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalBlockingPage);
 };

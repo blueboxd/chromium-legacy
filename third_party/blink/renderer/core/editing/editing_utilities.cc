@@ -340,7 +340,7 @@ bool IsNodeFullyContained(const EphemeralRange& range, const Node& node) {
 // TODO(editing-dev): We should make |SelectionAdjuster| to use this funciton
 // instead of |isSelectionBondary()|.
 bool IsUserSelectContain(const Node& node) {
-  return IsHTMLTextAreaElement(node) || IsHTMLInputElement(node) ||
+  return IsA<HTMLTextAreaElement>(node) || IsA<HTMLInputElement>(node) ||
          IsA<HTMLSelectElement>(node);
 }
 
@@ -1540,9 +1540,9 @@ bool IsBlockFlowElement(const Node& node) {
 
 bool IsInPasswordField(const Position& position) {
   TextControlElement* text_control = EnclosingTextControl(position);
-  return IsHTMLInputElement(text_control) &&
-         ToHTMLInputElement(text_control)->type() ==
-             input_type_names::kPassword;
+  auto* html_input_element = DynamicTo<HTMLInputElement>(text_control);
+  return html_input_element &&
+         html_input_element->type() == input_type_names::kPassword;
 }
 
 // If current position is at grapheme boundary, return 0; otherwise, return the
@@ -1715,11 +1715,11 @@ static scoped_refptr<Image> ImageFromNode(const Node& node) {
 AtomicString GetUrlStringFromNode(const Node& node) {
   // TODO(editing-dev): This should probably be reconciled with
   // HitTestResult::absoluteImageURL.
-  if (IsA<HTMLImageElement>(node) || IsHTMLInputElement(node))
+  if (IsA<HTMLImageElement>(node) || IsA<HTMLInputElement>(node))
     return To<HTMLElement>(node).FastGetAttribute(html_names::kSrcAttr);
   if (IsA<SVGImageElement>(node))
     return To<SVGElement>(node).ImageSourceURL();
-  if (IsHTMLEmbedElement(node) || IsA<HTMLObjectElement>(node) ||
+  if (IsA<HTMLEmbedElement>(node) || IsA<HTMLObjectElement>(node) ||
       IsA<HTMLCanvasElement>(node))
     return To<HTMLElement>(node).ImageSourceURL();
   return AtomicString();

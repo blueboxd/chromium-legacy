@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/chrome_ssl_blocking_page.h"
+#include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
 
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
@@ -58,11 +58,12 @@ TEST_F(SSLBlockingPageTest,
   ssl_info.cert_status = net::CERT_STATUS_DATE_INVALID;
 
   // Simulates the showing of a SSL blocking page.
-  SSLBlockingPage* blocking_page = ChromeSSLBlockingPage::Create(
-      web_contents(), net::ERR_CERT_DATE_INVALID, ssl_info, request_url,
-      /*options_mask=*/0, base::Time::NowFromSystemTime(),
-      /*support_url=*/GURL(),
-      /*ssl_cert_reporter=*/nullptr);
+  SSLBlockingPage* blocking_page =
+      ChromeSecurityBlockingPageFactory::CreateSSLPage(
+          web_contents(), net::ERR_CERT_DATE_INVALID, ssl_info, request_url,
+          /*options_mask=*/0, base::Time::NowFromSystemTime(),
+          /*support_url=*/GURL(),
+          /*ssl_cert_reporter=*/nullptr);
   blocking_page->DontCreateViewForTesting();
   blocking_page->Show();
 

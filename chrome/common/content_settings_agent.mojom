@@ -12,4 +12,8 @@ interface ContentSettingsAgent {
 
   // Sent to inform the renderer that it is displaying interstitial page.
   SetAsInterstitial();
+
+  // Sent to inform the renderer automatic upgrades for mixed content are
+  // disabled.
+  SetDisabledMixedContentUpgrades();
 };

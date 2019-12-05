@@ -39,8 +39,8 @@ class DummySharedURLLoaderFactory : public network::SharedURLLoaderFactory {
     NOTREACHED();
   }
 
-  // network::SharedURLLoaderFactoryInfo implementation
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
+  // network::PendingSharedURLLoaderFactory implementation
+  std::unique_ptr<network::PendingSharedURLLoaderFactory> Clone() override {
     NOTREACHED();
     return nullptr;
   }

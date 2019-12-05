@@ -24,7 +24,7 @@ bool PassesSameOriginCheck(const ResourceResponse& response,
   const KURL& response_url = response.ResponseUrl();
   scoped_refptr<const SecurityOrigin> resource_origin =
       SecurityOrigin::Create(response_url);
-  return resource_origin->IsSameSchemeHostPort(&initiator_security_origin);
+  return resource_origin->IsSameOriginWith(&initiator_security_origin);
 }
 
 bool AllowNavigationTimingRedirect(

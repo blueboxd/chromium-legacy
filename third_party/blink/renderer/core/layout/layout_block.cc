@@ -1202,7 +1202,7 @@ bool LayoutBlock::HitTestChildren(HitTestResult& result,
   DCHECK(!ChildrenInline());
   PhysicalOffset scrolled_offset = accumulated_offset;
   if (HasOverflowClip())
-    scrolled_offset -= PhysicalOffset(ScrolledContentOffset());
+    scrolled_offset -= PhysicalOffset(PixelSnappedScrolledContentOffset());
   HitTestAction child_hit_test = hit_test_action;
   if (hit_test_action == kHitTestChildBlockBackgrounds)
     child_hit_test = kHitTestChildBlockBackground;
@@ -1389,7 +1389,7 @@ PositionWithAffinity LayoutBlock::PositionForPoint(
 
 void LayoutBlock::OffsetForContents(PhysicalOffset& offset) const {
   if (HasOverflowClip())
-    offset += PhysicalOffset(ScrolledContentOffset());
+    offset += PhysicalOffset(PixelSnappedScrolledContentOffset());
 }
 
 void LayoutBlock::ScrollbarsChanged(bool horizontal_scrollbar_changed,
@@ -1671,7 +1671,7 @@ bool LayoutBlock::HasLineIfEmpty() const {
     return true;
 
   if (auto* shadow_root = DynamicTo<ShadowRoot>(GetNode())) {
-    if (IsHTMLInputElement(shadow_root->host()))
+    if (IsA<HTMLInputElement>(shadow_root->host()))
       return true;
   }
 

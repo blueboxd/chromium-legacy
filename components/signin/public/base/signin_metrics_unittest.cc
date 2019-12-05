@@ -15,6 +15,35 @@ namespace signin_metrics {
 
 namespace {
 
+const AccessPoint kAccessPointsThatSupportUserAction[] = {
+    AccessPoint::ACCESS_POINT_START_PAGE,
+    AccessPoint::ACCESS_POINT_NTP_LINK,
+    AccessPoint::ACCESS_POINT_MENU,
+    AccessPoint::ACCESS_POINT_SETTINGS,
+    AccessPoint::ACCESS_POINT_SUPERVISED_USER,
+    AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE,
+    AccessPoint::ACCESS_POINT_EXTENSIONS,
+    AccessPoint::ACCESS_POINT_APPS_PAGE_LINK,
+    AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE,
+    AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER,
+    AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
+    AccessPoint::ACCESS_POINT_USER_MANAGER,
+    AccessPoint::ACCESS_POINT_DEVICES_PAGE,
+    AccessPoint::ACCESS_POINT_CLOUD_PRINT,
+    AccessPoint::ACCESS_POINT_CONTENT_AREA,
+    AccessPoint::ACCESS_POINT_SIGNIN_PROMO,
+    AccessPoint::ACCESS_POINT_RECENT_TABS,
+    AccessPoint::ACCESS_POINT_UNKNOWN,
+    AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE,
+    AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN,
+    AccessPoint::ACCESS_POINT_NTP_CONTENT_SUGGESTIONS,
+    AccessPoint::ACCESS_POINT_RESIGNIN_INFOBAR,
+    AccessPoint::ACCESS_POINT_TAB_SWITCHER,
+    AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE,
+    AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE,
+    AccessPoint::ACCESS_POINT_MACHINE_LOGON,
+    AccessPoint::ACCESS_POINT_GOOGLE_SERVICES_SETTINGS};
+
 const AccessPoint kAccessPointsThatSupportImpression[] = {
     AccessPoint::ACCESS_POINT_START_PAGE,
     AccessPoint::ACCESS_POINT_NTP_LINK,
@@ -108,24 +137,18 @@ class SigninMetricsTest : public ::testing::Test {
         return "MachineLogon";
       case AccessPoint::ACCESS_POINT_GOOGLE_SERVICES_SETTINGS:
         return "GoogleServicesSettings";
+      case AccessPoint::ACCESS_POINT_SYNC_ERROR_CARD:
+        return "SyncErrorCard";
+      case AccessPoint::ACCESS_POINT_FORCED_SIGNIN:
+        return "ForcedSignin";
+      case AccessPoint::ACCESS_POINT_ACCOUNT_RENAMED:
+        return "AccountRenamed";
       case AccessPoint::ACCESS_POINT_MAX:
         NOTREACHED();
         return "";
     }
     NOTREACHED();
     return "";
-  }
-
-  static std::vector<AccessPoint> GetAllAccessPoints() {
-    std::vector<AccessPoint> access_points;
-    for (int ap = 0; ap < static_cast<int>(AccessPoint::ACCESS_POINT_MAX);
-         ++ap) {
-      // Skip the deprecated ACCESS_POINT_FORCE_SIGNIN_WARNING
-      if (ap == 23)
-        continue;
-      access_points.push_back(static_cast<AccessPoint>(ap));
-    }
-    return access_points;
   }
 
   static bool AccessPointSupportsPersonalizedPromo(AccessPoint access_point) {
@@ -135,7 +158,7 @@ class SigninMetricsTest : public ::testing::Test {
 };
 
 TEST_F(SigninMetricsTest, RecordSigninUserActionForAccessPoint) {
-  for (const AccessPoint& ap : GetAllAccessPoints()) {
+  for (const AccessPoint& ap : kAccessPointsThatSupportUserAction) {
     base::UserActionTester user_action_tester;
     RecordSigninUserActionForAccessPoint(
         ap, signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
@@ -168,7 +191,7 @@ TEST_F(SigninMetricsTest, RecordSigninUserActionWithPromoAction) {
 }
 
 TEST_F(SigninMetricsTest, RecordSigninUserActionWithNewNoExistingPromoAction) {
-  for (const AccessPoint& ap : GetAllAccessPoints()) {
+  for (const AccessPoint& ap : kAccessPointsThatSupportUserAction) {
     base::UserActionTester user_action_tester;
     RecordSigninUserActionForAccessPoint(
         ap, signin_metrics::PromoAction::
@@ -187,7 +210,7 @@ TEST_F(SigninMetricsTest, RecordSigninUserActionWithNewNoExistingPromoAction) {
 
 TEST_F(SigninMetricsTest,
        RecordSigninUserActionWithNewWithExistingPromoAction) {
-  for (const AccessPoint& ap : GetAllAccessPoints()) {
+  for (const AccessPoint& ap : kAccessPointsThatSupportUserAction) {
     base::UserActionTester user_action_tester;
     RecordSigninUserActionForAccessPoint(
         ap,

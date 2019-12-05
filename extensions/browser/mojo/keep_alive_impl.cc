@@ -15,8 +15,8 @@ namespace extensions {
 // static
 void KeepAliveImpl::Create(content::BrowserContext* context,
                            const Extension* extension,
-                           mojo::PendingReceiver<KeepAlive> receiver,
-                           content::RenderFrameHost* render_frame_host) {
+                           content::RenderFrameHost* render_frame_host,
+                           mojo::PendingReceiver<KeepAlive> receiver) {
   // Owns itself.
   new KeepAliveImpl(context, extension, std::move(receiver));
 }

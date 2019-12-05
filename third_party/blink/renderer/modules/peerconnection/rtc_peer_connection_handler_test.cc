@@ -30,7 +30,6 @@
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
-#include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
@@ -48,6 +47,7 @@
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_ice_candidate_platform.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_receiver_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_stats_request.h"
@@ -174,17 +174,17 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
   MOCK_METHOD4(TrackAddTransceiver,
                void(RTCPeerConnectionHandler* pc_handler,
                     TransceiverUpdatedReason reason,
-                    const blink::WebRTCRtpTransceiver& transceiver,
+                    const RTCRtpTransceiverPlatform& transceiver,
                     size_t transceiver_index));
   MOCK_METHOD4(TrackModifyTransceiver,
                void(RTCPeerConnectionHandler* pc_handler,
                     TransceiverUpdatedReason reason,
-                    const blink::WebRTCRtpTransceiver& transceiver,
+                    const RTCRtpTransceiverPlatform& transceiver,
                     size_t transceiver_index));
   MOCK_METHOD4(TrackRemoveTransceiver,
                void(RTCPeerConnectionHandler* pc_handler,
                     TransceiverUpdatedReason reason,
-                    const blink::WebRTCRtpTransceiver& transceiver,
+                    const RTCRtpTransceiverPlatform& transceiver,
                     size_t transceiver_index));
   MOCK_METHOD1(TrackOnIceComplete, void(RTCPeerConnectionHandler* pc_handler));
   MOCK_METHOD3(TrackCreateDataChannel,
@@ -408,7 +408,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
       if (error_or_transceiver.ok()) {
         DCHECK_EQ(
             error_or_transceiver.value()->ImplementationType(),
-            blink::WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly);
+            RTCRtpTransceiverPlatformImplementationType::kPlanBSenderOnly);
         auto sender = error_or_transceiver.value()->Sender();
         senders_.push_back(std::unique_ptr<blink::RTCRtpSenderImpl>(
             static_cast<blink::RTCRtpSenderImpl*>(sender.release())));
@@ -420,7 +420,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
       if (error_or_transceiver.ok()) {
         DCHECK_EQ(
             error_or_transceiver.value()->ImplementationType(),
-            blink::WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly);
+            RTCRtpTransceiverPlatformImplementationType::kPlanBSenderOnly);
         auto sender = error_or_transceiver.value()->Sender();
         senders_.push_back(std::unique_ptr<blink::RTCRtpSenderImpl>(
             static_cast<blink::RTCRtpSenderImpl*>(sender.release())));
@@ -526,7 +526,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
 
   bool HasReceiverForEveryTrack(
       const rtc::scoped_refptr<webrtc::MediaStreamInterface>& remote_stream,
-      const std::vector<std::unique_ptr<blink::WebRTCRtpReceiver>>& receivers) {
+      const std::vector<std::unique_ptr<RTCRtpReceiverPlatform>>& receivers) {
     for (const auto& audio_track : remote_stream->GetAudioTracks()) {
       if (!HasReceiverForTrack(*audio_track.get(), receivers))
         return false;
@@ -540,7 +540,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
 
   bool HasReceiverForTrack(
       const webrtc::MediaStreamTrackInterface& track,
-      const std::vector<std::unique_ptr<blink::WebRTCRtpReceiver>>& receivers) {
+      const std::vector<std::unique_ptr<RTCRtpReceiverPlatform>>& receivers) {
     for (const auto& receiver : receivers) {
       if (receiver->Track().Id().Utf8() == track.id())
         return true;
@@ -1204,11 +1204,11 @@ TEST_F(RTCPeerConnectionHandlerTest, DISABLED_OnAddAndOnRemoveStream) {
   rtc::scoped_refptr<webrtc::MediaStreamInterface> remote_stream(
       AddRemoteMockMediaStream("remote_stream", "video", "audio"));
   // Grab the added receivers when it's been successfully added to the PC.
-  std::vector<std::unique_ptr<blink::WebRTCRtpReceiver>> receivers_added;
+  std::vector<std::unique_ptr<RTCRtpReceiverPlatform>> receivers_added;
   EXPECT_CALL(*mock_client_.get(), DidAddReceiverPlanBForMock(_))
       .WillRepeatedly(
           Invoke([&receivers_added](
-                     std::unique_ptr<blink::WebRTCRtpReceiver>* receiver) {
+                     std::unique_ptr<RTCRtpReceiverPlatform>* receiver) {
             receivers_added.push_back(std::move(*receiver));
           }));
   EXPECT_CALL(
@@ -1218,7 +1218,7 @@ TEST_F(RTCPeerConnectionHandlerTest, DISABLED_OnAddAndOnRemoveStream) {
           PeerConnectionTracker::TransceiverUpdatedReason::kAddTrack, _, _))
       .Times(2);
   // Grab the removed receivers when it's been successfully added to the PC.
-  std::vector<std::unique_ptr<blink::WebRTCRtpReceiver>> receivers_removed;
+  std::vector<std::unique_ptr<RTCRtpReceiverPlatform>> receivers_removed;
   EXPECT_CALL(
       *mock_tracker_.get(),
       TrackRemoveTransceiver(
@@ -1228,7 +1228,7 @@ TEST_F(RTCPeerConnectionHandlerTest, DISABLED_OnAddAndOnRemoveStream) {
   EXPECT_CALL(*mock_client_.get(), DidRemoveReceiverPlanBForMock(_))
       .WillRepeatedly(
           Invoke([&receivers_removed](
-                     std::unique_ptr<blink::WebRTCRtpReceiver>* receiver) {
+                     std::unique_ptr<RTCRtpReceiverPlatform>* receiver) {
             receivers_removed.push_back(std::move(*receiver));
           }));
 

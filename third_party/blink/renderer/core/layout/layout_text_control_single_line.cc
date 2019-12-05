@@ -282,7 +282,7 @@ LayoutUnit LayoutTextControlSingleLine::ScrollHeight() const {
 }
 
 HTMLInputElement* LayoutTextControlSingleLine::InputElement() const {
-  return ToHTMLInputElement(GetNode());
+  return To<HTMLInputElement>(GetNode());
 }
 
 void LayoutTextControlSingleLine::ComputeVisualOverflow(

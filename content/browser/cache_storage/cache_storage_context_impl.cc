@@ -284,10 +284,12 @@ void CacheStorageContextImpl::CreateQuotaClientsOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!quota_manager_proxy.get())
     return;
-  quota_manager_proxy->RegisterClient(new CacheStorageQuotaClient(
-      CacheManager(), CacheStorageOwner::kCacheAPI));
-  quota_manager_proxy->RegisterClient(new CacheStorageQuotaClient(
-      CacheManager(), CacheStorageOwner::kBackgroundFetch));
+  quota_manager_proxy->RegisterClient(
+      base::MakeRefCounted<CacheStorageQuotaClient>(
+          CacheManager(), CacheStorageOwner::kCacheAPI));
+  quota_manager_proxy->RegisterClient(
+      base::MakeRefCounted<CacheStorageQuotaClient>(
+          CacheManager(), CacheStorageOwner::kBackgroundFetch));
 }
 
 }  // namespace content

@@ -478,7 +478,8 @@ initiationType:(web::NavigationInitiationType)initiationType;
                 referrer:referrer
               transition:transition
           initiationType:web::NavigationInitiationType::BROWSER_INITIATED];
-  pushedItem->SetUserAgentType(lastCommittedItem->GetUserAgentType());
+  pushedItem->SetUserAgentType(lastCommittedItem->GetUserAgentForInheritance(),
+                               /*update_inherited_user_agent =*/true);
   pushedItem->SetSerializedStateObject(stateObject);
   pushedItem->SetIsCreatedFromPushState(true);
   pushedItem->GetSSL() = lastCommittedItem->GetSSL();

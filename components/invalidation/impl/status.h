@@ -16,7 +16,8 @@ enum class InvalidationParsingStatus {
   kPublicTopicEmpty = 1,
   kPrivateTopicEmpty = 2,
   kVersionEmpty = 3,
-  kMaxValue = kVersionEmpty,
+  kVersionInvalid = 4,
+  kMaxValue = kVersionInvalid,
 };
 
 // This enum indicates how an operation was completed. These values are written

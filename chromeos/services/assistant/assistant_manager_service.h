@@ -55,7 +55,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerService
   // Stop the assistant.
   virtual void Stop() = 0;
 
-  // Returns the current state.
+  // Return the current state.
   virtual State GetState() const = 0;
 
   // Set access token for assistant.
@@ -67,13 +67,14 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerService
   // Turn on / off hotword listening.
   virtual void EnableHotword(bool enable) = 0;
 
+  // Enable/disable ARC play store.
   virtual void SetArcPlayStoreEnabled(bool enabled) = 0;
 
-  // Returns a pointer of AssistantSettingsManager.
+  // Return a pointer of AssistantSettingsManager.
   virtual AssistantSettingsManager* GetAssistantSettingsManager() = 0;
 
-  // Add/Remove an observer that is invoked when there is a communucation error
-  // with the Assistant service.
+  // Add/Remove an observer that is invoked when there is a communication
+  // error with the Assistant service.
   virtual void AddCommunicationErrorObserver(
       CommunicationErrorObserver* observer) = 0;
   virtual void RemoveCommunicationErrorObserver(

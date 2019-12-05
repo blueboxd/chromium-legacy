@@ -10,7 +10,7 @@
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
-#include "third_party/blink/public/platform/web_rtc_api_name.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_api_name.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
@@ -45,7 +45,7 @@ PLATFORM_EXPORT void LogUserMediaRequestResult(
 // that gets incremented only once per "session" as established by the
 // PerSessionWebRTCAPIMetrics singleton below. It can be viewed at
 // chrome://histograms/WebRTC.webkitApiCountPerSession.
-PLATFORM_EXPORT void UpdateWebRTCMethodCount(WebRTCAPIName api_name);
+PLATFORM_EXPORT void UpdateWebRTCMethodCount(RTCAPIName api_name);
 
 // A singleton that keeps track of the number of MediaStreams being
 // sent over PeerConnections. It uses the transition to zero such
@@ -69,24 +69,24 @@ class PLATFORM_EXPORT PerSessionWebRTCAPIMetrics {
 
  protected:
   friend struct base::DefaultSingletonTraits<PerSessionWebRTCAPIMetrics>;
-  friend PLATFORM_EXPORT void UpdateWebRTCMethodCount(WebRTCAPIName);
+  friend PLATFORM_EXPORT void UpdateWebRTCMethodCount(RTCAPIName);
 
   // Protected so that unit tests can test without this being a
   // singleton.
   PerSessionWebRTCAPIMetrics();
 
   // Overridable by unit tests.
-  virtual void LogUsage(WebRTCAPIName api_name);
+  virtual void LogUsage(RTCAPIName api_name);
 
   // Called by UpdateWebRTCMethodCount above. Protected rather than
   // private so that unit tests can call it.
-  void LogUsageOnlyOnce(WebRTCAPIName api_name);
+  void LogUsageOnlyOnce(RTCAPIName api_name);
 
  private:
   void ResetUsage();
 
   int num_streams_;
-  bool has_used_api_[static_cast<int>(WebRTCAPIName::kInvalidName)];
+  bool has_used_api_[static_cast<int>(RTCAPIName::kInvalidName)];
 
   THREAD_CHECKER(thread_checker_);
 

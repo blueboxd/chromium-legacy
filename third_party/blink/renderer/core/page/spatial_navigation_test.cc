@@ -762,7 +762,7 @@ class SpatialNavigationWithFocuslessModeTest
   ScopedFocuslessSpatialNavigationForTest use_focusless_mode_;
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          SpatialNavigationWithFocuslessModeTest,
                          ::testing::Bool());
 

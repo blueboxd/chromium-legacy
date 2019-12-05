@@ -91,7 +91,7 @@ PrefetchURLLoaderService::PrefetchURLLoaderService(
 void PrefetchURLLoaderService::GetFactory(
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
     int frame_tree_node_id,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo> factories,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory> factories,
     base::WeakPtr<RenderFrameHostImpl> render_frame_host,
     scoped_refptr<PrefetchedSignedExchangeCache>
         prefetched_signed_exchange_cache) {
@@ -266,7 +266,7 @@ void PrefetchURLLoaderService::EnsureCrossOriginFactory() {
     return;
 
   DCHECK(current_context.render_frame_host);
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> factories =
+  std::unique_ptr<network::PendingSharedURLLoaderFactory> factories =
       current_context.render_frame_host
           ->CreateCrossOriginPrefetchLoaderFactoryBundle();
   current_context.cross_origin_factory =

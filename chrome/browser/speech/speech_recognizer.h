@@ -17,7 +17,7 @@ struct SpeechRecognitionSessionPreamble;
 }
 
 namespace network {
-class SharedURLLoaderFactoryInfo;
+class PendingSharedURLLoaderFactory;
 }
 
 class SpeechRecognizerDelegate;
@@ -28,8 +28,8 @@ class SpeechRecognizerDelegate;
 class SpeechRecognizer {
  public:
   SpeechRecognizer(const base::WeakPtr<SpeechRecognizerDelegate>& delegate,
-                   std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-                       shared_url_loader_factory_info,
+                   std::unique_ptr<network::PendingSharedURLLoaderFactory>
+                       pending_shared_url_loader_factory,
                    const std::string& accept_language,
                    const std::string& locale);
   ~SpeechRecognizer();

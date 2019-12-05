@@ -164,6 +164,9 @@ void LogClickToCallPhoneNumberSize(const std::string& number,
 
 void LogPhoneNumberDetectionMetrics(const std::string& selection_text,
                                     bool sent_to_device) {
+  if (!base::FeatureList::IsEnabled(kClickToCallDetectionV2))
+    return;
+
   base::PostTask(FROM_HERE,
                  {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
                   base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},

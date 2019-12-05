@@ -1037,7 +1037,7 @@ bool HTMLInputElement::SizeShouldIncludeDecoration(int& preferred_size) const {
 
 void HTMLInputElement::CloneNonAttributePropertiesFrom(const Element& source,
                                                        CloneChildrenFlag flag) {
-  const HTMLInputElement& source_element = ToHTMLInputElement(source);
+  const auto& source_element = To<HTMLInputElement>(source);
 
   non_attribute_value_ = source_element.non_attribute_value_;
   has_dirty_value_ = source_element.has_dirty_value_;

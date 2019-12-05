@@ -163,7 +163,7 @@ class CertificateReportingServiceTestHelper
       override;
   void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
       override;
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;
+  std::unique_ptr<network::PendingSharedURLLoaderFactory> Clone() override;
 
   ReportSendingResult expected_report_result_;
 

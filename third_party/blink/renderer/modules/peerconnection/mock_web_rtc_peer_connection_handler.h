@@ -28,10 +28,10 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
   bool Initialize(const webrtc::PeerConnectionInterface::RTCConfiguration&,
                   const WebMediaConstraints&) override;
 
-  WebVector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
+  WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
       RTCSessionDescriptionRequest*,
       const WebMediaConstraints&) override;
-  WebVector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
+  WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>> CreateOffer(
       RTCSessionDescriptionRequest*,
       RTCOfferOptionsPlatform*) override;
   void CreateAnswer(RTCSessionDescriptionRequest*,
@@ -59,16 +59,16 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
   void GetStats(RTCStatsRequest*) override;
   void GetStats(WebRTCStatsReportCallback,
                 const WebVector<webrtc::NonStandardGroupId>&) override;
-  webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>
+  webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
   AddTransceiverWithTrack(const WebMediaStreamTrack&,
                           const webrtc::RtpTransceiverInit&) override;
-  webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>
+  webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
   AddTransceiverWithKind(std::string kind,
                          const webrtc::RtpTransceiverInit&) override;
-  webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>> AddTrack(
+  webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>> AddTrack(
       const WebMediaStreamTrack&,
       const WebVector<WebMediaStream>&) override;
-  webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>> RemoveTrack(
+  webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>> RemoveTrack(
       RTCRtpSenderPlatform*) override;
   scoped_refptr<webrtc::DataChannelInterface> CreateDataChannel(
       const WebString& label,
@@ -86,9 +86,9 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
       webrtc::PeerConnectionInterface::IceConnectionState state) override;
 
  private:
-  class DummyWebRTCRtpTransceiver;
+  class DummyRTCRtpTransceiverPlatform;
 
-  Vector<std::unique_ptr<DummyWebRTCRtpTransceiver>> transceivers_;
+  Vector<std::unique_ptr<DummyRTCRtpTransceiverPlatform>> transceivers_;
 };
 
 }  // namespace blink

@@ -52,8 +52,10 @@ base::TimeTicks CompositorFrameReportingController::Now() const {
 void CompositorFrameReportingController::WillBeginImplFrame() {
   base::TimeTicks begin_time = Now();
   if (reporters_[PipelineStage::kBeginImplFrame]) {
+    // If the the reporter is replaced in this stage, it means that Impl frame
+    // caused no damage.
     reporters_[PipelineStage::kBeginImplFrame]->TerminateFrame(
-        CompositorFrameReporter::FrameTerminationStatus::kReplacedByNewReporter,
+        CompositorFrameReporter::FrameTerminationStatus::kDidNotProduceFrame,
         begin_time);
   }
   std::unique_ptr<CompositorFrameReporter> reporter =

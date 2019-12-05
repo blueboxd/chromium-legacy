@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "ios/web/common/features.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -30,6 +31,7 @@ const char kDesktopUserAgent[] =
     "Safari/605.1.15";
 
 // UserAgentType description strings.
+const char kUserAgentTypeAutomaticDescription[] = "AUTOMATIC";
 const char kUserAgentTypeNoneDescription[] = "NONE";
 const char kUserAgentTypeMobileDescription[] = "MOBILE";
 const char kUserAgentTypeDesktopDescription[] = "DESKTOP";
@@ -53,12 +55,13 @@ namespace web {
 
 std::string GetUserAgentTypeDescription(UserAgentType type) {
   switch (type) {
+    case UserAgentType::AUTOMATIC:
+      DCHECK(base::FeatureList::IsEnabled(features::kDefaultToDesktopOnIPad));
+      return std::string(kUserAgentTypeAutomaticDescription);
     case UserAgentType::NONE:
       return std::string(kUserAgentTypeNoneDescription);
-      break;
     case UserAgentType::MOBILE:
       return std::string(kUserAgentTypeMobileDescription);
-      break;
     case UserAgentType::DESKTOP:
       return std::string(kUserAgentTypeDesktopDescription);
   }
@@ -70,6 +73,15 @@ UserAgentType GetUserAgentTypeWithDescription(const std::string& description) {
   if (description == std::string(kUserAgentTypeDesktopDescription))
     return UserAgentType::DESKTOP;
   return UserAgentType::NONE;
+}
+
+UserAgentType GetDefaultUserAgent(UIView* web_view) {
+  DCHECK(base::FeatureList::IsEnabled(features::kDefaultToDesktopOnIPad));
+  BOOL isRegularRegular = web_view.traitCollection.horizontalSizeClass ==
+                              UIUserInterfaceSizeClassRegular &&
+                          web_view.traitCollection.verticalSizeClass ==
+                              UIUserInterfaceSizeClassRegular;
+  return isRegularRegular ? UserAgentType::DESKTOP : UserAgentType::MOBILE;
 }
 
 std::string BuildOSCpuInfo(web::UserAgentType type) {

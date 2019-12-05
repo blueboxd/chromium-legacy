@@ -56,7 +56,8 @@ TEST_F(ComputeLayerSelectionTest, ComputeLayerSelection) {
       style='width: 100px; height: 20px;'>
   )HTML");
 
-  FocusAndSelectAll(ToHTMLInputElement(GetDocument().getElementById("target")));
+  FocusAndSelectAll(
+      To<HTMLInputElement>(GetDocument().getElementById("target")));
 
   const cc::LayerSelection& composited_selection =
       ComputeLayerSelection(Selection());
@@ -80,7 +81,7 @@ TEST_F(ComputeLayerSelectionTest, DontCrashOnLayerCreation) {
   )HTML");
   Element* target = GetDocument().getElementById("target");
 
-  FocusAndSelectAll(ToHTMLInputElement(target));
+  FocusAndSelectAll(To<HTMLInputElement>(target));
 
   const cc::LayerSelection& composited_selection =
       ComputeLayerSelection(Selection());
@@ -116,7 +117,8 @@ TEST_F(ComputeLayerSelectionTest, PositionInScrollableRoot) {
       <input id=target width=20 value='test test test test test tes tes test'>
   )HTML");
 
-  FocusAndSelectAll(ToHTMLInputElement(GetDocument().getElementById("target")));
+  FocusAndSelectAll(
+      To<HTMLInputElement>(GetDocument().getElementById("target")));
 
   ScrollableArea* root_scroller = GetDocument().View()->GetScrollableArea();
   root_scroller->SetScrollOffset(ScrollOffset(800, 500), kProgrammaticScroll);
@@ -177,7 +179,8 @@ TEST_F(ComputeLayerSelectionTest, PositionInScroller) {
       </div>
   )HTML");
 
-  FocusAndSelectAll(ToHTMLInputElement(GetDocument().getElementById("target")));
+  FocusAndSelectAll(
+      To<HTMLInputElement>(GetDocument().getElementById("target")));
 
   Element* e = GetDocument().getElementById("scroller");
   PaintLayerScrollableArea* scroller =
@@ -359,7 +362,8 @@ TEST_F(ComputeLayerSelectionTest, SamplePointOnBoundary) {
   )HTML");
   GetDocument().GetFrame()->SetPageZoomFactor(2.625);
 
-  FocusAndSelectAll(ToHTMLInputElement(GetDocument().getElementById("target")));
+  FocusAndSelectAll(
+      To<HTMLInputElement>(GetDocument().getElementById("target")));
 
   const cc::LayerSelection& composited_selection =
       ComputeLayerSelection(Selection());

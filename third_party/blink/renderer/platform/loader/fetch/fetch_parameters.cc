@@ -49,6 +49,8 @@ FetchParameters::FetchParameters(const ResourceRequest& resource_request,
       defer_(kNoDefer),
       image_request_optimization_(kNone) {}
 
+FetchParameters::FetchParameters(FetchParameters&&) = default;
+
 FetchParameters::~FetchParameters() = default;
 
 void FetchParameters::SetCrossOriginAccessControl(

@@ -87,16 +87,16 @@ webrtc::RtpTransceiverInit ToRtpTransceiverInit(
 
 RTCRtpTransceiver::RTCRtpTransceiver(
     RTCPeerConnection* pc,
-    std::unique_ptr<WebRTCRtpTransceiver> web_transceiver,
+    std::unique_ptr<RTCRtpTransceiverPlatform> platform_transceiver,
     RTCRtpSender* sender,
     RTCRtpReceiver* receiver)
     : pc_(pc),
-      web_transceiver_(std::move(web_transceiver)),
+      platform_transceiver_(std::move(platform_transceiver)),
       sender_(sender),
       receiver_(receiver),
       fired_direction_(base::nullopt) {
   DCHECK(pc_);
-  DCHECK(web_transceiver_);
+  DCHECK(platform_transceiver_);
   DCHECK(sender_);
   DCHECK(receiver_);
   UpdateMembers();
@@ -105,7 +105,7 @@ RTCRtpTransceiver::RTCRtpTransceiver(
 }
 
 String RTCRtpTransceiver::mid() const {
-  return web_transceiver_->Mid();
+  return platform_transceiver_->Mid();
 }
 
 RTCRtpSender* RTCRtpTransceiver::sender() const {
@@ -142,7 +142,7 @@ void RTCRtpTransceiver::setDirection(String direction,
                                       "The transceiver is stopped.");
     return;
   }
-  web_transceiver_->SetDirection(*webrtc_direction);
+  platform_transceiver_->SetDirection(*webrtc_direction);
   UpdateMembers();
 }
 
@@ -151,11 +151,11 @@ String RTCRtpTransceiver::currentDirection() const {
 }
 
 void RTCRtpTransceiver::UpdateMembers() {
-  stopped_ = web_transceiver_->Stopped();
-  direction_ = TransceiverDirectionToString(web_transceiver_->Direction());
+  stopped_ = platform_transceiver_->Stopped();
+  direction_ = TransceiverDirectionToString(platform_transceiver_->Direction());
   current_direction_ = OptionalTransceiverDirectionToString(
-      web_transceiver_->CurrentDirection());
-  fired_direction_ = web_transceiver_->FiredDirection();
+      platform_transceiver_->CurrentDirection());
+  fired_direction_ = platform_transceiver_->FiredDirection();
 }
 
 void RTCRtpTransceiver::OnPeerConnectionClosed() {
@@ -165,8 +165,8 @@ void RTCRtpTransceiver::OnPeerConnectionClosed() {
   current_direction_ = String();  // null
 }
 
-WebRTCRtpTransceiver* RTCRtpTransceiver::web_transceiver() const {
-  return web_transceiver_.get();
+RTCRtpTransceiverPlatform* RTCRtpTransceiver::platform_transceiver() const {
+  return platform_transceiver_.get();
 }
 
 base::Optional<webrtc::RtpTransceiverDirection>
@@ -175,13 +175,13 @@ RTCRtpTransceiver::fired_direction() const {
 }
 
 bool RTCRtpTransceiver::DirectionHasSend() const {
-  auto direction = web_transceiver_->Direction();
+  auto direction = platform_transceiver_->Direction();
   return direction == webrtc::RtpTransceiverDirection::kSendRecv ||
          direction == webrtc::RtpTransceiverDirection::kSendOnly;
 }
 
 bool RTCRtpTransceiver::DirectionHasRecv() const {
-  auto direction = web_transceiver_->Direction();
+  auto direction = platform_transceiver_->Direction();
   return direction == webrtc::RtpTransceiverDirection::kSendRecv ||
          direction == webrtc::RtpTransceiverDirection::kRecvOnly;
 }
@@ -238,7 +238,7 @@ void RTCRtpTransceiver::setCodecPreferences(
       }
     }
   }
-  auto result = web_transceiver_->SetCodecPreferences(codec_preferences);
+  auto result = platform_transceiver_->SetCodecPreferences(codec_preferences);
   if (!result.ok()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidModificationError, result.message());

@@ -36,8 +36,11 @@ class WebBundleReaderTest : public testing::Test {
     base::flat_map<GURL, data_decoder::mojom::BundleIndexValuePtr> items;
     data_decoder::mojom::BundleIndexValuePtr item =
         data_decoder::mojom::BundleIndexValue::New();
+    item->variants_value = "Accept;text/html;image/png";
     item->response_locations.push_back(
         data_decoder::mojom::BundleResponseLocation::New(573u, 765u));
+    item->response_locations.push_back(
+        data_decoder::mojom::BundleResponseLocation::New(333u, 222u));
     items.insert({primary_url_, std::move(item)});
 
     data_decoder::mojom::BundleMetadataPtr metadata =
@@ -84,8 +87,11 @@ TEST_F(WebBundleReaderTest, ReadResponse) {
   response->payload_offset = 0xdead;
   response->payload_length = 0xbeaf;
 
+  network::ResourceRequest resource_request;
+  resource_request.url = GetPrimaryURL();
+
   GetMockFactory()->ReadAndFullfillResponse(
-      GetReader(), GetPrimaryURL(),
+      GetReader(), resource_request,
       data_decoder::mojom::BundleResponseLocation::New(573u, 765u),
       std::move(response),
       base::BindOnce(
@@ -113,8 +119,11 @@ TEST_F(WebBundleReaderTest, ReadResponseForURLContainingUserAndPass) {
   response->payload_offset = 0xdead;
   response->payload_length = 0xbeaf;
 
+  network::ResourceRequest resource_request;
+  resource_request.url = url;
+
   GetMockFactory()->ReadAndFullfillResponse(
-      GetReader(), url,
+      GetReader(), resource_request,
       data_decoder::mojom::BundleResponseLocation::New(573u, 765u),
       std::move(response),
       base::BindOnce(
@@ -142,9 +151,43 @@ TEST_F(WebBundleReaderTest, ReadResponseForURLContainingFragment) {
   response->payload_offset = 0xdead;
   response->payload_length = 0xbeaf;
 
+  network::ResourceRequest resource_request;
+  resource_request.url = url;
+
   GetMockFactory()->ReadAndFullfillResponse(
-      GetReader(), url,
+      GetReader(), resource_request,
       data_decoder::mojom::BundleResponseLocation::New(573u, 765u),
+      std::move(response),
+      base::BindOnce(
+          [](data_decoder::mojom::BundleResponsePtr response,
+             data_decoder::mojom::BundleResponseParseErrorPtr error) {
+            EXPECT_TRUE(response);
+            EXPECT_FALSE(error);
+            if (response) {
+              EXPECT_EQ(200, response->response_code);
+              EXPECT_EQ(0xdeadu, response->payload_offset);
+              EXPECT_EQ(0xbeafu, response->payload_length);
+            }
+          }));
+}
+
+TEST_F(WebBundleReaderTest, ReadResponseForSecondVariant) {
+  ReadMetadata();
+  ASSERT_TRUE(GetReader()->HasEntry(GetPrimaryURL()));
+
+  data_decoder::mojom::BundleResponsePtr response =
+      data_decoder::mojom::BundleResponse::New();
+  response->response_code = 200;
+  response->payload_offset = 0xdead;
+  response->payload_length = 0xbeaf;
+
+  network::ResourceRequest resource_request;
+  resource_request.url = GetPrimaryURL();
+  resource_request.headers.SetHeader("Accept", "image/png");
+
+  GetMockFactory()->ReadAndFullfillResponse(
+      GetReader(), resource_request,
+      data_decoder::mojom::BundleResponseLocation::New(333u, 222u),
       std::move(response),
       base::BindOnce(
           [](data_decoder::mojom::BundleResponsePtr response,

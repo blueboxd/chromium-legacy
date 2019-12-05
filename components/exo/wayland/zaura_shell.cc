@@ -206,10 +206,8 @@ void AuraSurface::SetOcclusionTracking(bool tracking) {
 }
 
 void AuraSurface::Activate() {
-  if (!surface_)
-    return;
-  // TODO(hollingum): implement me.
-  LOG(WARNING) << "Surface requested focus, but that is not implemented";
+  if (surface_)
+    surface_->RequestActivation();
 }
 
 void AuraSurface::DrawAttention() {

@@ -10,7 +10,6 @@
 #include "base/util/type_safety/pass_key.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/touch_to_fill/touch_to_fill_view.h"
-#include "components/favicon/core/favicon_service.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/origin_credential_store.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
@@ -27,26 +26,12 @@ using ShowVirtualKeyboard =
 using password_manager::PasswordManagerDriver;
 using password_manager::UiCredential;
 
-namespace {
-
-void OnImageFetched(base::OnceCallback<void(const gfx::Image&)> callback,
-                    const favicon_base::FaviconRawBitmapResult& bitmap_result) {
-  gfx::Image image;
-  if (bitmap_result.is_valid())
-    image = gfx::Image::CreateFrom1xPNGBytes(bitmap_result.bitmap_data);
-  std::move(callback).Run(image);
-}
-
-}  // namespace
-
 TouchToFillController::TouchToFillController(
     util::PassKey<TouchToFillControllerTest>) {}
 
 TouchToFillController::TouchToFillController(
-    ChromePasswordManagerClient* password_client,
-    favicon::FaviconService* favicon_service)
+    ChromePasswordManagerClient* password_client)
     : password_client_(password_client),
-      favicon_service_(favicon_service),
       source_id_(ukm::GetSourceIdForWebContentsDocument(
           password_client_->web_contents())) {}
 
@@ -110,17 +95,4 @@ void TouchToFillController::OnDismiss() {
 
 gfx::NativeView TouchToFillController::GetNativeView() {
   return password_client_->web_contents()->GetNativeView();
-}
-
-void TouchToFillController::FetchFavicon(
-    const GURL& credential_origin,
-    const GURL& frame_origin,
-    int desired_size_in_pixel,
-    base::OnceCallback<void(const gfx::Image&)> callback) {
-  favicon_service_->GetRawFaviconForPageURL(
-      url::Origin::Create(credential_origin).opaque() ? frame_origin
-                                                      : credential_origin,
-      {favicon_base::IconType::kFavicon}, desired_size_in_pixel,
-      /* fallback_to_host = */ true,
-      base::BindOnce(&OnImageFetched, std::move(callback)), &favicon_tracker_);
 }

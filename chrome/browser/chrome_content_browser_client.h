@@ -391,6 +391,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       service_manager::BinderRegistry* registry,
       content::RenderFrameHost* render_frame_host) override;
   void RegisterBrowserInterfaceBindersForFrame(
+      content::RenderFrameHost* render_frame_host,
       service_manager::BinderMapWithContext<content::RenderFrameHost*>* map)
       override;
   void BindInterfaceRequestFromFrame(
@@ -475,6 +476,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       int render_process_id,
       URLLoaderFactoryType type,
       const url::Origin& request_initiator,
+      base::Optional<int64_t> navigation_id,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
           header_client,

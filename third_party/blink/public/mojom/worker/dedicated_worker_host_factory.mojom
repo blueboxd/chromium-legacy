@@ -5,7 +5,6 @@
 module blink.mojom;
 
 import "services/network/public/mojom/fetch_api.mojom";
-import "services/service_manager/public/mojom/interface_provider.mojom";
 import "third_party/blink/public/mojom/blob/blob_url_store.mojom";
 import "third_party/blink/public/mojom/browser_interface_broker.mojom";
 import "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom";
@@ -30,11 +29,6 @@ interface DedicatedWorkerHostFactoryClient {
   // Called when the worker host is created.
   OnWorkerHostCreated(
       // Used for accessing services from the worker.
-      // TODO(crbug.com/990845): remove when no longer used.
-      pending_remote<service_manager.mojom.InterfaceProvider>
-          interface_provider,
-      // Used for accessing services from the worker.
-      // should replace the |interface_provider| above
       pending_remote<blink.mojom.BrowserInterfaceBroker>
           browser_interface_broker);
 
@@ -78,18 +72,13 @@ interface DedicatedWorkerHostFactory {
   // The factory client should call this instead of
   // CreateWorkerHostAndStartScriptLoad() when PlzDedicatedWorker is disabled.
   //
-  // Creates a new DedicatedWorkerHost, and requests |worker_interface_provider|
-  // and |browser_interface_broker| (which is expected to replace
-  // |worker_interface_provider|) to provide the worker access to
-  // mojo interfaces.
+  // Creates a new DedicatedWorkerHost, and requests |browser_interface_broker|
+  // to provide the worker access to mojo interfaces.
   // |origin| must either be
   // unique or match the origin of the creating context (Document or
   // DedicatedWorkerGlobalScope).
   CreateWorkerHost(
       url.mojom.Origin origin,
-      // TODO(crbug.com/990845): remove when no longer used.
-      pending_receiver<service_manager.mojom.InterfaceProvider>
-          worker_interface_provider,
       pending_receiver<blink.mojom.BrowserInterfaceBroker>
           browser_interface_broker,
       pending_receiver<DedicatedWorkerHost> host);

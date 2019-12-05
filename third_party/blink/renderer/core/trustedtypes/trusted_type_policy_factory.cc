@@ -71,7 +71,8 @@ TrustedTypePolicy* TrustedTypePolicyFactory::defaultPolicy() const {
 
 TrustedTypePolicyFactory::TrustedTypePolicyFactory(ExecutionContext* context)
     : ContextClient(context),
-      empty_html_(MakeGarbageCollected<TrustedHTML>("")) {
+      empty_html_(MakeGarbageCollected<TrustedHTML>("")),
+      empty_script_(MakeGarbageCollected<TrustedScript>("")) {
   UseCounter::Count(context, WebFeature::kTrustedTypesEnabled);
 }
 
@@ -121,6 +122,10 @@ bool TrustedTypePolicyFactory::isScriptURL(ScriptState* script_state,
 
 TrustedHTML* TrustedTypePolicyFactory::emptyHTML() const {
   return empty_html_.Get();
+}
+
+TrustedScript* TrustedTypePolicyFactory::emptyScript() const {
+  return empty_script_.Get();
 }
 
 const struct {
@@ -316,6 +321,7 @@ void TrustedTypePolicyFactory::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
   ContextClient::Trace(visitor);
   visitor->Trace(empty_html_);
+  visitor->Trace(empty_script_);
   visitor->Trace(policy_map_);
 }
 

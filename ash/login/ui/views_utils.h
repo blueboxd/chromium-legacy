@@ -39,7 +39,7 @@ ASH_EXPORT gfx::Point CalculateBubblePositionLeftRightStrategy(
     gfx::Size bubble,
     gfx::Rect bounds);
 
-ASH_EXPORT gfx::Point CalculateBubblePositionRigthLeftStrategy(
+ASH_EXPORT gfx::Point CalculateBubblePositionRightLeftStrategy(
     gfx::Rect anchor,
     gfx::Size bubble,
     gfx::Rect bounds);

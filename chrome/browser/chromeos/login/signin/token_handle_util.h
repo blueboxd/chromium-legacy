@@ -36,17 +36,17 @@ class TokenHandleUtil {
       base::Callback<void(const AccountId&, TokenHandleStatus)>;
 
   // Returns true if UserManager has token handle associated with |account_id|.
-  bool HasToken(const AccountId& account_id);
+  static bool HasToken(const AccountId& account_id);
 
   // Removes token handle for |account_id| from UserManager storage.
-  void DeleteHandle(const AccountId& account_id);
+  static void DeleteHandle(const AccountId& account_id);
 
   // Marks current handle as invalid, new one should be obtained at next sign
   // in.
-  void MarkHandleInvalid(const AccountId& account_id);
+  static void MarkHandleInvalid(const AccountId& account_id);
 
   // Indicates if token handle for |account_id| is missing or marked as invalid.
-  bool ShouldObtainHandle(const AccountId& account_id);
+  static bool ShouldObtainHandle(const AccountId& account_id);
 
   // Performs token handle check for |account_id|. Will call |callback| with
   // corresponding result.
@@ -54,7 +54,8 @@ class TokenHandleUtil {
                   const TokenValidationCallback& callback);
 
   // Given the token |handle| store it for |account_id|.
-  void StoreTokenHandle(const AccountId& account_id, const std::string& handle);
+  static void StoreTokenHandle(const AccountId& account_id,
+                               const std::string& handle);
 
  private:
   // Associates GaiaOAuthClient::Delegate with User ID and Token.

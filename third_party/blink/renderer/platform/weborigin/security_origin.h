@@ -281,12 +281,18 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   // https://html.spec.whatwg.org/C/origin.html#same-origin-domain
   String ToTokenForFastCheck() const;
 
-  // This method checks for equality, ignoring the value of document.domain
-  // (and whether it was set) but considering the host. It is used for
-  // postMessage.
-  bool IsSameSchemeHostPort(const SecurityOrigin*) const;
-
-  static bool AreSameSchemeHostPort(const KURL& a, const KURL& b);
+  // This method implements HTML's "same origin" check, which verifies equality
+  // of opaque origins, or exact (scheme,host,port) matches. Note that
+  // `document.domain` does not come into play for this comparison.
+  //
+  // This method does not take the "universal access" flag into account. It does
+  // take the "local access" flag into account, considering `file:` origins that
+  // set the flag to be same-origin with all other `file:` origins that set the
+  // flag.
+  //
+  // https://html.spec.whatwg.org/#same-origin
+  bool IsSameOriginWith(const SecurityOrigin*) const;
+  static bool AreSameOrigin(const KURL& a, const KURL& b);
 
   static const KURL& UrlWithUniqueOpaqueOrigin();
 

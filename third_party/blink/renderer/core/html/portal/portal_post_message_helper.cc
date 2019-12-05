@@ -73,7 +73,7 @@ void PortalPostMessageHelper::CreateAndDispatchMessageEvent(
          IsA<HTMLPortalElement>(event_target->ToNode()));
 
   if (target_origin &&
-      !target_origin->IsSameSchemeHostPort(
+      !target_origin->IsSameOriginWith(
           event_target->GetExecutionContext()->GetSecurityOrigin())) {
     return;
   }

@@ -60,7 +60,8 @@ class CONTENT_EXPORT WebBundleReader final
   using ResponseCallback = base::OnceCallback<void(
       data_decoder::mojom::BundleResponsePtr,
       data_decoder::mojom::BundleResponseParseErrorPtr)>;
-  void ReadResponse(const GURL& url, ResponseCallback callback);
+  void ReadResponse(const network::ResourceRequest& resource_request,
+                    ResponseCallback callback);
 
   // Starts loading response body. |response| should be obtained by
   // ReadResponse above beforehand. Body will be written into |producer_handle|.
@@ -81,6 +82,10 @@ class CONTENT_EXPORT WebBundleReader final
 
   // Returns the WebBundleSource.
   const WebBundleSource& source() const;
+
+  base::WeakPtr<WebBundleReader> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
 
  private:
   friend class base::RefCounted<WebBundleReader>;
@@ -116,6 +121,9 @@ class CONTENT_EXPORT WebBundleReader final
   ~WebBundleReader();
 
   void ReadMetadataInternal(MetadataCallback callback, base::File file);
+  void ReadResponseInternal(
+      data_decoder::mojom::BundleResponseLocationPtr location,
+      ResponseCallback callback);
 
   void OnMetadataParsed(MetadataCallback callback,
                         data_decoder::mojom::BundleMetadataPtr metadata,
@@ -142,7 +150,11 @@ class CONTENT_EXPORT WebBundleReader final
   GURL primary_url_;
   base::flat_map<GURL, data_decoder::mojom::BundleIndexValuePtr> entries_;
   // Accumulates ReadResponse() requests while the parser is disconnected.
-  std::vector<std::pair<GURL, ResponseCallback>> pending_read_responses_;
+  std::vector<std::pair<data_decoder::mojom::BundleResponseLocationPtr,
+                        ResponseCallback>>
+      pending_read_responses_;
+
+  base::WeakPtrFactory<WebBundleReader> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebBundleReader);
 };

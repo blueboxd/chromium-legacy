@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/public/renderer/render_thread.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 
 namespace network_hints {
 namespace {
@@ -18,10 +18,11 @@ void ForwardToHandler(mojo::Remote<mojom::NetworkHintsHandler>* handler,
 
 }  // namespace
 
-WebPrescientNetworkingImpl::WebPrescientNetworkingImpl()
+WebPrescientNetworkingImpl::WebPrescientNetworkingImpl(
+    content::RenderFrame* render_frame)
     : dns_prefetch_(
           base::BindRepeating(&ForwardToHandler, base::Unretained(&handler_))) {
-  content::RenderThread::Get()->BindHostReceiver(
+  render_frame->GetBrowserInterfaceBroker()->GetInterface(
       handler_.BindNewPipeAndPassReceiver());
 }
 
@@ -37,16 +38,13 @@ void WebPrescientNetworkingImpl::PrefetchDNS(const blink::WebString& hostname) {
 }
 
 void WebPrescientNetworkingImpl::Preconnect(
-    blink::WebLocalFrame* web_local_frame,
     const blink::WebURL& url,
     bool allow_credentials) {
   DVLOG(2) << "Preconnect: " << url.GetString().Utf8();
-  if (!url.IsValid() || !web_local_frame)
+  if (!url.IsValid())
     return;
 
-  handler_->Preconnect(
-      content::RenderFrame::FromWebFrame(web_local_frame)->GetRoutingID(), url,
-      allow_credentials);
+  handler_->Preconnect(url, allow_credentials);
 }
 
 }  // namespace network_hints

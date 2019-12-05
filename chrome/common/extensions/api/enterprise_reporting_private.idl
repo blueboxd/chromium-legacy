@@ -16,8 +16,25 @@ namespace enterprise.reportingPrivate {
   // Invoked by <code>getPersistentSecret</code> to return the secret.
   callback GetPersistentSecretCallback = void(ArrayBuffer secret);
 
-  // Invokde by <code>getDeviceDataCallback</code> to return the device data.
+  // Invoked by <code>getDeviceDataCallback</code> to return the device data.
   callback GetDeviceDataCallback = void(ArrayBuffer data);
+
+  // Possible states a particular device setting can be in.
+  enum SettingValue { UNKNOWN, DISABLED, ENABLED };
+
+  // Device info fields returned by the getDeviceInfo API.
+  dictionary DeviceInfo {
+    DOMString osName;
+    DOMString osVersion;
+    DOMString deviceHostName;
+    DOMString deviceModel;
+    DOMString serialNumber;
+    SettingValue screenLockSecured;
+    SettingValue diskEncrypted;
+  };
+
+  // Invoked by <code>getDeviceInfo</code> to return device information.
+  callback GetDeviceInfoCallback = void(DeviceInfo deviceInfo);
 
   interface Functions {
 
@@ -43,6 +60,9 @@ namespace enterprise.reportingPrivate {
              ArrayBuffer data,
              optional DoneCallback callback);
 
+    // Gets the device information (including disk encryption status,
+    // screen lock status, serial number, model).
+    static void getDeviceInfo(optional GetDeviceInfoCallback callback);
   };
 
 };

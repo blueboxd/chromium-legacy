@@ -26,6 +26,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/net/system_network_context_manager.h"
+#include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/reputation/reputation_web_contents_observer.h"
 #include "chrome/browser/reputation/safety_tip_test_utils.h"
@@ -45,6 +46,9 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_types.h"
+#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/metrics_util.h"
@@ -54,6 +58,7 @@
 #include "components/security_state/content/ssl_status_input_event_data.h"
 #include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state.h"
+#include "components/security_state/core/security_state_pref_names.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -2419,6 +2424,62 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, SafetyTipFormHistogram) {
                   : security_state::SafetyTipStatus::kNone,
         1);
   }
+}
+
+// Tests for the temporary strict mixed content treatment opt out enterprise
+// policy.
+class MixedContentStrictTreatmentOptOutPolicyTest : public policy::PolicyTest {
+ public:
+  MixedContentStrictTreatmentOptOutPolicyTest() {
+    feature_list_.InitWithFeatures(
+        {security_state::features::kPassiveMixedContentWarning,
+         blink::features::kMixedContentAutoupgrade},
+        {});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(MixedContentStrictTreatmentOptOutPolicyTest,
+                       MixedContentStrictTreatmentDisabledSecurityState) {
+  // Check pref is set to true by default.
+  EXPECT_TRUE(browser()->profile()->GetPrefs()->GetBoolean(
+      security_state::prefs::kStricterMixedContentTreatmentEnabled));
+  // Set policy to disable mixed content treatment changes.
+  policy::PolicyMap policies;
+  policies.Set(policy::key::kStricterMixedContentTreatmentEnabled,
+               policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+               policy::POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(false), nullptr);
+  UpdateProviderPolicy(policies);
+  // Pref should now be set to false.
+  EXPECT_FALSE(browser()->profile()->GetPrefs()->GetBoolean(
+      security_state::prefs::kStricterMixedContentTreatmentEnabled));
+  // Start HTTP server.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  // Start HTTPS server.
+  net::EmbeddedTestServer https_server_ok(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server_ok.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+  https_server_ok.ServeFilesFromSourceDirectory("chrome/test/data");
+  ASSERT_TRUE(https_server_ok.Start());
+  // Navigate to an HTTPS page that displays mixed content.
+  net::HostPortPair replacement_pair = https_server_ok.host_port_pair();
+  base::StringPairs replacement_text;
+  replacement_text.push_back(
+      make_pair("REPLACE_WITH_HOST_AND_PORT", replacement_pair.ToString()));
+  std::string replacement_path = net::test_server::GetFilePathWithReplacements(
+      "/ssl/page_displays_insecure_content.html", replacement_text);
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_ok.GetURL(replacement_path));
+  // Check security state is NONE, if the request was autoupgraded this will
+  // instead be SECURE, and if the warning was shown it will be WARNING.
+  SecurityStateTabHelper* helper = SecurityStateTabHelper::FromWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  ASSERT_TRUE(helper);
+  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
+      helper->GetVisibleSecurityState();
+  EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
 }
 
 }  // namespace

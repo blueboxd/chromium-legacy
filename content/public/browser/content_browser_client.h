@@ -989,6 +989,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // This mechanism will replace interface registries and binders used for
   // handling InterfaceProvider's GetInterface() calls (see crbug.com/718652).
   virtual void RegisterBrowserInterfaceBindersForFrame(
+      RenderFrameHost* render_frame_host,
       service_manager::BinderMapWithContext<RenderFrameHost*>* map) {}
 
   // Content was unable to bind a request for this interface, so the embedder
@@ -1244,8 +1245,35 @@ class CONTENT_EXPORT ContentBrowserClient {
       int render_frame_id,
       NonNetworkURLLoaderFactoryMap* factories);
 
-  // Allows the embedder to intercept URLLoaderFactory interfaces used for
-  // navigation or being brokered on behalf of a renderer fetching subresources.
+  // Describes the purpose of the factory in WillCreateURLLoaderFactory().
+  enum class URLLoaderFactoryType {
+    // For navigations.
+    kNavigation,
+
+    // For downloads.
+    kDownload,
+
+    // For subresource requests from a document.
+    kDocumentSubResource,
+
+    // For the main script request of a dedicated worker or shared worker.
+    kWorkerMainResource,
+
+    // For the subresource requests from a dedicated worker or shared worker,
+    // including importScripts().
+    kWorkerSubResource,
+
+    // For fetching a service worker main script or subresource scripts,
+    // including importScripts().
+    kServiceWorkerScript,
+
+    // For regular fetches from a service worker (e.g., fetch(), XHR), not
+    // including importScripts().
+    kServiceWorkerSubResource,
+  };
+
+  // Allows the embedder to intercept URLLoaderFactory interfaces used by the
+  // content layer to request resources from (usually) the network service.
   //
   // The parameters for URLLoaderFactory creation, namely |header_client| and
   // |factory_override|, are used in the network service where the resulting
@@ -1253,10 +1281,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // passed to the network service might be different from the original factory
   // receiver that was given to the embedder if the embedder had replaced it.
   //
-  // |frame| is nullptr for kWorkerSubResource, kServiceWorkerSubResource and
-  // kServiceWorkerScript.
-  // For kNavigation type, it's the RenderFrameHost the navigation might commit
-  // in. Else it's the initiating frame.
+  // |type| indicates the type of requests the factory will be used for.
+  //
+  // |frame| is nullptr for type kWorkerSubResource, kServiceWorkerSubResource
+  // and kServiceWorkerScript. For kNavigation type, it's the RenderFrameHost
+  // the navigation might commit in. Else it's the initiating frame.
   //
   // |render_process_id| is the id of a render process host in which the
   // URLLoaderFactory will be used.
@@ -1279,6 +1308,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   // TODO(lukasza): https://crbug.com/888079: Ensure that |request_initiator| is
   // always accurate.
   //
+  // |navigation_id| is valid iff |type| is |kNavigation|. It corresponds to the
+  // Navigation ID returned by NavigationHandle::GetNavigationId().
+  //
   // |*factory_receiver| is always valid upon entry and MUST be valid upon
   // return. The embedder may swap out the value of |*factory_receiver| for its
   // own, in which case it must return |true| to indicate that it's proxying
@@ -1291,10 +1323,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // |bypass_redirect_checks| will be set to true when the embedder will be
   // handling redirect security checks.
   //
-  // |factory_override| gives the embedder a chance to replace the Network
-  // Service's internal URLLoaderFactory used by security features such as CORS.
+  // |factory_override| gives the embedder a chance to replace the network
+  // service's "internal" URLLoaderFactory. See more details in the
+  // documentation for URLLoaderFactoryOverride in network_context.mojom.
   // The point is to allow the embedder to override network behavior without
-  // losing the security features of the Network Service. The embedder should
+  // losing the security features of the network service. The embedder should
   // use |factory_override| instead of swapping out |*factory_receiver| if such
   // security features are desired.
   //
@@ -1308,28 +1341,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   // |*factory_override| to a valid override.
   //
   // Always called on the UI thread.
-  enum class URLLoaderFactoryType {
-    kNavigation,
-    kDownload,
-    kDocumentSubResource,
-
-    // For dedicated workers and shared workers.
-    kWorkerMainResource,
-    kWorkerSubResource,
-
-    // For regular fetches from a service worker (e.g., fetch(), XHR).
-    kServiceWorkerSubResource,
-
-    // For fetching a service worker main script or subresource scripts
-    // (e.g., importScripts()).
-    kServiceWorkerScript,
-  };
   virtual bool WillCreateURLLoaderFactory(
       BrowserContext* browser_context,
       RenderFrameHost* frame,
       int render_process_id,
       URLLoaderFactoryType type,
       const url::Origin& request_initiator,
+      base::Optional<int64_t> navigation_id,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
           header_client,

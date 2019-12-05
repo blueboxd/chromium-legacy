@@ -256,11 +256,33 @@ cr.define('cr.samlPasswordChange', function() {
 
     /**
      * Sends scraped password and resets the state.
+     * @param {bool} isOkta whether the page is Okta page.
      * @private
      */
-    onPasswordChangeSuccess_() {
-      const passwordsOnce = this.samlHandler_.getPasswordsScrapedTimes(1);
-      const passwordsTwice = this.samlHandler_.getPasswordsScrapedTimes(2);
+    onPasswordChangeSuccess_(isOkta) {
+      let passwordsOnce;
+      let passwordsTwice;
+      if (isOkta) {
+        passwordsOnce = this.samlHandler_.getPasswordsWithPropertyScrapedTimes(
+            1, 'oldPassword');
+        const newPasswords =
+            this.samlHandler_.getPasswordsWithPropertyScrapedTimes(
+                1, 'newPassword');
+        const verifyPasswords =
+            this.samlHandler_.getPasswordsWithPropertyScrapedTimes(
+                1, 'verifyPassword');
+        if (newPasswords.length == 1 && verifyPasswords.length == 1 &&
+            newPasswords[0] === verifyPasswords[0]) {
+          passwordsTwice = Array.from(newPasswords);
+        } else {
+          passwordsTwice = [];
+        }
+      } else {
+        passwordsOnce =
+            this.samlHandler_.getPasswordsWithPropertyScrapedTimes(1);
+        passwordsTwice =
+            this.samlHandler_.getPasswordsWithPropertyScrapedTimes(2);
+      }
 
       this.dispatchEvent(new CustomEvent('authCompleted', {
         detail: {
@@ -279,7 +301,6 @@ cr.define('cr.samlPasswordChange', function() {
       this.webview_.focus();
     }
 
-
     /**
      * Invoked when a new document loading completes.
      * @param {Object} details The web-request details.
@@ -289,7 +310,7 @@ cr.define('cr.samlPasswordChange', function() {
       if (details.method == 'POST' &&
           detectPasswordChangeSuccess(
               safeParseUrl_(details.url), safeParseUrl_(details.redirectUrl))) {
-        this.onPasswordChangeSuccess_();
+        this.onPasswordChangeSuccess_(false /* isOkta != OKTA */);
       }
     }
 
@@ -302,9 +323,11 @@ cr.define('cr.samlPasswordChange', function() {
       // Okta_detect_success_injected.js needs to be contacted by the parent,
       // so that it can send messages back to the parent.
       // Using setTimeout gives the page time to finish initializing.
+      // TODO: timeout value is chosen empirically, we need a better way
+      // to pass this to the injected code.
       setTimeout(() => {
         this.webview_.contentWindow.postMessage('connect', details.url);
-      }, 1000);
+      }, 2000);
     }
 
     /**
@@ -316,7 +339,7 @@ cr.define('cr.samlPasswordChange', function() {
       if (event.data == 'passwordChangeSuccess') {
         const pageProvider = detectProvider_(safeParseUrl_(event.origin));
         if (pageProvider == PasswordChangePageProvider.OKTA) {
-          this.onPasswordChangeSuccess_();
+          this.onPasswordChangeSuccess_(true /* isOkta == OKTA */);
         }
       }
     }

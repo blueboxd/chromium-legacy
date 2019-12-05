@@ -622,16 +622,16 @@ class SSLErrorHandlerDateInvalidTest : public ChromeRenderViewHostTestHarness {
     SSLErrorHandler::ResetConfigForTesting();
 
     base::RunLoop run_loop;
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        url_loader_factory_info;
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_url_loader_factory;
     base::PostTaskAndReply(
         FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(CreateURLLoaderFactory, &url_loader_factory_info),
+        base::BindOnce(CreateURLLoaderFactory, &pending_url_loader_factory),
         run_loop.QuitClosure());
     run_loop.Run();
 
     shared_url_loader_factory_ = network::SharedURLLoaderFactory::Create(
-        std::move(url_loader_factory_info));
+        std::move(pending_url_loader_factory));
 
     tracker_.reset(new network_time::NetworkTimeTracker(
         std::unique_ptr<base::Clock>(clock_),
@@ -694,12 +694,12 @@ class SSLErrorHandlerDateInvalidTest : public ChromeRenderViewHostTestHarness {
 
  private:
   static void CreateURLLoaderFactory(
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>*
-          url_loader_factory_info) {
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>*
+          pending_url_loader_factory) {
     scoped_refptr<network::TestSharedURLLoaderFactory> factory =
         base::MakeRefCounted<network::TestSharedURLLoaderFactory>();
     // Holds a reference to |factory|.
-    *url_loader_factory_info = factory->Clone();
+    *pending_url_loader_factory = factory->Clone();
   }
 
   net::SSLInfo ssl_info_;

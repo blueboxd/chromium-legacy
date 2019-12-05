@@ -65,7 +65,7 @@
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/metrics/metrics_mojo_service.h"
 #include "services/metrics/public/mojom/constants.mojom.h"
-#include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
+#include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -217,8 +217,8 @@ class DeviceServiceURLLoaderFactory : public network::SharedURLLoaderFactory {
         std::move(receiver));
   }
 
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
-    return std::make_unique<network::CrossThreadSharedURLLoaderFactoryInfo>(
+  std::unique_ptr<network::PendingSharedURLLoaderFactory> Clone() override {
+    return std::make_unique<network::CrossThreadPendingSharedURLLoaderFactory>(
         this);
   }
 

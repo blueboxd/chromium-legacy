@@ -227,14 +227,14 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // Pushes updated URL loader factories to the worker -- e.g. when DevTools
   // network interception is enabled.
   void UpdateLoaderFactories(
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo> script_bundle,
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_bundle);
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle> script_bundle,
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle> subresource_bundle);
 
   base::WeakPtr<EmbeddedWorkerInstance> AsWeakPtr();
 
   // The below can only be called on the UI thread. The returned factory may be
   // later supplied to UpdateLoaderFactories().
-  static std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+  static std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
   CreateFactoryBundleOnUI(
       RenderProcessHost* rph,
       int routing_id,
@@ -310,7 +310,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
 
   mojo::PendingRemote<network::mojom::URLLoaderFactory>
   MakeScriptLoaderFactoryRemote(
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo> script_bundle);
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle> script_bundle);
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
   ServiceWorkerVersion* owner_version_;

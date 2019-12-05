@@ -517,11 +517,6 @@
           'shards': 2, # https://crbug.com/955853
         },
       },
-      'Linux Tests': {
-        'swarming': {
-          'idempotent': False, # https://crbug.com/1013093
-        },
-      },
       'Linux TSan Tests': {
         'swarming': {
           'shards': 15,
@@ -1951,6 +1946,12 @@
       'Win10 Tests x64 (dbg)',
     ],
     'modifications': {
+      # devtools-frontend
+      'DevTools Linux': {
+        'args': [
+          '--fuzzy-diff',
+        ],
+      },
       'devtools_frontend_linux_blink_light_rel': {
         'args': [
           'http/tests/devtools',
@@ -1987,6 +1988,11 @@
         'args': [
           '--release',
           '--additional-driver-flag=--enable-features=BlinkHeapConcurrentMarking',
+          '--fuzzy-diff',
+        ],
+      },
+      'linux-blink-rel-dummy': {
+        'args': [
           '--fuzzy-diff',
         ],
       },
@@ -2219,6 +2225,11 @@
         ],
       },
       # client.v8.fyi
+      'V8 Blink Linux': {
+        'args': [
+          '--fuzzy-diff',
+        ],
+      },
       'V8 Blink Linux Debug': {
         'args': [
           '--debug',

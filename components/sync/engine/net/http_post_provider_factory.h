@@ -12,7 +12,7 @@
 #include "components/sync/engine/net/network_time_update_callback.h"
 
 namespace network {
-class SharedURLLoaderFactoryInfo;
+class PendingSharedURLLoaderFactory;
 }  // namespace network
 
 namespace syncer {
@@ -43,8 +43,8 @@ class HttpPostProviderFactory {
 using CreateHttpPostProviderFactory =
     base::RepeatingCallback<std::unique_ptr<HttpPostProviderFactory>(
         const std::string& user_agent,
-        std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-            url_loader_factory_info,
+        std::unique_ptr<network::PendingSharedURLLoaderFactory>
+            pending_url_loader_factory,
         const NetworkTimeUpdateCallback& network_time_update_callback)>;
 
 }  // namespace syncer

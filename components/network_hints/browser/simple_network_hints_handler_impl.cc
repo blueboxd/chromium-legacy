@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "ipc/ipc_message_macros.h"
@@ -101,8 +102,9 @@ SimpleNetworkHintsHandlerImpl::~SimpleNetworkHintsHandlerImpl() = default;
 
 // static
 void SimpleNetworkHintsHandlerImpl::Create(
-    int render_process_id,
+    content::RenderFrameHost* frame_host,
     mojo::PendingReceiver<mojom::NetworkHintsHandler> receiver) {
+  int render_process_id = frame_host->GetProcess()->GetID();
   mojo::MakeSelfOwnedReceiver(
       base::WrapUnique(new SimpleNetworkHintsHandlerImpl(render_process_id)),
       std::move(receiver));
@@ -118,8 +120,7 @@ void SimpleNetworkHintsHandlerImpl::PrefetchDNS(
   }
 }
 
-void SimpleNetworkHintsHandlerImpl::Preconnect(int render_frame_id,
-                                               const GURL& url,
+void SimpleNetworkHintsHandlerImpl::Preconnect(const GURL& url,
                                                bool allow_credentials) {
   // Not implemented.
 }

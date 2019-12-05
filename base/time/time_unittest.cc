@@ -515,6 +515,18 @@ TEST_F(TimeTest, ExplodeBeforeUnixEpoch) {
   EXPECT_EQ(59, exploded.second);
   EXPECT_EQ(999, exploded.millisecond);
 
+  t = Time::UnixEpoch() - TimeDelta::FromMicroseconds(999);
+  t.UTCExplode(&exploded);
+  EXPECT_TRUE(exploded.HasValidValues());
+  // Should be 1969-12-31 23:59:59 999 milliseconds (and 1 microsecond).
+  EXPECT_EQ(kUnixEpochYear - 1, exploded.year);
+  EXPECT_EQ(12, exploded.month);
+  EXPECT_EQ(31, exploded.day_of_month);
+  EXPECT_EQ(23, exploded.hour);
+  EXPECT_EQ(59, exploded.minute);
+  EXPECT_EQ(59, exploded.second);
+  EXPECT_EQ(999, exploded.millisecond);
+
   t = Time::UnixEpoch() - TimeDelta::FromMicroseconds(1000);
   t.UTCExplode(&exploded);
   EXPECT_TRUE(exploded.HasValidValues());
@@ -580,6 +592,18 @@ TEST_F(TimeTest, ExplodeBeforeUnixEpoch) {
   t.UTCExplode(&exploded);
   EXPECT_TRUE(exploded.HasValidValues());
   // Should be 1970-01-01 00:00:00 0 milliseconds (and 1 microsecond).
+  EXPECT_EQ(kUnixEpochYear, exploded.year);
+  EXPECT_EQ(1, exploded.month);
+  EXPECT_EQ(1, exploded.day_of_month);
+  EXPECT_EQ(0, exploded.hour);
+  EXPECT_EQ(0, exploded.minute);
+  EXPECT_EQ(0, exploded.second);
+  EXPECT_EQ(0, exploded.millisecond);
+
+  t = Time::UnixEpoch() + TimeDelta::FromMicroseconds(999);
+  t.UTCExplode(&exploded);
+  EXPECT_TRUE(exploded.HasValidValues());
+  // Should be 1970-01-01 00:00:00 0 milliseconds (and 999 microseconds).
   EXPECT_EQ(kUnixEpochYear, exploded.year);
   EXPECT_EQ(1, exploded.month);
   EXPECT_EQ(1, exploded.day_of_month);

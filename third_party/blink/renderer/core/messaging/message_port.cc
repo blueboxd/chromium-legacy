@@ -313,7 +313,7 @@ Event* MessagePort::CreateMessageEvent(BlinkTransferableMessage& message) {
   if (message.message->IsOriginCheckRequired()) {
     const SecurityOrigin* target_origin = context->GetSecurityOrigin();
     if (!message.sender_origin ||
-        !message.sender_origin->IsSameSchemeHostPort(target_origin)) {
+        !message.sender_origin->IsSameOriginWith(target_origin)) {
       return MessageEvent::CreateError();
     }
   }
@@ -327,7 +327,7 @@ Event* MessagePort::CreateMessageEvent(BlinkTransferableMessage& message) {
     }
     const SecurityOrigin* target_origin = context->GetSecurityOrigin();
     if (!message.sender_origin ||
-        !message.sender_origin->IsSameSchemeHostPort(target_origin)) {
+        !message.sender_origin->IsSameOriginWith(target_origin)) {
       UseCounter::Count(
           context, WebFeature::kMessageEventSharedArrayBufferSameAgentCluster);
     } else {

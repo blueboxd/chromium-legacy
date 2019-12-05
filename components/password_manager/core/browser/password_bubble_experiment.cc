@@ -8,11 +8,13 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 
@@ -56,6 +58,12 @@ void TurnOffAutoSignin(PrefService* prefs) {
 bool ShouldShowChromeSignInPasswordPromo(
     PrefService* prefs,
     const syncer::SyncService* sync_service) {
+#if defined(OS_CHROMEOS)
+  return false;
+#else
+  if (!prefs->GetBoolean(prefs::kSigninAllowed))
+    return false;
+
   if (!sync_service ||
       sync_service->HasDisableReason(
           syncer::SyncService::DISABLE_REASON_PLATFORM_OVERRIDE) ||
@@ -78,6 +86,7 @@ bool ShouldShowChromeSignInPasswordPromo(
          prefs->GetInteger(
              password_manager::prefs::kNumberSignInPasswordPromoShown) <
              kThreshold;
+#endif  // defined(OS_CHROMEOS)
 }
 
 }  // namespace password_bubble_experiment

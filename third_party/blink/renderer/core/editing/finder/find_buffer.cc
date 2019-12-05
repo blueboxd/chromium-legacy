@@ -130,7 +130,8 @@ bool ShouldIgnoreContents(const Node& node) {
   const auto* element = DynamicTo<HTMLElement>(node);
   if (!element)
     return false;
-  return (!element->ShouldSerializeEndTag() && !IsHTMLInputElement(*element)) ||
+  return (!element->ShouldSerializeEndTag() &&
+          !IsA<HTMLInputElement>(*element)) ||
          IsA<HTMLIFrameElement>(*element) || IsA<HTMLImageElement>(*element) ||
          IsA<HTMLMeterElement>(*element) || IsA<HTMLObjectElement>(*element) ||
          IsA<HTMLProgressElement>(*element) ||

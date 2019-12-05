@@ -96,20 +96,20 @@ class MockNetwork {
     net::HttpResponseInfo info;
     info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
         net::HttpUtil::AssembleRawHeaders(response.headers));
-    network::ResourceResponseHead response_head;
-    response_head.headers = info.headers;
-    response_head.headers->GetMimeType(&response_head.mime_type);
-    response_head.network_accessed = access_network_;
+    auto response_head = network::mojom::URLResponseHead::New();
+    response_head->headers = info.headers;
+    response_head->headers->GetMimeType(&response_head->mime_type);
+    response_head->network_accessed = access_network_;
     if (response.has_certificate_error) {
-      response_head.cert_status = net::CERT_STATUS_DATE_INVALID;
+      response_head->cert_status = net::CERT_STATUS_DATE_INVALID;
     }
 
     mojo::Remote<network::mojom::URLLoaderClient>& client = params->client;
-    if (response_head.headers->response_code() == 307) {
-      client->OnReceiveRedirect(net::RedirectInfo(), response_head);
+    if (response_head->headers->response_code() == 307) {
+      client->OnReceiveRedirect(net::RedirectInfo(), std::move(response_head));
       return true;
     }
-    client->OnReceiveResponse(response_head);
+    client->OnReceiveResponse(std::move(response_head));
 
     uint32_t bytes_written = response.body.size();
     mojo::ScopedDataPipeConsumerHandle consumer;

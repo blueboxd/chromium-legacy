@@ -6,6 +6,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/payments/autofill_save_card_infobar_delegate_mobile.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "ios/chrome/browser/infobars/infobar_controller_delegate.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/ui/autofill/save_card_message_with_links.h"
@@ -166,9 +167,13 @@
       self.saveCardInfoBarDelegate->expiration_date_year());
   self.modalViewController.currentCardSaved = !self.infobarAccepted;
   self.modalViewController.legalMessages = [self legalMessagesForModal];
-  // TODO(crbug.com/1029067):Change NO  to
-  // self.saveCardInfoBarDelegate->upload(). Once we want to enable editing.
-  self.modalViewController.supportsEditing = NO;
+  if ((base::FeatureList::IsEnabled(
+          autofill::features::kAutofillSaveCardInfobarEditSupport))) {
+    self.modalViewController.supportsEditing =
+        self.saveCardInfoBarDelegate->upload();
+  } else {
+    self.modalViewController.supportsEditing = NO;
+  }
 
   return YES;
 }

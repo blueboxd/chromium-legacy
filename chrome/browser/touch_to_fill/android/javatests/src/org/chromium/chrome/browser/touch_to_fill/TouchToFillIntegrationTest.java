@@ -5,8 +5,6 @@
 package org.chromium.chrome.browser.touch_to_fill;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
@@ -86,11 +84,10 @@ public class TouchToFillIntegrationTest {
         });
         pollUiThread(() -> getBottomSheetState() == BottomSheetController.SheetState.HALF);
 
-        pollUiThread(() -> getCredentials().getChildAt(0) != null);
-        TouchCommon.singleClickView(getCredentials().getChildAt(0));
+        pollUiThread(() -> getCredentials().getChildAt(1) != null);
+        TouchCommon.singleClickView(getCredentials().getChildAt(1));
 
         waitForEvent(mMockBridge).onCredentialSelected(ANA);
-        verify(mMockBridge).fetchFavicon(eq(ANA.getOriginUrl()), EXAMPLE_URL, anyInt(), any());
         verify(mMockBridge, never()).onDismissed();
     }
 

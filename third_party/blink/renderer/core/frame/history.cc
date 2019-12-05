@@ -255,7 +255,7 @@ bool History::CanChangeToUrl(const KURL& url,
   scoped_refptr<const SecurityOrigin> requested_origin =
       SecurityOrigin::Create(url);
   if (requested_origin->IsOpaque() ||
-      !requested_origin->IsSameSchemeHostPort(document_origin)) {
+      !requested_origin->IsSameOriginWith(document_origin)) {
     return false;
   }
 

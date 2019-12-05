@@ -132,7 +132,7 @@ FakeRTCRtpReceiverImpl::~FakeRTCRtpReceiverImpl() {}
 FakeRTCRtpReceiverImpl& FakeRTCRtpReceiverImpl::operator=(
     const FakeRTCRtpReceiverImpl&) = default;
 
-std::unique_ptr<blink::WebRTCRtpReceiver> FakeRTCRtpReceiverImpl::ShallowCopy()
+std::unique_ptr<RTCRtpReceiverPlatform> FakeRTCRtpReceiverImpl::ShallowCopy()
     const {
   return std::make_unique<FakeRTCRtpReceiverImpl>(*this);
 }
@@ -207,9 +207,9 @@ FakeRTCRtpTransceiverImpl::FakeRTCRtpTransceiverImpl(
 
 FakeRTCRtpTransceiverImpl::~FakeRTCRtpTransceiverImpl() {}
 
-blink::WebRTCRtpTransceiverImplementationType
+RTCRtpTransceiverPlatformImplementationType
 FakeRTCRtpTransceiverImpl::ImplementationType() const {
-  return blink::WebRTCRtpTransceiverImplementationType::kFullTransceiver;
+  return RTCRtpTransceiverPlatformImplementationType::kFullTransceiver;
 }
 
 uintptr_t FakeRTCRtpTransceiverImpl::Id() const {
@@ -226,7 +226,7 @@ std::unique_ptr<blink::RTCRtpSenderPlatform> FakeRTCRtpTransceiverImpl::Sender()
   return sender_.ShallowCopy();
 }
 
-std::unique_ptr<blink::WebRTCRtpReceiver> FakeRTCRtpTransceiverImpl::Receiver()
+std::unique_ptr<RTCRtpReceiverPlatform> FakeRTCRtpTransceiverImpl::Receiver()
     const {
   return receiver_.ShallowCopy();
 }

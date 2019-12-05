@@ -249,7 +249,7 @@ void TextFinder::SetFindEndstateFocusAndSelection() {
   Node* node = active_match->FirstNode();
   if (node && node->IsInShadowTree()) {
     if (Node* host = node->OwnerShadowHost()) {
-      if (IsHTMLInputElement(*host) || IsHTMLTextAreaElement(*host))
+      if (IsHTMLInputElement(*host) || IsA<HTMLTextAreaElement>(*host))
         node = host;
     }
   }

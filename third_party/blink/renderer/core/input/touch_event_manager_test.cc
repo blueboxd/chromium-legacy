@@ -98,8 +98,8 @@ TEST_F(TouchEventManagerTest, AbosolutePosWithScrollAndZoom) {
       Vector<WebPointerEvent>(), Vector<WebPointerEvent>());
   GetEventHandler().DispatchBufferedTouchEvents();
 
-  HTMLInputElement* input =
-      ToHTMLInputElement(GetDocument().getElementById("slideElement"));
+  auto* input =
+      To<HTMLInputElement>(GetDocument().getElementById("slideElement"));
   // Allow off by 1 error because it may result in different value in some
   // platform.
   EXPECT_NEAR(23, ParseToDoubleForNumberType(input->value()), 1);

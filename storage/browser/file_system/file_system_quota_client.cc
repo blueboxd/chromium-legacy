@@ -100,10 +100,6 @@ storage::QuotaClient::ID FileSystemQuotaClient::id() const {
   return storage::QuotaClient::kFileSystem;
 }
 
-void FileSystemQuotaClient::OnQuotaManagerDestroyed() {
-  delete this;
-}
-
 void FileSystemQuotaClient::GetOriginUsage(const url::Origin& origin,
                                            StorageType storage_type,
                                            GetUsageCallback callback) {

@@ -13,7 +13,6 @@ Polymer({
   is: 'settings-personalization-options',
 
   behaviors: [
-    I18nBehavior,
     PrefsBehavior,
     WebUIListenerBehavior,
   ],
@@ -32,23 +31,6 @@ Polymer({
 
     /** @type {settings.SyncStatus} */
     syncStatus: Object,
-
-    // <if expr="not chromeos">
-    /** @private {Array<!settings.StoredAccount>} */
-    storedAccounts_: Object,
-    // </if>
-
-    /** @private */
-    userSignedIn_: {
-      type: Boolean,
-      computed: 'computeUserSignedIn_(syncStatus, storedAccounts_)',
-    },
-
-    /** @private */
-    passwordsLeakDetectionAvailable_: {
-      type: Boolean,
-      computed: 'computePasswordsLeakDetectionAvailable_(prefs.*)',
-    },
 
     /** @private */
     passwordsLeakDetectionEnabled_: {
@@ -71,7 +53,13 @@ Polymer({
 
     /** @private */
     showRestart_: Boolean,
+
+    /** @private */
+    showRestartToast_: Boolean,
     // </if>
+
+    /** @private */
+    showSignoutDialog_: Boolean,
 
     /** @private */
     privacySettingsRedesignEnabled_: {
@@ -80,6 +68,21 @@ Polymer({
         return loadTimeData.getBoolean('privacySettingsRedesignEnabled');
       },
     },
+
+    /** @private */
+    syncFirstSetupInProgress_: {
+      type: Boolean,
+      value: false,
+      computed: 'computeSyncFirstSetupInProgress_(syncStatus)',
+    },
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeSyncFirstSetupInProgress_: function() {
+    return !!this.syncStatus && !!this.syncStatus.firstSetupInProgress;
   },
 
   /** @override */
@@ -91,67 +94,6 @@ Polymer({
     this.addWebUIListener('metrics-reporting-change', setMetricsReportingPref);
     this.browserProxy_.getMetricsReporting().then(setMetricsReportingPref);
     // </if>
-    // <if expr="not chromeos">
-    const storedAccountsChanged = storedAccounts => this.storedAccounts_ =
-        storedAccounts;
-    const syncBrowserProxy = settings.SyncBrowserProxyImpl.getInstance();
-    syncBrowserProxy.getStoredAccounts().then(storedAccountsChanged);
-    this.addWebUIListener('stored-accounts-updated', storedAccountsChanged);
-    // </if>
-
-    // Even though we already set checked="[[getCheckedLeakDetection_(...)]]"
-    // in the DOM, this might be overridden within prefValueChanged_ of
-    // SettingsBooleanControlBehaviorImpl which gets invoked once we navigate to
-    // sync_page.html. Re-computing the checked value here once fixes this
-    // problem.
-    this.$.passwordsLeakDetectionCheckbox.checked =
-        this.getCheckedLeakDetection_();
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  computeUserSignedIn_: function() {
-    return (!!this.syncStatus && !!this.syncStatus.signedIn) ?
-        !this.syncStatus.hasError :
-        (!!this.storedAccounts_ && this.storedAccounts_.length > 0);
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  computePasswordsLeakDetectionAvailable_: function() {
-    return !!this.getPref('profile.password_manager_leak_detection').value &&
-        !!this.getPref('safebrowsing.enabled').value;
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  getCheckedLeakDetection_: function() {
-    return this.userSignedIn_ && this.passwordsLeakDetectionAvailable_;
-  },
-
-  /**
-   * @return {string}
-   * @private
-   */
-  getPasswordsLeakDetectionSubLabel_: function() {
-    if (!this.userSignedIn_ && this.passwordsLeakDetectionAvailable_) {
-      return this.i18n('passwordsLeakDetectionSignedOutEnabledDescription');
-    }
-    return '';
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  getDisabledLeakDetection_: function() {
-    return !this.userSignedIn_ || !this.getPref('safebrowsing.enabled').value;
   },
 
   /**
@@ -206,14 +148,6 @@ Polymer({
     }
   },
 
-  /**
-   * @param {!Event} e
-   * @private
-   */
-  onRestartTap_: function(e) {
-    e.stopPropagation();
-    settings.LifetimeBrowserProxyImpl.getInstance().restart();
-  },
   // </if>
 
   // <if expr="_google_chrome">
@@ -249,6 +183,46 @@ Polymer({
     return loadTimeData.getBoolean('driveSuggestAvailable') &&
         !!this.syncStatus && !!this.syncStatus.signedIn &&
         this.syncStatus.statusAction !== settings.StatusAction.REAUTHENTICATE;
+  },
+
+  /** @private */
+  onSigninAllowedChange_: function() {
+    if (this.syncStatus.signedIn && !this.$$('#signinAllowedToggle').checked) {
+      // Switch the toggle back on and show the signout dialog.
+      this.$$('#signinAllowedToggle').checked = true;
+      this.showSignoutDialog_ = true;
+    } else {
+      /** @type {!SettingsToggleButtonElement} */ (
+          this.$$('#signinAllowedToggle'))
+          .sendPrefChange();
+      this.showRestartToast_ = true;
+    }
+
+    this.browserProxy_.recordSettingsPageHistogram(
+        settings.SettingsPageInteractions.PRIVACY_CHROME_SIGN_IN);
+  },
+
+  /** @private */
+  onSignoutDialogClosed_: function() {
+    if (/** @type {!SettingsSignoutDialogElement} */ (
+            this.$$('settings-signout-dialog'))
+            .wasConfirmed()) {
+      this.$$('#signinAllowedToggle').checked = false;
+      /** @type {!SettingsToggleButtonElement} */ (
+          this.$$('#signinAllowedToggle'))
+          .sendPrefChange();
+      this.showRestartToast_ = true;
+    }
+    this.showSignoutDialog_ = false;
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onRestartTap_: function(e) {
+    e.stopPropagation();
+    settings.LifetimeBrowserProxyImpl.getInstance().restart();
   },
 });
 })();

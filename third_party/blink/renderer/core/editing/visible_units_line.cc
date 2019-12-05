@@ -72,7 +72,7 @@ PositionWithAffinityTemplate<Strategy> StartPositionForLine(
     DCHECK(line_box.IsLineBox()) << line_box;
     const PhysicalOffset start_point = line_box.LineStartPoint();
     return FromPositionInDOMTree<Strategy>(
-        line_box.PositionForPoint(start_point));
+        line_box.CursorForDescendants().PositionForPoint(start_point));
   }
 
   const InlineBox* inline_box =
@@ -254,7 +254,7 @@ static PositionWithAffinityTemplate<Strategy> EndPositionForLine(
     line_box.MoveToContainingLine();
     const PhysicalOffset end_point = line_box.LineEndPoint();
     return FromPositionInDOMTree<Strategy>(
-        line_box.PositionForPoint(end_point));
+        line_box.CursorForDescendants().PositionForPoint(end_point));
   }
 
   const InlineBox* inline_box =

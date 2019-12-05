@@ -101,8 +101,8 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
 
   // Called to start a download.
   void BeginDownload(std::unique_ptr<DownloadUrlParameters> params,
-                     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-                         url_loader_factory_info,
+                     std::unique_ptr<network::PendingSharedURLLoaderFactory>
+                         pending_url_loader_factory,
                      bool is_new_download,
                      const GURL& site_url,
                      const GURL& tab_url,
@@ -121,8 +121,8 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
       network::mojom::URLResponseHeadPtr response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          url_loader_factory_info);
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          pending_url_loader_factory);
 
   void StartDownload(std::unique_ptr<DownloadCreateInfo> info,
                      std::unique_ptr<InputStream> stream,

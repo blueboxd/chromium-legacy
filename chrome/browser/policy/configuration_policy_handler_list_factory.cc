@@ -68,6 +68,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/search_engines/default_search_policy_handler.h"
+#include "components/security_state/core/security_state_pref_names.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/sync/base/pref_names.h"
@@ -1247,6 +1248,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kPaymentMethodQueryEnabled,
     payments::kCanMakePaymentEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kStricterMixedContentTreatmentEnabled,
+    security_state::prefs::kStricterMixedContentTreatmentEnabled,
+    base::Value::Type::BOOLEAN }
 };
 // clang-format on
 

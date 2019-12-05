@@ -67,6 +67,11 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
     // unwittingly iterating over RenderViewHostImpls that are in the cache.
     std::set<RenderViewHostImpl*> render_view_hosts;
 
+    // Timestamp of the start of the navigation restoring this entry from the
+    // back-forward cache. Set when the entry is restored from back-forward
+    // cache.
+    base::TimeTicks restore_navigation_start;
+
     DISALLOW_COPY_AND_ASSIGN(Entry);
   };
 
@@ -84,12 +89,6 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
   // the BackForwardCache is full, the least recently used document is evicted.
   // Precondition: CanStoreDocument(*(entry->render_frame_host)).
   void StoreEntry(std::unique_ptr<Entry> entry);
-
-  // Iterates over all the RenderViewHost inside |main_rfh| and freeze or
-  // resume them.
-  static void Freeze(RenderFrameHostImpl* main_rfh);
-  static void Resume(RenderFrameHostImpl* main_rfh,
-                     base::TimeTicks navigation_start);
 
   // Returns a pointer to a cached BackForwardCache entry matching
   // |navigation_entry_id| if it exists in the BackForwardCache. Returns nullptr

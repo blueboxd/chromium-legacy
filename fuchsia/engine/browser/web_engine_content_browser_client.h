@@ -37,6 +37,7 @@ class WebEngineContentBrowserClient : public content::ContentBrowserClient {
   void OverrideWebkitPrefs(content::RenderViewHost* rvh,
                            content::WebPreferences* web_prefs) final;
   void RegisterBrowserInterfaceBindersForFrame(
+      content::RenderFrameHost* render_frame_host,
       service_manager::BinderMapWithContext<content::RenderFrameHost*>* map)
       final;
   void RegisterNonNetworkNavigationURLLoaderFactories(

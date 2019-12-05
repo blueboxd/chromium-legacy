@@ -4480,6 +4480,7 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
     int render_process_id,
     URLLoaderFactoryType type,
     const url::Origin& request_initiator,
+    base::Optional<int64_t> navigation_id,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
         header_client,
@@ -4497,8 +4498,8 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
   if (web_request_api) {
     bool use_proxy_for_web_request =
         web_request_api->MaybeProxyURLLoaderFactory(
-            browser_context, frame, render_process_id, type, factory_receiver,
-            header_client);
+            browser_context, frame, render_process_id, type,
+            std::move(navigation_id), factory_receiver, header_client);
     if (bypass_redirect_checks)
       *bypass_redirect_checks = use_proxy_for_web_request;
     use_proxy |= use_proxy_for_web_request;

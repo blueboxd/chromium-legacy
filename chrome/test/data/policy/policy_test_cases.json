@@ -6547,5 +6547,16 @@
         "prefs": { "cors.legacy_mode.enabled": {} }
       }
     ]
+  },
+  "StricterMixedContentTreatmentEnabled" : {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "StricterMixedContentTreatmentEnabled": false },
+        "prefs": {
+	  "security_state.stricter_mixed_content_treatment_enabled": {}
+	}
+      }
+    ]
   }
 }

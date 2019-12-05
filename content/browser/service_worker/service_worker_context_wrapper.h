@@ -352,8 +352,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       storage::SpecialStoragePolicy* special_storage_policy,
       ChromeBlobStorageContext* blob_context,
       URLLoaderFactoryGetter* url_loader_factory_getter,
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-          non_network_loader_factory_bundle_info_for_update_check);
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+          non_network_pending_loader_factory_bundle_for_update_check);
   void ShutdownOnCoreThread();
 
   // If |include_installing_version| is true, |callback| is called if there is
@@ -427,8 +427,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       blink::ServiceWorkerStatusCode service_worker_status);
 
   // Called when ServiceWorkerImportedScriptUpdateCheck is enabled.
-  std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-  CreateNonNetworkURLLoaderFactoryBundleInfoForUpdateCheck(
+  std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+  CreateNonNetworkPendingURLLoaderFactoryBundleForUpdateCheck(
       BrowserContext* browser_context);
 
   void SetUpLoaderFactoryForUpdateCheckOnUI(

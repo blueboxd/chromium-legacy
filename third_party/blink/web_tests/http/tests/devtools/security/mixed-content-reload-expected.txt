@@ -7,10 +7,15 @@ Before Refresh --------------
     </DIV>
     <DIV class=security-explanation-text >
         <DIV class=security-explanation-title >
-Neutral Test Summary
+            <SPAN >
+Resources - 
+            </SPAN>
+            <SPAN class=security-explanation-title-neutral >
+mixed content
+            </SPAN>
         </DIV>
         <DIV >
-Neutral Test Description
+This page includes HTTP resources.
         </DIV>
         <DIV class=security-mixed-content >
 Reload the page to record requests for HTTP resources.
@@ -24,10 +29,15 @@ Refresh --------------
     </DIV>
     <DIV class=security-explanation-text >
         <DIV class=security-explanation-title >
-Neutral Test Summary
+            <SPAN >
+Resources - 
+            </SPAN>
+            <SPAN class=security-explanation-title-neutral >
+mixed content
+            </SPAN>
         </DIV>
         <DIV >
-Neutral Test Description
+This page includes HTTP resources.
         </DIV>
         <DIV class=security-mixed-content devtools-link role=link tabindex=0 >
 View 1 request in Network Panel

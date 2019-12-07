@@ -7,42 +7,36 @@
   await TestRunner.loadModule('security_test_runner');
   await TestRunner.showPanel('security');
 
-  // Explanations from https://cbc.badssl.com/ as of 2016-06-13.
-  // We explicitly place the explanation with the security state "info"
-  // first to make sure it gets reordered.
-  var explanations = [
+  const pageVisibleSecurityState = new Security.PageVisibleSecurityState(
+    Protocol.Security.SecurityState.Secure,
     {
-      description: 'Public-key pinning was bypassed by a local root certificate.',
-      securityState: 'info',
-      summary: 'Public-Key Pinning Bypassed',
-      certificate: []
+      protocol: 'TLS 1.0',
+      keyExchange: 'RSA',
+      keyExchangeGroup: null,
+      cipher: 'AES_128_CBC',
+      mac: 'HMAC-SHA1',
+      certificate: ['BASE64CERTIFICATE'],
+      subjectName: 'testexample.com',
+      issuer: 'Issuer',
+      // set valid time frame to avoid certificate expiring soon message
+      validFrom: new Date(Date.now()).setHours(-100),
+      validTo: new Date(Date.now()).setHours(100),
+      certifcateHasWeakSignature: false,
+      certificateHasSha1SignaturePresent: false,
+      modernSSL: false,
+      obsoleteSslProtocol: false,
+      obsoleteSslKeyExchange: false,
+      obsoleteSslCipher: false,
+      obsoleteSslSignature: false,
     },
-    {
-      description: 'The connection to this site is using a valid, trusted server certificate.',
-      securityState: 'secure',
-      summary: 'Valid Certificate',
-      certificate: ['BASE64CERTIFICATE']
-    },
-    {
-      description:
-          'The connection to this site uses a strong protocol (TLS 1.2), a strong key exchange (ECDHE_RSA), and an obsolete cipher (AES_256_CBC with HMAC-SHA1).',
-      securityState: 'secure',
-      summary: 'Obsolete Connection Settings',
-      certificate: []
-    },
-    {
-      description: 'All resources on this page are served securely.',
-      securityState: 'secure',
-      summary: 'Secure resources',
-      certificate: []
-    }
-  ];
+    null,
+    ['pkp-bypassed']
+  );
 
   TestRunner.mainTarget.model(Security.SecurityModel)
       .dispatchEventToListeners(
-          Security.SecurityModel.Events.SecurityStateChanged,
-          new Security.PageSecurityState(
-              Protocol.Security.SecurityState.Secure, explanations, null));
+        Security.SecurityModel.Events.VisibleSecurityStateChanged,
+        pageVisibleSecurityState);
 
   var request = new SDK.NetworkRequest(0, 'http://foo.test', 'https://foo.test', 0, 0, null);
   SecurityTestRunner.dispatchRequestFinished(request);

@@ -5,10 +5,15 @@ Tests that info explanations are placed after regular explanations.
     </DIV>
     <DIV class=security-explanation-text >
         <DIV class=security-explanation-title >
-Valid Certificate
+            <SPAN >
+Certificate - 
+            </SPAN>
+            <SPAN class=security-explanation-title-secure >
+valid and trusted
+            </SPAN>
         </DIV>
         <DIV >
-The connection to this site is using a valid, trusted server certificate.
+The connection to this site is using a valid, trusted server certificate issued by Issuer.
         </DIV>
         <BUTTON class=security-certificate-button text-button type=button role=button aria-haspopup=true >
 View certificate
@@ -20,19 +25,12 @@ View certificate
     </DIV>
     <DIV class=security-explanation-text >
         <DIV class=security-explanation-title >
-Obsolete Connection Settings
-        </DIV>
-        <DIV >
-The connection to this site uses a strong protocol (TLS 1.2), a strong key exchange (ECDHE_RSA), and an obsolete cipher (AES_256_CBC with HMAC-SHA1).
-        </DIV>
-    </DIV>
-</DIV>
-<DIV class=security-explanation security-explanation-secure >
-    <DIV class=security-property security-property-secure >
-    </DIV>
-    <DIV class=security-explanation-text >
-        <DIV class=security-explanation-title >
-Secure resources
+            <SPAN >
+Resources - 
+            </SPAN>
+            <SPAN class=security-explanation-title-secure >
+all served securely
+            </SPAN>
         </DIV>
         <DIV >
 All resources on this page are served securely.
@@ -44,10 +42,32 @@ All resources on this page are served securely.
     </DIV>
     <DIV class=security-explanation-text >
         <DIV class=security-explanation-title >
-Public-Key Pinning Bypassed
+            <SPAN >
+Certificate - 
+            </SPAN>
+            <SPAN class=security-explanation-title-info >
+Public-Key-Pinning bypassed
+            </SPAN>
         </DIV>
         <DIV >
-Public-key pinning was bypassed by a local root certificate.
+Public-Key-Pinning was bypassed by a local root certificate.
+        </DIV>
+    </DIV>
+</DIV>
+<DIV class=security-explanation security-explanation-info >
+    <DIV class=security-property security-property-info >
+    </DIV>
+    <DIV class=security-explanation-text >
+        <DIV class=security-explanation-title >
+            <SPAN >
+Connection - 
+            </SPAN>
+            <SPAN class=security-explanation-title-info >
+obsolete connection settings
+            </SPAN>
+        </DIV>
+        <DIV >
+The connection to this site is encrypted and authenticated using TLS 1.0, RSA, and AES_128_CBC with HMAC-SHA1.
         </DIV>
     </DIV>
 </DIV>

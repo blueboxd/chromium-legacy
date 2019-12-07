@@ -9,9 +9,10 @@
 
   TestRunner.mainTarget.model(Security.SecurityModel)
       .dispatchEventToListeners(
-          Security.SecurityModel.Events.SecurityStateChanged,
-          new Security.PageSecurityState(
-              Protocol.Security.SecurityState.Secure, [], null));
+        Security.SecurityModel.Events.VisibleSecurityStateChanged,
+        new Security.PageVisibleSecurityState(
+          Protocol.Security.SecurityState.Neutral, /* certificateSecurityState= */ null,
+          /* safetyTipInfo= */ null, /* securityStateIssueIds= */ ['scheme-is-not-cryptographic']));
 
   const page_url = TestRunner.resourceTreeModel.mainFrame.url;
   const page_origin = Common.ParsedURL.extractOrigin(page_url);

@@ -10,18 +10,13 @@
 
   TestRunner.addResult('\nBefore Refresh --------------');
 
-  var mixedExplanations = [{
-    securityState: Protocol.Security.SecurityState.Neutral,
-    summary: 'Neutral Test Summary',
-    description: 'Neutral Test Description',
-    mixedContentType: Protocol.Security.MixedContentType.OptionallyBlockable,
-    certificate: []
-  }];
+  const pageVisibleSecurityState = new Security.PageVisibleSecurityState(
+    Protocol.Security.SecurityState.Neutral, null, null,
+    ['displayed-mixed-content']);
   TestRunner.mainTarget.model(Security.SecurityModel)
       .dispatchEventToListeners(
-          Security.SecurityModel.Events.SecurityStateChanged,
-          new Security.PageSecurityState(
-              Protocol.Security.SecurityState.Neutral, mixedExplanations, null));
+        Security.SecurityModel.Events.VisibleSecurityStateChanged,
+        pageVisibleSecurityState);
 
   // At this point, the page has mixed content but no mixed requests have been recorded, so the user should be prompted to refresh.
   var explanations =
@@ -34,9 +29,8 @@
   // Now simulate a refresh.
   TestRunner.mainTarget.model(Security.SecurityModel)
       .dispatchEventToListeners(
-          Security.SecurityModel.Events.SecurityStateChanged,
-          new Security.PageSecurityState(
-              Protocol.Security.SecurityState.Neutral, mixedExplanations, null));
+        Security.SecurityModel.Events.VisibleSecurityStateChanged,
+        pageVisibleSecurityState);
 
   var request = new SDK.NetworkRequest(0, 'http://foo.test', 'https://foo.test', 0, 0, null);
   request.mixedContentType = 'optionally-blockable';

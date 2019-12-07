@@ -256,10 +256,6 @@ def DoComponentBuildTasks(staging_dir, build_dir, setup_runtime_deps):
     g_archive_inputs.append(setup_component_dll)
     shutil.copy(setup_component_dll, installer_dir)
 
-  # Handle the ICU data file dependency.
-  g_archive_inputs.append("icudtl.dat")
-  shutil.copy("icudtl.dat", installer_dir)
-
 def main(options):
   """Main method that reads input file, creates archive file and writes
   resource input file.

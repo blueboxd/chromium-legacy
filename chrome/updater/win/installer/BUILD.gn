@@ -89,6 +89,7 @@ template("generate_installer") {
       ":updater_runtime_deps",
       "//chrome/updater/win:uninstall.cmd",
       "//chrome/updater/win:updater",
+      "//third_party/icu:icudata",
     ]
 
     if (is_component_build) {

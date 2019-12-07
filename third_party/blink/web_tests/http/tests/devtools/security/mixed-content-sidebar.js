@@ -8,27 +8,13 @@
   await TestRunner.loadModule('security_test_runner');
   await TestRunner.showPanel('security');
 
-  var mixedExplanations = [
-    {
-      securityState: Protocol.Security.SecurityState.Neutral,
-      summary: 'Neutral Test Summary',
-      description: 'Neutral Test Description',
-      mixedContentType: Protocol.Security.MixedContentType.OptionallyBlockable,
-      certificate: []
-    },
-    {
-      securityState: Protocol.Security.SecurityState.Insecure,
-      summary: 'Insecure Test Summary',
-      description: 'Insecure Test Description',
-      mixedContentType: Protocol.Security.MixedContentType.Blockable,
-      certificate: []
-    }
-  ];
+  const pageVisibleSecurityState = new Security.PageVisibleSecurityState(
+    Protocol.Security.SecurityState.Neutral, null, null,
+    ['displayed-mixed-content', 'ran-mixed-content']);
   TestRunner.mainTarget.model(Security.SecurityModel)
       .dispatchEventToListeners(
-          Security.SecurityModel.Events.SecurityStateChanged,
-          new Security.PageSecurityState(
-              Protocol.Security.SecurityState.Neutral, mixedExplanations, null));
+        Security.SecurityModel.Events.VisibleSecurityStateChanged,
+        pageVisibleSecurityState);
 
   var passive = new SDK.NetworkRequest(0, 'http://foo.test', 'https://foo.test', 0, 0, null);
   passive.mixedContentType = 'optionally-blockable';

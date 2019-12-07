@@ -18,10 +18,10 @@ SkBitmap CreateSquareIcon(int size_px, SkColor solid_color) {
   return bitmap;
 }
 
-void AddGeneratedIcon(WebApplicationInfo* web_app_info,
+void AddGeneratedIcon(std::map<SquareSizePx, SkBitmap>* icon_bitmaps,
                       int size_px,
                       SkColor solid_color) {
-  web_app_info->icon_bitmaps[size_px] = CreateSquareIcon(size_px, solid_color);
+  (*icon_bitmaps)[size_px] = CreateSquareIcon(size_px, solid_color);
 }
 
 void AddIconToIconsMap(const GURL& icon_url,

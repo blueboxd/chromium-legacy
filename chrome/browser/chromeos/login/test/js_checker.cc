@@ -260,6 +260,14 @@ void JSChecker::TapOn(const std::string& element_id) {
   TapOnPath({element_id});
 }
 
+void JSChecker::TapLinkOnPath(
+    std::initializer_list<base::StringPiece> element_ids) {
+  ExpectVisiblePath(element_ids);
+  // Make sure this method is used only on <a> html elements.
+  ExpectEQ(GetOobeElementPath(element_ids) + ".tagName", std::string("A"));
+  Evaluate(GetOobeElementPath(element_ids) + ".click()");
+}
+
 void JSChecker::SelectRadioPath(
     std::initializer_list<base::StringPiece> element_ids) {
   ExpectVisiblePath(element_ids);

@@ -171,8 +171,46 @@ message SetAutoMediaPlaybackPolicyRequest {
 }
 
 message NavigationRequestEvent {
+  // The URL the frame is navigating to. This may change during the navigation
+  // when encountering a server redirect.
   string url = 1;
+
+  // Whether the navigation is taking place in the main frame or in a subframe.
+  // This remains constant over the navigation lifetime.
   bool is_for_main_frame = 2;
+
+  //  False for browser-initiated navigations, including:
+  //  * any navigation initiated from the omnibox
+  //  * navigations via suggestions in browser UI
+  //  * navigations via browser UI: Ctrl-R, refresh/forward/back/home buttons
+  //  * using window.history.forward() or window.history.back()
+  //  * any other "explicit" URL navigations, e.g. bookmarks
+  bool is_renderer_initiated = 3;
+
+  // Whether the navigation happened without changing document. Examples of
+  // same document navigations are:
+  // * reference fragment navigations
+  // * pushState/replaceState
+  // * same page history navigation
+  bool is_same_document = 4;
+
+  // Whether the navigation was initiated by a user gesture. Note that this
+  // will be false for browser-initiated navigations.
+  bool has_user_gesture = 5;
+
+  // The previous main frame URL that the user was on. This may be empty if
+  // there was no last committed entry.
+  string previous_url = 6;
+
+  // true if this navigation was initiated by a link click.
+  bool was_initiated_by_link_click = 7;
+
+  // Whether the navigation has encountered a server redirect or not.
+  bool was_server_redirect = 8;
+
+  // Whether the navigation is done using HTTP POST method. This may change
+  // during the navigation (e.g. after encountering a server redirect).
+  bool is_post = 9;
 }
 
 enum NavigationDecision {

@@ -12,6 +12,7 @@
 #include "net/base/address_list.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
@@ -96,7 +97,10 @@ void DnsProbeRunner::RunProbe(base::OnceClosure callback) {
   parameters->source = net::HostResolverSource::DNS;
   parameters->allow_cached_response = false;
 
+  // Use transient NIKs - don't want cached responses anyways, so no benefit
+  // from sharing a cache, beyond multiple probes not evicting anything.
   host_resolver_->ResolveHost(net::HostPortPair(kKnownGoodHostname, 80),
+                              net::NetworkIsolationKey::CreateTransient(),
                               std::move(parameters),
                               receiver_.BindNewPipeAndPassRemote());
   receiver_.set_disconnect_handler(base::BindOnce(

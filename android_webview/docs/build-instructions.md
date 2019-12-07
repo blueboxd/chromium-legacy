@@ -53,11 +53,6 @@ system_webview_package_name = "..."
 
 # Optional: speeds up fresh builds (Googlers-only)
 use_goma = true
-
-# Optional: 64-bit APKs include 32-bit & 64-bit code for broader compatibility.
-# You can disable building the 32-bit "secondary ABI" to speed up compiles, but
-# this crashes apps with their own 32-bit code.
-build_apk_secondary_abi = false
 ```
 
 ### Figuring out target\_cpu

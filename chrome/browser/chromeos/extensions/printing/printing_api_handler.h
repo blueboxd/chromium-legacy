@@ -5,11 +5,14 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_PRINTING_PRINTING_API_HANDLER_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_PRINTING_PRINTING_API_HANDLER_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager_factory.h"
+#include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
 #include "chrome/common/extensions/api/printing.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router_factory.h"
@@ -37,6 +40,8 @@ class PrintingAPIHandler : public BrowserContextKeyedAPI,
   // Returns the current instance for |browser_context|.
   static PrintingAPIHandler* Get(content::BrowserContext* browser_context);
 
+  std::vector<api::printing::Printer> GetPrinters();
+
  private:
   // Needed for BrowserContextKeyedAPI implementation.
   friend class BrowserContextKeyedAPIFactory<PrintingAPIHandler>;
@@ -60,6 +65,8 @@ class PrintingAPIHandler : public BrowserContextKeyedAPI,
   ExtensionRegistry* const extension_registry_;
 
   chromeos::CupsPrintJobManager* print_job_manager_;
+  chromeos::CupsPrintersManager* const printers_manager_;
+
   ScopedObserver<chromeos::CupsPrintJobManager,
                  chromeos::CupsPrintJobManager::Observer>
       print_job_manager_observer_;
@@ -75,6 +82,7 @@ struct BrowserContextFactoryDependencies<PrintingAPIHandler> {
       BrowserContextKeyedAPIFactory<PrintingAPIHandler>* factory) {
     factory->DependsOn(EventRouterFactory::GetInstance());
     factory->DependsOn(chromeos::CupsPrintJobManagerFactory::GetInstance());
+    factory->DependsOn(chromeos::CupsPrintersManagerFactory::GetInstance());
   }
 };
 

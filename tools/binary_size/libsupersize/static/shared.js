@@ -99,6 +99,16 @@ const _BYTE_UNITS = Object.freeze({
 });
 
 /**
+ * @enum {number} All possible states for a delta symbol.
+ */
+const _DIFF_STATUSES = Object.freeze({
+  UNCHANGED: 0,
+  CHANGED: 1,
+  ADDED: 2,
+  REMOVED: 3,
+});
+
+/**
  * Special types used by containers, such as folders and files.
  */
 const _CONTAINER_TYPES = {

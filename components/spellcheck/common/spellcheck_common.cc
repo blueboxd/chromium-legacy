@@ -196,4 +196,33 @@ void GetISOLanguageCountryCodeFromLocale(const std::string& locale,
   *country_code = std::string(country);
 }
 
+void FillSuggestions(
+    const std::vector<std::vector<base::string16>>& suggestions_list,
+    std::vector<base::string16>* optional_suggestions) {
+  DCHECK(optional_suggestions);
+  size_t num_languages = suggestions_list.size();
+
+  // Compute maximum number of suggestions in a single language.
+  size_t max_suggestions = 0;
+  for (const auto& suggestions : suggestions_list)
+    max_suggestions = std::max(max_suggestions, suggestions.size());
+
+  for (size_t count = 0; count < (max_suggestions * num_languages); ++count) {
+    size_t language = count % num_languages;
+    size_t index = count / num_languages;
+
+    if (suggestions_list[language].size() <= index)
+      continue;
+
+    const base::string16& suggestion = suggestions_list[language][index];
+    // Only add the suggestion if it's unique.
+    if (!base::Contains(*optional_suggestions, suggestion)) {
+      optional_suggestions->push_back(suggestion);
+    }
+    if (optional_suggestions->size() >= kMaxSuggestions) {
+      break;
+    }
+  }
+}
+
 }  // namespace spellcheck

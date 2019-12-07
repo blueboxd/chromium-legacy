@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.tab;
 import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.LoadUrlParams;

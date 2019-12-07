@@ -131,10 +131,6 @@ class CORE_EXPORT AutoplayPolicy final
   // should use, if checking to see if an action is allowed.
   bool IsLockedPendingUserGesture() const;
 
-  // Return true if and only if the settings allow autoplay of media on this
-  // frame.
-  bool IsAutoplayAllowedPerSettings() const;
-
   bool IsAutoplayingMutedInternal(bool muted) const;
   bool IsOrWillBeAutoplayingMutedInternal(bool muted) const;
 

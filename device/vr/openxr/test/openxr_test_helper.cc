@@ -187,7 +187,6 @@ XrInstance OpenXrTestHelper::CreateInstance() {
 
 XrResult OpenXrTestHelper::GetActionStateFloat(XrAction action,
                                                XrActionStateFloat* data) const {
-
   RETURN_IF_XR_FAILED(ValidateAction(action));
   const ActionProperties& cur_action_properties = actions_.at(action);
   RETURN_IF(cur_action_properties.type != XR_ACTION_TYPE_FLOAT_INPUT,
@@ -201,7 +200,6 @@ XrResult OpenXrTestHelper::GetActionStateFloat(XrAction action,
 XrResult OpenXrTestHelper::GetActionStateBoolean(
     XrAction action,
     XrActionStateBoolean* data) const {
-
   RETURN_IF_XR_FAILED(ValidateAction(action));
   const ActionProperties& cur_action_properties = actions_.at(action);
   RETURN_IF(cur_action_properties.type != XR_ACTION_TYPE_BOOLEAN_INPUT,
@@ -216,7 +214,6 @@ XrResult OpenXrTestHelper::GetActionStateBoolean(
 XrResult OpenXrTestHelper::GetActionStateVector2f(
     XrAction action,
     XrActionStateVector2f* data) const {
-
   RETURN_IF_XR_FAILED(ValidateAction(action));
   const ActionProperties& cur_action_properties = actions_.at(action);
   RETURN_IF(cur_action_properties.type != XR_ACTION_TYPE_VECTOR2F_INPUT,
@@ -230,7 +227,6 @@ XrResult OpenXrTestHelper::GetActionStateVector2f(
 
 XrResult OpenXrTestHelper::GetActionStatePose(XrAction action,
                                               XrActionStatePose* data) const {
-
   RETURN_IF_XR_FAILED(ValidateAction(action));
   const ActionProperties& cur_action_properties = actions_.at(action);
   RETURN_IF(cur_action_properties.type != XR_ACTION_TYPE_POSE_INPUT,
@@ -444,7 +440,6 @@ uint32_t OpenXrTestHelper::AttachedActionSetsSize() const {
 }
 
 XrResult OpenXrTestHelper::SyncActionData(XrActionSet action_set) {
-
   RETURN_IF_XR_FAILED(ValidateActionSet(action_set));
   RETURN_IF(ValidateActionSetNotAttached(action_set) !=
                 XR_ERROR_ACTIONSETS_ALREADY_ATTACHED,

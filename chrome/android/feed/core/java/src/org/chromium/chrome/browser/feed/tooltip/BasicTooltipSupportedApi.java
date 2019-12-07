@@ -6,9 +6,9 @@ package org.chromium.chrome.browser.feed.tooltip;
 
 import android.text.TextUtils;
 
+import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.feed.library.api.host.stream.TooltipSupportedApi;
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.feature_engagement.Tracker;
 

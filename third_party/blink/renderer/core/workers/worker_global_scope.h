@@ -116,8 +116,6 @@ class CORE_EXPORT WorkerGlobalScope
   HttpsState GetHttpsState() const override { return https_state_; }
   scheduler::WorkerScheduler* GetScheduler() final;
 
-  SecurityContext& GetSecurityContext() final { return *this; }
-  const SecurityContext& GetSecurityContext() const final { return *this; }
   void AddConsoleMessageImpl(ConsoleMessage*, bool discard_duplicates) final;
   bool IsSecureContext(String& error_message) const override;
   BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() final;

@@ -169,27 +169,25 @@ SkiaOutputDeviceBufferQueue::Image::CreateFence() {
 class SkiaOutputDeviceBufferQueue::OverlayData {
  public:
   OverlayData(
-      std::unique_ptr<gpu::SharedImageRepresentationGLTexture> representation)
+      std::unique_ptr<gpu::SharedImageRepresentationOverlay> representation)
       : representation_(std::move(representation)),
-        scoped_read_access_(representation_.get(),
-                            GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM) {}
+        scoped_read_access_(representation_.get(), true /* needs_gl_image */) {}
   OverlayData(OverlayData&&) = default;
   ~OverlayData() = default;
   OverlayData& operator=(OverlayData&&) = default;
 
-  gpu::SharedImageRepresentationGLTexture* representation() {
-    return representation_.get();
-  }
+  gl::GLImage* gl_image() { return scoped_read_access_.gl_image(); }
 
  private:
-  std::unique_ptr<gpu::SharedImageRepresentationGLTexture> representation_;
-  gpu::SharedImageRepresentationGLTexture::ScopedAccess scoped_read_access_;
+  std::unique_ptr<gpu::SharedImageRepresentationOverlay> representation_;
+  gpu::SharedImageRepresentationOverlay::ScopedReadAccess scoped_read_access_;
 };
 
 SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
     scoped_refptr<gl::GLSurface> gl_surface,
     SkiaOutputSurfaceDependency* deps,
     const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
+    gpu::MemoryTracker* memory_tracker,
     uint32_t shared_image_usage)
     : SkiaOutputDevice(false /*need_swap_semaphore */,
                        did_swap_buffer_complete_callback),
@@ -202,12 +200,12 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
                             deps->GetMailboxManager(),
                             deps->GetSharedImageManager(),
                             deps->GetGpuImageFactory(),
-                            nullptr,
+                            memory_tracker,
                             true),
       shared_image_usage_(shared_image_usage) {
   shared_image_representation_factory_ =
       std::make_unique<gpu::SharedImageRepresentationFactory>(
-          deps->GetSharedImageManager(), nullptr);
+          deps->GetSharedImageManager(), memory_tracker);
 
 #if defined(USE_OZONE)
   image_format_ = GetResourceFormat(display::DisplaySnapshot::PrimaryFormat());
@@ -225,10 +223,12 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
 SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
     scoped_refptr<gl::GLSurface> gl_surface,
     SkiaOutputSurfaceDependency* deps,
-    const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback)
+    const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
+    gpu::MemoryTracker* memory_tracker)
     : SkiaOutputDeviceBufferQueue(gl_surface,
                                   deps,
                                   did_swap_buffer_complete_callback,
+                                  memory_tracker,
                                   kSharedImageUsage) {}
 
 SkiaOutputDeviceBufferQueue::~SkiaOutputDeviceBufferQueue() {
@@ -239,7 +239,8 @@ SkiaOutputDeviceBufferQueue::~SkiaOutputDeviceBufferQueue() {
 std::unique_ptr<SkiaOutputDeviceBufferQueue>
 SkiaOutputDeviceBufferQueue::Create(
     SkiaOutputSurfaceDependency* deps,
-    const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback) {
+    const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
+    gpu::MemoryTracker* memory_tracker) {
 #if defined(OS_ANDROID)
   if (!features::IsAndroidSurfaceControlEnabled())
     return nullptr;
@@ -264,7 +265,8 @@ SkiaOutputDeviceBufferQueue::Create(
   }
 
   return std::make_unique<SkiaOutputDeviceBufferQueue>(
-      std::move(gl_surface), deps, did_swap_buffer_complete_callback);
+      std::move(gl_surface), deps, did_swap_buffer_complete_callback,
+      memory_tracker);
 #else
   return nullptr;
 #endif
@@ -341,9 +343,8 @@ void SkiaOutputDeviceBufferQueue::ScheduleOverlays(
 #if defined(OS_ANDROID)
   DCHECK(pending_overlays_.empty());
   for (auto& overlay : overlays) {
-    // TODO(https://crbug.com/1012401): don't depend on GL.
     auto shared_image =
-        shared_image_representation_factory_->ProduceGLTexture(overlay.mailbox);
+        shared_image_representation_factory_->ProduceOverlay(overlay.mailbox);
     // When display is re-opened, the first few frames might not have video
     // resource ready. Possible investigation crbug.com/1023971.
     if (!shared_image) {
@@ -352,22 +353,15 @@ void SkiaOutputDeviceBufferQueue::ScheduleOverlays(
     }
 
     pending_overlays_.emplace_back(std::move(shared_image));
-    auto* texture = pending_overlays_.back().representation()->GetTexture();
-    auto* image = texture->GetLevelImage(GL_TEXTURE_2D, 0);
-    DLOG_IF(ERROR, !image) << "Cannot get GLImage.";
-    DCHECK(!overlay.gpu_fence_id);
-    if (image) {
-      // We still use GL representation, so the BeginAccess() will import
-      // semaphore associate with the shared image to GL and wait on it.
-      // So we can create another GLFence, and use it for ScheduleOverlayPlane
-      // call.
-      // TODO(https://crbug.com/1012401): don't depend on GL, and use the
-      // semaphore associated with shared image directly.
-      auto gl_fence = gl::GLFence::CreateForGpuFence();
+    auto* gl_image = pending_overlays_.back().gl_image();
+    DLOG_IF(ERROR, !gl_image) << "Cannot get GLImage.";
+
+    if (gl_image) {
+      DCHECK(!overlay.gpu_fence_id);
       gl_surface_->ScheduleOverlayPlane(
-          overlay.plane_z_order, overlay.transform, image,
+          overlay.plane_z_order, overlay.transform, gl_image,
           ToNearestRect(overlay.display_rect), overlay.uv_rect,
-          !overlay.is_opaque, gl_fence->GetGpuFence());
+          !overlay.is_opaque, nullptr /* gpu_fence */);
     }
   }
 #endif  // defined(OS_ANDROID)

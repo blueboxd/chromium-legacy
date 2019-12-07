@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 class Profile;
 
@@ -138,7 +139,7 @@ class LoadingPredictor : public KeyedService,
   bool shutdown_ = false;
   size_t total_hints_activated_ = 0;
 
-  GURL last_omnibox_origin_;
+  url::Origin last_omnibox_origin_;
   base::TimeTicks last_omnibox_preconnect_time_;
   base::TimeTicks last_omnibox_preresolve_time_;
 

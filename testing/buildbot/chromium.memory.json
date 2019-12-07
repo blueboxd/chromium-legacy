@@ -16587,7 +16587,7 @@
               "os": "Windows-10-15063"
             }
           ],
-          "shards": 10
+          "shards": 20
         },
         "test": "browser_tests"
       },

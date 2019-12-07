@@ -236,8 +236,8 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type,
   bool generate_timestamps_flag =
       web_source_buffer->GetGenerateTimestampsFlag();
 
-  SourceBuffer* buffer = SourceBuffer::Create(std::move(web_source_buffer),
-                                              this, async_event_queue_.Get());
+  auto* buffer = MakeGarbageCollected<SourceBuffer>(
+      std::move(web_source_buffer), this, async_event_queue_.Get());
   // 8. Add the new object to sourceBuffers and queue a simple task to fire a
   //    simple event named addsourcebuffer at sourceBuffers.
   source_buffers_->Add(buffer);

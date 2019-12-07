@@ -42,7 +42,7 @@ class DeleteAfterRebootHelperTest : public testing::Test {
   }
   void TearDown() override {
     // Delete the temporary directory if it's still there.
-    base::DeleteFile(temp_dir_, true);
+    base::DeleteFileRecursively(temp_dir_);
 
     // Try and restore the pending moves value, if we have one.
     if (IsUserAnAdmin() && original_pending_moves_.size() > 1) {
@@ -240,7 +240,7 @@ TEST_F(DeleteAfterRebootHelperTest, TestFileDeleteSchedulingWithActualDeletes) {
   }
 
   // Delete the temporary directory.
-  base::DeleteFile(temp_dir_, true);
+  base::DeleteFileRecursively(temp_dir_);
 
   // Test that we can remove the pending deletes.
   EXPECT_TRUE(RemoveFromMovesPendingReboot(temp_dir_));

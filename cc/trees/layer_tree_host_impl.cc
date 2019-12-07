@@ -3576,8 +3576,16 @@ float LayerTreeHostImpl::TopControlsHeight() const {
   return active_tree_->top_controls_height();
 }
 
+float LayerTreeHostImpl::TopControlsMinHeight() const {
+  return active_tree_->top_controls_min_height();
+}
+
 float LayerTreeHostImpl::BottomControlsHeight() const {
   return active_tree_->bottom_controls_height();
+}
+
+float LayerTreeHostImpl::BottomControlsMinHeight() const {
+  return active_tree_->bottom_controls_min_height();
 }
 
 void LayerTreeHostImpl::SetCurrentBrowserControlsShownRatio(

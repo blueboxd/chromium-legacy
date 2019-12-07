@@ -4,11 +4,12 @@
 
 module blink.mojom;
 
+// Used for histograms, don't renumber.
 enum EngagementLevel {
-  NONE,
-  MINIMAL,
-  LOW,
-  MEDIUM,
-  HIGH,
-  MAX,
+  NONE = 0,
+  MINIMAL = 1,
+  LOW = 2,
+  MEDIUM = 3,
+  HIGH = 4,
+  MAX = 5,
 };

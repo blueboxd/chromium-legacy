@@ -26,6 +26,19 @@ void ParseSizeInfoFromFile(const char* filename, caspian::SizeInfo* info) {
   caspian::ParseSizeInfo(compressed.data(), compressed.size(), info);
 }
 
+void ParseDiffSizeInfoFromFile(const char* filename,
+                               caspian::SizeInfo* before,
+                               caspian::SizeInfo* after) {
+  std::ifstream ifs(filename, std::ifstream::in);
+  if (!ifs.good()) {
+    std::cerr << "Unable to open file: " << filename << std::endl;
+    exit(1);
+  }
+  std::string compressed((std::istreambuf_iterator<char>(ifs)),
+                         std::istreambuf_iterator<char>());
+  caspian::ParseDiffSizeInfo(&compressed[0], compressed.size(), before, after);
+}
+
 void Diff(const char* before_filename, const char* after_filename) {
   caspian::SizeInfo before;
   ParseSizeInfoFromFile(before_filename, &before);
@@ -51,22 +64,12 @@ void Diff(const char* before_filename, const char* after_filename) {
 void Validate(const char* filename) {
   caspian::SizeInfo info;
   ParseSizeInfoFromFile(filename, &info);
+}
 
-  size_t max_aliases = 0;
-  for (auto& s : info.raw_symbols) {
-    if (s.aliases_) {
-      max_aliases = std::max(max_aliases, s.aliases_->size());
-      // What a wonderful O(n^2) loop
-      for (auto* ss : *s.aliases_) {
-        if (ss->aliases_ != s.aliases_) {
-          std::cerr << "Not all symbols in alias group had same alias count"
-                    << std::endl;
-          exit(1);
-        }
-      }
-    }
-  }
-  std::cout << "Largest number of aliases: " << max_aliases << std::endl;
+void ValidateDiff(const char* filename) {
+  caspian::SizeInfo before;
+  caspian::SizeInfo after;
+  ParseDiffSizeInfoFromFile(filename, &before, &after);
 }
 
 void PrintUsageAndExit() {
@@ -86,6 +89,8 @@ int main(int argc, char* argv[]) {
     Diff(argv[2], argv[3]);
   } else if (std::string_view(argv[1]) == "validate") {
     Validate(argv[2]);
+  } else if (std::string_view(argv[1]) == "validatediff") {
+    ValidateDiff(argv[2]);
   } else {
     PrintUsageAndExit();
   }

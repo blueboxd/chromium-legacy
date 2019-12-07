@@ -4,8 +4,6 @@
 
 source_set("metrics") {
   sources = [
-    "metrics_mojo_service.cc",
-    "metrics_mojo_service.h",
     "ukm_recorder_interface.cc",
     "ukm_recorder_interface.h",
   ]
@@ -16,7 +14,6 @@ source_set("metrics") {
     "//mojo/public/cpp/bindings",
     "//services/metrics/public/cpp:metrics_cpp",
     "//services/metrics/public/mojom",
-    "//services/service_manager/public/cpp",
     "//url",
   ]
 }

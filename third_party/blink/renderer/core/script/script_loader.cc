@@ -249,7 +249,7 @@ network::mojom::CredentialsMode ScriptLoader::ModuleScriptCredentialsMode(
 bool ShouldBlockSyncScriptForFeaturePolicy(const ScriptElementBase* element,
                                            mojom::ScriptType script_type,
                                            bool parser_inserted) {
-  if (element->GetDocument().GetFeaturePolicy()->IsFeatureEnabled(
+  if (element->GetDocument().IsFeatureEnabled(
           mojom::FeaturePolicyFeature::kSyncScript)) {
     return false;
   }

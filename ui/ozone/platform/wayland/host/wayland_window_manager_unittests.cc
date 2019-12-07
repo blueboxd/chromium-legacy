@@ -211,9 +211,9 @@ TEST_P(WaylandWindowManagerTest, GetAllWindows) {
   EXPECT_EQ(2u, windows.size());
 }
 
-INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,
+INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          WaylandWindowManagerTest,
-                         ::testing::Values(kXdgShellV5));
+                         ::testing::Values(kXdgShellStable));
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
                          WaylandWindowManagerTest,

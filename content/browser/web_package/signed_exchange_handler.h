@@ -20,6 +20,7 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/log/net_log_with_source.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -36,7 +37,6 @@ struct OCSPVerifyResult;
 }  // namespace net
 
 namespace network {
-struct ResourceResponseHead;
 namespace mojom {
 class NetworkContext;
 }
@@ -75,7 +75,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
       SignedExchangeLoadResult result,
       net::Error error,
       const GURL& request_url,
-      const network::ResourceResponseHead& resource_response,
+      network::mojom::URLResponseHeadPtr resource_response,
       std::unique_ptr<net::SourceStream> payload_stream)>;
 
   static void SetNetworkContextForTesting(

@@ -47,6 +47,63 @@ enum FrameSequenceTrackerType {
   kMaxType
 };
 
+class CC_EXPORT FrameSequenceMetrics {
+ public:
+  FrameSequenceMetrics(FrameSequenceTrackerType type,
+                       UkmManager* ukm_manager,
+                       ThroughputUkmReporter* ukm_reporter);
+  ~FrameSequenceMetrics();
+
+  FrameSequenceMetrics(const FrameSequenceMetrics&) = delete;
+  FrameSequenceMetrics& operator=(const FrameSequenceMetrics&) = delete;
+
+  struct ThroughputData {
+    static std::unique_ptr<base::trace_event::TracedValue> ToTracedValue(
+        const ThroughputData& impl,
+        const ThroughputData& main);
+    // Returns the throughput in percent, a return value of base::nullopt
+    // indicates that no throughput metric is reported.
+    static base::Optional<int> ReportHistogram(
+        FrameSequenceTrackerType sequence_type,
+        const char* thread_name,
+        int metric_index,
+        const ThroughputData& data);
+    // Tracks the number of frames that were expected to be shown during this
+    // frame-sequence.
+    uint32_t frames_expected = 0;
+
+    // Tracks the number of frames that were actually presented to the user
+    // during this frame-sequence.
+    uint32_t frames_produced = 0;
+  };
+
+  void ReportMetrics();
+
+  ThroughputData& impl_throughput() { return impl_throughput_; }
+  ThroughputData& main_throughput() { return main_throughput_; }
+  void add_checkerboarded_frames(int64_t frames) {
+    frames_checkerboarded_ += frames;
+  }
+  uint32_t frames_checkerboarded() const { return frames_checkerboarded_; }
+
+ private:
+  const FrameSequenceTrackerType type_;
+
+  // Please refer to the comments in FrameSequenceTrackerCollection's
+  // ukm_manager_.
+  UkmManager* const ukm_manager_;
+
+  // Pointer to the reporter owned by the FrameSequenceTrackerCollection.
+  ThroughputUkmReporter* const throughput_ukm_reporter_;
+
+  ThroughputData impl_throughput_;
+  ThroughputData main_throughput_;
+
+  // Tracks the number of produced frames that had some amount of
+  // checkerboarding, and how many frames showed such checkerboarded frames.
+  uint32_t frames_checkerboarded_ = 0;
+};
+
 // Used for notifying attached FrameSequenceTracker's of begin-frames and
 // submitted frames.
 class CC_EXPORT FrameSequenceTrackerCollection {
@@ -201,6 +258,13 @@ class CC_EXPORT FrameSequenceTracker {
                        UkmManager* manager,
                        ThroughputUkmReporter* throughput_ukm_reporter);
 
+  FrameSequenceMetrics::ThroughputData& impl_throughput() {
+    return metrics_.impl_throughput();
+  }
+  FrameSequenceMetrics::ThroughputData& main_throughput() {
+    return metrics_.main_throughput();
+  }
+
   void ScheduleTerminate() {
     termination_status_ = TerminationStatus::kScheduledForTermination;
   }
@@ -217,33 +281,9 @@ class CC_EXPORT FrameSequenceTracker {
     uint32_t previous_sequence_delta = 0;
   };
 
-  struct ThroughputData {
-    static std::unique_ptr<base::trace_event::TracedValue> ToTracedValue(
-        const ThroughputData& impl,
-        const ThroughputData& main);
-    // Returns the throughput in percent, a return value of base::nullopt
-    // indicates that no throughput metric is reported.
-    static base::Optional<int> ReportHistogram(
-        FrameSequenceTrackerType sequence_type,
-        const char* thread_name,
-        int metric_index,
-        const ThroughputData& data);
-    // Tracks the number of frames that were expected to be shown during this
-    // frame-sequence.
-    uint32_t frames_expected = 0;
-
-    // Tracks the number of frames that were actually presented to the user
-    // during this frame-sequence.
-    uint32_t frames_produced = 0;
-  };
-
   struct CheckerboardingData {
     CheckerboardingData();
     ~CheckerboardingData();
-
-    // Tracks the number of produced frames that had some amount of
-    // checkerboarding, and how many frames showed such checkerboarded frames.
-    uint32_t frames_checkerboarded = 0;
 
     // Tracks whether the last presented frame had checkerboarding. This is used
     // to track how many vsyncs showed frames with checkerboarding.
@@ -273,8 +313,7 @@ class CC_EXPORT FrameSequenceTracker {
   TrackedFrameData begin_impl_frame_data_;
   TrackedFrameData begin_main_frame_data_;
 
-  ThroughputData impl_throughput_;
-  ThroughputData main_throughput_;
+  FrameSequenceMetrics metrics_;
 
   CheckerboardingData checkerboarding_;
 
@@ -314,13 +353,6 @@ class CC_EXPORT FrameSequenceTracker {
 
   // Report the throughput metrics every 5 seconds.
   const base::TimeDelta time_delta_to_report_ = base::TimeDelta::FromSeconds(5);
-
-  // Please refer to the comments in FrameSequenceTrackerCollection's
-  // ukm_manager_.
-  UkmManager* const ukm_manager_;
-
-  // Pointer to the reporter owned by the FrameSequenceTrackerCollection.
-  ThroughputUkmReporter* throughput_ukm_reporter_;
 
 #if DCHECK_IS_ON()
   // This stringstream represents a sequence of frame reporting activities on

@@ -132,14 +132,6 @@ BOOL forceMagicMouse = NO;
               blink::WebGestureEvent::InertialPhaseState::kMomentum) {
         return;
       }
-      // GestureScrollBegin and GestureScrollEnd events are created to wrap
-      // individual resent GestureScrollUpdates from a plugin. Hence these
-      // should not be used to indicate the beginning/end of the swipe gesture.
-      // TODO(mcnee): When we remove BrowserPlugin, delete this code.
-      // See crbug.com/533069
-      if (event.resending_plugin_id != -1) {
-        return;
-      }
       waitingForFirstGestureScroll_ = YES;
       break;
     case blink::WebInputEvent::kGestureScrollUpdate:

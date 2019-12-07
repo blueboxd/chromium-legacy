@@ -26,7 +26,7 @@
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='positioned-absolute-grandchildren-not-contained' class='positionAbsolute positioned'",
       "position": [35, 10],
-      "bounds": [319, 105],
+      "bounds": [199, 105],
       "backgroundColor": "#800080"
     },
     {
@@ -50,9 +50,8 @@
     },
     {
       "name": "Scroll corner of LayoutNGBlockFlow (positioned) DIV id='container-absolute-grandchildren' class='positionAbsolute overflow'",
-      "position": [87, 87],
-      "bounds": [15, 15],
-      "transform": 3
+      "position": [217, 10],
+      "bounds": [137, 104]
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='positioned-absolute-grandchildren' class='positionAbsolute positioned'",
@@ -125,9 +124,8 @@
     },
     {
       "name": "Scroll corner of LayoutNGBlockFlow (positioned) DIV id='container-absolute-sibling-grandchildren' class='positionAbsolute overflow'",
-      "position": [87, 87],
-      "bounds": [15, 15],
-      "transform": 9
+      "position": [97, 130],
+      "bounds": [137, 104]
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='positioned-absolute-sibling-grandchildren' class='positionAbsolute positioned'",
@@ -150,8 +148,8 @@
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='positioned-absolute-sibling-not-contained' class='positionAbsolute positioned'",
-      "position": [10, 130],
-      "bounds": [464, 224],
+      "position": [155, 130],
+      "bounds": [199, 105],
       "backgroundColor": "#800080"
     },
     {
@@ -175,9 +173,8 @@
     },
     {
       "name": "Scroll corner of LayoutNGBlockFlow (positioned) DIV id='container-absolute-sibling' class='positionAbsolute overflow'",
-      "position": [87, 87],
-      "bounds": [15, 15],
-      "transform": 13
+      "position": [337, 130],
+      "bounds": [137, 104]
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='positioned-absolute-sibling' class='positionAbsolute positioned'",
@@ -200,9 +197,8 @@
     },
     {
       "name": "Scroll corner of LayoutNGBlockFlow (positioned) DIV id='container-absolute' class='positionAbsolute overflow'",
-      "position": [87, 87],
-      "bounds": [15, 15],
-      "transform": 15
+      "position": [10, 217],
+      "bounds": [462, 137]
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='positioned-absolute' class='positionAbsolute positioned'",
@@ -213,9 +209,8 @@
     },
     {
       "name": "HorizontalScrollbar",
-      "position": [2, 87],
-      "bounds": [100, 15],
-      "transform": 17
+      "position": [12, 250],
+      "bounds": [222, 104]
     },
     {
       "name": "VerticalScrollbar",
@@ -239,9 +234,8 @@
     },
     {
       "name": "HorizontalScrollbar",
-      "position": [2, 87],
-      "bounds": [100, 15],
-      "transform": 20
+      "position": [132, 250],
+      "bounds": [222, 104]
     },
     {
       "name": "VerticalScrollbar",
@@ -265,9 +259,8 @@
     },
     {
       "name": "HorizontalScrollbar",
-      "position": [2, 87],
-      "bounds": [100, 15],
-      "transform": 23
+      "position": [252, 250],
+      "bounds": [222, 104]
     },
     {
       "name": "VerticalScrollbar",

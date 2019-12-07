@@ -118,15 +118,20 @@ KnownInterceptionDisclosureInfoBarDelegate::
 
 base::string16 KnownInterceptionDisclosureInfoBarDelegate::GetMessageText()
     const {
-  return l10n_util::GetStringUTF16(IDS_KNOWN_INTERCEPTION_INFOBAR_HEADING);
+  return l10n_util::GetStringUTF16(IDS_KNOWN_INTERCEPTION_HEADER);
 }
 
 int KnownInterceptionDisclosureInfoBarDelegate::GetButtons() const {
+#if defined(OS_ANDROID)
   return BUTTON_OK;
+#else
+  return BUTTON_NONE;
+#endif
 }
 
 base::string16 KnownInterceptionDisclosureInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
+#if defined(OS_ANDROID)
   switch (button) {
     case BUTTON_OK:
       return l10n_util::GetStringUTF16(
@@ -136,6 +141,7 @@ base::string16 KnownInterceptionDisclosureInfoBarDelegate::GetButtonLabel(
     case BUTTON_NONE:
       NOTREACHED();
   }
+#endif
   NOTREACHED();
   return base::string16();
 }
@@ -177,7 +183,7 @@ int KnownInterceptionDisclosureInfoBarDelegate::GetIconId() const {
 
 base::string16 KnownInterceptionDisclosureInfoBarDelegate::GetDescriptionText()
     const {
-  return l10n_util::GetStringUTF16(IDS_KNOWN_INTERCEPTION_INFOBAR_DESCRIPTION);
+  return l10n_util::GetStringUTF16(IDS_KNOWN_INTERCEPTION_BODY1);
 }
 
 // static

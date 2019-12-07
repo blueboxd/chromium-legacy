@@ -36,8 +36,6 @@ IN_PROC_BROWSER_TEST_F(WebUITabStripInteractiveTest,
       BrowserView::GetBrowserViewForBrowser(browser());
   WebUITabStripContainerView* const container = browser_view->webui_tab_strip();
   ASSERT_NE(nullptr, container);
-  container->SetVisibleForTesting(false);
-  browser_view->Layout();
 
   ui_test_utils::FocusView(browser(), VIEW_ID_OMNIBOX);
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));

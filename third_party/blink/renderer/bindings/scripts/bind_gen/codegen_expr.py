@@ -5,7 +5,10 @@
 import web_idl
 
 
-class _Expr(object):
+_CODE_GEN_EXPR_PASS_KEY = object()
+
+
+class CodeGenExpr(object):
     """
     Represents an expression which is composable to produce another expression.
 
@@ -13,9 +16,10 @@ class _Expr(object):
     logical operators (expr_not, expr_and, expr_or) come along with.
     """
 
-    def __init__(self, expr, is_compound=False):
+    def __init__(self, expr, is_compound=False, pass_key=None):
         assert isinstance(expr, (bool, str))
         assert isinstance(is_compound, bool)
+        assert pass_key is _CODE_GEN_EXPR_PASS_KEY
 
         if isinstance(expr, bool):
             self._text = "true" if expr else "false"
@@ -68,9 +72,13 @@ class _Expr(object):
         return self._is_always_true
 
 
+def _Expr(*args, **kwargs):
+    return CodeGenExpr(*args, pass_key=_CODE_GEN_EXPR_PASS_KEY, **kwargs)
+
+
 def _unary_op(op, term):
     assert isinstance(op, str)
-    assert isinstance(term, _Expr)
+    assert isinstance(term, CodeGenExpr)
 
     return _Expr("{}{}".format(op, term), is_compound=True)
 
@@ -78,7 +86,7 @@ def _unary_op(op, term):
 def _binary_op(op, terms):
     assert isinstance(op, str)
     assert isinstance(terms, (list, tuple))
-    assert all(isinstance(term, _Expr) for term in terms)
+    assert all(isinstance(term, CodeGenExpr) for term in terms)
     assert all(
         not (term.is_always_false or term.is_always_true) for term in terms)
 
@@ -86,7 +94,7 @@ def _binary_op(op, terms):
 
 
 def expr_not(term):
-    assert isinstance(term, _Expr)
+    assert isinstance(term, CodeGenExpr)
 
     if term.is_always_false:
         return _Expr(True)
@@ -97,7 +105,7 @@ def expr_not(term):
 
 def expr_and(terms):
     assert isinstance(terms, (list, tuple))
-    assert all(isinstance(term, _Expr) for term in terms)
+    assert all(isinstance(term, CodeGenExpr) for term in terms)
     assert terms
 
     if any(term.is_always_false for term in terms):
@@ -112,7 +120,7 @@ def expr_and(terms):
 
 def expr_or(terms):
     assert isinstance(terms, (list, tuple))
-    assert all(isinstance(term, _Expr) for term in terms)
+    assert all(isinstance(term, CodeGenExpr) for term in terms)
     assert terms
 
     if any(term.is_always_true for term in terms):
@@ -127,7 +135,7 @@ def expr_or(terms):
 
 def expr_uniq(terms):
     assert isinstance(terms, (list, tuple))
-    assert all(isinstance(term, _Expr) for term in terms)
+    assert all(isinstance(term, CodeGenExpr) for term in terms)
 
     uniq_terms = []
     for term in terms:

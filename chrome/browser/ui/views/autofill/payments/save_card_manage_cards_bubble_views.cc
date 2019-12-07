@@ -42,10 +42,19 @@ SaveCardManageCardsBubbleViews::SaveCardManageCardsBubbleViews(
     : SaveCardBubbleViews(anchor_view, web_contents, controller) {
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
   DialogDelegate::SetExtraView(CreateManageCardsButton(this));
+  DialogDelegate::SetFootnoteView(CreateSigninPromoView());
 }
 
 std::unique_ptr<views::View>
-SaveCardManageCardsBubbleViews::CreateFootnoteView() {
+SaveCardManageCardsBubbleViews::CreateMainContentView() {
+  std::unique_ptr<views::View> view =
+      SaveCardBubbleViews::CreateMainContentView();
+  view->SetID(DialogViewId::MANAGE_CARDS_VIEW);
+  return view;
+}
+
+std::unique_ptr<views::View>
+SaveCardManageCardsBubbleViews::CreateSigninPromoView() {
 #if defined(OS_CHROMEOS)
   // ChromeOS does not show the signin promo.
   return nullptr;
@@ -69,16 +78,6 @@ SaveCardManageCardsBubbleViews::CreateFootnoteView() {
 #endif
 }
 
-SaveCardManageCardsBubbleViews::~SaveCardManageCardsBubbleViews() {}
-
-std::unique_ptr<views::View>
-SaveCardManageCardsBubbleViews::CreateMainContentView() {
-  std::unique_ptr<views::View> view =
-      SaveCardBubbleViews::CreateMainContentView();
-  view->SetID(DialogViewId::MANAGE_CARDS_VIEW);
-  return view;
-}
-
 void SaveCardManageCardsBubbleViews::ButtonPressed(views::Button* sender,
                                                    const ui::Event& event) {
   if (sender->GetViewByID(DialogViewId::MANAGE_CARDS_BUTTON)) {
@@ -86,5 +85,7 @@ void SaveCardManageCardsBubbleViews::ButtonPressed(views::Button* sender,
     CloseBubble();
   }
 }
+
+SaveCardManageCardsBubbleViews::~SaveCardManageCardsBubbleViews() = default;
 
 }  // namespace autofill

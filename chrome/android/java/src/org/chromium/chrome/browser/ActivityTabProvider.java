@@ -16,10 +16,10 @@ import org.chromium.chrome.browser.compositor.layouts.StaticLayout;
 import org.chromium.chrome.browser.compositor.layouts.phone.SimpleAnimationLayout;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
-import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 
 /**
  * A class that provides the current {@link Tab} for various states of the browser's activity.
@@ -41,7 +41,7 @@ public class ActivityTabProvider implements Supplier<Tab> {
     }
 
     /** An {@link ActivityTabObserver} that can be used to explicitly watch non-hint events. */
-    public static abstract class HintlessActivityTabObserver implements ActivityTabObserver {
+    public abstract static class HintlessActivityTabObserver implements ActivityTabObserver {
         @Override
         public final void onActivityTabChanged(Tab tab, boolean hint) {
             // Only pass the event through if it isn't a hint.

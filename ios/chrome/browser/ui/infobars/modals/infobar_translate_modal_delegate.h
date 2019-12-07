@@ -16,6 +16,10 @@
 // original language).
 - (void)showOriginalLanguage;
 
+// Indicates the user changed the source/target language and wishes to Translate
+// again.
+- (void)translateWithNewLanguages;
+
 // Indicates the user chose to show options to change the source target
 // language.
 - (void)showChangeSourceLanguageOptions;

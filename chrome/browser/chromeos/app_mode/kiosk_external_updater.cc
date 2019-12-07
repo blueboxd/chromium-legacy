@@ -57,7 +57,7 @@ ParseExternalUpdateManifest(const base::FilePath& external_update_dir) {
 bool CopyExternalCrxAndDeleteTempDir(const base::FilePath& external_crx_file,
                                      const base::FilePath& temp_crx_file,
                                      const base::FilePath& temp_dir) {
-  base::DeleteFile(temp_dir, true);
+  base::DeleteFileRecursively(temp_dir);
   return base::CopyFile(external_crx_file, temp_crx_file);
 }
 

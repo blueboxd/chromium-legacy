@@ -449,6 +449,11 @@
           'gtest_tests': 'android_oreo_gtests',
         },
       },
+      'android-arm64-proguard-rel': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
       'android-cronet-arm-dbg': {
         'mixins': [
           'kitkat',
@@ -3217,7 +3222,7 @@
           'win10_nvidia_geforce_gtx_1660',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_fyi_win_and_dawn_gtests',
+          'gtest_tests': 'gpu_fyi_win_gtests',
           'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
         },
       },

@@ -50,9 +50,7 @@ void Decompress(const char* gzipped,
     uncompressed_size = __builtin_bswap32(uncompressed_size);
   }
 
-  // Using resize() instead of reserve() here is significantly slower when
-  // compiled to WebAssembly.
-  uncompressed->reserve(uncompressed_size + 1);
+  uncompressed->resize(uncompressed_size + 1);
   // Add terminating null for safety.
   (*uncompressed)[uncompressed_size] = '\0';
 
@@ -387,6 +385,7 @@ void ParseSizeInfo(const char* gzipped, unsigned long len, SizeInfo* info) {
     }
   }
 
+  info->is_sparse = has_padding;
   if (!has_padding) {
     CalculatePadding(&info->raw_symbols);
   }

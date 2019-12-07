@@ -20,6 +20,7 @@
 #include "components/viz/common/surfaces/surface_range.h"
 #include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/color_space.h"
+#include "ui/gfx/overlay_transform.h"
 
 namespace viz {
 class CompositorFrame;
@@ -51,6 +52,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
 
   CompositorFrame Aggregate(const SurfaceId& surface_id,
                             base::TimeTicks expected_display_time,
+                            gfx::OverlayTransform display_transform,
                             int64_t display_trace_id = -1);
   void ReleaseResources(const SurfaceId& surface_id);
   const SurfaceIndexMap& previous_contained_surfaces() const {

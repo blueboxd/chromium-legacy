@@ -22,8 +22,8 @@
 #include "net/ssl/ssl_info.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/net_adapters.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/origin.h"
 
 namespace blink {
@@ -65,7 +65,7 @@ class CONTENT_EXPORT SignedExchangeLoader final
   // redirect to the fallback URL.
   SignedExchangeLoader(
       const network::ResourceRequest& outer_request,
-      const network::ResourceResponseHead& outer_response_head,
+      network::mojom::URLResponseHeadPtr outer_response_head,
       mojo::ScopedDataPipeConsumerHandle outer_response_body,
       mojo::PendingRemote<network::mojom::URLLoaderClient> forwarding_client,
       network::mojom::URLLoaderClientEndpointsPtr endpoints,
@@ -132,12 +132,11 @@ class CONTENT_EXPORT SignedExchangeLoader final
  private:
   // Called from |signed_exchange_handler_| when it finds an origin-signed HTTP
   // exchange.
-  void OnHTTPExchangeFound(
-      SignedExchangeLoadResult result,
-      net::Error error,
-      const GURL& request_url,
-      const network::ResourceResponseHead& resource_response,
-      std::unique_ptr<net::SourceStream> payload_stream);
+  void OnHTTPExchangeFound(SignedExchangeLoadResult result,
+                           net::Error error,
+                           const GURL& request_url,
+                           network::mojom::URLResponseHeadPtr resource_response,
+                           std::unique_ptr<net::SourceStream> payload_stream);
 
   void StartReadingBody();
   void FinishReadingBody(int result);
@@ -147,7 +146,7 @@ class CONTENT_EXPORT SignedExchangeLoader final
   const network::ResourceRequest outer_request_;
 
   // The outer response of signed HTTP exchange which was received from network.
-  const network::ResourceResponseHead outer_response_head_;
+  network::mojom::URLResponseHeadPtr outer_response_head_;
 
   // This client is alive until OnHTTPExchangeFound() is called.
   mojo::Remote<network::mojom::URLLoaderClient> forwarding_client_;

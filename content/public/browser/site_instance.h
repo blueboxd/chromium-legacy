@@ -153,6 +153,9 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
   // assignment.
   virtual bool IsSameSiteWithURL(const GURL& url) = 0;
 
+  // Returns true if this object is used for a <webview> guest.
+  virtual bool IsGuest() = 0;
+
   // Factory method to create a new SiteInstance.  This will create a new
   // new BrowsingInstance, so it should only be used when creating a new tab
   // from scratch (or similar circumstances).

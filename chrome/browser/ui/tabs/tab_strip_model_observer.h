@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "ui/base/models/list_selection_model.h"
 
-class TabGroupVisualData;
 class TabStripModel;
 
 namespace content {
@@ -192,6 +191,23 @@ struct TabStripSelectionChange {
   int reason = 0;
 };
 
+// Struct to carry changes to tab groups. The tab group model is independent of
+// the tab strip model, so these changes are not bundled with
+// TabStripModelChanges or TabStripSelectionChanges.
+struct TabGroupChange {
+  // A group is created when the first tab is added to it and closed when the
+  // last tab is removed from it. Whenever the set of tabs in the group changes,
+  // a kContentsChange event is fired. Whenever the group's visual data changes,
+  // such as its title or color, a kVisualsChange event is fired.
+  enum Type { kCreated, kContentsChanged, kVisualsChanged, kClosed };
+
+  TabGroupChange(TabGroupId group, Type type);
+  ~TabGroupChange();
+
+  TabGroupId group;
+  Type type;
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // TabStripModelObserver
@@ -226,7 +242,7 @@ class TabStripModelObserver {
     kCloseAllCompleted = 1,
   };
 
-  // |change| is a series of changes in tabtrip model. |change| consists
+  // |change| is a series of changes in tabstrip model. |change| consists
   // of changes with same type and those changes may have caused selection or
   // activation changes. |selection| is determined by comparing the state of
   // TabStripModel before the |change| and after the |change| are applied.
@@ -236,22 +252,10 @@ class TabStripModelObserver {
                                       const TabStripModelChange& change,
                                       const TabStripSelectionChange& selection);
 
-  // Called when a group is first created with id |group|.
-  virtual void OnTabGroupCreated(TabGroupId group);
-
-  // Called when the tab membership of a group changes. |group| identifies which
-  // group changed.
-  virtual void OnTabGroupContentsChanged(TabGroupId group);
-
-  // Called when the TabGroupVisualData associated with a group changes. |group|
-  // identifies which group changed. |visual_data| is a pointer to the new
-  // TabGroupVisualData and is valid until either the data associated with
-  // |group| changes again or |group| is destroyed.
-  virtual void OnTabGroupVisualsChanged(TabGroupId group,
-                                        const TabGroupVisualData* visual_data);
-
-  // Called when the group with id |group| is closed.
-  virtual void OnTabGroupClosed(TabGroupId group);
+  // |change| is a change in the Tab Group model or metadata. These
+  // changes may cause repainting of some Tab Group UI. They are
+  // independent of the tabstrip model and do not affect any tab state.
+  virtual void OnTabGroupChanged(const TabGroupChange& change);
 
   // The specified WebContents at |index| changed in some way. |contents|
   // may be an entirely different object and the old value is no longer

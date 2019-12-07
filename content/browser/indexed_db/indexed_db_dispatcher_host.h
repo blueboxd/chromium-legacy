@@ -28,13 +28,10 @@
 #include "mojo/public/cpp/bindings/unique_associated_receiver_set.h"
 #include "storage/browser/blob/mojom/blob_storage_context.mojom.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
+#include "url/origin.h"
 
 namespace base {
 class SequencedTaskRunner;
-}
-
-namespace url {
-class Origin;
 }
 
 namespace content {

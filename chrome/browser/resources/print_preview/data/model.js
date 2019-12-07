@@ -8,12 +8,12 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {Policies} from '../native_layer.js';
+import {BackgroundGraphicsModeRestriction, Policies} from '../native_layer.js';
 
 import {Cdd, CddCapabilities, Destination, DestinationOrigin, DestinationType, RecentDestination} from './destination.js';
 import {getPrinterTypeForDestination} from './destination_match.js';
 // <if expr="chromeos">
-import {BackgroundGraphicsModeRestriction, ColorModeRestriction, DuplexModeRestriction, PinModeRestriction} from './destination_policies.js';
+import {ColorModeRestriction, DuplexModeRestriction, PinModeRestriction} from './destination_policies.js';
 // </if>
 import {DocumentSettings} from './document_info.js';
 import {CustomMarginsOrientation, Margins, MarginsSetting, MarginsType} from './margins.js';
@@ -106,7 +106,8 @@ export let PolicyEntry;
 
 /**
  * @typedef {{
- *   headerFooter: PolicyEntry
+ *   headerFooter: (PolicyEntry | undefined),
+ *   cssBackground: (PolicyEntry | undefined),
  * }}
  */
 export let PolicySettings;
@@ -1008,28 +1009,71 @@ Polymer({
   },
 
   /**
+   * Helper function for configurePolicySetting_(). Sets value and managed flag
+   * for given setting.
+   * @param {string} settingName Name of the setting being applied.
+   * @param {*} value Value of the setting provided via policy.
+   * @param {boolean} managed Flag showing whether value of setting is managed.
+   * @private
+   */
+  setPolicySetting_: function(settingName, value, managed) {
+    if (!this.policySettings_) {
+      this.policySettings_ = {};
+    }
+    this.policySettings_[settingName] = {
+      value: value,
+      managed: managed,
+    };
+  },
+
+  /**
+   * Helper function for setPolicySettings(). Calculates value and managed flag
+   * of the setting according to allowed and default modes.
+   * @param {string} settingName Name of the setting being applied.
+   * @param {*} allowedMode Policy value of allowed mode.
+   * @param {*} defaultMode Policy value of default mode.
+   * @private
+   */
+  configurePolicySetting_: function(settingName, allowedMode, defaultMode) {
+    switch (settingName) {
+      case 'headerFooter': {
+        const value = allowedMode !== undefined ? allowedMode : defaultMode;
+        if (value !== undefined) {
+          this.setPolicySetting_(settingName, value, allowedMode !== undefined);
+        }
+        break;
+      }
+      case 'cssBackground': {
+        const value = allowedMode ? allowedMode : defaultMode;
+        if (value !== undefined) {
+          this.setPolicySetting_(
+              settingName, value === BackgroundGraphicsModeRestriction.ENABLED,
+              !!allowedMode);
+        }
+        break;
+      }
+      default:
+        break;
+    }
+  },
+
+  /**
    * Sets settings in accordance to policies from native code, and prevents
    * those settings from being changed via other means.
    * @param {Policies} policies Value of policies.
    */
   setPolicySettings: function(policies) {
-    if (policies === undefined || policies.headerFooter === undefined) {
+    if (policies === undefined) {
       return;
     }
-    const headerFooterAllowedMode = policies.headerFooter.allowedMode;
-    const headerFooterDefaultMode = policies.headerFooter.defaultMode;
-    const headerFooterValue = headerFooterAllowedMode !== undefined ?
-        headerFooterAllowedMode :
-        headerFooterDefaultMode;
-    if (headerFooterValue === undefined) {
-      return;
-    }
-    this.policySettings_ = {
-      headerFooter: {
-        value: headerFooterValue,
-        managed: headerFooterAllowedMode !== undefined,
-      },
-    };
+    ['headerFooter', 'cssBackground'].forEach(settingName => {
+      if (!policies[settingName]) {
+        return;
+      }
+      const defaultMode = policies[settingName].defaultMode;
+      const allowedMode = policies[settingName].allowedMode;
+      this.configurePolicySetting_(settingName, allowedMode, defaultMode);
+    });
   },
 
   applyStickySettings: function() {
@@ -1145,28 +1189,16 @@ Polymer({
     }
     this.set('settings.pin.setByPolicy', !!pinPolicy);
 
-    const backgroundGraphicsPolicy = this.destination.backgroundGraphicsPolicy;
-    const backgroundGraphicsValue = backgroundGraphicsPolicy ?
-        backgroundGraphicsPolicy :
-        this.destination.defaultBackgroundGraphicsPolicy;
-    if (backgroundGraphicsValue) {
-      this.set(
-          'settings.cssBackground.value',
-          backgroundGraphicsValue ===
-              BackgroundGraphicsModeRestriction.ENABLED);
-    }
-    this.set('settings.cssBackground.setByPolicy', !!backgroundGraphicsPolicy);
-
     this.updateManaged_();
   },
   // </if>
 
   /** @private */
   updateManaged_: function() {
-    let managedSettings = ['headerFooter'];
+    let managedSettings = ['cssBackground', 'headerFooter'];
     // <if expr="chromeos">
-    managedSettings = managedSettings.concat(
-        ['color', 'cssBackground', 'duplex', 'duplexShortEdge', 'pin']);
+    managedSettings =
+        managedSettings.concat(['color', 'duplex', 'duplexShortEdge', 'pin']);
     // </if>
     this.settingsManaged = managedSettings.some(settingName => {
       const setting = this.getSetting(settingName);

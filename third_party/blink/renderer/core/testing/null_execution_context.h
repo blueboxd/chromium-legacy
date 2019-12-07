@@ -17,7 +17,6 @@
 namespace blink {
 
 class NullExecutionContext : public GarbageCollected<NullExecutionContext>,
-                             public SecurityContext,
                              public ExecutionContext {
   USING_GARBAGE_COLLECTED_MIXIN(NullExecutionContext);
 
@@ -43,9 +42,6 @@ class NullExecutionContext : public GarbageCollected<NullExecutionContext>,
   bool TasksNeedPause() override { return tasks_need_pause_; }
   void SetTasksNeedPause(bool flag) { tasks_need_pause_ = flag; }
 
-  SecurityContext& GetSecurityContext() final { return *this; }
-  const SecurityContext& GetSecurityContext() const final { return *this; }
-
   void AddConsoleMessageImpl(ConsoleMessage*,
                              bool discard_duplicates) override {}
   void ExceptionThrown(ErrorEvent*) override {}
@@ -53,7 +49,7 @@ class NullExecutionContext : public GarbageCollected<NullExecutionContext>,
   void SetIsSecureContext(bool);
   bool IsSecureContext(String& error_message) const override;
 
-  void SetUpSecurityContext();
+  void SetUpSecurityContextForTesting();
 
   ResourceFetcher* Fetcher() const override { return nullptr; }
 
@@ -62,16 +58,6 @@ class NullExecutionContext : public GarbageCollected<NullExecutionContext>,
 
   void CountUse(mojom::WebFeature) override {}
   void CountDeprecation(mojom::WebFeature) override {}
-
-  void SetSandboxFlags(WebSandboxFlags flags) { sandbox_flags_ = flags; }
-
-  using SecurityContext::GetSecurityOrigin;
-  using SecurityContext::GetContentSecurityPolicy;
-
-  void Trace(blink::Visitor* visitor) override {
-    SecurityContext::Trace(visitor);
-    ExecutionContext::Trace(visitor);
-  }
 
   BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() override;
 

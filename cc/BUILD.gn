@@ -278,6 +278,8 @@ cc_component("cc") {
     "trees/animated_paint_worklet_tracker.h",
     "trees/animation_effect_timings.h",
     "trees/animation_options.h",
+    "trees/browser_controls_params.cc",
+    "trees/browser_controls_params.h",
     "trees/clip_expander.cc",
     "trees/clip_expander.h",
     "trees/clip_node.cc",

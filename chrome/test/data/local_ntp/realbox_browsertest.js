@@ -17,6 +17,7 @@ test.realbox2 = {};
  */
 test.realbox.IDS = {
   REALBOX: 'realbox',
+  REALBOX_ICON: 'realbox-icon',
   REALBOX_INPUT_WRAPPER: 'realbox-input-wrapper',
   REALBOX_MATCHES: 'realbox-matches',
 };
@@ -1140,4 +1141,116 @@ test.realbox2.testPrivilegedDestinationUrls = function() {
   matchEls[0].querySelector(`.${test.realbox.CLASSES.REMOVE_ICON}`).click();
   assertEquals(1, test.realbox.deletedLines.length);
   assertEquals(3, test.realbox.opens.length);
+};
+
+test.realbox2.testRealboxIconZeroSuggest = function() {
+  const realboxIcon = $(test.realbox.IDS.REALBOX_ICON);
+  assertFalse(!!realboxIcon.style.backgroundImage);
+
+  // Trigger zero suggest querying autocomplete.
+  test.realbox.realboxEl.dispatchEvent(new Event('focusin', {
+    bubbles: true,
+    target: test.realbox.realboxEl,
+  }));
+  assertEquals(1, test.realbox.queries.length);
+
+  chrome.embeddedSearch.searchBox.autocompleteresultchanged({
+    input: test.realbox.realboxEl.value,
+    matches: [
+      test.realbox.getSearchMatch({allowedToBeDefaultMatch: false}),
+      test.realbox.getUrlMatch(),
+    ],
+  });
+
+  // Zero suggest matches should be showing but no selection nor icon should be
+  // present.
+  assertTrue(test.realbox.areMatchesShowing());
+
+  const matchEls = $(test.realbox.IDS.REALBOX_MATCHES).children;
+  assertEquals(2, matchEls.length);
+  assertFalse(matchEls[0].classList.contains(test.realbox.CLASSES.SELECTED));
+  assertFalse(!!realboxIcon.style.backgroundImage);
+
+  const arrowDown = new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'ArrowDown',
+  });
+  test.realbox.realboxEl.dispatchEvent(arrowDown);
+  assertTrue(arrowDown.defaultPrevented);
+
+  // Arrow down should create a selection. Because the first item is a search
+  // match, it shouldn't change the realbox icon (as it's search by default).
+  assertTrue(matchEls[0].classList.contains(test.realbox.CLASSES.SELECTED));
+  assertFalse(!!realboxIcon.style.backgroundImage);
+
+  test.realbox.realboxEl.dispatchEvent(new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'ArrowDown',
+  }));
+
+  // The second item is a URL and therefore should attempt to load the URL's
+  // favicon via background-image on #realbox-icon.
+  assertTrue(matchEls[1].classList.contains(test.realbox.CLASSES.SELECTED));
+  assertTrue(!!realboxIcon.style.backgroundImage);
+};
+
+test.realbox2.testRealboxIconPrefixSearch = function() {
+  const realboxIcon = $(test.realbox.IDS.REALBOX_ICON);
+  assertFalse(!!realboxIcon.style.backgroundImage);
+
+  test.realbox.realboxEl.value = 'about';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+
+  chrome.embeddedSearch.searchBox.autocompleteresultchanged({
+    input: test.realbox.realboxEl.value,
+    matches: [
+      test.realbox.getUrlMatch({allowedToBeDefaultMatch: true}),
+      test.realbox.getSearchMatch(),
+    ],
+  });
+  assertTrue(test.realbox.areMatchesShowing());
+
+  // First URL match should be showing and the favicon should be in the realbox.
+  const matchEls = $(test.realbox.IDS.REALBOX_MATCHES).children;
+  assertEquals(2, matchEls.length);
+  assertTrue(matchEls[0].classList.contains(test.realbox.CLASSES.SELECTED));
+  assertTrue(!!realboxIcon.style.backgroundImage);
+
+  const arrowDown = new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'ArrowDown',
+  });
+  test.realbox.realboxEl.dispatchEvent(arrowDown);
+  assertTrue(arrowDown.defaultPrevented);
+
+  // Second search match should clear the favicon.
+  assertTrue(matchEls[1].classList.contains(test.realbox.CLASSES.SELECTED));
+  assertFalse(!!realboxIcon.style.backgroundImage);
+
+  const escapeToDefaultMatch = new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'Escape',
+  });
+  test.realbox.realboxEl.dispatchEvent(escapeToDefaultMatch);
+  assertTrue(escapeToDefaultMatch.defaultPrevented);
+
+  // Pressing Escape should revert to first match (URL + icon in realbox).
+  assertTrue(matchEls[0].classList.contains(test.realbox.CLASSES.SELECTED));
+  assertTrue(!!realboxIcon.style.backgroundImage);
+
+  const escapeToClear = new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'Escape',
+  });
+  test.realbox.realboxEl.dispatchEvent(escapeToClear);
+  assertTrue(escapeToClear.defaultPrevented);
+
+  // Escape again should clear/hide matches and favicon.
+  assertFalse(test.realbox.areMatchesShowing());
+  assertFalse(!!realboxIcon.style.backgroundImage);
 };

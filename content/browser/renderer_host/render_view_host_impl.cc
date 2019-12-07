@@ -372,8 +372,7 @@ bool RenderViewHostImpl::CreateRenderView(
   }
   params->devtools_main_frame_token = devtools_frame_token;
   // GuestViews in the same StoragePartition need to find each other's frames.
-  params->renderer_wide_named_frame_lookup =
-      GetSiteInstance()->GetSiteURL().SchemeIs(kGuestScheme);
+  params->renderer_wide_named_frame_lookup = GetSiteInstance()->IsGuest();
   params->inside_portal = delegate_->IsPortal();
 
   // TODO(danakj): Make the visual_properties optional in the message.

@@ -112,8 +112,8 @@ ScriptPromise HID::getDevices(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  if (!context->GetSecurityContext().IsFeatureEnabled(
-          mojom::FeaturePolicyFeature::kHid, ReportOptions::kReportOnFailure)) {
+  if (!context->IsFeatureEnabled(mojom::FeaturePolicyFeature::kHid,
+                                 ReportOptions::kReportOnFailure)) {
     exception_state.ThrowSecurityError(kFeaturePolicyBlocked);
     return ScriptPromise();
   }

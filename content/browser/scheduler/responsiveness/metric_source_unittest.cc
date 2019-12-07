@@ -32,14 +32,16 @@ class FakeDelegate : public MetricSource::Delegate {
   void TearDownOnUIThread() override { tear_down_on_ui_thread_ = true; }
   void TearDownOnIOThread() override { tear_down_on_io_thread_ = true; }
 
-  void WillRunTaskOnUIThread(const base::PendingTask* task) override {
+  void WillRunTaskOnUIThread(const base::PendingTask* task,
+                             bool /* was_blocked_or_low_priority */) override {
     will_run_task_on_ui_thread_++;
   }
   void DidRunTaskOnUIThread(const base::PendingTask* task) override {
     did_run_task_on_ui_thread_++;
   }
 
-  void WillRunTaskOnIOThread(const base::PendingTask* task) override {
+  void WillRunTaskOnIOThread(const base::PendingTask* task,
+                             bool /* was_blocked_or_low_priority */) override {
     will_run_task_on_io_thread_++;
   }
   void DidRunTaskOnIOThread(const base::PendingTask* task) override {

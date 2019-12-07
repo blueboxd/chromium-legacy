@@ -381,6 +381,9 @@ class NET_EXPORT HostResolver {
   static HostResolverFlags ParametersToHostResolverFlags(
       const ResolveHostParameters& parameters);
 
+  // Helper for squashing error code to a small set of DNS error codes.
+  static int SquashErrorCode(int error);
+
  protected:
   HostResolver();
 

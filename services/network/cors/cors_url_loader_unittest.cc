@@ -1457,6 +1457,37 @@ TEST_F(CorsURLLoaderTest, OriginAccessList_NoCors) {
   EXPECT_EQ(net::OK, client().completion_status().error_code);
 }
 
+TEST_F(CorsURLLoaderTest, OriginAccessList_POST) {
+  const GURL origin("http://example.com");
+  const GURL url("http://other.com/foo.png");
+
+  // Adds an entry to allow the cross origin request beyond the CORS
+  // rules.
+  AddAllowListEntryForOrigin(url::Origin::Create(origin), url.scheme(),
+                             url.host(),
+                             mojom::CorsDomainMatchMode::kDisallowSubdomains);
+
+  ResourceRequest request;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
+  request.method = "POST";
+  request.url = url;
+  request.request_initiator = url::Origin::Create(origin);
+  CreateLoaderAndStart(request);
+  RunUntilCreateLoaderAndStartCalled();
+
+  NotifyLoaderClientOnReceiveResponse();
+  NotifyLoaderClientOnComplete(net::OK);
+
+  // preflight request
+  ASSERT_EQ(1, num_created_loaders());
+  EXPECT_EQ(GetRequest().url, url);
+  EXPECT_EQ(GetRequest().method, "POST");
+  std::string attached_origin;
+  EXPECT_TRUE(GetRequest().headers.GetHeader("origin", &attached_origin));
+  EXPECT_EQ(attached_origin, url::Origin::Create(url).Serialize());
+}
+
 TEST_F(CorsURLLoaderTest, 304ForSimpleRevalidation) {
   const GURL origin("https://example.com");
   const GURL url("https://other.example.com/foo.png");

@@ -438,5 +438,25 @@ const base::FeatureParam<std::string> kCacheStorageCodeCacheHintHeaderName{
 const base::Feature kDispatchBeforeUnloadOnFreeze{
     "DispatchBeforeUnloadOnFreeze", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables the use of GpuMemoryBuffer images for low latency 2d canvas.
+// TODO(khushalsagar): Enable this if we're using SurfaceControl and GMBs allow
+// us to overlay these resources.
+const base::Feature kLowLatencyCanvas2dImageChromium {
+  "LowLatencyCanvas2dImageChromium",
+#if defined(OS_CHROMEOS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif  // OS_CHROMEOS
+};
+
+// Enables the use of shared image swap chains for low latency 2d canvas.
+const base::Feature kLowLatencyCanvas2dSwapChain{
+    "LowLatencyCanvas2dSwapChain", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables the use of shared image swap chains for low latency webgl canvas.
+const base::Feature kLowLatencyWebGLSwapChain{
+    "LowLatencyWebGLSwapChain", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace blink

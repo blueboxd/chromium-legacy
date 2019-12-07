@@ -81,6 +81,7 @@ class CONTENT_EXPORT BackgroundSyncContextImpl
       base::Time last_browser_wakeup_for_periodic_sync,
       base::OnceCallback<void(base::TimeDelta)> callback) override;
   void RevivePeriodicBackgroundSyncRegistrations(url::Origin origin) override;
+  void UnregisterPeriodicSyncForOrigin(url::Origin origin) override;
 
  protected:
   friend class base::RefCountedDeleteOnSequence<BackgroundSyncContextImpl>;
@@ -124,6 +125,8 @@ class CONTENT_EXPORT BackgroundSyncContextImpl
 
   void RevivePeriodicBackgroundSyncRegistrationsOnCoreThread(
       url::Origin origin);
+
+  void UnregisterPeriodicSyncForOriginOnCoreThread(url::Origin origin);
 
   // The services are owned by this. They're either deleted
   // during ShutdownOnCoreThread() or when the channel is closed via

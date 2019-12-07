@@ -63,9 +63,8 @@ ScriptPromise Serial::getPorts(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  if (!context->GetSecurityContext().IsFeatureEnabled(
-          mojom::FeaturePolicyFeature::kSerial,
-          ReportOptions::kReportOnFailure)) {
+  if (!context->IsFeatureEnabled(mojom::FeaturePolicyFeature::kSerial,
+                                 ReportOptions::kReportOnFailure)) {
     exception_state.ThrowSecurityError(kFeaturePolicyBlocked);
     return ScriptPromise();
   }

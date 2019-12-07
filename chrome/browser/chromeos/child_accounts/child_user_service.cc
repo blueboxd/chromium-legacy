@@ -33,7 +33,7 @@ ChildUserService::ChildUserService(content::BrowserContext* context) {
 
 ChildUserService::~ChildUserService() = default;
 
-void ChildUserService::PauseWebActivity() {
+void ChildUserService::PauseWebActivity(const std::string& app_id) {
   DCHECK(app_time_controller_);
 
   app_time::WebTimeLimitEnforcer* web_time_enforcer =
@@ -44,7 +44,7 @@ void ChildUserService::PauseWebActivity() {
   web_time_enforcer->OnWebTimeLimitReached();
 }
 
-void ChildUserService::ResumeWebActivity() {
+void ChildUserService::ResumeWebActivity(const std::string& app_id) {
   DCHECK(app_time_controller_);
 
   app_time::WebTimeLimitEnforcer* web_time_enforcer =

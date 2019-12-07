@@ -14,8 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/string_matching/sequence_matcher.h"
 
-namespace string_matching {
-
 namespace {
 constexpr double kMinScore = 0.0;
 constexpr double kMaxScore = 1.0;
@@ -33,11 +31,12 @@ std::vector<base::string16> ProcessAndSort(const TokenizedString& text) {
 }
 }  // namespace
 
-namespace internal {
-// Check if the query only contains first characters of the text,
-// e.g. "coc" is a match of "Clash of Clan". Range of the score is [0, 1].
-double FirstCharacterMatch(const TokenizedString& query,
-                           const TokenizedString& text) {
+FuzzyTokenizedStringMatch::~FuzzyTokenizedStringMatch() {}
+FuzzyTokenizedStringMatch::FuzzyTokenizedStringMatch() {}
+
+double FuzzyTokenizedStringMatch::FirstCharacterMatch(
+    const TokenizedString& query,
+    const TokenizedString& text) {
   const base::string16 query_lower = base::i18n::ToLower(query.text());
   size_t query_index = 0;
   for (size_t text_index = 0; text_index < text.tokens().size(); text_index++) {
@@ -56,9 +55,8 @@ double FirstCharacterMatch(const TokenizedString& query,
   return kMinScore;
 }
 
-// Check if tokens of query are prefixes of text's tokens. Range of score is
-// [0, 1].
-double PrefixMatch(const TokenizedString& query, const TokenizedString& text) {
+double FuzzyTokenizedStringMatch::PrefixMatch(const TokenizedString& query,
+                                              const TokenizedString& text) {
   const std::vector<base::string16> query_tokens(query.tokens());
   const std::vector<base::string16> text_tokens(text.tokens());
   double match_score = kMaxScore;
@@ -86,10 +84,6 @@ double PrefixMatch(const TokenizedString& query, const TokenizedString& text) {
   }
   return std::max(kMinScore, match_score);
 }
-}  // namespace internal
-
-FuzzyTokenizedStringMatch::~FuzzyTokenizedStringMatch() {}
-FuzzyTokenizedStringMatch::FuzzyTokenizedStringMatch() {}
 
 double FuzzyTokenizedStringMatch::TokenSetRatio(
     const TokenizedString& query,
@@ -268,8 +262,7 @@ double FuzzyTokenizedStringMatch::WeightedRatio(
 
 double FuzzyTokenizedStringMatch::PrefixMatcher(const TokenizedString& query,
                                                 const TokenizedString& text) {
-  return std::max(internal::PrefixMatch(query, text),
-                  internal::FirstCharacterMatch(query, text));
+  return std::max(PrefixMatch(query, text), FirstCharacterMatch(query, text));
 }
 
 bool FuzzyTokenizedStringMatch::IsRelevant(const TokenizedString& query,
@@ -332,5 +325,3 @@ bool FuzzyTokenizedStringMatch::IsRelevant(const TokenizedString& query,
 
   return relevance_ >= relevance_threshold;
 }
-
-}  // namespace string_matching

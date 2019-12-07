@@ -94,7 +94,7 @@ public class AutofillProfilesFragment extends PreferenceFragmentCompat
             } else {
                 pref = new Preference(getStyledContext());
                 pref.setWidgetLayoutResource(R.layout.autofill_server_data_label);
-                pref.setFragment(AutofillServerProfilePreferences.class.getName());
+                pref.setFragment(AutofillServerProfileFragment.class.getName());
             }
             Bundle args = pref.getExtras();
             args.putString(MainPreferences.AUTOFILL_GUID, profile.getGUID());

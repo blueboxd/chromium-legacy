@@ -6,13 +6,14 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_APP_ICON_MANAGER_H_
 
 #include <cstdint>
+#include <map>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-
-class SkBitmap;
+#include "chrome/common/web_application_info.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace web_app {
 
@@ -34,6 +35,13 @@ class AppIconManager {
   virtual void ReadIcon(const AppId& app_id,
                         int icon_size_in_px,
                         ReadIconCallback callback) const = 0;
+
+  // Reads all icon bitmaps for an app. Returns empty |icon_bitmaps| in
+  // |callback| if IO error.
+  using ReadAllIconsCallback =
+      base::OnceCallback<void(std::map<SquareSizePx, SkBitmap> icon_bitmaps)>;
+  virtual void ReadAllIcons(const AppId& app_id,
+                            ReadAllIconsCallback callback) const = 0;
 
   // Reads smallest icon with size at least |icon_size_in_px|. Returns empty
   // SkBitmap in |callback| if IO error.

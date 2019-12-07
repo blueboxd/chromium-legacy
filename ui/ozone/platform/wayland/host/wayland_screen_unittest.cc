@@ -624,9 +624,9 @@ TEST_P(WaylandScreenTest, SetBufferScale) {
   display::Display::ResetForceDeviceScaleFactorForTesting();
 }
 
-INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,
+INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          WaylandScreenTest,
-                         ::testing::Values(kXdgShellV5));
+                         ::testing::Values(kXdgShellStable));
 INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
                          WaylandScreenTest,
                          ::testing::Values(kXdgShellV6));

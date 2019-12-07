@@ -30,7 +30,9 @@ CertNetFetcherTestUtilRealLoader::~CertNetFetcherTestUtilRealLoader() = default;
 
 CertNetFetcherTestUtilRealLoader::CertNetFetcherTestUtilRealLoader()
     : test_shared_url_loader_factory_(
-          base::MakeRefCounted<network::TestSharedURLLoaderFactory>()),
+          base::MakeRefCounted<network::TestSharedURLLoaderFactory>(
+              nullptr /* network_service */,
+              true /* is_trusted */)),
       receiver_(test_shared_url_loader_factory_.get(),
                 std::move(pending_receiver_)) {}
 }  // namespace cert_verifier

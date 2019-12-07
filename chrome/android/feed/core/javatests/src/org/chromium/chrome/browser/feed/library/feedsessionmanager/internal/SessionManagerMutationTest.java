@@ -26,6 +26,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.KnownContent;
 import org.chromium.chrome.browser.feed.library.api.common.MutationContext;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
@@ -43,7 +44,6 @@ import org.chromium.chrome.browser.feed.library.common.Result;
 import org.chromium.chrome.browser.feed.library.common.concurrent.testing.FakeMainThreadRunner;
 import org.chromium.chrome.browser.feed.library.common.concurrent.testing.FakeTaskQueue;
 import org.chromium.chrome.browser.feed.library.common.concurrent.testing.FakeThreadUtils;
-import org.chromium.chrome.browser.feed.library.common.functional.Supplier;
 import org.chromium.chrome.browser.feed.library.common.time.TimingUtils;
 import org.chromium.chrome.browser.feed.library.common.time.testing.FakeClock;
 import org.chromium.chrome.browser.feed.library.feedsessionmanager.internal.SessionManagerMutation.MutationCommitter;

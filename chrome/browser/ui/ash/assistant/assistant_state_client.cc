@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -76,6 +77,11 @@ void AssistantStateClient::SetProfile(Profile* profile) {
   pref_change_registrar_->Add(
       language::prefs::kApplicationLocale,
       base::BindRepeating(&AssistantStateClient::NotifyLocaleChanged,
+                          base::Unretained(this)));
+
+  pref_change_registrar_->Add(
+      chromeos::assistant::prefs::kAssistantDisabledByPolicy,
+      base::BindRepeating(&AssistantStateClient::NotifyFeatureAllowed,
                           base::Unretained(this)));
 
   NotifyLocaleChanged();

@@ -45,7 +45,8 @@ enum class RendererFactoryType {
   kFlinging = 4,         // FlingingRendererClientFactory
   kCast = 5,             // CastRendererClientFactory
   kMediaFoundation = 6,  // MediaFoundationRendererClientFactory
-  kMaxValue = kMediaFoundation,
+  kFuchsia = 7,          // FuchsiaRendererFactory
+  kMaxValue = kFuchsia,
 };
 
 class MEDIA_EXPORT RendererFactorySelector {

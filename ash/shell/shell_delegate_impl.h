@@ -27,6 +27,10 @@ class ShellDelegateImpl : public ShellDelegate {
   void BindNavigableContentsFactory(
       mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)
       override;
+  void BindMultiDeviceSetup(
+      mojo::PendingReceiver<
+          chromeos::multidevice_setup::mojom::MultiDeviceSetup> receiver)
+      override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellDelegateImpl);

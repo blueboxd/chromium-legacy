@@ -166,7 +166,7 @@ void LoadDpi(const wchar_t* printer,
 
 class PrintBackendWin : public PrintBackend {
  public:
-  PrintBackendWin() {}
+  explicit PrintBackendWin(const std::string& locale) : PrintBackend(locale) {}
 
   // PrintBackend implementation.
   bool EnumeratePrinters(PrinterList* printer_list) override;
@@ -182,7 +182,7 @@ class PrintBackendWin : public PrintBackend {
   bool IsValidPrinter(const std::string& printer_name) override;
 
  protected:
-  ~PrintBackendWin() override {}
+  ~PrintBackendWin() override = default;
 };
 
 bool PrintBackendWin::EnumeratePrinters(PrinterList* printer_list) {
@@ -392,8 +392,9 @@ bool PrintBackendWin::IsValidPrinter(const std::string& printer_name) {
 
 // static
 scoped_refptr<PrintBackend> PrintBackend::CreateInstanceImpl(
-    const base::DictionaryValue* print_backend_settings) {
-  return base::MakeRefCounted<PrintBackendWin>();
+    const base::DictionaryValue* print_backend_settings,
+    const std::string& locale) {
+  return base::MakeRefCounted<PrintBackendWin>(locale);
 }
 
 }  // namespace printing

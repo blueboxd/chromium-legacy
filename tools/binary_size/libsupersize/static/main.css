@@ -136,9 +136,10 @@ ul {
 
 .diff-status-icon {
   display: block;
-  position: absolute;
   flex: none;
-  transform: scale(0.6);
+  transform: scale(0.8);
+  position: absolute;
+  left: -26px;
 }
 
 /** Tree nodes */
@@ -150,6 +151,7 @@ ul {
   text-decoration: none;
   color: inherit;
   border-radius: 4px;
+  position: relative;
 }
 .node:hover {
   background: #f1f3f4;

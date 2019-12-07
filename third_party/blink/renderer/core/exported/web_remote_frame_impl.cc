@@ -262,8 +262,7 @@ void WebRemoteFrameImpl::SetReplicatedOrigin(
 
 void WebRemoteFrameImpl::SetReplicatedSandboxFlags(WebSandboxFlags flags) {
   DCHECK(GetFrame());
-  GetFrame()->GetSecurityContext()->ResetAndEnforceSandboxFlags(
-      static_cast<SandboxFlags>(flags));
+  GetFrame()->SetReplicatedSandboxFlags(flags);
 }
 
 void WebRemoteFrameImpl::SetReplicatedName(const WebString& name) {
@@ -282,7 +281,7 @@ void WebRemoteFrameImpl::SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
 void WebRemoteFrameImpl::AddReplicatedContentSecurityPolicyHeader(
     const WebString& header_value,
     network::mojom::ContentSecurityPolicyType type,
-    WebContentSecurityPolicySource source) {
+    network::mojom::ContentSecurityPolicySource source) {
   GetFrame()
       ->GetSecurityContext()
       ->GetContentSecurityPolicy()
@@ -292,19 +291,19 @@ void WebRemoteFrameImpl::AddReplicatedContentSecurityPolicyHeader(
 }
 
 void WebRemoteFrameImpl::ResetReplicatedContentSecurityPolicy() {
-  GetFrame()->GetSecurityContext()->ResetReplicatedContentSecurityPolicy();
+  GetFrame()->ResetReplicatedContentSecurityPolicy();
 }
 
 void WebRemoteFrameImpl::SetReplicatedInsecureRequestPolicy(
     WebInsecureRequestPolicy policy) {
   DCHECK(GetFrame());
-  GetFrame()->GetSecurityContext()->SetInsecureRequestPolicy(policy);
+  GetFrame()->SetInsecureRequestPolicy(policy);
 }
 
 void WebRemoteFrameImpl::SetReplicatedInsecureNavigationsSet(
     const WebVector<unsigned>& set) {
   DCHECK(GetFrame());
-  GetFrame()->GetSecurityContext()->SetInsecureNavigationsSet(set);
+  GetFrame()->SetInsecureNavigationsSet(set);
 }
 
 void WebRemoteFrameImpl::ForwardResourceTimingToParent(

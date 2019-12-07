@@ -507,7 +507,7 @@ TEST_F(WebApkInstallerTest, StoreUpdateRequestToFileCreatesDirectories) {
   EXPECT_TRUE(base::PathExists(update_request_path));
 
   // Clean up
-  base::DeleteFile(outer_file_path, true /* recursive */);
+  base::DeleteFileRecursively(outer_file_path);
 }
 
 // When there is no Web Manifest available for a site, an empty

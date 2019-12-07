@@ -26,6 +26,7 @@ group("updater") {
 if (is_win || is_mac) {
   source_set("common") {
     sources = [
+      "action_handler.h",
       "configurator.cc",
       "configurator.h",
       "crash_client.cc",
@@ -98,8 +99,8 @@ if (is_win || is_mac) {
 
     if (is_win) {
       deps += [
-        "//chrome/updater/win:updater_tests",
         "//chrome/updater/win:com",
+        "//chrome/updater/win:updater_tests",
       ]
 
       data_deps = [

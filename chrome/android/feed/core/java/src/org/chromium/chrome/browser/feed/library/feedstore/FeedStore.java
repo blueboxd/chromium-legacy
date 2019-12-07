@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.feed.library.feedstore;
 
 import com.google.protobuf.ByteString;
 
+import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
 import org.chromium.chrome.browser.feed.library.api.host.logging.InternalFeedError;
@@ -29,7 +30,6 @@ import org.chromium.chrome.browser.feed.library.common.concurrent.MainThreadRunn
 import org.chromium.chrome.browser.feed.library.common.concurrent.TaskQueue;
 import org.chromium.chrome.browser.feed.library.common.concurrent.TaskQueue.TaskType;
 import org.chromium.chrome.browser.feed.library.common.feedobservable.FeedObservable;
-import org.chromium.chrome.browser.feed.library.common.functional.Supplier;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 import org.chromium.chrome.browser.feed.library.common.protoextensions.FeedExtensionRegistry;
 import org.chromium.chrome.browser.feed.library.common.time.Clock;

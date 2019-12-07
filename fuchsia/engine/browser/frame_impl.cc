@@ -229,7 +229,30 @@ bool IsHeadless() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kHeadless);
 }
 
+using FrameImplMap =
+    base::small_map<std::map<content::WebContents*, FrameImpl*>>;
+
+FrameImplMap& WebContentsToFrameImplMap() {
+  static base::NoDestructor<FrameImplMap> frame_impl_map;
+  return *frame_impl_map;
+}
+
 }  // namespace
+
+// static
+FrameImpl* FrameImpl::FromRenderFrameHost(
+    content::RenderFrameHost* render_frame_host) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  if (!web_contents)
+    return nullptr;
+
+  auto& map = WebContentsToFrameImplMap();
+  auto it = map.find(web_contents);
+  if (it == map.end())
+    return nullptr;
+  return it->second;
+}
 
 FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
                      ContextImpl* context,
@@ -240,6 +263,9 @@ FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
       log_level_(kLogSeverityNone),
       url_request_rewrite_rules_manager_(web_contents_.get()),
       binding_(this, std::move(frame_request)) {
+  DCHECK(!WebContentsToFrameImplMap()[web_contents_.get()]);
+  WebContentsToFrameImplMap()[web_contents_.get()] = this;
+
   web_contents_->SetDelegate(this);
   Observe(web_contents_.get());
 
@@ -256,6 +282,17 @@ FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
 FrameImpl::~FrameImpl() {
   DestroyWindowTreeHost();
   context_->devtools_controller()->OnFrameDestroyed(web_contents_.get());
+
+  auto& map = WebContentsToFrameImplMap();
+  auto it = WebContentsToFrameImplMap().find(web_contents_.get());
+  DCHECK(it != map.end() && it->second == this);
+  map.erase(it);
+}
+
+void FrameImpl::BindAudioConsumerProvider(
+    mojo::PendingReceiver<media::mojom::FuchsiaAudioConsumerProvider>
+        receiver) {
+  audio_consumer_provider_service_.Bind(std::move(receiver));
 }
 
 zx::unowned_channel FrameImpl::GetBindingChannelForTest() const {
@@ -734,6 +771,10 @@ void FrameImpl::SetWindowTreeHost(
   root_window()->AddChild(web_contents_->GetNativeView());
   web_contents_->GetNativeView()->Show();
   window_tree_host_->Show();
+}
+
+void FrameImpl::SetMediaSessionId(uint64_t session_id) {
+  audio_consumer_provider_service_.set_session_id(session_id);
 }
 
 void FrameImpl::CloseContents(content::WebContents* source) {

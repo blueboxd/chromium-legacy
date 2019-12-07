@@ -133,7 +133,7 @@ void WebFormControlElement::SetValue(const WebString& value, bool send_events) {
 
 void WebFormControlElement::SetAutofillValue(const WebString& value) {
   // The input and change events will be sent in setValue.
-  if (IsHTMLInputElement(*private_) || IsA<HTMLTextAreaElement>(*private_)) {
+  if (IsA<HTMLInputElement>(*private_) || IsA<HTMLTextAreaElement>(*private_)) {
     if (!Focused()) {
       Unwrap<Element>()->DispatchFocusEvent(nullptr, kWebFocusTypeForward,
                                             nullptr);

@@ -88,7 +88,7 @@ class OriginTrialContextTest : public testing::Test {
     KURL page_url(origin);
     scoped_refptr<SecurityOrigin> page_origin =
         SecurityOrigin::Create(page_url);
-    execution_context_->SetSecurityOrigin(page_origin);
+    execution_context_->GetSecurityContext().SetSecurityOrigin(page_origin);
     execution_context_->SetIsSecureContext(SecurityOrigin::IsSecure(page_url));
   }
 

@@ -15,6 +15,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "extensions/browser/disable_reason.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/extension_builder.h"
@@ -214,6 +216,17 @@ TEST_F(ExtensionInstallStatusTest, PendingExtenisonIsRejected) {
   std::vector<ExtensionId> ids = {kExtensionId};
   SetExtensionSettings(kExtensionSettingsWithIdBlocked);
   EXPECT_EQ(ExtensionInstallStatus::kBlockedByPolicy,
+            GetWebstoreExtensionInstallStatus(kExtensionId, profile()));
+}
+
+// If an extension is disabled due to reason
+// DISABLE_CUSTODIAN_APPROVAL_REQUIRED, then GetWebstoreExtensionInstallStatus()
+// should return kCustodianApprovalRequired.
+TEST_F(ExtensionInstallStatusTest, ExtensionCustodianApprovalRequired) {
+  ExtensionPrefs::Get(profile())->AddDisableReason(
+      kExtensionId,
+      extensions::disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED);
+  EXPECT_EQ(ExtensionInstallStatus::kCustodianApprovalRequired,
             GetWebstoreExtensionInstallStatus(kExtensionId, profile()));
 }
 

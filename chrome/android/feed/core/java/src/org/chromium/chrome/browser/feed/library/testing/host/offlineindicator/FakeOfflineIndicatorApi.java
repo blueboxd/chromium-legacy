@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.testing.host.offlineindicator;
 
+import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.host.offlineindicator.OfflineIndicatorApi;
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -207,10 +207,11 @@ class DownloadItemFactoryImpl : public download::DownloadItemFactory {
       const base::FilePath& path,
       const GURL& url,
       const std::string& mime_type,
+      const net::NetworkIsolationKey& network_isolation_key,
       download::DownloadJob::CancelRequestCallback cancel_request_callback)
       override {
     return new download::DownloadItemImpl(delegate, download_id, path, url,
-                                          mime_type,
+                                          mime_type, network_isolation_key,
                                           std::move(cancel_request_callback));
   }
 };
@@ -732,8 +733,14 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_NE(download::DownloadItem::kInvalidId, id);
   DCHECK(!base::Contains(downloads_, id));
+
+  content::RenderFrameHost* rfh =
+      RenderFrameHost::FromID(render_process_id, render_frame_id);
+  net::NetworkIsolationKey network_isolation_key =
+      rfh ? rfh->GetNetworkIsolationKey() : net::NetworkIsolationKey();
+
   download::DownloadItemImpl* download_item = item_factory_->CreateSavePageItem(
-      this, id, main_file_path, page_url, mime_type,
+      this, id, main_file_path, page_url, mime_type, network_isolation_key,
       std::move(cancel_request_callback));
   DownloadItemUtils::AttachInfo(download_item, GetBrowserContext(),
                                 WebContentsImpl::FromRenderFrameHostID(
@@ -1228,11 +1235,6 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
     if (entry) {
       tab_url = entry->GetURL();
       tab_referrer_url = entry->GetReferrer().url;
-    }
-    RenderFrameHost* top_frame = web_contents->GetMainFrame();
-    if (top_frame) {
-      params->set_network_isolation_key(net::NetworkIsolationKey(
-          top_frame->GetLastCommittedOrigin(), rfh->GetLastCommittedOrigin()));
     }
   }
 

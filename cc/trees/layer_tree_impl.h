@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "cc/base/synced_property.h"
+#include "cc/input/browser_controls_offset_manager.h"
 #include "cc/input/event_listener_properties.h"
 #include "cc/input/layer_selection_bound.h"
 #include "cc/input/overscroll_behavior.h"
@@ -22,6 +23,7 @@
 #include "cc/layers/layer_list_iterator.h"
 #include "cc/paint/discardable_image_map.h"
 #include "cc/resources/ui_resource_client.h"
+#include "cc/trees/browser_controls_params.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/property_tree.h"
@@ -603,9 +605,8 @@ class CC_EXPORT LayerTreeImpl {
   // the viewport.
   void GetViewportSelection(viz::Selection<gfx::SelectionBound>* selection);
 
-  void set_browser_controls_shrink_blink_size(bool shrink);
   bool browser_controls_shrink_blink_size() const {
-    return browser_controls_shrink_blink_size_;
+    return browser_controls_params_.browser_controls_shrink_blink_size;
   }
   bool SetCurrentBrowserControlsShownRatio(float top_ratio, float bottom_ratio);
   float CurrentTopControlsShownRatio() const {
@@ -614,12 +615,21 @@ class CC_EXPORT LayerTreeImpl {
   float CurrentBottomControlsShownRatio() const {
     return bottom_controls_shown_ratio_->Current(IsActiveTree());
   }
-  void SetTopControlsHeight(float top_controls_height);
-  float top_controls_height() const { return top_controls_height_; }
+  void SetBrowserControlsParams(const BrowserControlsParams& params);
+  float top_controls_height() const {
+    return browser_controls_params_.top_controls_height;
+  }
+  float top_controls_min_height() const {
+    return browser_controls_params_.top_controls_min_height;
+  }
   void PushBrowserControlsFromMainThread(float top_controls_shown_ratio,
                                          float bottom_controls_shown_ratio);
-  void SetBottomControlsHeight(float bottom_controls_height);
-  float bottom_controls_height() const { return bottom_controls_height_; }
+  float bottom_controls_height() const {
+    return browser_controls_params_.bottom_controls_height;
+  }
+  float bottom_controls_min_height() const {
+    return browser_controls_params_.bottom_controls_min_height;
+  }
 
   void set_overscroll_behavior(const OverscrollBehavior& behavior);
   OverscrollBehavior overscroll_behavior() const {
@@ -823,11 +833,7 @@ class CC_EXPORT LayerTreeImpl {
   EventListenerProperties event_listener_properties_
       [static_cast<size_t>(EventListenerClass::kLast) + 1];
 
-  // Whether or not Blink's viewport size was shrunk by the height of the top
-  // controls at the time of the last layout.
-  bool browser_controls_shrink_blink_size_;
-  float top_controls_height_;
-  float bottom_controls_height_;
+  BrowserControlsParams browser_controls_params_;
 
   OverscrollBehavior overscroll_behavior_;
 

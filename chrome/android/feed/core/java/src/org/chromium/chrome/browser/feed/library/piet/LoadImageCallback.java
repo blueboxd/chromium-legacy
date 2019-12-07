@@ -11,7 +11,7 @@ import android.graphics.drawable.TransitionDrawable;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
+import org.chromium.base.Consumer;
 
 /**
  * Handles loading images from the host. In particular, handles the resizing of images as well as

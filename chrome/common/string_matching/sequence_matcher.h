@@ -12,8 +12,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 
-namespace string_matching {
-
 // Performs the calculation of similarity level between 2 strings. This class's
 // functionality is inspired by python's difflib.SequenceMatcher library.
 // (https://docs.python.org/2/library/difflib.html#difflib.SequenceMatcher)
@@ -75,7 +73,5 @@ class SequenceMatcher {
   std::vector<int> dp_common_string_;
   DISALLOW_COPY_AND_ASSIGN(SequenceMatcher);
 };
-
-}  // namespace string_matching
 
 #endif  // CHROME_COMMON_STRING_MATCHING_SEQUENCE_MATCHER_H_

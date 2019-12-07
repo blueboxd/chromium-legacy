@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.feed.library.sharedstream.piet;
 
 import android.graphics.drawable.Drawable;
 
+import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.host.imageloader.ImageLoaderApi;
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 import org.chromium.chrome.browser.feed.library.piet.host.ImageLoader;
 import org.chromium.components.feed.core.proto.ui.piet.ImagesProto.Image;
 import org.chromium.components.feed.core.proto.ui.piet.ImagesProto.ImageSource;

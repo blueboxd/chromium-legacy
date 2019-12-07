@@ -40,7 +40,7 @@ const base::Feature kSaveCardInfobarMessagesUI{
 // as a kill switch.
 // TODO(crbug.com/1014959): Enabled flag once feature is ready.
 const base::Feature kTranslateInfobarMessagesUI{
-    "TranslateInfobarMessagesUI", base::FEATURE_DISABLED_BY_DEFAULT};
+    "TranslateInfobarMessagesUI", base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsInfobarUIRebootEnabled() {
   return base::FeatureList::IsEnabled(kInfobarUIReboot);

@@ -1158,6 +1158,7 @@ PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form,
     }
     return list;
   }
+
   DCHECK(!add_statement_.empty());
   sql::Statement s(
       db_.GetCachedStatement(SQL_FROM_HERE, add_statement_.c_str()));
@@ -1166,19 +1167,26 @@ PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form,
   db_.set_error_callback(base::BindRepeating(&AddCallback, &sqlite_error_code));
   const bool success = s.Run();
   if (success) {
-    list.emplace_back(PasswordStoreChange::ADD, form, db_.GetLastInsertRowId());
+    // If success, the row never existed so password was not changed.
+    list.emplace_back(PasswordStoreChange::ADD, form, db_.GetLastInsertRowId(),
+                      /*password_changed=*/false);
     return list;
   }
+
   // Repeat the same statement but with REPLACE semantic.
   sqlite_error_code = 0;
   DCHECK(!add_replace_statement_.empty());
+  const std::string encrpyted_old_password = GetEncryptedPassword(form);
+  bool password_changed = !encrpyted_old_password.empty() &&
+                          encrpyted_old_password != encrypted_password;
   int old_primary_key = GetPrimaryKey(form);
   s.Assign(
       db_.GetCachedStatement(SQL_FROM_HERE, add_replace_statement_.c_str()));
   BindAddStatement(form, encrypted_password, &s);
   if (s.Run()) {
     list.emplace_back(PasswordStoreChange::REMOVE, form, old_primary_key);
-    list.emplace_back(PasswordStoreChange::ADD, form, db_.GetLastInsertRowId());
+    list.emplace_back(PasswordStoreChange::ADD, form, db_.GetLastInsertRowId(),
+                      password_changed);
   } else if (error) {
     if (sqlite_error_code == 19 /*SQLITE_CONSTRAINT*/) {
       *error = AddLoginError::kConstraintViolation;
@@ -1222,6 +1230,10 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form,
     }
     return PasswordStoreChangeList();
   }
+
+  const std::string encrpyted_old_password = GetEncryptedPassword(form);
+  bool password_changed = !encrpyted_old_password.empty() &&
+                          encrpyted_old_password != encrypted_password;
 
 #if defined(OS_IOS)
   DeleteEncryptedPassword(form);
@@ -1280,7 +1292,8 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form,
 
   PasswordStoreChangeList list;
   if (db_.GetLastChangeCount()) {
-    list.emplace_back(PasswordStoreChange::UPDATE, form, GetPrimaryKey(form));
+    list.emplace_back(PasswordStoreChange::UPDATE, form, GetPrimaryKey(form),
+                      password_changed);
   } else if (error) {
     *error = UpdateLoginError::kNoUpdatedRecords;
   }
@@ -1316,7 +1329,8 @@ bool LoginDatabase::RemoveLogin(const PasswordForm& form,
     return false;
   }
   if (changes) {
-    changes->emplace_back(PasswordStoreChange::REMOVE, form, primary_key);
+    changes->emplace_back(PasswordStoreChange::REMOVE, form, primary_key,
+                          /*password_changed=*/true);
   }
   return true;
 }
@@ -1351,7 +1365,7 @@ bool LoginDatabase::RemoveLoginByPrimaryKey(int primary_key,
   }
   if (changes) {
     changes->emplace_back(PasswordStoreChange::REMOVE, std::move(form),
-                          primary_key);
+                          primary_key, /*password_changed=*/true);
   }
   return true;
 }
@@ -1389,7 +1403,8 @@ bool LoginDatabase::RemoveLoginsCreatedBetween(
     for (const auto& pair : key_to_form_map) {
       changes->emplace_back(PasswordStoreChange::REMOVE,
                             /*form=*/std::move(*pair.second),
-                            /*primary_key=*/pair.first);
+                            /*primary_key=*/pair.first,
+                            /*password_changed=*/true);
     }
   }
   return true;

@@ -55,6 +55,7 @@
 @implementation CRWWebViewScrollViewProxy
 
 - (instancetype)init {
+  self = [super init];
   if (self) {
     Protocol* protocol = @protocol(CRWWebViewScrollViewProxyObserver);
     _observers =

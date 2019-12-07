@@ -123,14 +123,29 @@ void WebviewController::ProcessRequest(const webview::WebviewRequest& request) {
   }
 }
 
-void WebviewController::SendNavigationEvent(WebviewNavigationThrottle* throttle,
-                                            const GURL& gurl,
-                                            bool is_in_main_frame) {
+void WebviewController::SendNavigationEvent(
+    WebviewNavigationThrottle* throttle,
+    content::NavigationHandle* navigation_handle) {
   DCHECK(!current_navigation_throttle_);
+  DCHECK(navigation_handle);
   std::unique_ptr<webview::WebviewResponse> response =
       std::make_unique<webview::WebviewResponse>();
-  response->mutable_navigation_event()->set_url(gurl.spec());
-  response->mutable_navigation_event()->set_is_for_main_frame(is_in_main_frame);
+  auto* navigation_event = response->mutable_navigation_event();
+
+  navigation_event->set_url(navigation_handle->GetURL().GetContent());
+  navigation_event->set_is_for_main_frame(navigation_handle->IsInMainFrame());
+  navigation_event->set_is_renderer_initiated(
+      navigation_handle->IsRendererInitiated());
+  navigation_event->set_is_same_document(navigation_handle->IsSameDocument());
+  navigation_event->set_has_user_gesture(navigation_handle->HasUserGesture());
+  navigation_event->set_previous_url(
+      navigation_handle->GetPreviousURL().GetContent());
+  navigation_event->set_was_server_redirect(
+      navigation_handle->WasServerRedirect());
+  navigation_event->set_is_post(navigation_handle->IsPost());
+  navigation_event->set_was_initiated_by_link_click(
+      navigation_handle->WasInitiatedByLinkClick());
+
   current_navigation_throttle_ = throttle;
   client_->EnqueueSend(std::move(response));
 }

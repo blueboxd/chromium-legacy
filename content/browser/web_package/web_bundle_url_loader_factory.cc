@@ -20,8 +20,8 @@
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/constants.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace content {
 
@@ -29,7 +29,7 @@ namespace {
 
 constexpr char kCrLf[] = "\r\n";
 
-network::ResourceResponseHead CreateResourceResponse(
+network::mojom::URLResponseHeadPtr CreateResourceResponse(
     const data_decoder::mojom::BundleResponsePtr& response) {
   DCHECK_EQ(net::HTTP_OK, response->response_code);
 
@@ -48,12 +48,12 @@ network::ResourceResponseHead CreateResourceResponse(
   }
   header_strings.push_back(kCrLf);
 
-  network::ResourceResponseHead response_head;
+  auto response_head = network::mojom::URLResponseHead::New();
 
-  response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(base::JoinString(header_strings, "")));
-  response_head.headers->GetMimeTypeAndCharset(&response_head.mime_type,
-                                               &response_head.charset);
+  response_head->headers->GetMimeTypeAndCharset(&response_head->mime_type,
+                                                &response_head->charset);
   return response_head;
 }
 
@@ -130,13 +130,12 @@ class WebBundleURLLoaderFactory::EntryLoader final
       return;
     }
 
-    network::ResourceResponseHead response_head =
-        CreateResourceResponse(response);
+    auto response_head = CreateResourceResponse(response);
     if (byte_range_) {
       if (byte_range_->ComputeBounds(response->payload_length)) {
-        response_head.headers->UpdateWithNewRange(*byte_range_,
-                                                  response->payload_length,
-                                                  true /*replace_status_line*/);
+        response_head->headers->UpdateWithNewRange(
+            *byte_range_, response->payload_length,
+            true /*replace_status_line*/);
         // Adjust the offset and length to read.
         // Note: This wouldn't work when the exchange is signed and its payload
         // is mi-sha256 encoded. see crbug.com/1001366

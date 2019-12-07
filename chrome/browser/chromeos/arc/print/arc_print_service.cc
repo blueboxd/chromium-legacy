@@ -18,6 +18,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager.h"
@@ -179,7 +180,8 @@ void OnSetSettingsDoneOnIOThread(std::unique_ptr<printing::PrinterQuery> query,
 std::unique_ptr<printing::PrinterSemanticCapsAndDefaults>
 FetchCapabilitiesOnBlockingTaskRunner(const std::string& printer_id) {
   scoped_refptr<printing::PrintBackend> backend(
-      printing::PrintBackend::CreateInstance(nullptr));
+      printing::PrintBackend::CreateInstance(
+          nullptr, g_browser_process->GetApplicationLocale()));
   auto caps = std::make_unique<printing::PrinterSemanticCapsAndDefaults>();
   if (!backend->GetPrinterSemanticCapsAndDefaults(printer_id, caps.get())) {
     LOG(ERROR) << "Failed to get caps for " << printer_id;

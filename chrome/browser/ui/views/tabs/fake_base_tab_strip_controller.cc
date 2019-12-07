@@ -76,7 +76,7 @@ void FakeBaseTabStripController::MoveTabIntoGroup(
   if (old_group.has_value()) {
     tab_strip_->AddTabToGroup(base::nullopt, index);
     if (!base::Contains(tab_groups_, old_group))
-      tab_strip_->OnGroupDeleted(old_group.value());
+      tab_strip_->OnGroupClosed(old_group.value());
     else
       tab_strip_->OnGroupContentsChanged(old_group.value());
   }

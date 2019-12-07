@@ -104,14 +104,6 @@ WTF::String WebTimeRangesToString(const WebTimeRanges& ranges) {
 
 }  // namespace
 
-SourceBuffer* SourceBuffer::Create(
-    std::unique_ptr<WebSourceBuffer> web_source_buffer,
-    MediaSource* source,
-    EventQueue* async_event_queue) {
-  return MakeGarbageCollected<SourceBuffer>(std::move(web_source_buffer),
-                                            source, async_event_queue);
-}
-
 SourceBuffer::SourceBuffer(std::unique_ptr<WebSourceBuffer> web_source_buffer,
                            MediaSource* source,
                            EventQueue* async_event_queue)

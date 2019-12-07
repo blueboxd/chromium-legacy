@@ -1242,7 +1242,7 @@ bool AppCacheDatabase::DeleteExistingAndCreateNewDatabase() {
 
   // This also deletes the disk cache data.
   base::FilePath directory = db_file_path_.DirName();
-  if (!base::DeleteFile(directory, true))
+  if (!base::DeleteFileRecursively(directory))
     return false;
 
   // Make sure the steps above actually deleted things.

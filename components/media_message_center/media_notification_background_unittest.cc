@@ -109,6 +109,10 @@ class MediaNotificationBackgroundTest : public testing::Test {
     return background_->foreground_color_;
   }
 
+  double GetBackgroundFaviconColorShadeFactor() const {
+    return MediaNotificationBackground::kBackgroundFaviconColorShadeFactor;
+  }
+
  private:
   std::unique_ptr<MediaNotificationBackground> background_;
 
@@ -135,6 +139,80 @@ TEST_F(MediaNotificationBackgroundTest,
   constexpr SkColor kTestColor = SK_ColorYELLOW;
   background()->UpdateArtwork(CreateTestBackgroundImage(kTestColor));
   EXPECT_EQ(kTestColor, GetBackgroundColor());
+}
+
+TEST_F(MediaNotificationBackgroundTest,
+       DeriveBackgroundColor_NoArtworkAfterHavingOne) {
+  constexpr SkColor kTestColor = SK_ColorYELLOW;
+  background()->UpdateArtwork(CreateTestBackgroundImage(kTestColor));
+  EXPECT_EQ(kTestColor, GetBackgroundColor());
+
+  background()->UpdateArtwork(gfx::ImageSkia());
+  EXPECT_FALSE(GetBackgroundColor().has_value());
+}
+
+// Favicons should be used when available but have a shade applying to them.
+TEST_F(MediaNotificationBackgroundTest,
+       DeriveBackgroundColor_PopularNonWhiteBlackColorFavicon) {
+  constexpr SkColor kTestColor = SK_ColorYELLOW;
+  background()->UpdateFavicon(CreateTestBackgroundImage(kTestColor));
+  const SkColor expected_color = SkColorSetRGB(
+      SkColorGetR(kTestColor) * GetBackgroundFaviconColorShadeFactor(),
+      SkColorGetG(kTestColor) * GetBackgroundFaviconColorShadeFactor(),
+      SkColorGetB(kTestColor) * GetBackgroundFaviconColorShadeFactor());
+  EXPECT_EQ(expected_color, GetBackgroundColor());
+}
+
+TEST_F(MediaNotificationBackgroundTest,
+       DeriveBackgroundColor_NoFaviconAfterHavingOne) {
+  constexpr SkColor kTestColor = SK_ColorYELLOW;
+  background()->UpdateFavicon(CreateTestBackgroundImage(kTestColor));
+  const SkColor expected_color = SkColorSetRGB(
+      SkColorGetR(kTestColor) * GetBackgroundFaviconColorShadeFactor(),
+      SkColorGetG(kTestColor) * GetBackgroundFaviconColorShadeFactor(),
+      SkColorGetB(kTestColor) * GetBackgroundFaviconColorShadeFactor());
+  EXPECT_EQ(expected_color, GetBackgroundColor());
+
+  background()->UpdateFavicon(gfx::ImageSkia());
+  EXPECT_FALSE(GetBackgroundColor().has_value());
+}
+
+TEST_F(MediaNotificationBackgroundTest,
+       DeriveBackgroundColor_FaviconSetThenArtwork) {
+  constexpr SkColor kArtworkColor = SK_ColorYELLOW;
+  constexpr SkColor kFaviconColor = SK_ColorRED;
+
+  background()->UpdateFavicon(CreateTestBackgroundImage(kFaviconColor));
+  background()->UpdateArtwork(CreateTestBackgroundImage(kArtworkColor));
+
+  EXPECT_EQ(kArtworkColor, GetBackgroundColor());
+}
+
+TEST_F(MediaNotificationBackgroundTest,
+       DeriveBackgroundColor_ArtworkSetThenFavicon) {
+  constexpr SkColor kArtworkColor = SK_ColorYELLOW;
+  constexpr SkColor kFaviconColor = SK_ColorRED;
+
+  background()->UpdateArtwork(CreateTestBackgroundImage(kArtworkColor));
+  background()->UpdateFavicon(CreateTestBackgroundImage(kFaviconColor));
+
+  EXPECT_EQ(kArtworkColor, GetBackgroundColor());
+}
+
+TEST_F(MediaNotificationBackgroundTest,
+       DeriveBackgroundColor_SetAndRemoveArtworkWithFavicon) {
+  constexpr SkColor kArtworkColor = SK_ColorYELLOW;
+  constexpr SkColor kFaviconColor = SK_ColorRED;
+
+  background()->UpdateArtwork(CreateTestBackgroundImage(kArtworkColor));
+  background()->UpdateFavicon(CreateTestBackgroundImage(kFaviconColor));
+  background()->UpdateArtwork(gfx::ImageSkia());
+
+  const SkColor expected_color = SkColorSetRGB(
+      SkColorGetR(kFaviconColor) * GetBackgroundFaviconColorShadeFactor(),
+      SkColorGetG(kFaviconColor) * GetBackgroundFaviconColorShadeFactor(),
+      SkColorGetB(kFaviconColor) * GetBackgroundFaviconColorShadeFactor());
+  EXPECT_EQ(expected_color, GetBackgroundColor());
 }
 
 TEST_F(MediaNotificationBackgroundTest, GetBackgroundColorRespectsTheme) {

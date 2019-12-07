@@ -41,31 +41,14 @@ export const PinModeRestriction = {
 };
 
 /**
- * Enumeration of background graphics printing mode restrictions used by
- * Chromium.
- * This has to coincide with |printing::BackgroundGraphicsModeRestriction| as
- * defined in printing/backend/printing_restrictions.h
- * @enum {number}
- */
-export const BackgroundGraphicsModeRestriction = {
-  UNSET: 0,
-  ENABLED: 1,
-  DISABLED: 2,
-};
-
-/**
  * Policies affecting a destination.
  * @typedef {{
  *   allowedColorModes: ?ColorModeRestriction,
  *   allowedDuplexModes: ?DuplexModeRestriction,
  *   allowedPinMode: ?PinModeRestriction,
- *   allowedBackgroundGraphicsMode:
- *       ?BackgroundGraphicsModeRestriction,
  *   defaultColorMode: ?ColorModeRestriction,
  *   defaultDuplexMode: ?DuplexModeRestriction,
  *   defaultPinMode: ?PinModeRestriction,
- *   defaultBackgroundGraphicsMode:
- *       ?BackgroundGraphicsModeRestriction,
  * }}
  */
 export let DestinationPolicies;

@@ -291,7 +291,8 @@ public class FullscreenManagerTest {
                     @Override
                     public void onToggleOverlayVideoMode(boolean enabled) {}
                     @Override
-                    public void onBottomControlsHeightChanged(int bottomControlsHeight) {}
+                    public void onBottomControlsHeightChanged(
+                            int bottomControlsHeight, int bottomControlsMinHeight) {}
                     @Override
                     public void onUpdateViewportSize() {
                         viewportCallback.notifyCalled();

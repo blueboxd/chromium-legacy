@@ -126,6 +126,17 @@ NET_EXPORT extern const base::Feature
 NET_EXPORT extern const base::FeatureParam<int>
     kRecentHttpSameSiteAccessGrantsLegacyCookieSemanticsMilliseconds;
 
+// Recently created cookies are granted legacy access semantics. If this is set
+// and has a non-zero integer param value, then for the first (param value)
+// milliseconds after the cookie is created, the cookie will behave as if it
+// were "legacy" i.e. not handled according to SameSiteByDefaultCookies/
+// CookiesWithoutSameSiteMustBeSecure rules.
+// This does nothing if SameSiteByDefaultCookies is not enabled.
+NET_EXPORT extern const base::Feature
+    kRecentCreationTimeGrantsLegacyCookieSemantics;
+NET_EXPORT extern const base::FeatureParam<int>
+    kRecentCreationTimeGrantsLegacyCookieSemanticsMilliseconds;
+
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
 // When enabled, use the builtin cert verifier instead of the platform verifier.
 NET_EXPORT extern const base::Feature kCertVerifierBuiltinFeature;

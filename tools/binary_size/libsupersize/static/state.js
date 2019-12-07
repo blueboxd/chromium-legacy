@@ -325,9 +325,10 @@ function _makeIconTemplateGetter() {
    * @returns {SVGSVGElement}
    */
   function getDiffStatusTemplate(node) {
+    const isLeaf = node.children && node.children.length === 0;
     const entries = Object.entries(node.childStats);
     let key = 'unchanged';
-    if (entries.length != 0) {
+    if (isLeaf && entries.length != 0) {
       const statsEntry = entries[0][1];
       if (statsEntry.added) {
         key = 'added';
@@ -336,6 +337,10 @@ function _makeIconTemplateGetter() {
       } else if (statsEntry.changed) {
         key = 'changed';
       }
+    } else if (node.diffStatus == _DIFF_STATUSES.ADDED) {
+      key = 'added';
+    } else if (node.diffStatus == _DIFF_STATUSES.REMOVED) {
+      key = 'removed';
     }
     return statusIcons[key].cloneNode(true);
   }

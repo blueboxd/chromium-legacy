@@ -1075,37 +1075,37 @@ TEST_P(BidirectionalStreamQuicImplTest, CoalesceDataBuffersNotHeadersFrame) {
   if (VersionUsesHttp3(version_.transport_version))
     AddWrite(ConstructInitialSettingsPacket());
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
-  const char kBody1[] = "here are some data";
-  const char kBody2[] = "data keep coming";
-  std::string header = ConstructDataHeader(strlen(kBody1));
-  std::string header2 = ConstructDataHeader(strlen(kBody2));
+  const std::string kBody1 = "here are some data";
+  const std::string kBody2 = "data keep coming";
+  std::string header = ConstructDataHeader(kBody1.length());
+  std::string header2 = ConstructDataHeader(kBody2.length());
   std::vector<std::string> two_writes = {kBody1, kBody2};
   AddWrite(ConstructRequestHeadersPacketInner(
       GetNthClientInitiatedBidirectionalStreamId(0), !kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length));
   if (version_.transport_version != quic::QUIC_VERSION_99) {
     AddWrite(ConstructClientMultipleDataFramesPacket(kIncludeVersion, !kFin,
-                                                     {kBody1, kBody2}));
+                                                     {kBody1 + kBody2}));
   } else {
     AddWrite(ConstructClientMultipleDataFramesPacket(
-        kIncludeVersion, !kFin, {header, kBody1, header2, kBody2}));
+        kIncludeVersion, !kFin, {header + kBody1 + header2 + kBody2}));
   }
 
   // Ack server's data packet.
   AddWrite(ConstructClientAckPacket(3, 1, 2));
-  const char kBody3[] = "hello there";
-  const char kBody4[] = "another piece of small data";
-  const char kBody5[] = "really small";
-  std::string header3 = ConstructDataHeader(strlen(kBody3));
-  std::string header4 = ConstructDataHeader(strlen(kBody4));
-  std::string header5 = ConstructDataHeader(strlen(kBody5));
+  const std::string kBody3 = "hello there";
+  const std::string kBody4 = "another piece of small data";
+  const std::string kBody5 = "really small";
+  std::string header3 = ConstructDataHeader(kBody3.length());
+  std::string header4 = ConstructDataHeader(kBody4.length());
+  std::string header5 = ConstructDataHeader(kBody5.length());
   if (version_.transport_version != quic::QUIC_VERSION_99) {
-    AddWrite(ConstructClientMultipleDataFramesPacket(!kIncludeVersion, kFin,
-                                                     {kBody3, kBody4, kBody5}));
+    AddWrite(ConstructClientMultipleDataFramesPacket(
+        !kIncludeVersion, kFin, {kBody3 + kBody4 + kBody5}));
   } else {
     AddWrite(ConstructClientMultipleDataFramesPacket(
         !kIncludeVersion, kFin,
-        {header3, kBody3, header4, kBody4, header5, kBody5}));
+        {header3 + kBody3 + header4 + kBody4 + header5 + kBody5}));
   }
 
   Initialize();
@@ -1196,9 +1196,9 @@ TEST_P(BidirectionalStreamQuicImplTest, CoalesceDataBuffersNotHeadersFrame) {
   EXPECT_EQ(2, delegate->on_data_sent_count());
   EXPECT_EQ(kProtoQUIC, delegate->GetProtocol());
   EXPECT_EQ(static_cast<int64_t>(
-                spdy_request_headers_frame_length + strlen(kBody1) +
-                strlen(kBody2) + strlen(kBody3) + strlen(kBody4) +
-                strlen(kBody5) + header.length() + header2.length() +
+                spdy_request_headers_frame_length + kBody1.length() +
+                kBody2.length() + kBody3.length() + kBody4.length() +
+                kBody5.length() + header.length() + header2.length() +
                 header3.length() + header4.length() + header5.length()),
             delegate->GetTotalSentBytes());
   EXPECT_EQ(static_cast<int64_t>(spdy_response_headers_frame_length +
@@ -1238,8 +1238,8 @@ TEST_P(BidirectionalStreamQuicImplTest,
   const char kBody2[] = "really small";
   std::string header2 = ConstructDataHeader(strlen(kBody2));
   if (version_.transport_version == quic::QUIC_VERSION_99) {
-    AddWrite(ConstructClientMultipleDataFramesPacket(!kIncludeVersion, kFin,
-                                                     {header2, kBody2}));
+    AddWrite(ConstructClientMultipleDataFramesPacket(
+        !kIncludeVersion, kFin, {header2 + std::string(kBody2)}));
   } else {
     AddWrite(ConstructClientMultipleDataFramesPacket(!kIncludeVersion, kFin,
                                                      {kBody2}));
@@ -1344,36 +1344,36 @@ TEST_P(BidirectionalStreamQuicImplTest,
   if (VersionUsesHttp3(version_.transport_version))
     AddWrite(ConstructInitialSettingsPacket());
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
-  const char kBody1[] = "here are some data";
-  const char kBody2[] = "data keep coming";
-  std::string header = ConstructDataHeader(strlen(kBody1));
-  std::string header2 = ConstructDataHeader(strlen(kBody2));
+  const std::string kBody1 = "here are some data";
+  const std::string kBody2 = "data keep coming";
+  std::string header = ConstructDataHeader(kBody1.length());
+  std::string header2 = ConstructDataHeader(kBody2.length());
 
   if (version_.transport_version == quic::QUIC_VERSION_99) {
     AddWrite(ConstructRequestHeadersAndMultipleDataFramesPacket(
         !kFin, DEFAULT_PRIORITY, &spdy_request_headers_frame_length,
-        {header, kBody1, header2, kBody2}));
+        {header + kBody1 + header2 + kBody2}));
   } else {
     AddWrite(ConstructRequestHeadersAndMultipleDataFramesPacket(
         !kFin, DEFAULT_PRIORITY, &spdy_request_headers_frame_length,
-        {kBody1, kBody2}));
+        {kBody1 + kBody2}));
   }
 
   // Ack server's data packet.
   AddWrite(ConstructClientAckPacket(3, 1, 2));
-  const char kBody3[] = "hello there";
-  const char kBody4[] = "another piece of small data";
-  const char kBody5[] = "really small";
-  std::string header3 = ConstructDataHeader(strlen(kBody3));
-  std::string header4 = ConstructDataHeader(strlen(kBody4));
-  std::string header5 = ConstructDataHeader(strlen(kBody5));
+  const std::string kBody3 = "hello there";
+  const std::string kBody4 = "another piece of small data";
+  const std::string kBody5 = "really small";
+  std::string header3 = ConstructDataHeader(kBody3.length());
+  std::string header4 = ConstructDataHeader(kBody4.length());
+  std::string header5 = ConstructDataHeader(kBody5.length());
   if (version_.transport_version == quic::QUIC_VERSION_99) {
     AddWrite(ConstructClientMultipleDataFramesPacket(
         !kIncludeVersion, kFin,
-        {header3, kBody3, header4, kBody4, header5, kBody5}));
+        {header3 + kBody3 + header4 + kBody4 + header5 + kBody5}));
   } else {
-    AddWrite(ConstructClientMultipleDataFramesPacket(!kIncludeVersion, kFin,
-                                                     {kBody3, kBody4, kBody5}));
+    AddWrite(ConstructClientMultipleDataFramesPacket(
+        !kIncludeVersion, kFin, {kBody3 + kBody4 + kBody5}));
   }
 
   Initialize();
@@ -1459,9 +1459,9 @@ TEST_P(BidirectionalStreamQuicImplTest,
   EXPECT_EQ(2, delegate->on_data_sent_count());
   EXPECT_EQ(kProtoQUIC, delegate->GetProtocol());
   EXPECT_EQ(static_cast<int64_t>(
-                spdy_request_headers_frame_length + strlen(kBody1) +
-                strlen(kBody2) + strlen(kBody3) + strlen(kBody4) +
-                strlen(kBody5) + header.length() + header2.length() +
+                spdy_request_headers_frame_length + kBody1.length() +
+                kBody2.length() + kBody3.length() + kBody4.length() +
+                kBody5.length() + header.length() + header2.length() +
                 header3.length() + header4.length() + header5.length()),
             delegate->GetTotalSentBytes());
   EXPECT_EQ(static_cast<int64_t>(spdy_response_headers_frame_length +
@@ -1574,8 +1574,8 @@ TEST_P(BidirectionalStreamQuicImplTest, PostRequest) {
       &spdy_request_headers_frame_length));
   std::string header = ConstructDataHeader(strlen(kUploadData));
   if (version_.transport_version == quic::QUIC_VERSION_99) {
-    AddWrite(ConstructClientMultipleDataFramesPacket(kIncludeVersion, kFin,
-                                                     {header, kUploadData}));
+    AddWrite(ConstructClientMultipleDataFramesPacket(
+        kIncludeVersion, kFin, {header + std::string(kUploadData)}));
   } else {
     AddWrite(ConstructClientMultipleDataFramesPacket(kIncludeVersion, kFin,
                                                      {kUploadData}));
@@ -1675,8 +1675,8 @@ TEST_P(BidirectionalStreamQuicImplTest, EarlyDataOverrideRequest) {
       &spdy_request_headers_frame_length));
   std::string header = ConstructDataHeader(strlen(kUploadData));
   if (version_.transport_version == quic::QUIC_VERSION_99) {
-    AddWrite(ConstructClientMultipleDataFramesPacket(kIncludeVersion, kFin,
-                                                     {header, kUploadData}));
+    AddWrite(ConstructClientMultipleDataFramesPacket(
+        kIncludeVersion, kFin, {header + std::string(kUploadData)}));
   } else {
     AddWrite(ConstructClientMultipleDataFramesPacket(kIncludeVersion, kFin,
                                                      {kUploadData}));
@@ -1784,9 +1784,9 @@ TEST_P(BidirectionalStreamQuicImplTest, InterleaveReadDataAndSendData) {
                                        3, kFin, kUploadData, &client_maker_));
   } else {
     AddWrite(ConstructAckAndMultipleDataFramesPacket(
-        !kIncludeVersion, 2, 1, 1, !kFin, {header, kUploadData}));
+        !kIncludeVersion, 2, 1, 1, !kFin, {header + std::string(kUploadData)}));
     AddWrite(ConstructAckAndMultipleDataFramesPacket(
-        !kIncludeVersion, 3, 3, 3, kFin, {header, kUploadData}));
+        !kIncludeVersion, 3, 3, 3, kFin, {header + std::string(kUploadData)}));
   }
   Initialize();
 
@@ -2385,7 +2385,7 @@ TEST_P(BidirectionalStreamQuicImplTest, AsyncFinRead) {
   std::string header = ConstructDataHeader(strlen(kBody));
   if (version_.transport_version == quic::QUIC_VERSION_99) {
     AddWrite(ConstructClientMultipleDataFramesPacket(kIncludeVersion, kFin,
-                                                     {header, kBody}));
+                                                     {header + kBody}));
   } else {
     AddWrite(ConstructClientMultipleDataFramesPacket(kIncludeVersion, kFin,
                                                      {kBody}));

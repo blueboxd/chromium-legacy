@@ -21,6 +21,7 @@ import("//components/gwp_asan/buildflags/buildflags.gni")
 import("//components/nacl/features.gni")
 import("//components/offline_pages/buildflags/features.gni")
 import("//components/os_crypt/features.gni")
+import("//components/paint_preview/buildflags/buildflags.gni")
 import("//components/signin/features.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
 import("//extensions/buildflags/buildflags.gni")
@@ -703,6 +704,7 @@ if (!is_android) {
       "//components/resources",
       "//components/safe_browsing:buildflags",
       "//components/safe_browsing/db:test_database_manager",
+      "//components/services/paint_preview_compositor/public/mojom",
       "//components/services/patch/public/mojom",
       "//components/services/quarantine:test_support",
       "//components/signin/core/browser",
@@ -840,6 +842,7 @@ if (!is_android) {
       "../browser/availability/availability_prober_browsertest.cc",
       "../browser/background_fetch/background_fetch_browsertest.cc",
       "../browser/background_sync/background_sync_browsertest.cc",
+      "../browser/background_sync/background_sync_content_setting_browsertest.cc",
       "../browser/background_sync/background_sync_metrics_browsertest.cc",
       "../browser/badging/test_badge_manager_delegate.cc",
       "../browser/badging/test_badge_manager_delegate.h",
@@ -2327,6 +2330,8 @@ if (!is_android) {
         "../browser/chromeos/printing/history/test_print_job_history_service_observer.h",
         "../browser/chromeos/printing/test_cups_print_job_manager.cc",
         "../browser/chromeos/printing/test_cups_print_job_manager.h",
+        "../browser/chromeos/printing/test_cups_printers_manager.cc",
+        "../browser/chromeos/printing/test_cups_printers_manager.h",
         "../browser/chromeos/profiles/profile_helper_browsertest.cc",
         "../browser/chromeos/shutdown_policy_browsertest.cc",
         "../browser/chromeos/startup_settings_cache_browsertest.cc",
@@ -2415,6 +2420,10 @@ if (!is_android) {
         "base/interactive_test_utils_aura.h",
         "base/interactive_test_utils_views.cc",
       ]
+      if (use_cups) {
+        sources +=
+            [ "../browser/chromeos/extensions/printing/printing_apitest.cc" ]
+      }
       sources -= [
         "../../apps/load_and_launch_browsertest.cc",
         "../browser/policy/policy_startup_browsertest.cc",
@@ -2671,6 +2680,10 @@ if (!is_android) {
           "../browser/service_process/service_process_control_browsertest.cc",
         ]
       }
+    }
+    if (enable_paint_preview) {
+      sources +=
+          [ "../browser/paint_preview/paint_preview_compositor_browsertest.cc" ]
     }
     if (enable_service_discovery && !is_mac) {
       sources += [
@@ -3158,6 +3171,7 @@ test("unit_tests") {
     "../browser/payments/payment_handler_permission_context_unittest.cc",
     "../browser/performance_manager/decorators/frame_priority_decorator_unittest.cc",
     "../browser/performance_manager/decorators/frozen_frame_aggregator_unittest.cc",
+    "../browser/performance_manager/decorators/helpers/page_live_state_decorator_helper_unittest.cc",
     "../browser/performance_manager/decorators/page_aggregator_unittest.cc",
     "../browser/performance_manager/decorators/page_almost_idle_decorator_unittest.cc",
     "../browser/performance_manager/decorators/process_metrics_decorator_unittest.cc",
@@ -3777,6 +3791,7 @@ test("unit_tests") {
       "../browser/media/webrtc/desktop_capture_access_handler_unittest.cc",
       "../browser/media/webrtc/desktop_media_picker_controller_unittest.cc",
       "../browser/media/webrtc/display_media_access_handler_unittest.cc",
+      "../browser/media/webrtc/media_stream_capture_indicator_unittest.cc",
       "../browser/media/webrtc/tab_desktop_media_list_unittest.cc",
       "../browser/media/webrtc/webrtc_event_log_manager_common_unittest.cc",
       "../browser/media/webrtc/webrtc_event_log_manager_unittest.cc",
@@ -4858,6 +4873,7 @@ test("unit_tests") {
     if (enable_print_preview) {
       sources += [
         "../browser/printing/print_preview_dialog_controller_unittest.cc",
+        "../browser/printing/print_preview_sticky_settings_unittest.cc",
         "../browser/printing/print_preview_test.cc",
         "../browser/printing/print_preview_test.h",
         "../browser/printing/print_view_manager_unittest.cc",

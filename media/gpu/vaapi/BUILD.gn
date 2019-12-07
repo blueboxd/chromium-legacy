@@ -93,7 +93,6 @@ source_set("vaapi") {
     "//media/gpu:common",
     "//media/gpu:video_frame_mapper_common",
     "//media/gpu/chromeos:common",
-    "//media/gpu/linux:common",
     "//media/parsers",
     "//mojo/public/cpp/bindings",
     "//third_party/libyuv",

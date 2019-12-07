@@ -97,9 +97,6 @@ class WebContentSettingsClient {
   // interface.
   virtual bool AllowMutationEvents(bool default_value) { return default_value; }
 
-  // Controls whether autoplay is allowed for this frame.
-  virtual bool AllowAutoplay(bool default_value) { return default_value; }
-
   virtual bool AllowPopupsAndRedirects(bool default_value) {
     return default_value;
   }

@@ -166,8 +166,8 @@ void DesktopMediaListBase::UpdateSourceThumbnail(DesktopMediaID id,
 // static
 uint32_t DesktopMediaListBase::GetImageHash(const gfx::Image& image) {
   SkBitmap bitmap = image.AsBitmap();
-  uint32_t value = base::Hash(bitmap.getPixels(), bitmap.computeByteSize());
-  return value;
+  return base::FastHash(base::make_span(
+      static_cast<uint8_t*>(bitmap.getPixels()), bitmap.computeByteSize()));
 }
 
 void DesktopMediaListBase::OnRefreshComplete() {

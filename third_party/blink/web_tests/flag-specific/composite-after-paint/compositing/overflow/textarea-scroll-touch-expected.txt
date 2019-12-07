@@ -9,8 +9,8 @@
     },
     {
       "name": "LayoutTextControl TEXTAREA",
-      "bounds": [206, 126],
-      "transform": 1
+      "position": [18, 18],
+      "bounds": [436, 126]
     },
     {
       "name": "LayoutTextControl TEXTAREA",

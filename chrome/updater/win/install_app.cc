@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
@@ -120,7 +119,8 @@ class InstallProgressObserverIPC : public InstallProgressObserver {
     base::string16 version_string;
 
    private:
-    DISALLOW_COPY_AND_ASSIGN(ParamOnUpdateAvailable);
+    ParamOnUpdateAvailable(const ParamOnUpdateAvailable&) = delete;
+    ParamOnUpdateAvailable& operator=(const ParamOnUpdateAvailable&) = delete;
   };
 
   struct ParamOnDownloading {
@@ -131,7 +131,30 @@ class InstallProgressObserverIPC : public InstallProgressObserver {
     int pos = 0;
 
    private:
-    DISALLOW_COPY_AND_ASSIGN(ParamOnDownloading);
+    ParamOnDownloading(const ParamOnDownloading&) = delete;
+    ParamOnDownloading& operator=(const ParamOnDownloading&) = delete;
+  };
+
+  struct ParamOnWaitingToInstall {
+    ParamOnWaitingToInstall();
+    base::string16 app_id;
+    base::string16 app_name;
+
+   private:
+    ParamOnWaitingToInstall(const ParamOnWaitingToInstall&) = delete;
+    ParamOnWaitingToInstall& operator=(const ParamOnWaitingToInstall&) = delete;
+  };
+
+  struct ParamOnInstalling {
+    ParamOnInstalling();
+    base::string16 app_id;
+    base::string16 app_name;
+    int time_remaining_ms = 0;
+    int pos = 0;
+
+   private:
+    ParamOnInstalling(const ParamOnInstalling&) = delete;
+    ParamOnInstalling& operator=(const ParamOnInstalling&) = delete;
   };
 
   struct ParamOnComplete {
@@ -139,7 +162,8 @@ class InstallProgressObserverIPC : public InstallProgressObserver {
     ObserverCompletionInfo observer_info;
 
    private:
-    DISALLOW_COPY_AND_ASSIGN(ParamOnComplete);
+    ParamOnComplete(const ParamOnComplete&) = delete;
+    ParamOnComplete& operator=(const ParamOnComplete&) = delete;
   };
 
   THREAD_CHECKER(thread_checker_);
@@ -150,12 +174,17 @@ class InstallProgressObserverIPC : public InstallProgressObserver {
   // The thread id of the thread which owns the |ProgressWnd|.
   int window_thread_id_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(InstallProgressObserverIPC);
+  InstallProgressObserverIPC(const InstallProgressObserverIPC&) = delete;
+  InstallProgressObserverIPC& operator=(const InstallProgressObserverIPC&) =
+      delete;
 };
 
 InstallProgressObserverIPC::ParamOnUpdateAvailable::ParamOnUpdateAvailable() =
     default;
 InstallProgressObserverIPC::ParamOnDownloading::ParamOnDownloading() = default;
+InstallProgressObserverIPC::ParamOnWaitingToInstall::ParamOnWaitingToInstall() =
+    default;
+InstallProgressObserverIPC::ParamOnInstalling::ParamOnInstalling() = default;
 InstallProgressObserverIPC::ParamOnComplete::ParamOnComplete() = default;
 
 InstallProgressObserverIPC::InstallProgressObserverIPC(
@@ -229,6 +258,15 @@ void InstallProgressObserverIPC::OnWaitingToInstall(
     const base::string16& app_name,
     bool* can_start_install) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(progress_wnd_);
+  std::unique_ptr<ParamOnWaitingToInstall> param_on_waiting_to_install =
+      std::make_unique<ParamOnWaitingToInstall>();
+  param_on_waiting_to_install->app_id = app_id;
+  param_on_waiting_to_install->app_name = app_name;
+  ::PostThreadMessage(
+      window_thread_id_, WM_PROGRESS_WINDOW_IPC,
+      static_cast<WPARAM>(IPCAppMessages::kOnWaitingToInstall),
+      reinterpret_cast<LPARAM>(param_on_waiting_to_install.release()));
 }
 
 void InstallProgressObserverIPC::OnInstalling(const base::string16& app_id,
@@ -237,6 +275,16 @@ void InstallProgressObserverIPC::OnInstalling(const base::string16& app_id,
                                               int pos) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // TODO(sorin): implement progress, https://crbug.com/1014594.
+  DCHECK(progress_wnd_);
+  std::unique_ptr<ParamOnInstalling> param_on_installing =
+      std::make_unique<ParamOnInstalling>();
+  param_on_installing->app_id = app_id;
+  param_on_installing->app_name = app_name;
+  param_on_installing->time_remaining_ms = time_remaining_ms;
+  param_on_installing->pos = pos;
+  ::PostThreadMessage(window_thread_id_, WM_PROGRESS_WINDOW_IPC,
+                      static_cast<WPARAM>(IPCAppMessages::kOnInstalling),
+                      reinterpret_cast<LPARAM>(param_on_installing.release()));
 }
 
 void InstallProgressObserverIPC::OnPause() {
@@ -277,6 +325,24 @@ void InstallProgressObserverIPC::Invoke(WPARAM wparam, LPARAM lparam) {
       observer->OnDownloading(
           param_on_downloading->app_id, param_on_downloading->app_name,
           param_on_downloading->time_remaining_ms, param_on_downloading->pos);
+      break;
+    }
+    case IPCAppMessages::kOnWaitingToInstall: {
+      std::unique_ptr<ParamOnWaitingToInstall> param_on_waiting_to_install(
+          reinterpret_cast<ParamOnWaitingToInstall*>(lparam));
+      // TODO(sorin): implement cancelling of an install. crbug.com/1014591
+      bool can_install = false;
+      observer->OnWaitingToInstall(param_on_waiting_to_install->app_id,
+                                   param_on_waiting_to_install->app_name,
+                                   &can_install);
+      break;
+    }
+    case IPCAppMessages::kOnInstalling: {
+      std::unique_ptr<ParamOnInstalling> param_on_installing(
+          reinterpret_cast<ParamOnInstalling*>(lparam));
+      observer->OnInstalling(
+          param_on_installing->app_id, param_on_installing->app_name,
+          param_on_installing->time_remaining_ms, param_on_installing->pos);
       break;
     }
     case IPCAppMessages::kOnComplete: {
@@ -395,7 +461,8 @@ class InstallAppController : public ui::ProgressWndEvents,
   // and the UI thread.
   std::unique_ptr<InstallProgressObserverIPC> install_progress_observer_ipc_;
 
-  DISALLOW_COPY_AND_ASSIGN(InstallAppController);
+  InstallAppController(const InstallAppController&) = delete;
+  InstallAppController& operator=(const InstallAppController&) = delete;
 };
 
 // TODO(sorin): fix the hardcoding of the application name.

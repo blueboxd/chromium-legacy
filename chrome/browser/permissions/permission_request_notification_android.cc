@@ -59,15 +59,7 @@ PermissionRequestNotificationAndroid::Create(
 bool PermissionRequestNotificationAndroid::ShouldShowAsNotification(
     content::WebContents* web_contents,
     ContentSettingsType type) {
-  auto* manager = PermissionRequestManager::FromWebContents(web_contents);
-  return type == ContentSettingsType::NOTIFICATIONS &&
-         manager->ShouldCurrentRequestUseQuietUI() &&
-         (QuietNotificationPermissionUiConfig::UiFlavorToUse() ==
-              QuietNotificationPermissionUiConfig::UiFlavor::
-                  HEADS_UP_NOTIFICATION ||
-          QuietNotificationPermissionUiConfig::UiFlavorToUse() ==
-              QuietNotificationPermissionUiConfig::UiFlavor::
-                  QUIET_NOTIFICATION);
+  return false;
 }
 
 // static
@@ -79,19 +71,8 @@ std::string PermissionRequestNotificationAndroid::NotificationIdForOrigin(
 // static
 PermissionPrompt::TabSwitchingBehavior
 PermissionRequestNotificationAndroid::GetTabSwitchingBehavior() {
-  if (QuietNotificationPermissionUiConfig::UiFlavorToUse() ==
-      QuietNotificationPermissionUiConfig::UiFlavor::QUIET_NOTIFICATION) {
     return PermissionPrompt::TabSwitchingBehavior::
         kDestroyPromptButKeepRequestPending;
-  } else {
-    // For heads-up notifications finalize the request as "ignored" on tab
-    // switching.
-    DCHECK_EQ(
-        QuietNotificationPermissionUiConfig::UiFlavor::HEADS_UP_NOTIFICATION,
-        QuietNotificationPermissionUiConfig::UiFlavorToUse());
-    return PermissionPrompt::TabSwitchingBehavior::
-        kDestroyPromptAndIgnoreRequest;
-  }
 }
 
 void PermissionRequestNotificationAndroid::Close() {

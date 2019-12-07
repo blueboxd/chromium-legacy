@@ -19,6 +19,7 @@ void Grab(struct wl_client* client,
 
 const struct xdg_popup_interface kXdgPopupImpl = {
     &DestroyResource,  // destroy
+    &Grab,             // grab
 };
 
 const struct zxdg_popup_v6_interface kZxdgPopupV6Impl = {

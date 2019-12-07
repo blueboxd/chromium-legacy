@@ -391,7 +391,13 @@ void CrostiniInstaller::OnCrostiniRemovedAfterConfigurationFailed(
   if (result != CrostiniResult::SUCCESS) {
     LOG(ERROR) << "Failed to remove Crostini after failed configuration";
   }
-  HandleError(InstallerError::kErrorConfiguringContainer);
+
+  if (content::GetNetworkConnectionTracker()->IsOffline()) {
+    LOG(ERROR) << "Network connection dropped while configuring container";
+    HandleError(InstallerError::kErrorOffline);
+  } else {
+    HandleError(InstallerError::kErrorConfiguringContainer);
+  }
 }
 
 void CrostiniInstaller::OnContainerStarted(CrostiniResult result) {

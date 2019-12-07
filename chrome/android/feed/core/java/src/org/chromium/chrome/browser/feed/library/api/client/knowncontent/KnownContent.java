@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.api.client.knowncontent;
 
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
+import org.chromium.base.Consumer;
 
 import java.util.List;
 

@@ -83,9 +83,6 @@ class CORE_EXPORT IntersectionObserver final
   // the given |callback|. |thresholds| should be in the range [0,1], and are
   // interpreted according to the given |semantics|. |delay| specifies the
   // minimum period between change notifications.
-  //
-  // TODO(crbug.com/915495): The |delay| feature is broken. See comments in
-  // intersection_observation.cc.
   static IntersectionObserver* Create(
       const Vector<Length>& root_margin,
       const Vector<float>& thresholds,

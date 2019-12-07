@@ -67,6 +67,9 @@ class CONTENT_EXPORT BackgroundSyncContext {
   virtual void RevivePeriodicBackgroundSyncRegistrations(
       url::Origin origin) = 0;
 
+  // Unregisters any periodic Background Sync registrations for |origin|.
+  virtual void UnregisterPeriodicSyncForOrigin(url::Origin origin) = 0;
+
  protected:
   virtual ~BackgroundSyncContext() = default;
 

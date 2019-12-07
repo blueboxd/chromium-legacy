@@ -7,7 +7,6 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -51,36 +50,21 @@ class FrameTest : public PageTestBase {
 
 TEST_F(FrameTest, NoGesture) {
   // A nullptr LocalFrame* will not set user gesture state.
-  std::unique_ptr<UserGestureIndicator> holder =
-      LocalFrame::NotifyUserActivation(nullptr);
+  LocalFrame::NotifyUserActivation(nullptr);
   EXPECT_FALSE(GetDocument().GetFrame()->HasBeenActivated());
 }
 
 TEST_F(FrameTest, PossiblyExisting) {
   // A non-null LocalFrame* will set state, but a subsequent nullptr Document*
   // token will not override it.
-  {
-    std::unique_ptr<UserGestureIndicator> holder =
-        LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
-    EXPECT_TRUE(GetDocument().GetFrame()->HasBeenActivated());
-  }
-  {
-    std::unique_ptr<UserGestureIndicator> holder =
-        LocalFrame::NotifyUserActivation(nullptr);
-    EXPECT_TRUE(GetDocument().GetFrame()->HasBeenActivated());
-  }
-}
-
-TEST_F(FrameTest, NewGesture) {
-  // UserGestureToken::Status doesn't impact Document gesture state.
-  std::unique_ptr<UserGestureIndicator> holder =
-      LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  EXPECT_TRUE(GetDocument().GetFrame()->HasBeenActivated());
+  LocalFrame::NotifyUserActivation(nullptr);
   EXPECT_TRUE(GetDocument().GetFrame()->HasBeenActivated());
 }
 
 TEST_F(FrameTest, NavigateDifferentDomain) {
-  std::unique_ptr<UserGestureIndicator> holder =
-      LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
   EXPECT_TRUE(GetDocument().GetFrame()->HasBeenActivated());
   EXPECT_FALSE(
       GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
@@ -94,8 +78,7 @@ TEST_F(FrameTest, NavigateDifferentDomain) {
 }
 
 TEST_F(FrameTest, NavigateSameDomainMultipleTimes) {
-  std::unique_ptr<UserGestureIndicator> holder =
-      LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
   EXPECT_TRUE(GetDocument().GetFrame()->HasBeenActivated());
   EXPECT_FALSE(
       GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());
@@ -130,8 +113,7 @@ TEST_F(FrameTest, NavigateSameDomainMultipleTimes) {
 }
 
 TEST_F(FrameTest, NavigateSameDomainDifferentDomain) {
-  std::unique_ptr<UserGestureIndicator> holder =
-      LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
   EXPECT_TRUE(GetDocument().GetFrame()->HasBeenActivated());
   EXPECT_FALSE(
       GetDocument().GetFrame()->HasReceivedUserGestureBeforeNavigation());

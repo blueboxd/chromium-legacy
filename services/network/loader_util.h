@@ -7,6 +7,8 @@
 
 #include "base/component_export.h"
 #include "base/memory/ref_counted.h"
+#include "services/network/public/mojom/http_raw_request_response_info.mojom-forward.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 
 class GURL;
 
@@ -22,7 +24,6 @@ class URLRequest;
 // only path this should move out of the public directory.
 namespace network {
 struct HttpRawRequestResponseInfo;
-struct ResourceResponse;
 
 // Enumeration for UMA histograms logged by LogConcerningRequestHeaders().
 // Entries should not be renumbered and numeric values should never be reused.
@@ -61,11 +62,11 @@ extern const char kDefaultAcceptHeader[];
 // type of the response.
 COMPONENT_EXPORT(NETWORK_SERVICE)
 bool ShouldSniffContent(net::URLRequest* url_request,
-                        ResourceResponse* response);
+                        const mojom::URLResponseHead& response);
 
 // Fill HttpRawRequestResponseInfo based on raw headers.
 COMPONENT_EXPORT(NETWORK_SERVICE)
-scoped_refptr<HttpRawRequestResponseInfo> BuildRawRequestResponseInfo(
+mojom::HttpRawRequestResponseInfoPtr BuildRawRequestResponseInfo(
     const net::URLRequest& request,
     const net::HttpRawRequestHeaders& raw_request_headers,
     const net::HttpResponseHeaders* raw_response_headers);

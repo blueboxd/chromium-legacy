@@ -4,6 +4,7 @@
 
 #include "chrome/browser/printing/print_preview_sticky_settings.h"
 
+#include "base/json/json_reader.h"
 #include "base/no_destructor.h"
 #include "base/values.h"
 #include "chrome/common/pref_names.h"
@@ -14,7 +15,9 @@ namespace printing {
 
 namespace {
 
-const char kSettingAppState[] = "appState";
+constexpr char kId[] = "id";
+constexpr char kRecentDestinations[] = "recentDestinations";
+constexpr char kSettingAppState[] = "appState";
 
 }  // namespace
 
@@ -50,6 +53,34 @@ void PrintPreviewStickySettings::RestoreFromPrefs(PrefService* prefs) {
       value->FindKeyOfType(kSettingAppState, base::Value::Type::STRING);
   if (app_state)
     StoreAppState(app_state->GetString());
+}
+
+base::flat_map<std::string, int>
+PrintPreviewStickySettings::GetPrinterRecentlyUsedRanks() {
+  const std::string* sticky_settings_state = printer_app_state();
+  if (!sticky_settings_state)
+    return {};
+
+  base::Optional<base::Value> sticky_settings_state_value =
+      base::JSONReader::Read(*sticky_settings_state);
+  if (!sticky_settings_state_value || !sticky_settings_state_value->is_dict())
+    return {};
+
+  base::Value* recent_destinations =
+      sticky_settings_state_value->FindListKey(kRecentDestinations);
+  if (!recent_destinations)
+    return {};
+
+  auto& recent_destinations_list = recent_destinations->GetList();
+  base::flat_map<std::string, int> recently_used_ranks;
+  int current_rank = 0;
+  for (const auto& recent_destination : recent_destinations_list) {
+    const std::string* printer_id = recent_destination.FindStringKey(kId);
+    if (!printer_id)
+      continue;
+    recently_used_ranks[*printer_id] = current_rank++;
+  }
+  return recently_used_ranks;
 }
 
 // static

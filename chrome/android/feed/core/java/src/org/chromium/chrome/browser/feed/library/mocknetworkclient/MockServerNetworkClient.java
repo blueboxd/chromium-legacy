@@ -15,11 +15,11 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.CodedOutputStream;
 import com.google.protobuf.ExtensionRegistryLite;
 
+import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.host.network.HttpRequest;
 import org.chromium.chrome.browser.feed.library.api.host.network.HttpRequest.HttpMethod;
 import org.chromium.chrome.browser.feed.library.api.host.network.HttpResponse;
 import org.chromium.chrome.browser.feed.library.api.host.network.NetworkClient;
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 import org.chromium.chrome.browser.feed.library.feedrequestmanager.RequestHelper;
 import org.chromium.components.feed.core.proto.wire.FeedRequestProto.FeedRequest;

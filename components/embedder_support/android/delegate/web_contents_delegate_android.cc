@@ -356,12 +356,37 @@ int WebContentsDelegateAndroid::GetTopControlsHeight() {
   return Java_WebContentsDelegateAndroid_getTopControlsHeight(env, obj);
 }
 
+int WebContentsDelegateAndroid::GetTopControlsMinHeight() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return 0;
+  return Java_WebContentsDelegateAndroid_getTopControlsMinHeight(env, obj);
+}
+
 int WebContentsDelegateAndroid::GetBottomControlsHeight() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
     return 0;
   return Java_WebContentsDelegateAndroid_getBottomControlsHeight(env, obj);
+}
+
+int WebContentsDelegateAndroid::GetBottomControlsMinHeight() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return 0;
+  return Java_WebContentsDelegateAndroid_getBottomControlsMinHeight(env, obj);
+}
+
+bool WebContentsDelegateAndroid::ShouldAnimateBrowserControlsHeightChanges() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return false;
+  return Java_WebContentsDelegateAndroid_shouldAnimateBrowserControlsHeightChanges(
+      env, obj);
 }
 
 bool WebContentsDelegateAndroid::DoBrowserControlsShrinkRendererSize(

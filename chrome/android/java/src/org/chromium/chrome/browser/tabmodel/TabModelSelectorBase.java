@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.tabmodel;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.util.ArrayList;

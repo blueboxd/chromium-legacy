@@ -236,6 +236,7 @@ TEST_F(ServiceWorkerProcessManagerTest,
   // hit here since we are using RenderProcessHostFactory.
   scoped_refptr<SiteInstanceImpl> site_instance =
       SiteInstanceImpl::CreateForURL(browser_context_.get(), kGuestSiteUrl);
+  EXPECT_TRUE(site_instance->IsGuest());
   // It'd be more realistic to create a non-default StoragePartition, but there
   // would be no added value to this test since MockRenderProcessHost is not
   // StoragePartition-aware.

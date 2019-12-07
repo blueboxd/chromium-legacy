@@ -104,7 +104,10 @@ class WebContentsViewAndroid : public WebContentsView,
   void LostFocus(RenderWidgetHostImpl* render_widget_host) override;
   void TakeFocus(bool reverse) override;
   int GetTopControlsHeight() const override;
+  int GetTopControlsMinHeight() const override;
   int GetBottomControlsHeight() const override;
+  int GetBottomControlsMinHeight() const override;
+  bool ShouldAnimateBrowserControlsHeightChanges() const override;
   bool DoBrowserControlsShrinkRendererSize() const override;
 
   // ui::EventHandlerAndroid implementation.

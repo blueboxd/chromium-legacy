@@ -251,7 +251,7 @@ void DeleteDirectoryFiles(const base::FilePath& directory_path) {
       base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
   for (base::FilePath current = file_enum.Next(); !current.empty();
        current = file_enum.Next()) {
-    base::DeleteFile(current, true);
+    base::DeleteFileRecursively(current);
   }
 }
 

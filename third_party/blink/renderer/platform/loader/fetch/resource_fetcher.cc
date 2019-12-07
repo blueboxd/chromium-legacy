@@ -987,20 +987,6 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   TRACE_EVENT1("blink", "ResourceFetcher::requestResource", "url",
                params.Url().GetString().Utf8());
 
-  // We need to attach an origin header when the request's method is neither
-  // GET nor HEAD. For requests made by an extension content scripts, we want to
-  // attach page's origin, whereas the request's origin is the content script's
-  // origin. See https://crbug.com/944704 for details.
-  // TODO(crbug.com/940068) Remove this.
-  if (resource_request.HttpMethod() != http_names::kGET &&
-      resource_request.HttpMethod() != http_names::kHEAD &&
-      resource_request.RequestorOrigin() &&
-      !resource_request.RequestorOrigin()->IsSameOriginWith(
-          properties_->GetFetchClientSettingsObject().GetSecurityOrigin())) {
-    resource_request.SetHttpOriginIfNeeded(
-        properties_->GetFetchClientSettingsObject().GetSecurityOrigin());
-  }
-
   // |resource_request|'s origin can be null here, corresponding to the "client"
   // value in the spec. In that case client's origin is used.
   if (!resource_request.RequestorOrigin()) {

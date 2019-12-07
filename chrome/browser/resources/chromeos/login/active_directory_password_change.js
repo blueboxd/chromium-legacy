@@ -26,13 +26,59 @@ Polymer({
      * The user principal name.
      */
     username: String,
+
+    /**
+     * The old password.
+     */
+    oldPassword_: String,
+    /**
+     * The new password (first copy).
+     */
+    newPassword_: String,
+    /**
+     * The new password (second copy).
+     */
+    newPasswordRepeat_: String,
+
+    /**
+     * Indicates if old password is wrong.
+     */
+    oldPasswordWrong_: {
+      type: Boolean,
+      value: false,
+    },
+    /**
+     * Indicates if new password is rejected.
+     */
+    newPasswordRejected_: {
+      type: Boolean,
+      value: false,
+    },
+    /**
+     * Indicates if password is not repeated correctly.
+     */
+    passwordMismatch_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /** @public */
   reset: function() {
     this.$.animatedPages.selected = 0;
-    this.$.inputForm.reset();
+    this.resetInputFields_();
     this.updateNavigation_();
+  },
+
+  /** @private */
+  resetInputFields_: function() {
+    this.oldPassword = '';
+    this.newPassword = '';
+    this.newPasswordRepeat = '';
+
+    this.oldPasswordWrong_ = false;
+    this.newPasswordRejected_ = false;
+    this.passwordMismatch_ = false;
   },
 
   /**
@@ -44,10 +90,10 @@ Polymer({
   setInvalid: function(error) {
     switch (error) {
       case ACTIVE_DIRECTORY_PASSWORD_CHANGE_ERROR_STATE.WRONG_OLD_PASSWORD:
-        this.$.oldPassword.isInvalid = true;
+        this.oldPasswordWrong_ = true;
         break;
       case ACTIVE_DIRECTORY_PASSWORD_CHANGE_ERROR_STATE.NEW_PASSWORD_REJECTED:
-        this.$.newPassword1.isInvalid = true;
+        this.newPasswordRejected_ = true;
         break;
       default:
         console.error('Not handled error: ' + error);
@@ -56,24 +102,21 @@ Polymer({
 
   /** @private */
   onSubmit_: function() {
-    if (!this.$.oldPassword.checkValidity() ||
-        !this.$.newPassword1.checkValidity()) {
+    if (!this.$.oldPassword.validate() || !this.$.newPassword.validate()) {
       return;
     }
-    if (this.$.newPassword1.value != this.$.newPassword2.value) {
-      this.$.newPassword2.isInvalid = true;
+    if (this.newPassword != this.newPasswordRepeat) {
+      this.passwordMismatch_ = true;
       return;
     }
     this.$.animatedPages.selected++;
     this.updateNavigation_();
     var msg = {
       'username': this.username,
-      'oldPassword': this.$.oldPassword.value,
-      'newPassword': this.$.newPassword1.value,
+      'oldPassword': this.oldPassword,
+      'newPassword': this.newPassword,
     };
-    this.$.oldPassword.value = '';
-    this.$.newPassword1.value = '';
-    this.$.newPassword2.value = '';
+    this.resetInputFields_();
     this.fire('authCompleted', msg);
   },
 

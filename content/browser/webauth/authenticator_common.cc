@@ -889,12 +889,13 @@ void AuthenticatorCommon::MakeCredential(
   if (!connector_)
     connector_ = GetSystemConnector();
 
+  const bool origin_is_crypto_token_extension =
+      OriginIsCryptoTokenExtension(caller_origin_);
+
   // Save client data to return with the authenticator response.
   // TODO(kpaulhamus): Fetch and add the Channel ID/Token Binding ID public key
   // used to communicate with the origin.
-  if (OriginIsCryptoTokenExtension(caller_origin_)) {
-    // Cryptotoken requests should be proxied without UI.
-    request_delegate_->DisableUI();
+  if (origin_is_crypto_token_extension) {
     // As Cryptotoken validates the origin, accept the relying party id as the
     // origin from requests originating from Cryptotoken. The origin is provided
     // in Cryptotoken requests as the relying party name, which should be used
@@ -908,6 +909,10 @@ void AuthenticatorCommon::MakeCredential(
         client_data::kCreateType, caller_origin_.Serialize(),
         std::move(options->challenge), is_cross_origin);
   }
+
+  // Cryptotoken requests should be proxied without UI.
+  if (origin_is_crypto_token_extension || disable_ui_)
+    request_delegate_->DisableUI();
 
   UMA_HISTOGRAM_COUNTS_100(
       "WebAuthentication.MakeCredentialExcludeCredentialsCount",
@@ -1020,12 +1025,13 @@ void AuthenticatorCommon::GetAssertion(
     return;
   }
 
+  const bool origin_is_crypto_token_extension =
+      OriginIsCryptoTokenExtension(caller_origin_);
+
   // Save client data to return with the authenticator response.
   // TODO(kpaulhamus): Fetch and add the Channel ID/Token Binding ID public key
   // used to communicate with the origin.
-  if (OriginIsCryptoTokenExtension(caller_origin)) {
-    request_delegate_->DisableUI();
-
+  if (origin_is_crypto_token_extension) {
     // As Cryptotoken validates the origin, accept the relying party id as the
     // origin from requests originating from Cryptotoken.
     client_data_json_ = SerializeCollectedClientDataToJson(
@@ -1037,6 +1043,10 @@ void AuthenticatorCommon::GetAssertion(
         client_data::kGetType, caller_origin_.Serialize(),
         std::move(options->challenge), is_cross_origin);
   }
+
+  // Cryptotoken requests should be proxied without UI.
+  if (origin_is_crypto_token_extension || disable_ui_)
+    request_delegate_->DisableUI();
 
   if (options->allow_credentials.empty()) {
     if (!request_delegate_->SupportsResidentKeys()) {
@@ -1548,6 +1558,10 @@ void AuthenticatorCommon::Cleanup() {
   empty_allow_list_ = false;
   error_awaiting_user_acknowledgement_ =
       blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
+}
+
+void AuthenticatorCommon::DisableUI() {
+  disable_ui_ = true;
 }
 
 BrowserContext* AuthenticatorCommon::browser_context() const {

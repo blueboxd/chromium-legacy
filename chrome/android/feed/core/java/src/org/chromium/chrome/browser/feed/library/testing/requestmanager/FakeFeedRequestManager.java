@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.testing.requestmanager;
 
+import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.host.logging.RequestReason;
 import org.chromium.chrome.browser.feed.library.api.host.logging.Task;
 import org.chromium.chrome.browser.feed.library.api.internal.common.Model;
@@ -14,7 +15,6 @@ import org.chromium.chrome.browser.feed.library.common.concurrent.MainThreadRunn
 import org.chromium.chrome.browser.feed.library.common.concurrent.TaskQueue;
 import org.chromium.chrome.browser.feed.library.common.concurrent.TaskQueue.TaskType;
 import org.chromium.chrome.browser.feed.library.common.concurrent.testing.FakeThreadUtils;
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamToken;
 import org.chromium.components.feed.core.proto.wire.ConsistencyTokenProto.ConsistencyToken;
 import org.chromium.components.feed.core.proto.wire.ResponseProto.Response;

@@ -4,10 +4,10 @@
 
 package org.chromium.chrome.browser.feed.library.testing.host.stream;
 
+import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.host.stream.TooltipInfo.FeatureName;
 import org.chromium.chrome.browser.feed.library.api.host.stream.TooltipSupportedApi;
 import org.chromium.chrome.browser.feed.library.api.internal.common.ThreadUtils;
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 
 import java.util.ArrayList;
 

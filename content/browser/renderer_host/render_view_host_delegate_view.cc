@@ -17,8 +17,21 @@ int RenderViewHostDelegateView::GetTopControlsHeight() const {
   return 0;
 }
 
+int RenderViewHostDelegateView::GetTopControlsMinHeight() const {
+  return 0;
+}
+
 int RenderViewHostDelegateView::GetBottomControlsHeight() const {
   return 0;
+}
+
+int RenderViewHostDelegateView::GetBottomControlsMinHeight() const {
+  return 0;
+}
+
+bool RenderViewHostDelegateView::ShouldAnimateBrowserControlsHeightChanges()
+    const {
+  return false;
 }
 
 bool RenderViewHostDelegateView::DoBrowserControlsShrinkRendererSize() const {

@@ -1,0 +1,6 @@
+specific_include_rules = {
+    "html_canvas_element_module_test.cc": [
+        "+components/viz/test/test_context_provider.h",
+        "+components/viz/test/test_gles2_interface.h",
+    ]
+}

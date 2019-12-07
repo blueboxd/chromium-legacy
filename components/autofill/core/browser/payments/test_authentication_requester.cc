@@ -38,6 +38,11 @@ void TestAuthenticationRequester::OnFIDOAuthenticationComplete(
   }
 }
 
+void TestAuthenticationRequester::OnFidoAuthorizationComplete(
+    bool did_succeed) {
+  did_succeed_ = did_succeed;
+}
+
 void TestAuthenticationRequester::IsUserVerifiableCallback(
     bool is_user_verifiable) {
   is_user_verifiable_ = is_user_verifiable;

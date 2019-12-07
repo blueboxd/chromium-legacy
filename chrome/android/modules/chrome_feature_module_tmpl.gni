@@ -109,10 +109,8 @@ template("chrome_feature_module") {
         loadable_modules = _loadable_modules_64_bit
         shared_libraries = _shared_libraries
       } else {
-        if (build_apk_secondary_abi) {
-          secondary_abi_loadable_modules = _loadable_modules_32_bit
-          secondary_abi_shared_libraries = _shared_libraries
-        }
+        secondary_abi_loadable_modules = _loadable_modules_32_bit
+        secondary_abi_shared_libraries = _shared_libraries
       }
     } else {
       loadable_modules = _loadable_modules_32_bit

@@ -26,6 +26,9 @@ class TranslateInfoBarDelegate;
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
+// Update the infobarDelegate with any new source/target languages changed.
+- (void)updateLanguagesIfNecessary;
+
 // The consumer for the Infobar Modal.
 @property(nonatomic, weak) id<InfobarTranslateModalConsumer> modalConsumer;
 

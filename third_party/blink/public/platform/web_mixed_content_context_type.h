@@ -39,7 +39,7 @@ enum class WebMixedContentContextType {
   kBlockable,
   kOptionallyBlockable,
   kShouldBeBlockable,
-  kLast = kShouldBeBlockable
+  kMaxValue = kShouldBeBlockable
 };
 
 }  // namespace blink

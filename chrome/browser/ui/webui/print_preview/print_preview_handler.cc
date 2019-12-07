@@ -250,6 +250,9 @@ const char kDefaultMode[] = "defaultMode";
 // Name of a dictionary pref holding the policy value for the header/footer
 // checkbox.
 const char kHeaderFooter[] = "headerFooter";
+// Name of a dictionary pref holding the policy value for the background
+// graphics checkbox.
+const char kCssBackground[] = "cssBackground";
 // Name of a dictionary field indicating whether the 'Save to PDF' destination
 // is disabled.
 const char kPdfPrinterDisabled[] = "pdfPrinterDisabled";
@@ -438,6 +441,20 @@ base::Value GetPolicies(const PrefService& prefs) {
   }
   if (!header_footer_policy.DictEmpty())
     policies.SetKey(kHeaderFooter, std::move(header_footer_policy));
+
+  base::Value background_graphics_policy(base::Value::Type::DICTIONARY);
+  if (prefs.HasPrefPath(prefs::kPrintingAllowedBackgroundGraphicsModes)) {
+    background_graphics_policy.SetIntKey(
+        kAllowedMode,
+        prefs.GetInteger(prefs::kPrintingAllowedBackgroundGraphicsModes));
+  }
+  if (prefs.HasPrefPath(prefs::kPrintingBackgroundGraphicsDefault)) {
+    background_graphics_policy.SetIntKey(
+        kDefaultMode,
+        prefs.GetInteger(prefs::kPrintingBackgroundGraphicsDefault));
+  }
+  if (!background_graphics_policy.DictEmpty())
+    policies.SetKey(kCssBackground, std::move(background_graphics_policy));
 
   return policies;
 }

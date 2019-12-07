@@ -30,7 +30,7 @@ class ScopedReadOnlyDirectory {
   explicit ScopedReadOnlyDirectory(const base::FilePath& root_dir);
   ~ScopedReadOnlyDirectory() {
     permission_restorer_.reset();
-    EXPECT_TRUE(base::DeleteFile(read_only_path_, true));
+    EXPECT_TRUE(base::DeleteFileRecursively(read_only_path_));
   }
 
   const base::FilePath& GetReadOnlyPath() { return read_only_path_; }

@@ -8,6 +8,7 @@
 #ifndef CONTENT_COMMON_COMMON_PARAM_TRAITS_MACROS_H_
 #define CONTENT_COMMON_COMMON_PARAM_TRAITS_MACROS_H_
 
+#include "cc/trees/browser_controls_params.h"
 #include "content/common/frame_messages.h"
 #include "content/common/visual_properties.h"
 #include "ipc/ipc_message_macros.h"
@@ -30,6 +31,15 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScreenOrientationType,
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::DisplayMode,
                           blink::mojom::DisplayMode::kMaxValue)
 
+IPC_STRUCT_TRAITS_BEGIN(cc::BrowserControlsParams)
+  IPC_STRUCT_TRAITS_MEMBER(top_controls_height)
+  IPC_STRUCT_TRAITS_MEMBER(top_controls_min_height)
+  IPC_STRUCT_TRAITS_MEMBER(bottom_controls_height)
+  IPC_STRUCT_TRAITS_MEMBER(bottom_controls_min_height)
+  IPC_STRUCT_TRAITS_MEMBER(animate_browser_controls_height_changes)
+  IPC_STRUCT_TRAITS_MEMBER(browser_controls_shrink_blink_size)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(content::VisualProperties)
   IPC_STRUCT_TRAITS_MEMBER(screen_info)
   IPC_STRUCT_TRAITS_MEMBER(auto_resize_enabled)
@@ -38,10 +48,8 @@ IPC_STRUCT_TRAITS_BEGIN(content::VisualProperties)
   IPC_STRUCT_TRAITS_MEMBER(new_size)
   IPC_STRUCT_TRAITS_MEMBER(visible_viewport_size)
   IPC_STRUCT_TRAITS_MEMBER(compositor_viewport_pixel_rect)
-  IPC_STRUCT_TRAITS_MEMBER(browser_controls_shrink_blink_size)
+  IPC_STRUCT_TRAITS_MEMBER(browser_controls_params)
   IPC_STRUCT_TRAITS_MEMBER(scroll_focused_node_into_view)
-  IPC_STRUCT_TRAITS_MEMBER(top_controls_height)
-  IPC_STRUCT_TRAITS_MEMBER(bottom_controls_height)
   IPC_STRUCT_TRAITS_MEMBER(local_surface_id_allocation)
   IPC_STRUCT_TRAITS_MEMBER(is_fullscreen_granted)
   IPC_STRUCT_TRAITS_MEMBER(display_mode)

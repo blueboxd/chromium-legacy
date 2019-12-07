@@ -595,8 +595,9 @@ TEST_F(CreditCardFIDOAuthenticatorTest, Register_NewCardAuthorization) {
   EXPECT_TRUE(fido_authenticator_->IsUserOptedIn());
 
   fido_authenticator_->Authorize(
-      kTestAuthToken, GetTestRequestOptions(kTestChallenge, kTestRelyingPartyId,
-                                            kTestCredentialId));
+      requester_->GetWeakPtr(), kTestAuthToken,
+      GetTestRequestOptions(kTestChallenge, kTestRelyingPartyId,
+                            kTestCredentialId));
   EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::FOLLOWUP_AFTER_CVC_AUTH_FLOW,
             fido_authenticator_->current_flow());
 

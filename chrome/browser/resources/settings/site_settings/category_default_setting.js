@@ -6,27 +6,77 @@
  * @fileoverview
  * 'category-default-setting' is the polymer element for showing a certain
  * category under Site Settings.
+ *
+ * |optionLabel_| toggle is enabled:
+ * +-------------------------------------------------+
+ * | Category                                        |<-- Not defined here
+ * |                                                 |
+ * |  optionLabel_                     ( O)          |
+ * |  optionDescription_                             |
+ * |                                                 |
+ * |  subOptionLabel                   ( O)          |<-- SubOptionMode.TOGGLE
+ * |  subOptionDescription                           |     (optional)
+ * |                                                 |
+ * |  subOptionLabel                                 |<-- SubOptionMode.CHECKBOX
+ * |  [x] subOptionDescription                       |     (optional)
+ * |                                                 |
+ * +-------------------------------------------------+
+ *
+ * |optionLabel_| toggle is disabled:
+ * +-------------------------------------------------+
+ * | Category                                        |<-- Not defined here
+ * |                                                 |
+ * |  optionLabel_                     (O )          |
+ * |  optionDescription_                             |
+ * |                                                 |
+ * |  subOptionLabel                   (O )          |<-- Toggle is off and
+ * |  subOptionDescription                           |    disabled
+ * |                                                 |
+ * +-------------------------------------------------+
+ *
  */
+
+/**
+ * Display modes for a sub-option setting.
+ * @enum {string}
+ */
+const SubOptionMode = {
+  TOGGLE: 'toggle',
+  CHECKBOX: 'checkbox',
+  NONE: 'none',
+};
+
 Polymer({
   is: 'category-default-setting',
 
   behaviors: [SiteSettingsBehavior, WebUIListenerBehavior],
 
   properties: {
-    /* The second line, shown under the |optionLabel_| line. (optional) */
-    optionDescription: String,
-
-    /* The second line, shown under the |subOptionLabel| line. (optional) */
-    subOptionDescription: String,
-
-    /* The sub-option is a separate toggle. Setting this label will show the
-     * additional toggle. Shown above |subOptionDescription|. (optional) */
-    subOptionLabel: String,
 
     /* The on/off text for |optionLabel_| below. */
     toggleOffLabel: String,
     toggleOnLabel: String,
 
+    /* The on/off text for |optionDescription_| below. */
+    toggleOffDescription: String,
+    toggleOnDescription: String,
+
+    /* The sub-option is a separate toggle. Setting this label will show the
+     * additional sub option. Shown above |subOptionDescription|. (optional)
+     */
+    subOptionLabel: String,
+
+    /* The second line, shown under the |subOptionLabel| line. (optional) */
+    subOptionDescription: String,
+
+    /* The valid sub-option modes. */
+    subOptionMode: String,
+
+    /* The pref that sets the sub-option state, when the sub-option is shown
+    as a check-box. */
+    subOptionAsCheckboxPref: Boolean,
+
+    /* Pref based
     /** @private {chrome.settingsPrivate.PrefObject} */
     controlParams_: {
       type: Object,
@@ -36,11 +86,18 @@ Polymer({
     },
 
     /**
-     * The label to be shown next to the toggle (above |optionDescription|).
-     * This will be either toggleOffLabel or toggleOnLabel.
+     * The label to be shown next to the toggle (above
+     * |optionDescription_|). This will be either toggleOffLabel or
+     * toggleOnLabel.
      * @private
      */
     optionLabel_: String,
+
+    /* The second line, shown under the |optionLabel_| line. This will be
+     * either toggleOffDescription or toggleOnDescription. (optional)
+     * @private
+     */
+    optionDescription_: String,
 
     /** @private {!DefaultContentSetting} */
     priorDefaultContentSetting_: {
@@ -223,6 +280,8 @@ Polymer({
               this.computeIsSettingEnabled(defaultValue.setting);
           this.optionLabel_ =
               categoryEnabled ? this.toggleOnLabel : this.toggleOffLabel;
+          this.optionDescription_ = categoryEnabled ? this.toggleOnDescription :
+                                                      this.toggleOffDescription;
         });
   },
 
@@ -233,5 +292,21 @@ Polymer({
   isToggleDisabled_: function() {
     return this.category == settings.ContentSettingsTypes.POPUPS &&
         loadTimeData.getBoolean('isGuest');
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  showSubOptionAsToggle_: function(subOptionMode) {
+    return (subOptionMode == SubOptionMode.TOGGLE);
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  showSubOptionAsCheckbox_: function(subOptionMode) {
+    return (subOptionMode == SubOptionMode.CHECKBOX);
   },
 });

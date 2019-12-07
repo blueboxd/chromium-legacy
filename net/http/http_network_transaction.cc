@@ -1584,8 +1584,9 @@ int HttpNetworkTransaction::HandleIOError(int error) {
         retry_attempts_++;
         ResetConnectionAndRequestForResend();
         error = OK;
-      } else if (session_->params()
-                     .quic_params.retry_without_alt_svc_on_quic_errors) {
+      } else if (session_->context()
+                     .quic_context->params()
+                     ->retry_without_alt_svc_on_quic_errors) {
         // Disable alternative services for this request and retry it. If the
         // retry succeeds, then the alternative service will be marked as
         // broken then.

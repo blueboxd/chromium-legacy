@@ -179,8 +179,10 @@ WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
     WorkerReportingProxy& reporting_proxy)
     : ExecutionContext(isolate,
                        agent,
-                       MakeGarbageCollected<OriginTrialContext>()),
-      SecurityContext(std::move(origin), WebSandboxFlags::kNone, nullptr),
+                       MakeGarbageCollected<OriginTrialContext>(),
+                       std::move(origin),
+                       WebSandboxFlags::kNone,
+                       nullptr),
       off_main_thread_fetch_option_(off_main_thread_fetch_option),
       name_(name),
       parent_devtools_token_(parent_devtools_token),
@@ -406,10 +408,11 @@ WorkerOrWorkletGlobalScope::GetTaskRunner(TaskType type) {
 }
 
 void WorkerOrWorkletGlobalScope::ApplySandboxFlags(SandboxFlags mask) {
-  sandbox_flags_ |= mask;
+  GetSecurityContext().ApplySandboxFlags(mask);
   if (IsSandboxed(WebSandboxFlags::kOrigin) &&
       !GetSecurityOrigin()->IsOpaque()) {
-    SetSecurityOrigin(GetSecurityOrigin()->DeriveNewOpaqueOrigin());
+    GetSecurityContext().SetSecurityOrigin(
+        GetSecurityOrigin()->DeriveNewOpaqueOrigin());
   }
 }
 
@@ -422,7 +425,7 @@ void WorkerOrWorkletGlobalScope::InitContentSecurityPolicyFromVector(
     const Vector<CSPHeaderAndType>& headers) {
   if (!GetContentSecurityPolicy()) {
     auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
-    SetContentSecurityPolicy(csp);
+    GetSecurityContext().SetContentSecurityPolicy(csp);
   }
   for (const auto& policy_and_type : headers) {
     GetContentSecurityPolicy()->DidReceiveHeader(
@@ -490,7 +493,6 @@ void WorkerOrWorkletGlobalScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(modulator_);
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContext::Trace(visitor);
-  SecurityContext::Trace(visitor);
 }
 
 }  // namespace blink

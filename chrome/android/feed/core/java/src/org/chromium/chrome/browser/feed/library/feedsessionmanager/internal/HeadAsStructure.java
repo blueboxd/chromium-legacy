@@ -6,12 +6,12 @@ package org.chromium.chrome.browser.feed.library.feedsessionmanager.internal;
 
 import android.support.annotation.VisibleForTesting;
 
+import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.internal.common.PayloadWithId;
 import org.chromium.chrome.browser.feed.library.api.internal.common.ThreadUtils;
 import org.chromium.chrome.browser.feed.library.api.internal.store.Store;
 import org.chromium.chrome.browser.feed.library.common.Result;
 import org.chromium.chrome.browser.feed.library.common.Validators;
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 import org.chromium.chrome.browser.feed.library.common.functional.Function;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 import org.chromium.chrome.browser.feed.library.common.time.TimingUtils;

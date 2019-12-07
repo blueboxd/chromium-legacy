@@ -508,11 +508,11 @@ cursors.Cursor.prototype = {
           }
 
           // The last valid child index.
-          newIndex--;
+          newIndex = newNode.children.length;
+        } else {
+          newNode = newNode.children[newIndex];
+          newIndex = 0;
         }
-
-        newNode = newNode.children[newIndex];
-        newIndex = 0;
       } else {
         // This offset is a text offset into the descendant visible
         // text. Approximate this by indexing into the inline text boxes.

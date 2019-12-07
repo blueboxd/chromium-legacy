@@ -11,7 +11,8 @@
 
 namespace blink {
 
-RemoteSecurityContext::RemoteSecurityContext() : SecurityContext() {
+RemoteSecurityContext::RemoteSecurityContext()
+    : SecurityContext(nullptr, WebSandboxFlags::kNone, nullptr, kRemote) {
   // RemoteSecurityContext's origin is expected to stay uninitialized until
   // we set it using replicated origin data from the browser process.
   DCHECK(!GetSecurityOrigin());
@@ -22,10 +23,6 @@ RemoteSecurityContext::RemoteSecurityContext() : SecurityContext() {
   // FIXME: Document::initSecurityContext has a few other things we may
   // eventually want here, such as enforcing a setting to
   // grantUniversalAccess().
-}
-
-void RemoteSecurityContext::Trace(blink::Visitor* visitor) {
-  SecurityContext::Trace(visitor);
 }
 
 void RemoteSecurityContext::SetReplicatedOrigin(

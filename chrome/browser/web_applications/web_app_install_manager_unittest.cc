@@ -21,6 +21,7 @@
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/test/test_app_shortcut_manager.h"
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
+#include "chrome/browser/web_applications/test/test_file_handler_manager.h"
 #include "chrome/browser/web_applications/test/test_file_utils.h"
 #include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
 #include "chrome/browser/web_applications/test/test_web_app_registry_controller.h"
@@ -140,9 +141,11 @@ class WebAppInstallManagerTest : public WebAppTest {
         icon_manager_.get());
 
     shortcut_manager_ = std::make_unique<TestAppShortcutManager>(profile());
+    file_handler_manager_ = std::make_unique<TestFileHandlerManager>();
 
     install_manager_ = std::make_unique<WebAppInstallManager>(profile());
     install_manager_->SetSubsystems(&registrar(), shortcut_manager_.get(),
+                                    file_handler_manager_.get(),
                                     install_finalizer_.get());
 
     auto test_url_loader = std::make_unique<TestWebAppUrlLoader>();
@@ -166,6 +169,9 @@ class WebAppInstallManagerTest : public WebAppTest {
   WebAppRegistrar& registrar() { return controller().registrar(); }
   WebAppInstallManager& install_manager() { return *install_manager_; }
   TestAppShortcutManager& shortcut_manager() { return *shortcut_manager_; }
+  TestFileHandlerManager& file_handler_manager() {
+    return *file_handler_manager_;
+  }
   WebAppInstallFinalizer& finalizer() { return *install_finalizer_; }
   TestWebAppUrlLoader& url_loader() { return *test_url_loader_; }
   TestFileUtils& file_utils() {
@@ -340,6 +346,7 @@ class WebAppInstallManagerTest : public WebAppTest {
   std::unique_ptr<WebAppIconManager> icon_manager_;
 
   std::unique_ptr<TestAppShortcutManager> shortcut_manager_;
+  std::unique_ptr<TestFileHandlerManager> file_handler_manager_;
   std::unique_ptr<WebAppInstallManager> install_manager_;
   std::unique_ptr<WebAppInstallFinalizer> install_finalizer_;
   std::unique_ptr<TestWebAppUiManager> ui_manager_;

@@ -16,7 +16,6 @@ source_set("cpp") {
     "//chromeos/components/multidevice/logging",
     "//chromeos/services/multidevice_setup/public/mojom",
     "//mojo/public/cpp/bindings",
-    "//services/service_manager/public/cpp",
   ]
 }
 
@@ -127,6 +126,7 @@ static_library("test_support") {
     ":cpp",
     "//chromeos/services/multidevice_setup",
     "//chromeos/services/multidevice_setup/public/mojom",
+    "//url",
   ]
 
   deps = [
@@ -151,20 +151,6 @@ source_set("unit_tests") {
     "//chromeos/services/multidevice_setup",
     "//chromeos/services/multidevice_setup:test_support",
     "//chromeos/services/multidevice_setup/public/mojom",
-    "//services/service_manager/public/cpp/test:test_support",
     "//testing/gtest",
-  ]
-}
-
-source_set("manifest") {
-  sources = [
-    "manifest.cc",
-    "manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//chromeos/services/multidevice_setup/public/mojom",
-    "//services/service_manager/public/cpp",
   ]
 }

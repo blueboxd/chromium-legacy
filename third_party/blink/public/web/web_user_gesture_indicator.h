@@ -38,6 +38,8 @@ namespace blink {
 
 class WebLocalFrame;
 
+// TODO(mustaq): This class is obsolete.  Define a UAv2 interface on
+// WebLocalFrame and remove this.  crbug.com/959850
 class WebUserGestureIndicator {
  public:
   // Returns true if a user gesture is currently being processed. Must be called

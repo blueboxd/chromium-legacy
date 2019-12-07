@@ -57,6 +57,7 @@
       'Deterministic Android': 'android_without_codecs_release_bot_minimal_symbols',
       'Deterministic Android (dbg)': 'android_debug_bot',
 
+      'android-arm64-proguard-rel': 'android_release_bot_minimal_symbols_arm64',
       'android-cronet-arm-dbg': 'android_cronet_debug_static_bot_arm_no_neon',
       'android-cronet-arm-rel': 'android_cronet_release_bot_minimal_symbols_arm_no_neon',
       'android-cronet-arm64-dbg': 'android_cronet_debug_static_bot_arm64',
@@ -2426,10 +2427,7 @@
     },
 
     'ozone_linux': {
-      'gn_args': ('ozone_auto_platforms=false ozone_platform_wayland=true '
-                  'ozone_platform_headless=true ozone_platform_x11=true '
-                  'ozone_platform_gbm=true '
-                  'use_xkbcommon=true use_ozone=true'),
+      'gn_args': 'use_ozone=true ozone_platform="headless"',
     },
 
     # Used to pass the list of files to instrument for coverage to the compile

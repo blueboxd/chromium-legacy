@@ -771,7 +771,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   }
 
   const network::mojom::IPAddressSpace initiator_address_space =
-      origin_document ? origin_document->AddressSpace()
+      origin_document ? origin_document->GetSecurityContext().AddressSpace()
                       : network::mojom::IPAddressSpace::kUnknown;
 
   Client()->BeginNavigation(

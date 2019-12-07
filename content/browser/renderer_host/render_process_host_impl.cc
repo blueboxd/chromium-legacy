@@ -208,8 +208,9 @@
 #include "services/device/public/mojom/power_monitor.mojom.h"
 #include "services/device/public/mojom/screen_orientation.mojom.h"
 #include "services/device/public/mojom/time_zone_monitor.mojom.h"
-#include "services/metrics/public/mojom/constants.mojom.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/mojom/ukm_interface.mojom.h"
+#include "services/metrics/ukm_recorder_interface.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
@@ -542,15 +543,14 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
 
     spare_render_process_host_ = RenderProcessHostImpl::CreateRenderProcessHost(
         browser_context, nullptr /* storage_partition_impl */,
-        nullptr /* site_instance */, false /* is_for_guests_only */);
+        nullptr /* site_instance */);
     spare_render_process_host_->AddObserver(this);
     spare_render_process_host_->Init();
   }
 
   RenderProcessHost* MaybeTakeSpareRenderProcessHost(
       BrowserContext* browser_context,
-      SiteInstanceImpl* site_instance,
-      bool is_for_guests_only) {
+      SiteInstanceImpl* site_instance) {
     // Give embedder a chance to disable using a spare RenderProcessHost for
     // certain SiteInstances.  Some navigations, such as to NTP or extensions,
     // require passing command-line flags to the renderer process at process
@@ -594,7 +594,7 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
     if (spare_render_process_host_ &&
         browser_context == spare_render_process_host_->GetBrowserContext() &&
         site_storage == spare_render_process_host_->GetStoragePartition() &&
-        !is_for_guests_only && embedder_allows_spare_usage &&
+        !site_instance->IsGuest() && embedder_allows_spare_usage &&
         site_instance_allows_spare_usage) {
       CHECK(spare_render_process_host_->HostHasNotBeenUsed());
 
@@ -1258,6 +1258,12 @@ class RenderProcessHostImpl::IOThreadHostImpl
       return;
     }
 
+    if (auto r = receiver.As<ukm::mojom::UkmRecorderInterface>()) {
+      metrics::UkmRecorderInterface::Create(ukm::UkmRecorder::Get(),
+                                            std::move(r));
+      return;
+    }
+
     std::string interface_name = *receiver.interface_name();
     mojo::ScopedMessagePipeHandle pipe = receiver.PassPipe();
     if (binders_->TryBindInterface(interface_name, &pipe))
@@ -1400,8 +1406,7 @@ int RenderProcessHost::GetCurrentRenderProcessCountForTesting() {
 RenderProcessHost* RenderProcessHostImpl::CreateRenderProcessHost(
     BrowserContext* browser_context,
     StoragePartitionImpl* storage_partition_impl,
-    SiteInstance* site_instance,
-    bool is_for_guests_only) {
+    SiteInstance* site_instance) {
   if (g_render_process_host_factory_) {
     return g_render_process_host_factory_->CreateRenderProcessHost(
         browser_context, site_instance);
@@ -1415,10 +1420,10 @@ RenderProcessHost* RenderProcessHostImpl::CreateRenderProcessHost(
   // stash the Site URL on it. This way, when we start a service worker inside
   // this storage partition, we can create the appropriate SiteInstance for
   // finding a process (e.g., we will try to start a worker from
-  // "https://example.com/sw.js" but need to use the site URL
-  // "chrome-guest://blahblah" to get a process in the guest's
-  // StoragePartition.)
-  if (is_for_guests_only && site_instance &&
+  // "https://example.com/sw.js" but need to use the guest site URL
+  // to get a process in the guest's StoragePartition.)
+  const bool is_for_guests_only = site_instance && site_instance->IsGuest();
+  if (is_for_guests_only &&
       storage_partition_impl->site_for_service_worker().is_empty()) {
     storage_partition_impl->set_site_for_service_worker(
         site_instance->GetSiteURL());
@@ -2079,11 +2084,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       registry.get(),
       base::BindRepeating(&ForwardReceiver<device::mojom::PowerMonitor>,
                           device::mojom::kServiceName));
-
-  AddUIThreadInterface(
-      registry.get(),
-      base::BindRepeating(&ForwardReceiver<ukm::mojom::UkmRecorderInterface>,
-                          metrics::mojom::kMetricsServiceName));
 
   AddUIThreadInterface(
       registry.get(),
@@ -4141,7 +4141,6 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
   const GURL site_url = site_instance->GetSiteURL();
   SiteInstanceImpl::ProcessReusePolicy process_reuse_policy =
       site_instance->process_reuse_policy();
-  bool is_for_guests_only = site_url.SchemeIs(kGuestScheme);
   RenderProcessHost* render_process_host = nullptr;
 
   bool is_unmatched_service_worker = site_instance->is_for_service_worker();
@@ -4205,7 +4204,7 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
   bool spare_was_taken = false;
   if (!render_process_host) {
     render_process_host = spare_process_manager.MaybeTakeSpareRenderProcessHost(
-        browser_context, site_instance, is_for_guests_only);
+        browser_context, site_instance);
     spare_was_taken = (render_process_host != nullptr);
   }
 
@@ -4236,8 +4235,8 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
     // RenderProcessHostFactory may not instantiate a StoragePartition, and
     // creating one here with GetStoragePartition() can run into cross-thread
     // issues as TestBrowserContext initialization is done on the main thread.
-    render_process_host = CreateRenderProcessHost(
-        browser_context, nullptr, site_instance, is_for_guests_only);
+    render_process_host =
+        CreateRenderProcessHost(browser_context, nullptr, site_instance);
   }
 
   // It is important to call PrepareForFutureRequests *after* potentially

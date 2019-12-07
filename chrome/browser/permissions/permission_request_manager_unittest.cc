@@ -790,12 +790,14 @@ class MockNotificationPermissionUiSelector
 
   void SelectUiToUse(PermissionRequest* request,
                      DecisionMadeCallback callback) override {
+    base::Optional<QuietUiReason> reason;
+    if (ui_to_use_ == UiToUse::kQuietUi)
+      reason = QuietUiReason::kEnabledInPrefs;
     if (async_) {
-      base::PostTask(
-          FROM_HERE, {base::CurrentThread()},
-          base::BindOnce(std::move(callback), ui_to_use_, base::nullopt));
+      base::PostTask(FROM_HERE, {base::CurrentThread()},
+                     base::BindOnce(std::move(callback), ui_to_use_, reason));
     } else {
-      std::move(callback).Run(ui_to_use_, base::nullopt);
+      std::move(callback).Run(ui_to_use_, reason);
     }
   }
 

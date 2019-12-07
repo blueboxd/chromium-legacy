@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/request_priority.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -22,6 +23,7 @@ namespace predictors {
 
 ResolveHostClientImpl::ResolveHostClientImpl(
     const GURL& url,
+    const net::NetworkIsolationKey& network_isolation_key,
     ResolveHostCallback callback,
     network::mojom::NetworkContext* network_context)
     : callback_(std::move(callback)) {
@@ -32,7 +34,8 @@ ResolveHostClientImpl::ResolveHostClientImpl(
   parameters->initial_priority = net::RequestPriority::IDLE;
   parameters->is_speculative = true;
   network_context->ResolveHost(
-      net::HostPortPair::FromURL(url), std::move(parameters),
+      net::HostPortPair::FromURL(url), network_isolation_key,
+      std::move(parameters),
       receiver_.BindNewPipeAndPassRemote(base::CreateSingleThreadTaskRunner(
           {content::BrowserThread::UI,
            content::BrowserTaskType::kPreconnect})));

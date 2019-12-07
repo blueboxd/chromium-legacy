@@ -19,6 +19,9 @@
 #include "content/public/browser/system_connector.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/power_monitor.mojom.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/mojom/ukm_interface.mojom.h"
+#include "services/metrics/ukm_recorder_interface.h"
 
 #if defined(OS_MACOSX)
 #include "content/browser/sandbox_support_mac_impl.h"
@@ -107,6 +110,12 @@ void BrowserChildProcessHostImpl::BindHostReceiver(
                                             std::move(r));
             },
             std::move(r)));
+    return;
+  }
+
+  if (auto r = receiver.As<ukm::mojom::UkmRecorderInterface>()) {
+    metrics::UkmRecorderInterface::Create(ukm::UkmRecorder::Get(),
+                                          std::move(r));
     return;
   }
 

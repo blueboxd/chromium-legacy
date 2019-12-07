@@ -23,13 +23,13 @@
 
 namespace blink {
 
+class ExecutionContext;
 class FetchParameters;
 class ImageResourceInfo;
 class ImageResourceObserver;
 class ResourceError;
 class ResourceFetcher;
 class ResourceResponse;
-class SecurityContext;
 
 // ImageResourceContent is a container that holds fetch result of
 // an ImageResource in a decoded form.
@@ -182,7 +182,7 @@ class CORE_EXPORT ImageResourceContent final
   // extraneous metadata). "well-compressed" is determined by comparing the
   // image's compression ratio against a specific value that is defined by an
   // unoptimized image feature policy on |context|.
-  bool IsAcceptableCompressionRatio(const SecurityContext& context);
+  bool IsAcceptableCompressionRatio(const ExecutionContext& context);
 
   void LoadDeferredImage(ResourceFetcher* fetcher);
 

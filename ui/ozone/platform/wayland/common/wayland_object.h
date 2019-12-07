@@ -34,9 +34,11 @@ struct wl_surface;
 struct wl_touch;
 struct wp_presentation;
 struct wp_presentation_feedback;
-struct xdg_shell;
+struct xdg_wm_base;
 struct xdg_surface;
+struct xdg_toplevel;
 struct xdg_popup;
+struct xdg_positioner;
 struct zwp_linux_dmabuf_v1;
 struct zxdg_shell_v6;
 struct zxdg_surface_v6;
@@ -214,9 +216,9 @@ struct ObjectTraits<wp_presentation_feedback> {
 };
 
 template <>
-struct ObjectTraits<xdg_shell> {
+struct ObjectTraits<xdg_wm_base> {
   static const wl_interface* interface;
-  static void (*deleter)(xdg_shell*);
+  static void (*deleter)(xdg_wm_base*);
 };
 
 template <>
@@ -226,9 +228,21 @@ struct ObjectTraits<xdg_surface> {
 };
 
 template <>
+struct ObjectTraits<xdg_toplevel> {
+  static const wl_interface* interface;
+  static void (*deleter)(xdg_toplevel*);
+};
+
+template <>
 struct ObjectTraits<xdg_popup> {
   static const wl_interface* interface;
   static void (*deleter)(xdg_popup*);
+};
+
+template <>
+struct ObjectTraits<xdg_positioner> {
+  static const wl_interface* interface;
+  static void (*deleter)(xdg_positioner*);
 };
 
 template <>

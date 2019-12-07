@@ -1242,7 +1242,7 @@ TEST_F(HttpStreamFactoryTest, UsePreConnectIfNoZeroRTT) {
                                host_port_pair.port());
     http_server_properties.SetQuicAlternativeService(
         server, NetworkIsolationKey(), alternative_service, expiration,
-        session_params.quic_params.supported_versions);
+        DefaultSupportedQuicVersions());
 
     HttpNetworkSession::Context session_context =
         SpdySessionDependencies::CreateSessionContext(&session_deps);
@@ -2212,14 +2212,14 @@ class HttpStreamFactoryBidirectionalQuicTest
   // Disable bidirectional stream over QUIC. This should be invoked before
   // Initialize().
   void DisableQuicBidirectionalStream() {
-    params_.quic_params.disable_bidirectional_streams = true;
+    quic_context_.params()->disable_bidirectional_streams = true;
   }
 
   void Initialize() {
     params_.enable_quic = true;
-    params_.quic_params.supported_versions =
+    quic_context_.params()->supported_versions =
         quic::test::SupportedVersions(version_);
-    params_.quic_params.headers_include_h2_stream_dependency =
+    quic_context_.params()->headers_include_h2_stream_dependency =
         client_headers_include_h2_stream_dependency_;
 
     HttpNetworkSession::Context session_context;
@@ -2257,7 +2257,7 @@ class HttpStreamFactoryBidirectionalQuicTest
     http_server_properties_.SetQuicAlternativeService(
         url::SchemeHostPort(default_url_), NetworkIsolationKey(),
         alternative_service, expiration,
-        session_->params().quic_params.supported_versions);
+        session_->context().quic_context->params()->supported_versions);
   }
 
   test::QuicTestPacketMaker& client_packet_maker() {
@@ -3346,6 +3346,7 @@ class ProcessAlternativeServicesTest : public TestWithTaskEnvironment {
   HttpNetworkSession::Context session_context_;
   std::unique_ptr<HttpNetworkSession> session_;
   HttpServerProperties http_server_properties_;
+  QuicContext quic_context_;
 
  private:
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_ =
@@ -3357,7 +3358,6 @@ class ProcessAlternativeServicesTest : public TestWithTaskEnvironment {
   TransportSecurityState transport_security_state_;
   MultiLogCTVerifier ct_verifier_;
   DefaultCTPolicyEnforcer ct_policy_enforcer_;
-  QuicContext quic_context_;
 };
 
 TEST_F(ProcessAlternativeServicesTest, ProcessEmptyAltSvc) {
@@ -3411,7 +3411,7 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcClear) {
 }
 
 TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuic) {
-  session_params_.quic_params.supported_versions = quic::AllSupportedVersions();
+  quic_context_.params()->supported_versions = quic::AllSupportedVersions();
   session_ =
       std::make_unique<HttpNetworkSession>(session_params_, session_context_);
   url::SchemeHostPort origin(url::kHttpsScheme, "example.com", 443);
@@ -3442,7 +3442,7 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuic) {
 }
 
 TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuicIetf) {
-  session_params_.quic_params.supported_versions = quic::AllSupportedVersions();
+  quic_context_.params()->supported_versions = quic::AllSupportedVersions();
   session_ =
       std::make_unique<HttpNetworkSession>(session_params_, session_context_);
   url::SchemeHostPort origin(url::kHttpsScheme, "example.com", 443);
@@ -3484,7 +3484,7 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuicIetf) {
 }
 
 TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcHttp2) {
-  session_params_.quic_params.supported_versions = quic::AllSupportedVersions();
+  quic_context_.params()->supported_versions = quic::AllSupportedVersions();
   session_ =
       std::make_unique<HttpNetworkSession>(session_params_, session_context_);
   url::SchemeHostPort origin(url::kHttpsScheme, "example.com", 443);

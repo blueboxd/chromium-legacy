@@ -137,11 +137,35 @@ public class WebContentsDelegateAndroid {
     }
 
     /**
+     * @return The minimum visible height the top controls can have in DIP.
+     */
+    @CalledByNative
+    public int getTopControlsMinHeight() {
+        return 0;
+    }
+
+    /**
      * @return The height of the bottom controls in DIP.
      */
     @CalledByNative
     public int getBottomControlsHeight() {
         return 0;
+    }
+
+    /**
+     * @return The minimum visible height the bottom controls can have in DIP.
+     */
+    @CalledByNative
+    public int getBottomControlsMinHeight() {
+        return 0;
+    }
+
+    /**
+     * @return Whether or not the browser controls height changes should be animated.
+     */
+    @CalledByNative
+    public boolean shouldAnimateBrowserControlsHeightChanges() {
+        return false;
     }
 
     /**

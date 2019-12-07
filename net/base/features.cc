@@ -76,6 +76,14 @@ const base::FeatureParam<int>
         &kRecentHttpSameSiteAccessGrantsLegacyCookieSemantics,
         "RecentHttpSameSiteAccessGrantsLegacyCookieSemanticsMilliseconds", 0};
 
+const base::Feature kRecentCreationTimeGrantsLegacyCookieSemantics{
+    "RecentCreationTimeGrantsLegacyCookieSemantics",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<int>
+    kRecentCreationTimeGrantsLegacyCookieSemanticsMilliseconds{
+        &kRecentCreationTimeGrantsLegacyCookieSemantics,
+        "RecentCreationTimeGrantsLegacyCookieSemanticsMilliseconds", 0};
+
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
 const base::Feature kCertVerifierBuiltinFeature {
   "CertVerifierBuiltin",

@@ -20,7 +20,8 @@ class PrintBackendCUPS : public PrintBackend {
  public:
   PrintBackendCUPS(const GURL& print_server_url,
                    http_encryption_t encryption,
-                   bool blocking);
+                   bool blocking,
+                   const std::string& locale);
 
   // This static function is exposed here for use in the tests.
   PRINTING_EXPORT static bool PrinterBasicInfoFromCUPS(

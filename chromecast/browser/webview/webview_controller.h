@@ -53,9 +53,10 @@ class WebviewController : public CastWebContents::Delegate,
   // Close the page. This will cause a stopped response to eventually be sent.
   void ClosePage();
 
+  // Dispatch a navigation request event with the information supplied in the
+  // navigation handle.
   void SendNavigationEvent(WebviewNavigationThrottle* throttle,
-                           const GURL& url,
-                           bool is_in_main_frame);
+                           content::NavigationHandle* navigation_handle);
 
  protected:
   content::WebContents* GetWebContents() override;

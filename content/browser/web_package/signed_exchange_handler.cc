@@ -43,10 +43,10 @@
 #include "net/filter/source_stream.h"
 #include "net/ssl/ssl_info.h"
 #include "services/network/public/cpp/features.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/web_package/signed_exchange_request_matcher.h"
 
@@ -453,8 +453,7 @@ void SignedExchangeHandler::RunErrorCallback(SignedExchangeLoadResult result,
         nullptr);
   }
   std::move(headers_callback_)
-      .Run(result, error, GetFallbackUrl(), network::ResourceResponseHead(),
-           nullptr);
+      .Run(result, error, GetFallbackUrl(), nullptr, nullptr);
   state_ = State::kHeadersCallbackCalled;
 }
 
@@ -643,12 +642,12 @@ void SignedExchangeHandler::OnVerifyCert(
     return;
   }
 
-  network::ResourceResponseHead response_head;
-  response_head.is_signed_exchange_inner_response = true;
+  auto response_head = network::mojom::URLResponseHead::New();
+  response_head->is_signed_exchange_inner_response = true;
 
-  response_head.headers = envelope_->BuildHttpResponseHeaders();
-  response_head.headers->GetMimeTypeAndCharset(&response_head.mime_type,
-                                               &response_head.charset);
+  response_head->headers = envelope_->BuildHttpResponseHeaders();
+  response_head->headers->GetMimeTypeAndCharset(&response_head->mime_type,
+                                                &response_head->charset);
 
   if (!request_matcher_->MatchRequest(envelope_->response_headers())) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
@@ -661,13 +660,13 @@ void SignedExchangeHandler::OnVerifyCert(
 
   // TODO(https://crbug.com/803774): Resource timing for signed exchange
   // loading is not speced yet. https://github.com/WICG/webpackage/issues/156
-  response_head.load_timing.request_start_time = base::Time::Now();
+  response_head->load_timing.request_start_time = base::Time::Now();
   base::TimeTicks now(base::TimeTicks::Now());
-  response_head.load_timing.request_start = now;
-  response_head.load_timing.send_start = now;
-  response_head.load_timing.send_end = now;
-  response_head.load_timing.receive_headers_end = now;
-  response_head.content_length = response_head.headers->GetContentLength();
+  response_head->load_timing.request_start = now;
+  response_head->load_timing.send_start = now;
+  response_head->load_timing.send_end = now;
+  response_head->load_timing.receive_headers_end = now;
+  response_head->content_length = response_head->headers->GetContentLength();
 
   auto body_stream = CreateResponseBodyStream();
   if (!body_stream) {
@@ -691,10 +690,11 @@ void SignedExchangeHandler::OnVerifyCert(
         envelope_, unverified_cert_chain_->cert(), &ssl_info);
   }
 
-  response_head.ssl_info = std::move(ssl_info);
+  response_head->ssl_info = std::move(ssl_info);
   std::move(headers_callback_)
       .Run(SignedExchangeLoadResult::kSuccess, net::OK,
-           envelope_->request_url().url, response_head, std::move(body_stream));
+           envelope_->request_url().url, std::move(response_head),
+           std::move(body_stream));
   state_ = State::kHeadersCallbackCalled;
 }
 

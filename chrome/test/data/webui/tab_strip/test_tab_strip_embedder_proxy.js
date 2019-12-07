@@ -16,6 +16,7 @@ export class TestTabStripEmbedderProxy extends TestBrowserProxy {
       'showTabContextMenu',
       'reportTabActivationDuration',
       'reportTabDataReceivedDuration',
+      'reportTabCreationDuration',
     ]);
 
     this.colors_ = {};
@@ -73,5 +74,9 @@ export class TestTabStripEmbedderProxy extends TestBrowserProxy {
 
   reportTabDataReceivedDuration(tabCount, durationMs) {
     this.methodCalled('reportTabDataReceivedDuration', [tabCount, durationMs]);
+  }
+
+  reportTabCreationDuration(tabCount, durationMs) {
+    this.methodCalled('reportTabCreationDuration', [tabCount, durationMs]);
   }
 }

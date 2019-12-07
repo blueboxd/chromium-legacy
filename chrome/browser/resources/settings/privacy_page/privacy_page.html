@@ -267,7 +267,8 @@
           <category-default-setting category="{{ContentSettingsTypes.COOKIES}}"
               toggle-off-label="$i18n{siteSettingsBlocked}"
               toggle-on-label="$i18n{siteSettingsCookiesAllowedRecommended}"
-              sub-option-label="$i18n{deleteDataPostSession}">
+              sub-option-label="$i18n{deleteDataPostSession}"
+              sub-option-mode="toggle">
           </category-default-setting>
           <settings-toggle-button
               pref="{{prefs.profile.block_third_party_cookies}}"
@@ -438,11 +439,29 @@
         <settings-subpage page-title="$i18n{siteSettingsCategoryNotifications}"
             search-label="$i18n{siteSettingsAllSitesSearch}"
             search-term="{{searchFilter_}}">
-          <category-default-setting
-              toggle-off-label="$i18n{siteSettingsBlocked}"
-              toggle-on-label="$i18n{siteSettingsAskBeforeSendingRecommended}"
-              category="{{ContentSettingsTypes.NOTIFICATIONS}}">
-          </category-default-setting>
+          <template is="dom-if" if="[[enableQuietNotificationPromptsSetting_]]">
+            <category-default-setting
+                toggle-off-label="$i18n{siteSettingsCategoryNotifications}"
+                toggle-on-label="$i18n{siteSettingsCategoryNotifications}"
+                toggle-off-description="$i18n{siteSettingsNotificationsBlock}"
+                toggle-on-description="$i18n{siteSettingsNotificationsAsk}"
+                category="{{ContentSettingsTypes.NOTIFICATIONS}}"
+                sub-option-as-checkbox-pref="{{prefs.profile.content_settings.enable_quiet_permission_ui.notifications}}"
+                sub-option-label=
+                    "$i18n{siteSettingsEnableQuietNotificationPrompts}"
+                sub-option-mode="checkbox">
+            </category-default-setting>
+          </template>
+          <template is="dom-if" if="[[!enableQuietNotificationPromptsSetting_]]">
+            <category-default-setting
+                toggle-off-label="$i18n{siteSettingsCategoryNotifications}"
+                toggle-on-label="$i18n{siteSettingsCategoryNotifications}"
+                toggle-off-description="$i18n{siteSettingsNotificationsBlock}"
+                toggle-on-description="$i18n{siteSettingsNotificationsAsk}"
+                category="{{ContentSettingsTypes.NOTIFICATIONS}}"
+                sub-option-mode="none">
+            </category-default-setting>
+          </template>
           <category-setting-exceptions
               category="{{ContentSettingsTypes.NOTIFICATIONS}}"
               block-header="$i18n{siteSettingsBlock}"

@@ -4,8 +4,15 @@
 
 #include "chrome/browser/chromeos/extensions/printing/printing_api_handler.h"
 
+#include "base/stl_util.h"
+#include "chrome/browser/chromeos/extensions/printing/printing_api_utils.h"
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
+#include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/printing/print_preview_sticky_settings.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
@@ -18,6 +25,9 @@ PrintingAPIHandler::PrintingAPIHandler(content::BrowserContext* browser_context)
       extension_registry_(ExtensionRegistry::Get(browser_context)),
       print_job_manager_(
           chromeos::CupsPrintJobManagerFactory::GetForBrowserContext(
+              browser_context)),
+      printers_manager_(
+          chromeos::CupsPrintersManagerFactory::GetForBrowserContext(
               browser_context)),
       print_job_manager_observer_(this) {
   print_job_manager_observer_.Add(print_job_manager_);
@@ -38,6 +48,36 @@ PrintingAPIHandler* PrintingAPIHandler::Get(
     content::BrowserContext* browser_context) {
   return BrowserContextKeyedAPIFactory<PrintingAPIHandler>::Get(
       browser_context);
+}
+
+std::vector<api::printing::Printer> PrintingAPIHandler::GetPrinters() {
+  PrefService* prefs =
+      Profile::FromBrowserContext(browser_context_)->GetPrefs();
+
+  base::Optional<DefaultPrinterRules> default_printer_rules =
+      GetDefaultPrinterRules(prefs->GetString(
+          prefs::kPrintPreviewDefaultDestinationSelectionRules));
+
+  auto* sticky_settings = printing::PrintPreviewStickySettings::GetInstance();
+  sticky_settings->RestoreFromPrefs(prefs);
+  base::flat_map<std::string, int> recently_used_ranks =
+      sticky_settings->GetPrinterRecentlyUsedRanks();
+
+  static constexpr chromeos::PrinterClass kPrinterClasses[] = {
+      chromeos::PrinterClass::kEnterprise,
+      chromeos::PrinterClass::kSaved,
+      chromeos::PrinterClass::kAutomatic,
+  };
+  std::vector<api::printing::Printer> all_printers;
+  for (auto printer_class : kPrinterClasses) {
+    const std::vector<chromeos::Printer>& printers =
+        printers_manager_->GetPrinters(printer_class);
+    for (const auto& printer : printers) {
+      all_printers.emplace_back(
+          PrinterToIdl(printer, default_printer_rules, recently_used_ranks));
+    }
+  }
+  return all_printers;
 }
 
 void PrintingAPIHandler::OnPrintJobCreated(

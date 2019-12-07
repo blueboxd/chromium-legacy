@@ -22,7 +22,7 @@ class AppCacheManifestParserTest : public testing::Test {
 
 TEST(AppCacheManifestParserTest, NoData) {
   const GURL url("http://localhost");
-  const std::string scope = url.GetWithEmptyPath().path();
+  const std::string scope = url.GetWithoutFilename().path();
   AppCacheManifest manifest;
 
   EXPECT_FALSE(ParseManifest(
@@ -36,7 +36,7 @@ TEST(AppCacheManifestParserTest, NoData) {
 
 TEST(AppCacheManifestParserTest, CheckSignature) {
   const GURL url("http://localhost");
-  const std::string scope = url.GetWithEmptyPath().path();
+  const std::string scope = url.GetWithoutFilename().path();
 
   const std::string kBadSignatures[] = {
     "foo",
@@ -80,7 +80,7 @@ TEST(AppCacheManifestParserTest, CheckSignature) {
 
 TEST(AppCacheManifestParserTest, HeaderMetrics) {
   const GURL url("http://localhost");
-  const std::string scope = url.GetWithEmptyPath().path();
+  const std::string scope = url.GetWithoutFilename().path();
 
   struct TestCase {
     std::string manifest;
@@ -108,7 +108,7 @@ TEST(AppCacheManifestParserTest, HeaderMetrics) {
 
 TEST(AppCacheManifestParserTest, DangerousModeMetrics) {
   const GURL url("http://localhost");
-  const std::string scope = url.GetWithEmptyPath().path();
+  const std::string scope = url.GetWithoutFilename().path();
 
   struct TestCase {
     std::string manifest;
@@ -143,20 +143,75 @@ TEST(AppCacheManifestParserTest, NoManifestUrl) {
     "http://absolute.com/addme.com");
   const GURL kUrl;
   const std::string kScope("/");
-  EXPECT_TRUE(ParseManifest(kUrl, kScope, kData.c_str(), kData.length(),
-                            PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES,
-                            manifest));
+  EXPECT_FALSE(ParseManifest(kUrl, kScope, kData.c_str(), kData.length(),
+                             PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES,
+                             manifest));
   EXPECT_TRUE(manifest.explicit_urls.empty());
   EXPECT_TRUE(manifest.fallback_namespaces.empty());
   EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
   EXPECT_FALSE(manifest.online_whitelist_all);
-  EXPECT_EQ(manifest.parser_version, 0);
+  EXPECT_EQ(manifest.parser_version, -1);
+}
+
+TEST(AppCacheManifestParserTest, NoManifestScope) {
+  AppCacheManifest manifest;
+  const std::string kData(
+      "CACHE MANIFEST\r"
+      "relative/tobase.com\r"
+      "http://absolute.com/addme.com");
+  const GURL kUrl("http://localhost");
+  const std::string kScope;
+  EXPECT_FALSE(ParseManifest(kUrl, kScope, kData.c_str(), kData.length(),
+                             PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES,
+                             manifest));
+  EXPECT_TRUE(manifest.explicit_urls.empty());
+  EXPECT_TRUE(manifest.fallback_namespaces.empty());
+  EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
+  EXPECT_FALSE(manifest.online_whitelist_all);
+  EXPECT_EQ(manifest.parser_version, -1);
+}
+
+TEST(AppCacheManifestParserTest, NoManifestUrlAndScope) {
+  AppCacheManifest manifest;
+  const std::string kData(
+      "CACHE MANIFEST\r"
+      "relative/tobase.com\r"
+      "http://absolute.com/addme.com");
+  const GURL kUrl;
+  const std::string kScope;
+  EXPECT_FALSE(ParseManifest(kUrl, kScope, kData.c_str(), kData.length(),
+                             PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES,
+                             manifest));
+  EXPECT_TRUE(manifest.explicit_urls.empty());
+  EXPECT_TRUE(manifest.fallback_namespaces.empty());
+  EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
+  EXPECT_FALSE(manifest.online_whitelist_all);
+  EXPECT_EQ(manifest.parser_version, -1);
+}
+
+TEST(AppCacheManifestParserTest, SimpleManifest) {
+  AppCacheManifest manifest;
+  const std::string kData(
+      "CACHE MANIFEST\r"
+      "relative/tobase.com\r"
+      "http://absolute.com/addme.com");
+  const GURL kUrl("http://localhost");
+  const std::string kScope = "/";
+  EXPECT_TRUE(ParseManifest(kUrl, kScope, kData.c_str(), kData.length(),
+                            PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES,
+                            manifest));
+  const size_t kExpected = 2;
+  EXPECT_EQ(manifest.explicit_urls.size(), kExpected);
+  EXPECT_TRUE(manifest.fallback_namespaces.empty());
+  EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
+  EXPECT_FALSE(manifest.online_whitelist_all);
+  EXPECT_EQ(manifest.parser_version, 1);
 }
 
 TEST(AppCacheManifestParserTest, ExplicitUrls) {
   AppCacheManifest manifest;
   const GURL kUrl("http://www.foo.com");
-  const std::string kScope = kUrl.GetWithEmptyPath().path();
+  const std::string kScope = kUrl.GetWithoutFilename().path();
   const std::string kData("CACHE MANIFEST\r"
     "relative/one\r"
     "# some comment\r"
@@ -182,7 +237,7 @@ TEST(AppCacheManifestParserTest, ExplicitUrls) {
   EXPECT_FALSE(manifest.online_whitelist_all);
   EXPECT_FALSE(manifest.did_ignore_intercept_namespaces);
   EXPECT_FALSE(manifest.did_ignore_fallback_namespaces);
-  EXPECT_EQ(manifest.parser_version, 0);
+  EXPECT_EQ(manifest.parser_version, 1);
 
   std::unordered_set<std::string> urls = manifest.explicit_urls;
   const size_t kExpected = 5;
@@ -219,7 +274,7 @@ TEST(AppCacheManifestParserTest, ExplicitUrls) {
 TEST(AppCacheManifestParserTest, WhitelistUrls) {
   AppCacheManifest manifest;
   const GURL kUrl("http://www.bar.com");
-  const std::string kScope = kUrl.GetWithEmptyPath().path();
+  const std::string kScope = kUrl.GetWithoutFilename().path();
   const std::string kData("CACHE MANIFEST\r"
     "NETWORK:\r"
     "relative/one\r"
@@ -265,7 +320,7 @@ TEST(AppCacheManifestParserTest, WhitelistUrls) {
 TEST(AppCacheManifestParserTest, FallbackUrls) {
   AppCacheManifest manifest;
   const GURL kUrl("http://glorp.com");
-  const std::string kScope = kUrl.GetWithEmptyPath().path();
+  const std::string kScope = kUrl.GetWithoutFilename().path();
   const std::string kData("CACHE MANIFEST\r"
     "# a comment\r"
     "CACHE:\r"
@@ -340,7 +395,7 @@ TEST(AppCacheManifestParserTest, FallbackUrls) {
 TEST(AppCacheManifestParserTest, FallbackUrlsWithPort) {
   AppCacheManifest manifest;
   const GURL kUrl("http://www.portme.com:1234");
-  const std::string kScope = kUrl.GetWithEmptyPath().path();
+  const std::string kScope = kUrl.GetWithoutFilename().path();
   const std::string kData("CACHE MANIFEST\r"
     "FALLBACK:\r"
     "http://www.portme.com:1234/one relative/onefb\r"
@@ -390,7 +445,7 @@ TEST(AppCacheManifestParserTest, FallbackUrlsWithPort) {
 TEST(AppCacheManifestParserTest, InterceptUrls) {
   AppCacheManifest manifest;
   const GURL kUrl("http://www.portme.com:1234");
-  const std::string kScope = kUrl.GetWithEmptyPath().path();
+  const std::string kScope = kUrl.GetWithoutFilename().path();
   const std::string kData("CHROMIUM CACHE MANIFEST\r"
     "CHROMIUM-INTERCEPT:\r"
     "http://www.portme.com:1234/one return relative/int1\r"
@@ -449,7 +504,7 @@ TEST(AppCacheManifestParserTest, InterceptUrls) {
 TEST(AppCacheManifestParserTest, ComboUrls) {
   AppCacheManifest manifest;
   const GURL kUrl("http://combo.com:42");
-  const std::string kScope = kUrl.GetWithEmptyPath().path();
+  const std::string kScope = kUrl.GetWithoutFilename().path();
   const std::string kData("CACHE MANIFEST\r"
     "relative/explicit-1\r"
     "# some comment\r"
@@ -516,7 +571,7 @@ TEST(AppCacheManifestParserTest, ComboUrls) {
 TEST(AppCacheManifestParserTest, UnusualUtf8) {
   AppCacheManifest manifest;
   const GURL kUrl("http://bad.com");
-  const std::string kScope = kUrl.GetWithEmptyPath().path();
+  const std::string kScope = kUrl.GetWithoutFilename().path();
   const std::string kData("CACHE MANIFEST\r"
     "\xC0" "invalidutf8\r"
     "nonbmp" "\xF1\x84\xAB\xBC\r");
@@ -532,7 +587,7 @@ TEST(AppCacheManifestParserTest, UnusualUtf8) {
 TEST(AppCacheManifestParserTest, IgnoreAfterSpace) {
   AppCacheManifest manifest;
   const GURL kUrl("http://smorg.borg");
-  const std::string kScope = kUrl.GetWithEmptyPath().path();
+  const std::string kScope = kUrl.GetWithoutFilename().path();
   const std::string kData(
     "CACHE MANIFEST\r"
     "resource.txt this stuff after the white space should be ignored\r");
@@ -547,7 +602,7 @@ TEST(AppCacheManifestParserTest, IgnoreAfterSpace) {
 TEST(AppCacheManifestParserTest, DifferentOriginUrlWithSecureScheme) {
   AppCacheManifest manifest;
   const GURL kUrl("https://www.foo.com");
-  const std::string kScope = kUrl.GetWithEmptyPath().path();
+  const std::string kScope = kUrl.GetWithoutFilename().path();
   const std::string kData("CACHE MANIFEST\r"
     "CACHE: \r"
     "relative/secureschemesameorigin\r"
@@ -576,7 +631,7 @@ TEST(AppCacheManifestParserTest, DifferentOriginUrlWithSecureScheme) {
 
 TEST(AppCacheManifestParserTest, PatternMatching) {
   const GURL kUrl("http://foo.com/manifest");
-  const std::string kScope = kUrl.GetWithEmptyPath().path();
+  const std::string kScope = kUrl.GetWithoutFilename().path();
   const std::string kManifestBody(
       "CACHE MANIFEST\r"
       "CACHE: \r"
@@ -643,7 +698,7 @@ TEST(AppCacheManifestParserTest, PatternMatching) {
       manifest.online_whitelist_namespaces[1].target_url);
 }
 
-TEST(AppCacheManifestParserTest, IgnoreDangerousFallbacks) {
+TEST(AppCacheManifestParserTest, IgnoreDangerousFallbacksWithGlobalScope) {
   const GURL kUrl("http://foo.com/scope/manifest?with_query_args");
   const std::string kScope = kUrl.GetWithEmptyPath().path();
   const std::string kData(
@@ -672,9 +727,39 @@ TEST(AppCacheManifestParserTest, IgnoreDangerousFallbacks) {
             manifest.fallback_namespaces[0].namespace_url);
 }
 
+TEST(AppCacheManifestParserTest, IgnoreDangerousFallbacksWithDefaultScope) {
+  const GURL kUrl("http://foo.com/scope/manifest?with_query_args");
+  const std::string kScope = kUrl.GetWithoutFilename().path();
+  const std::string kData(
+      "CACHE MANIFEST\r"
+      "FALLBACK:\r"
+      "http://foo.com/scope/  fallback_url\r"
+      "http://foo.com/out_of_scope/ fallback_url\r");
+
+  // Scope matching depends on resolving "." as a relative url.
+  EXPECT_EQ(kUrl.GetWithoutFilename().spec(),
+            std::string("http://foo.com/scope/"));
+
+  AppCacheManifest manifest;
+  manifest = AppCacheManifest();
+  EXPECT_TRUE(ParseManifest(kUrl, kScope, kData.c_str(), kData.length(),
+                            PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES,
+                            manifest));
+  EXPECT_FALSE(manifest.did_ignore_fallback_namespaces);
+  EXPECT_EQ(1u, manifest.fallback_namespaces.size());
+
+  manifest = AppCacheManifest();
+  EXPECT_TRUE(ParseManifest(kUrl, kScope, kData.c_str(), kData.length(),
+                            PARSE_MANIFEST_PER_STANDARD, manifest));
+  EXPECT_TRUE(manifest.did_ignore_fallback_namespaces);
+  EXPECT_EQ(1u, manifest.fallback_namespaces.size());
+  EXPECT_EQ(GURL("http://foo.com/scope/"),
+            manifest.fallback_namespaces[0].namespace_url);
+}
+
 TEST(AppCacheManifestParserTest, NetworkPatternMetrics) {
   const GURL url("http://foo.com/scope/manifest?with_query_args");
-  const std::string scope = url.GetWithEmptyPath().path();
+  const std::string scope = url.GetWithoutFilename().path();
 
   struct TestCase {
     std::string manifest;
@@ -709,7 +794,7 @@ TEST(AppCacheManifestParserTest, NetworkPatternMetrics) {
   }
 }
 
-TEST(AppCacheManifestParserTest, FallbackPatternMetrics) {
+TEST(AppCacheManifestParserTest, FallbackPatternMetricsWithGlobalScope) {
   const GURL url("http://foo.com/scope/manifest?with_query_args");
   const std::string scope = url.GetWithEmptyPath().path();
 
@@ -746,7 +831,53 @@ TEST(AppCacheManifestParserTest, FallbackPatternMetrics) {
   }
 }
 
-TEST(AppCacheManifestParserTest, InterceptUsageMetrics) {
+TEST(AppCacheManifestParserTest, FallbackPatternMetricsWithDefaultScope) {
+  const GURL url("http://foo.com/scope/manifest?with_query_args");
+  const std::string scope = url.GetWithoutFilename().path();
+
+  struct TestCase {
+    std::string manifest;
+    int expected_false_count;
+    int expected_true_count;
+  } test_cases[] = {
+      {"", 1, 0},
+      {"FALLBACK:\rhttp://foo.com/fallback /url\r", 1, 0},
+      {"FALLBACK:\rhttp://foo.com/fallback_pattern* /pattern isPattern\r", 1,
+       0},
+      {"FALLBACK:\rhttp://foo.com/scope/fallback /url\r", 1, 0},
+      {"FALLBACK:\rhttp://foo.com/scope/fallback_pattern* /pattern isPattern\r",
+       0, 1},
+      {"NETWORK:\r*\r", 1, 0},
+      {"NETWORK:\rhttp://foo.com/network\r", 1, 0},
+      {"NETWORK:\rhttp://foo.com/network_pattern* isPattern\r", 1, 0},
+      {"CHROMIUM-INTERCEPT:\rhttp://foo.com/intercept return /url\r", 1, 0},
+      {"CHROMIUM-INTERCEPT:\r"
+       "http://foo.com/intercept* return /pattern isPattern\r",
+       1, 0},
+      {"CHROMIUM-INTERCEPT:\r"
+       "http://foo.com/scope/intercept return /url\r",
+       1, 0},
+      {"CHROMIUM-INTERCEPT:\r"
+       "http://foo.com/scope/intercept* return /pattern isPattern\r",
+       1, 0},
+  };
+
+  for (const auto& test_case : test_cases) {
+    AppCacheManifest manifest;
+    base::HistogramTester tester;
+    std::string manifest_text =
+        std::string("CACHE MANIFEST\r") + test_case.manifest;
+
+    ParseManifest(url, scope, manifest_text.c_str(), manifest_text.length(),
+                  PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES, manifest);
+    tester.ExpectBucketCount("appcache.Manifest.FallbackPattern", 0,
+                             test_case.expected_false_count);
+    tester.ExpectBucketCount("appcache.Manifest.FallbackPattern", 1,
+                             test_case.expected_true_count);
+  }
+}
+
+TEST(AppCacheManifestParserTest, InterceptUsageMetricsWithGlobalScope) {
   const GURL url("http://foo.com/scope/manifest?with_query_args");
   const std::string scope = url.GetWithEmptyPath().path();
 
@@ -786,7 +917,53 @@ TEST(AppCacheManifestParserTest, InterceptUsageMetrics) {
   }
 }
 
-TEST(AppCacheManifestParserTest, PatternMetrics) {
+TEST(AppCacheManifestParserTest, InterceptUsageMetricsWithDefaultScope) {
+  const GURL url("http://foo.com/scope/manifest?with_query_args");
+  const std::string scope = url.GetWithoutFilename().path();
+
+  struct TestCase {
+    std::string manifest;
+    int expected_none_count;
+    int expected_exact_count;
+    int expected_pattern_count;
+  } test_cases[] = {
+      {"", 1, 0, 0},
+      {"FALLBACK:\rhttp://foo.com/fallback /url\r", 1, 0, 0},
+      {"FALLBACK:\rhttp://foo.com/fallback_pattern* /pattern isPattern\r", 1, 0,
+       0},
+      {"NETWORK:\r*\r", 1, 0, 0},
+      {"NETWORK:\rhttp://foo.com/network\r", 1, 0, 0},
+      {"NETWORK:\rhttp://foo.com/network_pattern* isPattern\r", 1, 0, 0},
+      {"CHROMIUM-INTERCEPT:\rhttp://foo.com/intercept return /url\r", 1, 0, 0},
+      {"CHROMIUM-INTERCEPT:\r"
+       "http://foo.com/intercept* return /pattern isPattern\r",
+       1, 0, 0},
+      {"CHROMIUM-INTERCEPT:\r"
+       "http://foo.com/scope/intercept return /url\r",
+       0, 1, 0},
+      {"CHROMIUM-INTERCEPT:\r"
+       "http://foo.com/scope/intercept* return /pattern isPattern\r",
+       0, 0, 1},
+  };
+
+  for (const auto& test_case : test_cases) {
+    AppCacheManifest manifest;
+    base::HistogramTester tester;
+    std::string manifest_text =
+        std::string("CACHE MANIFEST\r") + test_case.manifest;
+
+    ParseManifest(url, scope, manifest_text.c_str(), manifest_text.length(),
+                  PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES, manifest);
+    tester.ExpectBucketCount("appcache.Manifest.InterceptUsage", 0,
+                             test_case.expected_none_count);
+    tester.ExpectBucketCount("appcache.Manifest.InterceptUsage", 1,
+                             test_case.expected_exact_count);
+    tester.ExpectBucketCount("appcache.Manifest.InterceptUsage", 2,
+                             test_case.expected_pattern_count);
+  }
+}
+
+TEST(AppCacheManifestParserTest, PatternMetricsWithGlobalScope) {
   const GURL url("http://foo.com/scope/manifest?with_query_args");
   const std::string scope = url.GetWithEmptyPath().path();
 
@@ -811,6 +988,57 @@ TEST(AppCacheManifestParserTest, PatternMetrics) {
       {"CHROMIUM-INTERCEPT:\rhttp://foo.com/intercept return /url\r", 1, 0},
       {"CHROMIUM-INTERCEPT:\r"
        "http://foo.com/intercept* return /pattern isPattern\r",
+       0, 1},
+  };
+
+  for (const auto& test_case : test_cases) {
+    AppCacheManifest manifest;
+    base::HistogramTester tester;
+    std::string manifest_text =
+        std::string("CACHE MANIFEST\r") + test_case.manifest;
+
+    ParseManifest(url, scope, manifest_text.c_str(), manifest_text.length(),
+                  PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES, manifest);
+    tester.ExpectBucketCount("appcache.Manifest.Pattern", 0,
+                             test_case.expected_false_count);
+    tester.ExpectBucketCount("appcache.Manifest.Pattern", 1,
+                             test_case.expected_true_count);
+  }
+}
+
+TEST(AppCacheManifestParserTest, PatternMetricsWithDefaultScope) {
+  const GURL url("http://foo.com/scope/manifest?with_query_args");
+  const std::string scope = url.GetWithoutFilename().path();
+
+  struct TestCase {
+    std::string manifest;
+    int expected_false_count;
+    int expected_true_count;
+  } test_cases[] = {
+      {"", 1, 0},
+      {"FALLBACK:\rhttp://foo.com/fallback /url\r", 1, 0},
+      {"FALLBACK:\rhttp://foo.com/fallback_pattern* /pattern isPattern\r", 1,
+       0},
+      {"FALLBACK:\rhttp://foo.com/scope /pattern isPattern\r", 1, 0},
+      {"FALLBACK:\rhttp://foo.com/scope/fallback_pattern* /pattern isPattern\r",
+       0, 1},
+      {"FALLBACK:\rhttp://foo.com/scope/foo/fallback_pattern* /pattern "
+       "isPattern\r",
+       0, 1},
+      {"NETWORK:\r*\r", 1, 0},
+      {"NETWORK:\rhttp://foo.com/network\r", 1, 0},
+      {"NETWORK:\rhttp://foo.com/network_pattern* isPattern\r", 0, 1},
+      {"CHROMIUM-INTERCEPT:\rhttp://foo.com/intercept return /url\r", 1, 0},
+      {"CHROMIUM-INTERCEPT:\r"
+       "http://foo.com/intercept* return /pattern isPattern\r",
+       1, 0},
+      {"CHROMIUM-INTERCEPT:\rhttp://foo.com/scope return /url\r", 1, 0},
+      {"CHROMIUM-INTERCEPT:\r"
+       "http://foo.com/scope* return /pattern isPattern\r",
+       1, 0},
+      {"CHROMIUM-INTERCEPT:\rhttp://foo.com/scope/x return /url\r", 1, 0},
+      {"CHROMIUM-INTERCEPT:\r"
+       "http://foo.com/scope/x* return /pattern isPattern\r",
        0, 1},
   };
 

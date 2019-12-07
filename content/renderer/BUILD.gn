@@ -474,11 +474,16 @@ target(link_target_type, "renderer") {
 
   if (is_fuchsia) {
     sources += [
+      "media/fuchsia_renderer_factory.cc",
+      "media/fuchsia_renderer_factory.h",
       "render_view_fuchsia.cc",
       "renderer_main_platform_delegate_fuchsia.cc",
     ]
 
-    deps += [ "//media/fuchsia/cdm/client" ]
+    deps += [
+      "//media/fuchsia/audio",
+      "//media/fuchsia/cdm/client",
+    ]
   }
 
   if (enable_media_remoting) {

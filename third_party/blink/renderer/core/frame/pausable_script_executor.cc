@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_persistent_value_vector.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -53,10 +52,8 @@ WebScriptExecutor::WebScriptExecutor(
     : sources_(sources), world_id_(world_id), user_gesture_(user_gesture) {}
 
 Vector<v8::Local<v8::Value>> WebScriptExecutor::Execute(LocalFrame* frame) {
-  std::unique_ptr<UserGestureIndicator> indicator;
-  if (user_gesture_) {
-    indicator = LocalFrame::NotifyUserActivation(frame);
-  }
+  if (user_gesture_)
+    LocalFrame::NotifyUserActivation(frame);
 
   Vector<v8::Local<v8::Value>> results;
   for (const auto& source : sources_) {

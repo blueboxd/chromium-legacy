@@ -36,12 +36,29 @@ export let PreviewSettings;
 export let LocalDestinationInfo;
 
 /**
+ * Enumeration of background graphics printing mode restrictions used by
+ * Chromium.
+ * This has to coincide with |printing::BackgroundGraphicsModeRestriction| as
+ * defined in printing/backend/printing_restrictions.h
+ * @enum {number}
+ */
+export const BackgroundGraphicsModeRestriction = {
+  UNSET: 0,
+  ENABLED: 1,
+  DISABLED: 2,
+};
+
+/**
  * Policies affecting print settings values and availability.
  * @typedef {{
  *   headerFooter: ({
  *     allowedMode: (boolean | undefined),
  *     defaultMode: (boolean | undefined),
  *   } | undefined),
+ *   cssBackground: ({
+ *     allowedMode: (BackgroundGraphicsModeRestriction | undefined),
+ *     defaultMode: (BackgroundGraphicsModeRestriction | undefined),
+ *   } | undefined)
  * }}
  */
 export let Policies;

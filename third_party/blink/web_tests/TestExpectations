@@ -4584,15 +4584,6 @@ crbug.com/769056 virtual/text-antialias/emoji-web-font.html [ Failure ]
 # Paint-timing tests timeout without threaded-compositing, so skip them.
 crbug.com/720047 external/wpt/paint-timing [ Skip ]
 
-# This feature is disabled currently, these tests should be enabled once the
-# feature has been enabled by default.
-crbug.com/694855 media/audio-src-suspend-after-have-metadata.html [ Skip ]
-crbug.com/694855 media/video-src-skip-suspend-after-have-metadata.html [ Skip ]
-crbug.com/694855 media/video-src-suspend-after-have-metadata.html [ Skip ]
-crbug.com/694855 virtual/audio-service/media/audio-src-suspend-after-have-metadata.html [ Skip ]
-crbug.com/694855 virtual/audio-service/media/video-src-skip-suspend-after-have-metadata.html [ Skip ]
-crbug.com/694855 virtual/audio-service/media/video-src-suspend-after-have-metadata.html [ Skip ]
-
 ### See crbug.com/891427 comment near the top of this file:
 ###crbug.com/849979 media/video-layer-crash.html [ Pass Timeout ]
 
@@ -5951,6 +5942,8 @@ crbug.com/1029528 [ Linux ] http/tests/devtools/network/oopif-content.js [ Pass 
 crbug.com/1028477 [ Mac Win ] http/tests/devtools/appcache/appcache-manifest-with-non-existing-file.js [ Pass Timeout ]
 
 crbug.com/833100 [ Mac ] external/wpt/battery-status/battery-full-manual.https.html [ Pass Failure ]
+
+crbug.com/1031345 media/controls/overlay-play-button-tap-to-hide.html [ Timeout Pass ]
 
 # Tests include race-conditions that will be fixed after DevTools fully uses ES modules
 crbug.com/1006759 http/tests/devtools/sources/debugger-ui/continue-to-location-markers-in-top-level-function.js [ Pass Failure ]

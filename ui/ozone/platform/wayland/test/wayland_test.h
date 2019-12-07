@@ -31,8 +31,8 @@ namespace ui {
 class ScopedKeyboardLayoutEngine;
 class WaylandScreen;
 
-const uint32_t kXdgShellV5 = 5;
 const uint32_t kXdgShellV6 = 6;
+const uint32_t kXdgShellStable = 7;
 
 // WaylandTest is a base class that sets up a display, window, and test server,
 // and allows easy synchronization between them.

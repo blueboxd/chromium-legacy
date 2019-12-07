@@ -70,6 +70,7 @@ class CreditCardFIDOAuthenticator
     virtual void OnFIDOAuthenticationComplete(
         bool did_succeed,
         const CreditCard* card = nullptr) = 0;
+    virtual void OnFidoAuthorizationComplete(bool did_succeed) = 0;
   };
   CreditCardFIDOAuthenticator(AutofillDriver* driver, AutofillClient* client);
   ~CreditCardFIDOAuthenticator() override;
@@ -88,8 +89,10 @@ class CreditCardFIDOAuthenticator
 
   // Invokes an Authorization flow. Sends signature created from
   // |request_options| along with the |card_authorization_token| to Payments in
-  // order to authorize the corresponding card.
-  void Authorize(std::string card_authorization_token,
+  // order to authorize the corresponding card. Notifies |requester| once
+  // Authorization is complete.
+  void Authorize(base::WeakPtr<Requester> requester,
+                 std::string card_authorization_token,
                  base::Value request_options);
 
   // Opts the user out.

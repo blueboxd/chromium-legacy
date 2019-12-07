@@ -23,6 +23,27 @@ const char* GetEnumStringValue(SharingFeatureName feature) {
   }
 }
 
+// These value are mapped to histogram suffixes. Please keep in sync with
+// "SharingDevicePlatform" in src/tools/metrics/histograms/enums.xml.
+std::string DevicePlatformToString(SharingDevicePlatform device_platform) {
+  switch (device_platform) {
+    case SharingDevicePlatform::kAndroid:
+      return "Android";
+    case SharingDevicePlatform::kChromeOS:
+      return "ChromeOS";
+    case SharingDevicePlatform::kIOS:
+      return "iOS";
+    case SharingDevicePlatform::kLinux:
+      return "Linux";
+    case SharingDevicePlatform::kMac:
+      return "Mac";
+    case SharingDevicePlatform::kWindows:
+      return "Windows";
+    case SharingDevicePlatform::kUnknown:
+      return "Unknown";
+  }
+}
+
 const std::string& MessageTypeToMessageSuffix(
     chrome_browser_sharing::MessageType message_type) {
   // For proto3 enums unrecognized enum values are kept when parsing and their
@@ -196,20 +217,46 @@ void LogSharingDialogShown(SharingFeatureName feature, SharingDialogType type) {
 
 void LogSendSharingMessageResult(
     chrome_browser_sharing::MessageType message_type,
+    SharingDevicePlatform receiving_device_platform,
     SharingSendMessageResult result) {
-  base::UmaHistogramEnumeration("Sharing.SendMessageResult", result);
+  const std::string metric_prefix = "Sharing.SendMessageResult";
+
+  base::UmaHistogramEnumeration(metric_prefix, result);
   base::UmaHistogramEnumeration(
-      base::StrCat({"Sharing.SendMessageResult.",
+      base::StrCat(
+          {metric_prefix, ".", MessageTypeToMessageSuffix(message_type)}),
+      result);
+
+  base::UmaHistogramEnumeration(
+      base::StrCat({metric_prefix, ".",
+                    DevicePlatformToString(receiving_device_platform)}),
+      result);
+  base::UmaHistogramEnumeration(
+      base::StrCat({metric_prefix, ".",
+                    DevicePlatformToString(receiving_device_platform), ".",
                     MessageTypeToMessageSuffix(message_type)}),
       result);
 }
 
 void LogSendSharingAckMessageResult(
     chrome_browser_sharing::MessageType message_type,
+    SharingDevicePlatform ack_receiver_device_type,
     SharingSendMessageResult result) {
-  base::UmaHistogramEnumeration("Sharing.SendAckMessageResult", result);
+  const std::string metric_prefix = "Sharing.SendAckMessageResult";
+
+  base::UmaHistogramEnumeration(metric_prefix, result);
   base::UmaHistogramEnumeration(
-      base::StrCat({"Sharing.SendAckMessageResult.",
+      base::StrCat(
+          {metric_prefix, ".", MessageTypeToMessageSuffix(message_type)}),
+      result);
+
+  base::UmaHistogramEnumeration(
+      base::StrCat({metric_prefix, ".",
+                    DevicePlatformToString(ack_receiver_device_type)}),
+      result);
+  base::UmaHistogramEnumeration(
+      base::StrCat({metric_prefix, ".",
+                    DevicePlatformToString(ack_receiver_device_type), ".",
                     MessageTypeToMessageSuffix(message_type)}),
       result);
 }

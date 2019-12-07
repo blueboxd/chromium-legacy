@@ -73,50 +73,48 @@ constexpr size_t kBlockedBodyAllocationSize = 1;
 void PopulateResourceResponse(net::URLRequest* request,
                               bool is_load_timing_enabled,
                               bool include_ssl_info,
-                              ResourceResponse* response) {
-  response->head.request_time = request->request_time();
-  response->head.response_time = request->response_time();
-  response->head.headers = request->response_headers();
-  request->GetCharset(&response->head.charset);
-  response->head.content_length = request->GetExpectedContentSize();
-  request->GetMimeType(&response->head.mime_type);
+                              network::mojom::URLResponseHead* response) {
+  response->request_time = request->request_time();
+  response->response_time = request->response_time();
+  response->headers = request->response_headers();
+  request->GetCharset(&response->charset);
+  response->content_length = request->GetExpectedContentSize();
+  request->GetMimeType(&response->mime_type);
   net::HttpResponseInfo response_info = request->response_info();
-  response->head.was_fetched_via_spdy = response_info.was_fetched_via_spdy;
-  response->head.was_alpn_negotiated = response_info.was_alpn_negotiated;
-  response->head.alpn_negotiated_protocol =
-      response_info.alpn_negotiated_protocol;
-  response->head.connection_info = response_info.connection_info;
-  response->head.remote_endpoint = response_info.remote_endpoint;
-  response->head.was_fetched_via_cache = request->was_cached();
-  response->head.proxy_server = request->proxy_server();
-  response->head.network_accessed = response_info.network_accessed;
-  response->head.async_revalidation_requested =
+  response->was_fetched_via_spdy = response_info.was_fetched_via_spdy;
+  response->was_alpn_negotiated = response_info.was_alpn_negotiated;
+  response->alpn_negotiated_protocol = response_info.alpn_negotiated_protocol;
+  response->connection_info = response_info.connection_info;
+  response->remote_endpoint = response_info.remote_endpoint;
+  response->was_fetched_via_cache = request->was_cached();
+  response->proxy_server = request->proxy_server();
+  response->network_accessed = response_info.network_accessed;
+  response->async_revalidation_requested =
       response_info.async_revalidation_requested;
-  response->head.was_in_prefetch_cache =
+  response->was_in_prefetch_cache =
       !(request->load_flags() & net::LOAD_PREFETCH) &&
       response_info.unused_since_prefetch;
 
   if (is_load_timing_enabled)
-    request->GetLoadTimingInfo(&response->head.load_timing);
+    request->GetLoadTimingInfo(&response->load_timing);
 
   if (request->ssl_info().cert.get()) {
-    response->head.ct_policy_compliance =
-        request->ssl_info().ct_policy_compliance;
-    response->head.cert_status = request->ssl_info().cert_status;
+    response->ct_policy_compliance = request->ssl_info().ct_policy_compliance;
+    response->cert_status = request->ssl_info().cert_status;
     net::SSLVersion ssl_version = net::SSLConnectionStatusToVersion(
         request->ssl_info().connection_status);
-    response->head.is_legacy_tls_version =
+    response->is_legacy_tls_version =
         ssl_version == net::SSLVersion::SSL_CONNECTION_VERSION_TLS1 ||
         ssl_version == net::SSLVersion::SSL_CONNECTION_VERSION_TLS1_1;
 
     if (include_ssl_info)
-      response->head.ssl_info = request->ssl_info();
+      response->ssl_info = request->ssl_info();
   }
 
-  response->head.request_start = request->creation_time();
-  response->head.response_start = base::TimeTicks::Now();
-  response->head.encoded_data_length = request->GetTotalReceivedBytes();
-  response->head.auth_challenge_info = request->auth_challenge_info();
+  response->request_start = request->creation_time();
+  response->response_start = base::TimeTicks::Now();
+  response->encoded_data_length = request->GetTotalReceivedBytes();
+  response->auth_challenge_info = request->auth_challenge_info();
 }
 
 // A subclass of net::UploadBytesElementReader which owns
@@ -720,11 +718,9 @@ void URLLoader::FollowRedirect(const std::vector<std::string>& removed_headers,
           new_origin /* top frame origin */, new_origin /* frame origin */));
     } else if (update_network_isolation_key_on_redirect_ ==
                mojom::UpdateNetworkIsolationKeyOnRedirect::kUpdateFrameOrigin) {
-      base::Optional<url::Origin> top_frame_origin =
-          url_request_->network_isolation_key().GetTopFrameOrigin();
-      DCHECK(top_frame_origin);
       url_request_->set_network_isolation_key(
-          net::NetworkIsolationKey(top_frame_origin.value(), new_origin));
+          url_request_->network_isolation_key().CreateWithNewFrameOrigin(
+              new_origin));
     }
   }
 
@@ -792,12 +788,12 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
   // optionally follow the redirect.
   *defer_redirect = true;
 
-  scoped_refptr<ResourceResponse> response = new ResourceResponse();
+  auto response = network::mojom::URLResponseHead::New();
   PopulateResourceResponse(
       url_request_.get(), is_load_timing_enabled_,
       options_ & mojom::kURLLoadOptionSendSSLInfoWithResponse, response.get());
   if (report_raw_headers_) {
-    response->head.raw_request_response_info = BuildRawRequestResponseInfo(
+    response->raw_request_response_info = BuildRawRequestResponseInfo(
         *url_request_, raw_request_headers_, raw_response_headers_.get());
     raw_request_headers_ = net::HttpRawRequestHeaders();
     raw_response_headers_ = nullptr;
@@ -808,7 +804,7 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
   // Enforce the Cross-Origin-Resource-Policy (CORP) header.
   if (CrossOriginResourcePolicy::kBlock ==
       CrossOriginResourcePolicy::Verify(
-          url_request_->url(), url_request_->initiator(), response->head,
+          url_request_->url(), url_request_->initiator(), *response,
           request_mode_, factory_params_->request_initiator_site_lock,
           factory_params_->cross_origin_embedder_policy)) {
     CompleteBlockedResponse(net::ERR_BLOCKED_BY_RESPONSE, false);
@@ -823,7 +819,7 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
                           has_user_activation_, &redirect_info.new_url,
                           *factory_params_);
 
-  url_loader_client_->OnReceiveRedirect(redirect_info, response->head);
+  url_loader_client_->OnReceiveRedirect(redirect_info, std::move(response));
 }
 
 void URLLoader::OnAuthRequired(net::URLRequest* url_request,
@@ -938,12 +934,12 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
     upload_progress_tracker_ = nullptr;
   }
 
-  response_ = new ResourceResponse();
+  response_ = network::mojom::URLResponseHead::New();
   PopulateResourceResponse(
       url_request_.get(), is_load_timing_enabled_,
       options_ & mojom::kURLLoadOptionSendSSLInfoWithResponse, response_.get());
   if (report_raw_headers_) {
-    response_->head.raw_request_response_info = BuildRawRequestResponseInfo(
+    response_->raw_request_response_info = BuildRawRequestResponseInfo(
         *url_request_, raw_request_headers_, raw_response_headers_.get());
     raw_request_headers_ = net::HttpRawRequestHeaders();
     raw_response_headers_ = nullptr;
@@ -963,7 +959,7 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
   // Enforce the Cross-Origin-Resource-Policy (CORP) header.
   if (CrossOriginResourcePolicy::kBlock ==
       CrossOriginResourcePolicy::Verify(
-          url_request_->url(), url_request_->initiator(), response_->head,
+          url_request_->url(), url_request_->initiator(), *response_,
           request_mode_, factory_params_->request_initiator_site_lock,
           factory_params_->cross_origin_embedder_policy)) {
     CompleteBlockedResponse(net::ERR_BLOCKED_BY_RESPONSE, false);
@@ -979,7 +975,7 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
 
     corb_analyzer_ =
         std::make_unique<CrossOriginReadBlocking::ResponseAnalyzer>(
-            url_request_->url(), url_request_->initiator(), response_->head,
+            url_request_->url(), url_request_->initiator(), *response_,
             factory_params_->request_initiator_site_lock, request_mode_);
     is_more_corb_sniffing_needed_ = corb_analyzer_->needs_sniffing();
     if (corb_analyzer_->ShouldBlock()) {
@@ -993,13 +989,13 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
     }
   }
   if ((options_ & mojom::kURLLoadOptionSniffMimeType)) {
-    if (ShouldSniffContent(url_request_.get(), response_.get())) {
+    if (ShouldSniffContent(url_request_.get(), *response_)) {
       is_more_mime_sniffing_needed_ = true;
-    } else if (response_->head.mime_type.empty()) {
+    } else if (response_->mime_type.empty()) {
       // Ugg.  The server told us not to sniff the content but didn't give us
       // a mime type.  What's a browser to do?  Turns out, we're supposed to
       // treat the response as "text/plain".  This is the most secure option.
-      response_->head.mime_type.assign("text/plain");
+      response_->mime_type.assign("text/plain");
     }
   }
 
@@ -1008,7 +1004,7 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
     // Parse the Content-Security-Policy headers.
     ContentSecurityPolicy policy;
     if (policy.Parse(url_request_->url(), *url_request_->response_headers()))
-      response_->head.content_security_policy = std::move(policy);
+      response_->content_security_policy = std::move(policy);
   }
 
   // If necessary, retrieve the associated origin policy, before sending the
@@ -1116,7 +1112,7 @@ void URLLoader::DidRead(int num_bytes, bool completed_synchronously) {
       base::StringPiece data(pending_write_->buffer(), data_length);
 
       if (is_more_mime_sniffing_needed_) {
-        const std::string& type_hint = response_->head.mime_type;
+        const std::string& type_hint = response_->mime_type;
         std::string new_type;
         is_more_mime_sniffing_needed_ = !net::SniffMimeType(
             data.data(), data.size(), url_request_->url(), type_hint,
@@ -1124,8 +1120,8 @@ void URLLoader::DidRead(int num_bytes, bool completed_synchronously) {
         // SniffMimeType() returns false if there is not enough data to
         // determine the mime type. However, even if it returns false, it
         // returns a new type that is probably better than the current one.
-        response_->head.mime_type.assign(new_type);
-        response_->head.did_mime_sniff = true;
+        response_->mime_type.assign(new_type);
+        response_->did_mime_sniff = true;
       }
 
       if (is_more_corb_sniffing_needed_) {
@@ -1406,7 +1402,7 @@ void URLLoader::DeleteSelf() {
 }
 
 void URLLoader::SendResponseToClient() {
-  url_loader_client_->OnReceiveResponse(response_->head);
+  url_loader_client_->OnReceiveResponse(std::move(response_));
 
   net::IOBufferWithSize* metadata =
       url_request_->response_info().metadata.get();
@@ -1418,7 +1414,6 @@ void URLLoader::SendResponseToClient() {
   }
 
   url_loader_client_->OnStartLoadingResponseBody(std::move(consumer_handle_));
-  response_ = nullptr;
 }
 
 void URLLoader::CompletePendingWrite(bool success) {
@@ -1582,8 +1577,8 @@ URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
   DCHECK(consumer_handle_.is_valid());
 
   // Send stripped headers to the real URLLoaderClient.
-  CrossOriginReadBlocking::SanitizeBlockedResponse(&response_->head);
-  url_loader_client_->OnReceiveResponse(response_->head);
+  CrossOriginReadBlocking::SanitizeBlockedResponse(response_.get());
+  url_loader_client_->OnReceiveResponse(response_->Clone());
 
   // Send empty body to the real URLLoaderClient.
   mojo::DataPipe empty_data_pipe(kBlockedBodyAllocationSize);
@@ -1688,9 +1683,9 @@ void URLLoader::ReportFlaggedResponseCookies() {
 void URLLoader::StartReading() {
   if (!is_more_mime_sniffing_needed_ && !is_more_corb_sniffing_needed_) {
     // Treat feed types as text/plain.
-    if (response_->head.mime_type == "application/rss+xml" ||
-        response_->head.mime_type == "application/atom+xml") {
-      response_->head.mime_type.assign("text/plain");
+    if (response_->mime_type == "application/rss+xml" ||
+        response_->mime_type == "application/atom+xml") {
+      response_->mime_type.assign("text/plain");
     }
     SendResponseToClient();
   }
@@ -1701,7 +1696,7 @@ void URLLoader::StartReading() {
 
 void URLLoader::OnOriginPolicyManagerRetrieveDone(
     const OriginPolicy& origin_policy) {
-  response_->head.origin_policy = origin_policy;
+  response_->origin_policy = origin_policy;
 
   StartReading();
 }

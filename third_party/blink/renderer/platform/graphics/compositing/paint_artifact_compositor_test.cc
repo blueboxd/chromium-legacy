@@ -870,7 +870,7 @@ TEST_P(PaintArtifactCompositorTest, SiblingClipsWithAlias) {
       CreateClip(c0(), t0(), FloatRoundedRect(0, 0, 800, 600));
   auto common_clip = ClipPaintPropertyNode::CreateAlias(*real_common_clip);
   auto real_clip1 =
-      CreateClip(*common_clip, t0(), FloatRoundedRect(0, 0, 400, 600));
+      CreateClip(*common_clip, t0(), FloatRoundedRect(0, 0, 300, 200));
   auto clip1 = ClipPaintPropertyNode::CreateAlias(*real_clip1);
   auto real_clip2 =
       CreateClip(*common_clip, t0(), FloatRoundedRect(400, 0, 400, 600));
@@ -878,41 +878,93 @@ TEST_P(PaintArtifactCompositorTest, SiblingClipsWithAlias) {
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), *clip1, e0())
-      .RectDrawing(FloatRect(0, 0, 640, 480), Color::kWhite);
+      .RectDrawing(FloatRect(0, 0, 111, 222), Color::kWhite);
   artifact.Chunk(t0(), *clip2, e0())
+      .RectDrawing(FloatRect(333, 444, 555, 666), Color::kBlack);
+  Update(artifact.Build());
+
+  // The two chunks are merged together.
+  ASSERT_EQ(1u, ContentLayerCount());
+  const cc::Layer* layer = ContentLayerAt(0);
+  EXPECT_THAT(
+      layer->GetPicture(),
+      Pointee(DrawsRectangles(Vector<RectWithColor>{
+          // This is the first RectDrawing with real_clip1 applied.
+          RectWithColor(FloatRect(0, 0, 111, 200), Color::kWhite),
+          // This is the second RectDrawing with real_clip2 applied.
+          RectWithColor(FloatRect(400, 444, 400, 156), Color::kBlack)})));
+  EXPECT_EQ(gfx::Transform(), layer->ScreenSpaceTransform());
+  const cc::ClipNode* clip_node =
+      GetPropertyTrees().clip_tree.Node(layer->clip_tree_index());
+  EXPECT_EQ(cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP, clip_node->clip_type);
+  ASSERT_EQ(gfx::RectF(0, 0, 800, 600), clip_node->clip);
+}
+
+TEST_P(PaintArtifactCompositorTest, SiblingClipsWithCompositedTransform) {
+  auto t1 = CreateTransform(t0(), TransformationMatrix(), FloatPoint3D(),
+                            CompositingReason::kWillChangeTransform);
+  auto t2 = CreateTransform(*t1, TransformationMatrix().Translate(1, 2));
+  auto c1 = CreateClip(c0(), t0(), FloatRoundedRect(0, 0, 400, 600));
+  auto c2 = CreateClip(c0(), *t2, FloatRoundedRect(400, 0, 400, 600));
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(t0(), *c1, e0())
+      .RectDrawing(FloatRect(0, 0, 640, 480), Color::kWhite);
+  artifact.Chunk(t0(), *c2, e0())
       .RectDrawing(FloatRect(0, 0, 640, 480), Color::kBlack);
   Update(artifact.Build());
+
+  // We can't merge the two chunks because their clips have unmergeable
+  // transforms.
   ASSERT_EQ(2u, ContentLayerCount());
+}
 
-  const cc::Layer* white_layer = ContentLayerAt(0);
-  EXPECT_THAT(
-      white_layer->GetPicture(),
-      Pointee(DrawsRectangle(FloatRect(0, 0, 640, 480), Color::kWhite)));
-  EXPECT_EQ(gfx::Transform(), white_layer->ScreenSpaceTransform());
-  const cc::ClipNode* white_clip =
-      GetPropertyTrees().clip_tree.Node(white_layer->clip_tree_index());
-  EXPECT_EQ(cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP, white_clip->clip_type);
-  ASSERT_EQ(gfx::RectF(0, 0, 400, 600), white_clip->clip);
+TEST_P(PaintArtifactCompositorTest, SiblingTransformsWithAlias) {
+  auto real_common_transform =
+      CreateTransform(t0(), TransformationMatrix().Translate(5, 6));
+  auto common_transform =
+      TransformPaintPropertyNode::CreateAlias(*real_common_transform);
+  auto real_transform1 =
+      CreateTransform(*common_transform, TransformationMatrix().Scale(2));
+  auto transform1 = TransformPaintPropertyNode::CreateAlias(*real_transform1);
+  auto real_transform2 =
+      CreateTransform(*common_transform, TransformationMatrix().Scale(0.5));
+  auto transform2 = TransformPaintPropertyNode::CreateAlias(*real_transform2);
 
-  const cc::Layer* black_layer = ContentLayerAt(1);
-  // The layer is clipped.
-  EXPECT_EQ(gfx::Size(240, 480), black_layer->bounds());
-  EXPECT_EQ(gfx::Vector2dF(400, 0), black_layer->offset_to_transform_parent());
-  EXPECT_THAT(
-      black_layer->GetPicture(),
-      Pointee(DrawsRectangle(FloatRect(0, 0, 240, 480), Color::kBlack)));
-  EXPECT_EQ(Translation(400, 0), black_layer->ScreenSpaceTransform());
-  const cc::ClipNode* black_clip =
-      GetPropertyTrees().clip_tree.Node(black_layer->clip_tree_index());
-  EXPECT_EQ(cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP, black_clip->clip_type);
-  ASSERT_EQ(gfx::RectF(400, 0, 400, 600), black_clip->clip);
+  TestPaintArtifact artifact;
+  artifact.Chunk(*transform1, c0(), e0())
+      .RectDrawing(FloatRect(0, 0, 111, 222), Color::kWhite);
+  artifact.Chunk(*transform2, c0(), e0())
+      .RectDrawing(FloatRect(0, 0, 333, 444), Color::kBlack);
+  Update(artifact.Build());
 
-  EXPECT_EQ(white_clip->parent_id, black_clip->parent_id);
-  const cc::ClipNode* common_clip_node =
-      GetPropertyTrees().clip_tree.Node(white_clip->parent_id);
-  EXPECT_EQ(cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP,
-            common_clip_node->clip_type);
-  ASSERT_EQ(gfx::RectF(0, 0, 800, 600), common_clip_node->clip);
+  // The two chunks are merged together.
+  ASSERT_EQ(1u, ContentLayerCount());
+  const cc::Layer* layer = ContentLayerAt(0);
+  EXPECT_THAT(layer->GetPicture(),
+              Pointee(DrawsRectangles(Vector<RectWithColor>{
+                  RectWithColor(FloatRect(0, 0, 222, 444), Color::kWhite),
+                  RectWithColor(FloatRect(0, 0, 166.5, 222), Color::kBlack)})));
+  gfx::Transform expected_transform;
+  expected_transform.Translate(5, 6);
+  EXPECT_EQ(expected_transform, layer->ScreenSpaceTransform());
+}
+
+TEST_P(PaintArtifactCompositorTest, SiblingTransformsWithComposited) {
+  auto t1 = CreateTransform(t0(), TransformationMatrix(), FloatPoint3D(),
+                            CompositingReason::kWillChangeTransform);
+  auto t2 = CreateTransform(*t1, TransformationMatrix().Translate(1, 2));
+  auto t3 = CreateTransform(t0(), TransformationMatrix().Translate(3, 4));
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(*t2, c0(), e0())
+      .RectDrawing(FloatRect(0, 0, 640, 480), Color::kWhite);
+  artifact.Chunk(*t3, c0(), e0())
+      .RectDrawing(FloatRect(0, 0, 640, 480), Color::kBlack);
+  Update(artifact.Build());
+
+  // We can't merge the two chunks because their transforms are not mergeable.
+  ASSERT_EQ(2u, ContentLayerCount());
 }
 
 TEST_P(PaintArtifactCompositorTest, ForeignLayerPassesThrough) {
@@ -1886,7 +1938,8 @@ TEST_P(PaintArtifactCompositorTest, PendingLayer) {
   chunk2.properties = chunk1.properties;
   chunk2.known_to_be_opaque = true;
   chunk2.bounds = IntRect(10, 20, 30, 40);
-  pending_layer.Merge(PendingLayer(chunk2, 1, false));
+  pending_layer.Merge(PendingLayer(chunk2, 1, false),
+                      pending_layer.property_tree_state);
 
   // Bounds not equal to one PaintChunk.
   EXPECT_EQ(FloatRect(0, 0, 40, 60), pending_layer.bounds);
@@ -1897,7 +1950,8 @@ TEST_P(PaintArtifactCompositorTest, PendingLayer) {
   chunk3.properties = chunk1.properties;
   chunk3.known_to_be_opaque = true;
   chunk3.bounds = IntRect(-5, -25, 20, 20);
-  pending_layer.Merge(PendingLayer(chunk3, 2, false));
+  pending_layer.Merge(PendingLayer(chunk3, 2, false),
+                      pending_layer.property_tree_state);
 
   EXPECT_EQ(FloatRect(-5, -25, 45, 85), pending_layer.bounds);
   EXPECT_EQ((Vector<wtf_size_t>{0, 1, 2}), pending_layer.paint_chunk_indices);
@@ -1921,7 +1975,8 @@ TEST_P(PaintArtifactCompositorTest, PendingLayerWithGeometry) {
   chunk2.properties = chunk1.properties;
   SetTransform(chunk2, *transform);
   chunk2.bounds = IntRect(0, 0, 50, 60);
-  pending_layer.Merge(PendingLayer(chunk2, 1, false));
+  pending_layer.Merge(PendingLayer(chunk2, 1, false),
+                      pending_layer.property_tree_state);
 
   EXPECT_EQ(FloatRect(0, 0, 70, 85), pending_layer.bounds);
 }
@@ -1941,7 +1996,8 @@ TEST_P(PaintArtifactCompositorTest, DISABLED_PendingLayerKnownOpaque) {
   chunk2.properties = chunk1.properties;
   chunk2.bounds = IntRect(0, 0, 25, 35);
   chunk2.known_to_be_opaque = true;
-  pending_layer.Merge(PendingLayer(chunk2, 1, false));
+  pending_layer.Merge(PendingLayer(chunk2, 1, false),
+                      pending_layer.property_tree_state);
 
   // Chunk 2 doesn't cover the entire layer, so not opaque.
   EXPECT_EQ(FloatRect(chunk2.bounds), pending_layer.rect_known_to_be_opaque);
@@ -1951,7 +2007,8 @@ TEST_P(PaintArtifactCompositorTest, DISABLED_PendingLayerKnownOpaque) {
   chunk3.properties = chunk1.properties;
   chunk3.bounds = IntRect(0, 0, 50, 60);
   chunk3.known_to_be_opaque = true;
-  pending_layer.Merge(PendingLayer(chunk3, 2, false));
+  pending_layer.Merge(PendingLayer(chunk3, 2, false),
+                      pending_layer.property_tree_state);
 
   // Chunk 3 covers the entire layer, so now it's opaque.
   EXPECT_EQ(FloatRect(chunk3.bounds), pending_layer.bounds);

@@ -4,6 +4,8 @@
 
 #include "ash/wm/desks/desks_util.h"
 
+#include <array>
+
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/tablet_mode.h"

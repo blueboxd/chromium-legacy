@@ -423,18 +423,21 @@ void CorsURLLoader::StartRequest() {
   if (!IsNavigationRequestMode(request_.mode) && request_.request_initiator &&
       (fetch_cors_flag_ ||
        (request_.method != "GET" && request_.method != "HEAD"))) {
-    if (!fetch_cors_flag_ &&
-        request_.headers.HasHeader(net::HttpRequestHeaders::kOrigin) &&
-        request_.request_initiator->scheme() == "chrome-extension") {
-      // We need to attach an origin header when the request's method is neither
-      // GET nor HEAD. For requests made by an extension content scripts, we
-      // want to attach page's origin, whereas the request's origin is the
-      // content script's origin. See https://crbug.com/944704 for details.
-      // TODO(crbug.com/940068) Remove this condition.
+    if (tainted_) {
+      request_.headers.SetHeader(net::HttpRequestHeaders::kOrigin,
+                                 url::Origin().Serialize());
+    } else if (!request_.isolated_world_origin &&
+               HasSpecialAccessToDestination()) {
+      DCHECK(!fetch_cors_flag_);
+      // When request's origin has an access to the destination URL (via
+      // |origin_access_list_| and |factory_bound_origin_access_list_|), we
+      // attach destination URL's origin instead of request's origin to the
+      // "origin" request header.
+      request_.headers.SetHeader(net::HttpRequestHeaders::kOrigin,
+                                 url::Origin::Create(request_.url).Serialize());
     } else {
-      request_.headers.SetHeader(
-          net::HttpRequestHeaders::kOrigin,
-          (tainted_ ? url::Origin() : *request_.request_initiator).Serialize());
+      request_.headers.SetHeader(net::HttpRequestHeaders::kOrigin,
+                                 request_.request_initiator->Serialize());
     }
   }
 
@@ -516,26 +519,17 @@ void CorsURLLoader::OnMojoDisconnect() {
 // This should be identical to CalculateCorsFlag defined in
 // //third_party/blink/renderer/platform/loader/cors/cors.cc.
 void CorsURLLoader::SetCorsFlagIfNeeded() {
-  if (fetch_cors_flag_)
+  if (fetch_cors_flag_) {
     return;
+  }
 
   if (!network::cors::ShouldCheckCors(request_.url, request_.request_initiator,
                                       request_.mode)) {
     return;
   }
 
-  // The source origin and destination URL pair may be in the allow list.
-  switch (origin_access_list_->CheckAccessState(request_)) {
-    case OriginAccessList::AccessState::kAllowed:
-      return;
-    case OriginAccessList::AccessState::kBlocked:
-      break;
-    case OriginAccessList::AccessState::kNotListed:
-      if (factory_bound_origin_access_list_->CheckAccessState(request_) ==
-          OriginAccessList::AccessState::kAllowed) {
-        return;
-      }
-      break;
+  if (HasSpecialAccessToDestination()) {
+    return;
   }
 
   // When a request is initiated in a unique opaque origin (e.g., in a sandboxed
@@ -555,6 +549,19 @@ void CorsURLLoader::SetCorsFlagIfNeeded() {
   }
 
   fetch_cors_flag_ = true;
+}
+
+bool CorsURLLoader::HasSpecialAccessToDestination() const {
+  // The source origin and destination URL pair may be in the allow list.
+  switch (origin_access_list_->CheckAccessState(request_)) {
+    case OriginAccessList::AccessState::kAllowed:
+      return true;
+    case OriginAccessList::AccessState::kBlocked:
+      return false;
+    case OriginAccessList::AccessState::kNotListed:
+      return factory_bound_origin_access_list_->CheckAccessState(request_) ==
+             OriginAccessList::AccessState::kAllowed;
+  }
 }
 
 // Keep this in sync with the identical function

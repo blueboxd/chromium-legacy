@@ -21,6 +21,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/completion_repeating_callback.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
@@ -47,8 +48,12 @@ class ResolveHostAndOpenSocket final : public network::ResolveHostClientBase {
       const AdbClientSocket::SocketCallback& callback,
       mojo::Remote<network::mojom::HostResolver>* host_resolver)
       : callback_(callback) {
+    // Fine to use a transient NetworkIsolationKey here - this is for debugging,
+    // so performance doesn't matter, and it doesn't need to share a DNS cache
+    // with anything else.
     (*host_resolver)
-        ->ResolveHost(address, nullptr, receiver_.BindNewPipeAndPassRemote());
+        ->ResolveHost(address, net::NetworkIsolationKey::CreateTransient(),
+                      nullptr, receiver_.BindNewPipeAndPassRemote());
     receiver_.set_disconnect_handler(
         base::BindOnce(&ResolveHostAndOpenSocket::OnComplete,
                        base::Unretained(this), net::ERR_NAME_NOT_RESOLVED,

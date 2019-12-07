@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "base/optional.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_manager_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_metrics_util.h"
@@ -176,6 +176,8 @@ PluginVmLauncherView* PluginVmLauncherView::GetActiveViewForTesting() {
 
 int PluginVmLauncherView::GetDialogButtons() const {
   switch (state_) {
+    case State::START_DLC_DOWNLOADING:
+    case State::DOWNLOADING_DLC:
     case State::START_DOWNLOADING:
     case State::DOWNLOADING:
     case State::IMPORTING:
@@ -196,6 +198,8 @@ int PluginVmLauncherView::GetDialogButtons() const {
 base::string16 PluginVmLauncherView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   switch (state_) {
+    case State::START_DLC_DOWNLOADING:
+    case State::DOWNLOADING_DLC:
     case State::START_DOWNLOADING:
     case State::DOWNLOADING:
     case State::IMPORTING: {
@@ -240,6 +244,13 @@ bool PluginVmLauncherView::Accept() {
 }
 
 bool PluginVmLauncherView::Cancel() {
+  if (state_ == State::DOWNLOADING_DLC ||
+      state_ == State::START_DLC_DOWNLOADING) {
+    plugin_vm_image_manager_->CancelDlcDownload();
+
+    plugin_vm::RecordPluginVmSetupResultHistogram(
+        plugin_vm::PluginVmSetupResult::kUserCancelledDownloadingPluginVmDlc);
+  }
   if (state_ == State::DOWNLOADING || state_ == State::START_DOWNLOADING) {
     plugin_vm_image_manager_->CancelDownload();
 
@@ -260,8 +271,39 @@ gfx::Size PluginVmLauncherView::CalculatePreferredSize() const {
   return gfx::Size(kWindowWidth, kWindowHeight);
 }
 
+void PluginVmLauncherView::OnDlcDownloadStarted() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  state_ = State::DOWNLOADING_DLC;
+  OnStateUpdated();
+}
+
+void PluginVmLauncherView::OnDlcDownloadProgressUpdated(
+    double progress,
+    base::TimeDelta elapsed_time) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_EQ(state_, State::DOWNLOADING_DLC);
+
+  UpdateOperationProgress(progress * 100, 100.0, elapsed_time);
+}
+
+void PluginVmLauncherView::OnDlcDownloadCompleted() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_EQ(state_, State::DOWNLOADING_DLC);
+
+  state_ = State::START_DOWNLOADING;
+  OnStateUpdated();
+
+  plugin_vm_image_manager_->StartDownload();
+}
+
+void PluginVmLauncherView::OnDlcDownloadCancelled() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+}
+
 void PluginVmLauncherView::OnDownloadStarted() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_EQ(state_, State::START_DOWNLOADING);
 
   state_ = State::DOWNLOADING;
   OnStateUpdated();
@@ -346,6 +388,8 @@ void PluginVmLauncherView::OnImported() {
 
 base::string16 PluginVmLauncherView::GetBigMessage() const {
   switch (state_) {
+    case State::START_DLC_DOWNLOADING:
+    case State::DOWNLOADING_DLC:
     case State::START_DOWNLOADING:
     case State::DOWNLOADING:
     case State::IMPORTING:
@@ -367,6 +411,8 @@ base::string16 PluginVmLauncherView::GetBigMessage() const {
 
 base::string16 PluginVmLauncherView::GetMessage() const {
   switch (state_) {
+    case State::START_DLC_DOWNLOADING:
+    case State::DOWNLOADING_DLC:
     case State::START_DOWNLOADING:
       return l10n_util::GetStringUTF16(
           IDS_PLUGIN_VM_LAUNCHER_START_DOWNLOADING_MESSAGE);
@@ -379,14 +425,44 @@ base::string16 PluginVmLauncherView::GetMessage() const {
     case State::FINISHED:
       return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_FINISHED_MESSAGE);
     case State::ERROR:
+      using Reason = plugin_vm::PluginVmImageManager::FailureReason;
       DCHECK(reason_);
       switch (*reason_) {
-        case plugin_vm::PluginVmImageManager::FailureReason::NOT_ALLOWED:
+        default:
+        case Reason::LOGIC_ERROR:
+        case Reason::SIGNAL_NOT_CONNECTED:
+        case Reason::OPERATION_IN_PROGRESS:
+        case Reason::UNEXPECTED_DISK_IMAGE_STATUS:
+        case Reason::INVALID_DISK_IMAGE_STATUS_RESPONSE:
+        case Reason::DISPATCHER_NOT_AVAILABLE:
+        case Reason::CONCIERGE_NOT_AVAILABLE:
+          return l10n_util::GetStringFUTF16(
+              IDS_PLUGIN_VM_LAUNCHER_ERROR_MESSAGE_LOGIC_ERROR,
+              base::NumberToString16(
+                  static_cast<std::underlying_type_t<Reason>>(*reason_)));
+        case Reason::NOT_ALLOWED:
           return l10n_util::GetStringUTF16(
               IDS_PLUGIN_VM_LAUNCHER_NOT_ALLOWED_MESSAGE);
-        default:
-          return l10n_util::GetStringUTF16(
-              IDS_PLUGIN_VM_LAUNCHER_ERROR_MESSAGE);
+        case Reason::INVALID_IMAGE_URL:
+        case Reason::HASH_MISMATCH:
+          return l10n_util::GetStringFUTF16(
+              IDS_PLUGIN_VM_LAUNCHER_ERROR_MESSAGE_CONFIG_ERROR,
+              base::NumberToString16(
+                  static_cast<std::underlying_type_t<Reason>>(*reason_)));
+        case Reason::DOWNLOAD_FAILED_UNKNOWN:
+        case Reason::DOWNLOAD_FAILED_NETWORK:
+        case Reason::DOWNLOAD_FAILED_ABORTED:
+          return l10n_util::GetStringFUTF16(
+              IDS_PLUGIN_VM_LAUNCHER_ERROR_MESSAGE_DOWNLOAD_FAILED,
+              base::NumberToString16(
+                  static_cast<std::underlying_type_t<Reason>>(*reason_)));
+        case Reason::COULD_NOT_OPEN_IMAGE:
+        case Reason::INVALID_IMPORT_RESPONSE:
+        case Reason::IMAGE_IMPORT_FAILED:
+          return l10n_util::GetStringFUTF16(
+              IDS_PLUGIN_VM_LAUNCHER_ERROR_MESSAGE_INSTALLING_FAILED,
+              base::NumberToString16(
+                  static_cast<std::underlying_type_t<Reason>>(*reason_)));
       }
   }
 }
@@ -424,9 +500,10 @@ void PluginVmLauncherView::OnStateUpdated() {
   SetMessageLabel();
   SetBigImage();
 
-  const bool progress_bar_visible = state_ == State::START_DOWNLOADING ||
-                                    state_ == State::DOWNLOADING ||
-                                    state_ == State::IMPORTING;
+  const bool progress_bar_visible =
+      state_ == State::START_DLC_DOWNLOADING ||
+      state_ == State::DOWNLOADING_DLC || state_ == State::START_DOWNLOADING ||
+      state_ == State::DOWNLOADING || state_ == State::IMPORTING;
   progress_bar_->SetVisible(progress_bar_visible);
   // Values outside the range [0,1] display an infinite loading animation.
   progress_bar_->SetValue(-1);
@@ -476,7 +553,8 @@ void PluginVmLauncherView::UpdateOperationProgress(
     double units_processed,
     double total_units,
     base::TimeDelta elapsed_time) const {
-  DCHECK(state_ == State::DOWNLOADING || state_ == State::IMPORTING);
+  DCHECK(state_ == State::DOWNLOADING_DLC || state_ == State::DOWNLOADING ||
+         state_ == State::IMPORTING);
 
   base::Optional<double> maybe_fraction_complete =
       GetFractionComplete(units_processed, total_units);
@@ -533,9 +611,9 @@ void PluginVmLauncherView::StartPluginVmImageDownload() {
   // retry button is clicked).
   setup_start_tick_ = base::TimeTicks::Now();
 
-  state_ = State::START_DOWNLOADING;
+  state_ = State::START_DLC_DOWNLOADING;
   OnStateUpdated();
 
   plugin_vm_image_manager_->SetObserver(this);
-  plugin_vm_image_manager_->StartDownload();
+  plugin_vm_image_manager_->StartDlcDownload();
 }

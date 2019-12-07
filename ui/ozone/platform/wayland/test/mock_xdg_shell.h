@@ -5,7 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_TEST_MOCK_XDG_SHELL_H_
 #define UI_OZONE_PLATFORM_WAYLAND_TEST_MOCK_XDG_SHELL_H_
 
-#include <xdg-shell-unstable-v5-server-protocol.h>
+#include <xdg-shell-server-protocol.h>
 #include <xdg-shell-unstable-v6-server-protocol.h>
 
 #include "base/macros.h"
@@ -14,7 +14,7 @@
 
 namespace wl {
 
-extern const struct xdg_shell_interface kMockXdgShellImpl;
+extern const struct xdg_wm_base_interface kMockXdgShellImpl;
 extern const struct zxdg_shell_v6_interface kMockZxdgShellV6Impl;
 
 // Manage xdg_shell object.
@@ -23,7 +23,6 @@ class MockXdgShell : public GlobalObject {
   MockXdgShell();
   ~MockXdgShell() override;
 
-  MOCK_METHOD1(UseUnstableVersion, void(int32_t version));
   MOCK_METHOD1(Pong, void(uint32_t serial));
 
  private:

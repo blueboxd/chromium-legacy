@@ -41,12 +41,14 @@ class CONTENT_EXPORT StoragePartitionImplMap
                             bool can_create);
 
   // Starts an asynchronous best-effort attempt to delete all on-disk storage
-  // related to |site|, avoiding any directories that are known to be in use.
+  // related to |partition_domain|, avoiding any directories that are known to
+  // be in use.
   //
   // |on_gc_required| is called if the AsyncObliterate() call was unable to
   // fully clean the on-disk storage requiring a call to GarbageCollect() on
   // the next browser start.
-  void AsyncObliterate(const GURL& site, const base::Closure& on_gc_required);
+  void AsyncObliterate(const std::string& partition_domain,
+                       const base::Closure& on_gc_required);
 
   // Examines the on-disk storage and removes any entires that are not listed
   // in the |active_paths|, or in use by current entries in the storage

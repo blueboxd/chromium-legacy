@@ -518,8 +518,11 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   // policy is used to enable hints for all subresources, based on the policy of
   // the requesting document, and the origin of the resource.
   const FeaturePolicy* policy = nullptr;
-  if (frame_or_imported_document_)
-    policy = frame_or_imported_document_->GetDocument().GetFeaturePolicy();
+  if (frame_or_imported_document_) {
+    policy = frame_or_imported_document_->GetDocument()
+                 .GetSecurityContext()
+                 .GetFeaturePolicy();
+  }
   url::Origin resource_origin =
       SecurityOrigin::Create(request.Url())->ToUrlOrigin();
 

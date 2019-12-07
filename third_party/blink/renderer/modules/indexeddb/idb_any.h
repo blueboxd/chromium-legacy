@@ -57,25 +57,6 @@ class MODULES_EXPORT IDBAny final : public GarbageCollected<IDBAny> {
  public:
   static IDBAny* CreateUndefined();
   static IDBAny* CreateNull();
-  template <typename T>
-  static IDBAny* Create(T* idb_object) {
-    return MakeGarbageCollected<IDBAny>(idb_object);
-  }
-  static IDBAny* Create(DOMStringList* dom_string_list) {
-    return MakeGarbageCollected<IDBAny>(dom_string_list);
-  }
-  static IDBAny* Create(int64_t value) {
-    return MakeGarbageCollected<IDBAny>(value);
-  }
-  static IDBAny* Create(std::unique_ptr<IDBKey> key) {
-    return MakeGarbageCollected<IDBAny>(std::move(key));
-  }
-  static IDBAny* Create(std::unique_ptr<IDBValue> value) {
-    return MakeGarbageCollected<IDBAny>(std::move(value));
-  }
-  static IDBAny* Create(Vector<std::unique_ptr<IDBValue>> values) {
-    return MakeGarbageCollected<IDBAny>(std::move(values));
-  }
 
   enum Type {
     kUndefinedType = 0,

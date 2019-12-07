@@ -793,12 +793,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       DCHECK_EQ(static_cast<int>(ResourceType::kSubFrame),
                 resource_request_->resource_type);
       url::Origin subframe_origin = url::Origin::Create(resource_request_->url);
-      base::Optional<url::Origin> top_frame_origin =
-          resource_request_->trusted_params->network_isolation_key
-              .GetTopFrameOrigin();
-      DCHECK(top_frame_origin);
       resource_request_->trusted_params->network_isolation_key =
-          net::NetworkIsolationKey(top_frame_origin.value(), subframe_origin);
+          resource_request_->trusted_params->network_isolation_key
+              .CreateWithNewFrameOrigin(subframe_origin);
     }
 
     resource_request_->referrer = GURL(redirect_info_.new_referrer);

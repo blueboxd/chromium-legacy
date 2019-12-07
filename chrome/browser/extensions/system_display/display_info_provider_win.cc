@@ -33,8 +33,7 @@ BOOL CALLBACK EnumMonitorCallback(HMONITOR monitor,
 
   DisplayUnitInfo unit;
 
-  MONITORINFOEX monitor_info;
-  ZeroMemory(&monitor_info, sizeof(MONITORINFOEX));
+  MONITORINFOEX monitor_info = {};
   monitor_info.cbSize = sizeof(monitor_info);
   GetMonitorInfo(monitor, &monitor_info);
 
@@ -43,8 +42,8 @@ BOOL CALLBACK EnumMonitorCallback(HMONITOR monitor,
   if (!EnumDisplayDevices(monitor_info.szDevice, 0, &device, 0))
     return FALSE;
 
-  unit.id =
-      base::NumberToString(base::Hash(base::WideToUTF8(monitor_info.szDevice)));
+  unit.id = base::NumberToString(
+      base::PersistentHash(base::WideToUTF8(monitor_info.szDevice)));
   unit.name = base::WideToUTF8(device.DeviceString);
   all_displays->push_back(std::move(unit));
 

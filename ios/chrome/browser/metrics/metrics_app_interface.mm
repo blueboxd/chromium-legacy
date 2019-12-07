@@ -5,21 +5,28 @@
 #include "ios/chrome/browser/metrics/metrics_app_interface.h"
 
 #include "base/stl_util.h"
+#include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/ukm/ukm_service.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/metrics/ios_chrome_metrics_service_accessor.h"
+#import "ios/chrome/test/app/histogram_test_util.h"
+#import "ios/testing/nserror_util.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+namespace {
 // Constant for timeout while waiting for asynchronous sync and UKM operations.
 const NSTimeInterval kSyncUKMOperationsTimeout = 10.0;
 
 bool g_metrics_enabled = false;
+
+chrome_test_util::HistogramTester* g_histogram_tester = nullptr;
+}  // namespace
 
 namespace metrics {
 
@@ -102,6 +109,98 @@ class UkmEGTestHelper {
 
 + (void)UKMRecordDummySource:(int64_t)sourceID {
   return metrics::UkmEGTestHelper::RecordDummySource(sourceID);
+}
+
++ (NSError*)setupHistogramTester {
+  if (g_histogram_tester) {
+    return testing::NSErrorWithLocalizedDescription(
+        @"Cannot setup two histogram testers.");
+  }
+  g_histogram_tester = new chrome_test_util::HistogramTester();
+  return nil;
+}
+
++ (NSError*)releaseHistogramTester {
+  if (!g_histogram_tester) {
+    return testing::NSErrorWithLocalizedDescription(
+        @"Cannot release histogram tester.");
+  }
+  delete g_histogram_tester;
+  g_histogram_tester = nullptr;
+  return nil;
+}
+
++ (NSError*)expectTotalCount:(int)count forHistogram:(NSString*)histogram {
+  if (!g_histogram_tester) {
+    return testing::NSErrorWithLocalizedDescription(
+        @"setupHistogramTester must be called before testing metrics.");
+  }
+  __block NSString* error = nil;
+
+  g_histogram_tester->ExpectTotalCount(base::SysNSStringToUTF8(histogram),
+                                       count, ^(NSString* e) {
+                                         error = e;
+                                       });
+  if (error) {
+    return testing::NSErrorWithLocalizedDescription(error);
+  }
+  return nil;
+}
+
++ (NSError*)expectCount:(int)count
+              forBucket:(int)bucket
+           forHistogram:(NSString*)histogram {
+  if (!g_histogram_tester) {
+    return testing::NSErrorWithLocalizedDescription(
+        @"setupHistogramTester must be called before testing metrics.");
+  }
+  __block NSString* error = nil;
+
+  g_histogram_tester->ExpectBucketCount(base::SysNSStringToUTF8(histogram),
+                                        bucket, count, ^(NSString* e) {
+                                          error = e;
+                                        });
+  if (error) {
+    return testing::NSErrorWithLocalizedDescription(error);
+  }
+  return nil;
+}
+
++ (NSError*)expectUniqueSampleWithCount:(int)count
+                              forBucket:(int)bucket
+                           forHistogram:(NSString*)histogram {
+  if (!g_histogram_tester) {
+    return testing::NSErrorWithLocalizedDescription(
+        @"setupHistogramTester must be called before testing metrics.");
+  }
+  __block NSString* error = nil;
+
+  g_histogram_tester->ExpectUniqueSample(base::SysNSStringToUTF8(histogram),
+                                         bucket, count, ^(NSString* e) {
+                                           error = e;
+                                         });
+  if (error) {
+    return testing::NSErrorWithLocalizedDescription(error);
+  }
+  return nil;
+}
+
++ (NSError*)expectSum:(NSInteger)sum forHistogram:(NSString*)histogram {
+  if (!g_histogram_tester) {
+    return testing::NSErrorWithLocalizedDescription(
+        @"setupHistogramTester must be called before testing metrics.");
+  }
+  std::unique_ptr<base::HistogramSamples> samples =
+      g_histogram_tester->GetHistogramSamplesSinceCreation(
+          base::SysNSStringToUTF8(histogram));
+  if (samples->sum() != sum) {
+    return testing::NSErrorWithLocalizedDescription([NSString
+        stringWithFormat:
+            @"Sum of histogram %@ mismatch. Expected %ld, Observed: %ld",
+            histogram, static_cast<long>(sum),
+            static_cast<long>(samples->sum())]);
+  }
+  return nil;
 }
 
 @end

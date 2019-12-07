@@ -117,8 +117,8 @@ class FrameSequenceTrackerTest : public testing::Test {
     base::HistogramTester histogram_tester;
 
     // Test that there is no main thread frames expected.
-    tracker_->impl_throughput_.frames_expected = 100u;
-    tracker_->impl_throughput_.frames_produced = 85u;
+    tracker_->impl_throughput().frames_expected = 100u;
+    tracker_->impl_throughput().frames_produced = 85u;
     tracker_->ReportMetrics();
     histogram_tester.ExpectTotalCount(
         "Graphics.Smoothness.Throughput.CompositorThread.TouchScroll", 1u);
@@ -128,8 +128,8 @@ class FrameSequenceTrackerTest : public testing::Test {
         "Graphics.Smoothness.Throughput.SlowerThread.TouchScroll", 1u);
 
     // Test that both are reported.
-    tracker_->main_throughput_.frames_expected = 50u;
-    tracker_->main_throughput_.frames_produced = 25u;
+    tracker_->main_throughput().frames_expected = 50u;
+    tracker_->main_throughput().frames_produced = 25u;
     tracker_->ReportMetrics();
     histogram_tester.ExpectTotalCount(
         "Graphics.Smoothness.Throughput.CompositorThread.TouchScroll", 2u);
@@ -139,10 +139,10 @@ class FrameSequenceTrackerTest : public testing::Test {
         "Graphics.Smoothness.Throughput.SlowerThread.TouchScroll", 2u);
 
     // Test that none is reported.
-    tracker_->main_throughput_.frames_expected = 2u;
-    tracker_->main_throughput_.frames_produced = 1u;
-    tracker_->impl_throughput_.frames_expected = 2u;
-    tracker_->impl_throughput_.frames_produced = 1u;
+    tracker_->main_throughput().frames_expected = 2u;
+    tracker_->main_throughput().frames_produced = 1u;
+    tracker_->impl_throughput().frames_expected = 2u;
+    tracker_->impl_throughput().frames_produced = 1u;
     tracker_->ReportMetrics();
     histogram_tester.ExpectTotalCount(
         "Graphics.Smoothness.Throughput.CompositorThread.TouchScroll", 2u);
@@ -152,10 +152,10 @@ class FrameSequenceTrackerTest : public testing::Test {
         "Graphics.Smoothness.Throughput.SlowerThread.TouchScroll", 2u);
 
     // Test the case where compositor and main thread have the same throughput.
-    tracker_->impl_throughput_.frames_expected = 20u;
-    tracker_->impl_throughput_.frames_produced = 18u;
-    tracker_->main_throughput_.frames_expected = 20u;
-    tracker_->main_throughput_.frames_produced = 18u;
+    tracker_->impl_throughput().frames_expected = 20u;
+    tracker_->impl_throughput().frames_produced = 18u;
+    tracker_->main_throughput().frames_expected = 20u;
+    tracker_->main_throughput().frames_produced = 18u;
     tracker_->ReportMetrics();
     histogram_tester.ExpectTotalCount(
         "Graphics.Smoothness.Throughput.CompositorThread.TouchScroll", 3u);
@@ -187,16 +187,16 @@ class FrameSequenceTrackerTest : public testing::Test {
     return tracker_->ignored_frame_tokens_;
   }
 
-  FrameSequenceTracker::ThroughputData ImplThroughput() const {
-    return tracker_->impl_throughput_;
+  FrameSequenceMetrics::ThroughputData ImplThroughput() const {
+    return tracker_->impl_throughput();
   }
-  FrameSequenceTracker::ThroughputData MainThroughput() const {
-    return tracker_->main_throughput_;
+  FrameSequenceMetrics::ThroughputData MainThroughput() const {
+    return tracker_->main_throughput();
   }
 
  protected:
   uint32_t number_of_frames_checkerboarded() const {
-    return tracker_->checkerboarding_.frames_checkerboarded;
+    return tracker_->metrics_.frames_checkerboarded();
   }
 
   std::unique_ptr<CompositorFrameReportingController>

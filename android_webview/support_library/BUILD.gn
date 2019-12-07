@@ -29,7 +29,7 @@ android_library("support_lib_glue_java") {
   ]
 
   deps = [
-    "//android_webview:android_webview_java",
+    "//android_webview:browser_java",
     "//android_webview/glue:glue",
     "//android_webview/support_library/boundary_interfaces:boundary_interface_java",
     "//android_webview/support_library/callback:callback_java",

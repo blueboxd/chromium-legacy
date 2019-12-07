@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/dbus/concierge_client.h"
+#include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "components/download/public/background_service/download_params.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -59,12 +60,19 @@ class PluginVmImageManager
     COULD_NOT_OPEN_IMAGE = 13,
     INVALID_IMPORT_RESPONSE = 14,
     IMAGE_IMPORT_FAILED = 15,
+    DLC_DOWNLOAD_FAILED = 16,
+    DLC_DOWNLOAD_NOT_STARTED = 17,
   };
 
   // Observer class for the PluginVm image related events.
   class Observer {
    public:
     virtual ~Observer() = default;
+    virtual void OnDlcDownloadStarted() = 0;
+    virtual void OnDlcDownloadProgressUpdated(double progress,
+                                              base::TimeDelta elapsed_time) = 0;
+    virtual void OnDlcDownloadCompleted() = 0;
+    virtual void OnDlcDownloadCancelled() = 0;
     virtual void OnDownloadStarted() = 0;
     virtual void OnDownloadProgressUpdated(uint64_t bytes_downloaded,
                                            int64_t content_length,
@@ -82,7 +90,16 @@ class PluginVmImageManager
   explicit PluginVmImageManager(Profile* profile);
 
   // Returns true if manager is processing PluginVm image at the moment.
-  bool IsProcessingImage();
+  bool IsProcessing();
+
+  // Initiates the PluginVM DLC download, should always be called before
+  // |StartDownload()|, which initiates the PluginVM image download.
+  void StartDlcDownload();
+  // DLC(s) cannot be currently cancelled when initiated, so this will cause
+  // progress and completed install callbacks to be blocked to the observer if
+  // there is an install taking place.
+  void CancelDlcDownload();
+
   void StartDownload();
   // Cancels the download of PluginVm image finishing the image processing.
   // Downloaded PluginVm image archive is being deleted.
@@ -98,6 +115,11 @@ class PluginVmImageManager
 
   void SetObserver(Observer* observer);
   void RemoveObserver();
+
+  // Called by DlcserviceClient, are not supposed to be used by other classes.
+  void OnDlcDownloadProgressUpdated(double progress);
+  void OnDlcDownloadCompleted(const std::string& err,
+                              const dlcservice::DlcModuleList& dlc_module_list);
 
   // Called by PluginVmImageDownloadClient, are not supposed to be used by other
   // classes.
@@ -126,12 +148,16 @@ class PluginVmImageManager
  private:
   enum class State {
     NOT_STARTED,
+    DOWNLOADING_DLC,
+    DOWNLOAD_DLC_CANCELLED,
+    DOWNLOADED_DLC,
     DOWNLOADING,
     DOWNLOAD_CANCELLED,
     DOWNLOADED,
     IMPORTING,
     IMPORT_CANCELLED,
     CONFIGURED,
+    DOWNLOAD_DLC_FAILED,
     DOWNLOAD_FAILED,
     IMPORT_FAILED,
   };
@@ -142,10 +168,12 @@ class PluginVmImageManager
   State state_ = State::NOT_STARTED;
   std::string current_download_guid_;
   base::FilePath downloaded_plugin_vm_image_archive_;
+  dlcservice::DlcModuleList dlc_module_list_;
   // Used to identify our running import with concierge:
   std::string current_import_command_uuid_;
   // -1 when is not yet determined.
   int64_t downloaded_plugin_vm_image_size_ = -1;
+  base::TimeTicks dlc_download_start_tick_;
   base::TimeTicks download_start_tick_;
   base::TimeTicks import_start_tick_;
 

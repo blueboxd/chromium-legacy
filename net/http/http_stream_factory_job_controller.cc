@@ -1049,7 +1049,9 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
       continue;
 
     if (stream_type == HttpStreamRequest::BIDIRECTIONAL_STREAM &&
-        session_->params().quic_params.disable_bidirectional_streams) {
+        session_->context()
+            .quic_context->params()
+            ->disable_bidirectional_streams) {
       continue;
     }
 
@@ -1071,7 +1073,7 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
 
     HostPortPair destination(alternative_service_info.host_port_pair());
     if (session_key.host() != destination.host() &&
-        !session_->params().quic_params.allow_remote_alt_svc) {
+        !session_->context().quic_context->params()->allow_remote_alt_svc) {
       continue;
     }
     ignore_result(ApplyHostMappingRules(original_url, &destination));
@@ -1098,7 +1100,7 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
 quic::ParsedQuicVersion HttpStreamFactory::JobController::SelectQuicVersion(
     const quic::ParsedQuicVersionVector& advertised_versions) {
   const quic::ParsedQuicVersionVector& supported_versions =
-      session_->params().quic_params.supported_versions;
+      session_->context().quic_context->params()->supported_versions;
   if (advertised_versions.empty())
     return supported_versions[0];
 

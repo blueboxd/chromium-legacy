@@ -29,7 +29,7 @@ class WebPointerProperties {
     kBack,
     kForward,
     kEraser,
-    kLastEntry = kEraser  // Must be the last entry in the list
+    kMaxValue = kEraser  // Must be the last entry in the list
   };
 
   enum class Buttons : unsigned {
@@ -48,7 +48,7 @@ class WebPointerProperties {
     kPen,
     kEraser,
     kTouch,
-    kLastEntry = kTouch  // Must be the last entry in the list
+    kMaxValue = kTouch  // Must be the last entry in the list
   };
 
   explicit WebPointerProperties(

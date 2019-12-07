@@ -34,9 +34,12 @@ TabStripUILayout TabStripUILayout::CalculateForWebViewportSize(
                                         viewport_size.height());
   } else {
     layout.tab_thumbnail_size.set_width(kThumbnailMinDimensionLength);
+    // The height of the tab title is cropped from the thumbnail height to
+    // make the tabs appear less tall.
     layout.tab_thumbnail_size.set_height(kThumbnailMinDimensionLength *
-                                         viewport_size.height() /
-                                         viewport_size.width());
+                                             viewport_size.height() /
+                                             viewport_size.width() -
+                                         layout.tab_title_height);
   }
 
   return layout;

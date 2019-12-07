@@ -40,28 +40,29 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
                               public WebContentsObserver,
                               public WebContentsDelegate {
  public:
+  explicit Portal(RenderFrameHostImpl* owner_render_frame_host);
+  Portal(RenderFrameHostImpl* owner_render_frame_host,
+         std::unique_ptr<WebContents> existing_web_contents);
   ~Portal() override;
 
   static bool IsEnabled();
-
-  static Portal* FromToken(const base::UnguessableToken& portal_token);
-
-  // Creates a Portal and binds it to the pipe specified in the |request|. This
-  // function creates a strong binding, so the ownership of the Portal is
-  // delegated to the binding.
-  static Portal* Create(
-      RenderFrameHostImpl* owner_render_frame_host,
-      mojo::PendingAssociatedReceiver<blink::mojom::Portal> receiver,
-      mojo::PendingAssociatedRemote<blink::mojom::PortalClient> client);
-
-  // Creates a portal without binding it to any pipe. Only used in tests.
-  static std::unique_ptr<Portal> CreateForTesting(
-      RenderFrameHostImpl* owner_render_frame_host);
 
   static void BindPortalHostReceiver(
       RenderFrameHostImpl* frame,
       mojo::PendingAssociatedReceiver<blink::mojom::PortalHost>
           pending_receiver);
+
+  // Associates this via Mojo with a remote client in the renderer process.
+  void Bind(mojo::PendingAssociatedReceiver<blink::mojom::Portal> receiver,
+            mojo::PendingAssociatedRemote<blink::mojom::PortalClient> client);
+
+  // Called when it is time for the portal to be deleted, such as when the pipe
+  // holding it closes. If this is never called, the owning RenderFrameHostImpl
+  // is responsible for deleting this object.
+  //
+  // This object will be deleted by the time this returns. Any pointers to it
+  // are invalid.
+  void DestroySelf();
 
   // Called from a synchronous IPC from the renderer process in order to create
   // the proxy.
@@ -107,21 +108,19 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
     return owner_render_frame_host_;
   }
 
-  // Gets/sets the mojo receiver. Only used in tests.
-  mojo::SelfOwnedAssociatedReceiverRef<blink::mojom::Portal>
-  GetBindingForTesting() {
-    return receiver_;
+  // Only used in tests.
+  blink::mojom::Portal* GetInterceptorForTesting() const {
+    return interceptor_.get();
   }
-  void SetReceiverForTesting(
-      mojo::SelfOwnedAssociatedReceiverRef<blink::mojom::Portal> receiver);
-  void SetClientForTesting(
-      mojo::AssociatedRemote<blink::mojom::PortalClient> client);
+  void SetInterceptorForTesting(
+      std::unique_ptr<blink::mojom::Portal> interceptor) {
+    interceptor_ = std::move(interceptor);
+    receiver_.SwapImplForTesting(interceptor_.get());
+  }
 
   blink::mojom::PortalClient& client() { return *(client_.get()); }
 
  private:
-  explicit Portal(RenderFrameHostImpl* owner_render_frame_host);
-
   void SetPortalContents(std::unique_ptr<WebContents> web_contents);
 
   RenderFrameHostImpl* owner_render_frame_host_;
@@ -130,11 +129,12 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   // to reference this portal when communicating with the renderer.
   const base::UnguessableToken portal_token_;
 
-  // WeakPtr to SelfOwnedAssociatedReceiver.
-  mojo::SelfOwnedAssociatedReceiverRef<blink::mojom::Portal> receiver_;
+  // Receives messages from the outer (host) frame.
+  mojo::AssociatedReceiver<blink::mojom::Portal> receiver_{this};
 
   // Receives messages from the inner render process.
-  mojo::AssociatedReceiver<blink::mojom::PortalHost> portal_host_receiver_;
+  mojo::AssociatedReceiver<blink::mojom::PortalHost> portal_host_receiver_{
+      this};
 
   // Used to communicate with the HTMLPortalElement in the renderer that
   // hosts this Portal.
@@ -144,6 +144,10 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   std::unique_ptr<WebContents> portal_contents_;
 
   WebContentsImpl* portal_contents_impl_ = nullptr;
+
+  // Another implementation of blink::mojom::Portal to bind instead.
+  // For use in testing only.
+  std::unique_ptr<blink::mojom::Portal> interceptor_;
 };
 
 }  // namespace content

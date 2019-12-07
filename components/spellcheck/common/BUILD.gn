@@ -60,4 +60,12 @@ mojom("interfaces") {
   if (use_renderer_spellchecker) {
     enabled_features += [ "USE_RENDERER_SPELLCHECKER" ]
   }
+
+  if (use_win_hybrid_spellchecker) {
+    enabled_features += [ "USE_WIN_HYBRID_SPELLCHECKER" ]
+  }
+
+  if (use_windows_preferred_languages_for_spellcheck) {
+    enabled_features += [ "USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK" ]
+  }
 }

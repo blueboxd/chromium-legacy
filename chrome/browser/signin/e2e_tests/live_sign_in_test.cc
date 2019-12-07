@@ -151,22 +151,12 @@ class LiveSignInTest : public signin::test::LiveTest {
   }
 };
 
-// Often timing out on windows.  http://crbug.com/1025335
-#if defined(OS_WIN)
-#define MAYBE_SimpleSignInFlow DISABLED_SimpleSignInFlow
-#define MAYBE_WebSignOut DISABLED_WebSignOut
-#define MAYBE_TurnOffSync DISABLED_TurnOffSync
-#else
-#define MAYBE_SimpleSignInFlow SimpleSignInFlow
-#define MAYBE_WebSignOut WebSignOut
-#define MAYBE_TurnOffSync TurnOffSync
-#endif
-
+// This test can pass. Marked as manual because it TIMED_OUT on Win7.
+// See crbug.com/1025335.
 // Sings in an account through the settings page and checks that the account is
 // added to Chrome. Sync should be disabled because the test doesn't pass
 // through the Sync confirmation dialog.
-
-IN_PROC_BROWSER_TEST_F(LiveSignInTest, MAYBE_SimpleSignInFlow) {
+IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_SimpleSignInFlow) {
   TestAccount ta;
   CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", ta));
   SignInFromSettings(ta);
@@ -183,11 +173,13 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest, MAYBE_SimpleSignInFlow) {
   EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
 }
 
+// This test can pass. Marked as manual because it TIMED_OUT on Win7.
+// See crbug.com/1025335.
 // Signs in an account through the settings page and enables Sync. Checks that
 // Sync is enabled.
 // Then, signs out on the web and checks that the account is removed from
 // cookies and Sync paused error is displayed.
-IN_PROC_BROWSER_TEST_F(LiveSignInTest, MAYBE_WebSignOut) {
+IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_WebSignOut) {
   TestAccount test_account;
   CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", test_account));
   TurnOnSync(test_account);
@@ -218,10 +210,12 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest, MAYBE_WebSignOut) {
 #endif  // !defined(OS_CHROMEOS)
 }
 
+// This test can pass. Marked as manual because it TIMED_OUT on Win7.
+// See crbug.com/1025335.
 // Sings in two accounts on the web and checks that cookies and refresh tokens
 // are added to Chrome. Sync should be disabled.
 // Then, signs out on the web and checks that accounts are removed from Chrome.
-IN_PROC_BROWSER_TEST_F(LiveSignInTest, WebSignInAndSignOut) {
+IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_WebSignInAndSignOut) {
   TestAccount test_account_1;
   CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", test_account_1));
   SignInFromWeb(test_account_1);
@@ -263,11 +257,13 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest, WebSignInAndSignOut) {
   EXPECT_TRUE(identity_manager()->GetAccountsWithRefreshTokens().empty());
 }
 
+// This test can pass. Marked as manual because it TIMED_OUT on Win7.
+// See crbug.com/1025335.
 // Signs in an account through the settings page and enables Sync. Checks that
 // Sync is enabled. Signs in a second account on the web.
 // Then, turns Sync off from the settings page and checks that both accounts are
 // removed from Chrome and from cookies.
-IN_PROC_BROWSER_TEST_F(LiveSignInTest, MAYBE_TurnOffSync) {
+IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_TurnOffSync) {
   TestAccount test_account_1;
   CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", test_account_1));
   TurnOnSync(test_account_1);
@@ -308,10 +304,12 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest, MAYBE_TurnOffSync) {
   EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
 }
 
+// This test can pass. Marked as manual because it TIMED_OUT on Win7.
+// See crbug.com/1025335.
 // Signs in an account on the web. Goes to the Chrome settings to enable Sync
 // but cancels the sync confirmation dialog. Checks that the account is still
 // signed in on the web but Sync is disabled.
-IN_PROC_BROWSER_TEST_F(LiveSignInTest, CancelSyncWithWebAccount) {
+IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_CancelSyncWithWebAccount) {
   TestAccount test_account;
   CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", test_account));
   SignInFromWeb(test_account);
@@ -338,10 +336,12 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest, CancelSyncWithWebAccount) {
   EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
 }
 
+// This test can pass. Marked as manual because it TIMED_OUT on Win7.
+// See crbug.com/1025335.
 // Starts the sign in flow from the settings page, enters credentials on the
 // login page but cancels the Sync confirmation dialog. Checks that Sync is
 // disabled and no account was added to Chrome.
-IN_PROC_BROWSER_TEST_F(LiveSignInTest, CancelSync) {
+IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_CancelSync) {
   TestAccount test_account;
   CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", test_account));
   SignInFromSettings(test_account);

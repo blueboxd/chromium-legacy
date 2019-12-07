@@ -130,18 +130,15 @@ template("trichrome_library_apk_tmpl") {
       if (invoker.is_64_bit_browser) {
         shared_libraries = [ "//chrome/android:libmonochrome_64" ]
         _include_primary_support = true
-        if (invoker.include_32_bit_webview && build_apk_secondary_abi) {
-          # TODO(cjgrant): This dummy lib shouldn't be conditional on build_apk_secondary_abi.
+        if (invoker.include_32_bit_webview) {
           secondary_native_lib_placeholders = [ "libdummy.so" ]
         }
       } else {
+        secondary_abi_shared_libraries =
+            [ "//chrome/android:monochrome_secondary_abi_lib" ]
+        _include_secondary_support = true
         if (invoker.include_64_bit_webview) {
           native_lib_placeholders = [ "libdummy.so" ]
-        }
-        if (build_apk_secondary_abi) {
-          secondary_abi_shared_libraries =
-              [ "//chrome/android:monochrome_secondary_abi_lib" ]
-          _include_secondary_support = true
         }
       }
     } else {

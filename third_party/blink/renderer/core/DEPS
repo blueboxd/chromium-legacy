@@ -50,6 +50,7 @@ include_rules = [
     "+cc/paint/paint_canvas.h",
     "+cc/paint/paint_flags.h",
     "+cc/paint/paint_worklet_input.h",
+    "+cc/trees/browser_controls_params.h",
     "+cc/trees/paint_holding_commit_trigger.h",
     "+components/performance_manager/public/mojom/coordination_unit.mojom-blink.h",
     "+gpu/config/gpu_feature_info.h",

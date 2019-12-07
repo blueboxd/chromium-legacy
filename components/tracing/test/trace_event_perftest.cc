@@ -20,7 +20,7 @@ namespace tracing {
 namespace {
 
 using base::BindOnce;
-using base::Closure;
+using base::OnceClosure;
 using base::RunLoop;
 using base::Thread;
 using base::Unretained;
@@ -53,12 +53,11 @@ class TraceEventPerfTest : public ::testing::Test {
   }
 
   static void OnTraceDataCollected(
-      Closure quit_closure,
+      OnceClosure quit_closure,
       const scoped_refptr<base::RefCountedString>& events_str,
       bool has_more_events) {
-
     if (!has_more_events)
-      quit_closure.Run();
+      std::move(quit_closure).Run();
   }
 
   std::unique_ptr<TracedValue> MakeTracedValue(int counter) {

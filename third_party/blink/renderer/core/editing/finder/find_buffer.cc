@@ -353,7 +353,7 @@ void FindBuffer::CollectTextUntilBlockBoundary(
       }
       // Move the node so we wouldn't encounter this node or its descendants
       // later.
-      if (!IsHTMLWBRElement(To<HTMLElement>(*node)))
+      if (!IsA<HTMLWBRElement>(To<HTMLElement>(*node)))
         buffer_.push_back(kMaxCodepoint);
       node = FlatTreeTraversal::NextSkippingChildren(*node);
       continue;

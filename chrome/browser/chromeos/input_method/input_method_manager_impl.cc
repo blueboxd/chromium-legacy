@@ -942,8 +942,9 @@ void InputMethodManagerImpl::RecordInputMethodUsage(
   UMA_HISTOGRAM_ENUMERATION("InputMethod.Category",
                             GetInputMethodCategory(input_method_id),
                             INPUT_METHOD_CATEGORY_MAX);
-  base::UmaHistogramSparse("InputMethod.ID2",
-                           static_cast<int32_t>(base::Hash(input_method_id)));
+  base::UmaHistogramSparse(
+      "InputMethod.ID2",
+      static_cast<int32_t>(base::PersistentHash(input_method_id)));
 }
 
 void InputMethodManagerImpl::AddObserver(

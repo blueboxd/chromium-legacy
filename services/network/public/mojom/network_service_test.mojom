@@ -12,6 +12,7 @@ import "services/network/public/mojom/network_types.mojom";
 // Maps to net::RuleBasedHostResolverProc::Rule::ResolverType.
 enum ResolverType {
   kResolverTypeFail,
+  kResolverTypeFailTimeout,
   kResolverTypeSystem,
   kResolverTypeIPLiteral,
   kResolverTypeDirectLookup,

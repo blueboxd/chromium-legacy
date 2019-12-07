@@ -321,6 +321,7 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('  jar_excluded_patterns = ["*/ListenableFuture.class"]\n')
                 break
             case 'com_google_guava_listenablefuture':
+            case 'com_googlecode_java_diff_utils_diffutils':
                 // Needed to break dependency cycle for errorprone_plugin_java.
                 sb.append('  no_build_hooks = true\n')
                 break

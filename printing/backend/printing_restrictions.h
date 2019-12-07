@@ -49,11 +49,9 @@ enum class BackgroundGraphicsModeRestriction {
 PRINTING_EXPORT extern const char kAllowedColorModes[];
 PRINTING_EXPORT extern const char kAllowedDuplexModes[];
 PRINTING_EXPORT extern const char kAllowedPinModes[];
-PRINTING_EXPORT extern const char kAllowedBackgroundGraphicsModes[];
 PRINTING_EXPORT extern const char kDefaultColorMode[];
 PRINTING_EXPORT extern const char kDefaultDuplexMode[];
 PRINTING_EXPORT extern const char kDefaultPinMode[];
-PRINTING_EXPORT extern const char kDefaultBackgroundGraphicsMode[];
 
 // Dictionary keys to be used with |kPrintingAllowedPageSizes| and
 // |kPrintingSizeDefault| policies.

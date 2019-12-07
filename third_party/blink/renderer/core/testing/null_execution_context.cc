@@ -22,7 +22,10 @@ NullExecutionContext::NullExecutionContext(
           v8::Isolate::GetCurrent(),
           MakeGarbageCollected<Agent>(v8::Isolate::GetCurrent(),
                                       base::UnguessableToken::Null()),
-          origin_trial_context),
+          origin_trial_context,
+          nullptr,
+          WebSandboxFlags::kNone,
+          nullptr),
       tasks_need_pause_(false),
       is_secure_context_(true),
       scheduler_(scheduler::CreateDummyFrameScheduler()) {}
@@ -39,11 +42,12 @@ bool NullExecutionContext::IsSecureContext(String& error_message) const {
   return is_secure_context_;
 }
 
-void NullExecutionContext::SetUpSecurityContext() {
+void NullExecutionContext::SetUpSecurityContextForTesting() {
   auto* policy = MakeGarbageCollected<ContentSecurityPolicy>();
-  SecurityContext::SetSecurityOrigin(SecurityOrigin::Create(url_));
+  GetSecurityContext().SetSecurityOriginForTesting(
+      SecurityOrigin::Create(url_));
   policy->BindToDelegate(GetContentSecurityPolicyDelegate());
-  SecurityContext::SetContentSecurityPolicy(policy);
+  GetSecurityContext().SetContentSecurityPolicy(policy);
 }
 
 FrameOrWorkerScheduler* NullExecutionContext::GetScheduler() {

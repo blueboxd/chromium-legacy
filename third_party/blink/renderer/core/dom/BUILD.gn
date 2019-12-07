@@ -266,8 +266,6 @@ blink_core_sources("dom") {
     "tree_walker.h",
     "user_action_element_set.cc",
     "user_action_element_set.h",
-    "user_gesture_indicator.cc",
-    "user_gesture_indicator.h",
     "v0_insertion_point.cc",
     "v0_insertion_point.h",
     "visited_link_state.cc",

@@ -156,7 +156,7 @@ void ObliterateOneDirectory(const base::FilePath& current_dir,
 
     switch (action) {
       case kDelete:
-        base::DeleteFile(to_delete, true);
+        base::DeleteFileRecursively(to_delete);
         break;
 
       case kEnqueue:
@@ -206,7 +206,7 @@ void BlockingObliteratePath(
   // root and be done with it.  Otherwise, signal garbage collection and do
   // a best-effort delete of the on-disk structures.
   if (valid_paths_to_keep.empty()) {
-    base::DeleteFile(root, true);
+    base::DeleteFileRecursively(root);
     return;
   }
   closure_runner->PostTask(FROM_HERE, on_gc_required);
@@ -363,18 +363,8 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
 }
 
 void StoragePartitionImplMap::AsyncObliterate(
-    const GURL& site,
+    const std::string& partition_domain,
     const base::Closure& on_gc_required) {
-  // This method should avoid creating any StoragePartition (which would
-  // create more open file handles) so that it can delete as much of the
-  // data off disk as possible.
-  std::string partition_domain;
-  std::string partition_name;
-  bool in_memory = false;
-  GetContentClient()->browser()->GetStoragePartitionConfigForSite(
-      browser_context_, site, false, &partition_domain,
-      &partition_name, &in_memory);
-
   // Find the active partitions for the domain. Because these partitions are
   // active, it is not possible to just delete the directories that contain
   // the backing data structures without causing the browser to crash. Instead,

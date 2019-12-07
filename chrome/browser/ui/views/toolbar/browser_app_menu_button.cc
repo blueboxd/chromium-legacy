@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
+#include "chrome/browser/ui/views/feature_promos/feature_promo_colors.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
@@ -51,14 +52,6 @@
 #endif  // defined(OS_CHROMEOS)
 
 namespace {
-
-// Button background and icon colors for in-product help promos. The first is
-// the preferred color, but the selected color depends on the
-// background. TODO(collinbaker): consider moving these into theme system.
-constexpr SkColor kFeaturePromoHighlightDarkColor = gfx::kGoogleBlue600;
-constexpr SkColor kFeaturePromoHighlightDarkExtremeColor = gfx::kGoogleBlue900;
-constexpr SkColor kFeaturePromoHighlightLightColor = gfx::kGoogleGrey100;
-constexpr SkColor kFeaturePromoHighlightLightExtremeColor = SK_ColorWHITE;
 
 // Cycle duration of ink drop pulsing animation used for in-product help.
 constexpr base::TimeDelta kFeaturePromoPulseDuration =
@@ -293,13 +286,8 @@ const char* BrowserAppMenuButton::GetClassName() const {
 }
 
 base::Optional<SkColor> BrowserAppMenuButton::GetPromoHighlightColor() const {
-  if (promo_feature_) {
-    return ToolbarButton::AdjustHighlightColorForContrast(
-        GetThemeProvider(), kFeaturePromoHighlightDarkColor,
-        kFeaturePromoHighlightLightColor,
-        kFeaturePromoHighlightDarkExtremeColor,
-        kFeaturePromoHighlightLightExtremeColor);
-  }
+  if (promo_feature_)
+    return GetFeaturePromoHighlightColorForToolbar(GetThemeProvider());
 
   return base::nullopt;
 }

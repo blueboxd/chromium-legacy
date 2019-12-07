@@ -71,7 +71,7 @@ class MEDIA_BLINK_EXPORT MultiBufferReader : public MultiBuffer::Reader {
   // Returns net::OK if |len| bytes are already available, otherwise it will
   // return net::ERR_IO_PENDING and call |cb| at some point later.
   // |len| must be smaller or equal to max_buffer_forward.
-  int Wait(int64_t len, const base::Closure& cb);
+  int Wait(int64_t len, base::OnceClosure cb);
 
   // Set how much data we try to preload into the cache ahead of our current
   // location. Normally, we preload until we have preload_high bytes, then
@@ -138,7 +138,7 @@ class MEDIA_BLINK_EXPORT MultiBufferReader : public MultiBuffer::Reader {
   // Indirection function used to call callbacks. When we post a callback
   // we indirect it through a weak_ptr and this function to make sure we
   // don't call any callbacks after this object has been destroyed.
-  void Call(const base::Closure& cb) const;
+  void Call(base::OnceClosure cb) const;
 
   // The multibuffer we're wrapping, not owned.
   MultiBuffer* multibuffer_;
@@ -179,7 +179,7 @@ class MEDIA_BLINK_EXPORT MultiBufferReader : public MultiBuffer::Reader {
 
   // When Available() > current_wait_size_ we call cb_.
   int64_t current_wait_size_;
-  base::Closure cb_;
+  base::OnceClosure cb_;
 
   // Progress callback.
   base::Callback<void(int64_t, int64_t)> progress_callback_;

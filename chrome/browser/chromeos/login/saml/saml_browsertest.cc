@@ -969,7 +969,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, MAYBE_PasswordConfirmFlow) {
   OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
   test::OobeJS().ExpectTrue("!$('saml-confirm-password').manualInput");
   test::OobeJS().ExpectTrue(
-      "!$('saml-confirm-password').$.passwordInput.isInvalid");
+      "!$('saml-confirm-password').$.passwordInput.invalid");
 
   // Enter an unknown password for the first time should go back to confirm
   // password screen with error message.
@@ -977,7 +977,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, MAYBE_PasswordConfirmFlow) {
   OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
   test::OobeJS().ExpectTrue("!$('saml-confirm-password').manualInput");
   test::OobeJS().ExpectTrue(
-      "$('saml-confirm-password').$.passwordInput.isInvalid");
+      "$('saml-confirm-password').$.passwordInput.invalid");
 
   // Enter an unknown password 2nd time should go back fatal error message.
   SendConfirmPassword("wrong_password");
@@ -1190,7 +1190,6 @@ class SAMLPolicyTest : public SamlTest {
   void ShowGAIALoginForm();
   void ShowSAMLInterstitial();
   void ClickNextOnSAMLInterstitialPage();
-  void ClickChangeAccountOnSAMLInterstitialPage();
   void LogInWithSAML(const std::string& user_id,
                      const std::string& auth_sid_cookie,
                      const std::string& auth_lsid_cookie);
@@ -1376,65 +1375,22 @@ void SAMLPolicyTest::ShowGAIALoginForm() {
 
 void SAMLPolicyTest::ShowSAMLInterstitial() {
   WaitForOobeUI();
-
-  std::string js =
-      "{"
-      "  let notify = function() {"
-      "    window.domAutomationController.send('samlInterstitialPageReady');"
-      "  };"
-      "  if ($('gaia-signin').samlInterstitialPageReady) {"
-      "    window.setTimeout(notify, 0);"
-      "  } else {"
-      "    $SamlInterstitialPath.addEventListener("
-      "        'samlInterstitialPageReady', notify);"
-      "  }"
-      "}";
-  base::ReplaceSubstringsAfterOffset(
-      &js, 0, "$SamlInterstitialPath",
-      test::GetOobeElementPath({"gaia-signin", "saml-interstitial"}));
-
-  content::DOMMessageQueue message_queue;
-  ASSERT_TRUE(content::ExecuteScript(GetLoginUI()->GetWebContents(), js));
   ASSERT_TRUE(ash::LoginScreenTestApi::ClickAddUserButton());
-
-  std::string message;
-  do {
-    ASSERT_TRUE(message_queue.WaitForMessage(&message));
-  } while (message != "\"samlInterstitialPageReady\"");
+  test::OobeJS()
+      .CreateVisibilityWaiter(true, {"gaia-signin", "saml-interstitial"})
+      ->Wait();
 }
 
 void SAMLPolicyTest::ClickNextOnSAMLInterstitialPage() {
   content::DOMMessageQueue message_queue;
   SetupAuthFlowChangeListener();
 
-  std::string js =
-      test::GetOobeElementPath({"gaia-signin", "saml-interstitial"}) +
-      ".submit();";
-  ASSERT_TRUE(content::ExecuteScript(GetLoginUI()->GetWebContents(), js));
+  test::OobeJS().TapOnPath({"gaia-signin", "interstitial-next"});
 
   std::string message;
   do {
     ASSERT_TRUE(message_queue.WaitForMessage(&message));
   } while (message != "\"SamlLoaded\"");
-}
-
-void SAMLPolicyTest::ClickChangeAccountOnSAMLInterstitialPage() {
-  std::string js =
-      "$('gaia-signin').authenticator_.addEventListener('ready', function() {"
-      "  window.domAutomationController.send('ready');"
-      "});"
-      "$SamlInterstitialPath.changeAccountLink.click();";
-  base::ReplaceSubstringsAfterOffset(
-      &js, 0, "$SamlInterstitialPath",
-      test::GetOobeElementPath({"gaia-signin", "saml-interstitial"}));
-
-  content::DOMMessageQueue message_queue;
-  ASSERT_TRUE(content::ExecuteScript(GetLoginUI()->GetWebContents(), js));
-
-  std::string message;
-  do {
-    ASSERT_TRUE(message_queue.WaitForMessage(&message));
-  } while (message != "\"ready\"");
 }
 
 void SAMLPolicyTest::LogInWithSAML(const std::string& user_id,
@@ -1628,17 +1584,22 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLInterstitialChangeAccount) {
   ShowSAMLInterstitial();
   test::OobeJS().ExpectHiddenPath({"gaia-signin", "signin-frame-dialog"});
   test::OobeJS().ExpectHiddenPath({"gaia-signin", "offline-gaia"});
-  test::OobeJS().ExpectVisiblePath({"gaia-signin", "gaia-step-contents"});
+  test::OobeJS().ExpectVisiblePath({"gaia-signin", "saml-interstitial"});
 
   // Click the "change account" link on the SAML interstitial page.
-  ClickChangeAccountOnSAMLInterstitialPage();
+  test::OobeJS().TapLinkOnPath({"gaia-signin", "interstitial-change-account"});
 
   // Expects that only the gaia signin frame is visible and shown.
-  test::OobeJS().ExpectVisiblePath({"gaia-signin", "signin-frame-dialog"});
+  test::OobeJS()
+      .CreateVisibilityWaiter(true, {"gaia-signin", "signin-frame-dialog"})
+      ->Wait();
+  test::OobeJS()
+      .CreateVisibilityWaiter(false, {"gaia-signin", "gaia-loading"})
+      ->Wait();
   test::OobeJS().ExpectHasClass("non-transparent",
                                 {"gaia-signin", "signin-frame-container"});
   test::OobeJS().ExpectHiddenPath({"gaia-signin", "offline-gaia"});
-  test::OobeJS().ExpectHiddenPath({"gaia-signin", "gaia-step-contents"});
+  test::OobeJS().ExpectHiddenPath({"gaia-signin", "saml-interstitial"});
 }
 
 // Tests that clicking "Next" in the SAML interstitial page successfully

@@ -359,14 +359,17 @@ class WebWidgetClient {
   virtual void SetBrowserControlsShownRatio(float top_ratio,
                                             float bottom_ratio) {}
 
-  // Set browser controls height. If |shrink_viewport| is set to true, then
-  // Blink shrunk the viewport clip layers by the top and bottom browser
-  // controls height. Top controls will translate the web page down and do not
-  // immediately scroll when hiding. The bottom controls scroll immediately and
-  // never translate the content (only clip it).
-  virtual void SetBrowserControlsHeight(float top_height,
-                                        float bottom_height,
-                                        bool shrink_viewport) {}
+  // Set browser controls params. These params consist of top and bottom
+  // heights, min-heights, browser_controls_shrink_blink_size, and
+  // animate_browser_controls_height_changes. If
+  // animate_browser_controls_height_changes is set to true, changes to the
+  // browser controls height will be animated. If
+  // browser_controls_shrink_blink_size is set to true, then Blink shrunk the
+  // viewport clip layers by the top and bottom browser controls height. Top
+  // controls will translate the web page down and do not immediately scroll
+  // when hiding. The bottom controls scroll immediately and never translate the
+  // content (only clip it).
+  virtual void SetBrowserControlsParams(cc::BrowserControlsParams params) {}
 
   virtual viz::FrameSinkId GetFrameSinkId() {
     NOTREACHED();

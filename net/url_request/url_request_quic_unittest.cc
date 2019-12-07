@@ -20,6 +20,7 @@
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_util.h"
 #include "net/quic/crypto/proof_source_chromium.h"
+#include "net/quic/quic_context.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
@@ -62,7 +63,8 @@ class URLRequestQuicTest : public TestWithTaskEnvironment {
                                            OK);
     // To simplify the test, and avoid the race with the HTTP request, we force
     // QUIC for these requests.
-    params->quic_params.origins_to_force_quic_on.insert(
+    context_->set_quic_context(&quic_context_);
+    quic_context_.params()->origins_to_force_quic_on.insert(
         HostPortPair(kTestServerHost, 443));
     params->enable_quic = true;
     params->enable_server_push_cancellation = true;
@@ -180,6 +182,7 @@ class URLRequestQuicTest : public TestWithTaskEnvironment {
   std::unique_ptr<MappedHostResolver> host_resolver_;
   std::unique_ptr<QuicSimpleServer> server_;
   std::unique_ptr<TestURLRequestContext> context_;
+  QuicContext quic_context_;
   quic::QuicMemoryCacheBackend memory_cache_backend_;
   MockCertVerifier cert_verifier_;
 };

@@ -31,7 +31,7 @@ class FakeFrontendChannel : public protocol::FrontendChannel {
   void flushProtocolNotifications() override {}
   void fallThrough(int call_id,
                    const std::string& method,
-                   const std::string& message) override {}
+                   crdtp::span<uint8_t> message) override {}
   void sendProtocolNotification(
       std::unique_ptr<protocol::Serializable> message) override;
 

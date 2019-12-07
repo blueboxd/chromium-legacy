@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.common.feedobservable;
 
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
+import org.chromium.base.Consumer;
 
 /** A FeedObservable implementation that allows calling a notify method on all observers. */
 public class ObservableNotifier<ObserverT> extends FeedObservable<ObserverT> {

@@ -11,8 +11,6 @@
 #include "base/strings/string16.h"
 #include "ui/gfx/range/range.h"
 
-namespace string_matching {
-
 class TokenizedString;
 
 // TokenizedStringMatch takes two tokenized strings: one as the text and
@@ -47,7 +45,5 @@ class TokenizedStringMatch {
 
   DISALLOW_COPY_AND_ASSIGN(TokenizedStringMatch);
 };
-
-}  // namespace string_matching
 
 #endif  // CHROME_COMMON_STRING_MATCHING_TOKENIZED_STRING_MATCH_H_

@@ -14,6 +14,7 @@ import static org.chromium.components.feed.core.proto.ui.action.FeedActionProto.
 
 import android.view.View;
 
+import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.ContentMetadata;
 import org.chromium.chrome.browser.feed.library.api.host.action.StreamActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
@@ -22,7 +23,6 @@ import org.chromium.chrome.browser.feed.library.api.internal.actionparser.Action
 import org.chromium.chrome.browser.feed.library.api.internal.actionparser.ActionSource;
 import org.chromium.chrome.browser.feed.library.api.internal.protocoladapter.ProtocolAdapter;
 import org.chromium.chrome.browser.feed.library.common.Result;
-import org.chromium.chrome.browser.feed.library.common.functional.Supplier;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 import org.chromium.chrome.browser.feed.library.feedactionparser.internal.ActionTypesConverter;
 import org.chromium.chrome.browser.feed.library.feedactionparser.internal.PietFeedActionPayloadRetriever;

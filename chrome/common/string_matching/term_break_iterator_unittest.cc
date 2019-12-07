@@ -9,8 +9,7 @@
 
 using base::UTF8ToUTF16;
 
-namespace string_matching {
-namespace test {
+namespace {
 
 TEST(TermBreakIteratorTest, EmptyWord) {
   base::string16 empty;
@@ -85,5 +84,4 @@ TEST(TermBreakIteratorTest, CaseAndNoCase) {
   EXPECT_FALSE(iter.Advance());  // Test unexpected advance after end.
 }
 
-}  // namespace test
-}  // namespace string_matching
+}  // namespace

@@ -45,6 +45,7 @@ class TreeBuilder {
   // method.
   void JoinDexMethodClasses(TreeNode* node);
 
+  BaseSizeInfo* size_info_;
   TreeNode root_;
   std::unordered_map<GroupedPath, TreeNode*> _parents;
 

@@ -41,6 +41,8 @@ class WebAppIconManager : public AppIconManager {
   void ReadIcon(const AppId& app_id,
                 int icon_size_in_px,
                 ReadIconCallback callback) const override;
+  void ReadAllIcons(const AppId& app_id,
+                    ReadAllIconsCallback callback) const override;
   void ReadSmallestIcon(const AppId& app_id,
                         int icon_size_in_px,
                         ReadIconCallback callback) const override;

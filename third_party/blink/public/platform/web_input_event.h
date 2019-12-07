@@ -444,8 +444,8 @@ class WebInputEvent {
 
   unsigned size() const { return size_; }
 
-  void SetTargetFrameMovedRecently() const {
-    const_cast<WebInputEvent*>(this)->modifiers_ |= kTargetFrameMovedRecently;
+  void SetTargetFrameMovedRecently() {
+    modifiers_ |= kTargetFrameMovedRecently;
   }
 
  protected:

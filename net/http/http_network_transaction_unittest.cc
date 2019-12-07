@@ -13196,7 +13196,7 @@ TEST_F(HttpNetworkTransactionTest, ClearAlternativeServices) {
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetQuicAlternativeService(
       test_server, NetworkIsolationKey(), alternative_service, expiration,
-      session->params().quic_params.supported_versions);
+      session->context().quic_context->params()->supported_versions);
   EXPECT_EQ(1u,
             http_server_properties
                 ->GetAlternativeServiceInfos(test_server, NetworkIsolationKey())
@@ -13355,7 +13355,7 @@ TEST_F(HttpNetworkTransactionTest, IdentifyQuicBroken) {
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetQuicAlternativeService(
       server, NetworkIsolationKey(), alternative_service, expiration,
-      HttpNetworkSession::Params().quic_params.supported_versions);
+      DefaultSupportedQuicVersions());
   // Mark the QUIC alternative service as broken.
   http_server_properties->MarkAlternativeServiceBroken(alternative_service,
                                                        NetworkIsolationKey());
@@ -13421,12 +13421,12 @@ TEST_F(HttpNetworkTransactionTest, IdentifyQuicNotBroken) {
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
           alternative_service1, expiration,
-          session->params().quic_params.supported_versions));
+          session->context().quic_context->params()->supported_versions));
   AlternativeService alternative_service2(kProtoQUIC, alternative2);
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
           alternative_service2, expiration,
-          session->params().quic_params.supported_versions));
+          session->context().quic_context->params()->supported_versions));
 
   http_server_properties->SetAlternativeServices(
       server, NetworkIsolationKey(), alternative_service_info_vector);

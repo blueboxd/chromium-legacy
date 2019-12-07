@@ -4181,12 +4181,11 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginWebViewTest, IsolatedOriginInWebview) {
     load_observer.Wait();
   }
 
-  // TODO(alexmos, creis): The isolated origin currently has to use the
-  // chrome-guest:// SiteInstance, rather than a SiteInstance with its own
+  // TODO(alexmos, creis): The isolated origin currently has to use a
+  // guest SiteInstance, rather than a SiteInstance with its own
   // meaningful site URL.  This should be fixed as part of
   // https://crbug.com/734722.
-  EXPECT_TRUE(guest->GetMainFrame()->GetSiteInstance()->GetSiteURL().SchemeIs(
-      content::kGuestScheme));
+  EXPECT_TRUE(guest->GetMainFrame()->GetSiteInstance()->IsGuest());
 
   // Now, navigate <webview> to a regular page with a subframe.
   GURL foo_url(embedded_test_server()->GetURL("foo.com", "/iframe.html"));

@@ -21,6 +21,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/id_map.h"
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -176,6 +177,7 @@ class MediaInterfaceProxy;
 class NavigationEntryImpl;
 class NavigationRequest;
 class PermissionServiceContext;
+class Portal;
 class PrefetchedSignedExchangeCache;
 class PresentationServiceImpl;
 class PushMessagingManager;
@@ -996,15 +998,23 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Called on the main frame of a page embedded in a Portal when it is
   // activated. The frame has the option to adopt the previous page as a portal
-  // identified by |portal_token| with the interface |portal|. The activation
+  // containing the contents |predecessor_web_contents|. The activation
   // can optionally include a message |data| dispatched with the
   // PortalActivateEvent.
   void OnPortalActivated(
-      const base::UnguessableToken& portal_token,
-      mojo::PendingAssociatedRemote<blink::mojom::Portal> portal,
-      mojo::PendingAssociatedReceiver<blink::mojom::PortalClient> portal_client,
+      std::unique_ptr<WebContents> predecessor_web_contents,
       blink::TransferableMessage data,
       base::OnceCallback<void(blink::mojom::PortalActivateResult)> callback);
+
+  // Called in tests that synthetically create portals but need them to be
+  // properly associated with the owning RenderFrameHost.
+  void OnPortalCreatedForTesting(std::unique_ptr<Portal> portal);
+
+  // Look up a portal by its token (as received from the renderer process).
+  Portal* FindPortalByToken(const base::UnguessableToken& portal_token);
+
+  // Called when a Portal needs to be destroyed.
+  void DestroyPortal(Portal* portal);
 
   // Called on the main frame of a page embedded in a Portal to forward a
   // message from the host of a portal.
@@ -2560,6 +2570,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // TODO(crbug.com/1026101): Remove after the investigation.
   base::Optional<ShouldSwapBrowsingInstance>
       browsing_instance_not_swapped_reason_;
+
+  // The portals owned by this frame. |Portal::owner_render_frame_host_| points
+  // back to |this|.
+  base::flat_set<std::unique_ptr<Portal>, base::UniquePtrComparator> portals_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_{this};

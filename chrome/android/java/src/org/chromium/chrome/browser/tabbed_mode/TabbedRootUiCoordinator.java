@@ -165,7 +165,10 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
             final int resourceId = mActivity.getControlContainerHeightResource();
             final int topControlsNewHeight =
                     mActivity.getResources().getDimensionPixelSize(resourceId) + indicatorHeight;
-            mActivity.getFullscreenManager().setTopControlsHeight(topControlsNewHeight);
+            mActivity.getFullscreenManager().setAnimateBrowserControlsHeightChanges(true);
+            mActivity.getFullscreenManager().setTopControlsHeight(
+                    topControlsNewHeight, indicatorHeight);
+            mActivity.getFullscreenManager().setAnimateBrowserControlsHeightChanges(false);
         });
         mStatusIndicatorCoordinator.addObserver(mStatusIndicatorObserver);
     }

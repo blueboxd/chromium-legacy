@@ -246,8 +246,9 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
         failed_on_default_network_callback_(base::BindRepeating(
             &QuicStreamFactoryTestBase::OnFailedOnDefaultNetwork,
             base::Unretained(this))),
-        failed_on_default_network_(false) {
-    test_params_.quic_params.headers_include_h2_stream_dependency =
+        failed_on_default_network_(false),
+        quic_params_(context_.params()) {
+    quic_params_->headers_include_h2_stream_dependency =
         client_headers_include_h2_stream_dependency;
     context_.AdvanceTime(quic::QuicTime::Delta::FromSeconds(1));
   }
@@ -260,7 +261,7 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
         cert_verifier_.get(), &ct_policy_enforcer_, &transport_security_state_,
         cert_transparency_verifier_.get(),
         /*SocketPerformanceWatcherFactory*/ nullptr,
-        &crypto_client_stream_factory_, &context_, test_params_.quic_params);
+        &crypto_client_stream_factory_, &context_);
   }
 
   void InitializeConnectionMigrationV2Test(
@@ -271,9 +272,9 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
         scoped_mock_network_change_notifier_->mock_network_change_notifier();
     mock_ncn->ForceNetworkHandlesSupported();
     mock_ncn->SetConnectedNetworksList(connected_networks);
-    test_params_.quic_params.migrate_sessions_on_network_change_v2 = true;
-    test_params_.quic_params.migrate_sessions_early_v2 = true;
-    test_params_.quic_params.allow_port_migration = false;
+    quic_params_->migrate_sessions_on_network_change_v2 = true;
+    quic_params_->migrate_sessions_early_v2 = true;
+    quic_params_->allow_port_migration = false;
     socket_factory_.reset(new TestMigrationSocketFactory);
     Initialize();
   }
@@ -476,7 +477,7 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
   // Helper method for server migration tests.
   void VerifyServerMigration(const quic::QuicConfig& config,
                              IPEndPoint expected_address) {
-    test_params_.quic_params.allow_server_migration = true;
+    quic_params_->allow_server_migration = true;
     Initialize();
 
     ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -578,9 +579,8 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
                                            PRIVACY_MODE_DISABLED);
     }
 
-    test_params_.quic_params.max_server_configs_stored_in_properties = 1;
-    test_params_.quic_params.idle_connection_timeout =
-        base::TimeDelta::FromSeconds(500);
+    quic_params_->max_server_configs_stored_in_properties = 1;
+    quic_params_->idle_connection_timeout = base::TimeDelta::FromSeconds(500);
     Initialize();
     factory_->set_is_quic_known_to_work_on_current_network(true);
     ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -903,8 +903,7 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
   bool failed_on_default_network_;
   NetErrorDetails net_error_details_;
 
-  // Variables to configure QuicStreamFactory.
-  HttpNetworkSession::Params test_params_;
+  QuicParams* quic_params_;
 };
 
 class QuicStreamFactoryTest : public QuicStreamFactoryTestBase,
@@ -1173,7 +1172,7 @@ TEST_P(QuicStreamFactoryTest, CachedInitialRtt) {
   stats.srtt = base::TimeDelta::FromMilliseconds(10);
   http_server_properties_->SetServerNetworkStats(url::SchemeHostPort(url_),
                                                  NetworkIsolationKey(), stats);
-  test_params_.quic_params.estimate_initial_rtt = true;
+  quic_params_->estimate_initial_rtt = true;
 
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -1229,7 +1228,7 @@ TEST_P(QuicStreamFactoryTest, CachedInitialRttWithNetworkIsolationKey) {
   stats.srtt = base::TimeDelta::FromMilliseconds(10);
   http_server_properties_->SetServerNetworkStats(url::SchemeHostPort(url_),
                                                  kNetworkIsolationKey1, stats);
-  test_params_.quic_params.estimate_initial_rtt = true;
+  quic_params_->estimate_initial_rtt = true;
   Initialize();
 
   for (const auto& network_isolation_key :
@@ -1243,7 +1242,7 @@ TEST_P(QuicStreamFactoryTest, CachedInitialRttWithNetworkIsolationKey) {
         version_,
         quic::QuicUtils::CreateRandomConnectionId(context_.random_generator()),
         context_.clock(), kDefaultServerHostName, quic::Perspective::IS_CLIENT,
-        test_params_.quic_params.headers_include_h2_stream_dependency);
+        quic_params_->headers_include_h2_stream_dependency);
 
     MockQuicData socket_data(version_);
     socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
@@ -1284,7 +1283,7 @@ TEST_P(QuicStreamFactoryTest, 2gInitialRtt) {
   ScopedMockNetworkChangeNotifier notifier;
   notifier.mock_network_change_notifier()->SetConnectionType(
       NetworkChangeNotifier::CONNECTION_2G);
-  test_params_.quic_params.estimate_initial_rtt = true;
+  quic_params_->estimate_initial_rtt = true;
 
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -1319,7 +1318,7 @@ TEST_P(QuicStreamFactoryTest, 3gInitialRtt) {
   ScopedMockNetworkChangeNotifier notifier;
   notifier.mock_network_change_notifier()->SetConnectionType(
       NetworkChangeNotifier::CONNECTION_3G);
-  test_params_.quic_params.estimate_initial_rtt = true;
+  quic_params_->estimate_initial_rtt = true;
 
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -1465,7 +1464,7 @@ TEST_P(QuicStreamFactoryTest, ServerNetworkStatsWithNetworkIsolationKey) {
         version_,
         quic::QuicUtils::CreateRandomConnectionId(context_.random_generator()),
         context_.clock(), kDefaultServerHostName, quic::Perspective::IS_CLIENT,
-        test_params_.quic_params.headers_include_h2_stream_dependency);
+        quic_params_->headers_include_h2_stream_dependency);
 
     MockQuicData socket_data(version_);
     socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
@@ -2338,7 +2337,7 @@ TEST_P(QuicStreamFactoryTest, WriteErrorInCryptoConnectWithSyncHostResolution) {
 }
 
 TEST_P(QuicStreamFactoryTest, CloseSessionsOnIPAddressChanged) {
-  test_params_.quic_params.close_sessions_on_ip_change = true;
+  quic_params_->close_sessions_on_ip_change = true;
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -2431,7 +2430,7 @@ TEST_P(QuicStreamFactoryTest, CloseSessionsOnIPAddressChanged) {
 // as going away on IP address change instead of being closed. New requests will
 // go to a new connection.
 TEST_P(QuicStreamFactoryTest, GoAwaySessionsOnIPAddressChanged) {
-  test_params_.quic_params.goaway_sessions_on_ip_change = true;
+  quic_params_->goaway_sessions_on_ip_change = true;
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -3064,7 +3063,7 @@ TEST_P(QuicStreamFactoryTest,
 
 void QuicStreamFactoryTestBase::TestOnNetworkMadeDefaultNonMigratableStream(
     bool migrate_idle_sessions) {
-  test_params_.quic_params.migrate_idle_sessions = migrate_idle_sessions;
+  quic_params_->migrate_idle_sessions = migrate_idle_sessions;
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -3255,7 +3254,7 @@ TEST_P(QuicStreamFactoryTest,
 
 void QuicStreamFactoryTestBase::TestOnNetworkDisconnectedNonMigratableStream(
     bool migrate_idle_sessions) {
-  test_params_.quic_params.migrate_idle_sessions = migrate_idle_sessions;
+  quic_params_->migrate_idle_sessions = migrate_idle_sessions;
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -3424,7 +3423,7 @@ TEST_P(QuicStreamFactoryTest,
 
 void QuicStreamFactoryTestBase::TestOnNetworkMadeDefaultNoOpenStreams(
     bool migrate_idle_sessions) {
-  test_params_.quic_params.migrate_idle_sessions = migrate_idle_sessions;
+  quic_params_->migrate_idle_sessions = migrate_idle_sessions;
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -3511,7 +3510,7 @@ TEST_P(QuicStreamFactoryTest,
 
 void QuicStreamFactoryTestBase::TestOnNetworkDisconnectedNoOpenStreams(
     bool migrate_idle_sessions) {
-  test_params_.quic_params.migrate_idle_sessions = migrate_idle_sessions;
+  quic_params_->migrate_idle_sessions = migrate_idle_sessions;
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -4188,7 +4187,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnPathDegrading(
 // Verifies that port migration can be attempted and succeed when path degrading
 // is detected, even if NetworkHandle is not supported.
 TEST_P(QuicStreamFactoryTest, MigratePortOnPathDegrading_WithoutNetworkHandle) {
-  test_params_.quic_params.allow_port_migration = true;
+  quic_params_->allow_port_migration = true;
   socket_factory_.reset(new TestMigrationSocketFactory);
   Initialize();
 
@@ -4204,7 +4203,7 @@ TEST_P(QuicStreamFactoryTest, MigratePortOnPathDegrading_WithNetworkHandle) {
       scoped_mock_network_change_notifier_->mock_network_change_notifier();
   mock_ncn->ForceNetworkHandlesSupported();
   mock_ncn->SetConnectedNetworksList({kDefaultNetworkForTests});
-  test_params_.quic_params.allow_port_migration = true;
+  quic_params_->allow_port_migration = true;
   socket_factory_.reset(new TestMigrationSocketFactory);
   Initialize();
 
@@ -4226,8 +4225,8 @@ TEST_P(QuicStreamFactoryTest, MigratePortOnPathDegrading_WithMigration) {
   mock_ncn->ForceNetworkHandlesSupported();
   mock_ncn->SetConnectedNetworksList({kDefaultNetworkForTests});
   // Enable migration on network change.
-  test_params_.quic_params.migrate_sessions_on_network_change_v2 = true;
-  test_params_.quic_params.allow_port_migration = true;
+  quic_params_->migrate_sessions_on_network_change_v2 = true;
+  quic_params_->allow_port_migration = true;
   socket_factory_.reset(new TestMigrationSocketFactory);
   Initialize();
 
@@ -4377,7 +4376,7 @@ void QuicStreamFactoryTestBase::TestSimplePortMigrationOnPathDegrading() {
 
 // Regression test for https://crbug.com/1014092.
 TEST_P(QuicStreamFactoryTest, MultiplePortMigrationsExceedsMaxLimit) {
-  test_params_.quic_params.allow_port_migration = true;
+  quic_params_->allow_port_migration = true;
   socket_factory_.reset(new TestMigrationSocketFactory);
   Initialize();
 
@@ -4549,7 +4548,7 @@ TEST_P(QuicStreamFactoryTest, MultiplePortMigrationsExceedsMaxLimit) {
 // This test verifies that the session marks itself GOAWAY on path degrading
 // and it does not receive any new request
 TEST_P(QuicStreamFactoryTest, GoawayOnPathDegrading) {
-  test_params_.quic_params.go_away_on_path_degrading = true;
+  quic_params_->go_away_on_path_degrading = true;
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -5350,7 +5349,7 @@ TEST_P(QuicStreamFactoryTest,
 
 void QuicStreamFactoryTestBase::TestMigrateSessionEarlyNonMigratableStream(
     bool migrate_idle_sessions) {
-  test_params_.quic_params.migrate_idle_sessions = migrate_idle_sessions;
+  quic_params_->migrate_idle_sessions = migrate_idle_sessions;
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -5996,7 +5995,7 @@ void QuicStreamFactoryTestBase::
         quic::QuicErrorCode quic_error) {
   DCHECK(quic_error == quic::QUIC_NETWORK_IDLE_TIMEOUT ||
          quic_error == quic::QUIC_HANDSHAKE_TIMEOUT);
-  test_params_.quic_params.retry_on_alternate_network_before_handshake = true;
+  quic_params_->retry_on_alternate_network_before_handshake = true;
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
 
@@ -6152,7 +6151,7 @@ void QuicStreamFactoryTestBase::
 // is triggered before handshake is confirmed and connection migration is turned
 // on.
 TEST_P(QuicStreamFactoryTest, MigrationOnWriteErrorBeforeHandshakeConfirmed) {
-  DCHECK(!test_params_.quic_params.retry_on_alternate_network_before_handshake);
+  DCHECK(!quic_params_->retry_on_alternate_network_before_handshake);
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
 
@@ -6226,7 +6225,7 @@ TEST_P(QuicStreamFactoryTest, MigrationOnWriteErrorBeforeHandshakeConfirmed) {
 // on, a new connection will be retried on the alternate network.
 TEST_P(QuicStreamFactoryTest,
        RetryConnectionOnWriteErrorBeforeHandshakeConfirmed) {
-  test_params_.quic_params.retry_on_alternate_network_before_handshake = true;
+  quic_params_->retry_on_alternate_network_before_handshake = true;
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
 
@@ -6968,7 +6967,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorNonMigratableStream(
   DVLOG(1) << "Write error mode: "
            << ((write_error_mode == SYNCHRONOUS) ? "SYNCHRONOUS" : "ASYNC");
   DVLOG(1) << "Migrate idle sessions: " << migrate_idle_sessions;
-  test_params_.quic_params.migrate_idle_sessions = migrate_idle_sessions;
+  quic_params_->migrate_idle_sessions = migrate_idle_sessions;
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -8278,8 +8277,7 @@ TEST_P(QuicStreamFactoryTest, DefaultRetransmittableOnWireTimeoutForMigration) {
 TEST_P(QuicStreamFactoryTest, CustomRetransmittableOnWireTimeoutForMigration) {
   constexpr base::TimeDelta custom_timeout_value =
       base::TimeDelta::FromMilliseconds(200);
-  test_params_.quic_params.retransmittable_on_wire_timeout =
-      custom_timeout_value;
+  quic_params_->retransmittable_on_wire_timeout = custom_timeout_value;
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -8435,8 +8433,7 @@ TEST_P(QuicStreamFactoryTest, CustomRetransmittableOnWireTimeoutForMigration) {
 TEST_P(QuicStreamFactoryTest, CustomRetransmittableOnWireTimeout) {
   constexpr base::TimeDelta custom_timeout_value =
       base::TimeDelta::FromMilliseconds(200);
-  test_params_.quic_params.retransmittable_on_wire_timeout =
-      custom_timeout_value;
+  quic_params_->retransmittable_on_wire_timeout = custom_timeout_value;
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -8577,7 +8574,7 @@ TEST_P(QuicStreamFactoryTest, NoRetransmittableOnWireTimeout) {
   stats.srtt = base::TimeDelta::FromMilliseconds(200);
   http_server_properties_->SetServerNetworkStats(url::SchemeHostPort(url_),
                                                  NetworkIsolationKey(), stats);
-  test_params_.quic_params.estimate_initial_rtt = true;
+  quic_params_->estimate_initial_rtt = true;
 
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -8710,9 +8707,8 @@ TEST_P(QuicStreamFactoryTest,
        CustomeRetransmittableOnWireTimeoutWithMigrationOnNetworkChangeOnly) {
   constexpr base::TimeDelta custom_timeout_value =
       base::TimeDelta::FromMilliseconds(200);
-  test_params_.quic_params.retransmittable_on_wire_timeout =
-      custom_timeout_value;
-  test_params_.quic_params.migrate_sessions_on_network_change_v2 = true;
+  quic_params_->retransmittable_on_wire_timeout = custom_timeout_value;
+  quic_params_->migrate_sessions_on_network_change_v2 = true;
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -8854,8 +8850,8 @@ TEST_P(QuicStreamFactoryTest,
   stats.srtt = base::TimeDelta::FromMilliseconds(200);
   http_server_properties_->SetServerNetworkStats(url::SchemeHostPort(url_),
                                                  NetworkIsolationKey(), stats);
-  test_params_.quic_params.estimate_initial_rtt = true;
-  test_params_.quic_params.migrate_sessions_on_network_change_v2 = true;
+  quic_params_->estimate_initial_rtt = true;
+  quic_params_->migrate_sessions_on_network_change_v2 = true;
   Initialize();
 
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -9284,7 +9280,7 @@ void QuicStreamFactoryTestBase::
 // default network or the idle migration period threshold is exceeded.
 // The default threshold is 30s.
 TEST_P(QuicStreamFactoryTest, DefaultIdleMigrationPeriod) {
-  test_params_.quic_params.migrate_idle_sessions = true;
+  quic_params_->migrate_idle_sessions = true;
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -9411,8 +9407,8 @@ TEST_P(QuicStreamFactoryTest, DefaultIdleMigrationPeriod) {
 
 TEST_P(QuicStreamFactoryTest, CustomIdleMigrationPeriod) {
   // The customized threshold is 15s.
-  test_params_.quic_params.migrate_idle_sessions = true;
-  test_params_.quic_params.idle_session_migration_period =
+  quic_params_->migrate_idle_sessions = true;
+  quic_params_->idle_session_migration_period =
       base::TimeDelta::FromSeconds(15);
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
@@ -9534,7 +9530,7 @@ TEST_P(QuicStreamFactoryTest, CustomIdleMigrationPeriod) {
 }
 
 TEST_P(QuicStreamFactoryTest, ServerMigration) {
-  test_params_.quic_params.allow_server_migration = true;
+  quic_params_->allow_server_migration = true;
   Initialize();
 
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -9678,7 +9674,7 @@ TEST_P(QuicStreamFactoryTest, ServerMigrationIPv6ToIPv4) {
 }
 
 TEST_P(QuicStreamFactoryTest, ServerMigrationIPv4ToIPv6Fails) {
-  test_params_.quic_params.allow_server_migration = true;
+  quic_params_->allow_server_migration = true;
   Initialize();
 
   // Add a resolver rule to make initial connection to an IPv4 address.
@@ -9952,8 +9948,7 @@ TEST_P(QuicStreamFactoryTest, EnableNotLoadFromDiskCache) {
 }
 
 TEST_P(QuicStreamFactoryTest, ReducePingTimeoutOnConnectionTimeOutOpenStreams) {
-  test_params_.quic_params.reduced_ping_timeout =
-      base::TimeDelta::FromSeconds(10);
+  quic_params_->reduced_ping_timeout = base::TimeDelta::FromSeconds(10);
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -10329,9 +10324,8 @@ TEST_P(QuicStreamFactoryTest,
   const quic::QuicServerId kQuicServerId(
       kDefaultServerHostName, kDefaultServerPort, PRIVACY_MODE_DISABLED);
 
-  test_params_.quic_params.max_server_configs_stored_in_properties = 1;
-  test_params_.quic_params.idle_connection_timeout =
-      base::TimeDelta::FromSeconds(500);
+  quic_params_->max_server_configs_stored_in_properties = 1;
+  quic_params_->idle_connection_timeout = base::TimeDelta::FromSeconds(500);
   Initialize();
   factory_->set_is_quic_known_to_work_on_current_network(true);
   crypto_client_stream_factory_.set_handshake_mode(
@@ -11292,19 +11286,18 @@ TEST_P(QuicStreamFactoryTest, ClearCachedStatesInCryptoConfig) {
 // Passes connection options and client connection options to QuicStreamFactory,
 // then checks that its internal quic::QuicConfig is correct.
 TEST_P(QuicStreamFactoryTest, ConfigConnectionOptions) {
-  test_params_.quic_params.connection_options.push_back(quic::kTIME);
-  test_params_.quic_params.connection_options.push_back(quic::kTBBR);
-  test_params_.quic_params.connection_options.push_back(quic::kREJ);
+  quic_params_->connection_options.push_back(quic::kTIME);
+  quic_params_->connection_options.push_back(quic::kTBBR);
+  quic_params_->connection_options.push_back(quic::kREJ);
 
-  test_params_.quic_params.client_connection_options.push_back(quic::kTBBR);
-  test_params_.quic_params.client_connection_options.push_back(quic::k1RTT);
+  quic_params_->client_connection_options.push_back(quic::kTBBR);
+  quic_params_->client_connection_options.push_back(quic::k1RTT);
 
   Initialize();
 
   const quic::QuicConfig* config =
       QuicStreamFactoryPeer::GetConfig(factory_.get());
-  EXPECT_EQ(test_params_.quic_params.connection_options,
-            config->SendConnectionOptions());
+  EXPECT_EQ(quic_params_->connection_options, config->SendConnectionOptions());
   EXPECT_TRUE(config->HasClientRequestedIndependentOption(
       quic::kTBBR, quic::Perspective::IS_CLIENT));
   EXPECT_TRUE(config->HasClientRequestedIndependentOption(
@@ -11434,9 +11427,9 @@ TEST_P(QuicStreamFactoryTest, HostResolverUsesParams) {
 // |quic_max_idle_time_before_crypto_handshake| to QuicStreamFactory,
 // checks that its internal quic::QuicConfig is correct.
 TEST_P(QuicStreamFactoryTest, ConfigMaxTimeBeforeCryptoHandshake) {
-  test_params_.quic_params.max_time_before_crypto_handshake =
+  quic_params_->max_time_before_crypto_handshake =
       base::TimeDelta::FromSeconds(11);
-  test_params_.quic_params.max_idle_time_before_crypto_handshake =
+  quic_params_->max_idle_time_before_crypto_handshake =
       base::TimeDelta::FromSeconds(13);
   Initialize();
 
@@ -11698,7 +11691,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterHostResolutionCallbackFailAsync) {
 // the final connection is established through the resolved DNS. No racing
 // connection.
 TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceAndHostResolutionSync) {
-  test_params_.quic_params.race_stale_dns_on_connection = true;
+  quic_params_->race_stale_dns_on_connection = true;
   host_resolver_ = std::make_unique<MockCachingHostResolver>();
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -11796,7 +11789,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceAndHostResolutionAsync) {
 // With dns race experiment on, DNS resolve returns async, stale dns used,
 // connects synchrounously, and then the resolved DNS matches.
 TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceHostResolveAsyncStaleMatch) {
-  test_params_.quic_params.race_stale_dns_on_connection = true;
+  quic_params_->race_stale_dns_on_connection = true;
   host_resolver_ = std::make_unique<MockCachingHostResolver>();
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -11862,7 +11855,7 @@ TEST_P(QuicStreamFactoryTest,
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
-  test_params_.quic_params.race_stale_dns_on_connection = true;
+  quic_params_->race_stale_dns_on_connection = true;
   host_resolver_ = std::make_unique<MockCachingHostResolver>();
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -11938,7 +11931,7 @@ TEST_P(QuicStreamFactoryTest,
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
-  test_params_.quic_params.race_stale_dns_on_connection = true;
+  quic_params_->race_stale_dns_on_connection = true;
   host_resolver_ = std::make_unique<MockCachingHostResolver>();
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -12005,7 +11998,7 @@ TEST_P(QuicStreamFactoryTest,
 // sync, but dns no match
 TEST_P(QuicStreamFactoryTest,
        ResultAfterDNSRaceHostResolveAsyncStaleSyncNoMatch) {
-  test_params_.quic_params.race_stale_dns_on_connection = true;
+  quic_params_->race_stale_dns_on_connection = true;
   host_resolver_ = std::make_unique<MockCachingHostResolver>();
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -12088,7 +12081,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleAsyncResolveAsyncNoMatch) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
-  test_params_.quic_params.race_stale_dns_on_connection = true;
+  quic_params_->race_stale_dns_on_connection = true;
   host_resolver_ = std::make_unique<MockCachingHostResolver>();
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -12178,7 +12171,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncStaleAsyncNoMatch) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
-  test_params_.quic_params.race_stale_dns_on_connection = true;
+  quic_params_->race_stale_dns_on_connection = true;
   host_resolver_ = std::make_unique<MockCachingHostResolver>();
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -12254,7 +12247,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncStaleAsyncNoMatch) {
 // With dns race experiment on, dns resolve returns error sync, same behavior
 // as experiment is not on
 TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceHostResolveError) {
-  test_params_.quic_params.race_stale_dns_on_connection = true;
+  quic_params_->race_stale_dns_on_connection = true;
   host_resolver_ = std::make_unique<MockCachingHostResolver>();
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -12280,7 +12273,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceHostResolveError) {
 // With dns race experiment on, no cache available, dns resolve returns error
 // async
 TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceHostResolveAsyncError) {
-  test_params_.quic_params.race_stale_dns_on_connection = true;
+  quic_params_->race_stale_dns_on_connection = true;
   host_resolver_ = std::make_unique<MockCachingHostResolver>();
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -12310,7 +12303,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceHostResolveAsyncError) {
 // With dns race experiment on, dns resolve async, staled used and connects
 // sync, dns returns error and no connection is established.
 TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleSyncHostResolveError) {
-  test_params_.quic_params.race_stale_dns_on_connection = true;
+  quic_params_->race_stale_dns_on_connection = true;
   host_resolver_ = std::make_unique<MockCachingHostResolver>();
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -12371,7 +12364,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleSyncHostResolveError) {
 // return error, then dns matches.
 // This serves as a regression test for crbug.com/956374.
 TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleErrorDNSMatches) {
-  test_params_.quic_params.race_stale_dns_on_connection = true;
+  quic_params_->race_stale_dns_on_connection = true;
   host_resolver_ = std::make_unique<MockCachingHostResolver>();
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -12422,7 +12415,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleErrorDNSMatches) {
 // With dns race experiment on, dns resolve async, stale used and connection
 // returns error, dns no match, new connection is established
 TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleErrorDNSNoMatch) {
-  test_params_.quic_params.race_stale_dns_on_connection = true;
+  quic_params_->race_stale_dns_on_connection = true;
   host_resolver_ = std::make_unique<MockCachingHostResolver>();
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -12488,7 +12481,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleErrorDNSNoMatch) {
 // With dns race experiment on, dns resolve async, stale used and connection
 // returns error, dns no match, new connection error
 TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleErrorDNSNoMatchError) {
-  test_params_.quic_params.race_stale_dns_on_connection = true;
+  quic_params_->race_stale_dns_on_connection = true;
   host_resolver_ = std::make_unique<MockCachingHostResolver>();
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -12548,7 +12541,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncErrorStaleAsync) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
-  test_params_.quic_params.race_stale_dns_on_connection = true;
+  quic_params_->race_stale_dns_on_connection = true;
   host_resolver_ = std::make_unique<MockCachingHostResolver>();
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -12614,7 +12607,7 @@ TEST_P(QuicStreamFactoryTest,
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
-  test_params_.quic_params.race_stale_dns_on_connection = true;
+  quic_params_->race_stale_dns_on_connection = true;
   host_resolver_ = std::make_unique<MockCachingHostResolver>();
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -12674,7 +12667,7 @@ TEST_P(QuicStreamFactoryTest,
 // With dns race experiment on, test that host resolution callback behaves
 // normal as experiment is not on
 TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceHostResolveAsync) {
-  test_params_.quic_params.race_stale_dns_on_connection = true;
+  quic_params_->race_stale_dns_on_connection = true;
   host_resolver_ = std::make_unique<MockCachingHostResolver>();
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -12725,7 +12718,7 @@ TEST_P(QuicStreamFactoryTest, StaleNetworkFailedAfterHandshake) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
-  test_params_.quic_params.race_stale_dns_on_connection = true;
+  quic_params_->race_stale_dns_on_connection = true;
   host_resolver_ = std::make_unique<MockCachingHostResolver>();
 
   InitializeConnectionMigrationV2Test(
@@ -12805,7 +12798,7 @@ TEST_P(QuicStreamFactoryTest, StaleNetworkFailedBeforeHandshake) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
-  test_params_.quic_params.race_stale_dns_on_connection = true;
+  quic_params_->race_stale_dns_on_connection = true;
   host_resolver_ = std::make_unique<MockCachingHostResolver>();
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
@@ -12889,7 +12882,7 @@ TEST_P(QuicStreamFactoryTest, ConfigInitialRttForHandshake) {
   }
   constexpr base::TimeDelta kInitialRtt =
       base::TimeDelta::FromMilliseconds(400);
-  test_params_.quic_params.initial_rtt_for_handshake = kInitialRtt;
+  quic_params_->initial_rtt_for_handshake = kInitialRtt;
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::COLD_START_WITH_CHLO_SENT);
   Initialize();

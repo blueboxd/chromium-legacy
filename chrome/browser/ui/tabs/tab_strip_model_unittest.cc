@@ -210,8 +210,8 @@ class MockTabStripModelObserver : public TabStripModelObserver {
   }
 
   struct TabGroupUpdate {
-    std::vector<TabGroupVisualData> visuals_updates;
     int contents_update_count = 0;
+    int visuals_update_count = 0;
   };
 
   const std::map<TabGroupId, TabGroupUpdate>& group_updates() const {
@@ -274,22 +274,25 @@ class MockTabStripModelObserver : public TabStripModelObserver {
     }
   }
 
-  void OnTabGroupCreated(TabGroupId group) override {
-    group_updates_[group] = TabGroupUpdate();
-  }
-
-  void OnTabGroupContentsChanged(TabGroupId group) override {
-    group_updates_[group].contents_update_count++;
-  }
-
-  void OnTabGroupVisualsChanged(
-      TabGroupId group,
-      const TabGroupVisualData* visual_data) override {
-    group_updates_[group].visuals_updates.push_back(*visual_data);
-  }
-
-  void OnTabGroupClosed(TabGroupId group) override {
-    group_updates_.erase(group);
+  void OnTabGroupChanged(const TabGroupChange& change) override {
+    switch (change.type) {
+      case TabGroupChange::kCreated: {
+        group_updates_[change.group] = TabGroupUpdate();
+        break;
+      }
+      case TabGroupChange::kContentsChanged: {
+        group_updates_[change.group].contents_update_count++;
+        break;
+      }
+      case TabGroupChange::kVisualsChanged: {
+        group_updates_[change.group].visuals_update_count++;
+        break;
+      }
+      case TabGroupChange::kClosed: {
+        group_updates_.erase(change.group);
+        break;
+      }
+    }
   }
 
   void TabChangedAt(WebContents* contents,
@@ -3454,9 +3457,7 @@ TEST_F(TabStripModelTest, VisualDataChangeNotifiesObservers) {
   // Now check that we are notified when we change it, once at creation
   // and once from the explicit update.
   ASSERT_EQ(1u, observer.group_updates().size());
-  EXPECT_EQ(2u, observer.group_update(group).visuals_updates.size());
-  EXPECT_EQ(new_data.title(),
-            observer.group_update(group).visuals_updates[1].title());
+  EXPECT_EQ(2, observer.group_update(group).visuals_update_count);
 
   strip.CloseAllTabs();
 }

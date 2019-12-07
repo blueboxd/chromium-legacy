@@ -63,6 +63,7 @@ bool PrintingEnumPolicyHandler<Mode>::GetValue(const PolicyMap& policies,
   return false;
 }
 
+#if defined(OS_CHROMEOS)
 PrintingAllowedColorModesPolicyHandler::PrintingAllowedColorModesPolicyHandler()
     : PrintingEnumPolicyHandler<printing::ColorModeRestriction>(
           key::kPrintingAllowedColorModes,
@@ -75,6 +76,18 @@ PrintingAllowedColorModesPolicyHandler::PrintingAllowedColorModesPolicyHandler()
 
 PrintingAllowedColorModesPolicyHandler::
     ~PrintingAllowedColorModesPolicyHandler() = default;
+
+PrintingColorDefaultPolicyHandler::PrintingColorDefaultPolicyHandler()
+    : PrintingEnumPolicyHandler<printing::ColorModeRestriction>(
+          key::kPrintingColorDefault,
+          prefs::kPrintingColorDefault,
+          {
+              {"monochrome", printing::ColorModeRestriction::kMonochrome},
+              {"color", printing::ColorModeRestriction::kColor},
+          }) {}
+
+PrintingColorDefaultPolicyHandler::~PrintingColorDefaultPolicyHandler() =
+    default;
 
 PrintingAllowedDuplexModesPolicyHandler::
     PrintingAllowedDuplexModesPolicyHandler()
@@ -90,47 +103,6 @@ PrintingAllowedDuplexModesPolicyHandler::
 PrintingAllowedDuplexModesPolicyHandler::
     ~PrintingAllowedDuplexModesPolicyHandler() = default;
 
-PrintingAllowedPinModesPolicyHandler::PrintingAllowedPinModesPolicyHandler()
-    : PrintingEnumPolicyHandler<printing::PinModeRestriction>(
-          key::kPrintingAllowedPinModes,
-          prefs::kPrintingAllowedPinModes,
-          {
-              {"any", printing::PinModeRestriction::kUnset},
-              {"pin", printing::PinModeRestriction::kPin},
-              {"no_pin", printing::PinModeRestriction::kNoPin},
-          }) {}
-
-PrintingAllowedPinModesPolicyHandler::~PrintingAllowedPinModesPolicyHandler() =
-    default;
-
-PrintingAllowedBackgroundGraphicsModesPolicyHandler::
-    PrintingAllowedBackgroundGraphicsModesPolicyHandler()
-    : PrintingEnumPolicyHandler<printing::BackgroundGraphicsModeRestriction>(
-          key::kPrintingAllowedBackgroundGraphicsModes,
-          prefs::kPrintingAllowedBackgroundGraphicsModes,
-          {
-              {"any", printing::BackgroundGraphicsModeRestriction::kUnset},
-              {"enabled",
-               printing::BackgroundGraphicsModeRestriction::kEnabled},
-              {"disabled",
-               printing::BackgroundGraphicsModeRestriction::kDisabled},
-          }) {}
-
-PrintingAllowedBackgroundGraphicsModesPolicyHandler::
-    ~PrintingAllowedBackgroundGraphicsModesPolicyHandler() = default;
-
-PrintingColorDefaultPolicyHandler::PrintingColorDefaultPolicyHandler()
-    : PrintingEnumPolicyHandler<printing::ColorModeRestriction>(
-          key::kPrintingColorDefault,
-          prefs::kPrintingColorDefault,
-          {
-              {"monochrome", printing::ColorModeRestriction::kMonochrome},
-              {"color", printing::ColorModeRestriction::kColor},
-          }) {}
-
-PrintingColorDefaultPolicyHandler::~PrintingColorDefaultPolicyHandler() =
-    default;
-
 PrintingDuplexDefaultPolicyHandler::PrintingDuplexDefaultPolicyHandler()
     : PrintingEnumPolicyHandler<printing::DuplexModeRestriction>(
           key::kPrintingDuplexDefault,
@@ -144,6 +116,19 @@ PrintingDuplexDefaultPolicyHandler::PrintingDuplexDefaultPolicyHandler()
 PrintingDuplexDefaultPolicyHandler::~PrintingDuplexDefaultPolicyHandler() =
     default;
 
+PrintingAllowedPinModesPolicyHandler::PrintingAllowedPinModesPolicyHandler()
+    : PrintingEnumPolicyHandler<printing::PinModeRestriction>(
+          key::kPrintingAllowedPinModes,
+          prefs::kPrintingAllowedPinModes,
+          {
+              {"any", printing::PinModeRestriction::kUnset},
+              {"pin", printing::PinModeRestriction::kPin},
+              {"no_pin", printing::PinModeRestriction::kNoPin},
+          }) {}
+
+PrintingAllowedPinModesPolicyHandler::~PrintingAllowedPinModesPolicyHandler() =
+    default;
+
 PrintingPinDefaultPolicyHandler::PrintingPinDefaultPolicyHandler()
     : PrintingEnumPolicyHandler<printing::PinModeRestriction>(
           key::kPrintingPinDefault,
@@ -154,21 +139,6 @@ PrintingPinDefaultPolicyHandler::PrintingPinDefaultPolicyHandler()
           }) {}
 
 PrintingPinDefaultPolicyHandler::~PrintingPinDefaultPolicyHandler() = default;
-
-PrintingBackgroundGraphicsDefaultPolicyHandler::
-    PrintingBackgroundGraphicsDefaultPolicyHandler()
-    : PrintingEnumPolicyHandler<printing::BackgroundGraphicsModeRestriction>(
-          key::kPrintingBackgroundGraphicsDefault,
-          prefs::kPrintingBackgroundGraphicsDefault,
-          {
-              {"enabled",
-               printing::BackgroundGraphicsModeRestriction::kEnabled},
-              {"disabled",
-               printing::BackgroundGraphicsModeRestriction::kDisabled},
-          }) {}
-
-PrintingBackgroundGraphicsDefaultPolicyHandler::
-    ~PrintingBackgroundGraphicsDefaultPolicyHandler() = default;
 
 PrintingAllowedPageSizesPolicyHandler::PrintingAllowedPageSizesPolicyHandler()
     : ListPolicyHandler(key::kPrintingAllowedPageSizes,
@@ -249,5 +219,37 @@ void PrintingSizeDefaultPolicyHandler::ApplyPolicySettings(
     prefs->SetValue(prefs::kPrintingSizeDefault, value->Clone());
   }
 }
+#endif  // defined(OS_CHROMEOS)
+
+PrintingAllowedBackgroundGraphicsModesPolicyHandler::
+    PrintingAllowedBackgroundGraphicsModesPolicyHandler()
+    : PrintingEnumPolicyHandler<printing::BackgroundGraphicsModeRestriction>(
+          key::kPrintingAllowedBackgroundGraphicsModes,
+          prefs::kPrintingAllowedBackgroundGraphicsModes,
+          {
+              {"any", printing::BackgroundGraphicsModeRestriction::kUnset},
+              {"enabled",
+               printing::BackgroundGraphicsModeRestriction::kEnabled},
+              {"disabled",
+               printing::BackgroundGraphicsModeRestriction::kDisabled},
+          }) {}
+
+PrintingAllowedBackgroundGraphicsModesPolicyHandler::
+    ~PrintingAllowedBackgroundGraphicsModesPolicyHandler() = default;
+
+PrintingBackgroundGraphicsDefaultPolicyHandler::
+    PrintingBackgroundGraphicsDefaultPolicyHandler()
+    : PrintingEnumPolicyHandler<printing::BackgroundGraphicsModeRestriction>(
+          key::kPrintingBackgroundGraphicsDefault,
+          prefs::kPrintingBackgroundGraphicsDefault,
+          {
+              {"enabled",
+               printing::BackgroundGraphicsModeRestriction::kEnabled},
+              {"disabled",
+               printing::BackgroundGraphicsModeRestriction::kDisabled},
+          }) {}
+
+PrintingBackgroundGraphicsDefaultPolicyHandler::
+    ~PrintingBackgroundGraphicsDefaultPolicyHandler() = default;
 
 }  // namespace policy

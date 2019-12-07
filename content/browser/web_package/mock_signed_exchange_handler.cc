@@ -45,22 +45,22 @@ MockSignedExchangeHandler::MockSignedExchangeHandler(
     ExchangeHeadersCallback headers_callback)
     : header_integrity_(params.header_integrity),
       signature_expire_time_(params.signature_expire_time) {
-  network::ResourceResponseHead head;
+  auto head = network::mojom::URLResponseHead::New();
   if (params.error == net::OK) {
-    head.headers =
+    head->headers =
         base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
-    head.mime_type = params.mime_type;
-    head.headers->AddHeader(
+    head->mime_type = params.mime_type;
+    head->headers->AddHeader(
         base::StringPrintf("Content-type: %s", params.mime_type.c_str()));
     for (const auto& header : params.response_headers)
-      head.headers->AddHeader(header);
-    head.is_signed_exchange_inner_response = true;
-    head.content_length = head.headers->GetContentLength();
+      head->headers->AddHeader(header);
+    head->is_signed_exchange_inner_response = true;
+    head->content_length = head->headers->GetContentLength();
   }
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(headers_callback), params.result, params.error,
-                     params.inner_url, head, std::move(body)));
+                     params.inner_url, std::move(head), std::move(body)));
 }
 
 base::Optional<net::SHA256HashValue>

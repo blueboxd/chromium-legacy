@@ -2006,11 +2006,11 @@ jumbo_static_library("ui") {
       "//chromeos/services/cellular_setup",
       "//chromeos/services/cellular_setup/public/mojom",
       "//chromeos/services/machine_learning/public/cpp",
+      "//chromeos/services/multidevice_setup",
       "//chromeos/services/multidevice_setup/public/cpp",
       "//chromeos/services/multidevice_setup/public/cpp:android_sms_app_helper_delegate",
       "//chromeos/services/multidevice_setup/public/cpp:prefs",
       "//chromeos/services/multidevice_setup/public/cpp:url_provider",
-      "//chromeos/services/multidevice_setup/public/mojom",
       "//chromeos/services/network_config/public/mojom",
       "//chromeos/settings",
       "//chromeos/strings",
@@ -2032,6 +2032,7 @@ jumbo_static_library("ui") {
       "//ui/chromeos/events",
       "//ui/compositor_extra",
     ]
+    public_deps += [ "//chromeos/services/multidevice_setup/public/mojom" ]
     allow_circular_includes_from += [ "//chrome/browser/chromeos" ]
 
     if (!is_official_build) {
@@ -2732,6 +2733,8 @@ jumbo_static_library("ui") {
       "views/chrome_typography.h",
       "views/chrome_typography_provider.cc",
       "views/chrome_typography_provider.h",
+      "views/chrome_view_class_properties.cc",
+      "views/chrome_view_class_properties.h",
       "views/chrome_views_delegate.cc",
       "views/chrome_views_delegate.h",
       "views/chrome_web_dialog_view.cc",
@@ -2810,6 +2813,8 @@ jumbo_static_library("ui") {
       "views/feature_promos/feature_promo_bubble_timeout.h",
       "views/feature_promos/feature_promo_bubble_view.cc",
       "views/feature_promos/feature_promo_bubble_view.h",
+      "views/feature_promos/feature_promo_colors.cc",
+      "views/feature_promos/feature_promo_colors.h",
       "views/feature_promos/global_media_controls_promo_controller.cc",
       "views/feature_promos/global_media_controls_promo_controller.h",
       "views/feature_promos/reopen_tab_promo_controller.cc",
@@ -3195,6 +3200,8 @@ jumbo_static_library("ui") {
       "views/tabs/tab_group_editor_bubble_view.h",
       "views/tabs/tab_group_header.cc",
       "views/tabs/tab_group_header.h",
+      "views/tabs/tab_group_highlight.cc",
+      "views/tabs/tab_group_highlight.h",
       "views/tabs/tab_group_underline.cc",
       "views/tabs/tab_group_underline.h",
       "views/tabs/tab_group_views.cc",

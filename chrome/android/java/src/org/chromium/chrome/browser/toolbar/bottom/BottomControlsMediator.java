@@ -173,7 +173,8 @@ class BottomControlsMediator implements ChromeFullscreenManager.FullscreenListen
     public void onToggleOverlayVideoMode(boolean enabled) {}
 
     @Override
-    public void onBottomControlsHeightChanged(int bottomControlsHeight) {}
+    public void onBottomControlsHeightChanged(
+            int bottomControlsHeight, int bottomControlsMinHeight) {}
 
     @Override
     public void onOverlayPanelShown() {
@@ -214,7 +215,7 @@ class BottomControlsMediator implements ChromeFullscreenManager.FullscreenListen
      * The composited view is the composited version of the Android View. It is used to be able to
      * scroll the bottom controls off-screen synchronously. Since the bottom controls live below
      * the webcontents we re-size the webcontents through
-     * {@link ChromeFullscreenManager#setBottomControlsHeight(int)} whenever the composited view
+     * {@link ChromeFullscreenManager#setBottomControlsHeight(int,int)} whenever the composited view
      * visibility changes.
      */
     private void updateCompositedViewVisibility() {
@@ -222,7 +223,8 @@ class BottomControlsMediator implements ChromeFullscreenManager.FullscreenListen
                 mIsBottomControlsVisible && !mIsKeyboardVisible && !isInFullscreenMode();
         mModel.set(BottomControlsProperties.COMPOSITED_VIEW_VISIBLE, isCompositedViewVisible);
         mFullscreenManager.setBottomControlsHeight(
-                isCompositedViewVisible ? mBottomControlsHeight : 0);
+                isCompositedViewVisible ? mBottomControlsHeight : 0,
+                mFullscreenManager.getBottomControlsMinHeight());
     }
 
     /**

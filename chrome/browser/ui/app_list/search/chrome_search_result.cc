@@ -159,10 +159,9 @@ void ChromeSearchResult::OnVisibilityChanged(bool visibility) {
   VLOG(1) << " Visibility change to " << visibility << " and ID is " << id();
 }
 
-void ChromeSearchResult::UpdateFromMatch(
-    const string_matching::TokenizedString& title,
-    const string_matching::TokenizedStringMatch& match) {
-  const string_matching::TokenizedStringMatch::Hits& hits = match.hits();
+void ChromeSearchResult::UpdateFromMatch(const TokenizedString& title,
+                                         const TokenizedStringMatch& match) {
+  const TokenizedStringMatch::Hits& hits = match.hits();
 
   Tags tags;
   tags.reserve(hits.size());

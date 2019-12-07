@@ -113,18 +113,7 @@ ScriptPromise USB::getDevices(ScriptState* script_state) {
                           DOMExceptionCode::kNotSupportedError));
   }
 
-  FeatureEnabledState state = GetFeatureEnabledState();
-  if (state != FeatureEnabledState::kEnabled) {
-    ExecutionContext* execution_context = ExecutionContext::From(script_state);
-    if (auto* document = DynamicTo<Document>(execution_context)) {
-      document->ReportFeaturePolicyViolation(
-          mojom::FeaturePolicyFeature::kUsb,
-          (state == FeatureEnabledState::kReportOnly
-               ? mojom::FeaturePolicyDisposition::kReport
-               : mojom::FeaturePolicyDisposition::kEnforce));
-    }
-  }
-  if (state == FeatureEnabledState::kDisabled) {
+  if (!IsFeatureEnabled(ReportOptions::kReportOnFailure)) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError,
@@ -148,8 +137,7 @@ ScriptPromise USB::requestDevice(ScriptState* script_state,
                           DOMExceptionCode::kNotSupportedError));
   }
 
-  if (!frame->GetDocument()->IsFeatureEnabled(
-          mojom::FeaturePolicyFeature::kUsb, ReportOptions::kReportOnFailure)) {
+  if (!IsFeatureEnabled(ReportOptions::kReportOnFailure)) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError,
@@ -283,8 +271,7 @@ void USB::AddedEventListener(const AtomicString& event_type,
     return;
   }
 
-  if (!IsContextSupported() ||
-      GetFeatureEnabledState() == FeatureEnabledState::kDisabled)
+  if (!IsContextSupported() || !IsFeatureEnabled(ReportOptions::kDoNotReport))
     return;
 
   EnsureServiceConnection();
@@ -295,7 +282,7 @@ void USB::EnsureServiceConnection() {
     return;
 
   DCHECK(IsContextSupported());
-  DCHECK(GetFeatureEnabledState() != FeatureEnabledState::kDisabled);
+  DCHECK(IsFeatureEnabled(ReportOptions::kDoNotReport));
   // See https://bit.ly/2S0zRAS for task types.
   auto task_runner =
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
@@ -326,9 +313,9 @@ bool USB::IsContextSupported() const {
   return true;
 }
 
-FeatureEnabledState USB::GetFeatureEnabledState() const {
-  return GetExecutionContext()->GetSecurityContext().GetFeatureEnabledState(
-      mojom::FeaturePolicyFeature::kUsb);
+bool USB::IsFeatureEnabled(ReportOptions report_options) const {
+  return GetExecutionContext()->IsFeatureEnabled(
+      mojom::FeaturePolicyFeature::kUsb, report_options);
 }
 
 void USB::Trace(blink::Visitor* visitor) {

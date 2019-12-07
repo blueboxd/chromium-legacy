@@ -3038,11 +3038,6 @@
     "expiry_milestone": 82
   },
   {
-    "name": "periodic-background-sync",
-    "owners": [ "nator" ],
-    "expiry_milestone": 80
-  },
-  {
     "name": "policy-atomic-group-enabled",
     "owners": [ "ydago" ],
     "expiry_milestone": 80
@@ -3203,6 +3198,11 @@
     "name": "sharing-peer-connection-sender",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
     "expiry_milestone": 83
+  },
+  {
+    "name": "sharing-qr-code-generator",
+    "owners": [ "//components/send_tab_to_self/OWNERS" ],
+    "expiry_milestone": 82
   },
   {
     "name": "sharing-rename-devices",
@@ -3695,9 +3695,14 @@
     "expiry_milestone": 82
   },
   {
+    "name": "win-use-hybrid-spellchecker",
+    "owners": [ "gujen@google.com", "chrome-language@google.com" ],
+    "expiry_milestone": 83
+  },
+  {
     "name": "win-use-native-spellchecker",
-    "owners": [ "gujen@google.com", "yyushkina@google.com" ],
-    "expiry_milestone": 81
+    "owners": [ "gujen@google.com", "chrome-language@google.com" ],
+    "expiry_milestone": 83
   },
   {
     "name": "windows-mixed-reality",

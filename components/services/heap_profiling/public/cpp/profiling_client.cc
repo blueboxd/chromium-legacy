@@ -34,7 +34,8 @@ void ProfilingClient::BindToInterface(
   receivers_.Add(this, std::move(receiver));
 }
 
-void ProfilingClient::StartProfiling(mojom::ProfilingParamsPtr params) {
+void ProfilingClient::StartProfiling(mojom::ProfilingParamsPtr params,
+                                     StartProfilingCallback callback) {
   if (started_profiling_)
     return;
   started_profiling_ = true;
@@ -62,9 +63,10 @@ void ProfilingClient::StartProfiling(mojom::ProfilingParamsPtr params) {
         DCHECK(can_unwind);
       }),
       base::BindOnce(&ProfilingClient::StartProfilingInternal,
-                     base::Unretained(this), std::move(params)));
+                     base::Unretained(this), std::move(params),
+                     std::move(callback)));
 #else
-  StartProfilingInternal(std::move(params));
+  StartProfilingInternal(std::move(params), std::move(callback));
 #endif
 }
 
@@ -169,13 +171,15 @@ bool SetOnInitAllocatorShimCallbackForTesting(
   return false;
 }
 
-void ProfilingClient::StartProfilingInternal(mojom::ProfilingParamsPtr params) {
+void ProfilingClient::StartProfilingInternal(mojom::ProfilingParamsPtr params,
+                                             StartProfilingCallback callback) {
   size_t sampling_rate = params->sampling_rate;
   InitAllocationRecorder(std::move(params));
   auto* profiler = base::SamplingHeapProfiler::Get();
   profiler->SetSamplingInterval(sampling_rate);
   profiler->Start();
   AllocatorHooksHaveBeenInitialized();
+  std::move(callback).Run();
 }
 
 void ProfilingClient::RetrieveHeapProfile(

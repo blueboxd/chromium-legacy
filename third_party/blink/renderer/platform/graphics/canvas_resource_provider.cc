@@ -90,7 +90,6 @@ class CanvasResourceProviderSharedBitmap : public CanvasResourceProviderBitmap {
   }
   ~CanvasResourceProviderSharedBitmap() override = default;
   bool SupportsDirectCompositing() const override { return true; }
-  bool SupportsSingleBuffering() const override { return true; }
 
  private:
   scoped_refptr<CanvasResource> CreateResource() final {
@@ -590,12 +589,11 @@ class CanvasResourceProviderSwapChain final : public CanvasResourceProvider {
 namespace {
 
 enum class CanvasResourceType {
-  kDirect3DSwapChain,
+  kDirect3DPassThrough,
   kDirect2DSwapChain,
-  kDirect3DGpuMemoryBuffer,
+  kSharedImage,
   kSharedBitmap,
   kBitmap,
-  kSharedImage,
 };
 
 const Vector<CanvasResourceType>& GetResourceTypeFallbackList(
@@ -635,14 +633,13 @@ const Vector<CanvasResourceType>& GetResourceTypeFallbackList(
       // from an external source. The external site should take care of
       // using SharedImages since the resource will be used by the display
       // compositor.
-      CanvasResourceType::kDirect3DSwapChain,
-      CanvasResourceType::kDirect3DGpuMemoryBuffer,
+      CanvasResourceType::kDirect3DPassThrough,
       // The rest is equal to |kCompositedFallbackList|.
       CanvasResourceType::kSharedImage,
       CanvasResourceType::kSharedBitmap,
       CanvasResourceType::kBitmap,
   });
-  DCHECK(std::equal(kAcceleratedDirect3DFallbackList.begin() + 2,
+  DCHECK(std::equal(kAcceleratedDirect3DFallbackList.begin() + 1,
                     kAcceleratedDirect3DFallbackList.end(),
                     kCompositedFallbackList.begin(),
                     kCompositedFallbackList.end()));
@@ -711,38 +708,33 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
     bool is_origin_top_left) {
   std::unique_ptr<CanvasResourceProvider> provider;
 
-  if (context_provider_wrapper) {
-    const int max_texture_size = context_provider_wrapper->ContextProvider()
-                                     ->GetCapabilities()
-                                     .max_texture_size;
+  bool is_gpu_memory_buffer_image_allowed = false;
+  bool is_swap_chain_allowed = false;
+
+  if (SharedGpuContext::IsGpuCompositingEnabled() && context_provider_wrapper) {
+    const auto& context_capabilities =
+        context_provider_wrapper->ContextProvider()->GetCapabilities();
+
+    const int max_texture_size = context_capabilities.max_texture_size;
+
     if (size.Width() > max_texture_size || size.Height() > max_texture_size)
       usage = ResourceUsage::kSoftwareResourceUsage;
+
+    is_gpu_memory_buffer_image_allowed =
+        (presentation_mode & kAllowImageChromiumPresentationMode) &&
+        Platform::Current()->GetGpuMemoryBufferManager() &&
+        gpu::IsImageSizeValidForGpuMemoryBufferFormat(
+            gfx::Size(size), color_params.GetBufferFormat()) &&
+        gpu::IsImageFromGpuMemoryBufferFormatSupported(
+            color_params.GetBufferFormat(), context_capabilities);
+
+    is_swap_chain_allowed =
+        (presentation_mode & kAllowSwapChainPresentationMode) &&
+        context_capabilities.shared_image_swap_chain;
   }
 
   const Vector<CanvasResourceType>& fallback_list =
       GetResourceTypeFallbackList(usage);
-
-#if defined(OS_ANDROID)
-  // TODO(khushalsagar): Re-enable these if we're using SurfaceControl and
-  // GMBs allow us to overlay these resources.
-  const bool is_gpu_memory_buffer_image_allowed = false;
-#else
-  const bool is_gpu_memory_buffer_image_allowed =
-      SharedGpuContext::IsGpuCompositingEnabled() && context_provider_wrapper &&
-      (presentation_mode & kAllowImageChromiumPresentationMode) &&
-      gpu::IsImageSizeValidForGpuMemoryBufferFormat(
-          gfx::Size(size), color_params.GetBufferFormat()) &&
-      gpu::IsImageFromGpuMemoryBufferFormatSupported(
-          color_params.GetBufferFormat(),
-          context_provider_wrapper->ContextProvider()->GetCapabilities());
-#endif
-
-  const bool is_swap_chain_allowed =
-      SharedGpuContext::IsGpuCompositingEnabled() && context_provider_wrapper &&
-      context_provider_wrapper->ContextProvider()
-          ->GetCapabilities()
-          .shared_image_swap_chain &&
-      (presentation_mode & kAllowSwapChainPresentationMode);
 
   for (CanvasResourceType resource_type : fallback_list) {
     // Note: We are deliberately not using std::move() on
@@ -757,15 +749,8 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
             size, msaa_sample_count, filter_quality, color_params,
             context_provider_wrapper, resource_dispatcher);
         break;
-      case CanvasResourceType::kDirect3DSwapChain:
-        if (!is_swap_chain_allowed)
-          continue;
-        provider = std::make_unique<CanvasResourceProviderPassThrough>(
-            size, filter_quality, color_params, context_provider_wrapper,
-            resource_dispatcher, is_origin_top_left);
-        break;
-      case CanvasResourceType::kDirect3DGpuMemoryBuffer:
-        if (!is_gpu_memory_buffer_image_allowed)
+      case CanvasResourceType::kDirect3DPassThrough:
+        if (!is_gpu_memory_buffer_image_allowed && !is_swap_chain_allowed)
           continue;
         provider = std::make_unique<CanvasResourceProviderPassThrough>(
             size, filter_quality, color_params, context_provider_wrapper,
@@ -788,14 +773,16 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
         if (!context_provider_wrapper)
           continue;
 
-        const bool usage_wants_single_buffered =
-            usage == ResourceUsage::kAcceleratedDirect2DResourceUsage ||
-            usage == ResourceUsage::kAcceleratedDirect3DResourceUsage ||
-            usage == ResourceUsage::kSoftwareCompositedDirect2DResourceUsage;
-        const bool usage_wants_overlays =
-            usage_wants_single_buffered ||
+        const bool is_accelerated =
+            usage == ResourceUsage::kAcceleratedResourceUsage ||
             usage == ResourceUsage::kAcceleratedCompositedResourceUsage ||
-            usage == ResourceUsage::kSoftwareCompositedResourceUsage;
+            usage == ResourceUsage::kAcceleratedDirect2DResourceUsage ||
+            usage == ResourceUsage::kAcceleratedDirect3DResourceUsage;
+
+        // If the rendering will be in software and we don't have GMB support,
+        // fallback to bitmap provider type.
+        if (!is_accelerated && !is_gpu_memory_buffer_image_allowed)
+          continue;
 
         // texture_storage_image is required to create shared images supporting
         // scanout usage.
@@ -805,29 +792,21 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
                 ->GetCapabilities()
                 .texture_storage_image;
 
-        const bool can_use_gmbs =
-            is_gpu_memory_buffer_image_allowed &&
-            Platform::Current()->GetGpuMemoryBufferManager();
-
         const bool is_overlay_candidate =
-            usage_wants_overlays && can_use_overlays;
-        const bool is_accelerated =
-            usage == ResourceUsage::kAcceleratedResourceUsage ||
-            usage == ResourceUsage::kAcceleratedCompositedResourceUsage ||
-            usage == ResourceUsage::kAcceleratedDirect2DResourceUsage ||
-            usage == ResourceUsage::kAcceleratedDirect3DResourceUsage;
+            (usage == ResourceUsage::kAcceleratedDirect2DResourceUsage ||
+             usage == ResourceUsage::kAcceleratedDirect3DResourceUsage ||
+             usage == ResourceUsage::kAcceleratedCompositedResourceUsage ||
+             usage == ResourceUsage::kSoftwareCompositedResourceUsage) &&
+            can_use_overlays;
 
-        // If the rendering will be in software and we don't have GMB support,
-        // fallback to bitmap provider type.
-        if (!is_accelerated && !can_use_gmbs)
-          continue;
-
-        // TODO(khushalsagar) Single buffering requires concurrent
-        // read/write access to the resource which is sub-optimal for software
-        // raster since that would require concurrent access to the resource on
-        // the CPU and GPU. Check if we should disable it in software mode.
+        // Single buffering requires concurrent read/write access to the
+        // resource which is sub-optimal for software raster since that would
+        // require concurrent access to the resource on the CPU and GPU, so
+        // enable it for accelerated low latency canvas only.
         const bool maybe_single_buffered =
-            usage_wants_single_buffered && can_use_gmbs;
+            (usage == ResourceUsage::kAcceleratedDirect2DResourceUsage ||
+             usage == ResourceUsage::kAcceleratedDirect3DResourceUsage) &&
+            is_gpu_memory_buffer_image_allowed;
 
         provider = std::make_unique<CanvasResourceProviderSharedImage>(
             size, msaa_sample_count, filter_quality, color_params,

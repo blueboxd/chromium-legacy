@@ -21,13 +21,16 @@ namespace responsiveness {
 // and DidProcessTask().
 class CONTENT_EXPORT MessageLoopObserver : base::TaskObserver {
  public:
-  using TaskCallback =
+  using WillProcessTaskCallback =
+      base::RepeatingCallback<void(const base::PendingTask* task,
+                                   bool was_blocked_or_low_priority)>;
+  using DidProcessTaskCallback =
       base::RepeatingCallback<void(const base::PendingTask* task)>;
 
   // The constructor will register the object as an observer of the current
   // MessageLoop. The destructor will unregister the object.
-  MessageLoopObserver(TaskCallback will_run_task_callback,
-                      TaskCallback did_run_task_callback);
+  MessageLoopObserver(WillProcessTaskCallback will_process_task_callback,
+                      DidProcessTaskCallback did_process_task_callback);
   ~MessageLoopObserver() override;
 
  private:
@@ -35,8 +38,8 @@ class CONTENT_EXPORT MessageLoopObserver : base::TaskObserver {
                        bool was_blocked_or_low_priority) override;
   void DidProcessTask(const base::PendingTask& pending_task) override;
 
-  TaskCallback will_run_task_callback_;
-  TaskCallback did_run_task_callback_;
+  const WillProcessTaskCallback will_process_task_callback_;
+  const DidProcessTaskCallback did_process_task_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageLoopObserver);
 };

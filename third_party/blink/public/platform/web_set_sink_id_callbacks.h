@@ -16,7 +16,6 @@ enum class WebSetSinkIdError {
   kNotAuthorized,
   kAborted,
   kNotSupported,
-  kLast = kNotSupported
 };
 
 using WebSetSinkIdCompleteCallback =

@@ -107,7 +107,10 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
                             const GURL& initiator_url,
                             blink::NavigationBlockedReason reason) override;
   int GetTopControlsHeight() override;
+  int GetTopControlsMinHeight() override;
   int GetBottomControlsHeight() override;
+  int GetBottomControlsMinHeight() override;
+  bool ShouldAnimateBrowserControlsHeightChanges() override;
   bool DoBrowserControlsShrinkRendererSize(
       const content::WebContents* contents) override;
 

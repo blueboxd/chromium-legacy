@@ -1528,7 +1528,6 @@ enum WebFeature {
   kARIAFlowToAttribute = 2085,
   kARIAGrabbedAttribute = 2086,
   kARIAHasPopupAttribute = 2087,
-  kARIAHelpAttribute = 2088,
   kARIAHiddenAttribute = 2089,
   kARIAInvalidAttribute = 2090,
   kARIAKeyShortcutsAttribute = 2091,
@@ -2493,6 +2492,7 @@ enum WebFeature {
   kHTMLMetaElementReferrerPolicy = 3112,
   kNonWebbyMixedContent = 3113,
   kV8SharedArrayBufferConstructed = 3114,
+  kScrollSnapCausesScrollOnInitialLayout = 3115,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

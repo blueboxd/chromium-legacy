@@ -36,11 +36,14 @@
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_notifier.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser_delegate.h"
 #include "third_party/blink/renderer/core/frame/dom_timer_coordinator.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -49,6 +52,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/https_state.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
 
 namespace base {
@@ -70,16 +74,17 @@ class CoreProbeSink;
 class DOMTimerCoordinator;
 class ErrorEvent;
 class EventTarget;
+class FeaturePolicy;
 class FrameOrWorkerScheduler;
 class KURL;
 class LocalDOMWindow;
 class OriginTrialContext;
 class PublicURLManager;
 class ResourceFetcher;
-class SecurityContext;
 class SecurityOrigin;
 class ScriptState;
 class TrustedTypePolicyFactory;
+enum class WebSandboxFlags;
 
 enum class TaskType : unsigned char;
 
@@ -150,10 +155,13 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
 
   virtual bool ShouldInstallV8Extensions() const { return false; }
 
-  const SecurityOrigin* GetSecurityOrigin();
+  const SecurityOrigin* GetSecurityOrigin() const;
   SecurityOrigin* GetMutableSecurityOrigin();
 
-  ContentSecurityPolicy* GetContentSecurityPolicy();
+  ContentSecurityPolicy* GetContentSecurityPolicy() const;
+
+  WebSandboxFlags GetSandboxFlags() const;
+  bool IsSandboxed(WebSandboxFlags mask) const;
 
   // Returns the content security policy to be used based on the current
   // JavaScript world we are in.
@@ -184,8 +192,10 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
 
   virtual ResourceFetcher* Fetcher() const = 0;
 
-  virtual SecurityContext& GetSecurityContext() = 0;
-  virtual const SecurityContext& GetSecurityContext() const = 0;
+  SecurityContext& GetSecurityContext() { return security_context_; }
+  const SecurityContext& GetSecurityContext() const {
+    return security_context_;
+  }
 
   // https://tc39.github.io/ecma262/#sec-agent-clusters
   // TODO(dtapuska): Remove this virtual once all execution_contexts
@@ -303,11 +313,39 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   bool FeaturePolicyFeatureObserved(
       mojom::FeaturePolicyFeature feature) override;
 
+  // Tests whether the policy-controlled feature is enabled in this frame.
+  // Optionally sends a report to any registered reporting observers or
+  // Report-To endpoints, via ReportFeaturePolicyViolation(), if the feature is
+  // disabled. The optional ConsoleMessage will be sent to the console if
+  // present, or else a default message will be used instead.
+  bool IsFeatureEnabled(
+      mojom::FeaturePolicyFeature,
+      ReportOptions report_on_failure = ReportOptions::kDoNotReport,
+      const String& message = g_empty_string,
+      const String& source_file = g_empty_string) const;
+  bool IsFeatureEnabled(
+      mojom::FeaturePolicyFeature,
+      PolicyValue threshold_value,
+      ReportOptions report_on_failure = ReportOptions::kDoNotReport,
+      const String& message = g_empty_string,
+      const String& source_file = g_empty_string) const;
+  virtual void CountPotentialFeaturePolicyViolation(
+      mojom::FeaturePolicyFeature) const {}
+  virtual void ReportFeaturePolicyViolation(
+      mojom::FeaturePolicyFeature,
+      mojom::FeaturePolicyDisposition,
+      const String& message = g_empty_string,
+      const String& source_file = g_empty_string) const {}
+
+  String addressSpaceForBindings() const;
 
  protected:
   ExecutionContext(v8::Isolate* isolate,
                    Agent* agent,
-                   OriginTrialContext* origin_trial_context);
+                   OriginTrialContext* origin_trial_context,
+                   scoped_refptr<SecurityOrigin> origin,
+                   WebSandboxFlags sandbox_flags,
+                   std::unique_ptr<FeaturePolicy> feature_policy);
   ~ExecutionContext() override;
 
  private:
@@ -316,11 +354,12 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
                              mojom::ConsoleMessageLevel,
                              const String& message,
                              bool discard_duplicates) final;
-
   virtual void AddConsoleMessageImpl(ConsoleMessage*,
                                      bool discard_duplicates) = 0;
 
   v8::Isolate* const isolate_;
+
+  SecurityContext security_context_;
 
   bool DispatchErrorEventInternal(ErrorEvent*, SanitizeScriptErrors);
 

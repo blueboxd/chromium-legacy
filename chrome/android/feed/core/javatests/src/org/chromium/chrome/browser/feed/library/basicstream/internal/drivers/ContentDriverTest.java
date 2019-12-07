@@ -31,6 +31,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.ContentMetadata;
 import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
@@ -52,7 +53,6 @@ import org.chromium.chrome.browser.feed.library.basicstream.internal.pendingdism
 import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.PietViewHolder;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.viewloggingupdater.ViewLoggingUpdater;
 import org.chromium.chrome.browser.feed.library.common.concurrent.testing.FakeMainThreadRunner;
-import org.chromium.chrome.browser.feed.library.common.functional.Supplier;
 import org.chromium.chrome.browser.feed.library.common.time.testing.FakeClock;
 import org.chromium.chrome.browser.feed.library.sharedstream.contextmenumanager.ContextMenuManager;
 import org.chromium.chrome.browser.feed.library.sharedstream.logging.LoggingListener;

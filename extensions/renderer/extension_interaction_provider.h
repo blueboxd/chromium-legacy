@@ -8,7 +8,6 @@
 #include "extensions/renderer/bindings/interaction_provider.h"
 
 #include "base/optional.h"
-#include "third_party/blink/public/web/web_user_gesture_token.h"
 #include "v8/include/v8.h"
 
 namespace blink {

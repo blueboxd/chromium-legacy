@@ -23,6 +23,7 @@ suite('CategoryDefaultSetting', function() {
     PolymerTest.clearBody();
     testElement = document.createElement('category-default-setting');
     testElement.subOptionLabel = 'test label';
+    testElement.subOptionMode = 'toggle';
     document.body.appendChild(testElement);
   });
 

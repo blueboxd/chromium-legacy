@@ -961,7 +961,7 @@ CanvasRenderingContext2D::getContextAttributes() const {
     settings->setColorSpace(ColorSpaceAsString());
     settings->setPixelFormat(PixelFormatAsString());
   }
-  settings->setDesynchronized(canvas()->LowLatencyEnabled());
+  settings->setDesynchronized(Host()->LowLatencyEnabled());
   return settings;
 }
 

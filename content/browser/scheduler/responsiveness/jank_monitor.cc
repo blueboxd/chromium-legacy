@@ -103,7 +103,9 @@ void JankMonitor::TearDownOnIOThread() {
   // monitor timer fires.
 }
 
-void JankMonitor::WillRunTaskOnUIThread(const base::PendingTask* task) {
+void JankMonitor::WillRunTaskOnUIThread(
+    const base::PendingTask* task,
+    bool /* was_blocked_or_low_priority */) {
   DCHECK(ui_thread_exec_state_);
   WillRunTaskOrEvent(ui_thread_exec_state_.get(), task);
 }
@@ -113,7 +115,9 @@ void JankMonitor::DidRunTaskOnUIThread(const base::PendingTask* task) {
   DidRunTaskOrEvent(ui_thread_exec_state_.get(), task);
 }
 
-void JankMonitor::WillRunTaskOnIOThread(const base::PendingTask* task) {
+void JankMonitor::WillRunTaskOnIOThread(
+    const base::PendingTask* task,
+    bool /* was_blocked_or_low_priority */) {
   DCHECK(io_thread_exec_state_);
   WillRunTaskOrEvent(io_thread_exec_state_.get(), task);
 }

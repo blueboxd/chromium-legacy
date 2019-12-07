@@ -314,7 +314,7 @@ base::string16 AXNode::GetInheritedString16Attribute(
   return base::UTF8ToUTF16(GetInheritedStringAttribute(attribute));
 }
 
-AXLanguageInfo* AXNode::GetLanguageInfo() {
+AXLanguageInfo* AXNode::GetLanguageInfo() const {
   return language_info_.get();
 }
 
@@ -322,16 +322,27 @@ void AXNode::SetLanguageInfo(std::unique_ptr<AXLanguageInfo> lang_info) {
   language_info_ = std::move(lang_info);
 }
 
-std::string AXNode::GetLanguage() {
-  // If we have been labelled with language info then rely on that.
-  const AXLanguageInfo* lang_info = GetLanguageInfo();
-  if (lang_info && !lang_info->language.empty())
-    return lang_info->language;
+void AXNode::ClearLanguageInfo() {
+  language_info_.reset();
+}
 
-  // Otherwise fallback to kLanguage attribute.
-  const auto& lang_attr =
-      GetInheritedStringAttribute(ax::mojom::StringAttribute::kLanguage);
-  return lang_attr;
+std::string AXNode::GetLanguage() {
+  // Walk up tree considering both detected and author declared languages.
+  for (const AXNode* cur = this; cur; cur = cur->parent()) {
+    // If language detection has assigned a language then we prefer that.
+    const AXLanguageInfo* lang_info = cur->GetLanguageInfo();
+    if (lang_info && !lang_info->language.empty()) {
+      return lang_info->language;
+    }
+
+    // If the page author has declared a language attribute we fallback to that.
+    const AXNodeData& data = cur->data();
+    if (data.HasStringAttribute(ax::mojom::StringAttribute::kLanguage)) {
+      return data.GetStringAttribute(ax::mojom::StringAttribute::kLanguage);
+    }
+  }
+
+  return base::EmptyString();
 }
 
 std::ostream& operator<<(std::ostream& stream, const AXNode& node) {

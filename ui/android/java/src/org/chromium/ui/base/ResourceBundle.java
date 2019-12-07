@@ -36,6 +36,7 @@ public final class ResourceBundle {
     /**
      * Called when there are no locale pak files available.
      */
+    @CalledByNative
     public static void setNoAvailableLocalePaks() {
         assert sCompressedLocales == null && sUncompressedLocales == null;
         sCompressedLocales = new String[] {};

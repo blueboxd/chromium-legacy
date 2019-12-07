@@ -216,7 +216,7 @@ void DeleteAllRenamedUserDirectories(const base::FilePath& dir,
                                   pattern);
   for (base::FilePath to_delete = enumerator.Next(); !to_delete.empty();
        to_delete = enumerator.Next()) {
-    base::DeleteFile(to_delete, true /* recursive */);
+    base::DeleteFileRecursively(to_delete);
   }
 }
 

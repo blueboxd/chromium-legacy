@@ -13,6 +13,7 @@
 
 class Tab;
 class TabGroupHeader;
+class TabGroupHighlight;
 class TabGroupUnderline;
 class TabStrip;
 
@@ -25,6 +26,7 @@ class TabGroupViews {
 
   TabGroupId group() const { return group_; }
   TabGroupHeader* header() const { return header_.get(); }
+  TabGroupHighlight* highlight() const { return highlight_.get(); }
   TabGroupUnderline* underline() const { return underline_.get(); }
 
   // Updates the visuals of each view in preparation for repainting.
@@ -39,10 +41,23 @@ class TabGroupViews {
   // Returns the group color.
   SkColor GetGroupColor() const;
 
+  // Returns the tab highlight background color. Needed to layer painting for
+  // the group background highlight.
+  SkColor GetTabBackgroundColor() const;
+
+  // Returns the group background color, which matches the non-active selected
+  // tab color. Needed to layer painting for the group background highlight.
+  SkColor GetGroupBackgroundColor() const;
+
+  // Returns whether the group highlight background should be shown. Currently
+  // it should only be shown if the entire group is dragging via its header.
+  bool ShouldPaintGroupBackground() const;
+
  private:
   TabStrip* const tab_strip_;
   const TabGroupId group_;
   std::unique_ptr<TabGroupHeader> header_;
+  std::unique_ptr<TabGroupHighlight> highlight_;
   std::unique_ptr<TabGroupUnderline> underline_;
 };
 

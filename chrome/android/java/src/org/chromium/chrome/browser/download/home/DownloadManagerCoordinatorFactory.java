@@ -28,6 +28,7 @@ public class DownloadManagerCoordinatorFactory {
             ComponentName parentComponent, ModalDialogManager modalDialogManager) {
         Profile profile = Profile.getLastUsedProfile();
         return new DownloadManagerCoordinatorImpl(activity, config, snackbarManager,
-                modalDialogManager, TrackerFactory.getTrackerForProfile(profile));
+                modalDialogManager, TrackerFactory.getTrackerForProfile(profile),
+                new FaviconProviderImpl(profile));
     }
 }

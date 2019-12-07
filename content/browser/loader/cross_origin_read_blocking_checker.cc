@@ -11,7 +11,7 @@
 #include "net/base/mime_sniffer.h"
 #include "services/network/cross_origin_read_blocking.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_reader.h"
 #include "url/origin.h"
@@ -95,7 +95,7 @@ class CrossOriginReadBlockingChecker::BlobIOState {
 
 CrossOriginReadBlockingChecker::CrossOriginReadBlockingChecker(
     const network::ResourceRequest& request,
-    const network::ResourceResponseHead& response,
+    const network::mojom::URLResponseHead& response,
     const url::Origin& request_initiator_site_lock,
     const storage::BlobDataHandle& blob_data_handle,
     base::OnceCallback<void(Result)> callback)

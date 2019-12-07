@@ -5,7 +5,6 @@
 module blink.mojom;
 
 import "mojo/public/mojom/base/string16.mojom";
-import "url/mojom/origin.mojom";
 
 // The renderer uses this interface to ask the browser process about content
 // settings for whether features are allowed to be used by the worker.

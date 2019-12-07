@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.feed.library.feedsessionmanager.internal;
 import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
 
+import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.KnownContent;
 import org.chromium.chrome.browser.feed.library.api.common.MutationContext;
 import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
@@ -27,7 +28,6 @@ import org.chromium.chrome.browser.feed.library.common.Result;
 import org.chromium.chrome.browser.feed.library.common.concurrent.MainThreadRunner;
 import org.chromium.chrome.browser.feed.library.common.concurrent.TaskQueue;
 import org.chromium.chrome.browser.feed.library.common.concurrent.TaskQueue.TaskType;
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 import org.chromium.chrome.browser.feed.library.common.logging.Dumpable;
 import org.chromium.chrome.browser.feed.library.common.logging.Dumper;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;

@@ -1105,6 +1105,8 @@ jumbo_static_library("browser") {
     "performance_manager/decorators/frame_priority_decorator.h",
     "performance_manager/decorators/frozen_frame_aggregator.cc",
     "performance_manager/decorators/frozen_frame_aggregator.h",
+    "performance_manager/decorators/helpers/page_live_state_decorator_helper.cc",
+    "performance_manager/decorators/helpers/page_live_state_decorator_helper.h",
     "performance_manager/decorators/page_aggregator.cc",
     "performance_manager/decorators/page_aggregator.h",
     "performance_manager/decorators/page_almost_idle_decorator.cc",
@@ -4316,6 +4318,8 @@ jumbo_static_library("browser") {
   if (enable_basic_printing) {
     # Some form of printing support.
     sources += [
+      "policy/printing_restrictions_policy_handler.cc",
+      "policy/printing_restrictions_policy_handler.h",
       "printing/print_job.cc",
       "printing/print_job.h",
       "printing/print_job_manager.cc",
@@ -4344,12 +4348,6 @@ jumbo_static_library("browser") {
       "//printing",
     ]
 
-    if (is_chromeos) {
-      sources += [
-        "policy/printing_restrictions_policy_handler.cc",
-        "policy/printing_restrictions_policy_handler.h",
-      ]
-    }
     if (is_win) {
       sources += [
         "printing/pdf_to_emf_converter.cc",

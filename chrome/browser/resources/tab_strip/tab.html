@@ -234,18 +234,20 @@
   }
 
   #thumbnail {
-    align-items: center;
+    align-items: flex-start;
     background: var(--tabstrip-tab-background-color);
     display: flex;
     flex: 1;
+    height: var(--tabstrip-tab-thumbnail-height);
     justify-content: center;
+    width: var(--tabstrip-tab-thumbnail-width);
   }
 
   #thumbnailImg {
-    height: calc(var(--tabstrip-tab-height) - var(--tabstrip-tab-title-height));
+    min-height: 100%;
     object-fit: cover;
     pointer-events: none;
-    width: var(--tabstrip-tab-width);
+    width: 100%;
   }
 
   #thumbnailImg:not([src]) {

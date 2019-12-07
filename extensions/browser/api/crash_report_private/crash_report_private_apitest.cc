@@ -138,7 +138,8 @@ IN_PROC_BROWSER_TEST_F(CrashReportPrivateApiTest, Basic) {
 
   EXPECT_EQ(last_report_.query,
             "browser=Chrome&browser_version=1.2.3.4&channel=Stable&"
-            "full_url=http%3A%2F%2Fwww.test.com%2F&os=ChromeOS&os_version=" +
+            "error_message=hi&full_url=http%3A%2F%2Fwww.test.com%2F&"
+            "os=ChromeOS&os_version=" +
                 GetOsVersion() +
                 "&prod=Chrome%2520(Chrome%2520OS)&src=http%3A%2F%2Fwww.test."
                 "com%2F&type=JavascriptError&url=%2F&ver=1.2.3.4");
@@ -163,8 +164,8 @@ IN_PROC_BROWSER_TEST_F(CrashReportPrivateApiTest, ExtraParamsAndStackTrace) {
 
   EXPECT_EQ(last_report_.query,
             "browser=Chrome&browser_version=1.2.3.4&channel=Stable&column=%C8&"
-            "full_url=http%3A%2F%2Fwww.test.com%2Ffoo&line=%7B&os=ChromeOS&"
-            "os_version=" +
+            "error_message=hi&full_url=http%3A%2F%2Fwww.test.com%2Ffoo"
+            "&line=%7B&os=ChromeOS&os_version=" +
                 GetOsVersion() +
                 "&prod=TestApp&src=http%3A%2F%2Fwww.test.com%2Ffoo&type="
                 "JavascriptError&url=%2Ffoo&ver=1.0.0.0");
@@ -189,6 +190,34 @@ IN_PROC_BROWSER_TEST_F(CrashReportPrivateApiTest, StackTraceWithErrorMessage) {
 
   EXPECT_EQ(last_report_.query,
             "browser=Chrome&browser_version=1.2.3.4&channel=Stable&column=%C8&"
+            "error_message=hi&full_url=http%3A%2F%2Fwww.test.com%2Ffoo&"
+            "line=%7B&os=ChromeOS&os_version=" +
+                GetOsVersion() +
+                "&prod=TestApp&src=http%3A%2F%2Fwww.test.com%2Ffoo&type="
+                "JavascriptError&url=%2Ffoo&ver=1.0.0.0");
+  EXPECT_EQ(last_report_.content, "");
+}
+
+IN_PROC_BROWSER_TEST_F(CrashReportPrivateApiTest, AnonymizeMessage) {
+  // We use the feedback APIs anonymizer tool, which scrubs many different types
+  // of PII. As a sanity check, test if Mac addresses are anonymized.
+  constexpr char kTestScript[] = R"(
+    chrome.crashReportPrivate.reportError({
+        message: "06-00-00-00-00-00",
+        url: "http://www.test.com/foo",
+        product: 'TestApp',
+        version: '1.0.0.0',
+        lineNumber: 123,
+        columnNumber: 456,
+      },
+      () => window.domAutomationController.send(""));
+  )";
+  ExecuteScriptInBackgroundPage(browser_context(), extension_->id(),
+                                kTestScript);
+
+  EXPECT_EQ(last_report_.query,
+            "browser=Chrome&browser_version=1.2.3.4&channel=Stable&column=%C8&"
+            "error_message=%5BMAC%20OUI%3D06%3A00%3A00%20IFACE%3D1%5D&"
             "full_url=http%3A%2F%2Fwww.test.com%2Ffoo&line=%7B&os=ChromeOS&"
             "os_version=" +
                 GetOsVersion() +

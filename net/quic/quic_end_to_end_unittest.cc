@@ -141,7 +141,7 @@ class QuicEndToEndTest : public ::testing::Test, public WithTaskEnvironment {
 
     // To simplify the test, and avoid the race with the HTTP request, we force
     // QUIC for these requests.
-    session_params_.quic_params.origins_to_force_quic_on.insert(
+    quic_context_.params()->origins_to_force_quic_on.insert(
         HostPortPair::FromString("test.example.com:443"));
 
     transaction_factory_.reset(

@@ -11,8 +11,6 @@
 #include "base/strings/string16.h"
 #include "ui/gfx/range/range.h"
 
-namespace string_matching {
-
 // TokenizedString takes a string and breaks it down into token words. It
 // first breaks using BreakIterator to get all the words. Then it breaks
 // the words again at camel case boundaries and alpha/number boundaries.
@@ -40,7 +38,5 @@ class TokenizedString {
 
   DISALLOW_COPY_AND_ASSIGN(TokenizedString);
 };
-
-}  // namespace string_matching
 
 #endif  // CHROME_COMMON_STRING_MATCHING_TOKENIZED_STRING_H_

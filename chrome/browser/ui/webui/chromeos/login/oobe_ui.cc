@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_service_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/shutdown_policy_handler.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
@@ -91,7 +92,7 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/component_extension_resources.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
+#include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
@@ -100,7 +101,6 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -491,27 +491,24 @@ void OobeUI::ConfigureOobeDisplay() {
     oobe_display_chooser_ = std::make_unique<OobeDisplayChooser>();
 }
 
-service_manager::Connector* OobeUI::GetLoggedInUserMojoConnector() {
-  // This function should only be called after the user has logged in.
-  DCHECK(
-      user_manager::UserManager::Get()->IsUserLoggedIn() &&
-      user_manager::UserManager::Get()->GetActiveUser()->is_profile_created());
-  return content::BrowserContext::GetConnectorFor(
-      ProfileManager::GetActiveUserProfile());
-}
-
 void OobeUI::BindMultiDeviceSetup(
     mojo::PendingReceiver<multidevice_setup::mojom::MultiDeviceSetup>
         receiver) {
-  GetLoggedInUserMojoConnector()->Connect(
-      multidevice_setup::mojom::kServiceName, std::move(receiver));
+  multidevice_setup::MultiDeviceSetupService* service =
+      multidevice_setup::MultiDeviceSetupServiceFactory::GetForProfile(
+          ProfileManager::GetActiveUserProfile());
+  if (service)
+    service->BindMultiDeviceSetup(std::move(receiver));
 }
 
 void OobeUI::BindPrivilegedHostDeviceSetter(
     mojo::PendingReceiver<multidevice_setup::mojom::PrivilegedHostDeviceSetter>
         receiver) {
-  GetLoggedInUserMojoConnector()->Connect(
-      multidevice_setup::mojom::kServiceName, std::move(receiver));
+  multidevice_setup::MultiDeviceSetupService* service =
+      multidevice_setup::MultiDeviceSetupServiceFactory::GetForProfile(
+          ProfileManager::GetActiveUserProfile());
+  if (service)
+    service->BindPrivilegedHostDeviceSetter(std::move(receiver));
 }
 
 void OobeUI::BindCrosNetworkConfig(

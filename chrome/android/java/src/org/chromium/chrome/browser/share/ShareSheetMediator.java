@@ -15,6 +15,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.feature_engagement.ScreenshotTabObserver;
+import org.chromium.chrome.browser.metrics.UkmRecorder;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.printing.PrintShareActivity;
 import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfShareActivity;
@@ -163,8 +164,14 @@ class ShareSheetMediator {
         share(builder.build());
         if (shareDirectly) {
             RecordUserAction.record("MobileMenuDirectShare");
+            if (webContents != null) {
+                new UkmRecorder.Bridge().recordEvent(webContents, "MobileMenu.DirectShare");
+            }
         } else {
             RecordUserAction.record("MobileMenuShare");
+            if (webContents != null) {
+                new UkmRecorder.Bridge().recordEvent(webContents, "MobileMenu.Share");
+            }
         }
 
         if (blockingUri == null) return;

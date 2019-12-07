@@ -32,7 +32,6 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/session_manager/session_manager_types.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -113,28 +112,6 @@ gfx::Size GetParentAccessViewSize() {
   return gfx::Size(kParentAccessViewWidthDp,
                    IsTabletMode() ? kParentAccessViewTabletModeHeightDp
                                   : kParentAccessViewHeightDp);
-}
-
-// Returns background color for parent access dialog. |using_blur| should be
-// true if the dialog is using background blur (color transparency depends on
-// it).
-SkColor GetBackgroundColor(bool using_blur) {
-  SkColor color = AshColorProvider::Get()->GetBaseLayerColor(
-      AshColorProvider::BaseLayerType::kOpaque,
-      AshColorProvider::AshColorMode::kDark);
-
-  SkColor extracted_color =
-      Shell::Get()->wallpaper_controller()->GetProminentColor(
-          color_utils::ColorProfile(color_utils::LumaRange::DARK,
-                                    color_utils::SaturationRange::MUTED));
-
-  if (extracted_color != kInvalidWallpaperColor &&
-      extracted_color != SK_ColorTRANSPARENT) {
-    color = color_utils::GetResultingPaintColor(
-        SkColorSetA(SK_ColorBLACK, kAlpha70Percent), extracted_color);
-  }
-
-  return using_blur ? SkColorSetA(color, kAlpha74Percent) : color;
 }
 
 base::string16 GetTitle(ParentAccessRequestReason reason) {
@@ -575,6 +552,26 @@ constexpr char ParentAccessView::kUMAParentAccessCodeAction[];
 // static
 constexpr char ParentAccessView::kUMAParentAccessCodeUsage[];
 
+// static
+SkColor ParentAccessView::GetChildUserDialogColor(bool using_blur) {
+  SkColor color = AshColorProvider::Get()->GetBaseLayerColor(
+      AshColorProvider::BaseLayerType::kOpaque,
+      AshColorProvider::AshColorMode::kDark);
+
+  SkColor extracted_color =
+      Shell::Get()->wallpaper_controller()->GetProminentColor(
+          color_utils::ColorProfile(color_utils::LumaRange::DARK,
+                                    color_utils::SaturationRange::MUTED));
+
+  if (extracted_color != kInvalidWallpaperColor &&
+      extracted_color != SK_ColorTRANSPARENT) {
+    color = color_utils::GetResultingPaintColor(
+        SkColorSetA(SK_ColorBLACK, kAlpha70Percent), extracted_color);
+  }
+
+  return using_blur ? SkColorSetA(color, kAlpha74Percent) : color;
+}
+
 ParentAccessView::ParentAccessView(const AccountId& account_id,
                                    const Callbacks& callbacks,
                                    ParentAccessRequestReason reason,
@@ -582,9 +579,7 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
     : callbacks_(callbacks),
       account_id_(account_id),
       request_reason_(reason),
-      validation_time_(validation_time),
-      blur_background_(Shell::Get()->session_controller()->GetSessionState() ==
-                       session_manager::SessionState::ACTIVE) {
+      validation_time_(validation_time) {
   DCHECK(callbacks.on_finished);
   // Main view contains all other views aligned vertically and centered.
   auto layout = std::make_unique<views::BoxLayout>(
@@ -602,8 +597,7 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
   layer()->SetFillsBoundsOpaquely(false);
   layer()->SetRoundedCornerRadius(
       gfx::RoundedCornersF(kParentAccessViewRoundedCornerRadiusDp));
-  if (blur_background_)
-    layer()->SetBackgroundBlur(ShelfConfig::Get()->shelf_blur_radius());
+  layer()->SetBackgroundBlur(ShelfConfig::Get()->shelf_blur_radius());
 
   const int child_view_width =
       kParentAccessViewWidthDp - 2 * kParentAccessViewHorizontalInsetDp;
@@ -762,7 +756,7 @@ void ParentAccessView::OnPaint(gfx::Canvas* canvas) {
 
   cc::PaintFlags flags;
   flags.setStyle(cc::PaintFlags::kFill_Style);
-  flags.setColor(GetBackgroundColor(blur_background_));
+  flags.setColor(GetChildUserDialogColor(true));
   canvas->DrawRoundRect(GetContentsBounds(),
                         kParentAccessViewRoundedCornerRadiusDp, flags);
 }

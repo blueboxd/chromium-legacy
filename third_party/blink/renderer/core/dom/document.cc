@@ -275,8 +275,6 @@
 #include "third_party/blink/renderer/core/svg/svg_use_element.h"
 #include "third_party/blink/renderer/core/svg_element_factory.h"
 #include "third_party/blink/renderer/core/svg_names.h"
-#include "third_party/blink/renderer/core/timing/dom_window_performance.h"
-#include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
 #include "third_party/blink/renderer/core/xml/parser/xml_document_parser.h"
 #include "third_party/blink/renderer/core/xml_names.h"
@@ -1101,12 +1099,12 @@ Document::Document(const DocumentInit& initializer,
                    DocumentClassFlags document_classes)
     : ContainerNode(nullptr, kCreateDocument),
       TreeScope(*this),
-      SecurityContext(security_initializer.GetSecurityOrigin(),
-                      security_initializer.GetSandboxFlags(),
-                      security_initializer.TakeFeaturePolicy()),
       ExecutionContext(V8PerIsolateData::MainThreadIsolate(),
                        security_initializer.GetAgent(),
-                       security_initializer.GetOriginTrialContext()),
+                       security_initializer.GetOriginTrialContext(),
+                       security_initializer.GetSecurityOrigin(),
+                       security_initializer.GetSandboxFlags(),
+                       security_initializer.TakeFeaturePolicy()),
       evaluate_media_queries_on_style_recalc_(false),
       pending_sheet_layout_(kNoLayoutWithPendingSheets),
       window_agent_factory_(security_initializer.GetWindowAgentFactory()),
@@ -3697,7 +3695,7 @@ void Document::open(Document* entered_document,
     csp->CopyStateFrom(entered_document->GetContentSecurityPolicy());
     // We inherit the sandbox flags of the entered document, so mask on
     // the ones contained in the CSP.
-    sandbox_flags_ |= csp->GetSandboxMask();
+    GetSecurityContext().ApplySandboxFlags(csp->GetSandboxMask());
     InitContentSecurityPolicy(csp);
     // Clear the hash fragment from the inherited URL to prevent a
     // scroll-into-view for any document.open()'d frame.
@@ -3707,7 +3705,8 @@ void Document::open(Document* entered_document,
     if (Loader())
       Loader()->UpdateUrlForDocumentOpen(new_url);
 
-    SetSecurityOrigin(entered_document->GetMutableSecurityOrigin());
+    GetSecurityContext().SetSecurityOrigin(
+        entered_document->GetMutableSecurityOrigin());
     SetReferrerPolicy(entered_document->GetReferrerPolicy());
     SetCookieURL(entered_document->CookieURL());
   }
@@ -6927,7 +6926,7 @@ void Document::FeaturePolicyInitialized(
   is_vertical_scroll_enforced_ =
       frame_ && !frame_->IsMainFrame() &&
       RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
-      !GetFeaturePolicy()->IsFeatureEnabled(
+      !GetSecurityContext().GetFeaturePolicy()->IsFeatureEnabled(
           mojom::FeaturePolicyFeature::kVerticalScroll);
 }
 
@@ -6985,8 +6984,8 @@ void Document::ApplyReportOnlyFeaturePolicyFromHeader(
         "Error with Feature-Policy-Report-Only header: " + message));
   }
 
-  AddReportOnlyFeaturePolicy(report_only_policy, GetOwnerContainerPolicy(),
-                             GetParentFeaturePolicy());
+  GetSecurityContext().AddReportOnlyFeaturePolicy(
+      report_only_policy, GetOwnerContainerPolicy(), GetParentFeaturePolicy());
 }
 
 bool Document::AllowedToUseDynamicMarkUpInsertion(
@@ -7043,7 +7042,7 @@ FontMatchingMetrics* Document::GetFontMatchingMetrics() {
 }
 
 void Document::InitContentSecurityPolicy(ContentSecurityPolicy* csp) {
-  SetContentSecurityPolicy(csp);
+  GetSecurityContext().SetContentSecurityPolicy(csp);
   GetContentSecurityPolicy()->BindToDelegate(
       GetContentSecurityPolicyDelegate());
 }
@@ -7063,7 +7062,8 @@ void Document::InitSecurityContext(
   if (security_initializer.BindCSPImmediately()) {
     InitContentSecurityPolicy(security_initializer.GetCSP());
   } else {
-    SetContentSecurityPolicy(security_initializer.GetCSP());
+    GetSecurityContext().SetContentSecurityPolicy(
+        security_initializer.GetCSP());
   }
   if (!initializer.HasSecurityContext()) {
     // No source for a security context.
@@ -7071,10 +7071,11 @@ void Document::InitSecurityContext(
     cookie_url_ = KURL(g_empty_string);
     return;
   }
-  SetInsecureRequestPolicy(initializer.GetInsecureRequestPolicy());
+  GetSecurityContext().SetInsecureRequestPolicy(
+      initializer.GetInsecureRequestPolicy());
   if (initializer.InsecureNavigationsToUpgrade()) {
     for (auto to_upgrade : *initializer.InsecureNavigationsToUpgrade())
-      AddInsecureNavigationUpgrade(to_upgrade);
+      GetSecurityContext().AddInsecureNavigationUpgrade(to_upgrade);
   }
 
   bool inherit_cookie_url_from_owner = initializer.IsSrcdocDocument() ||
@@ -7085,15 +7086,7 @@ void Document::InitSecurityContext(
                     ? initializer.OwnerDocument()->CookieURL()
                     : url_;
 
-  SetAddressSpace(initializer.GetIPAddressSpace());
-}
-
-void Document::SetSecurityOrigin(scoped_refptr<SecurityOrigin> origin) {
-  // Enforce that we don't change access, we might change the reference (via
-  // IsolatedCopy but we can't change the security policy).
-  CHECK(origin);
-  CHECK(GetSecurityOrigin()->CanAccess(origin.get()));
-  SecurityContext::SetSecurityOrigin(origin);
+  GetSecurityContext().SetAddressSpace(initializer.GetIPAddressSpace());
 }
 
 void Document::BindContentSecurityPolicy() {
@@ -7321,10 +7314,6 @@ void Document::TasksWereUnpaused() {
 
   if (scripted_animation_controller_)
     scripted_animation_controller_->Unpause();
-
-  MutationObserver::ResumeSuspendedObservers();
-  if (dom_window_)
-    DOMWindowPerformance::performance(*dom_window_)->ResumeSuspendedObservers();
 }
 
 bool Document::TasksNeedPause() {
@@ -8100,7 +8089,7 @@ void Document::DidEnforceInsecureRequestPolicy() {
   if (!GetFrame())
     return;
   GetFrame()->GetLocalFrameHostRemote().EnforceInsecureRequestPolicy(
-      GetInsecureRequestPolicy());
+      GetSecurityContext().GetInsecureRequestPolicy());
 }
 
 void Document::DidEnforceInsecureNavigationsSet() {
@@ -8108,7 +8097,7 @@ void Document::DidEnforceInsecureNavigationsSet() {
     return;
   GetFrame()->GetLocalFrameHostRemote().EnforceInsecureNavigationsSet(
       SecurityContext::SerializeInsecureNavigationSet(
-          InsecureNavigationsToUpgrade()));
+          GetSecurityContext().InsecureNavigationsToUpgrade()));
 }
 
 void Document::CountDetachingNodeAccessInDOMNodeRemovedHandler() {
@@ -8341,7 +8330,6 @@ void Document::Trace(Visitor* visitor) {
   TreeScope::Trace(visitor);
   ContainerNode::Trace(visitor);
   ExecutionContext::Trace(visitor);
-  SecurityContext::Trace(visitor);
   DocumentShutdownNotifier::Trace(visitor);
   SynchronousMutationNotifier::Trace(visitor);
 }
@@ -8403,7 +8391,7 @@ bool Document::IsSlotAssignmentOrLegacyDistributionDirty() const {
 
 bool Document::IsLazyLoadPolicyEnforced() const {
   return RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
-         !GetFeaturePolicy()->IsFeatureEnabled(
+         !GetSecurityContext().GetFeaturePolicy()->IsFeatureEnabled(
              mojom::FeaturePolicyFeature::kLazyLoad);
 }
 

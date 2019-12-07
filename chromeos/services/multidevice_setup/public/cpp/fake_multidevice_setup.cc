@@ -72,11 +72,6 @@ FakeMultiDeviceSetup::~FakeMultiDeviceSetup() {
   }
 }
 
-void FakeMultiDeviceSetup::BindHandle(mojo::ScopedMessagePipeHandle handle) {
-  BindReceiver(
-      mojo::PendingReceiver<mojom::MultiDeviceSetup>(std::move(handle)));
-}
-
 void FakeMultiDeviceSetup::FlushForTesting() {
   host_status_observers_.FlushForTesting();
   feature_state_observers_.FlushForTesting();
@@ -106,6 +101,7 @@ void FakeMultiDeviceSetup::NotifyFeatureStateChanged(
 
 void FakeMultiDeviceSetup::SetAccountStatusChangeDelegate(
     mojo::PendingRemote<mojom::AccountStatusChangeDelegate> delegate) {
+  delegate_.reset();
   delegate_.Bind(std::move(delegate));
 }
 

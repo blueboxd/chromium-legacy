@@ -339,7 +339,7 @@ void IndexedDBContextImpl::DeleteForOrigin(const Origin& origin) {
     const bool kNonRecursive = false;
     base::DeleteFile(idb_directory, kNonRecursive);
   }
-  base::DeleteFile(GetBlobStorePath(origin), true /* recursive */);
+  base::DeleteFileRecursively(GetBlobStorePath(origin));
   QueryDiskAndUpdateQuotaUsage(origin);
   if (s.ok()) {
     GetOriginSet()->erase(origin);
@@ -364,9 +364,8 @@ void IndexedDBContextImpl::CopyOriginData(const Origin& origin,
   // Delete any existing storage paths in the destination context.
   // A previously failed migration may have left behind partially copied
   // directories.
-  for (const base::FilePath& dest_path :
-       dest_context_impl->GetStoragePaths(origin))
-    base::DeleteFile(dest_path, true);
+  for (const auto& dest_path : dest_context_impl->GetStoragePaths(origin))
+    base::DeleteFileRecursively(dest_path);
 
   base::FilePath dest_data_path = dest_context_impl->data_path();
   base::CreateDirectory(dest_data_path);
@@ -569,7 +568,7 @@ void IndexedDBContextImpl::Shutdown() {
                   continue;
                 if (factory)
                   factory->ForceClose(*origin, false);
-                base::DeleteFile(*file_path, true);
+                base::DeleteFileRecursively(*file_path);
               }
             },
             data_path_, base::WrapRefCounted(this), special_storage_policy_));

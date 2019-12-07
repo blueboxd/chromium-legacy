@@ -12,6 +12,6 @@ Polymer({
    * @private
    */
   contentChanged_: function(content) {
-    this.innerHTML = content;
-  }
+    this.$.echo.innerHTML = content;
+  },
 });

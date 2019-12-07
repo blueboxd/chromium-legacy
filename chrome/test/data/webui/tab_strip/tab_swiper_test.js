@@ -38,158 +38,106 @@ suite('TabSwiper', () => {
     const pointerState = {clientY: startY, pointerId: 1};
     tabElement.dispatchEvent(new PointerEvent('pointerdown', pointerState));
 
-    function testSwipeAnimation(swipeUp) {
-      const direction = swipeUp ? -1 : 1;
+    // Swipe was not enough to start any part of the animation.
+    pointerState.clientY = startY - 1;
+    pointerState.movementY = 1; /* Any non-0 value here is fine. */
+    tabElement.dispatchEvent(new PointerEvent('pointermove', pointerState));
+    assertEquals(tabElStyle.maxWidth, `${tabWidth}px`);
+    assertEquals(tabElStyle.opacity, '1');
+    let startTop = tabElement.getBoundingClientRect().top;
+    assertEquals(startTop, 0);
 
-      // Swipe was not enough to start any part of the animation.
-      pointerState.clientY = startY + (direction * 1);
-      pointerState.movementY = 1; /* Any non-0 value here is fine. */
-      tabElement.dispatchEvent(new PointerEvent('pointermove', pointerState));
-      assertEquals(tabElStyle.maxWidth, `${tabWidth}px`);
-      assertEquals(tabElStyle.opacity, '1');
-      let startTop = tabElement.getBoundingClientRect().top;
-      assertEquals(startTop, 0);
+    // Swipe was enough to start animating the position.
+    pointerState.clientY = startY - (TRANSLATE_ANIMATION_THRESHOLD_PX + 1);
+    tabElement.dispatchEvent(new PointerEvent('pointermove', pointerState));
+    assertEquals(tabElStyle.maxWidth, `${tabWidth}px`);
+    let top = tabElement.getBoundingClientRect().top;
+    assertTrue(top < startTop && top > -1 * SWIPE_FINISH_THRESHOLD_PX);
 
-      // Swipe was enough to start animating the position.
-      pointerState.clientY =
-          startY + (direction * (TRANSLATE_ANIMATION_THRESHOLD_PX + 1));
-      tabElement.dispatchEvent(new PointerEvent('pointermove', pointerState));
-      assertEquals(tabElStyle.maxWidth, `${tabWidth}px`);
-      let top = tabElement.getBoundingClientRect().top;
-      if (swipeUp) {
-        assertTrue(top < startTop && top > -1 * SWIPE_FINISH_THRESHOLD_PX);
-      } else {
-        assertTrue(top > startTop && top < SWIPE_FINISH_THRESHOLD_PX);
-      }
+    // Swipe was enough to start animating max width and opacity.
+    pointerState.clientY = startY - (SWIPE_START_THRESHOLD_PX + 1);
+    tabElement.dispatchEvent(new PointerEvent('pointermove', pointerState));
+    assertTrue(
+        parseInt(tabElStyle.maxWidth) > 0 &&
+        parseInt(tabElStyle.maxWidth) < tabWidth);
+    assertTrue(
+        parseFloat(tabElStyle.opacity) > 0 &&
+        parseFloat(tabElStyle.opacity) < 1);
 
-      // Swipe was enough to start animating max width and opacity.
-      pointerState.clientY =
-          startY + (direction * (SWIPE_START_THRESHOLD_PX + 1));
-      tabElement.dispatchEvent(new PointerEvent('pointermove', pointerState));
-      assertTrue(
-          parseInt(tabElStyle.maxWidth) > 0 &&
-          parseInt(tabElStyle.maxWidth) < tabWidth);
-      assertTrue(
-          parseFloat(tabElStyle.opacity) > 0 &&
-          parseFloat(tabElStyle.opacity) < 1);
-
-      // Swipe was enough to finish animating.
-      pointerState.clientY =
-          startY + (direction * (SWIPE_FINISH_THRESHOLD_PX + 1));
-      tabElement.dispatchEvent(new PointerEvent('pointermove', pointerState));
-      assertEquals(tabElStyle.maxWidth, '0px');
-      assertEquals(tabElStyle.opacity, '0');
-      assertEquals(
-          tabElement.getBoundingClientRect().top,
-          direction * SWIPE_FINISH_THRESHOLD_PX);
-    }
-
-    testSwipeAnimation(true);
-    testSwipeAnimation(false);
+    // Swipe was enough to finish animating.
+    pointerState.clientY = startY - (SWIPE_FINISH_THRESHOLD_PX + 1);
+    tabElement.dispatchEvent(new PointerEvent('pointermove', pointerState));
+    assertEquals(tabElStyle.maxWidth, '0px');
+    assertEquals(tabElStyle.opacity, '0');
+    assertEquals(
+        tabElement.getBoundingClientRect().top, -SWIPE_FINISH_THRESHOLD_PX);
   });
 
   test('finishing the swipe animation fires an event', async () => {
-    async function testFiredEvent(swipeUp) {
-      const firedEventPromise = eventToPromise('swipe', tabElement);
-      const startY = 50;
-      const direction = swipeUp ? -1 : 1;
-      const pointerState = {clientY: startY, pointerId: 1};
-      tabElement.dispatchEvent(new PointerEvent('pointerdown', pointerState));
+    const firedEventPromise = eventToPromise('swipe', tabElement);
+    const startY = 50;
+    const pointerState = {clientY: startY, pointerId: 1};
+    tabElement.dispatchEvent(new PointerEvent('pointerdown', pointerState));
 
-      pointerState.clientY =
-          startY + (direction * (SWIPE_FINISH_THRESHOLD_PX + 1));
-      pointerState.movementY = 1; /* Any non-0 value here is fine. */
-      tabElement.dispatchEvent(new PointerEvent('pointermove', pointerState));
-      tabElement.dispatchEvent(new PointerEvent('pointerup', pointerState));
-      await firedEventPromise;
-    }
-
-    await testFiredEvent(true);
-
-    // Re-add the element back to the DOM and re-test for swiping down.
-    document.body.appendChild(tabElement);
-    await testFiredEvent(false);
+    pointerState.clientY = startY - (SWIPE_FINISH_THRESHOLD_PX + 1);
+    pointerState.movementY = 1; /* Any non-0 value here is fine. */
+    tabElement.dispatchEvent(new PointerEvent('pointermove', pointerState));
+    tabElement.dispatchEvent(new PointerEvent('pointerup', pointerState));
+    await firedEventPromise;
   });
 
   test('swiping enough and releasing finishes the animation', async () => {
-    async function testReleasing(swipeUp) {
-      const firedEventPromise = eventToPromise('swipe', tabElement);
+    const firedEventPromise = eventToPromise('swipe', tabElement);
 
-      const tabElStyle = window.getComputedStyle(tabElement);
-      const startY = 50;
-      const direction = swipeUp ? -1 : 1;
+    const tabElStyle = window.getComputedStyle(tabElement);
+    const startY = 50;
 
-      const pointerState = {clientY: 50, pointerId: 1};
-      tabElement.dispatchEvent(new PointerEvent('pointerdown', pointerState));
+    const pointerState = {clientY: 50, pointerId: 1};
+    tabElement.dispatchEvent(new PointerEvent('pointerdown', pointerState));
 
-      pointerState.clientY =
-          startY + (direction * (SWIPE_START_THRESHOLD_PX + 1));
-      pointerState.movementY = 1; /* Any non-0 value here is fine. */
-      tabElement.dispatchEvent(new PointerEvent('pointermove', pointerState));
-      tabElement.dispatchEvent(new PointerEvent('pointerup', pointerState));
-      await firedEventPromise;
-      assertEquals(tabElStyle.maxWidth, '0px');
-      assertEquals(tabElStyle.opacity, '0');
-    }
-
-    await testReleasing(true);
-
-    // Re-add the element back to the DOM and re-test for swiping down.
-    document.body.appendChild(tabElement);
-    await testReleasing(false);
+    pointerState.clientY = startY - (SWIPE_START_THRESHOLD_PX + 1);
+    pointerState.movementY = 1; /* Any non-0 value here is fine. */
+    tabElement.dispatchEvent(new PointerEvent('pointermove', pointerState));
+    tabElement.dispatchEvent(new PointerEvent('pointerup', pointerState));
+    await firedEventPromise;
+    assertEquals(tabElStyle.maxWidth, '0px');
+    assertEquals(tabElStyle.opacity, '0');
   });
 
   test('swiping and letting go before resets animation', () => {
     tabElement.style.setProperty('--tabstrip-tab-width', '100px');
+    const tabElStyle = window.getComputedStyle(tabElement);
+    const startY = 50;
 
-    function testReleasing(swipeUp) {
-      const tabElStyle = window.getComputedStyle(tabElement);
-      const startY = 50;
-      const direction = swipeUp ? -1 : 1;
+    const pointerState = {clientY: 50, pointerId: 1};
+    tabElement.dispatchEvent(new PointerEvent('pointerdown', pointerState));
 
-      const pointerState = {clientY: 50, pointerId: 1};
-      tabElement.dispatchEvent(new PointerEvent('pointerdown', pointerState));
+    pointerState.clientY = startY - 1;
+    pointerState.movementY = 1; /* Any non-0 value here is fine. */
+    tabElement.dispatchEvent(new PointerEvent('pointermove', pointerState));
+    tabElement.dispatchEvent(new PointerEvent('pointerup', pointerState));
 
-      pointerState.clientY = startY + (direction * 1);
-      pointerState.movementY = 1; /* Any non-0 value here is fine. */
-      tabElement.dispatchEvent(new PointerEvent('pointermove', pointerState));
-      tabElement.dispatchEvent(new PointerEvent('pointerup', pointerState));
-
-      assertEquals(tabElStyle.maxWidth, '100px');
-      assertEquals(tabElStyle.opacity, '1');
-    }
-
-    testReleasing(true);
-    testReleasing(false);
+    assertEquals(tabElStyle.maxWidth, '100px');
+    assertEquals(tabElStyle.opacity, '1');
   });
 
   test('swiping fast enough finishes playing the animation', async () => {
     const tabElStyle = window.getComputedStyle(tabElement);
+    const firedEventPromise = eventToPromise('swipe', tabElement);
+    const startY = 50;
+    const pointerState = {clientY: 50, pointerId: 1};
 
-    async function testHighSpeedSwipe(swipeUp) {
-      const firedEventPromise = eventToPromise('swipe', tabElement);
-      const direction = swipeUp ? -1 : 1;
-      const startY = 50;
-      const pointerState = {clientY: 50, pointerId: 1};
+    tabElement.dispatchEvent(new PointerEvent('pointerdown', pointerState));
 
-      tabElement.dispatchEvent(new PointerEvent('pointerdown', pointerState));
+    pointerState.clientY = -100;
+    pointerState.movementY = -50;
+    pointerState.timestamp = 1020;
+    tabElement.dispatchEvent(new PointerEvent('pointermove', pointerState));
+    tabElement.dispatchEvent(new PointerEvent('pointerup', pointerState));
 
-      pointerState.clientY = 100;
-      pointerState.movementY = direction * 100;
-      pointerState.timestamp = 1020;
-      tabElement.dispatchEvent(new PointerEvent('pointermove', pointerState));
-      tabElement.dispatchEvent(new PointerEvent('pointerup', pointerState));
-
-      await firedEventPromise;
-      assertEquals(tabElStyle.maxWidth, '0px');
-      assertEquals(tabElStyle.opacity, '0');
-    }
-
-    await testHighSpeedSwipe(true);
-
-    // Re-add the element back to the DOM and re-test for swiping down.
-    document.body.appendChild(tabElement);
-    await testHighSpeedSwipe(false);
+    await firedEventPromise;
+    assertEquals(tabElStyle.maxWidth, '0px');
+    assertEquals(tabElStyle.opacity, '0');
   });
 
   test('pointerdown should reset the animation time', async () => {

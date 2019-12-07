@@ -26,10 +26,6 @@ namespace base {
 class DictionaryValue;
 }  // namespace base
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace chromeos {
 
 class ErrorScreen;
@@ -158,7 +154,6 @@ class OobeUI : public ui::MojoWebUIController {
   void ConfigureOobeDisplay();
 
   // Adds Mojo receivers for this WebUIController.
-  service_manager::Connector* GetLoggedInUserMojoConnector();
   void BindMultiDeviceSetup(
       mojo::PendingReceiver<multidevice_setup::mojom::MultiDeviceSetup>
           receiver);

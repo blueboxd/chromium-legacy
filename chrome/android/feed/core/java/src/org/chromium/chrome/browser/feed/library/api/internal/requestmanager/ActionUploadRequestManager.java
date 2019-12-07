@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.api.internal.requestmanager;
 
+import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.common.Result;
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamUploadableAction;
 import org.chromium.components.feed.core.proto.wire.ConsistencyTokenProto.ConsistencyToken;
 

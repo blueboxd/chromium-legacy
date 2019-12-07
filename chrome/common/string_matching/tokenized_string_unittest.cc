@@ -9,9 +9,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace string_matching {
-namespace test {
-
 namespace {
 
 base::string16 GetContent(const TokenizedString& tokenized) {
@@ -27,8 +24,6 @@ base::string16 GetContent(const TokenizedString& tokenized) {
   }
   return str;
 }
-
-}  // namespace
 
 TEST(TokenizedStringTest, Empty) {
   base::string16 empty;
@@ -83,5 +78,4 @@ TEST(TokenizedStringTest, Basic) {
   }
 }
 
-}  // namespace test
-}  // namespace string_matching
+}  // namespace

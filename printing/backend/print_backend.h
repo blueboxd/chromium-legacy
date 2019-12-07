@@ -179,7 +179,8 @@ class PRINTING_EXPORT PrintBackend
   // Allocates a print backend. If |print_backend_settings| is nullptr, default
   // settings will be used.
   static scoped_refptr<PrintBackend> CreateInstance(
-      const base::DictionaryValue* print_backend_settings);
+      const base::DictionaryValue* print_backend_settings,
+      const std::string& locale);
 
   // Test method to override the print backend for testing.  Caller should
   // retain ownership.
@@ -187,11 +188,18 @@ class PRINTING_EXPORT PrintBackend
 
  protected:
   friend class base::RefCountedThreadSafe<PrintBackend>;
+  explicit PrintBackend(const std::string& locale);
   virtual ~PrintBackend();
 
   // Provide the actual backend for CreateInstance().
   static scoped_refptr<PrintBackend> CreateInstanceImpl(
-      const base::DictionaryValue* print_backend_settings);
+      const base::DictionaryValue* print_backend_settings,
+      const std::string& locale);
+
+  const std::string& locale() const { return locale_; }
+
+ private:
+  const std::string locale_;
 };
 
 }  // namespace printing

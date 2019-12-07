@@ -88,10 +88,12 @@ class CONTENT_EXPORT JankMonitor
   void TearDownOnUIThread() override;
   void TearDownOnIOThread() override;
 
-  void WillRunTaskOnUIThread(const base::PendingTask* task) override;
+  void WillRunTaskOnUIThread(const base::PendingTask* task,
+                             bool was_blocked_or_low_priority) override;
   void DidRunTaskOnUIThread(const base::PendingTask* task) override;
 
-  void WillRunTaskOnIOThread(const base::PendingTask* task) override;
+  void WillRunTaskOnIOThread(const base::PendingTask* task,
+                             bool was_blocked_or_low_priority) override;
   void DidRunTaskOnIOThread(const base::PendingTask* task) override;
 
   void WillRunEventOnUIThread(const void* opaque_identifier) override;

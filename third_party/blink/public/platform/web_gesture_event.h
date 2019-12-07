@@ -42,13 +42,6 @@ class WebGestureEvent : public WebInputEvent {
   // field contains 0. See crbug.com/618738.
   uint32_t unique_touch_event_id;
 
-  // This field exists to allow BrowserPlugin to mark GestureScroll events as
-  // 'resent' to handle the case where an event is not consumed when first
-  // encountered; it should be handled differently by the plugin when it is
-  // sent for thesecond time. No code within Blink touches this, other than to
-  // plumb it through event conversions.
-  int resending_plugin_id;
-
   union {
     // Tap information must be set for GestureTap, GestureTapUnconfirmed,
     // and GestureDoubleTap events.
@@ -197,12 +190,10 @@ class WebGestureEvent : public WebInputEvent {
                   base::TimeTicks time_stamp,
                   WebGestureDevice device = WebGestureDevice::kUninitialized)
       : WebInputEvent(sizeof(WebGestureEvent), type, modifiers, time_stamp),
-        resending_plugin_id(-1),
         source_device_(device) {}
 
   WebGestureEvent()
       : WebInputEvent(sizeof(WebGestureEvent)),
-        resending_plugin_id(-1),
         source_device_(WebGestureDevice::kUninitialized) {}
 
   const WebFloatPoint& PositionInWidget() const { return position_in_widget_; }

@@ -10810,18 +10810,6 @@ interface WebGLUniformLocation
 interface WebGLVertexArrayObject
     attribute @@toStringTag
     method constructor
-interface WebGLVideoFrameMetadata
-    attribute @@toStringTag
-    getter captureTime
-    getter elapsedProcessingTime
-    getter expectedPresentationTime
-    getter height
-    getter presentationTime
-    getter presentationTimestamp
-    getter presentedFrames
-    getter rtpTimestamp
-    getter width
-    method constructor
 interface WebKitCSSMatrix : DOMMatrixReadOnly
     attribute @@toStringTag
     getter a

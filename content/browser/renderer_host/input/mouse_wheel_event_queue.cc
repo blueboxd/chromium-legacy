@@ -78,12 +78,6 @@ bool MouseWheelEventQueue::CanGenerateGestureScroll(
     return false;
   }
 
-  if (event_sent_for_gesture_ack_->event.resending_plugin_id != -1) {
-    TRACE_EVENT_INSTANT0("input", "Wheel Event Resending Plugin Id Is Not -1",
-                         TRACE_EVENT_SCOPE_THREAD);
-    return false;
-  }
-
   if (scrolling_device_ != blink::WebGestureDevice::kUninitialized &&
       scrolling_device_ != blink::WebGestureDevice::kTouchpad) {
     TRACE_EVENT_INSTANT0("input",
@@ -136,7 +130,6 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
         event_sent_for_gesture_ack_->event.PositionInWidget());
     scroll_update.SetPositionInScreen(
         event_sent_for_gesture_ack_->event.PositionInScreen());
-    scroll_update.resending_plugin_id = -1;
 
 #if !defined(OS_MACOSX)
     // Swap X & Y if Shift is down and when there is no horizontal movement.
@@ -301,7 +294,6 @@ void MouseWheelEventQueue::SendScrollEnd(WebGestureEvent update_event,
   WebGestureEvent scroll_end(update_event);
   scroll_end.SetTimeStamp(ui::EventTimeForNow());
   scroll_end.SetType(WebInputEvent::kGestureScrollEnd);
-  scroll_end.resending_plugin_id = -1;
   scroll_end.data.scroll_end.synthetic = synthetic;
   scroll_end.data.scroll_end.inertial_phase =
       update_event.data.scroll_update.inertial_phase;

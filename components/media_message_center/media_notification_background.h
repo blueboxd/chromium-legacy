@@ -40,6 +40,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationBackground
   void UpdateArtwork(const gfx::ImageSkia& image);
   bool UpdateCornerRadius(int top_radius, int bottom_radius);
   bool UpdateArtworkMaxWidthPct(double max_width_pct);
+  void UpdateFavicon(const gfx::ImageSkia& icon);
 
   SkColor GetBackgroundColor(const views::View& owner) const;
   SkColor GetForegroundColor(const views::View& owner) const;
@@ -50,6 +51,9 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationBackground
   FRIEND_TEST_ALL_PREFIXES(MediaNotificationBackgroundRTLTest,
                            BoundsSanityCheck);
 
+  // Shade factor used on favicon dominant color before set as background color.
+  static constexpr double kBackgroundFaviconColorShadeFactor = 0.55;
+
   int GetArtworkWidth(const gfx::Size& view_size) const;
   int GetArtworkVisibleWidth(const gfx::Size& view_size) const;
   gfx::Rect GetArtworkBounds(const views::View& owner) const;
@@ -58,10 +62,12 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationBackground
   SkPoint GetGradientStartPoint(const gfx::Rect& draw_bounds) const;
   SkPoint GetGradientEndPoint(const gfx::Rect& draw_bounds) const;
   SkColor GetDefaultBackgroundColor(const views::View& owner) const;
+  void UpdateColorsInternal();
 
   int top_radius_;
   int bottom_radius_;
 
+  gfx::ImageSkia favicon_;
   gfx::ImageSkia artwork_;
   double artwork_max_width_pct_;
 

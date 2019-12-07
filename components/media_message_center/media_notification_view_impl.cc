@@ -383,6 +383,13 @@ void MediaNotificationViewImpl::UpdateWithMediaArtwork(
   SchedulePaint();
 }
 
+void MediaNotificationViewImpl::UpdateWithFavicon(const gfx::ImageSkia& icon) {
+  GetMediaNotificationBackground()->UpdateFavicon(icon);
+
+  UpdateForegroundColor();
+  SchedulePaint();
+}
+
 views::Button* MediaNotificationViewImpl::GetHeaderRowForTesting() const {
   return header_row_;
 }

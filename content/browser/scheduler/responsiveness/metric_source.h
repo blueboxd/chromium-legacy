@@ -49,12 +49,14 @@ class CONTENT_EXPORT MetricSource {
 
     // These methods are called by the MessageLoopObserver of the UI thread to
     // allow Delegate to collect metadata about the tasks being run.
-    virtual void WillRunTaskOnUIThread(const base::PendingTask* task) = 0;
+    virtual void WillRunTaskOnUIThread(const base::PendingTask* task,
+                                       bool was_blocked_or_low_priority) = 0;
     virtual void DidRunTaskOnUIThread(const base::PendingTask* task) = 0;
 
     // These methods are called by the MessageLoopObserver of the IO thread to
     // allow Delegate to collect metadata about the tasks being run.
-    virtual void WillRunTaskOnIOThread(const base::PendingTask* task) = 0;
+    virtual void WillRunTaskOnIOThread(const base::PendingTask* task,
+                                       bool was_blocked_or_low_priority) = 0;
     virtual void DidRunTaskOnIOThread(const base::PendingTask* task) = 0;
 
     // These methods are called by the NativeEventObserver of the UI thread to

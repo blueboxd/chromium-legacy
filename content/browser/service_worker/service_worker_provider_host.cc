@@ -57,7 +57,7 @@ void CreateQuicTransportConnectorImpl(
 
 // static
 base::WeakPtr<ServiceWorkerProviderHost>
-ServiceWorkerProviderHost::PreCreateNavigationHost(
+ServiceWorkerProviderHost::CreateForWindow(
     base::WeakPtr<ServiceWorkerContextCore> context,
     bool are_ancestors_secure,
     int frame_tree_node_id,

@@ -76,7 +76,6 @@ blink_core_sources("exported") {
     "web_shared_worker_impl.h",
     "web_text_checking_result.cc",
     "web_user_gesture_indicator.cc",
-    "web_user_gesture_token.cc",
     "web_v8_context_snapshot.cc",
     "web_view_impl.cc",
     "web_view_impl.h",

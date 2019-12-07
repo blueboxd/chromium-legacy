@@ -20,10 +20,6 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace chromeos {
 
 namespace multidevice_setup {
@@ -39,7 +35,7 @@ class MultiDeviceSetupClientImpl : public MultiDeviceSetupClient,
     static void SetInstanceForTesting(Factory* test_factory);
     virtual ~Factory();
     virtual std::unique_ptr<MultiDeviceSetupClient> BuildInstance(
-        service_manager::Connector* connector);
+        mojo::PendingRemote<mojom::MultiDeviceSetup> remote_setup);
 
    private:
     static Factory* test_factory_;
@@ -81,7 +77,8 @@ class MultiDeviceSetupClientImpl : public MultiDeviceSetupClient,
  private:
   friend class MultiDeviceSetupClientImplTest;
 
-  explicit MultiDeviceSetupClientImpl(service_manager::Connector* connector);
+  explicit MultiDeviceSetupClientImpl(
+      mojo::PendingRemote<mojom::MultiDeviceSetup> remote_setup);
 
   void OnGetEligibleHostDevicesCompleted(
       GetEligibleHostDevicesCallback callback,

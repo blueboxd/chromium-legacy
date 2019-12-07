@@ -68,17 +68,22 @@ static_library("multidevice_setup") {
     "//chromeos/services/multidevice_setup/public/cpp:auth_token_validator",
     "//chromeos/services/multidevice_setup/public/cpp:oobe_completion_tracker",
     "//chromeos/services/multidevice_setup/public/cpp:prefs",
-    "//chromeos/services/multidevice_setup/public/mojom",
     "//chromeos/services/secure_channel/public/cpp/client",
     "//chromeos/services/secure_channel/public/mojom",
     "//components/pref_registry",
     "//components/prefs:prefs",
-    "//services/service_manager/public/cpp",
+    "//url",
+  ]
+
+  public_deps = [
+    "//chromeos/services/multidevice_setup/public/mojom",
   ]
 
   visibility = [
     ":*",
     "//chrome/browser",
+    "//chrome/browser/chromeos",
+    "//chrome/browser/ui",
     "//chromeos/services/multidevice_setup/public/cpp:test_support",
     "//chromeos/services/multidevice_setup/public/cpp:unit_tests",
   ]
@@ -154,7 +159,6 @@ source_set("unit_tests") {
     "//chromeos/services/multidevice_setup/public/mojom",
     "//chromeos/services/secure_channel/public/cpp/client:test_support",
     "//components/sync_preferences:test_support",
-    "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

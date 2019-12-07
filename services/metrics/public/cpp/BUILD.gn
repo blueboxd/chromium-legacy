@@ -37,7 +37,6 @@ component("metrics_cpp") {
 
   deps = [
     "//mojo/public/cpp/bindings",
-    "//services/service_manager/public/cpp",
     "//third_party/metrics_proto",
   ]
 }
@@ -95,18 +94,5 @@ static_library("ukm_builders") {
     ":gen_ukm_builders",
     ":metrics_cpp",
     "//base",
-  ]
-}
-
-source_set("manifest") {
-  sources = [
-    "manifest.cc",
-    "manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//services/metrics/public/mojom",
-    "//services/service_manager/public/cpp",
   ]
 }

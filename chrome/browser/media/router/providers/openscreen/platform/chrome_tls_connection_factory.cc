@@ -21,14 +21,14 @@
 #include "third_party/openscreen/src/platform/base/tls_listen_options.h"
 
 namespace openscreen {
-namespace platform {
+
 std::unique_ptr<TlsConnectionFactory> TlsConnectionFactory::CreateFactory(
     Client* client,
     TaskRunner* task_runner) {
   return std::make_unique<media_router::ChromeTlsConnectionFactory>(
       client, task_runner, nullptr /* network context */);
 }
-}  // namespace platform
+
 }  // namespace openscreen
 
 namespace media_router {
@@ -36,9 +36,9 @@ namespace media_router {
 namespace {
 
 using openscreen::IPEndpoint;
-using openscreen::platform::TlsConnectOptions;
-using openscreen::platform::TlsCredentials;
-using openscreen::platform::TlsListenOptions;
+using openscreen::TlsConnectOptions;
+using openscreen::TlsCredentials;
+using openscreen::TlsListenOptions;
 
 constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("open_screen_tls_message", R"(
@@ -109,15 +109,15 @@ void ChromeTlsConnectionFactory::Listen(const IPEndpoint& local_address,
 }
 
 ChromeTlsConnectionFactory::ChromeTlsConnectionFactory(
-    openscreen::platform::TlsConnectionFactory::Client* client,
-    openscreen::platform::TaskRunner* task_runner,
+    openscreen::TlsConnectionFactory::Client* client,
+    openscreen::TaskRunner* task_runner,
     network::mojom::NetworkContext* network_context)
     : client_(client),
       task_runner_(task_runner),
       network_context_(network_context) {}
 
 ChromeTlsConnectionFactory::TcpConnectRequest::TcpConnectRequest(
-    openscreen::platform::TlsConnectOptions options_in,
+    openscreen::TlsConnectOptions options_in,
     openscreen::IPEndpoint remote_address_in,
     mojo::Remote<network::mojom::TCPConnectedSocket> tcp_socket_in)
     : options(std::move(options_in)),

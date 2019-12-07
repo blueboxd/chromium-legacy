@@ -8,8 +8,8 @@ import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.VisibleForTesting;
 
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
-import org.chromium.chrome.browser.feed.library.common.functional.Supplier;
+import org.chromium.base.Consumer;
+import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.feed.library.piet.host.TypefaceProvider.GoogleSansTypeface;
 import org.chromium.components.feed.core.proto.ui.piet.ImagesProto.Image;
 

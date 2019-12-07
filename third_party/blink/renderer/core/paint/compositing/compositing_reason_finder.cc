@@ -165,8 +165,10 @@ bool CompositingReasonFinder::RequiresCompositingFor3DTransform(
     return false;
 
   // Don't composite "trivial" 3D transforms such as translateZ(0).
-  if (base::FeatureList::IsEnabled(blink::features::kDoNotCompositeTrivial3D))
+  if (Platform::Current()->IsLowEndDevice() ||
+      base::FeatureList::IsEnabled(blink::features::kDoNotCompositeTrivial3D)) {
     return layout_object.StyleRef().HasNonTrivial3DTransformOperation();
+  }
 
   return layout_object.StyleRef().Has3DTransformOperation();
 }

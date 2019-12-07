@@ -45,7 +45,6 @@ js_type_check("closure_compile") {
     ":oobe_welcome",
     ":recommend_apps",
     ":saml_confirm_password",
-    ":saml_interstitial",
     ":sync_consent",
     ":throbber_notice",
     ":update_required_card",
@@ -320,12 +319,6 @@ js_library("recommend_apps") {
 }
 
 js_library("saml_confirm_password") {
-}
-
-js_library("saml_interstitial") {
-  deps = [
-    ":html-echo",
-  ]
 }
 
 js_library("sync_consent") {

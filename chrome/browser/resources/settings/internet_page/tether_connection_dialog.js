@@ -7,6 +7,30 @@
 
 const mojom = chromeos.networkConfig.mojom;
 
+
+/**
+ * Maps signal strength from [0, 100] to [0, 4] which represents the number
+ * of bars in the signal icon displayed to the user. This is used to select
+ * the correct icon.
+ * @param {number} strength The signal strength from [0 - 100].
+ * @return {number} The number of signal bars from [0, 4] as an integer
+ */
+function signalStrengthToBarCount(strength) {
+  if (strength > 75) {
+    return 4;
+  }
+  if (strength > 50) {
+    return 3;
+  }
+  if (strength > 25) {
+    return 2;
+  }
+  if (strength > 0) {
+    return 1;
+  }
+  return 0;
+}
+
 Polymer({
   is: 'tether-connection-dialog',
 
@@ -61,7 +85,7 @@ Polymer({
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties|undefined} managedProperties
    * @return {boolean}
    * @private
    */
@@ -73,32 +97,48 @@ Polymer({
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties|undefined} managedProperties
    * @return {string} The battery percentage integer value converted to a
    *     string. Note that this will not return a string with a "%" suffix.
    * @private
    */
   getBatteryPercentageAsString_: function(managedProperties) {
-    return managedProperties.typeProperties.tether.batteryPercentage.toString();
+    return managedProperties ?
+        managedProperties.typeProperties.tether.batteryPercentage.toString() :
+        '0';
   },
 
   /**
    * Retrieves an image that corresponds to signal strength of the tether host.
    * Custom icons are used here instead of a <network-icon> because this
    * dialog uses a special color scheme.
-   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties|undefined} managedProperties
    * @return {string} The name of the icon to be used to represent the network's
    *     signal strength.
    */
   getSignalStrengthIconName_: function(managedProperties) {
-    const signalStrength =
-        managedProperties.typeProperties.tether.signalStrength;
+    const signalStrength = managedProperties ?
+        managedProperties.typeProperties.tether.signalStrength :
+        0;
     return 'os-settings:signal-cellular-' +
-        Math.min(4, Math.max(signalStrength, 0)) + '-bar';
+        signalStrengthToBarCount(signalStrength) + '-bar';
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
+   * Retrieves a localized accessibility label for the signal strength.
+   * @param {!mojom.ManagedProperties|undefined} managedProperties
+   * @return {string} The localized signal strength label.
+   */
+  getSignalStrengthLabel_: function(managedProperties) {
+    const signalStrength = managedProperties ?
+        managedProperties.typeProperties.tether.signalStrength :
+        0;
+    const networkTypeString = this.i18n('OncTypeTether');
+    return this.i18n('networkStrength', networkTypeString, signalStrength);
+  },
+
+  /**
+   * @param {!mojom.ManagedProperties|undefined} managedProperties
    * @return {string}
    * @private
    */
@@ -107,47 +147,55 @@ Polymer({
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties|undefined} managedProperties
    * @return {string}
    * @private
    */
   getBatteryPercentageString_: function(managedProperties) {
-    return this.i18n(
-        'tetherConnectionBatteryPercentage',
-        this.getBatteryPercentageAsString_(managedProperties));
+    return managedProperties ?
+        this.i18n(
+            'tetherConnectionBatteryPercentage',
+            this.getBatteryPercentageAsString_(managedProperties)) :
+        '';
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties|undefined} managedProperties
    * @return {string}
    * @private
    */
   getExplanation_: function(managedProperties) {
-    return this.i18n(
-        'tetherConnectionExplanation',
-        HTMLEscape(OncMojo.getNetworkName(managedProperties)));
+    return managedProperties ?
+        this.i18n(
+            'tetherConnectionExplanation',
+            HTMLEscape(OncMojo.getNetworkName(managedProperties))) :
+        '';
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties|undefined} managedProperties
    * @return {string}
    * @private
    */
   getDescriptionTitle_: function(managedProperties) {
-    return this.i18n(
-        'tetherConnectionDescriptionTitle',
-        HTMLEscape(OncMojo.getNetworkName(managedProperties)));
+    return managedProperties ?
+        this.i18n(
+            'tetherConnectionDescriptionTitle',
+            HTMLEscape(OncMojo.getNetworkName(managedProperties))) :
+        '';
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties|undefined} managedProperties
    * @return {string}
    * @private
    */
   getBatteryDescription_: function(managedProperties) {
-    return this.i18n(
-        'tetherConnectionDescriptionBattery',
-        this.getBatteryPercentageAsString_(managedProperties));
+    return managedProperties ?
+        this.i18n(
+            'tetherConnectionDescriptionBattery',
+            this.getBatteryPercentageAsString_(managedProperties)) :
+        '';
   },
 });
 })();

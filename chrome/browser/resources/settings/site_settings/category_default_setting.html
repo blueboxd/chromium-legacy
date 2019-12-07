@@ -11,17 +11,24 @@
   <template>
     <style include="settings-shared"></style>
     <settings-toggle-button id="toggle"
-        class="first"
-        pref="{{controlParams_}}" label="[[optionLabel_]]"
-        sub-label="[[optionDescription]]"
+        class="first" pref="{{controlParams_}}"
+        label="[[optionLabel_]]" sub-label="[[optionDescription_]]"
         disabled$="[[isToggleDisabled_(category)]]">
     </settings-toggle-button>
-    <template is="dom-if" if="[[subOptionLabel]]">
+    <template is="dom-if" if="[[showSubOptionAsToggle_(subOptionMode)]]">
       <settings-toggle-button id="subOptionToggle"
-          pref="{{subControlParams_}}"
-          label="[[subOptionLabel]]" sub-label="[[subOptionDescription]]"
+          pref="{{subControlParams_}}" label="[[subOptionLabel]]"
+          sub-label="[[subOptionDescription]]"
           disabled$="[[!controlParams_.value]]">
       </settings-toggle-button>
+    </template>
+    <template is="dom-if" if="[[showSubOptionAsCheckbox_(subOptionMode)]]">
+     <div class="settings-box continuation" hidden$="[[!controlParams_.value]]">
+        <settings-checkbox hidden="[[!controlParams_.value]]"
+            id="subOptionCheckbox" pref="{{subOptionAsCheckboxPref}}"
+            label="[[subOptionLabel]]" sub-label="[[subOptionDescription]]">
+        </settings-checkbox>
+     </div>
     </template>
   </template>
   <script src="category_default_setting.js"></script>

@@ -91,7 +91,6 @@ source_set("v4l2") {
     "//media/gpu:buildflags",
     "//media/gpu:common",
     "//media/gpu/chromeos:common",
-    "//media/gpu/linux:common",
     "//third_party/libyuv",
     "//ui/gfx/geometry",
     "//ui/ozone",

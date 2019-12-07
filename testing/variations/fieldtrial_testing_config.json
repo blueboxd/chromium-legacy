@@ -1378,6 +1378,12 @@
                     },
                     "enable_features": [
                         "BlinkSchedulerVeryHighPriorityForCompositingAfterDelay"
+                    ],
+                    "disable_features": [
+                        "BlinkSchedulerPrioritizeCompositingUntilBeginMainFrame",
+                        "BlinkSchedulerVeryHighPriorityForCompositingAlternating",
+                        "PrioritizeBootstrapTasks",
+                        "PrioritizeCompositingAndLoadingDuringEarlyLoading"
                     ]
                 }
             ]
@@ -7116,6 +7122,26 @@
             ]
         }
     ],
+    "VerifyHTMLFetchedFromAppCacheBeforeDelay": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "ios",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "VerifyHTMLFetchedFromAppCacheBeforeDelay"
+                    ]
+                }
+            ]
+        }
+    ],
     "VideoCaptureService": [
         {
             "platforms": [
@@ -7561,24 +7587,6 @@
                     "enable_features": [
                         "WebRtcHideLocalIpsWithMdns"
                     ]
-                }
-            ]
-        }
-    ],
-    "WebRTC-KeepAbsSendTimeExtension": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "ios",
-                "android",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled"
                 }
             ]
         }

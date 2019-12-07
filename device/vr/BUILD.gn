@@ -228,6 +228,8 @@ if (enable_vr) {
         "openxr/openxr_device.h",
         "openxr/openxr_input_helper.cc",
         "openxr/openxr_input_helper.h",
+        "openxr/openxr_path_helper.cc",
+        "openxr/openxr_path_helper.h",
         "openxr/openxr_render_loop.cc",
         "openxr/openxr_render_loop.h",
         "openxr/openxr_statics.cc",

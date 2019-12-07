@@ -285,4 +285,10 @@ TEST(MediaRouterMetricsTest, RecordIconStateAtDialogOpen) {
       MediaRouterMetrics::kHistogramUiDialogIconStateAtOpen);
 }
 
+TEST(MediaRouterMetricsTest, RecordIconStateAtInit) {
+  TestRecordBooleanMetric(
+      base::BindRepeating(&MediaRouterMetrics::RecordIconStateAtInit),
+      MediaRouterMetrics::kHistogramUiIconStateAtInit);
+}
+
 }  // namespace media_router

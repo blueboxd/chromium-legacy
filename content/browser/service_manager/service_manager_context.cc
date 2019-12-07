@@ -63,8 +63,6 @@
 #include "services/media_session/media_session_service.h"
 #include "services/media_session/public/cpp/features.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
-#include "services/metrics/metrics_mojo_service.h"
-#include "services/metrics/public/mojom/constants.mojom.h"
 #include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -544,10 +542,6 @@ ServiceManagerContext::ServiceManagerContext(
       service_manager_thread_task_runner_));
   auto* system_connection = ServiceManagerConnection::GetForProcess();
   SetSystemConnector(system_connection->GetConnector()->Clone());
-
-  RegisterInProcessService(metrics::mojom::kMetricsServiceName,
-                           service_manager_thread_task_runner_,
-                           base::BindRepeating(&metrics::CreateMetricsService));
 
   if (base::FeatureList::IsEnabled(
           media_session::features::kMediaSessionService)) {

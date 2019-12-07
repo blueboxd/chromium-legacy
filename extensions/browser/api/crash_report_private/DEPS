@@ -1,5 +1,6 @@
 include_rules = [
   "+components/crash/content/app/client_upload_info.h",
+  "+components/feedback/anonymizer_tool.h",
 ]
 
 specific_include_rules = {

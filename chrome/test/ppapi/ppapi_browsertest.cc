@@ -820,6 +820,7 @@ class MockNetworkContext : public network::TestNetworkContext {
   }
 
   void ResolveHost(const net::HostPortPair& host,
+                   const net::NetworkIsolationKey& network_isolation_key,
                    network::mojom::ResolveHostParametersPtr optional_parameters,
                    mojo::PendingRemote<network::mojom::ResolveHostClient>
                        pending_response_client) override {

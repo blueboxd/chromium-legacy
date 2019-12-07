@@ -140,6 +140,13 @@ public class StatusView extends LinearLayout {
     }
 
     /**
+     * @return Whether search engine status icon is visible.
+     */
+    public boolean isSearchEngineStatusIconVisible() {
+        return mIconView.getVisibility() == VISIBLE;
+    }
+
+    /**
      * Set the composite touch delegate here to which this view's touch delegate will be added.
      * @param compositeTouchDelegate The parent's CompositeTouchDelegate to be used.
      */

@@ -227,18 +227,17 @@ void LoadingPredictor::HandleOmniboxHint(const GURL& url, bool preconnectable) {
   if (!url.is_valid() || !url.has_host() || !IsPreconnectAllowed(profile_))
     return;
 
-  GURL origin = url.GetOrigin();
+  url::Origin origin = url::Origin::Create(url);
   bool is_new_origin = origin != last_omnibox_origin_;
   last_omnibox_origin_ = origin;
+  net::NetworkIsolationKey network_isolation_key(origin, origin);
   base::TimeTicks now = base::TimeTicks::Now();
   if (preconnectable) {
     if (is_new_origin || now - last_omnibox_preconnect_time_ >=
                              kMinDelayBetweenPreconnectRequests) {
       last_omnibox_preconnect_time_ = now;
-      // Not to be confused with |origin|.
-      url::Origin url_origin = url::Origin::Create(url);
-      preconnect_manager()->StartPreconnectUrl(
-          url, true, net::NetworkIsolationKey(url_origin, url_origin));
+      preconnect_manager()->StartPreconnectUrl(url, true,
+                                               network_isolation_key);
     }
     return;
   }
@@ -246,7 +245,7 @@ void LoadingPredictor::HandleOmniboxHint(const GURL& url, bool preconnectable) {
   if (is_new_origin || now - last_omnibox_preresolve_time_ >=
                            kMinDelayBetweenPreresolveRequests) {
     last_omnibox_preresolve_time_ = now;
-    preconnect_manager()->StartPreresolveHost(url);
+    preconnect_manager()->StartPreresolveHost(url, network_isolation_key);
   }
 }
 

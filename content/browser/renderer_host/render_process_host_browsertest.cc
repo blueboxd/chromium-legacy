@@ -1287,8 +1287,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, NoFramesSeenPriorityTest) {
   RenderProcessHost::SetRunRendererInProcess(true);
   RenderProcessHostImpl* process = static_cast<RenderProcessHostImpl*>(
       RenderProcessHostImpl::CreateRenderProcessHost(
-          ShellContentBrowserClient::Get()->browser_context(), nullptr, nullptr,
-          false /* is_for_guests_only */));
+          ShellContentBrowserClient::Get()->browser_context(), nullptr,
+          nullptr));
   DCHECK(process);
   RenderProcessHost::SetRunRendererInProcess(false);
 
@@ -1305,8 +1305,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, LowPriorityFramesDisabled) {
   RenderProcessHost::SetRunRendererInProcess(true);
   RenderProcessHostImpl* process = static_cast<RenderProcessHostImpl*>(
       RenderProcessHostImpl::CreateRenderProcessHost(
-          ShellContentBrowserClient::Get()->browser_context(), nullptr, nullptr,
-          false /* is_for_guests_only */));
+          ShellContentBrowserClient::Get()->browser_context(), nullptr,
+          nullptr));
   // It starts off as normal priority.
   EXPECT_FALSE(process->IsProcessBackgrounded());
   // With the feature off it stays low priority when adding low priority frames.
@@ -1331,8 +1331,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, PriorityOverride) {
   RenderProcessHost::SetRunRendererInProcess(true);
   RenderProcessHostImpl* process = static_cast<RenderProcessHostImpl*>(
       RenderProcessHostImpl::CreateRenderProcessHost(
-          ShellContentBrowserClient::Get()->browser_context(), nullptr, nullptr,
-          false /* is_for_guests_only */));
+          ShellContentBrowserClient::Get()->browser_context(), nullptr,
+          nullptr));
 
   // It starts off as normal priority with no override.
   EXPECT_FALSE(process->HasPriorityOverride());
@@ -1373,8 +1373,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, PriorityOverride) {
 // is called.
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ConstructedButNotInitializedYet) {
   RenderProcessHost* process = RenderProcessHostImpl::CreateRenderProcessHost(
-      ShellContentBrowserClient::Get()->browser_context(), nullptr, nullptr,
-      false /* is_for_guests_only */);
+      ShellContentBrowserClient::Get()->browser_context(), nullptr, nullptr);
 
   // Just verifying that the arguments of CreateRenderProcessHost got processed
   // correctly.
@@ -1404,8 +1403,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ConstructedButNotInitializedYet) {
 // This test verifies that a fast shutdown is possible for a starting process.
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, FastShutdownForStartingProcess) {
   RenderProcessHost* process = RenderProcessHostImpl::CreateRenderProcessHost(
-      ShellContentBrowserClient::Get()->browser_context(), nullptr, nullptr,
-      false /* is_for_guests_only */);
+      ShellContentBrowserClient::Get()->browser_context(), nullptr, nullptr);
   process->Init();
   EXPECT_TRUE(process->FastShutdownIfPossible());
   process->Cleanup();
@@ -1428,8 +1426,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostFramePriorityTest,
   RenderProcessHost::SetRunRendererInProcess(true);
   RenderProcessHostImpl* process = static_cast<RenderProcessHostImpl*>(
       RenderProcessHostImpl::CreateRenderProcessHost(
-          ShellContentBrowserClient::Get()->browser_context(), nullptr, nullptr,
-          false /* is_for_guests_only */));
+          ShellContentBrowserClient::Get()->browser_context(), nullptr,
+          nullptr));
   // For these tests, assume something is always visible.
   SetVisibleClients(process, 1);
   // When no frames are attached, it's not low priority.
@@ -1495,8 +1493,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostFramePriorityTest,
   RenderProcessHost::SetRunRendererInProcess(true);
   RenderProcessHostImpl* process = static_cast<RenderProcessHostImpl*>(
       RenderProcessHostImpl::CreateRenderProcessHost(
-          ShellContentBrowserClient::Get()->browser_context(), nullptr, nullptr,
-          false /* is_for_guests_only */));
+          ShellContentBrowserClient::Get()->browser_context(), nullptr,
+          nullptr));
   // For these tests, assume something is always visible.
   SetVisibleClients(process, 1);
   // When no frames are attached, it's not low priority.
@@ -1525,8 +1523,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostFramePriorityTest,
   RenderProcessHost::SetRunRendererInProcess(true);
   RenderProcessHostImpl* process = static_cast<RenderProcessHostImpl*>(
       RenderProcessHostImpl::CreateRenderProcessHost(
-          ShellContentBrowserClient::Get()->browser_context(), nullptr, nullptr,
-          false /* is_for_guests_only */));
+          ShellContentBrowserClient::Get()->browser_context(), nullptr,
+          nullptr));
   // For these tests, assume something is always visible.
   SetVisibleClients(process, 1);
   // When no frames are attached, it's not low priority.

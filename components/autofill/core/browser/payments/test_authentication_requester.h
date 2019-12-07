@@ -44,6 +44,7 @@ class TestAuthenticationRequester
   // CreditCardFIDOAuthenticator::Requester:
   void OnFIDOAuthenticationComplete(bool did_succeed,
                                     const CreditCard* card = nullptr) override;
+  void OnFidoAuthorizationComplete(bool did_succeed) override;
 
   void IsUserVerifiableCallback(bool is_user_verifiable);
 #endif

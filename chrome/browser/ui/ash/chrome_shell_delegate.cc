@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
+#include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/chrome_accessibility_delegate.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "ui/aura/window.h"
 #include "url/gurl.h"
 
@@ -70,6 +72,16 @@ void ChromeShellDelegate::BindNavigableContentsFactory(
     mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver) {
   ProfileManager::GetActiveUserProfile()->BindNavigableContentsFactory(
       std::move(receiver));
+}
+
+void ChromeShellDelegate::BindMultiDeviceSetup(
+    mojo::PendingReceiver<chromeos::multidevice_setup::mojom::MultiDeviceSetup>
+        receiver) {
+  chromeos::multidevice_setup::MultiDeviceSetupService* service =
+      chromeos::multidevice_setup::MultiDeviceSetupServiceFactory::
+          GetForProfile(ProfileManager::GetPrimaryUserProfile());
+  if (service)
+    service->BindMultiDeviceSetup(std::move(receiver));
 }
 
 ash::AccessibilityDelegate* ChromeShellDelegate::CreateAccessibilityDelegate() {

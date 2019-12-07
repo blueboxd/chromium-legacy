@@ -224,8 +224,9 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
       int32_t world_id = ISOLATED_WORLD_ID_GLOBAL) = 0;
 
   // This runs the JavaScript, but without restrictions. THIS IS ONLY FOR TESTS.
-  // This version adds a fake UserGestureIndicator to test functionality that
-  // requires such a user gesture. https://crbug.com/408426
+  // Unlike the method above, this one triggers a fake user activation
+  // notification to test functionalities that are gated by user
+  // activation.
   virtual void ExecuteJavaScriptWithUserGestureForTests(
       const base::string16& javascript,
       int32_t world_id = ISOLATED_WORLD_ID_GLOBAL) = 0;

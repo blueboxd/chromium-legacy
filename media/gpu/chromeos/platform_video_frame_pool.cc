@@ -10,7 +10,7 @@
 #include "base/optional.h"
 #include "base/task/post_task.h"
 #include "media/gpu/chromeos/gpu_buffer_layout.h"
-#include "media/gpu/linux/platform_video_frame_utils.h"
+#include "media/gpu/chromeos/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 
 namespace media {

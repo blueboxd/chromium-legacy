@@ -63,7 +63,7 @@ DemoModeResourcesRemover::RemovalResult RemoveDirectory(
   if (!base::DirectoryExists(path) || base::IsDirectoryEmpty(path))
     return DemoModeResourcesRemover::RemovalResult::kNotFound;
 
-  if (!base::DeleteFile(path, true /*recursive*/))
+  if (!base::DeleteFileRecursively(path))
     return DemoModeResourcesRemover::RemovalResult::kFailed;
 
   return DemoModeResourcesRemover::RemovalResult::kSuccess;

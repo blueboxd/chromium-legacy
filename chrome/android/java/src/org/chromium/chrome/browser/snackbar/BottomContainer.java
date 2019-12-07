@@ -96,7 +96,8 @@ public class BottomContainer
     }
 
     @Override
-    public void onBottomControlsHeightChanged(int bottomControlsHeight) {
+    public void onBottomControlsHeightChanged(
+            int bottomControlsHeight, int bottomControlsMinHeight) {
         setTranslationY(mBaseYOffset);
     }
 

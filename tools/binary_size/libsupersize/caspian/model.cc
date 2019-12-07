@@ -306,6 +306,10 @@ SectionId BaseSizeInfo::ShortSectionName(const char* section_name) {
 SizeInfo::SizeInfo() = default;
 SizeInfo::~SizeInfo() = default;
 
+bool SizeInfo::IsSparse() const {
+  return is_sparse;
+}
+
 DeltaSizeInfo::DeltaSizeInfo(const SizeInfo* before, const SizeInfo* after)
     : before(before), after(after) {}
 
@@ -313,10 +317,15 @@ DeltaSizeInfo::~DeltaSizeInfo() = default;
 DeltaSizeInfo::DeltaSizeInfo(const DeltaSizeInfo&) = default;
 DeltaSizeInfo& DeltaSizeInfo::operator=(const DeltaSizeInfo&) = default;
 
+bool DeltaSizeInfo::IsSparse() const {
+  return before->IsSparse() && after->IsSparse();
+}
+
 void TreeNode::WriteIntoJson(
     int depth,
     std::function<bool(const TreeNode* const& l, const TreeNode* const& r)>
         compare_func,
+    bool is_sparse,
     Json::Value* out) {
   if (symbol) {
     if (symbol->NumAliases() > 1) {
@@ -336,6 +345,14 @@ void TreeNode::WriteIntoJson(
     }
   } else {
     (*out)["idPath"] = id_path.ToString();
+
+    if (!is_sparse && !children.empty()) {
+      // Add tag to containers in which all child symbols were added/removed.
+      DiffStatus diff_status = node_stats.GetGlobalDiffStatus();
+      if (diff_status != DiffStatus::kUnchanged) {
+        (*out)["diffStatus"] = static_cast<uint8_t>(diff_status);
+      }
+    }
   }
   (*out)["shortNameIndex"] = short_name_index;
   std::string type;
@@ -365,7 +382,7 @@ void TreeNode::WriteIntoJson(
     // TODO: Support additional compare functions.
     std::sort(children.begin(), children.end(), compare_func);
     for (unsigned int i = 0; i < children.size(); i++) {
-      children[i]->WriteIntoJson(depth - 1, compare_func,
+      children[i]->WriteIntoJson(depth - 1, compare_func, is_sparse,
                                  &(*out)["children"][i]);
     }
   }
@@ -432,5 +449,31 @@ int32_t NodeStats::SumCount() const {
     count += pair.second.count;
   }
   return count;
+}
+
+int32_t NodeStats::SumAdded() const {
+  int32_t count = 0;
+  for (auto& pair : child_stats) {
+    count += pair.second.added;
+  }
+  return count;
+}
+
+int32_t NodeStats::SumRemoved() const {
+  int32_t count = 0;
+  for (auto& pair : child_stats) {
+    count += pair.second.removed;
+  }
+  return count;
+}
+
+DiffStatus NodeStats::GetGlobalDiffStatus() const {
+  int32_t count = SumCount();
+  if (SumAdded() == count) {
+    return DiffStatus::kAdded;
+  } else if (SumRemoved() == count) {
+    return DiffStatus::kRemoved;
+  }
+  return DiffStatus::kUnchanged;
 }
 }  // namespace caspian

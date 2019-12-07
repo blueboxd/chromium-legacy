@@ -13,6 +13,19 @@ enum ContentSecurityPolicyType {
   kEnforce
 };
 
+// The source from which the CSP header is coming from.
+enum ContentSecurityPolicySource {
+  // From the HTTP response's headers.
+  kHTTP,
+
+  // From the <meta> HTML tag with the "http-equiv" attribute.
+  kMeta,
+
+  // From an origin-policy file.
+  // Origin Policy spec: https://wicg.github.io/origin-policy/
+  kOriginPolicy
+};
+
 // A CSPSource represents an expression that matches a set of urls.
 // Examples of CSPSource:
 // - domain.example.com

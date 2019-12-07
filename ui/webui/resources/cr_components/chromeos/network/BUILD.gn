@@ -171,6 +171,7 @@ js_library("network_icon") {
   deps = [
     ":onc_mojo",
     "//ui/webui/resources/js:assert",
+    "//ui/webui/resources/js:i18n_behavior",
   ]
 }
 

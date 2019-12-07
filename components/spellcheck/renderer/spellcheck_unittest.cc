@@ -106,7 +106,7 @@ class SpellCheckTest : public testing::Test {
   static void FillSuggestions(
       const std::vector<std::vector<base::string16>>& suggestions_list,
       std::vector<base::string16>* optional_suggestions) {
-    SpellCheck::FillSuggestions(suggestions_list, optional_suggestions);
+    spellcheck::FillSuggestions(suggestions_list, optional_suggestions);
   }
 
 #if !defined(OS_MACOSX)

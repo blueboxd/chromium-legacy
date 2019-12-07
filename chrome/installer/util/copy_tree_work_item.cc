@@ -110,7 +110,7 @@ void CopyTreeWorkItem::RollbackImpl() {
   // If this does happen sometimes, we may consider using Move instead of
   // Delete here. For now we just log the error and continue with the
   // rest of rollback operation.
-  if (copied_to_dest_path_ && !base::DeleteFile(dest_path_, true)) {
+  if (copied_to_dest_path_ && !base::DeleteFileRecursively(dest_path_)) {
     LOG(ERROR) << "Can not delete " << dest_path_.value();
   }
   if (moved_to_backup_) {
@@ -121,7 +121,7 @@ void CopyTreeWorkItem::RollbackImpl() {
     }
   }
   if (copied_to_alternate_path_ &&
-      !base::DeleteFile(alternative_path_, true)) {
+      !base::DeleteFileRecursively(alternative_path_)) {
     LOG(ERROR) << "Can not delete " << alternative_path_.value();
   }
 }

@@ -1606,6 +1606,13 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
       {"tetherConnectionConnectButton",
        IDS_SETTINGS_INTERNET_TETHER_CONNECTION_CONNECT_BUTTON},
       {"tetherEnableBluetooth", IDS_ENABLE_BLUETOOTH},
+      {"ethernetNetwork", IDS_SETTINGS_INTERNET_ETHERNET_NETWORK},
+      {"vpnNetwork", IDS_SETTINGS_INTERNET_VPN_NETWORK},
+      {"networkOff", IDS_SETTINGS_INTERNET_NETWORK_OFF},
+      {"networkNoNetwork", IDS_SETTINGS_INTERNET_NETWORK_NO_NETWORK},
+      {"networkConnecting", IDS_SETTINGS_INTERNET_NETWORK_CONNECTING},
+      {"networkNotConnected", IDS_SETTINGS_INTERNET_NETWORK_NOT_CONNECTED},
+      {"networkStrength", IDS_SETTINGS_INTERNET_NETWORK_STRENGTH},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
@@ -2812,6 +2819,12 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"siteSettingsMicrophoneLabel", IDS_SETTINGS_SITE_SETTINGS_MIC_LABEL},
     {"siteSettingsCategoryNotifications",
      IDS_SETTINGS_SITE_SETTINGS_NOTIFICATIONS},
+    {"siteSettingsNotificationsAsk",
+     IDS_SETTINGS_SITE_SETTINGS_NOTIFICATIONS_ASK},
+    {"siteSettingsNotificationsBlock",
+     IDS_SETTINGS_SITE_SETTINGS_NOTIFICATIONS_BLOCK},
+    {"siteSettingsEnableQuietNotificationPrompts",
+     IDS_SETTINGS_SITE_SETTINGS_ENABLE_QUIET_NOTIFICATION_PROMPTS},
     {"siteSettingsCategoryPopups", IDS_SETTINGS_SITE_SETTINGS_POPUPS},
     {"siteSettingsCategoryZoomLevels", IDS_SETTINGS_SITE_SETTINGS_ZOOM_LEVELS},
     {"siteSettingsAllSites", IDS_SETTINGS_SITE_SETTINGS_ALL_SITES},
@@ -3168,6 +3181,10 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "enableStoragePressureUI",
       base::FeatureList::IsEnabled(features::kStoragePressureUI));
+
+  html_source->AddBoolean(
+      "enableQuietNotificationPromptsSetting",
+      base::FeatureList::IsEnabled(features::kQuietNotificationPrompts));
 }
 
 #if defined(OS_CHROMEOS)

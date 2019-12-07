@@ -488,7 +488,7 @@ PointerEventFactory::~PointerEventFactory() {
 
 void PointerEventFactory::Clear() {
   for (int type = 0;
-       type <= ToInt(WebPointerProperties::PointerType::kLastEntry); type++) {
+       type <= ToInt(WebPointerProperties::PointerType::kMaxValue); type++) {
     primary_id_[type] = PointerEventFactory::kInvalidId;
     id_count_[type] = 0;
   }

@@ -139,15 +139,8 @@ PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
     return CreatePermissionDescriptor(PermissionName::BACKGROUND_FETCH);
   if (name == "idle-detection")
     return CreatePermissionDescriptor(PermissionName::IDLE_DETECTION);
-  if (name == "periodic-background-sync") {
-    if (!RuntimeEnabledFeatures::PeriodicBackgroundSyncEnabled(
-            ExecutionContext::From(script_state))) {
-      exception_state.ThrowTypeError(
-          "Periodic Background Sync is not enabled.");
-      return nullptr;
-    }
+  if (name == "periodic-background-sync")
     return CreatePermissionDescriptor(PermissionName::PERIODIC_BACKGROUND_SYNC);
-  }
   if (name == "wake-lock") {
     if (!RuntimeEnabledFeatures::WakeLockEnabled(
             ExecutionContext::From(script_state))) {

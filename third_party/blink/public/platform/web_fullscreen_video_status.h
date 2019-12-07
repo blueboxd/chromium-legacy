@@ -15,7 +15,7 @@ enum class WebFullscreenVideoStatus {
   // Video is fullscreen and is not allowed to enter Picture-in-Picture.
   kFullscreenAndPictureInPictureDisabled,
   // The maximum number of fullscreen status.
-  kMax = kFullscreenAndPictureInPictureDisabled,
+  kMaxValue = kFullscreenAndPictureInPictureDisabled,
 };
 
 }  // namespace blink

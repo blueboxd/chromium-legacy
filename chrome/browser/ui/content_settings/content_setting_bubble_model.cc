@@ -1635,18 +1635,13 @@ ContentSettingNotificationsBubbleModel::ContentSettingNotificationsBubbleModel(
           PermissionRequestManager::QuietUiReason::kTriggeredByCrowdDeny) {
     message_resource_id =
         IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_CROWD_DENY_DESCRIPTION;
-  }
-  set_message(l10n_util::GetStringUTF16(message_resource_id));
-
-  if (QuietNotificationPermissionUiConfig::UiFlavorToUse() ==
-      QuietNotificationPermissionUiConfig::UiFlavor::ANIMATED_ICON) {
-    base::RecordAction(
-        base::UserMetricsAction("Notifications.Quiet.AnimatedIconClicked"));
-  } else if (QuietNotificationPermissionUiConfig::UiFlavorToUse() ==
-             QuietNotificationPermissionUiConfig::UiFlavor::STATIC_ICON) {
     base::RecordAction(
         base::UserMetricsAction("Notifications.Quiet.StaticIconClicked"));
+  } else {
+    base::RecordAction(
+        base::UserMetricsAction("Notifications.Quiet.AnimatedIconClicked"));
   }
+  set_message(l10n_util::GetStringUTF16(message_resource_id));
 }
 
 ContentSettingNotificationsBubbleModel::

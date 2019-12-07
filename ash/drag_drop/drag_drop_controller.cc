@@ -27,10 +27,12 @@
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
+#include "ui/gfx/animation/animation_delegate_notifier.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -523,6 +525,7 @@ void DragDropController::Drop(aura::Window* target,
 
 void DragDropController::AnimationEnded(const gfx::Animation* animation) {
   cancel_animation_.reset();
+  cancel_animation_notifier_.reset();
 
   // By the time we finish animation, another drag/drop session may have
   // started. We do not want to destroy the drag image in that case.
@@ -584,8 +587,12 @@ void DragDropController::StartCanceledAnimation(
   drag_image_->SetTouchDragOperationHintOff();
   drag_image_initial_bounds_for_cancel_animation_ =
       drag_image_->GetBoundsInScreen();
-  cancel_animation_.reset(CreateCancelAnimation(
-      animation_duration, kCancelAnimationFrameRate, this));
+  cancel_animation_notifier_ = std::make_unique<
+      gfx::AnimationDelegateNotifier<views::AnimationDelegateViews>>(
+      this, drag_image_.get());
+  cancel_animation_.reset(
+      CreateCancelAnimation(animation_duration, kCancelAnimationFrameRate,
+                            cancel_animation_notifier_.get()));
   cancel_animation_->Start();
 }
 

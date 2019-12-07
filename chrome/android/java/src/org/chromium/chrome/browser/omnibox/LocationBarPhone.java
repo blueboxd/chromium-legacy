@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.omnibox;
 
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
@@ -17,6 +19,9 @@ import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.status.StatusView;
+import org.chromium.ui.interpolators.BakedBezierInterpolator;
+
+import java.util.List;
 
 /**
  * A location bar implementation specific for smaller/phone screens.
@@ -30,7 +35,6 @@ public class LocationBarPhone extends LocationBarLayout {
     private View mFirstVisibleFocusedView;
     private View mUrlBar;
     private StatusView mStatusView;
-    private View mIconView;
 
     private Runnable mKeyboardResizeModeTask;
 
@@ -91,7 +95,6 @@ public class LocationBarPhone extends LocationBarLayout {
             mStatusView = findViewById(R.id.location_bar_status);
             mStatusView.updateSearchEngineStatusIcon(
                     shouldShowSearchEngineLogo, isSearchEngineGoogle, searchEngineUrl);
-            mIconView = mStatusView.findViewById(R.id.location_bar_status_icon);
             mFirstVisibleFocusedView = mStatusView;
             updateUrlBarPaddingForSearchEngineIcon();
 
@@ -125,10 +128,38 @@ public class LocationBarPhone extends LocationBarLayout {
     }
 
     /**
-     * @return The first view visible when the location bar is focused.
+     * @return Width of child views before the first view that would be visible when location bar is
+     *         focused. The first visible, focused view should be either url bar or status icon.
      */
-    public View getFirstViewVisibleWhenFocused() {
-        return mFirstVisibleFocusedView;
+    public int getOffsetOfFirstVisibleFocusedView() {
+        int visibleWidth = 0;
+        for (int i = 0; i < getChildCount(); i++) {
+            View child = getChildAt(i);
+            if (child == mFirstVisibleFocusedView) break;
+            if (child.getVisibility() == GONE) continue;
+            visibleWidth += child.getMeasuredWidth();
+        }
+        return visibleWidth;
+    }
+
+    /**
+     * Populates fade animators of status icon for location bar focus change animation.
+     * @param animators The target list to add animators to.
+     * @param startDelayMs Start delay of fade animation in milliseconds.
+     * @param durationMs Duration of fade animation in milliseconds.
+     * @param targetAlpha Target alpha value.
+     */
+    public void populateFadeAnimations(
+            List<Animator> animators, long startDelayMs, long durationMs, float targetAlpha) {
+        for (int i = 0; i < getChildCount(); i++) {
+            View child = getChildAt(i);
+            if (child == mFirstVisibleFocusedView) break;
+            Animator animator = ObjectAnimator.ofFloat(child, ALPHA, targetAlpha);
+            animator.setStartDelay(startDelayMs);
+            animator.setDuration(durationMs);
+            animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
+            animators.add(animator);
+        }
     }
 
     /**
@@ -192,7 +223,7 @@ public class LocationBarPhone extends LocationBarLayout {
                 * (mStatusView.getEndPaddingPixelSizeForFocusState(true)
                         - mStatusView.getEndPaddingPixelSizeForFocusState(false));
 
-        if (!hasFocus && mIconView.getVisibility() == VISIBLE
+        if (!hasFocus && mStatusView.isSearchEngineStatusIconVisible()
                 && SearchEngineLogoUtils.currentlyOnNTP(mToolbarDataProvider)) {
             // When:
             // 1. unfocusing the LocationBar on the NTP.

@@ -1215,22 +1215,22 @@ TEST_F(DocumentTest, DocumentPolicyFeaturePolicyCoexist) {
   // document_policy need to return true for the feature to be
   // enabled.
   NavigateTo(KURL("https://www.example.com/"), "font-display-late-swap *", "");
-  GetDocument().SetDocumentPolicyForTesting(
+  GetDocument().GetSecurityContext().SetDocumentPolicyForTesting(
       DocumentPolicy::CreateWithRequiredPolicy(
           {{test_feature, blink::PolicyValue(true)}}));
   EXPECT_TRUE(GetDocument().IsFeatureEnabled(test_feature, report_option));
-  GetDocument().SetDocumentPolicyForTesting(
+  GetDocument().GetSecurityContext().SetDocumentPolicyForTesting(
       DocumentPolicy::CreateWithRequiredPolicy(
           {{test_feature, blink::PolicyValue(false)}}));
   EXPECT_FALSE(GetDocument().IsFeatureEnabled(test_feature, report_option));
 
   NavigateTo(KURL("https://www.example.com/"), "font-display-late-swap 'none'",
              "");
-  GetDocument().SetDocumentPolicyForTesting(
+  GetDocument().GetSecurityContext().SetDocumentPolicyForTesting(
       DocumentPolicy::CreateWithRequiredPolicy(
           {{test_feature, blink::PolicyValue(true)}}));
   EXPECT_FALSE(GetDocument().IsFeatureEnabled(test_feature, report_option));
-  GetDocument().SetDocumentPolicyForTesting(
+  GetDocument().GetSecurityContext().SetDocumentPolicyForTesting(
       DocumentPolicy::CreateWithRequiredPolicy(
           {{test_feature, blink::PolicyValue(false)}}));
   EXPECT_FALSE(GetDocument().IsFeatureEnabled(test_feature, report_option));

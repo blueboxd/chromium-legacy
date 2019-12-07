@@ -18,6 +18,7 @@
 #include "ash/login/ui/login_pin_view.h"
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/non_accessible_view.h"
+#include "ash/login/ui/parent_access_view.h"
 #include "ash/login/ui/pin_keyboard_animation.h"
 #include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/login_constants.h"
@@ -80,12 +81,6 @@ constexpr SkColor kChallengeResponseArrowBackgroundColor =
     SkColorSetARGB(0x2B, 0xFF, 0xFF, 0xFF);
 constexpr SkColor kChallengeResponseErrorColor =
     SkColorSetRGB(0xEE, 0x67, 0x5C);
-
-// The color of the disabled auth message bubble when the color extracted from
-// wallpaper is transparent or invalid (i.e. color calculation fails or is
-// disabled).
-constexpr SkColor kDisabledAuthMessageBubbleColor =
-    SkColorSetRGB(0x20, 0x21, 0x24);
 
 // Date time format containing only the day of the week, for example: "Tuesday".
 constexpr char kDayOfWeekOnlyTimeFormat[] = "EEEE";
@@ -711,12 +706,8 @@ class LoginAuthUserView::DisabledAuthMessageView : public views::View {
 
     cc::PaintFlags flags;
     flags.setStyle(cc::PaintFlags::kFill_Style);
-    SkColor color = Shell::Get()->wallpaper_controller()->GetProminentColor(
-        color_utils::ColorProfile(color_utils::LumaRange::NORMAL,
-                                  color_utils::SaturationRange::MUTED));
-    if (color == kInvalidWallpaperColor || color == SK_ColorTRANSPARENT)
-      color = kDisabledAuthMessageBubbleColor;
-    flags.setColor(color);
+    flags.setColor(
+        ParentAccessView::GetChildUserDialogColor(false /*using blur*/));
     canvas->DrawRoundRect(GetContentsBounds(),
                           kDisabledAuthMessageRoundedCornerRadiusDp, flags);
   }

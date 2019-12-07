@@ -32,8 +32,8 @@ namespace ui {
 class BitmapCursorOzone;
 class OSExchangeData;
 class WaylandConnection;
-class XDGPopupWrapper;
-class XDGSurfaceWrapper;
+class ShellPopupWrapper;
+class ShellSurfaceWrapper;
 
 namespace {
 class XDGShellObjectFactory;
@@ -60,8 +60,8 @@ class WaylandWindow : public PlatformWindow,
   void UpdateBufferScale(bool update_bounds);
 
   wl_surface* surface() const { return surface_.get(); }
-  XDGSurfaceWrapper* xdg_surface() const { return xdg_surface_.get(); }
-  XDGPopupWrapper* xdg_popup() const { return xdg_popup_.get(); }
+  ShellSurfaceWrapper* shell_surface() const { return shell_surface_.get(); }
+  ShellPopupWrapper* shell_popup() const { return shell_popup_.get(); }
 
   WaylandWindow* parent_window() const { return parent_window_; }
 
@@ -85,7 +85,7 @@ class WaylandWindow : public PlatformWindow,
   bool has_touch_focus() const { return has_touch_focus_; }
 
   // Set a child of this window. It is very important in case of nested
-  // xdg_popups as long as they must be destroyed in the back order.
+  // shell_popups as long as they must be destroyed in the back order.
   void set_child_window(WaylandWindow* window) { child_window_ = window; }
 
   // Set whether this window has an implicit grab (often referred to as capture
@@ -149,7 +149,7 @@ class WaylandWindow : public PlatformWindow,
   uint32_t DispatchEvent(const PlatformEvent& event) override;
 
   // Handles the configuration events coming from the surface (see
-  // |XDGSurfaceWrapperV5::Configure| and
+  // |XDGSurfaceWrapperStable::ConfigureTopLevel| and
   // |XDGSurfaceWrapperV6::ConfigureTopLevel|.  The width and height come in
   // DIP of the output that the surface is currently bound to.
   void HandleSurfaceConfigure(int32_t widht,
@@ -182,9 +182,9 @@ class WaylandWindow : public PlatformWindow,
   void MaybeTriggerPendingStateChange();
 
   // Creates a popup window, which is visible as a menu window.
-  void CreateXdgPopup();
+  void CreateShellPopup();
   // Creates a surface window, which is visible as a main window.
-  void CreateXdgSurface();
+  void CreateShellSurface();
   // Creates (if necessary) and show subsurface window, to host
   // tooltip's content.
   void CreateAndShowTooltipSubSurface();
@@ -237,8 +237,8 @@ class WaylandWindow : public PlatformWindow,
 
   // Wrappers around xdg v5 and xdg v6 objects. WaylandWindow doesn't
   // know anything about the version.
-  std::unique_ptr<XDGSurfaceWrapper> xdg_surface_;
-  std::unique_ptr<XDGPopupWrapper> xdg_popup_;
+  std::unique_ptr<ShellSurfaceWrapper> shell_surface_;
+  std::unique_ptr<ShellPopupWrapper> shell_popup_;
 
   // The current cursor bitmap (immutable).
   scoped_refptr<BitmapCursorOzone> bitmap_;

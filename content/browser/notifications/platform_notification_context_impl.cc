@@ -1064,10 +1064,7 @@ bool PlatformNotificationContextImpl::DestroyDatabase() {
   // Remove all files in the directory that the database was previously located
   // in, to make sure that any left-over files are gone as well.
   base::FilePath database_path = GetDatabasePath();
-  if (!database_path.empty())
-    return base::DeleteFile(database_path, true);
-
-  return true;
+  return database_path.empty() || base::DeleteFileRecursively(database_path);
 }
 
 base::FilePath PlatformNotificationContextImpl::GetDatabasePath() const {

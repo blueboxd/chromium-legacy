@@ -45,33 +45,12 @@ class PrintingEnumPolicyHandler : public TypeCheckingPolicyHandler {
   base::flat_map<std::string, Mode> policy_value_to_mode_;
 };
 
+#if defined(OS_CHROMEOS)
 class PrintingAllowedColorModesPolicyHandler
     : public PrintingEnumPolicyHandler<printing::ColorModeRestriction> {
  public:
   PrintingAllowedColorModesPolicyHandler();
   ~PrintingAllowedColorModesPolicyHandler() override;
-};
-
-class PrintingAllowedDuplexModesPolicyHandler
-    : public PrintingEnumPolicyHandler<printing::DuplexModeRestriction> {
- public:
-  PrintingAllowedDuplexModesPolicyHandler();
-  ~PrintingAllowedDuplexModesPolicyHandler() override;
-};
-
-class PrintingAllowedPinModesPolicyHandler
-    : public PrintingEnumPolicyHandler<printing::PinModeRestriction> {
- public:
-  PrintingAllowedPinModesPolicyHandler();
-  ~PrintingAllowedPinModesPolicyHandler() override;
-};
-
-class PrintingAllowedBackgroundGraphicsModesPolicyHandler
-    : public PrintingEnumPolicyHandler<
-          printing::BackgroundGraphicsModeRestriction> {
- public:
-  PrintingAllowedBackgroundGraphicsModesPolicyHandler();
-  ~PrintingAllowedBackgroundGraphicsModesPolicyHandler() override;
 };
 
 class PrintingColorDefaultPolicyHandler
@@ -81,6 +60,13 @@ class PrintingColorDefaultPolicyHandler
   ~PrintingColorDefaultPolicyHandler() override;
 };
 
+class PrintingAllowedDuplexModesPolicyHandler
+    : public PrintingEnumPolicyHandler<printing::DuplexModeRestriction> {
+ public:
+  PrintingAllowedDuplexModesPolicyHandler();
+  ~PrintingAllowedDuplexModesPolicyHandler() override;
+};
+
 class PrintingDuplexDefaultPolicyHandler
     : public PrintingEnumPolicyHandler<printing::DuplexModeRestriction> {
  public:
@@ -88,19 +74,18 @@ class PrintingDuplexDefaultPolicyHandler
   ~PrintingDuplexDefaultPolicyHandler() override;
 };
 
+class PrintingAllowedPinModesPolicyHandler
+    : public PrintingEnumPolicyHandler<printing::PinModeRestriction> {
+ public:
+  PrintingAllowedPinModesPolicyHandler();
+  ~PrintingAllowedPinModesPolicyHandler() override;
+};
+
 class PrintingPinDefaultPolicyHandler
     : public PrintingEnumPolicyHandler<printing::PinModeRestriction> {
  public:
   PrintingPinDefaultPolicyHandler();
   ~PrintingPinDefaultPolicyHandler() override;
-};
-
-class PrintingBackgroundGraphicsDefaultPolicyHandler
-    : public PrintingEnumPolicyHandler<
-          printing::BackgroundGraphicsModeRestriction> {
- public:
-  PrintingBackgroundGraphicsDefaultPolicyHandler();
-  ~PrintingBackgroundGraphicsDefaultPolicyHandler() override;
 };
 
 class PrintingAllowedPageSizesPolicyHandler : public ListPolicyHandler {
@@ -132,6 +117,23 @@ class PrintingSizeDefaultPolicyHandler : public TypeCheckingPolicyHandler {
   bool GetValue(const PolicyMap& policies,
                 PolicyErrorMap* errors,
                 const base::Value** result);
+};
+#endif  // defined(OS_CHROMEOS)
+
+class PrintingAllowedBackgroundGraphicsModesPolicyHandler
+    : public PrintingEnumPolicyHandler<
+          printing::BackgroundGraphicsModeRestriction> {
+ public:
+  PrintingAllowedBackgroundGraphicsModesPolicyHandler();
+  ~PrintingAllowedBackgroundGraphicsModesPolicyHandler() override;
+};
+
+class PrintingBackgroundGraphicsDefaultPolicyHandler
+    : public PrintingEnumPolicyHandler<
+          printing::BackgroundGraphicsModeRestriction> {
+ public:
+  PrintingBackgroundGraphicsDefaultPolicyHandler();
+  ~PrintingBackgroundGraphicsDefaultPolicyHandler() override;
 };
 
 }  // namespace policy

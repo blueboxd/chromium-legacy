@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.feed.library.piet.host;
 
 import android.graphics.Typeface;
 
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
+import org.chromium.base.Consumer;
 
 /** Typeface provider that does not provide any typefaces; for use as a default implementation. */
 public class NullTypefaceProvider implements TypefaceProvider {

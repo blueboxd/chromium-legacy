@@ -3530,6 +3530,15 @@
         ],
         'test': 'dawn_end2end_tests',
       },
+      'dawn_end2end_use_spvc_tests': {
+        'desktop_args': [
+          '--use-gpu-in-tests',
+          # Dawn test retries deliberately disabled to prevent flakiness.
+          '--test-launcher-retry-limit=0',
+          '--use-spvc',
+        ],
+        'test': 'dawn_end2end_tests',
+      },
     },
 
     # GPU gtests that test Dawn and integration with Chromium
@@ -3566,6 +3575,15 @@
           # Dawn test retries deliberately disabled to prevent flakiness.
           '--test-launcher-retry-limit=0',
           '--skip-validation',
+        ],
+        'test': 'dawn_end2end_tests',
+      },
+      'dawn_end2end_use_spvc_tests': {
+        'desktop_args': [
+          '--use-gpu-in-tests',
+          # Dawn test retries deliberately disabled to prevent flakiness.
+          '--test-launcher-retry-limit=0',
+          '--use-spvc',
         ],
         'test': 'dawn_end2end_tests',
       },
@@ -4683,7 +4701,6 @@
           "--benchmarks=rendering.desktop",
         ],
         'swarming': {},
-        'experiment_percentage': 100,
       }
     },
 
@@ -4696,7 +4713,6 @@
           "--browser=android-chromium"
         ],
         'swarming': {},
-        'experiment_percentage': 100,
       }
     },
 
@@ -5730,21 +5746,6 @@
       'gpu_angle_unit_gtests',
       'gpu_angle_white_box_gtests',
       'gpu_common_gtests',
-      'gpu_desktop_specific_gtests',
-      'gpu_fyi_and_optional_non_linux_gtests',
-      'gpu_fyi_and_optional_win_specific_gtests',
-      'gpu_gles2_conform_gtests',
-      'gpu_swiftshader_gtests',
-      'gpu_win_specific_gtests',
-    ],
-
-    'gpu_fyi_win_and_dawn_gtests': [
-      'gpu_angle_end2end_gtests',
-      'gpu_angle_unit_gtests',
-      'gpu_angle_white_box_gtests',
-      'gpu_common_gtests',
-      'gpu_dawn_gtests',
-      'gpu_default_and_optional_win_specific_gtests',
       'gpu_desktop_specific_gtests',
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_fyi_and_optional_win_specific_gtests',

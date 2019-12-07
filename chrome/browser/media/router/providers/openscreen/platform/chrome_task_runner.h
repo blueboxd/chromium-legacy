@@ -7,10 +7,11 @@
 
 #include "base/single_thread_task_runner.h"
 #include "third_party/openscreen/src/platform/api/task_runner.h"
+#include "third_party/openscreen/src/platform/api/time.h"
 
 namespace media_router {
 
-class ChromeTaskRunner final : public openscreen::platform::TaskRunner {
+class ChromeTaskRunner final : public openscreen::TaskRunner {
  public:
   explicit ChromeTaskRunner(
       scoped_refptr<base::SequencedTaskRunner> task_runner);
@@ -22,10 +23,9 @@ class ChromeTaskRunner final : public openscreen::platform::TaskRunner {
 
   // TaskRunner overrides
   ~ChromeTaskRunner() final;
-  void PostPackagedTask(openscreen::platform::TaskRunner::Task task) final;
-  void PostPackagedTaskWithDelay(
-      openscreen::platform::TaskRunner::Task task,
-      openscreen::platform::Clock::duration delay) final;
+  void PostPackagedTask(openscreen::TaskRunner::Task task) final;
+  void PostPackagedTaskWithDelay(openscreen::TaskRunner::Task task,
+                                 openscreen::Clock::duration delay) final;
 
  private:
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

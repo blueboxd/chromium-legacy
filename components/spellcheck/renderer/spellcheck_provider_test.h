@@ -102,6 +102,18 @@ class TestingSpellCheckProvider : public SpellCheckProvider,
                           FillSuggestionListCallback) override;
 #endif
 
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+  void GetPerLanguageSuggestions(
+      const base::string16& word,
+      GetPerLanguageSuggestionsCallback callback) override;
+  void RequestPartialTextCheck(
+      const base::string16& text,
+      int route_id,
+      const std::vector<SpellCheckResult>& partial_results,
+      bool fill_suggestions,
+      RequestPartialTextCheckCallback callback) override;
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+
 #if defined(OS_ANDROID)
   void DisconnectSessionBridge() override;
 #endif

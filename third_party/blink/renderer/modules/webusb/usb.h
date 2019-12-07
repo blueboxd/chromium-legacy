@@ -83,7 +83,7 @@ class USB final : public EventTargetWithInlineData,
   void EnsureServiceConnection();
 
   bool IsContextSupported() const;
-  FeatureEnabledState GetFeatureEnabledState() const;
+  bool IsFeatureEnabled(ReportOptions) const;
 
   mojo::Remote<mojom::blink::WebUsbService> service_;
   HeapHashSet<Member<ScriptPromiseResolver>> get_devices_requests_;

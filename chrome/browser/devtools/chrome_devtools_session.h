@@ -49,7 +49,7 @@ class ChromeDevToolsSession : public protocol::FrontendChannel {
   void flushProtocolNotifications() override;
   void fallThrough(int call_id,
                    const std::string& method,
-                   const std::string& message) override;
+                   crdtp::span<uint8_t> message) override;
 
   content::DevToolsAgentHost* const agent_host_;
   content::DevToolsAgentHostClient* const client_;

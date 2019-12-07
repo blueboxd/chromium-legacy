@@ -56,7 +56,7 @@ Polymer({
     /** @private {!ShortcutError} */
     error_: {
       type: Number,
-      value: 0,
+      value: ShortcutError.NO_ERROR,
     },
 
     /** @private */
@@ -94,7 +94,7 @@ Polymer({
     this.capturing_ = false;
     const input = this.$.input;
     input.blur();
-    input.invalid = false;
+    this.error_ = ShortcutError.NO_ERROR;
     this.delegate.setShortcutHandlingSuspended(false);
   },
 
@@ -160,13 +160,17 @@ Polymer({
    */
   getErrorString_: function(
       error, includeStartModifier, tooManyModifiers, needCharacter) {
-    if (error == ShortcutError.TOO_MANY_MODIFIERS) {
-      return tooManyModifiers;
+    switch (this.error_) {
+      case ShortcutError.INCLUDE_START_MODIFIER:
+        return includeStartModifier;
+      case ShortcutError.TOO_MANY_MODIFIERS:
+        return tooManyModifiers;
+      case ShortcutError.NEED_CHARACTER:
+        return needCharacter;
+      default:
+        assert(this.error_ == ShortcutError.NO_ERROR);
+        return '';
     }
-    if (error == ShortcutError.NEED_CHARACTER) {
-      return needCharacter;
-    }
-    return includeStartModifier;
   },
 
   /**
@@ -185,22 +189,20 @@ Polymer({
     // but that requires updating the existing page as well.
     if (e.ctrlKey && e.altKey) {
       this.error_ = ShortcutError.TOO_MANY_MODIFIERS;
-      this.$.input.invalid = true;
       return;
     }
     if (!hasValidModifiers(e)) {
       this.pendingShortcut_ = '';
       this.error_ = ShortcutError.INCLUDE_START_MODIFIER;
-      this.$.input.invalid = true;
       return;
     }
     this.pendingShortcut_ = keystrokeToString(e);
     if (!isValidKeyCode(e.keyCode)) {
       this.error_ = ShortcutError.NEED_CHARACTER;
-      this.$.input.invalid = true;
       return;
     }
-    this.$.input.invalid = false;
+
+    this.error_ = ShortcutError.NO_ERROR;
 
     this.commitPending_();
     this.endCapture_();
@@ -231,6 +233,14 @@ Polymer({
     // We don't want to show the clear button if the input is currently
     // capturing a new shortcut or if there is no shortcut to clear.
     return this.capturing_ || !this.shortcut;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  getIsInvalid_: function() {
+    return this.error_ != ShortcutError.NO_ERROR;
   },
 
   /** @private */

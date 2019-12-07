@@ -7,10 +7,14 @@
 #include <utility>
 
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_style.h"
+#include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
+#include "chrome/browser/ui/views/tabs/tab_group_highlight.h"
 #include "chrome/browser/ui/views/tabs/tab_group_underline.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_types.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -21,6 +25,9 @@ TabGroupViews::TabGroupViews(TabStrip* tab_strip, TabGroupId group)
 
   underline_ = std::make_unique<TabGroupUnderline>(this, group_);
   underline_->set_owned_by_client();
+
+  highlight_ = std::make_unique<TabGroupHighlight>(this, group_);
+  highlight_->set_owned_by_client();
 }
 
 TabGroupViews::~TabGroupViews() {}
@@ -28,6 +35,7 @@ TabGroupViews::~TabGroupViews() {}
 void TabGroupViews::UpdateVisuals() {
   header_->VisualsChanged();
   underline_->SchedulePaint();
+  highlight_->SchedulePaint();
 
   const int active_index = tab_strip_->controller()->GetActiveIndex();
   if (active_index != TabStripModel::kNoTab)
@@ -67,4 +75,21 @@ SkColor TabGroupViews::GetGroupColor() const {
       tab_strip_->controller()->GetVisualDataForGroup(group_);
 
   return data->color();
+}
+
+SkColor TabGroupViews::GetTabBackgroundColor() const {
+  return tab_strip_->GetTabBackgroundColor(
+      TabActive::kInactive, BrowserFrameActiveState::kUseCurrent);
+}
+
+SkColor TabGroupViews::GetGroupBackgroundColor() const {
+  const SkColor active_color = tab_strip_->GetTabBackgroundColor(
+      TabActive::kActive, BrowserFrameActiveState::kUseCurrent);
+  return SkColorSetA(active_color, gfx::Tween::IntValueBetween(
+                                       TabStyle::kSelectedTabOpacity,
+                                       SK_AlphaTRANSPARENT, SK_AlphaOPAQUE));
+}
+
+bool TabGroupViews::ShouldPaintGroupBackground() const {
+  return header_->dragging();
 }

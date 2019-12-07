@@ -69,7 +69,7 @@ void MaybeCleanupMetadataFolder(const base::FilePath& extension_path) {
 
   const base::FilePath& metadata_dir = extension_path.Append(kMetadataFolder);
   if (base::IsDirectoryEmpty(metadata_dir))
-    base::DeleteFile(metadata_dir, true /*recursive*/);
+    base::DeleteFileRecursively(metadata_dir);
 }
 
 }  // namespace

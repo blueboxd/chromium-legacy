@@ -115,7 +115,7 @@ void MaybeCreateLoaderOnCoreThread(
     if (params.resource_type == ResourceType::kMainFrame ||
         params.resource_type == ResourceType::kSubFrame) {
       container_host =
-          ServiceWorkerProviderHost::PreCreateNavigationHost(
+          ServiceWorkerProviderHost::CreateForWindow(
               context_core->AsWeakPtr(), params.are_ancestors_secure,
               params.frame_tree_node_id, std::move(host_receiver),
               std::move(client_remote))

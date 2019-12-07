@@ -16,8 +16,6 @@ internals.settings.setAutoplayPolicy('user-gesture-required');
 internals.settings.setWebAppScope(
     document.URL.substring(0, document.URL.lastIndexOf('/') + 1) + "foo/");
 
-testRunner.setAutoplayAllowed(true);
-
 function createMediaElement(type) {
   var e = document.createElement(type);
   e.src = type == 'audio' ? 'content/test.oga' : 'content/test.ogv';

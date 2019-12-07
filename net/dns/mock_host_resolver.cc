@@ -183,8 +183,10 @@ class MockHostResolverBase::RequestImpl
     DCHECK_EQ(id_, id);
     id_ = 0;
 
-    // Check that error information has been set
+    // Check that error information has been set and that the top-level error
+    // code is valid.
     DCHECK(resolve_error_info_.error != ERR_IO_PENDING);
+    DCHECK(error == OK || error == ERR_NAME_NOT_RESOLVED);
 
     DCHECK(!complete_);
     complete_ = true;
@@ -442,7 +444,7 @@ void MockHostResolverBase::ResolveNow(size_t id) {
   req->SetError(error);
   if (error == OK && !req->parameters().is_speculative)
     req->set_address_results(addresses, base::nullopt);
-  req->OnAsyncCompleted(id, error);
+  req->OnAsyncCompleted(id, SquashErrorCode(error));
 }
 
 void MockHostResolverBase::DetachRequest(size_t id) {
@@ -567,7 +569,7 @@ int MockHostResolverBase::Resolve(RequestImpl* request) {
     request->set_address_results(addresses, std::move(stale_info));
   if (rv != ERR_DNS_CACHE_MISS ||
       request->parameters().source == HostResolverSource::LOCAL_ONLY) {
-    return rv;
+    return SquashErrorCode(rv);
   }
 
   // Just like the real resolver, refuse to do anything with invalid
@@ -587,7 +589,7 @@ int MockHostResolverBase::Resolve(RequestImpl* request) {
     request->SetError(rv);
     if (rv == OK && !request->parameters().is_speculative)
       request->set_address_results(addresses, base::nullopt);
-    return rv;
+    return SquashErrorCode(rv);
   }
 
   // Store the request for asynchronous resolution
@@ -849,6 +851,15 @@ void RuleBasedHostResolverProc::AddSimulatedFailure(
   AddRuleInternal(rule);
 }
 
+void RuleBasedHostResolverProc::AddSimulatedTimeoutFailure(
+    const std::string& host_pattern) {
+  HostResolverFlags flags = HOST_RESOLVER_LOOPBACK_ONLY |
+                            HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
+  Rule rule(Rule::kResolverTypeFailTimeout, host_pattern,
+            ADDRESS_FAMILY_UNSPECIFIED, flags, std::string(), std::string(), 0);
+  AddRuleInternal(rule);
+}
+
 void RuleBasedHostResolverProc::ClearRules() {
   CHECK(modifications_allowed_);
   base::AutoLock lock(rule_lock_);
@@ -902,6 +913,8 @@ int RuleBasedHostResolverProc::Resolve(const std::string& host,
       switch (r->resolver_type) {
         case Rule::kResolverTypeFail:
           return ERR_NAME_NOT_RESOLVED;
+        case Rule::kResolverTypeFailTimeout:
+          return ERR_DNS_TIMED_OUT;
         case Rule::kResolverTypeSystem:
 #if defined(OS_WIN)
           EnsureWinsockInit();

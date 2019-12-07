@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -339,6 +340,16 @@ ManagedDisplayInfo DisplayChangeObserver::CreateManagedDisplayInfo(
     new_info.set_device_dpi(dpi);
   new_info.set_color_space(snapshot->color_space());
   new_info.set_bits_per_channel(snapshot->bits_per_channel());
+  // TODO(crbug.com/1012846): Remove this flag and provision when HDR is fully
+  // supported on ChromeOS.
+#if defined(OS_CHROMEOS)
+  constexpr int32_t kNormalBitDepth = 8;
+  if (new_info.bits_per_channel() > kNormalBitDepth &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableUseHDRTransferFunction)) {
+    new_info.set_bits_per_channel(kNormalBitDepth);
+  }
+#endif
 
   new_info.set_refresh_rate(mode_info->refresh_rate());
   new_info.set_is_interlaced(mode_info->is_interlaced());

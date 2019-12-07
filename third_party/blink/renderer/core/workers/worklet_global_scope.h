@@ -57,8 +57,6 @@ class CORE_EXPORT WorkletGlobalScope
   const KURL& BaseURL() const final { return url_; }
   KURL CompleteURL(const String&) const final;
   String UserAgent() const final { return user_agent_; }
-  SecurityContext& GetSecurityContext() final { return *this; }
-  const SecurityContext& GetSecurityContext() const final { return *this; }
   bool IsSecureContext(String& error_message) const final;
   bool IsContextThread() const final;
   void AddConsoleMessageImpl(ConsoleMessage*, bool discard_duplicates) final;

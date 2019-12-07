@@ -12,7 +12,7 @@ wayland_protocol("gtk_primary_selection_protocol") {
 
 wayland_protocol("xdg_shell_protocol") {
   sources = [
-    "src/unstable/xdg-shell/xdg-shell-unstable-v5.xml",
+    "src/stable/xdg-shell/xdg-shell.xml",
     "src/unstable/xdg-shell/xdg-shell-unstable-v6.xml",
   ]
 }

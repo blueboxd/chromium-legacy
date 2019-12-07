@@ -404,7 +404,6 @@ source_set("chrome_content_browser_overlay_manifest") {
       "//chromeos/services/cellular_setup/public/mojom",
       "//chromeos/services/ime/public/mojom",
       "//chromeos/services/media_perception/public/mojom",
-      "//chromeos/services/multidevice_setup/public/cpp:manifest",
       "//chromeos/services/multidevice_setup/public/mojom",
       "//chromeos/services/network_config/public/mojom",
       "//components/chromeos_camera/common:camera_app_helper",

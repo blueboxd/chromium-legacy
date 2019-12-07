@@ -24,6 +24,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
+#include "components/password_manager/core/browser/compromised_credentials_observer.h"
 #include "components/password_manager/core/browser/compromised_credentials_table.h"
 #include "components/password_manager/core/browser/field_info_table.h"
 #include "components/password_manager/core/browser/password_leak_history_consumer.h"
@@ -142,6 +143,11 @@ bool PasswordStore::Init(const syncer::SyncableService::StartSyncFlare& flare,
         base::BindOnce(&PasswordStore::InitOnBackgroundSequence, this, flare),
         base::BindOnce(&PasswordStore::OnInitCompleted, this));
   }
+
+  compromised_credentials_observer_ =
+      std::make_unique<CompromisedCredentialsObserver>(this);
+  compromised_credentials_observer_->Initialize();
+
   return true;
 }
 
@@ -568,6 +574,7 @@ void PasswordStore::ScheduleEnterprisePasswordURLUpdate() {
 
 PasswordStore::~PasswordStore() {
   DCHECK(shutdown_called_);
+  compromised_credentials_observer_.reset(nullptr);
 }
 
 scoped_refptr<base::SequencedTaskRunner>

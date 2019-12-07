@@ -203,55 +203,18 @@ class BrowserContextServiceManagerConnectionHolder
     : public base::SupportsUserData::Data {
  public:
   explicit BrowserContextServiceManagerConnectionHolder(
-      BrowserContext* browser_context,
       service_manager::mojom::ServiceRequest request)
-      : browser_context_(browser_context),
-        service_manager_connection_(ServiceManagerConnection::Create(
+      : service_manager_connection_(ServiceManagerConnection::Create(
             std::move(request),
-            base::CreateSingleThreadTaskRunner({BrowserThread::IO}))) {
-    service_manager_connection_->SetDefaultServiceRequestHandler(
-        base::BindRepeating(
-            &BrowserContextServiceManagerConnectionHolder::OnServiceRequest,
-            weak_ptr_factory_.GetWeakPtr()));
-  }
+            base::CreateSingleThreadTaskRunner({BrowserThread::IO}))) {}
   ~BrowserContextServiceManagerConnectionHolder() override {}
 
   ServiceManagerConnection* service_manager_connection() {
     return service_manager_connection_.get();
   }
 
-  void DestroyRunningServices() { running_services_.clear(); }
-
  private:
-  void OnServiceRequest(const std::string& service_name,
-                        service_manager::mojom::ServiceRequest request) {
-    std::unique_ptr<service_manager::Service> service =
-        browser_context_->HandleServiceRequest(service_name,
-                                               std::move(request));
-    if (!service) {
-      LOG(ERROR) << "Ignoring request for unknown per-browser-context service:"
-                 << service_name;
-      return;
-    }
-
-    auto* raw_service = service.get();
-    service->set_termination_closure(base::BindOnce(
-        &BrowserContextServiceManagerConnectionHolder::OnServiceQuit,
-        base::Unretained(this), raw_service));
-    running_services_.emplace(raw_service, std::move(service));
-  }
-
-  void OnServiceQuit(service_manager::Service* service) {
-    running_services_.erase(service);
-  }
-
-  BrowserContext* const browser_context_;
   std::unique_ptr<ServiceManagerConnection> service_manager_connection_;
-  std::map<service_manager::Service*, std::unique_ptr<service_manager::Service>>
-      running_services_;
-
-  base::WeakPtrFactory<BrowserContextServiceManagerConnectionHolder>
-      weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BrowserContextServiceManagerConnectionHolder);
 };
@@ -267,10 +230,10 @@ base::WeakPtr<storage::BlobStorageContext> BlobStorageContextGetterForBrowser(
 // static
 void BrowserContext::AsyncObliterateStoragePartition(
     BrowserContext* browser_context,
-    const GURL& site,
+    const std::string& partition_domain,
     const base::Closure& on_gc_required) {
   GetStoragePartitionMap(browser_context)
-      ->AsyncObliterate(site, on_gc_required);
+      ->AsyncObliterate(partition_domain, on_gc_required);
 }
 
 // static
@@ -472,14 +435,6 @@ void BrowserContext::NotifyWillBeDestroyed(BrowserContext* browser_context) {
   // ensure that all their WebContents (and therefore RPHs) are torn down too.
   browser_context->RemoveUserData(kContentServiceKey);
 
-  // Tear down all running service instances which were started on behalf of
-  // this BrowserContext. Note that we leave the UserData itself in place
-  // because it's possible for someone to call
-  // |GetServiceManagerConnectionFor()| between now and actual BrowserContext
-  // destruction.
-  if (connection_holder)
-    connection_holder->DestroyRunningServices();
-
   // Service Workers must shutdown before the browser context is destroyed,
   // since they keep render process hosts alive and the codebase assumes that
   // render process hosts die before their profile (browser context) dies.
@@ -599,7 +554,7 @@ void BrowserContext::Initialize(BrowserContext* browser_context,
 
     BrowserContextServiceManagerConnectionHolder* connection_holder =
         new BrowserContextServiceManagerConnectionHolder(
-            browser_context, std::move(service_receiver));
+            std::move(service_receiver));
     browser_context->SetUserData(kServiceManagerConnection,
                                  base::WrapUnique(connection_holder));
     ServiceManagerConnection* connection =
@@ -675,12 +630,6 @@ std::string BrowserContext::GetMediaDeviceIDSalt() {
 // static
 std::string BrowserContext::CreateRandomMediaDeviceIDSalt() {
   return base::UnguessableToken::Create().ToString();
-}
-
-std::unique_ptr<service_manager::Service> BrowserContext::HandleServiceRequest(
-    const std::string& service_name,
-    service_manager::mojom::ServiceRequest request) {
-  return nullptr;
 }
 
 const std::string& BrowserContext::UniqueId() {

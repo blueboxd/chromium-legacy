@@ -24,6 +24,8 @@ class Value;
 
 namespace net {
 
+class NetworkIsolationKey;
+
 // Returns a Value containing NetLog parameters for constructing a URLRequest.
 NET_EXPORT base::Value NetLogURLRequestConstructorParams(
     const GURL& url,
@@ -31,11 +33,13 @@ NET_EXPORT base::Value NetLogURLRequestConstructorParams(
     NetworkTrafficAnnotationTag traffic_annotation);
 
 // Returns a Value containing NetLog parameters for starting a URLRequest.
-NET_EXPORT base::Value NetLogURLRequestStartParams(const GURL& url,
-                                                   const std::string& method,
-                                                   int load_flags,
-                                                   PrivacyMode privacy_mode,
-                                                   int64_t upload_id);
+NET_EXPORT base::Value NetLogURLRequestStartParams(
+    const GURL& url,
+    const std::string& method,
+    int load_flags,
+    PrivacyMode privacy_mode,
+    const NetworkIsolationKey& network_isolation_key,
+    int64_t upload_id);
 
 }  // namespace net
 

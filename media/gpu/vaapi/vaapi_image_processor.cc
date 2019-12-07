@@ -19,7 +19,7 @@
 #include "base/task/post_task.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/chromeos/fourcc.h"
-#include "media/gpu/linux/platform_video_frame_utils.h"
+#include "media/gpu/chromeos/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_utils.h"

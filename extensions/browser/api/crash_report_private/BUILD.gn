@@ -15,6 +15,7 @@ source_set("crash_report_private") {
 
   deps = [
     "//components/crash/content/app",
+    "//components/feedback",
     "//content/public/browser",
     "//extensions/common/api",
     "//net",

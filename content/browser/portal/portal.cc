@@ -27,21 +27,17 @@
 
 namespace content {
 
-namespace {
-using PortalTokenMap = std::
-    unordered_map<base::UnguessableToken, Portal*, base::UnguessableTokenHash>;
-base::LazyInstance<PortalTokenMap>::Leaky g_portal_token_map =
-    LAZY_INSTANCE_INITIALIZER;
-}  // namespace
-
 Portal::Portal(RenderFrameHostImpl* owner_render_frame_host)
     : WebContentsObserver(
           WebContents::FromRenderFrameHost(owner_render_frame_host)),
       owner_render_frame_host_(owner_render_frame_host),
-      portal_token_(base::UnguessableToken::Create()),
-      portal_host_receiver_(this) {
-  auto pair = g_portal_token_map.Get().emplace(portal_token_, this);
-  DCHECK(pair.second);
+      portal_token_(base::UnguessableToken::Create()) {
+}
+
+Portal::Portal(RenderFrameHostImpl* owner_render_frame_host,
+               std::unique_ptr<WebContents> existing_web_contents)
+    : Portal(owner_render_frame_host) {
+  SetPortalContents(std::move(existing_web_contents));
 }
 
 Portal::~Portal() {
@@ -54,8 +50,6 @@ Portal::~Portal() {
   if (outer_node)
     outer_node->RemoveObserver(this);
   portal_contents_impl_->set_portal(nullptr);
-
-  g_portal_token_map.Get().erase(portal_token_);
 }
 
 // static
@@ -63,40 +57,6 @@ bool Portal::IsEnabled() {
   return base::FeatureList::IsEnabled(blink::features::kPortals) ||
          base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kEnableExperimentalWebPlatformFeatures);
-}
-
-// static
-Portal* Portal::FromToken(const base::UnguessableToken& portal_token) {
-  PortalTokenMap& portals = g_portal_token_map.Get();
-  auto it = portals.find(portal_token);
-  return it == portals.end() ? nullptr : it->second;
-}
-
-// static
-Portal* Portal::Create(
-    RenderFrameHostImpl* owner_render_frame_host,
-    mojo::PendingAssociatedReceiver<blink::mojom::Portal> receiver,
-    mojo::PendingAssociatedRemote<blink::mojom::PortalClient> client) {
-  if (!IsEnabled()) {
-    mojo::ReportBadMessage(
-        "blink.mojom.Portal can only be used if the Portals feature is "
-        "enabled.");
-    return nullptr;
-  }
-
-  auto portal_ptr = base::WrapUnique(new Portal(owner_render_frame_host));
-  Portal* portal = portal_ptr.get();
-  portal->receiver_ =
-      mojo::MakeSelfOwnedAssociatedReceiver<blink::mojom::Portal>(
-          std::move(portal_ptr), std::move(receiver));
-  portal->client_.Bind(std::move(client));
-  return portal;
-}
-
-// static
-std::unique_ptr<Portal> Portal::CreateForTesting(
-    RenderFrameHostImpl* owner_render_frame_host) {
-  return base::WrapUnique(new Portal(owner_render_frame_host));
 }
 
 // static
@@ -132,6 +92,22 @@ void Portal::BindPortalHostReceiver(
   if (receiver.is_bound())
     receiver.reset();
   receiver.Bind(std::move(pending_receiver));
+}
+
+void Portal::Bind(
+    mojo::PendingAssociatedReceiver<blink::mojom::Portal> receiver,
+    mojo::PendingAssociatedRemote<blink::mojom::PortalClient> client) {
+  DCHECK(!receiver_.is_bound());
+  DCHECK(!client_.is_bound());
+  receiver_.Bind(std::move(receiver));
+  receiver_.set_disconnect_handler(
+      base::BindOnce(&Portal::DestroySelf, base::Unretained(this)));
+  client_.Bind(std::move(client));
+}
+
+void Portal::DestroySelf() {
+  // Deletes |this|.
+  owner_render_frame_host_->DestroyPortal(this);
 }
 
 RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
@@ -193,7 +169,7 @@ void Portal::Navigate(const GURL& url,
                       NavigateCallback callback) {
   if (!url.SchemeIsHTTPOrHTTPS()) {
     mojo::ReportBadMessage("Portal::Navigate tried to use non-HTTP protocol.");
-    receiver_->Close();  // Also deletes |this|.
+    DestroySelf();  // Also deletes |this|.
     return;
   }
 
@@ -300,7 +276,7 @@ void Portal::Activate(blink::TransferableMessage data,
 
   if (outer_contents->portal()) {
     mojo::ReportBadMessage("Portal::Activate called on nested portal");
-    receiver_->Close();  // Also deletes |this|.
+    DestroySelf();  // Also deletes |this|.
     return;
   }
 
@@ -392,20 +368,9 @@ void Portal::Activate(blink::TransferableMessage data,
 
   portal_contents_impl_->set_portal(nullptr);
 
-  mojo::PendingAssociatedRemote<blink::mojom::Portal> pending_portal;
-  auto portal_receiver = pending_portal.InitWithNewEndpointAndPassReceiver();
-
-  mojo::PendingAssociatedRemote<blink::mojom::PortalClient> pending_client;
-  auto client_receiver = pending_client.InitWithNewEndpointAndPassReceiver();
-
-  Portal* portal =
-      Create(portal_contents_impl_->GetMainFrame(), std::move(portal_receiver),
-             std::move(pending_client));
-  portal->SetPortalContents(std::move(predecessor_web_contents));
-
   portal_contents_impl_->GetMainFrame()->OnPortalActivated(
-      portal->portal_token_, std::move(pending_portal),
-      std::move(client_receiver), std::move(data), std::move(callback));
+      std::move(predecessor_web_contents), std::move(data),
+      std::move(callback));
 
   devtools_instrumentation::PortalActivated(outer_contents->GetMainFrame());
 }
@@ -437,18 +402,19 @@ void Portal::OnFrameTreeNodeDestroyed(FrameTreeNode* frame_tree_node) {
   // in the outer WebContents (not the FrameTreeNode of the document containing
   // it). If that outer FrameTreeNode goes away, this Portal should stop
   // accepting new messages and go away as well.
-  receiver_->Close();  // Also deletes |this|.
+  DestroySelf();  // Deletes |this|.
 }
 
 void Portal::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
-  // When the portal is in an orphaned state, the RenderFrameDeleted callback is
-  // used to tie the portal's lifetime to its owner.
+  // Even though this object is owned (via unique_ptr by the RenderFrameHost),
+  // explicitly observing RenderFrameDeleted is necessary because it happens
+  // earlier than the destructor, notably before Mojo teardown.
   if (render_frame_host == owner_render_frame_host_)
-    receiver_->Close();  // Also deletes |this|.
+    DestroySelf();  // Deletes |this|.
 }
 
 void Portal::WebContentsDestroyed() {
-  receiver_->Close();  // Also deletes |this|.
+  DestroySelf();  // Deletes |this|.
 }
 
 void Portal::LoadingStateChanged(WebContents* source,
@@ -471,16 +437,6 @@ base::UnguessableToken Portal::GetDevToolsFrameToken() const {
 
 WebContentsImpl* Portal::GetPortalContents() {
   return portal_contents_impl_;
-}
-
-void Portal::SetReceiverForTesting(
-    mojo::SelfOwnedAssociatedReceiverRef<blink::mojom::Portal> receiver) {
-  receiver_ = receiver;
-}
-
-void Portal::SetClientForTesting(
-    mojo::AssociatedRemote<blink::mojom::PortalClient> client) {
-  client_ = std::move(client);
 }
 
 void Portal::SetPortalContents(std::unique_ptr<WebContents> web_contents) {

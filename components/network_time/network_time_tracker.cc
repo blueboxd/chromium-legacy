@@ -393,7 +393,7 @@ NetworkTimeTracker::NetworkTimeResult NetworkTimeTracker::GetNetworkTime(
   return NETWORK_TIME_AVAILABLE;
 }
 
-bool NetworkTimeTracker::StartTimeFetch(const base::Closure& closure) {
+bool NetworkTimeTracker::StartTimeFetch(base::OnceClosure closure) {
   DCHECK(thread_checker_.CalledOnValidThread());
   FetchBehavior behavior = GetFetchBehavior();
   if (behavior != FETCHES_ON_DEMAND_ONLY &&
@@ -403,7 +403,7 @@ bool NetworkTimeTracker::StartTimeFetch(const base::Closure& closure) {
 
   // Enqueue the callback before calling CheckTime(), so that if
   // CheckTime() completes synchronously, the callback gets called.
-  fetch_completion_callbacks_.push_back(closure);
+  fetch_completion_callbacks_.push_back(std::move(closure));
 
   // If a time query is already in progress, do not start another one.
   if (time_fetcher_) {
@@ -580,10 +580,11 @@ void NetworkTimeTracker::OnURLLoaderComplete(
   // Clear |fetch_completion_callbacks_| before running any of them,
   // because a callback could call StartTimeFetch() to enqueue another
   // callback.
-  std::vector<base::Closure> callbacks = fetch_completion_callbacks_;
+  std::vector<base::OnceClosure> callbacks =
+      std::move(fetch_completion_callbacks_);
   fetch_completion_callbacks_.clear();
-  for (const auto& callback : callbacks) {
-    callback.Run();
+  for (auto& callback : callbacks) {
+    std::move(callback).Run();
   }
 }
 

@@ -36,10 +36,8 @@ void PortalCreatedObserver::CreatePortal(
     mojo::PendingAssociatedRemote<blink::mojom::PortalClient> client,
     CreatePortalCallback callback) {
   PortalInterceptorForTesting* portal_interceptor =
-      PortalInterceptorForTesting::Create(
-          render_frame_host_impl_, std::move(portal),
-          mojo::AssociatedRemote<blink::mojom::PortalClient>(
-              std::move(client)));
+      PortalInterceptorForTesting::Create(render_frame_host_impl_,
+                                          std::move(portal), std::move(client));
   portal_ = portal_interceptor->GetPortal();
   RenderFrameProxyHost* proxy_host = portal_->CreateProxyAndAttachPortal();
   std::move(callback).Run(proxy_host->GetRoutingID(), portal_->portal_token(),
@@ -51,7 +49,7 @@ void PortalCreatedObserver::CreatePortal(
 void PortalCreatedObserver::AdoptPortal(
     const base::UnguessableToken& portal_token,
     AdoptPortalCallback callback) {
-  Portal* portal = Portal::FromToken(portal_token);
+  Portal* portal = render_frame_host_impl_->FindPortalByToken(portal_token);
   PortalInterceptorForTesting* portal_interceptor =
       PortalInterceptorForTesting::Create(render_frame_host_impl_, portal);
   portal_ = portal_interceptor->GetPortal();

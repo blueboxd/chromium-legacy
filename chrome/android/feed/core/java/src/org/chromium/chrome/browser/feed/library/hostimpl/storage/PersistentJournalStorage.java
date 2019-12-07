@@ -11,6 +11,7 @@ import static org.chromium.chrome.browser.feed.library.api.host.storage.JournalO
 import android.content.Context;
 import android.support.annotation.VisibleForTesting;
 
+import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.host.storage.CommitResult;
 import org.chromium.chrome.browser.feed.library.api.host.storage.JournalMutation;
 import org.chromium.chrome.browser.feed.library.api.host.storage.JournalOperation;
@@ -20,7 +21,6 @@ import org.chromium.chrome.browser.feed.library.api.host.storage.JournalStorage;
 import org.chromium.chrome.browser.feed.library.api.host.storage.JournalStorageDirect;
 import org.chromium.chrome.browser.feed.library.api.internal.common.ThreadUtils;
 import org.chromium.chrome.browser.feed.library.common.Result;
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 
 import java.io.File;

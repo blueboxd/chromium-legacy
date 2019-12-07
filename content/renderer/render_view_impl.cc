@@ -1158,12 +1158,8 @@ void RenderViewImpl::DidCompletePageScaleAnimationForWidget() {
 
 void RenderViewImpl::ResizeWebWidgetForWidget(
     const gfx::Size& widget_size,
-    float top_controls_height,
-    float bottom_controls_height,
-    bool browser_controls_shrink_blink_size) {
-  webview()->ResizeWithBrowserControls(widget_size, top_controls_height,
-                                       bottom_controls_height,
-                                       browser_controls_shrink_blink_size);
+    cc::BrowserControlsParams browser_controls_params) {
+  webview()->ResizeWithBrowserControls(widget_size, browser_controls_params);
 }
 
 void RenderViewImpl::SetScreenMetricsEmulationParametersForWidget(

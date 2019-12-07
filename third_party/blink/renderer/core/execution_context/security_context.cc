@@ -83,26 +83,40 @@ WTF::Vector<unsigned> SecurityContext::SerializeInsecureNavigationSet(
   return serialized;
 }
 
-SecurityContext::SecurityContext()
-    : SecurityContext(nullptr, WebSandboxFlags::kNone, nullptr) {}
-
 SecurityContext::SecurityContext(scoped_refptr<SecurityOrigin> origin,
                                  WebSandboxFlags sandbox_flags,
-                                 std::unique_ptr<FeaturePolicy> feature_policy)
+                                 std::unique_ptr<FeaturePolicy> feature_policy,
+                                 SecurityContextType context_type)
     : sandbox_flags_(sandbox_flags),
       security_origin_(std::move(origin)),
       feature_policy_(std::move(feature_policy)),
       address_space_(network::mojom::IPAddressSpace::kUnknown),
       insecure_request_policy_(kLeaveInsecureRequestsAlone),
-      require_safe_types_(false) {}
-
-SecurityContext::~SecurityContext() = default;
+      require_safe_types_(false),
+      context_type_(context_type) {}
 
 void SecurityContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(content_security_policy_);
 }
 
 void SecurityContext::SetSecurityOrigin(
+    scoped_refptr<SecurityOrigin> security_origin) {
+  // Enforce that we don't change access, we might change the reference (via
+  // IsolatedCopy but we can't change the security policy).
+  CHECK(security_origin);
+  // The purpose of this check is to ensure that the SecurityContext does not
+  // change after script has executed in the ExecutionContext. If this is a
+  // RemoteSecurityContext, then there is no local script execution, so it is
+  // safe for the SecurityOrigin to change.
+  // Exempting null ExecutionContexts is also necessary because RemoteFrames and
+  // RemoteSecurityContexts do not change when a cross-origin navigation happens
+  // remotely.
+  CHECK(context_type_ == kRemote || !security_origin_ ||
+        security_origin_->CanAccess(security_origin.get()));
+  security_origin_ = std::move(security_origin);
+}
+
+void SecurityContext::SetSecurityOriginForTesting(
     scoped_refptr<SecurityOrigin> security_origin) {
   security_origin_ = std::move(security_origin);
 }
@@ -120,22 +134,6 @@ bool SecurityContext::IsSandboxed(WebSandboxFlags mask) const {
       return !feature_policy_->IsFeatureEnabled(feature);
   }
   return (sandbox_flags_ & mask) != WebSandboxFlags::kNone;
-}
-
-String SecurityContext::addressSpaceForBindings() const {
-  switch (address_space_) {
-    case network::mojom::IPAddressSpace::kPublic:
-    case network::mojom::IPAddressSpace::kUnknown:
-      return "public";
-
-    case network::mojom::IPAddressSpace::kPrivate:
-      return "private";
-
-    case network::mojom::IPAddressSpace::kLocal:
-      return "local";
-  }
-  NOTREACHED();
-  return "public";
 }
 
 void SecurityContext::SetRequireTrustedTypes() {
@@ -174,29 +172,17 @@ void SecurityContext::SetDocumentPolicyForTesting(
   document_policy_ = std::move(document_policy);
 }
 
-bool SecurityContext::IsFeatureEnabled(mojom::FeaturePolicyFeature feature,
-                                       ReportOptions report_on_failure,
-                                       const String& message,
-                                       const String& source_file) const {
+bool SecurityContext::IsFeatureEnabled(
+    mojom::FeaturePolicyFeature feature) const {
   return IsFeatureEnabled(
-      feature,
-      PolicyValue::CreateMaxPolicyValue(
-          feature_policy_->GetFeatureList().at(feature).second),
-      report_on_failure, message, source_file);
+      feature, PolicyValue::CreateMaxPolicyValue(
+                   feature_policy_->GetFeatureList().at(feature).second));
 }
 
-bool SecurityContext::IsFeatureEnabled(mojom::FeaturePolicyFeature feature,
-                                       PolicyValue threshold_value,
-                                       ReportOptions report_on_failure,
-                                       const String& message,
-                                       const String& source_file) const {
-  if (report_on_failure == ReportOptions::kReportOnFailure) {
-    // We are expecting a violation report in case the feature is disabled in
-    // the context. Therefore, this qualifies as a potential violation (i.e.,
-    // if the feature was disabled it would generate a report).
-    CountPotentialFeaturePolicyViolation(feature);
-  }
-
+bool SecurityContext::IsFeatureEnabled(
+    mojom::FeaturePolicyFeature feature,
+    PolicyValue threshold_value,
+    base::Optional<mojom::FeaturePolicyDisposition>* disposition) const {
   bool document_policy_result =
       !(RuntimeEnabledFeatures::DocumentPolicyEnabled() && document_policy_) ||
       (document_policy_->IsFeatureSupported(feature) &&
@@ -205,22 +191,12 @@ bool SecurityContext::IsFeatureEnabled(mojom::FeaturePolicyFeature feature,
   FeatureEnabledState state = GetFeatureEnabledState(feature, threshold_value);
   if (state == FeatureEnabledState::kEnabled)
     return document_policy_result;
-  if (report_on_failure == ReportOptions::kReportOnFailure) {
-    ReportFeaturePolicyViolation(
-        feature,
-        (state == FeatureEnabledState::kReportOnly
-             ? mojom::FeaturePolicyDisposition::kReport
-             : mojom::FeaturePolicyDisposition::kEnforce),
-        message, source_file);
+  if (disposition) {
+    *disposition = (state == FeatureEnabledState::kReportOnly)
+                       ? mojom::FeaturePolicyDisposition::kReport
+                       : mojom::FeaturePolicyDisposition::kEnforce;
   }
   return (state != FeatureEnabledState::kDisabled) && document_policy_result;
-}
-
-FeatureEnabledState SecurityContext::GetFeatureEnabledState(
-    mojom::FeaturePolicyFeature feature) const {
-  return GetFeatureEnabledState(
-      feature, PolicyValue::CreateMaxPolicyValue(
-                   feature_policy_->GetFeatureList().at(feature).second));
 }
 
 FeatureEnabledState SecurityContext::GetFeatureEnabledState(

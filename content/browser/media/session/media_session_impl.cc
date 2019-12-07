@@ -28,6 +28,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/favicon_url.h"
 #include "media/base/media_content_type.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "services/media_session/public/cpp/media_image_manager.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
@@ -1025,7 +1026,9 @@ void MediaSessionImpl::GetMediaImageBitmap(
       image.src, false /* is_favicon */, desired_size_px /* preferred_size */,
       desired_size_px /* max_bitmap_size */, false /* bypass_cache */,
       base::BindOnce(&MediaSessionImpl::OnImageDownloadComplete,
-                     base::Unretained(this), std::move(callback),
+                     base::Unretained(this),
+                     mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+                         std::move(callback), SkBitmap()),
                      minimum_size_px, desired_size_px));
 }
 

@@ -88,6 +88,7 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   size_t GetRelatedActiveContentsCount() override;
   bool RequiresDedicatedProcess() override;
   bool IsSameSiteWithURL(const GURL& url) override;
+  bool IsGuest() override;
 
   // The policy to apply when selecting a RenderProcessHost for the
   // SiteInstance. If no suitable RenderProcessHost for the SiteInstance exists

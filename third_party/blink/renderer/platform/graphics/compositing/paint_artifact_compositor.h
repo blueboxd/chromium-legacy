@@ -217,15 +217,21 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
     PendingLayer(const PaintChunk& first_paint_chunk,
                  wtf_size_t first_chunk_index,
                  bool requires_own_layer);
-    // Merge another pending layer after this one, appending all its paint
+
+    // Merge another pending layer into this one, appending all its paint
     // chunks after chunks in this layer, with appropriate space conversion
-    // applied. The merged layer must have a property tree state that's deeper
-    // than this layer, i.e. can "upcast" to this layer's state.
-    void Merge(const PendingLayer& guest);
-    // |guest_state| is for cases that we want to check if we can merge |guest|
-    // if it has |guest_state| (which may be different from its current state).
-    bool CanMerge(const PendingLayer& guest,
-                  const PropertyTreeState& guest_state) const;
+    // applied to both this layer and the guest layer from their original
+    // property tree state to |merged_state|.
+    void Merge(const PendingLayer& guest,
+               const PropertyTreeState& merged_state);
+    // If the guest layer can be merged into this layer, returns the property
+    // tree state of the merged layer. |guest_state| is for cases that we want
+    // to check if we can merge |guest| if it has |guest_state| in the future
+    // (which may be different from its current state).
+    base::Optional<PropertyTreeState> CanMerge(
+        const PendingLayer& guest,
+        const PropertyTreeState& guest_state) const;
+
     // Mutate this layer's property tree state to a more general (shallower)
     // state, thus the name "upcast". The concrete effect of this is to
     // "decomposite" some of the properties, so that fewer properties will be

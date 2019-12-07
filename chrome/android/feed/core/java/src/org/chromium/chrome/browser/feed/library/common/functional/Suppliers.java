@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.common.functional;
 
+import org.chromium.base.Supplier;
+
 /** Utility methods for working with the {@link Supplier} class. */
 public class Suppliers {
     /**

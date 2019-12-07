@@ -21,7 +21,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/cross_origin_read_blocking.h"
-#include "services/network/public/cpp/resource_response_info.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -1983,10 +1983,11 @@ class ResponseAnalyzerTest : public testing::Test,
   ResponseAnalyzerTest() {}
 
   // Returns a ResourceResponse that matches the TestScenario's parameters.
-  ResourceResponseInfo CreateResponse(const std::string& response_content_type,
-                                      const std::string& raw_response_headers,
-                                      const std::string& initiator_origin) {
-    ResourceResponseInfo response;
+  mojom::URLResponseHeadPtr CreateResponse(
+      const std::string& response_content_type,
+      const std::string& raw_response_headers,
+      const std::string& initiator_origin) {
+    auto response = mojom::URLResponseHead::New();
     std::string formatted_response_headers =
         net::HttpUtil::AssembleRawHeaders(raw_response_headers);
     scoped_refptr<net::HttpResponseHeaders> response_headers =
@@ -1997,11 +1998,11 @@ class ResponseAnalyzerTest : public testing::Test,
     bool had_charset = false;
     response_headers->AddHeader(std::string("Content-Type: ") +
                                 response_content_type);
-    net::HttpUtil::ParseContentType(response_content_type, &response.mime_type,
+    net::HttpUtil::ParseContentType(response_content_type, &response->mime_type,
                                     &charset, &had_charset, nullptr);
-    EXPECT_FALSE(response.mime_type.empty())
+    EXPECT_FALSE(response->mime_type.empty())
         << "Invalid MIME type defined in kScenarios.";
-    response.headers = response_headers;
+    response->headers = response_headers;
 
     return response;
   }
@@ -2009,7 +2010,7 @@ class ResponseAnalyzerTest : public testing::Test,
   // Instantiate and run |analyzer_| on the current scenario. Allow the analyzer
   // to sniff the response body if needed and confirm it correctly decides to
   // block or allow.
-  void RunAnalyzerOnScenario(ResourceResponseInfo response) {
+  void RunAnalyzerOnScenario(const mojom::URLResponseHead& response) {
     TestScenario scenario = GetParam();
     // Initialize |request| from the parameters.
     std::unique_ptr<net::URLRequest> request =
@@ -2165,12 +2166,12 @@ TEST_P(ResponseAnalyzerTest, ResponseBlocking) {
   // values from it before the analyzer clears the headers. Once the
   // CORBProtection logging is removed (and that test gone) the response can be
   // constructed in RunAnalyzerOnScenario().
-  ResourceResponseInfo response =
+  auto response =
       CreateResponse(scenario.response_content_type, scenario.response_headers,
                      scenario.initiator_origin);
 
   // Run the analyzer and confirm it allows/blocks correctly.
-  RunAnalyzerOnScenario(response);
+  RunAnalyzerOnScenario(*response);
 
   // Verify that histograms are correctly incremented.
   base::HistogramTester::CountsMap expected_counts;
@@ -2237,23 +2238,23 @@ TEST_P(ResponseAnalyzerTest, CORBProtectionLogging) {
   // Initialize |response| from the parameters and record if it looks sensitive
   // or supports range requests. These values are saved because the analyzer
   // will clear the response headers in the event it decides to block.
-  ResourceResponseInfo response =
+  auto response =
       CreateResponse(scenario.response_content_type, scenario.response_headers,
                      scenario.initiator_origin);
   const bool seems_sensitive_from_cors_heuristic =
       network::CrossOriginReadBlocking::ResponseAnalyzer::
-          SeemsSensitiveFromCORSHeuristic(response);
+          SeemsSensitiveFromCORSHeuristic(*response);
   const bool seems_sensitive_from_cache_heuristic =
       network::CrossOriginReadBlocking::ResponseAnalyzer::
-          SeemsSensitiveFromCacheHeuristic(response);
+          SeemsSensitiveFromCacheHeuristic(*response);
   const bool supports_range_requests =
       network::CrossOriginReadBlocking::ResponseAnalyzer::SupportsRangeRequests(
-          response);
+          *response);
   const bool expect_nosniff =
-      network::CrossOriginReadBlocking::ResponseAnalyzer::HasNoSniff(response);
+      network::CrossOriginReadBlocking::ResponseAnalyzer::HasNoSniff(*response);
 
   // Run the analyzer and confirm it allows/blocks correctly.
-  RunAnalyzerOnScenario(response);
+  RunAnalyzerOnScenario(*response);
 
   base::HistogramTester::CountsMap expected_counts;
   expected_counts["SiteIsolation.CORBProtection.SensitiveResource"] = 1;
@@ -2653,143 +2654,141 @@ TEST(CrossOriginReadBlockingTest, GetCanonicalMimeType) {
   }
 }
 
-network::ResourceResponseInfo CreateResponse(std::string raw_headers) {
+mojom::URLResponseHeadPtr CreateResponse(std::string raw_headers) {
   scoped_refptr<net::HttpResponseHeaders> headers =
       base::MakeRefCounted<net::HttpResponseHeaders>(
           net::HttpUtil::AssembleRawHeaders(raw_headers));
-  network::ResourceResponseInfo response = {};
-  response.headers = headers;
+
+  auto response = mojom::URLResponseHead::New();
+  response->headers = headers;
   return response;
 }
 
 TEST(CrossOriginReadBlockingTest, SeemsSensitiveFromCORSHeuristic) {
   // Response with no CORS header.
-  network::ResourceResponseInfo no_cors_response =
-      CreateResponse("HTTP/1.1 200 OK");
+  auto no_cors_response = CreateResponse("HTTP/1.1 200 OK");
   EXPECT_FALSE(CrossOriginReadBlocking::ResponseAnalyzer::
-                   SeemsSensitiveFromCORSHeuristic(no_cors_response));
+                   SeemsSensitiveFromCORSHeuristic(*no_cors_response));
 
   // Response with CORS value = "*", so not sensitive.
-  network::ResourceResponseInfo cors_any_response = CreateResponse(
+  auto cors_any_response = CreateResponse(
       "HTTP/1.1 200 OK\n"
       "Access-Control-Allow-Origin: *");
   EXPECT_FALSE(CrossOriginReadBlocking::ResponseAnalyzer::
-                   SeemsSensitiveFromCORSHeuristic(cors_any_response));
+                   SeemsSensitiveFromCORSHeuristic(*cors_any_response));
 
   // Response with CORS value = "null", so not sensitive.
-  network::ResourceResponseInfo cors_null_response = CreateResponse(
+  auto cors_null_response = CreateResponse(
       "HTTP/1.1 200 OK\n"
       "Access-Control-Allow-Origin: null");
   EXPECT_FALSE(CrossOriginReadBlocking::ResponseAnalyzer::
-                   SeemsSensitiveFromCORSHeuristic(cors_null_response));
+                   SeemsSensitiveFromCORSHeuristic(*cors_null_response));
 
   // Response with CORS header restricting access to a particular origin.
-  network::ResourceResponseInfo cors_response = CreateResponse(
+  auto cors_response = CreateResponse(
       "HTTP/1.1 200 OK\n"
       "Access-Control-Allow-Origin: http://www.a.com/");
   EXPECT_TRUE(CrossOriginReadBlocking::ResponseAnalyzer::
-                  SeemsSensitiveFromCORSHeuristic(cors_response));
+                  SeemsSensitiveFromCORSHeuristic(*cors_response));
 }
 
 TEST(CrossOriginReadBlockingTest, SeemsSensitiveFromCacheHeuristic) {
   // Response with no cache-control or vary header.
-  network::ResourceResponseInfo no_cache_response =
-      CreateResponse("HTTP/1.1 200 OK");
+  auto no_cache_response = CreateResponse("HTTP/1.1 200 OK");
   EXPECT_FALSE(CrossOriginReadBlocking::ResponseAnalyzer::
-                   SeemsSensitiveFromCacheHeuristic(no_cache_response));
+                   SeemsSensitiveFromCacheHeuristic(*no_cache_response));
 
   // Response with cache-control but no vary header.
-  network::ResourceResponseInfo cache_only_response = CreateResponse(
+  auto cache_only_response = CreateResponse(
       "HTTP/1.1 200 OK\n"
       "Cache-Control: private");
   EXPECT_FALSE(CrossOriginReadBlocking::ResponseAnalyzer::
-                   SeemsSensitiveFromCacheHeuristic(cache_only_response));
+                   SeemsSensitiveFromCacheHeuristic(*cache_only_response));
 
   // Response with vary: origin but no cache-control header.
-  network::ResourceResponseInfo vary_only_response = CreateResponse(
+  auto vary_only_response = CreateResponse(
       "HTTP/1.1 200 OK\n"
       "Vary: origin");
   EXPECT_FALSE(CrossOriginReadBlocking::ResponseAnalyzer::
-                   SeemsSensitiveFromCacheHeuristic(vary_only_response));
+                   SeemsSensitiveFromCacheHeuristic(*vary_only_response));
 
   // Response with vary: user-agent and cache-control: no-cache (should still
   // not seem sensitive).
-  network::ResourceResponseInfo wrong_values_response = CreateResponse(
+  auto wrong_values_response = CreateResponse(
       "HTTP/1.1 200 OK\n"
       "Vary: user-agent\n"
       "Cache-Control: no-cache");
   EXPECT_FALSE(CrossOriginReadBlocking::ResponseAnalyzer::
-                   SeemsSensitiveFromCacheHeuristic(wrong_values_response));
+                   SeemsSensitiveFromCacheHeuristic(*wrong_values_response));
 
   // Response with vary: origin and cache-control: private.
-  network::ResourceResponseInfo vary_and_cache_response = CreateResponse(
+  auto vary_and_cache_response = CreateResponse(
       "HTTP/1.1 200 OK\n"
       "Vary: origin\n"
       "Cache-Control: private");
   EXPECT_TRUE(CrossOriginReadBlocking::ResponseAnalyzer::
-                  SeemsSensitiveFromCacheHeuristic(vary_and_cache_response));
+                  SeemsSensitiveFromCacheHeuristic(*vary_and_cache_response));
 
   // Response with vary: origin, user-agent and cache-control: private, no-store
   // (we should still find the relevant values).
-  network::ResourceResponseInfo extra_values_response = CreateResponse(
+  auto extra_values_response = CreateResponse(
       "HTTP/1.1 200 OK\n"
       "Vary: origin, user-agent\n"
       "Cache-Control: no-cache, private");
   EXPECT_TRUE(CrossOriginReadBlocking::ResponseAnalyzer::
-                  SeemsSensitiveFromCacheHeuristic(extra_values_response));
+                  SeemsSensitiveFromCacheHeuristic(*extra_values_response));
 }
 
 TEST(CrossOriginReadBlockingTest, SeemsSensitiveWithBothHeuristics) {
   // Response with CORS heuristic should not appear sensitive to cache
   // heuristic.
-  network::ResourceResponseInfo cors_response = CreateResponse(
+  auto cors_response = CreateResponse(
       "HTTP/1.1 200 OK\n"
       "Access-Control-Allow-Origin: http://www.a.com/");
   EXPECT_FALSE(CrossOriginReadBlocking::ResponseAnalyzer::
-                   SeemsSensitiveFromCacheHeuristic(cors_response));
+                   SeemsSensitiveFromCacheHeuristic(*cors_response));
 
   // Response with cache heuristic should not appear sensitive to CORS
   // heuristic.
-  network::ResourceResponseInfo cache_response = CreateResponse(
+  auto cache_response = CreateResponse(
       "HTTP/1.1 200 OK\n"
       "Vary: origin\n"
       "Cache-Control: private");
   EXPECT_FALSE(CrossOriginReadBlocking::ResponseAnalyzer::
-                   SeemsSensitiveFromCORSHeuristic(cache_response));
+                   SeemsSensitiveFromCORSHeuristic(*cache_response));
 
   // Response with both cache and CORS heuristic signals (e.g. vary: origin +
   // cache-control: private as well as the access-control-allow-origin header).
-  network::ResourceResponseInfo both_response = CreateResponse(
+  auto both_response = CreateResponse(
       "HTTP/1.1 200 OK\n"
       "Vary: origin\n"
       "Cache-Control: private\n"
       "Access-Control-Allow-Origin: http://www.a.com/");
   EXPECT_TRUE(CrossOriginReadBlocking::ResponseAnalyzer::
-                  SeemsSensitiveFromCORSHeuristic(both_response));
+                  SeemsSensitiveFromCORSHeuristic(*both_response));
   EXPECT_TRUE(CrossOriginReadBlocking::ResponseAnalyzer::
-                  SeemsSensitiveFromCacheHeuristic(both_response));
+                  SeemsSensitiveFromCacheHeuristic(*both_response));
 }
 
 TEST(CrossOriginReadBlockingTest, SupportsRangeRequests) {
   // Response with no Accept-Ranges header. Should return false.
-  network::ResourceResponseInfo no_accept_ranges =
-      CreateResponse("HTTP/1.1 200 OK");
+  auto no_accept_ranges = CreateResponse("HTTP/1.1 200 OK");
   EXPECT_FALSE(CrossOriginReadBlocking::ResponseAnalyzer::SupportsRangeRequests(
-      no_accept_ranges));
+      *no_accept_ranges));
 
   // Response with an Accept-Ranges header. Should return true.
-  network::ResourceResponseInfo bytes_accept_ranges = CreateResponse(
+  auto bytes_accept_ranges = CreateResponse(
       "HTTP/1.1 200 OK\n"
       "Accept-Ranges: bytes");
   EXPECT_TRUE(CrossOriginReadBlocking::ResponseAnalyzer::SupportsRangeRequests(
-      bytes_accept_ranges));
+      *bytes_accept_ranges));
 
   // Response with an Accept-Ranges header value of |none|. Should return false.
-  network::ResourceResponseInfo none_accept_ranges = CreateResponse(
+  auto none_accept_ranges = CreateResponse(
       "HTTP/1.1 200 OK\n"
       "Accept-Ranges: none");
   EXPECT_FALSE(CrossOriginReadBlocking::ResponseAnalyzer::SupportsRangeRequests(
-      none_accept_ranges));
+      *none_accept_ranges));
 }
 
 }  // namespace network

@@ -8,11 +8,13 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
 namespace {
@@ -187,8 +189,24 @@ void SnapCoordinator::SnapAreaDidChange(LayoutBox& snap_area,
 }
 
 void SnapCoordinator::ReSnapAllContainers() {
-  for (const auto* container : snap_containers_)
-    ScrollableArea::GetForScrolling(container)->SnapAfterLayout();
+  for (const auto* container : snap_containers_) {
+    auto* scrollable_area = ScrollableArea::GetForScrolling(container);
+    ScrollOffset initial_offset = scrollable_area->GetScrollOffset();
+    scrollable_area->SnapAfterLayout();
+
+    // If this is the first time resnapping all containers then this means this
+    // is the initial layout. We record whenever the initial scroll offset
+    // changes as a result of snapping.
+    // TODO(majidvp): This is here to measure potential web-compat impact of
+    // launching this feature. We should remove it once it is launched.
+    // crbug.com/866127
+    if (!did_first_resnap_all_containers_ &&
+        scrollable_area->GetScrollOffset() != initial_offset) {
+      UseCounter::Count(container->GetDocument(),
+                        WebFeature::kScrollSnapCausesScrollOnInitialLayout);
+    }
+  }
+  did_first_resnap_all_containers_ = true;
 }
 
 void SnapCoordinator::UpdateAllSnapContainerData() {

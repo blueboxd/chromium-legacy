@@ -32,6 +32,7 @@
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
@@ -159,9 +160,12 @@ class PortForwardingHostResolver : public network::ResolveHostClientBase {
     DCHECK(!receiver_.is_bound());
 
     net::HostPortPair host_port_pair(host, port);
+    // Use a transient NetworkIsolationKey, as there's no need to share cached
+    // DNS results from this request with anything else.
     content::BrowserContext::GetDefaultStoragePartition(profile)
         ->GetNetworkContext()
-        ->ResolveHost(host_port_pair, nullptr,
+        ->ResolveHost(host_port_pair,
+                      net::NetworkIsolationKey::CreateTransient(), nullptr,
                       receiver_.BindNewPipeAndPassRemote());
     receiver_.set_disconnect_handler(
         base::BindOnce(&PortForwardingHostResolver::OnComplete,

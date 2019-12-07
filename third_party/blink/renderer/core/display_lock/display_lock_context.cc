@@ -894,7 +894,7 @@ const char* DisplayLockContext::ShouldForceUnlock() const {
   auto* html_element = DynamicTo<HTMLElement>(element_.Get());
   if ((style->IsDisplayTableType() &&
        style->Display() != EDisplay::kTableCell) ||
-      (!html_element || IsHTMLRubyElement(html_element)) ||
+      (!html_element || IsA<HTMLRubyElement>(html_element)) ||
       (style->IsDisplayInlineType() && !style->IsDisplayReplacedType())) {
     return rejection_names::kContainmentNotSatisfied;
   }

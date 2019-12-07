@@ -13,9 +13,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.client.requestmanager.RequestManager;
 import org.chromium.chrome.browser.feed.library.api.internal.sessionmanager.FeedSessionManager;
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 import org.chromium.chrome.browser.feed.library.common.functional.Function;
 import org.chromium.chrome.browser.feed.library.common.testing.InfraIntegrationScope;
 import org.chromium.chrome.browser.feed.library.common.testing.ResponseBuilder;

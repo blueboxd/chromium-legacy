@@ -24,7 +24,8 @@ DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
       new download::DownloadUrlParameters(
           url, render_frame_host->GetProcess()->GetID(),
           render_frame_host->GetRenderViewHost()->GetRoutingID(),
-          render_frame_host->GetRoutingID(), traffic_annotation));
+          render_frame_host->GetRoutingID(), traffic_annotation,
+          render_frame_host->GetNetworkIsolationKey()));
 }
 
 // static

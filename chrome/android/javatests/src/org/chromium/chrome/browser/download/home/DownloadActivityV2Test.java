@@ -146,8 +146,9 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
         mModalDialogManager =
                 new ModalDialogManager(mAppModalPresenter, ModalDialogManager.ModalDialogType.APP);
 
-        mDownloadCoordinator = new DownloadManagerCoordinatorImpl(
-                getActivity(), config, mSnackbarManager, mModalDialogManager, mTracker);
+        FaviconProvider faviconProvider = (url, faviconSizePx, callback) -> {};
+        mDownloadCoordinator = new DownloadManagerCoordinatorImpl(getActivity(), config,
+                mSnackbarManager, mModalDialogManager, mTracker, faviconProvider);
         getActivity().setContentView(mDownloadCoordinator.getView());
 
         mDownloadCoordinator.updateForUrl(UrlConstants.DOWNLOADS_URL);

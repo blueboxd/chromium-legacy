@@ -304,6 +304,7 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
   // Popup is dismissed.
   WaitForStatus(TestPopupObserver::GenerationPopup::kHidden);
 }
+
 IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
                        PopupShownAndDismissedByKeyPress) {
   FocusPasswordField();
@@ -382,4 +383,18 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
   EXPECT_EQ(1u, stored_passwords.begin()->second.size());
   EXPECT_EQ(base::UTF8ToUTF16("UN"),
             (stored_passwords.begin()->second)[0].username_value);
+}
+
+// Verify that navigating away closes the popup.
+IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
+                       NavigatingAwayClosesPopup) {
+  // Open popup.
+  FocusPasswordField();
+  EXPECT_TRUE(GenerationPopupShowing());
+
+  // Simulate navigating to a different page.
+  NavigateToFile("/password/signup_form.html");
+
+  // Check that popup is dismissed.
+  EXPECT_FALSE(GenerationPopupShowing());
 }

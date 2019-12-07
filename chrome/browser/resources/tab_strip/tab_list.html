@@ -10,20 +10,21 @@
     display: flex;
     height: 100%;
     overflow: overlay hidden;
+    touch-action: pan-x;
     width: 100%;
   }
 
   #pinnedTabsContainer {
-    /* 4 pinned tabs should fit in the same space vertically as 1 unpinned
-     * tab. 30px is subtracted from the height of an unpinned tab as there
-     * are three 10px gaps to separate each of the 4 pinned tabs. */
-    --tabstrip-pinned-tab-size: calc((var(--tabstrip-tab-height) - 30px) / 4);
+    /* 3 pinned tabs should fit in the same space vertically as 1 unpinned
+     * tab. 20px is subtracted from the height of an unpinned tab as there
+     * are two 10px gaps to separate each of the 3 pinned tabs. */
+    --tabstrip-pinned-tab-size: calc((var(--tabstrip-tab-height) - 20px) / 3);
 
     display: grid;
     grid-auto-columns: var(--tabstrip-pinned-tab-size);
     grid-auto-flow: column;
     grid-gap: 10px;
-    grid-template-rows: repeat(4, var(--tabstrip-pinned-tab-size));
+    grid-template-rows: repeat(3, var(--tabstrip-pinned-tab-size));
     padding: var(--tabstrip-tab-spacing);
     padding-inline-end: 0;
   }
@@ -38,6 +39,7 @@
     overflow: hidden;
     padding: var(--tabstrip-tab-spacing);
     padding-inline-end: 0;
+    width: 100%;
   }
 
   #demoOptions {

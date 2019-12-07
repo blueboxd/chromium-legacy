@@ -108,8 +108,9 @@ MutationObserver* MutationObserver::Create(ScriptState* script_state,
 
 MutationObserver::MutationObserver(ExecutionContext* execution_context,
                                    Delegate* delegate)
-    : ContextClient(execution_context), delegate_(delegate) {
+    : ContextLifecycleStateObserver(execution_context), delegate_(delegate) {
   priority_ = g_observer_priority++;
+  UpdateStateIfNeeded();
 }
 
 MutationObserver::~MutationObserver() = default;
@@ -233,11 +234,6 @@ static SlotChangeList& ActiveSlotChangeList() {
                       (MakeGarbageCollected<SlotChangeList>()));
   return *slot_change_list;
 }
-static MutationObserverSet& SuspendedMutationObservers() {
-  DEFINE_STATIC_LOCAL(Persistent<MutationObserverSet>, suspended_observers,
-                      (MakeGarbageCollected<MutationObserverSet>()));
-  return *suspended_observers;
-}
 static void EnsureEnqueueMicrotask() {
   if (ActiveMutationObservers().IsEmpty() && ActiveSlotChangeList().IsEmpty())
     Microtask::EnqueueMicrotask(WTF::Bind(&MutationObserver::DeliverMutations));
@@ -286,9 +282,10 @@ HeapHashSet<Member<Node>> MutationObserver::GetObservedNodes() const {
   return observed_nodes;
 }
 
-bool MutationObserver::ShouldBeSuspended() const {
-  const ExecutionContext* execution_context = delegate_->GetExecutionContext();
-  return execution_context && execution_context->IsContextPaused();
+void MutationObserver::ContextLifecycleStateChanged(
+    mojom::FrameLifecycleState state) {
+  if (state == mojom::FrameLifecycleState::kRunning)
+    ActivateObserver(this);
 }
 
 void MutationObserver::CancelInspectorAsyncTasks() {
@@ -299,7 +296,8 @@ void MutationObserver::CancelInspectorAsyncTasks() {
 }
 
 void MutationObserver::Deliver() {
-  DCHECK(!ShouldBeSuspended());
+  if (!GetExecutionContext() || GetExecutionContext()->IsContextPaused())
+    return;
 
   // Calling ClearTransientRegistrations() can modify registrations_, so it's
   // necessary to make a copy of the transient registrations before operating on
@@ -325,21 +323,6 @@ void MutationObserver::Deliver() {
 }
 
 // static
-void MutationObserver::ResumeSuspendedObservers() {
-  DCHECK(IsMainThread());
-  if (SuspendedMutationObservers().IsEmpty())
-    return;
-  MutationObserverVector suspended;
-  CopyToVector(SuspendedMutationObservers(), suspended);
-  for (const auto& observer : suspended) {
-    if (!observer->ShouldBeSuspended()) {
-      SuspendedMutationObservers().erase(observer);
-      ActivateObserver(observer);
-    }
-  }
-}
-
-// static
 void MutationObserver::DeliverMutations() {
   // These steps are defined in DOM Standard's "notify mutation observers".
   // https://dom.spec.whatwg.org/#notify-mutation-observers
@@ -352,17 +335,8 @@ void MutationObserver::DeliverMutations() {
   for (const auto& slot : slots)
     slot->ClearSlotChangeEventEnqueued();
   std::sort(observers.begin(), observers.end(), ObserverLessThan());
-  for (const auto& observer : observers) {
-    if (!observer->GetExecutionContext()) {
-      // The observer's execution context is already gone, as active observers
-      // intentionally do not hold their execution context. Do nothing then.
-      continue;
-    }
-    if (observer->ShouldBeSuspended())
-      SuspendedMutationObservers().insert(observer);
-    else
-      observer->Deliver();
-  }
+  for (const auto& observer : observers)
+    observer->Deliver();
   for (const auto& slot : slots)
     slot->DispatchSlotChangeEvent();
 }
@@ -372,7 +346,7 @@ void MutationObserver::Trace(Visitor* visitor) {
   visitor->Trace(records_);
   visitor->Trace(registrations_);
   ScriptWrappable::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ContextLifecycleStateObserver::Trace(visitor);
 }
 
 }  // namespace blink

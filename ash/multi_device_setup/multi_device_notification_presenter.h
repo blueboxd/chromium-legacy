@@ -10,6 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/session/session_observer.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -22,10 +23,6 @@ namespace message_center {
 class MessageCenter;
 class Notification;
 }  // namespace message_center
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
 
 namespace ash {
 
@@ -48,9 +45,8 @@ class ASH_EXPORT MultiDeviceNotificationPresenter
       public SessionObserver,
       public message_center::MessageCenterObserver {
  public:
-  MultiDeviceNotificationPresenter(
-      message_center::MessageCenter* message_center,
-      service_manager::Connector* connector);
+  explicit MultiDeviceNotificationPresenter(
+      message_center::MessageCenter* message_center);
   ~MultiDeviceNotificationPresenter() override;
 
   // Removes the notification created by NotifyPotentialHostExists() or does
@@ -121,7 +117,6 @@ class ASH_EXPORT MultiDeviceNotificationPresenter
   void FlushForTesting();
 
   message_center::MessageCenter* message_center_;
-  service_manager::Connector* connector_;
 
   // Notification currently showing or
   // Status::kNoNotificationVisible if there isn't one.

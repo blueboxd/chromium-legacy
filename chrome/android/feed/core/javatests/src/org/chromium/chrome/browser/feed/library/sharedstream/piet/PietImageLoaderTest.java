@@ -16,9 +16,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.host.imageloader.ImageLoaderApi;
 import org.chromium.chrome.browser.feed.library.api.host.stream.CardConfiguration;
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 import org.chromium.chrome.browser.feed.library.common.time.testing.FakeClock;
 import org.chromium.components.feed.core.proto.ui.piet.ImagesProto.Image;
 import org.chromium.components.feed.core.proto.ui.piet.ImagesProto.ImageSource;

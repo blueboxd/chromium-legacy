@@ -369,9 +369,9 @@ TEST_P(WaylandPointerTest, SetBitmapOnPointerFocus) {
   Mock::VerifyAndClearExpectations(pointer_);
 }
 
-INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,
+INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          WaylandPointerTest,
-                         ::testing::Values(kXdgShellV5));
+                         ::testing::Values(kXdgShellStable));
 INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
                          WaylandPointerTest,
                          ::testing::Values(kXdgShellV6));

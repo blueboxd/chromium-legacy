@@ -16,7 +16,8 @@ namespace printing {
 
 class DummyPrintBackend : public PrintBackend {
  public:
-  DummyPrintBackend() {}
+  explicit DummyPrintBackend(const std::string& locale)
+      : PrintBackend(locale) {}
 
   bool EnumeratePrinters(PrinterList* printer_list) override { return false; }
 
@@ -48,15 +49,16 @@ class DummyPrintBackend : public PrintBackend {
   }
 
  private:
-  ~DummyPrintBackend() override {}
+  ~DummyPrintBackend() override = default;
 
   DISALLOW_COPY_AND_ASSIGN(DummyPrintBackend);
 };
 
 // static
 scoped_refptr<PrintBackend> PrintBackend::CreateInstanceImpl(
-    const base::DictionaryValue* print_backend_settings) {
-  return new DummyPrintBackend();
+    const base::DictionaryValue* print_backend_settings,
+    const std::string& locale) {
+  return base::MakeRefCounted<DummyPrintBackend>(locale);
 }
 
 }  // namespace printing

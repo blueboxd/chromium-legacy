@@ -2491,6 +2491,27 @@
     <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_CONNECT_BUTTON" desc="Settings > Internet > Tether Connection Dialog > Button which, when tapped, starts a connection attempt to the device.">
       Connect
     </message>
+    <message name="IDS_SETTINGS_INTERNET_ETHERNET_NETWORK" desc="Settings > Internet > Accessibility label for nework icon: Ethernet">
+      Ethernet network
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_VPN_NETWORK" desc="Settings > Internet > Accessibility label for nework icon: VPN">
+      VPN network
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_OFF" desc="Settings > Internet > Accessibility label for nework icon: network off">
+      <ph name="NETWORK_TYPE">$1<ex>Instant Tethering</ex></ph> network, off
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_NO_NETWORK" desc="Settings > Internet > Accessibility label for nework icon: no network">
+      <ph name="NETWORK_TYPE">$1<ex>Instant Tethering</ex></ph>, no network
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_CONNECTING" desc="Settings > Internet > Accessibility label for nework icon: network, connecting">
+      <ph name="NETWORK_TYPE">$1<ex>Instant Tethering</ex></ph> network, connecting
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_NOT_CONNECTED" desc="Settings > Internet > Accessibility label for nework icon: network, not connected">
+      <ph name="NETWORK_TYPE">$1<ex>Instant Tethering</ex></ph> network, not connected
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_STRENGTH" desc="Settings > Internet > Accessibility label for nework icon: connected with signal strength percentage">
+      <ph name="NETWORK_TYPE">$1<ex>Instant Tethering</ex></ph> network, signal strength <ph name="SIGNAL_STRENGTH">$2<ex>80</ex></ph>%
+    </message>
     <message name="IDS_SETTINGS_INTERNET_TOGGLE_TETHER_LABEL" desc="Settings > Internet: Label for Tether enable/disable toggle .">
       Get data connection
     </message>

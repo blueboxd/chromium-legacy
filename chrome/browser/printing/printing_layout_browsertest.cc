@@ -58,7 +58,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
 
   void TearDown() override {
     InProcessBrowserTest::TearDown();
-    base::DeleteFile(emf_path_, true);
+    base::DeleteFileRecursively(emf_path_);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

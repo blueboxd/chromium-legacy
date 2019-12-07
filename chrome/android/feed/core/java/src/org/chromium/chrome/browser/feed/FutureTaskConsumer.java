@@ -5,9 +5,9 @@
 package org.chromium.chrome.browser.feed;
 
 import org.chromium.base.Callback;
+import org.chromium.base.Consumer;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.feed.library.common.concurrent.SimpleSettableFuture;
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 
 import java.util.concurrent.ExecutionException;
 

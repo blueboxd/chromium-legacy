@@ -294,6 +294,8 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   bool IsBrowserInitiated() const { return is_browser_initiated_; }
 
+  bool IsSameOriginNavigation() const { return is_same_origin_navigation_; }
+
   // TODO(dcheng, japhet): Some day, Document::Url() will always match
   // DocumentLoader::Url(), and one of them will be removed. Today is not that
   // day though.
@@ -494,6 +496,9 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   // Whether this load request was initiated by the browser.
   bool is_browser_initiated_ = false;
+
+  // Whether this load request was initiated by the same origin.
+  bool is_same_origin_navigation_ = false;
 
   // See WebNavigationParams for definition.
   bool was_discarded_ = false;

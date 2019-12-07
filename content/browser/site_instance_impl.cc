@@ -544,6 +544,10 @@ bool SiteInstanceImpl::IsSameSiteWithURL(const GURL& url) {
                                       true /* should_compare_effective_urls */);
 }
 
+bool SiteInstanceImpl::IsGuest() {
+  return site_.SchemeIs(kGuestScheme);
+}
+
 bool SiteInstanceImpl::IsOriginalUrlSameSite(
     const GURL& dest_url,
     bool should_compare_effective_urls) {

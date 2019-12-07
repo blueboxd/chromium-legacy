@@ -35,7 +35,6 @@ void MultiDeviceSetupService::RegisterProfilePrefs(
 }
 
 MultiDeviceSetupService::MultiDeviceSetupService(
-    service_manager::mojom::ServiceRequest request,
     PrefService* pref_service,
     device_sync::DeviceSyncClient* device_sync_client,
     AuthTokenValidator* auth_token_validator,
@@ -43,8 +42,7 @@ MultiDeviceSetupService::MultiDeviceSetupService(
     AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate,
     AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker,
     const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider)
-    : service_binding_(this, std::move(request)),
-      multidevice_setup_(
+    : multidevice_setup_(
           MultiDeviceSetupInitializer::Factory::Get()->BuildInstance(
               pref_service,
               device_sync_client,
@@ -65,24 +63,14 @@ MultiDeviceSetupService::~MultiDeviceSetupService() {
     multidevice_setup_->CloseAllReceivers();
 }
 
-void MultiDeviceSetupService::OnStart() {
-  PA_LOG(VERBOSE) << "MultiDeviceSetupService::OnStart()";
-  registry_.AddInterface(
-      base::BindRepeating(&MultiDeviceSetupBase::BindReceiver,
-                          base::Unretained(multidevice_setup_.get())));
-  registry_.AddInterface(base::BindRepeating(
-      &PrivilegedHostDeviceSetterBase::BindReceiver,
-      base::Unretained(privileged_host_device_setter_.get())));
+void MultiDeviceSetupService::BindMultiDeviceSetup(
+    mojo::PendingReceiver<mojom::MultiDeviceSetup> receiver) {
+  multidevice_setup_->BindReceiver(std::move(receiver));
 }
 
-void MultiDeviceSetupService::OnBindInterface(
-    const service_manager::BindSourceInfo& source_info,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  PA_LOG(VERBOSE)
-      << "MultiDeviceSetupService::OnBindInterface() from interface "
-      << interface_name << ".";
-  registry_.BindInterface(interface_name, std::move(interface_pipe));
+void MultiDeviceSetupService::BindPrivilegedHostDeviceSetter(
+    mojo::PendingReceiver<mojom::PrivilegedHostDeviceSetter> receiver) {
+  privileged_host_device_setter_->BindReceiver(std::move(receiver));
 }
 
 }  // namespace multidevice_setup

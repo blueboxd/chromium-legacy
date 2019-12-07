@@ -580,42 +580,6 @@ TEST_F(ContentSettingsAgentImplBrowserTest, ContentSettingsInterstitialPages) {
   EXPECT_EQ(0, mock_agent.on_content_blocked_count());
 }
 
-TEST_F(ContentSettingsAgentImplBrowserTest, AutoplayContentSettings) {
-  MockContentSettingsAgentImpl mock_agent(view_->GetMainRenderFrame(),
-                                          registry_.get());
-
-  // Load some HTML.
-  LoadHTML("<html>Foo</html>");
-
-  // Set the default setting.
-  RendererContentSettingRules content_setting_rules;
-  ContentSettingsForOneType& autoplay_setting_rules =
-      content_setting_rules.autoplay_rules;
-  autoplay_setting_rules.push_back(ContentSettingPatternSource(
-      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      base::Value::FromUniquePtrValue(
-          content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW)),
-      std::string(), false));
-
-  ContentSettingsAgentImpl* agent =
-      ContentSettingsAgentImpl::Get(view_->GetMainRenderFrame());
-  agent->SetContentSettingRules(&content_setting_rules);
-
-  EXPECT_TRUE(agent->AllowAutoplay(false));
-
-  // Add rule to block autoplay.
-  autoplay_setting_rules.insert(
-      autoplay_setting_rules.begin(),
-      ContentSettingPatternSource(
-          ContentSettingsPattern::Wildcard(),
-          ContentSettingsPattern::Wildcard(),
-          base::Value::FromUniquePtrValue(
-              content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK)),
-          std::string(), false));
-
-  EXPECT_FALSE(agent->AllowAutoplay(true));
-}
-
 TEST_F(ContentSettingsAgentImplBrowserTest, MixedAutoupgradesDisabledByRules) {
   MockContentSettingsAgentImpl mock_agent(view_->GetMainRenderFrame(),
                                           registry_.get());

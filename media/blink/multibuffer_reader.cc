@@ -113,7 +113,7 @@ int64_t MultiBufferReader::TryRead(uint8_t* data, int64_t len) {
   return bytes_read;
 }
 
-int MultiBufferReader::Wait(int64_t len, const base::Closure& cb) {
+int MultiBufferReader::Wait(int64_t len, base::OnceClosure cb) {
   DCHECK_LE(pos_ + len, end_);
   DCHECK_NE(Available(), -1);
   DCHECK_LE(len, max_buffer_forward_);
@@ -125,7 +125,7 @@ int MultiBufferReader::Wait(int64_t len, const base::Closure& cb) {
   if (Available() >= current_wait_size_) {
     return net::OK;
   } else {
-    cb_ = cb;
+    cb_ = std::move(cb);
     return net::ERR_IO_PENDING;
   }
 }
@@ -155,8 +155,8 @@ void MultiBufferReader::CheckWait() {
   }
 }
 
-void MultiBufferReader::Call(const base::Closure& cb) const {
-  cb.Run();
+void MultiBufferReader::Call(base::OnceClosure cb) const {
+  std::move(cb).Run();
 }
 
 void MultiBufferReader::UpdateEnd(MultiBufferBlockId p) {

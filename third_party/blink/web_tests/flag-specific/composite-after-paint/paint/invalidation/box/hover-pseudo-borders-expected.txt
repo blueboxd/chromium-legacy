@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) \u003Cpseudo:after\u003E",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) ::after",
           "rect": [138, 8, 100, 100],
           "reason": "style change"
         },

@@ -113,6 +113,7 @@ class MediaRouterMetrics {
   static const char kHistogramUiDialogLoadedWithData[];
   static const char kHistogramUiDialogPaint[];
   static const char kHistogramUiFirstAction[];
+  static const char kHistogramUiIconStateAtInit[];
 
   // Records where the user clicked to open the Media Router dialog.
   static void RecordMediaRouterDialogOrigin(MediaRouterDialogOpenOrigin origin);
@@ -188,6 +189,10 @@ class MediaRouterMetrics {
   // Records whether the toolbar icon is pinned by the user pref / admin policy.
   // Recorded whenever the Cast dialog is opened.
   static void RecordIconStateAtDialogOpen(bool is_pinned);
+
+  // Records whether the toolbar icon is pinned by the user pref / admin policy.
+  // Recorded whenever the browser is initialized.
+  static void RecordIconStateAtInit(bool is_pinned);
 };
 
 }  // namespace media_router

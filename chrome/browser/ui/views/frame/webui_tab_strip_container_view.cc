@@ -24,7 +24,9 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/chrome_view_class_properties.h"
 #include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_view.h"
+#include "chrome/browser/ui/views/feature_promos/feature_promo_colors.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/webui_tab_counter_button.h"
@@ -126,9 +128,15 @@ WebUITabStripContainerView::WebUITabStripContainerView(
   // EventTargets.
   auto_closer_->DisableCheckTargets();
 
-  SetVisible(true);
-  animation_.Reset(1.0);
-  auto_closer_->set_enabled(true);
+  SetVisible(false);
+  animation_.Reset(0.0);
+
+  // TODO(crbug.com/1010589) WebContents are initially assumed to be visible by
+  // default unless explicitly hidden. The WebContents need to be set to hidden
+  // so that the visibility state of the document in JavaScript is correctly
+  // initially set to 'hidden', and the 'visibilitychange' events correctly get
+  // fired.
+  web_view_->GetWebContents()->WasHidden();
 
   web_view_->set_allow_accelerators(true);
 
@@ -226,6 +234,7 @@ WebUITabStripContainerView::GetAcceleratorProvider() const {
 
 void WebUITabStripContainerView::CloseContainer() {
   SetContainerTargetVisibility(false);
+  iph_tracker_->NotifyEvent(feature_engagement::events::kWebUITabStripClosed);
 }
 
 void WebUITabStripContainerView::SetContainerTargetVisibility(
@@ -237,13 +246,13 @@ void WebUITabStripContainerView::SetContainerTargetVisibility(
     web_view_->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
     time_at_open_ = base::TimeTicks::Now();
 
-    iph_tracker_->NotifyEvent(feature_engagement::events::kWebUITabStripOpened);
     // If we're opening, end IPH if it's showing.
     if (tab_counter_promo_) {
       widget_observer_.Remove(tab_counter_promo_->GetWidget());
       tab_counter_promo_->GetWidget()->CloseWithReason(
           views::Widget::ClosedReason::kUnspecified);
       tab_counter_promo_ = nullptr;
+      tab_counter_->SetProperty(kHasInProductHelpPromoKey, false);
       iph_tracker_->Dismissed(feature_engagement::kIPHWebUITabStripFeature);
     }
   } else {
@@ -305,6 +314,7 @@ bool WebUITabStripContainerView::EventShouldPropagate(const ui::Event& event) {
 
 void WebUITabStripContainerView::CloseForEventOutsideTabStrip() {
   RecordTabStripUICloseHistogram(TabStripUICloseAction::kTapOutsideTabStrip);
+  iph_tracker_->NotifyEvent(feature_engagement::events::kWebUITabStripClosed);
   SetContainerTargetVisibility(false);
 }
 
@@ -312,20 +322,8 @@ void WebUITabStripContainerView::AnimationEnded(
     const gfx::Animation* animation) {
   DCHECK_EQ(&animation_, animation);
   PreferredSizeChanged();
-  if (animation_.GetCurrentValue() == 0.0) {
+  if (animation_.GetCurrentValue() == 0.0)
     SetVisible(false);
-    iph_tracker_->NotifyEvent(feature_engagement::events::kWebUITabStripClosed);
-    if (iph_tracker_->ShouldTriggerHelpUI(
-            feature_engagement::kIPHWebUITabStripFeature)) {
-      DCHECK(tab_counter_);
-      tab_counter_promo_ = FeaturePromoBubbleView::CreateOwned(
-          tab_counter_, views::BubbleBorder::TOP_RIGHT,
-          FeaturePromoBubbleView::ActivationAction::DO_NOT_ACTIVATE,
-          IDS_WEBUI_TAB_STRIP_PROMO);
-      tab_counter_promo_->set_close_on_deactivate(false);
-      widget_observer_.Add(tab_counter_promo_->GetWidget());
-    }
-  }
 }
 
 void WebUITabStripContainerView::AnimationProgressed(
@@ -378,8 +376,12 @@ void WebUITabStripContainerView::ButtonPressed(views::Button* sender,
     const bool new_visibility = !GetVisible();
     if (new_visibility) {
       RecordTabStripUIOpenHistogram(TabStripUIOpenAction::kTapOnTabCounter);
+      iph_tracker_->NotifyEvent(
+          feature_engagement::events::kWebUITabStripOpened);
     } else {
       RecordTabStripUICloseHistogram(TabStripUICloseAction::kTapOnTabCounter);
+      iph_tracker_->NotifyEvent(
+          feature_engagement::events::kWebUITabStripClosed);
     }
 
     SetContainerTargetVisibility(new_visibility);
@@ -391,6 +393,18 @@ void WebUITabStripContainerView::ButtonPressed(views::Button* sender,
     }
   } else if (sender->GetID() == VIEW_ID_WEBUI_TAB_STRIP_NEW_TAB_BUTTON) {
     chrome::ExecuteCommand(browser_, IDC_NEW_TAB);
+
+    if (iph_tracker_->ShouldTriggerHelpUI(
+            feature_engagement::kIPHWebUITabStripFeature)) {
+      DCHECK(tab_counter_);
+      tab_counter_->SetProperty(kHasInProductHelpPromoKey, true);
+      tab_counter_promo_ = FeaturePromoBubbleView::CreateOwned(
+          tab_counter_, views::BubbleBorder::TOP_RIGHT,
+          FeaturePromoBubbleView::ActivationAction::DO_NOT_ACTIVATE,
+          IDS_WEBUI_TAB_STRIP_PROMO);
+      tab_counter_promo_->set_close_on_deactivate(false);
+      widget_observer_.Add(tab_counter_promo_->GetWidget());
+    }
   } else {
     NOTREACHED();
   }
@@ -432,6 +446,7 @@ void WebUITabStripContainerView::OnWidgetDestroying(views::Widget* widget) {
   tab_counter_promo_ = nullptr;
   widget_observer_.Remove(widget);
 
+  tab_counter_->SetProperty(kHasInProductHelpPromoKey, false);
   iph_tracker_->Dismissed(feature_engagement::kIPHWebUITabStripFeature);
 }
 

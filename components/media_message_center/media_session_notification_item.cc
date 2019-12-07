@@ -14,6 +14,7 @@
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
+#include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 
@@ -110,6 +111,14 @@ void MediaSessionNotificationItem::MediaSessionActionsChanged(
 void MediaSessionNotificationItem::MediaControllerImageChanged(
     media_session::mojom::MediaSessionImageType type,
     const SkBitmap& bitmap) {
+  if (type == media_session::mojom::MediaSessionImageType::kSourceIcon) {
+    session_favicon_ = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+    if (view_ && !frozen_)
+      view_->UpdateWithFavicon(*session_favicon_);
+
+    return;
+  }
+
   DCHECK_EQ(media_session::mojom::MediaSessionImageType::kArtwork, type);
 
   session_artwork_ = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
@@ -133,6 +142,8 @@ void MediaSessionNotificationItem::SetView(MediaNotificationView* view) {
 
     if (session_artwork_.has_value())
       view_->UpdateWithMediaArtwork(*session_artwork_);
+    if (session_favicon_.has_value())
+      view_->UpdateWithFavicon(*session_favicon_);
   }
 }
 
@@ -158,6 +169,7 @@ void MediaSessionNotificationItem::SetController(
     media_session::mojom::MediaSessionInfoPtr session_info) {
   observer_receiver_.reset();
   artwork_observer_receiver_.reset();
+  favicon_observer_receiver_.reset();
 
   is_bound_ = true;
   media_controller_remote_ = std::move(controller);
@@ -175,6 +187,11 @@ void MediaSessionNotificationItem::SetController(
         kMediaSessionNotificationArtworkMinSize,
         kMediaSessionNotificationArtworkDesiredSize,
         artwork_observer_receiver_.BindNewPipeAndPassRemote());
+
+    media_controller_remote_->ObserveImages(
+        media_session::mojom::MediaSessionImageType::kSourceIcon,
+        gfx::kFaviconSize, kMediaSessionNotificationArtworkDesiredSize,
+        favicon_observer_receiver_.BindNewPipeAndPassRemote());
   }
 
   MaybeHideOrShowNotification();
@@ -249,6 +266,8 @@ void MediaSessionNotificationItem::Unfreeze() {
 
     if (session_artwork_.has_value())
       view_->UpdateWithMediaArtwork(*session_artwork_);
+    if (session_favicon_.has_value())
+      view_->UpdateWithFavicon(*session_favicon_);
   }
 }
 

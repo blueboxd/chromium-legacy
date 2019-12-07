@@ -35,8 +35,8 @@ constexpr char kAdAutocompleteRealm[] = "$.userInput.querySelector('span')";
 constexpr char kPasswordChangeId[] = "active-directory-password-change";
 constexpr char kAdAnimatedPages[] = "animatedPages";
 constexpr char kAdOldPasswordInput[] = "oldPassword";
-constexpr char kAdNewPassword1Input[] = "newPassword1";
-constexpr char kAdNewPassword2Input[] = "newPassword2";
+constexpr char kAdNewPassword1Input[] = "newPassword";
+constexpr char kAdNewPassword2Input[] = "newPasswordRepeat";
 constexpr char kPasswordChangeFormId[] = "inputForm";
 constexpr char kFormButtonId[] = "button";
 
@@ -213,7 +213,7 @@ void ActiveDirectoryLoginMixin::TestPasswordChangeError(
   for (const char* element :
        {kAdOldPasswordInput, kAdNewPassword1Input, kAdNewPassword2Input}) {
     std::string js_assertion =
-        test::GetOobeElementPath({kPasswordChangeId, element}) + ".isInvalid";
+        test::GetOobeElementPath({kPasswordChangeId, element}) + ".invalid";
     if (element != invalid_element)
       js_assertion = "!" + js_assertion;
     test::OobeJS().ExpectTrue(js_assertion);

@@ -278,7 +278,7 @@ void IDBRequest::SetResultCursor(IDBCursor* cursor,
   cursor_primary_key_ = std::move(primary_key);
   cursor_value_ = std::move(value);
 
-  EnqueueResultInternal(IDBAny::Create(cursor));
+  EnqueueResultInternal(MakeGarbageCollected<IDBAny>(cursor));
 }
 
 bool IDBRequest::ShouldEnqueueEvent() const {
@@ -428,7 +428,7 @@ void IDBRequest::EnqueueResponse(const Vector<String>& string_list) {
   auto* dom_string_list = MakeGarbageCollected<DOMStringList>();
   for (const auto& item : string_list)
     dom_string_list->Append(item);
-  EnqueueResultInternal(IDBAny::Create(dom_string_list));
+  EnqueueResultInternal(MakeGarbageCollected<IDBAny>(dom_string_list));
 }
 
 void IDBRequest::EnqueueResponse(std::unique_ptr<WebIDBCursor> backend,
@@ -480,7 +480,7 @@ void IDBRequest::EnqueueResponse(std::unique_ptr<IDBKey> idb_key) {
   }
 
   if (idb_key && idb_key->IsValid())
-    EnqueueResultInternal(IDBAny::Create(std::move(idb_key)));
+    EnqueueResultInternal(MakeGarbageCollected<IDBAny>(std::move(idb_key)));
   else
     EnqueueResultInternal(IDBAny::CreateUndefined());
 }
@@ -502,7 +502,7 @@ void IDBRequest::EnqueueResponse(Vector<std::unique_ptr<IDBValue>> values) {
     return;
   }
 
-  EnqueueResultInternal(IDBAny::Create(std::move(values)));
+  EnqueueResultInternal(MakeGarbageCollected<IDBAny>(std::move(values)));
 }
 
 #if DCHECK_IS_ON()
@@ -538,7 +538,7 @@ void IDBRequest::EnqueueResponse(std::unique_ptr<IDBValue> value) {
          value->KeyPath() == EffectiveObjectStore(source_)->IdbKeyPath());
 #endif
 
-  EnqueueResultInternal(IDBAny::Create(std::move(value)));
+  EnqueueResultInternal(MakeGarbageCollected<IDBAny>(std::move(value)));
 }
 
 void IDBRequest::EnqueueResponse(int64_t value) {
@@ -547,7 +547,7 @@ void IDBRequest::EnqueueResponse(int64_t value) {
     metrics_.RecordAndReset();
     return;
   }
-  EnqueueResultInternal(IDBAny::Create(value));
+  EnqueueResultInternal(MakeGarbageCollected<IDBAny>(value));
 }
 
 void IDBRequest::EnqueueResponse() {

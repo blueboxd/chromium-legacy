@@ -127,9 +127,9 @@ TEST(CrossOriginResourcePolicyTest, WithCOEP) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kCrossOriginIsolation);
 
-  ResourceResponseInfo corp_none;
-  ResourceResponseInfo corp_same_origin;
-  ResourceResponseInfo corp_cross_origin;
+  mojom::URLResponseHead corp_none;
+  mojom::URLResponseHead corp_same_origin;
+  mojom::URLResponseHead corp_cross_origin;
 
   corp_same_origin.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(
@@ -155,7 +155,7 @@ TEST(CrossOriginResourcePolicyTest, WithCOEP) {
   struct TestCase {
     const RequestMode request_mode;
     const url::Origin origin;
-    const ResourceResponseInfo response_info;
+    mojom::URLResponseHeadPtr response_info;
     const CrossOriginResourcePolicy::VerificationResult
         expectation_with_coep_none;
     const CrossOriginResourcePolicy::VerificationResult
@@ -163,32 +163,35 @@ TEST(CrossOriginResourcePolicyTest, WithCOEP) {
   } test_cases[] = {
       // We don't have a cross-origin-resource-policy header on a response. That
       // leads to kBlock when COEP: kRequireCorp is used.
-      {RequestMode::kNoCors, another_origin, corp_none, kAllow, kBlock},
+      {RequestMode::kNoCors, another_origin, corp_none.Clone(), kAllow, kBlock},
       // We have "cross-origin-resource-policy: same-origin", so regardless of
       // COEP the response is blocked.
-      {RequestMode::kNoCors, another_origin, corp_same_origin, kBlock, kBlock},
+      {RequestMode::kNoCors, another_origin, corp_same_origin.Clone(), kBlock,
+       kBlock},
       // We have "cross-origin-resource-policy: cross-origin", so regardless of
       // COEP the response is allowed.
-      {RequestMode::kNoCors, another_origin, corp_cross_origin, kAllow, kAllow},
+      {RequestMode::kNoCors, another_origin, corp_cross_origin.Clone(), kAllow,
+       kAllow},
       // The origin of the request URL and request's origin match, so regardless
       // of COEP the response is allowed.
-      {RequestMode::kNoCors, destination_origin, corp_same_origin, kAllow,
-       kAllow},
+      {RequestMode::kNoCors, destination_origin, corp_same_origin.Clone(),
+       kAllow, kAllow},
       // The request mode is "cors", so so regardless of COEP the response is
       // allowed.
-      {RequestMode::kCors, another_origin, corp_same_origin, kAllow, kAllow},
+      {RequestMode::kCors, another_origin, corp_same_origin.Clone(), kAllow,
+       kAllow},
   };
 
   for (const auto& test_case : test_cases) {
     EXPECT_EQ(test_case.expectation_with_coep_none,
               CrossOriginResourcePolicy::Verify(
-                  destination, test_case.origin, test_case.response_info,
+                  destination, test_case.origin, *test_case.response_info,
                   test_case.request_mode, test_case.origin,
                   mojom::CrossOriginEmbedderPolicy::kNone));
 
     EXPECT_EQ(test_case.expectation_with_coep_require_corp,
               CrossOriginResourcePolicy::Verify(
-                  destination, test_case.origin, test_case.response_info,
+                  destination, test_case.origin, *test_case.response_info,
                   test_case.request_mode, test_case.origin,
                   mojom::CrossOriginEmbedderPolicy::kRequireCorp));
   }

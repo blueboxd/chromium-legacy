@@ -85,7 +85,7 @@ void IDBOpenDBRequest::EnqueueBlocked(int64_t old_version) {
   if (version_ != IDBDatabaseMetadata::kDefaultVersion) {
     new_version_nullable = version_;
   }
-  EnqueueEvent(IDBVersionChangeEvent::Create(
+  EnqueueEvent(MakeGarbageCollected<IDBVersionChangeEvent>(
       event_type_names::kBlocked, old_version, new_version_nullable));
 }
 
@@ -119,13 +119,13 @@ void IDBOpenDBRequest::EnqueueUpgradeNeeded(
   transaction_ = IDBTransaction::CreateVersionChange(
       GetExecutionContext(), std::move(transaction_backend_), transaction_id_,
       idb_database, this, old_database_metadata);
-  SetResult(IDBAny::Create(idb_database));
+  SetResult(MakeGarbageCollected<IDBAny>(idb_database));
 
   if (version_ == IDBDatabaseMetadata::kNoVersion)
     version_ = 1;
-  EnqueueEvent(IDBVersionChangeEvent::Create(event_type_names::kUpgradeneeded,
-                                             old_version, version_, data_loss,
-                                             data_loss_message));
+  EnqueueEvent(MakeGarbageCollected<IDBVersionChangeEvent>(
+      event_type_names::kUpgradeneeded, old_version, version_, data_loss,
+      data_loss_message));
 }
 
 void IDBOpenDBRequest::EnqueueResponse(std::unique_ptr<WebIDBDatabase> backend,
@@ -149,7 +149,7 @@ void IDBOpenDBRequest::EnqueueResponse(std::unique_ptr<WebIDBDatabase> backend,
     idb_database = MakeGarbageCollected<IDBDatabase>(
         GetExecutionContext(), std::move(backend),
         database_callbacks_.Release(), isolate_);
-    SetResult(IDBAny::Create(idb_database));
+    SetResult(MakeGarbageCollected<IDBAny>(idb_database));
   }
   idb_database->SetMetadata(metadata);
   EnqueueEvent(Event::Create(event_type_names::kSuccess));
@@ -166,8 +166,8 @@ void IDBOpenDBRequest::EnqueueResponse(int64_t old_version) {
     old_version = IDBDatabaseMetadata::kDefaultVersion;
   }
   SetResult(IDBAny::CreateUndefined());
-  EnqueueEvent(IDBVersionChangeEvent::Create(event_type_names::kSuccess,
-                                             old_version, base::nullopt));
+  EnqueueEvent(MakeGarbageCollected<IDBVersionChangeEvent>(
+      event_type_names::kSuccess, old_version, base::nullopt));
 }
 
 bool IDBOpenDBRequest::ShouldEnqueueEvent() const {

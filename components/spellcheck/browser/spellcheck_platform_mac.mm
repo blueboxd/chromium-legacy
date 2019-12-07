@@ -151,7 +151,8 @@ void UpdateSpellingPanelWithMisspelledWord(const base::string16& word) {
                     waitUntilDone:YES];
 }
 
-bool PlatformSupportsLanguage(const std::string& current_language) {
+void PlatformSupportsLanguage(const std::string& current_language,
+                              base::OnceCallback<void(bool)> callback) {
   // First, convert the language to an OS X language code.
   NSString* mac_lang_code = ConvertLanguageCodeToMac(current_language);
 
@@ -159,7 +160,7 @@ bool PlatformSupportsLanguage(const std::string& current_language) {
   NSArray* availableLanguages = [SharedSpellChecker() availableLanguages];
 
   // Return true if the given language is supported by OS X.
-  return [availableLanguages containsObject:mac_lang_code];
+  std::move(callback).Run([availableLanguages containsObject:mac_lang_code]);
 }
 
 void SetLanguage(const std::string& lang_to_set,

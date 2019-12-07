@@ -14,13 +14,13 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.common.MutationContext;
 import org.chromium.chrome.browser.feed.library.api.host.logging.RequestReason;
 import org.chromium.chrome.browser.feed.library.api.internal.common.Model;
 import org.chromium.chrome.browser.feed.library.api.internal.requestmanager.FeedRequestManager;
 import org.chromium.chrome.browser.feed.library.api.internal.sessionmanager.FeedSessionManager;
 import org.chromium.chrome.browser.feed.library.common.Result;
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /** Test of the {@link RequestManagerImpl} class. */

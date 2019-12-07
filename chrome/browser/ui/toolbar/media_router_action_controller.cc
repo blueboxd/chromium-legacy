@@ -9,6 +9,7 @@
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_feature.h"
+#include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -148,6 +149,10 @@ MediaRouterActionController::MediaRouterActionController(
       prefs::kShowCastIconInToolbar,
       base::Bind(&MediaRouterActionController::MaybeAddOrRemoveAction,
                  base::Unretained(this)));
+  if (profile_->IsRegularProfile()) {
+    media_router::MediaRouterMetrics::RecordIconStateAtInit(
+        MediaRouterActionController::GetAlwaysShowActionPref(profile_));
+  }
 }
 
 void MediaRouterActionController::MaybeAddOrRemoveAction() {

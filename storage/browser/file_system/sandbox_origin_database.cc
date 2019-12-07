@@ -118,7 +118,7 @@ bool SandboxOriginDatabase::Init(InitOption init_option,
                                 SandboxOriginRepairResult::DB_REPAIR_MAX);
       FALLTHROUGH;
     case DELETE_ON_CORRUPTION:
-      if (!base::DeleteFile(file_system_directory_, true))
+      if (!base::DeleteFileRecursively(file_system_directory_))
         return false;
       if (!base::CreateDirectory(file_system_directory_))
         return false;
@@ -329,7 +329,7 @@ base::FilePath SandboxOriginDatabase::GetDatabasePath() const {
 
 void SandboxOriginDatabase::RemoveDatabase() {
   DropDatabase();
-  base::DeleteFile(GetDatabasePath(), true /* recursive */);
+  base::DeleteFileRecursively(GetDatabasePath());
 }
 
 bool SandboxOriginDatabase::GetLastPathNumber(int* number) {

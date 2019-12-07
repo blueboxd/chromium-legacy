@@ -180,7 +180,7 @@ class TabStrip : public views::AccessiblePaneView,
 
   // Destroys the views associated with a recently deleted tab group. The
   // associated view mappings are erased in OnGroupCloseAnimationCompleted().
-  void OnGroupDeleted(TabGroupId group);
+  void OnGroupClosed(TabGroupId group);
 
   // Returns true if the tab is not partly or fully clipped (due to overflow),
   // and the tab couldn't become partly clipped due to changing the selected tab

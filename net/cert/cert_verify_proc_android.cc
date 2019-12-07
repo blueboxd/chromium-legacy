@@ -15,6 +15,7 @@
 #include "net/android/cert_verify_result_android.h"
 #include "net/android/network_library.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/cert_net_fetcher.h"
 #include "net/cert/cert_status_flags.h"
@@ -100,7 +101,8 @@ bool PerformAIAFetchAndAddResultToVector(scoped_refptr<CertNetFetcher> fetcher,
   if (!url.is_valid())
     return false;
   std::unique_ptr<CertNetFetcher::Request> request(fetcher->FetchCaIssuers(
-      url, CertNetFetcher::DEFAULT, CertNetFetcher::DEFAULT));
+      url, NetworkIsolationKey::Todo(), CertNetFetcher::DEFAULT,
+      CertNetFetcher::DEFAULT));
   Error error;
   std::vector<uint8_t> aia_fetch_bytes;
   request->WaitForResult(&error, &aia_fetch_bytes);

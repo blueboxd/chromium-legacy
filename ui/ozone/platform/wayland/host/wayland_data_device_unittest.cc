@@ -481,9 +481,9 @@ TEST_P(WaylandDataDeviceManagerTest, ValidateDroppedXMozUrl) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,
+INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          WaylandDataDeviceManagerTest,
-                         ::testing::Values(kXdgShellV5));
+                         ::testing::Values(kXdgShellStable));
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
                          WaylandDataDeviceManagerTest,

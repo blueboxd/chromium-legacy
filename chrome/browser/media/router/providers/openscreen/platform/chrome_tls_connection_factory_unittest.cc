@@ -25,8 +25,9 @@ using ::testing::NiceMock;
 using ::testing::StrictMock;
 
 using openscreen::Error;
-using openscreen::platform::TlsConnection;
-using openscreen::platform::TlsConnectionFactory;
+using openscreen::TlsConnection;
+using openscreen::TlsConnectionFactory;
+using openscreen::TlsConnectOptions;
 
 namespace media_router {
 
@@ -108,8 +109,7 @@ TEST_F(ChromeTlsConnectionFactoryTest, CallsNetworkContextCreateMethod) {
   ChromeTlsConnectionFactory factory(&mock_client, task_runner.get(),
                                      mock_network_context.get());
 
-  factory.Connect(kValidOpenscreenEndpoint,
-                  openscreen::platform::TlsConnectOptions{});
+  factory.Connect(kValidOpenscreenEndpoint, TlsConnectOptions{});
 
   mock_network_context->ExecuteCreateCallback(net::OK);
   EXPECT_EQ(1, mock_network_context->times_called());
@@ -123,8 +123,7 @@ TEST_F(ChromeTlsConnectionFactoryTest,
   EXPECT_CALL(mock_client,
               OnConnectionFailed(&factory, kValidOpenscreenEndpoint));
 
-  factory.Connect(kValidOpenscreenEndpoint,
-                  openscreen::platform::TlsConnectOptions{});
+  factory.Connect(kValidOpenscreenEndpoint, TlsConnectOptions{});
 
   mock_network_context->ExecuteCreateCallback(net::ERR_FAILED);
   EXPECT_EQ(1, mock_network_context->times_called());

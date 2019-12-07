@@ -36,7 +36,8 @@ void UiDevToolsClient::Dispatch(const std::string& data) {
   std::unique_ptr<protocol::Value> protocolCommand =
       protocol::StringUtil::parseMessage(data, false);
   if (dispatcher_.parseCommand(protocolCommand.get(), &call_id, &method)) {
-    dispatcher_.dispatch(call_id, method, std::move(protocolCommand), data);
+    dispatcher_.dispatch(call_id, method, std::move(protocolCommand),
+                         crdtp::SpanFrom(data));
   }
 }
 
@@ -91,7 +92,7 @@ void UiDevToolsClient::flushProtocolNotifications() {
 
 void UiDevToolsClient::fallThrough(int call_id,
                                    const std::string& method,
-                                   const std::string& message) {
+                                   crdtp::span<uint8_t> message) {
   NOTIMPLEMENTED();
 }
 

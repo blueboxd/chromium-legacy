@@ -103,6 +103,8 @@ class PasswordGenerationPopupControllerImpl
   // content::WebContentsObserver overrides
   void DidAttachInterstitialPage() override;
   void WebContentsDestroyed() override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
 #if !defined(OS_ANDROID)
   // ZoomObserver implementation.

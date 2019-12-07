@@ -19,6 +19,8 @@ class GURL;
 
 namespace net {
 
+class NetworkIsolationKey;
+
 // CertNetFetcher is a synchronous interface for fetching AIA URLs and CRL
 // URLs. It is shared between a caller thread (which starts and waits for
 // fetches), and a network thread (which does the actual fetches). It can be
@@ -67,16 +69,19 @@ class NET_EXPORT CertNetFetcher
 
   virtual WARN_UNUSED_RESULT std::unique_ptr<Request> FetchCaIssuers(
       const GURL& url,
+      const NetworkIsolationKey& network_isolation_key,
       int timeout_milliseconds,
       int max_response_bytes) = 0;
 
   virtual WARN_UNUSED_RESULT std::unique_ptr<Request> FetchCrl(
       const GURL& url,
+      const NetworkIsolationKey& network_isolation_key,
       int timeout_milliseconds,
       int max_response_bytes) = 0;
 
   virtual WARN_UNUSED_RESULT std::unique_ptr<Request> FetchOcsp(
       const GURL& url,
+      const NetworkIsolationKey& network_isolation_key,
       int timeout_milliseconds,
       int max_response_bytes) = 0;
 

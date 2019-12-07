@@ -1485,7 +1485,7 @@ void DeveloperPrivateLoadDirectoryFunction::Load() {
 void DeveloperPrivateLoadDirectoryFunction::ClearExistingDirectoryContent(
     const base::FilePath& project_path) {
   // Clear the project directory before copying new files.
-  base::DeleteFile(project_path, true /*recursive*/);
+  base::DeleteFileRecursively(project_path);
 
   pending_copy_operations_count_ = 1;
 

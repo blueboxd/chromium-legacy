@@ -987,9 +987,6 @@ extern const char kForcedColorsDescription[];
 extern const char kPercentBasedScrollingName[];
 extern const char kPercentBasedScrollingDescription[];
 
-extern const char kPeriodicBackgroundSyncName[];
-extern const char kPeriodicBackgroundSyncDescription[];
-
 extern const char kPerMethodCanMakePaymentQuotaName[];
 extern const char kPerMethodCanMakePaymentQuotaDescription[];
 
@@ -1104,6 +1101,9 @@ extern const char kSharingPeerConnectionReceiverDescription[];
 
 extern const char kSharingPeerConnectionSenderName[];
 extern const char kSharingPeerConnectionSenderDescription[];
+
+extern const char kSharingQRCodeGeneratorName[];
+extern const char kSharingQRCodeGeneratorDescription[];
 
 extern const char kSharingRenameDevicesName[];
 extern const char kSharingRenameDevicesDescription[];
@@ -1814,6 +1814,12 @@ extern const char kUseXpsForPrintingDescription[];
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 extern const char kWinUseBrowserSpellCheckerName[];
 extern const char kWinUseBrowserSpellCheckerDescription[];
+
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+extern const char kWinUseHybridSpellCheckerName[];
+extern const char kWinUseHybridSpellCheckerDescription[];
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
 
 #endif  // defined(OS_WIN)

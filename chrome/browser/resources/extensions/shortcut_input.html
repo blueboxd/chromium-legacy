@@ -17,6 +17,7 @@
 </style>
 <div id="main">
   <cr-input id="input" placeholder="$i18n{shortcutTypeAShortcut}"
+      invalid="[[getIsInvalid_(error_)]]"
       error-message="[[getErrorString_(error_,
           '$i18nPolymer{shortcutIncludeStartModifier}',
           '$i18nPolymer{shortcutTooManyModifiers}',

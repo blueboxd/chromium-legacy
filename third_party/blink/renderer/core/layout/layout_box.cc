@@ -3359,7 +3359,7 @@ bool LayoutBox::SizesLogicalWidthToFitContent(
 
 bool LayoutBox::AutoWidthShouldFitContent() const {
   return GetNode() &&
-         (IsHTMLInputElement(*GetNode()) ||
+         (IsA<HTMLInputElement>(*GetNode()) ||
           IsA<HTMLSelectElement>(*GetNode()) ||
           IsA<HTMLButtonElement>(*GetNode()) ||
           IsA<HTMLTextAreaElement>(*GetNode()) || IsRenderedLegend());

@@ -282,14 +282,16 @@ void EchoPrivateGetUserConsentFunction::OnRedeemOffersAllowedChecked(
   AddRef();
 
   // Create and show the dialog.
-  chromeos::EchoDialogView* dialog = new chromeos::EchoDialogView(this);
-  if (redeem_offers_allowed_) {
-    dialog->InitForEnabledEcho(
-        base::UTF8ToUTF16(params->consent_requester.service_name),
-        base::UTF8ToUTF16(params->consent_requester.origin));
-  } else {
-    dialog->InitForDisabledEcho();
+  chromeos::EchoDialogView::Params dialog_params;
+  dialog_params.echo_enabled = redeem_offers_allowed_;
+  if (dialog_params.echo_enabled) {
+    dialog_params.service_name =
+        base::UTF8ToUTF16(params->consent_requester.service_name);
+    dialog_params.origin = base::UTF8ToUTF16(params->consent_requester.origin);
   }
+
+  chromeos::EchoDialogView* dialog =
+      new chromeos::EchoDialogView(this, dialog_params);
   dialog->Show(web_contents->GetTopLevelNativeWindow());
 
   // If there is a dialog_shown_callback_, invoke it with the created dialog.

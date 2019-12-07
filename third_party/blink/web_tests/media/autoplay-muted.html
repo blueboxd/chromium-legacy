@@ -15,7 +15,6 @@
 
     internals.settings.setAutoplayPolicy('user-gesture-required');
     internals.runtimeFlags.autoplayMutedVideosEnabled = true;
-    testRunner.setAutoplayAllowed(true);
 
     function createMutedMediaElement(type) {
         var e = document.createElement(type);
@@ -97,15 +96,5 @@
             eventSender.consumeUserActivation();
         });
     }, "Test that unmuting autoplayed video with gesture doesn't pause it.");
-
-    promise_test(function(t) {
-        testRunner.setAutoplayAllowed(false);
-        return promise_rejects(
-            t,
-            new DOMException(
-                'play() can only be initiated by a user gesture.',
-                'NotAllowedError'),
-            createMutedVideoElement().play());
-    }, "Test that muted videos don't autoplay when the setting is disabled");
 </script>
 </body>

@@ -15,18 +15,6 @@ const char QuietNotificationPermissionUiConfig::kEnableAdaptiveActivation[] =
 const char QuietNotificationPermissionUiConfig::kEnableCrowdDenyTriggering[] =
     "enable_crowd_deny_triggering";
 
-QuietNotificationPermissionUiConfig::UiFlavor
-QuietNotificationPermissionUiConfig::UiFlavorToUse() {
-  if (!base::FeatureList::IsEnabled(features::kQuietNotificationPrompts))
-    return UiFlavor::NONE;
-
-#if defined(OS_ANDROID)
-  return UiFlavor::MINI_INFOBAR;
-#else   // OS_ANDROID
-  return UiFlavor::ANIMATED_ICON;
-#endif  // !OS_ANDROID
-}
-
 // static
 bool QuietNotificationPermissionUiConfig::IsAdaptiveActivationEnabled() {
   if (!base::FeatureList::IsEnabled(features::kQuietNotificationPrompts))

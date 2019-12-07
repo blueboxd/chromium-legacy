@@ -130,6 +130,7 @@ class FakeBluetoothLEDeviceWinrt
   void SimulateGattNameChange(const std::string& new_name);
   void SimulateGattServicesDiscovered(const std::vector<std::string>& uuids);
   void SimulateGattServicesChanged();
+  void SimulateStatusChangeToDisconnect();
   void SimulateGattServiceRemoved(BluetoothRemoteGattService* service);
   void SimulateGattCharacteristic(BluetoothRemoteGattService* service,
                                   const std::string& uuid,

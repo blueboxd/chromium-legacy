@@ -332,6 +332,14 @@ void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
   UMA_HISTOGRAM_TIMES("Assistant.OptInFlow.GetSettingsRequestTime",
                       time_since_request_sent);
 
+  if (ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
+          assistant::prefs::kAssistantDisabledByPolicy)) {
+    DVLOG(1) << "Assistant is disabled by domain policy. Skip Assistant "
+                "opt-in flow.";
+    HandleFlowFinished();
+    return;
+  }
+
   assistant::SettingsUi settings_ui;
   if (!settings_ui.ParseFromString(settings)) {
     LOG(ERROR) << "Failed to parse get settings response.";

@@ -280,19 +280,22 @@ TEST(AXLanguageDetectionTest, LangAttrInheritanceFeatureFlagOn) {
 
   {
     AXNode* node3 = tree.GetFromId(3);
-    EXPECT_NE(node3->GetLanguageInfo(), nullptr);
+    // Inherited languages are not stored in lang info.
+    EXPECT_EQ(node3->GetLanguageInfo(), nullptr);
     EXPECT_EQ(node3->GetLanguage(), "en");
   }
 
   {
     AXNode* node4 = tree.GetFromId(4);
-    EXPECT_NE(node4->GetLanguageInfo(), nullptr);
+    // Inherited languages are not stored in lang info.
+    EXPECT_EQ(node4->GetLanguageInfo(), nullptr);
     EXPECT_EQ(node4->GetLanguage(), "fr");
   }
 
   {
     AXNode* node5 = tree.GetFromId(5);
-    EXPECT_NE(node5->GetLanguageInfo(), nullptr);
+    // Inherited languages are not stored in lang info.
+    EXPECT_EQ(node5->GetLanguageInfo(), nullptr);
     EXPECT_EQ(node5->GetLanguage(), "fr");
   }
 }
@@ -406,7 +409,8 @@ TEST(AXLanguageDetectionTest, LanguageDetectionBasic) {
   {
     AXNode* node5 = tree.GetFromId(5);
     EXPECT_TRUE(node5->IsText());
-    EXPECT_NE(node5->GetLanguageInfo(), nullptr);
+    // Inherited languages are not stored in lang info.
+    EXPECT_EQ(node5->GetLanguageInfo(), nullptr);
     EXPECT_EQ(node5->GetLanguage(), "en");
   }
 }
@@ -528,9 +532,8 @@ TEST(AXLanguageDetectionTest, LanguageDetectionDetectOnly) {
   {
     AXNode* node5 = tree.GetFromId(5);
     EXPECT_TRUE(node5->IsText());
-    ASSERT_NE(node5->GetLanguageInfo(), nullptr);
-    ASSERT_EQ(node5->GetLanguageInfo()->detected_languages.size(), (unsigned)0);
-    EXPECT_TRUE(node5->GetLanguageInfo()->language.empty());
+    // Inherited languages are not stored in lang info.
+    ASSERT_EQ(node5->GetLanguageInfo(), nullptr);
     EXPECT_EQ(node5->GetLanguage(), "fr");
   }
 }

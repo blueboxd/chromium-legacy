@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/component_export.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/base/file_mojom_traits.h"
 #include "mojo/public/cpp/base/file_path_mojom_traits.h"
@@ -101,7 +100,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
       const network::ResourceRequest& request) {
     return request.isolated_world_origin;
   }
-  static const GURL& referrer(const network::ResourceRequest& request);
+  static const GURL& referrer(const network::ResourceRequest& request) {
+    return request.referrer;
+  }
   static net::URLRequest::ReferrerPolicy referrer_policy(
       const network::ResourceRequest& request) {
     return request.referrer_policy;

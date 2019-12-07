@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.common.concurrent;
 
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
+import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 
 import java.util.concurrent.ExecutionException;

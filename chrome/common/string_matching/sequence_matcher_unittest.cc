@@ -8,8 +8,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace string_matching {
-
 namespace {
 constexpr bool kDefaultUseEditDistance = false;
 
@@ -19,7 +17,6 @@ bool MatchEqual(const Match& match1, const Match& match2) {
          match1.pos_second_string == match2.pos_second_string &&
          match1.length == match2.length;
 }
-}  // namespace
 
 class SequenceMatcherTest : public testing::Test {};
 
@@ -131,4 +128,4 @@ TEST_F(SequenceMatcherTest, TestEditDistanceRatio) {
                   .Ratio(),
               0.2, 0.01);
 }
-}  // namespace string_matching
+}  // namespace

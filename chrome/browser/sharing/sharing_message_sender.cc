@@ -5,6 +5,7 @@
 #include "chrome/browser/sharing/sharing_message_sender.h"
 #include "base/guid.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
@@ -35,6 +36,9 @@ void SharingMessageSender::SendMessageToDevice(
   send_message_callbacks_.emplace(message_guid, std::move(callback));
   chrome_browser_sharing::MessageType message_type =
       SharingPayloadCaseToMessageType(message.payload_case());
+
+  receiver_device_platform_.emplace(
+      message_guid, sync_prefs_->GetDevicePlatform(device_guid));
 
   base::PostDelayedTask(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, content::BrowserThread::UI},
@@ -142,5 +146,12 @@ void SharingMessageSender::InvokeSendMessageCallback(
   ResponseCallback callback = std::move(iter->second);
   send_message_callbacks_.erase(iter);
   std::move(callback).Run(result, std::move(response));
-  LogSendSharingMessageResult(message_type, result);
+
+  auto device_platform_iter = receiver_device_platform_.find(message_guid);
+  DCHECK(device_platform_iter != receiver_device_platform_.end());
+
+  SharingDevicePlatform device_platform = device_platform_iter->second;
+  receiver_device_platform_.erase(device_platform_iter);
+
+  LogSendSharingMessageResult(message_type, device_platform, result);
 }

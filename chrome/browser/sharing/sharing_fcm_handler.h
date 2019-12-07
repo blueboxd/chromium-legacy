@@ -25,6 +25,8 @@ class SharingFCMSender;
 class SharingHandlerRegistry;
 class SharingSyncPreference;
 
+enum class SharingDevicePlatform;
+
 // SharingFCMHandler is responsible for receiving SharingMessage from GCMDriver
 // and delegate it to the payload specific handler.
 class SharingFCMHandler : public gcm::GCMAppHandler {
@@ -68,11 +70,13 @@ class SharingFCMHandler : public gcm::GCMAppHandler {
       std::string original_message_id,
       chrome_browser_sharing::MessageType original_message_type,
       base::Optional<syncer::DeviceInfo::SharingTargetInfo> target_info,
+      SharingDevicePlatform sender_device_type,
       std::unique_ptr<chrome_browser_sharing::ResponseMessage> response);
 
   void OnAckMessageSent(
       std::string original_message_id,
       chrome_browser_sharing::MessageType original_message_type,
+      SharingDevicePlatform sender_device_type,
       SharingSendMessageResult result,
       base::Optional<std::string> message_id);
 

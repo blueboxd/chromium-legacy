@@ -14,6 +14,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_utils.h"
 #include "components/printing/browser/printer_capabilities.h"
 #include "content/public/browser/browser_thread.h"
@@ -48,8 +49,8 @@ scoped_refptr<base::TaskRunner> CreatePrinterHandlerTaskRunner() {
 PrinterList EnumeratePrintersAsync() {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-  scoped_refptr<PrintBackend> print_backend(
-      PrintBackend::CreateInstance(nullptr));
+  scoped_refptr<PrintBackend> print_backend(PrintBackend::CreateInstance(
+      nullptr, g_browser_process->GetApplicationLocale()));
 
   PrinterList printer_list;
   print_backend->EnumeratePrinters(&printer_list);
@@ -65,8 +66,8 @@ base::Value FetchCapabilitiesAsync(const std::string& device_name) {
 
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-  scoped_refptr<PrintBackend> print_backend(
-      PrintBackend::CreateInstance(nullptr));
+  scoped_refptr<PrintBackend> print_backend(PrintBackend::CreateInstance(
+      nullptr, g_browser_process->GetApplicationLocale()));
 
   VLOG(1) << "Get printer capabilities start for " << device_name;
 
@@ -84,8 +85,8 @@ base::Value FetchCapabilitiesAsync(const std::string& device_name) {
 std::string GetDefaultPrinterAsync() {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-  scoped_refptr<PrintBackend> print_backend(
-      PrintBackend::CreateInstance(nullptr));
+  scoped_refptr<PrintBackend> print_backend(PrintBackend::CreateInstance(
+      nullptr, g_browser_process->GetApplicationLocale()));
 
   std::string default_printer = print_backend->GetDefaultPrinterName();
   VLOG(1) << "Default Printer: " << default_printer;

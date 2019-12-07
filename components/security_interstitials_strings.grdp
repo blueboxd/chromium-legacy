@@ -499,19 +499,7 @@
   <message name="IDS_KNOWN_INTERCEPTION_INFOBAR_HEADING" desc="Text of the heading used to alert the user that Chrome has detected that their network connnection is being intercepted.">
     Your activity on the web is being monitored
   </message>
-  <if expr="is_android">
-    <if expr="_google_chrome">
-      <message name="IDS_KNOWN_INTERCEPTION_INFOBAR_DESCRIPTION" desc="Short description used to explain why the warning is shown, for the Android infobar.">
-        The certificate presented for this connection is not trusted by Chrome, because it is known to be used for network interception and monitoring.
-      </message>
-    </if>
-    <if expr="not _google_chrome">
-      <message name="IDS_KNOWN_INTERCEPTION_INFOBAR_DESCRIPTION" desc="Short description used to explain why the warning is shown, for the Android infobar.">
-        The certificate for this connection is not trusted by Chromium, because it is known to be used for network interception and monitoring.
-      </message>
-    </if>
-  </if>
   <message name="IDS_KNOWN_INTERCEPTION_INFOBAR_BUTTON_TEXT" desc="Text of the button to close the disclosure infobar and continue using Chrome.">
-    Continue
+    OK
   </message>
 </grit-part>

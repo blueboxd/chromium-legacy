@@ -8,19 +8,14 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.UserDataHost;
 import org.chromium.chrome.browser.native_page.NativePage;
-import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 
 /**
  * Tab is a visual/functional unit that encapsulates the content (not just web site content
@@ -29,22 +24,6 @@ import java.lang.annotation.RetentionPolicy;
  */
 public interface Tab {
     public static final int INVALID_TAB_ID = -1;
-
-    /**
-     * A list of the various ways tabs can be hidden.
-     */
-    @IntDef({TabHidingType.CHANGED_TABS, TabHidingType.ACTIVITY_HIDDEN, TabHidingType.REPARENTED})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface TabHidingType {
-        /** A tab was hidden due to other tab getting foreground. */
-        int CHANGED_TABS = 0;
-
-        /** A tab was hidden together with an activity. */
-        int ACTIVITY_HIDDEN = 1;
-
-        /** A tab was hidden while being reparented to a new activity. */
-        int REPARENTED = 2;
-    }
 
     /**
      * Adds a {@link TabObserver} to be notified on {@link Tab} changes.

@@ -14,7 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
-import org.chromium.chrome.browser.feed.library.common.functional.Supplier;
+import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 
 /** LinearLayout with special measuring code for GridRow */

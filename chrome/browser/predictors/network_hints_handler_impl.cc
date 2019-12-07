@@ -30,7 +30,10 @@ void NetworkHintsHandlerImpl::PrefetchDNS(
     const std::vector<std::string>& names) {
   if (!preconnect_manager_)
     return;
-  preconnect_manager_->StartPreresolveHosts(names);
+  // TODO(https://crbug.com/997049): Pass in |render_frame_id| here and use it
+  // to create a NetworkIsolationKey, like Preconnect() does.
+  preconnect_manager_->StartPreresolveHosts(names,
+                                            net::NetworkIsolationKey::Todo());
 }
 
 void NetworkHintsHandlerImpl::Preconnect(const GURL& url,

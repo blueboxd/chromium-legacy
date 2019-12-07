@@ -17,6 +17,7 @@
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/services/device_sync/feature_status_change.h"
+#include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -76,6 +77,11 @@ class DeviceSyncClientImpl : public DeviceSyncClient,
       mojom::DeviceSync::SetFeatureStatusCallback callback) override;
   void FindEligibleDevices(multidevice::SoftwareFeature software_feature,
                            FindEligibleDevicesCallback callback) override;
+  void NotifyDevices(
+      const std::vector<std::string>& device_instance_ids,
+      cryptauthv2::TargetService target_service,
+      multidevice::SoftwareFeature feature,
+      mojom::DeviceSync::NotifyDevicesCallback callback) override;
   void GetDevicesActivityStatus(
       mojom::DeviceSync::GetDevicesActivityStatusCallback callback) override;
   void GetDebugInfo(mojom::DeviceSync::GetDebugInfoCallback callback) override;

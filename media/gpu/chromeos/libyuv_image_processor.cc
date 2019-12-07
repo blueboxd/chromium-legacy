@@ -82,7 +82,6 @@ std::unique_ptr<LibYUVImageProcessor> LibYUVImageProcessor::Create(
   // LibYUVImageProcessor supports only memory-based video frame for input.
   VideoFrame::StorageType input_storage_type = VideoFrame::STORAGE_UNKNOWN;
   for (auto input_type : input_config.preferred_storage_types) {
-#if defined(OS_LINUX)
     if (input_type == VideoFrame::STORAGE_DMABUFS) {
       video_frame_mapper = VideoFrameMapperFactory::CreateMapper(
           input_config.fourcc.ToVideoPixelFormat(), VideoFrame::STORAGE_DMABUFS,
@@ -92,7 +91,6 @@ std::unique_ptr<LibYUVImageProcessor> LibYUVImageProcessor::Create(
         break;
       }
     }
-#endif  // defined(OS_LINUX)
 
     if (VideoFrame::IsStorageTypeMappable(input_type)) {
       input_storage_type = input_type;
@@ -191,7 +189,6 @@ void LibYUVImageProcessor::ProcessTask(scoped_refptr<VideoFrame> input_frame,
                                        FrameReadyCB cb) {
   DCHECK(process_thread_.task_runner()->BelongsToCurrentThread());
   DVLOGF(4);
-#if defined(OS_LINUX)
   if (input_frame->storage_type() == VideoFrame::STORAGE_DMABUFS) {
     DCHECK_NE(video_frame_mapper_.get(), nullptr);
     input_frame = video_frame_mapper_->Map(std::move(input_frame));
@@ -201,7 +198,6 @@ void LibYUVImageProcessor::ProcessTask(scoped_refptr<VideoFrame> input_frame,
       return;
     }
   }
-#endif  // defined(OS_LINUX)
 
   int res = DoConversion(input_frame.get(), output_frame.get());
   if (res != 0) {

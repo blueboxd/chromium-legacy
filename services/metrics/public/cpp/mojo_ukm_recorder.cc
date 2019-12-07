@@ -7,8 +7,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "services/metrics/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace ukm {
 
@@ -16,15 +14,6 @@ MojoUkmRecorder::MojoUkmRecorder(
     mojo::PendingRemote<mojom::UkmRecorderInterface> interface)
     : interface_(std::move(interface)) {}
 MojoUkmRecorder::~MojoUkmRecorder() = default;
-
-// static
-std::unique_ptr<MojoUkmRecorder> MojoUkmRecorder::Create(
-    service_manager::Connector* connector) {
-  mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> interface;
-  connector->Connect(metrics::mojom::kMetricsServiceName,
-                     interface.InitWithNewPipeAndPassReceiver());
-  return std::make_unique<MojoUkmRecorder>(std::move(interface));
-}
 
 base::WeakPtr<MojoUkmRecorder> MojoUkmRecorder::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();

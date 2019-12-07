@@ -219,6 +219,11 @@ void FakeBluetoothLEDeviceWinrt::SimulateGattConnection() {
   connection_status_changed_handler_->Invoke(this, nullptr);
 }
 
+void FakeBluetoothLEDeviceWinrt::SimulateStatusChangeToDisconnect() {
+  status_ = BluetoothConnectionStatus_Disconnected;
+  connection_status_changed_handler_->Invoke(this, nullptr);
+}
+
 void FakeBluetoothLEDeviceWinrt ::SimulateGattConnectionError(
     BluetoothDevice::ConnectErrorCode error_code) {
   if (!gatt_services_callback_)
@@ -240,10 +245,8 @@ void FakeBluetoothLEDeviceWinrt::SimulateGattDisconnection() {
 
   // Simulate production UWP behavior that only really disconnects once all
   // references to a device are dropped.
-  if (reference_count_ == 0u) {
-    status_ = BluetoothConnectionStatus_Disconnected;
-    connection_status_changed_handler_->Invoke(this, nullptr);
-  }
+  if (reference_count_ == 0u)
+    SimulateStatusChangeToDisconnect();
 }
 
 void FakeBluetoothLEDeviceWinrt::SimulateDeviceBreaksConnection() {
@@ -256,8 +259,7 @@ void FakeBluetoothLEDeviceWinrt::SimulateDeviceBreaksConnection() {
   }
 
   // Simulate a Gatt Disconnecion regardless of the reference count.
-  status_ = BluetoothConnectionStatus_Disconnected;
-  connection_status_changed_handler_->Invoke(this, nullptr);
+  SimulateStatusChangeToDisconnect();
 }
 
 void FakeBluetoothLEDeviceWinrt::SimulateGattNameChange(

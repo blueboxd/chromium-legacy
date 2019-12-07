@@ -135,9 +135,9 @@ void Service::SetSearchResults(
     // set the title tags (highlighting which parts of the title matched the
     // search query).
     const base::string16 title = base::UTF8ToUTF16(result.title);
-    string_matching::TokenizedString tokenized_title(title);
-    string_matching::TokenizedStringMatch match;
-    string_matching::TokenizedString tokenized_query(base::UTF8ToUTF16(query_));
+    TokenizedString tokenized_title(title);
+    TokenizedStringMatch match;
+    TokenizedString tokenized_query(base::UTF8ToUTF16(query_));
     if (!match.Calculate(tokenized_query, tokenized_title))
       continue;
 

@@ -673,7 +673,13 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest,
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowErrorDefault) {
+// Consistently times out on debug builds. See crbug.com/1031341.
+#if !defined(NDEBUG)
+#define MAYBE_OnlineSetupFlowErrorDefault DISABLED_OnlineSetupFlowErrorDefault
+#else
+#define MAYBE_OnlineSetupFlowErrorDefault OnlineSetupFlowErrorDefault
+#endif
+IN_PROC_BROWSER_TEST_F(DemoSetupTest, MAYBE_OnlineSetupFlowErrorDefault) {
   // Simulate online setup failure.
   enrollment_helper_.ExpectEnrollmentMode(
       policy::EnrollmentConfig::MODE_ATTESTATION);

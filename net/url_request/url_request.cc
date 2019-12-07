@@ -278,6 +278,8 @@ base::Value URLRequest::GetStateAsValue() const {
     dict.SetStringKey("delegate_blocked_by", blocked_by_);
 
   dict.SetStringKey("method", method_);
+  dict.SetStringKey("network_isolation_key",
+                    network_isolation_key_.ToDebugString());
   dict.SetBoolKey("has_upload", has_upload());
   dict.SetBoolKey("is_pending", is_pending_);
 
@@ -620,7 +622,7 @@ void URLRequest::StartJob(URLRequestJob* job) {
 
   net_log_.BeginEvent(NetLogEventType::URL_REQUEST_START_JOB, [&] {
     return NetLogURLRequestStartParams(
-        url(), method_, load_flags_, privacy_mode_,
+        url(), method_, load_flags_, privacy_mode_, network_isolation_key_,
         upload_data_stream_ ? upload_data_stream_->identifier() : -1);
   });
 

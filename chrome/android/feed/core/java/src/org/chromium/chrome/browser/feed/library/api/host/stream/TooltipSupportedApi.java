@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.api.host.stream;
 
+import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.host.stream.TooltipInfo.FeatureName;
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 
 /** Interface to communicate if particular types of tooltips meet triggering conditions. */
 public interface TooltipSupportedApi {

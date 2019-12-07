@@ -41,7 +41,6 @@ class MessageBox::Core : public views::DialogDelegateView {
   bool Cancel() override;
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
 
   // views::WidgetDelegate interface.
   views::View* GetContentsView() override;
@@ -54,8 +53,6 @@ class MessageBox::Core : public views::DialogDelegateView {
 
  private:
   const base::string16 title_label_;
-  const base::string16 ok_label_;
-  const base::string16 cancel_label_;
   ResultCallback result_callback_;
   MessageBox* message_box_;
 
@@ -72,13 +69,13 @@ MessageBox::Core::Core(const base::string16& title_label,
                        ResultCallback result_callback,
                        MessageBox* message_box)
     : title_label_(title_label),
-      ok_label_(ok_label),
-      cancel_label_(cancel_label),
       result_callback_(result_callback),
       message_box_(message_box),
       message_box_view_(new views::MessageBoxView(
           views::MessageBoxView::InitParams(message_label))) {
   DCHECK(message_box_);
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK, ok_label);
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL, cancel_label);
 }
 
 void MessageBox::Core::Show() {
@@ -119,19 +116,6 @@ ui::ModalType MessageBox::Core::GetModalType() const {
 
 base::string16 MessageBox::Core::GetWindowTitle() const {
   return title_label_;
-}
-
-base::string16 MessageBox::Core::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  switch (button) {
-    case ui::DIALOG_BUTTON_OK:
-      return ok_label_;
-    case ui::DIALOG_BUTTON_CANCEL:
-      return cancel_label_;
-    default:
-      NOTREACHED();
-      return base::string16();
-  }
 }
 
 views::View* MessageBox::Core::GetContentsView() {

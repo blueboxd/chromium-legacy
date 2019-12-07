@@ -111,6 +111,9 @@ enum OptimizationType {
   // This optimization defers execution of parser-blocking script until after
   // parsing completes.
   DEFER_ALL_SCRIPT = 5;
+  // This optimization is used to provide aggregated performance information
+  // about the page and pages it links to.
+  PERFORMANCE_HINTS = 6;
 }
 
 // Presents semantics for how page load URLs should be matched.

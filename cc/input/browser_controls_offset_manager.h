@@ -40,6 +40,9 @@ class CC_EXPORT BrowserControlsOffsetManager {
   float ContentTopOffset() const;
   float TopControlsShownRatio() const;
   float TopControlsHeight() const;
+  float TopControlsMinHeight() const;
+  // The minimum shown ratio top controls can have.
+  float TopControlsMinShownRatio() const;
 
   // The amount of offset of the web content area, calculating from the bottom.
   // Same as the current shown height of the bottom controls.
@@ -47,7 +50,10 @@ class CC_EXPORT BrowserControlsOffsetManager {
   // Similar to TopControlsHeight(), this method should return a static value.
   // The current animated height should be acquired from ContentBottomOffset().
   float BottomControlsHeight() const;
+  float BottomControlsMinHeight() const;
   float BottomControlsShownRatio() const;
+  // The minimum shown ratio bottom controls can have.
+  float BottomControlsMinShownRatio() const;
 
   bool HasAnimation();
 
@@ -57,6 +63,8 @@ class CC_EXPORT BrowserControlsOffsetManager {
 
   BrowserControlsState PullConstraintForMainThread(
       bool* out_changed_since_commit);
+
+  void OnBrowserControlsParamsChanged(bool animate_changes);
 
   void ScrollBegin();
   gfx::Vector2dF ScrollBy(const gfx::Vector2dF& pending_delta);

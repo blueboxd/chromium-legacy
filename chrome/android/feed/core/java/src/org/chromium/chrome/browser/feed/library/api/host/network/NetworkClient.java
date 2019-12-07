@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.api.host.network;
 
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
+import org.chromium.base.Consumer;
 
 /**
  * An object that can send an {@link HttpRequest} and receive an {@link HttpResponse} in response.

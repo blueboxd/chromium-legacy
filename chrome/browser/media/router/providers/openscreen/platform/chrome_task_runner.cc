@@ -15,8 +15,8 @@
 
 namespace media_router {
 
-using openscreen::platform::Clock;
-using openscreen::platform::TaskRunner;
+using openscreen::Clock;
+using openscreen::TaskRunner;
 
 namespace {
 void ExecuteTask(TaskRunner::Task task) {

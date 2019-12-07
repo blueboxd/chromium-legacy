@@ -1284,6 +1284,14 @@ const char kPrinterTypeDenyList[] = "printing.printer_type_deny_list";
 // Preview.
 const char kPrintHeaderFooter[] = "printing.print_header_footer";
 
+// A pref holding the allowed background graphics printing modes.
+const char kPrintingAllowedBackgroundGraphicsModes[] =
+    "printing.allowed_background_graphics_modes";
+
+// A pref holding the default background graphics mode.
+const char kPrintingBackgroundGraphicsDefault[] =
+    "printing.background_graphics_default";
+
 // Boolean controlling whether printing is enabled.
 const char kPrintingEnabled[] = "printing.enabled";
 
@@ -1339,10 +1347,6 @@ const char kPrintingAllowedDuplexModes[] = "printing.allowed_duplex_modes";
 // A pref holding the allowed PIN printing modes.
 const char kPrintingAllowedPinModes[] = "printing.allowed_pin_modes";
 
-// A pref holding the allowed background graphics printing modes.
-const char kPrintingAllowedBackgroundGraphicsModes[] =
-    "printing.allowed_background_graphics_modes";
-
 // A pref holding the list of allowed printing duplex mode.
 // Empty list is no restriction.
 const char kPrintingAllowedPageSizes[] = "printing.allowed_page_sizes";
@@ -1355,10 +1359,6 @@ const char kPrintingDuplexDefault[] = "printing.duplex_default";
 
 // A pref holding the default PIN mode.
 const char kPrintingPinDefault[] = "printing.pin_default";
-
-// A pref holding the default background graphics mode.
-const char kPrintingBackgroundGraphicsDefault[] =
-    "printing.background_graphics_default";
 
 // A pref holding the default page size.
 const char kPrintingSizeDefault[] = "printing.size_default";

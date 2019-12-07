@@ -70,11 +70,11 @@ class RenderWidgetTargeter {
         RenderWidgetHostViewBase* root_view,
         const blink::WebInputEvent& event) = 0;
 
-    // |event| is in |root_view|'s coordinate space.
+    // |event| must be non-null, and is in |root_view|'s coordinate space.
     virtual void DispatchEventToTarget(
         RenderWidgetHostViewBase* root_view,
         RenderWidgetHostViewBase* target,
-        const blink::WebInputEvent& event,
+        blink::WebInputEvent* event,
         const ui::LatencyInfo& latency,
         const base::Optional<gfx::PointF>& target_location) = 0;
 
@@ -150,7 +150,7 @@ class RenderWidgetTargeter {
 
     bool MergeEventIfPossible(const blink::WebInputEvent& event);
     bool IsWebInputEventRequest() const;
-    const blink::WebInputEvent& GetEvent() const;
+    blink::WebInputEvent* GetEvent();
     RenderWidgetHostViewBase* GetRootView() const;
     gfx::PointF GetLocation() const;
     const ui::LatencyInfo& GetLatency() const;

@@ -63,7 +63,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
     kAcceleratedCompositedResourceUsage = 3,
     kAcceleratedDirect2DResourceUsage = 4,
     kAcceleratedDirect3DResourceUsage = 5,
-    kSoftwareCompositedDirect2DResourceUsage = 6,
+    kSoftwareCompositedDirect2DResourceUsage = 6,  // deprecated
     kMaxValue = kSoftwareCompositedDirect2DResourceUsage,
   };
 

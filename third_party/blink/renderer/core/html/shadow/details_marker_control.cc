@@ -52,7 +52,7 @@ bool DetailsMarkerControl::LayoutObjectIsNeeded(
 }
 
 HTMLSummaryElement* DetailsMarkerControl::SummaryElement() const {
-  return ToHTMLSummaryElement(OwnerShadowHost());
+  return To<HTMLSummaryElement>(OwnerShadowHost());
 }
 
 }  // namespace blink

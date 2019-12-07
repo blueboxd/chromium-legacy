@@ -19,7 +19,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * Tests for {@link RadioButtonLayout}.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
+@RunWith(BaseJUnit4ClassRunner.class)
 public class RadioButtonWithDescriptionLayoutTest {
     private static final String NON_ZERO_MARGIN_ASSERT_MESSAGE =
             "First N-1 items should have a non-zero margin";

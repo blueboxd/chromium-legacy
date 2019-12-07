@@ -40,6 +40,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/appcache/appcache.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -410,14 +411,27 @@ bool ParseManifest(const GURL& manifest_url,
   if (!data.empty() && !IsWhiteSpace(data[0]))
     return false;
 
+  if (!manifest_url.is_valid())
+    return false;
+
+  if (!AppCache::CheckValidManifestScope(manifest_url, manifest_scope))
+    return false;
+
   // Manifest parser version handling.
   //
   // Version 0: Pre-manifest scope, a manifest's scope for resources listed in
   // the FALLBACK and CHROMIUM-INTERCEPT sections can span the entire origin.
   //
-  // This code generates manifests with parser version 0.
-  manifest.parser_version = 0;
+  // Version 1: Manifests have a scope, resources listed in the FALLBACK and
+  // CHROMIUM-INTERCEPT sections must exist within that scope or be ignored.
+  // Changing the manifest, the scope, or the version of the manifest will
+  // trigger a refetch of the manifest.
+  //
+  // This code generates manifests with parser version 1.
+  manifest.parser_version = 1;
   manifest.scope = manifest_scope;
+
+  const GURL manifest_scope_url = manifest_url.Resolve(manifest_scope);
 
   // The spec requires ignoring any characters on the first line after the
   // signature and its following whitespace.
@@ -510,7 +524,10 @@ bool ParseManifest(const GURL& manifest_url,
         continue;
       }
 
-      if (manifest_url.GetOrigin() != namespace_url.GetOrigin())
+      if (namespace_url.GetOrigin() != manifest_url.GetOrigin())
+        continue;
+
+      if (!IsUrlWithinScope(namespace_url, manifest_scope_url))
         continue;
 
       // The only supported verb is "return".
@@ -542,7 +559,7 @@ bool ParseManifest(const GURL& manifest_url,
     }
 
     if (mode == Mode::kFallback) {
-      if (manifest_url.GetOrigin() != namespace_url.GetOrigin())
+      if (namespace_url.GetOrigin() != manifest_url.GetOrigin())
         continue;
 
       if (parse_mode != PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES) {
@@ -552,6 +569,9 @@ bool ParseManifest(const GURL& manifest_url,
           continue;
         }
       }
+
+      if (!IsUrlWithinScope(namespace_url, manifest_scope_url))
+        continue;
 
       base::StringPiece fallback_url_token;
       std::tie(fallback_url_token, line) = SplitLineToken(line);

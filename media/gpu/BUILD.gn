@@ -86,7 +86,6 @@ component("gpu") {
     public_deps += [
       ":video_frame_mapper",
       "//media/gpu/chromeos",
-      "//media/gpu/linux:common",
     ]
   }
 
@@ -322,7 +321,7 @@ if (use_v4l2_codec || use_vaapi) {
 
     # generic_dmabuf_video_frame_mapper
     if (use_v4l2_codec || use_vaapi) {
-      deps += [ "//media/gpu/linux:video_frame_mapper" ]
+      deps += [ "//media/gpu/chromeos:video_frame_mapper" ]
     }
 
     # vaapi_dmabuf_video_frame_mapper
@@ -490,10 +489,7 @@ source_set("unit_tests") {
   ]
 
   if (use_v4l2_codec || use_vaapi) {
-    deps += [
-      "//media/gpu/chromeos:unit_tests",
-      "//media/gpu/linux:unit_tests",
-    ]
+    deps += [ "//media/gpu/chromeos:unit_tests" ]
   }
   if (use_vaapi) {
     deps += [ "//media/gpu/vaapi:unit_test" ]

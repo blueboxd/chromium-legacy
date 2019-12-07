@@ -185,6 +185,11 @@ base::WeakPtr<BluetoothAdapter> BluetoothAdapterCast::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
+base::WeakPtr<BluetoothAdapterCast> BluetoothAdapterCast::GetCastWeakPtr() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return weak_factory_.GetWeakPtr();
+}
+
 bool BluetoothAdapterCast::SetPoweredImpl(bool powered) {
   NOTREACHED() << "This method is not invoked when SetPowered() is overridden.";
   return true;

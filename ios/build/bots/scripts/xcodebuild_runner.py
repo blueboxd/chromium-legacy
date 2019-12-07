@@ -16,6 +16,7 @@ import subprocess
 import threading
 import time
 
+import iossim_util
 import test_runner
 import xcode_log_parser
 
@@ -236,7 +237,9 @@ class EgtestsApp(object):
 class LaunchCommand(object):
   """Stores xcodebuild test launching command."""
 
-  def __init__(self, egtests_app, destination,
+  def __init__(self,
+               egtests_app,
+               udid,
                shards,
                retries,
                out_dir=os.path.basename(os.getcwd()),
@@ -245,7 +248,7 @@ class LaunchCommand(object):
 
     Args:
       egtests_app: (EgtestsApp) An egtests_app to run.
-      destination: (str) A destination.
+      udid: (str) UDID of a device/simulator.
       shards: (int) A number of shards.
       retries: (int) A number of retries.
       out_dir: (str) A folder in which xcodebuild will generate test output.
@@ -259,7 +262,7 @@ class LaunchCommand(object):
       raise test_runner.AppNotFoundError(
           'Parameter `egtests_app` is not EgtestsApp: %s' % egtests_app)
     self.egtests_app = egtests_app
-    self.destination = destination
+    self.udid = udid
     self.shards = shards
     self.retries = retries
     self.out_dir = out_dir
@@ -348,7 +351,8 @@ class LaunchCommand(object):
     # total number of attempts is self.retries+1
     for attempt in range(self.retries + 1):
       # Erase all simulators per each attempt
-      if 'iOS Simulator' in self.destination:
+      if 'simulator' in iossim_util.get_simulator_runtime_by_device_udid(
+          self.udid).lower():
         # kill all running simulators to prevent possible memory leaks
         test_runner.SimulatorTestRunner.kill_simulators()
         shutdown_all_simulators()
@@ -356,10 +360,8 @@ class LaunchCommand(object):
         erase_all_simulators()
         erase_all_simulators(XTDEVICE_FOLDER)
       outdir_attempt = os.path.join(self.out_dir, 'attempt_%d' % attempt)
-      cmd_list = self.command(self.egtests_app,
-                              outdir_attempt,
-                              self.destination,
-                              shards)
+      cmd_list = self.command(self.egtests_app, outdir_attempt,
+                              'id=%s' % self.udid, shards)
       # TODO(crbug.com/914878): add heartbeat logging to xcodebuild_runner.
       LOGGER.info('Start test attempt #%d for command [%s]' % (
           attempt, ' '.join(cmd_list)))
@@ -535,25 +537,18 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
     [
         {
             'app':paths to egtests_app,
-            'destination': 'platform=iOS Simulator,OS=<os>,Name=<simulator>'
+            'udid': 'UDID of Simulator'
             'shards': N
         }
     ]
     """
-    self.sharding_data = [
-        {
-            'app': self.app_path,
-            'host': self.host_app_path,
-            # Destination is required to run tests via xcodebuild and it
-            # looks like
-            # 'platform=iOS Simulator,OS=<os_version>,Name=<simulator-name>'
-            # By default all tests runs on 'platform=iOS Simulator'.
-            'destination': 'platform=iOS Simulator,OS=%s,name=%s' % (
-                self.version, self.platform),
-            'shards': self.shards,
-            'test_cases': self.test_cases
-        }
-    ]
+    self.sharding_data = [{
+        'app': self.app_path,
+        'host': self.host_app_path,
+        'udid': iossim_util.get_simulator(self.platform, self.version),
+        'shards': self.shards,
+        'test_cases': self.test_cases
+    }]
 
   def get_launch_env(self):
     """Returns a dict of environment variables to use to launch the test app.
@@ -567,20 +562,21 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
 
   def launch(self):
     """Launches tests using xcodebuild."""
-    destinaion_folder = lambda dest: dest.replace(
-        'platform=iOS Simulator,', '').replace(',name=', ' ').replace('OS=', '')
     launch_commands = []
     for params in self.sharding_data:
-      launch_commands.append(LaunchCommand(
-          EgtestsApp(params['app'], included_tests=params['test_cases'],
-                     env_vars=self.env_vars, test_args=self.test_args,
-                     host_app_path=params['host']),
-          params['destination'],
-          shards=params['shards'],
-          retries=self.retries,
-          out_dir=os.path.join(self.out_dir,
-                               destinaion_folder(params['destination'])),
-          env=self.get_launch_env()))
+      launch_commands.append(
+          LaunchCommand(
+              EgtestsApp(
+                  params['app'],
+                  included_tests=params['test_cases'],
+                  env_vars=self.env_vars,
+                  test_args=self.test_args,
+                  host_app_path=params['host']),
+              udid=params['udid'],
+              shards=params['shards'],
+              retries=self.retries,
+              out_dir=os.path.join(self.out_dir, params['udid']),
+              env=self.get_launch_env()))
 
     pool = multiprocessing.pool.ThreadPool(len(launch_commands))
     attempts_results = []

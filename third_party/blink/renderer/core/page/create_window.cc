@@ -288,9 +288,10 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
   bool not_sandboxed =
       opener_frame.GetDocument()->GetSandboxFlags() == WebSandboxFlags::kNone;
   FeaturePolicy::FeatureState opener_feature_state =
-      (not_sandboxed || propagate_sandbox)
-          ? opener_frame.GetDocument()->GetFeaturePolicy()->GetFeatureState()
-          : FeaturePolicy::FeatureState();
+      (not_sandboxed || propagate_sandbox) ? opener_frame.GetSecurityContext()
+                                                 ->GetFeaturePolicy()
+                                                 ->GetFeatureState()
+                                           : FeaturePolicy::FeatureState();
 
   SessionStorageNamespaceId new_namespace_id =
       AllocateSessionStorageNamespaceId();

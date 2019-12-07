@@ -11,13 +11,12 @@ import android.support.test.filters.SmallTest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.util.DisabledTest;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 
 /**
  * Unit tests for {@link KeyPrefix}.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 public class KeyPrefixTest {
     @Test
     @SmallTest
@@ -30,21 +29,18 @@ public class KeyPrefixTest {
     }
 
     @Test(expected = AssertionError.class)
-    @DisabledTest(message = "https://crbug.com/1028821")
     @SmallTest
     public void testError_missingPeriod() {
         new KeyPrefix("Chrome.Feature.KP");
     }
 
     @Test(expected = AssertionError.class)
-    @DisabledTest(message = "https://crbug.com/1028821")
     @SmallTest
     public void testError_missingStar() {
         new KeyPrefix("Chrome.Feature.KP.");
     }
 
     @Test(expected = AssertionError.class)
-    @DisabledTest(message = "https://crbug.com/1028821")
     @SmallTest
     public void testError_extraStar() {
         new KeyPrefix("Chrome.Feature.KP.**");

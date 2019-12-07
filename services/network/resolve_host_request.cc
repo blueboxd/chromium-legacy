@@ -19,6 +19,7 @@ namespace network {
 ResolveHostRequest::ResolveHostRequest(
     net::HostResolver* resolver,
     const net::HostPortPair& host,
+    const net::NetworkIsolationKey& network_isolation_key,
     const base::Optional<net::HostResolver::ResolveHostParameters>&
         optional_parameters,
     net::NetLog* net_log) {
@@ -26,7 +27,8 @@ ResolveHostRequest::ResolveHostRequest(
   DCHECK(net_log);
 
   internal_request_ = resolver->CreateRequest(
-      host, net::NetLogWithSource::Make(net_log, net::NetLogSourceType::NONE),
+      host, network_isolation_key,
+      net::NetLogWithSource::Make(net_log, net::NetLogSourceType::NONE),
       optional_parameters);
 }
 

@@ -38,7 +38,6 @@ class Value;
 
 using String = WTF::String;
 using StringBuilder = WTF::StringBuilder;
-using ProtocolMessage = WebVector<uint8_t>;
 
 class CORE_EXPORT StringUtil {
   STATIC_ONLY(StringUtil);

@@ -15,7 +15,8 @@ namespace printing {
 
 class PrintBackendCupsIpp : public PrintBackend {
  public:
-  explicit PrintBackendCupsIpp(std::unique_ptr<CupsConnection> connection);
+  PrintBackendCupsIpp(std::unique_ptr<CupsConnection> connection,
+                      const std::string& locale);
 
  private:
   ~PrintBackendCupsIpp() override;

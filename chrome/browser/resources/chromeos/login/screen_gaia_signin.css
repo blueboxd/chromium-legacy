@@ -2,11 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-:host(.saml-interstitial) {
-  height: 528px;
-  width: 448px;
-}
-
 .signin-link {
   color: rgb(37, 79, 155);
   cursor: pointer;

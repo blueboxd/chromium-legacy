@@ -12,7 +12,7 @@ import android.graphics.Shader.TileMode;
 import android.graphics.drawable.ShapeDrawable;
 import android.support.annotation.VisibleForTesting;
 
-import org.chromium.chrome.browser.feed.library.common.functional.Supplier;
+import org.chromium.base.Supplier;
 
 /** Generates a linear gradient according to CSS behavior */
 class GradientShader extends ShapeDrawable.ShaderFactory {

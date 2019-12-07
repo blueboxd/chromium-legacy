@@ -7,9 +7,11 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager_observer.h"
+#include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/ui/browser_list_observer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/process_manager_delegate.h"
 
 class Browser;
@@ -20,8 +22,9 @@ namespace extensions {
 // Support for ProcessManager. Controls cases where Chrome wishes to disallow
 // extension background pages or defer their creation.
 class ChromeProcessManagerDelegate : public ProcessManagerDelegate,
-                                     public content::NotificationObserver,
-                                     public BrowserListObserver {
+                                     public BrowserListObserver,
+                                     public ProfileManagerObserver,
+                                     public ProfileObserver {
  public:
   ChromeProcessManagerDelegate();
   ~ChromeProcessManagerDelegate() override;
@@ -35,20 +38,18 @@ class ChromeProcessManagerDelegate : public ProcessManagerDelegate,
   bool DeferCreatingStartupBackgroundHosts(
       content::BrowserContext* context) const override;
 
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   // BrowserListObserver:
   void OnBrowserAdded(Browser* browser) override;
 
- private:
-  // Notification handlers.
-  void OnProfileCreated(Profile* profile);
-  void OnProfileDestroyed(Profile* profile);
+  // ProfileManagerObserver:
+  void OnProfileAdded(Profile* profile) override;
 
-  content::NotificationRegistrar registrar_;
+  // ProfileObserver:
+  void OnOffTheRecordProfileCreated(Profile* off_the_record_profile) override;
+  void OnProfileWillBeDestroyed(Profile* profile) override;
+
+ private:
+  ScopedObserver<Profile, ProfileObserver> observed_profiles_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChromeProcessManagerDelegate);
 };

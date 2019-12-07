@@ -31,12 +31,9 @@ template("system_webview_apk_tmpl") {
                            ])
 
     deps += [
+      "//android_webview:android_webview_step1_java",
       "//android_webview:locale_pak_assets",
       "//android_webview:pak_file_assets",
-      "//android_webview/glue",
-      "//android_webview/nonembedded:nonembedded_java",
-      "//android_webview/support_library:support_lib_glue_java",
-      "//base:base_java",
     ]
 
     target_sdk_version = android_sdk_version
@@ -70,7 +67,7 @@ template("system_webview_apk_tmpl") {
       shared_libraries = [ "//android_webview:libwebviewchromium" ]
       _include_primary_support = true
       shared_resources = true
-      if (build_apk_secondary_abi && android_64bit_target_cpu) {
+      if (android_64bit_target_cpu) {
         secondary_abi_shared_libraries = [ "//android_webview:libwebviewchromium($android_secondary_abi_toolchain)" ]
         _include_secondary_support = true
       }
@@ -83,7 +80,7 @@ template("system_webview_apk_tmpl") {
       if (android_64bit_target_cpu) {
         if (invoker.is_64_bit_browser) {
           native_lib_placeholders = [ "libdummy.so" ]
-          if (invoker.include_32_bit_webview && build_apk_secondary_abi) {
+          if (invoker.include_32_bit_webview) {
             secondary_abi_shared_libraries = [ "//android_webview:monochrome_64($android_secondary_abi_toolchain)" ]
             deps += [ "//android_webview:v8_snapshot_secondary_abi_assets" ]
             _include_secondary_support = true
@@ -99,9 +96,7 @@ template("system_webview_apk_tmpl") {
               deps += [ "//v8:v8_external_startup_data_assets" ]
             }
           }
-          if (build_apk_secondary_abi) {
-            secondary_native_lib_placeholders = [ "libdummy.so" ]
-          }
+          secondary_native_lib_placeholders = [ "libdummy.so" ]
         }
       } else {
         native_lib_placeholders = [ "libdummy.so" ]

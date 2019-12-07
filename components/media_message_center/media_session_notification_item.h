@@ -126,6 +126,8 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaSessionNotificationItem
 
   base::Optional<gfx::ImageSkia> session_artwork_;
 
+  base::Optional<gfx::ImageSkia> session_favicon_;
+
   // True if the metadata needs to be updated on |view_|. Used to prevent
   // updating |view_|'s metadata twice on a single change.
   bool view_needs_metadata_update_ = false;
@@ -151,6 +153,9 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaSessionNotificationItem
 
   mojo::Receiver<media_session::mojom::MediaControllerImageObserver>
       artwork_observer_receiver_{this};
+
+  mojo::Receiver<media_session::mojom::MediaControllerImageObserver>
+      favicon_observer_receiver_{this};
 
   base::WeakPtrFactory<MediaSessionNotificationItem> weak_ptr_factory_{this};
 };

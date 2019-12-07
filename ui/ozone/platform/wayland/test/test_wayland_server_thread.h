@@ -45,8 +45,8 @@ class TestWaylandServerThread : public base::Thread,
   // descriptor that a client can connect to. The caller is responsible for
   // ensuring that this file descriptor gets closed (for example, by calling
   // wl_display_connect).
-  // Instantiates an xdg_shell of version |shell_version|; versions 5 and 6 are
-  // supported.
+  // Instantiates an xdg_shell of version |shell_version|; versions 6 and 7
+  // (stable) are supported.
   bool Start(uint32_t shell_version);
 
   // Pauses the server thread when it becomes idle.

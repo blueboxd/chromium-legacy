@@ -145,6 +145,30 @@ class MockGLSurfaceAsync : public gl::GLSurfaceStub {
   SwapCompletionCallback callback_;
 };
 
+class MemoryTrackerStub : public gpu::MemoryTracker {
+ public:
+  MemoryTrackerStub() = default;
+  MemoryTrackerStub(const MemoryTrackerStub&) = delete;
+  MemoryTrackerStub& operator=(const MemoryTrackerStub&) = delete;
+  ~MemoryTrackerStub() override { DCHECK(!size_); }
+
+  // MemoryTracker implementation:
+  void TrackMemoryAllocatedChange(uint64_t delta) override { size_ += delta; }
+  uint64_t GetSize() const override { return size_; }
+  uint64_t ClientTracingId() const override { return client_tracing_id_; }
+  int ClientId() const override {
+    return gpu::ChannelIdFromCommandBufferId(command_buffer_id_);
+  }
+  uint64_t ContextGroupTracingId() const override {
+    return command_buffer_id_.GetUnsafeValue();
+  }
+
+ private:
+  gpu::CommandBufferId command_buffer_id_;
+  const uint64_t client_tracing_id_ = 0;
+  uint64_t size_ = 0;
+};
+
 }  // namespace
 
 namespace viz {
@@ -161,6 +185,7 @@ class SkiaOutputDeviceBufferQueueTest : public TestOnGpu {
 
   void SetUpOnGpu() override {
     gl_surface_ = base::MakeRefCounted<MockGLSurfaceAsync>();
+    memory_tracker_ = std::make_unique<MemoryTrackerStub>();
 
     auto present_callback =
         base::DoNothing::Repeatedly<gpu::SwapBuffersCompleteParams,
@@ -173,7 +198,7 @@ class SkiaOutputDeviceBufferQueueTest : public TestOnGpu {
     std::unique_ptr<SkiaOutputDeviceBufferQueue> onscreen_device =
         std::make_unique<SkiaOutputDeviceBufferQueue>(
             gl_surface_, dependency_.get(), present_callback,
-            shared_image_usage);
+            memory_tracker_.get(), shared_image_usage);
 
     output_device_ = std::move(onscreen_device);
   }
@@ -193,6 +218,8 @@ class SkiaOutputDeviceBufferQueueTest : public TestOnGpu {
   base::circular_deque<std::unique_ptr<Image>>& in_flight_images() {
     return output_device_->in_flight_images_;
   }
+
+  const gpu::MemoryTracker& memory_tracker() { return *memory_tracker_; }
 
   int CountBuffers() {
     int n = available_images().size() + in_flight_images().size();
@@ -235,6 +262,7 @@ class SkiaOutputDeviceBufferQueueTest : public TestOnGpu {
  protected:
   std::unique_ptr<SkiaOutputSurfaceDependency> dependency_;
   scoped_refptr<MockGLSurfaceAsync> gl_surface_;
+  std::unique_ptr<MemoryTrackerStub> memory_tracker_;
   std::unique_ptr<SkiaOutputDeviceBufferQueue> output_device_;
 };
 
@@ -247,10 +275,13 @@ TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, MultipleGetCurrentBufferCalls) {
 
   output_device_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false,
                           gfx::OVERLAY_TRANSFORM_NONE);
+  EXPECT_EQ(0U, memory_tracker().GetSize());
   EXPECT_NE(GetCurrentImage(), nullptr);
+  EXPECT_NE(0U, memory_tracker().GetSize());
   EXPECT_EQ(1, CountBuffers());
   auto* fb = current_image();
   EXPECT_NE(GetCurrentImage(), nullptr);
+  EXPECT_NE(0U, memory_tracker().GetSize());
   EXPECT_EQ(1, CountBuffers());
   EXPECT_EQ(fb, current_image());
 }
@@ -259,9 +290,11 @@ TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, CheckDoubleBuffering) {
   // Check buffer flow through double buffering path.
   output_device_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false,
                           gfx::OVERLAY_TRANSFORM_NONE);
+  EXPECT_EQ(0U, memory_tracker().GetSize());
   EXPECT_EQ(0, CountBuffers());
 
   EXPECT_NE(GetCurrentImage(), nullptr);
+  EXPECT_NE(0U, memory_tracker().GetSize());
   EXPECT_EQ(1, CountBuffers());
   EXPECT_NE(current_image(), nullptr);
   EXPECT_FALSE(displayed_image());
@@ -271,6 +304,7 @@ TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, CheckDoubleBuffering) {
   EXPECT_EQ(0U, in_flight_images().size());
   EXPECT_TRUE(displayed_image());
   EXPECT_NE(GetCurrentImage(), nullptr);
+  EXPECT_NE(0U, memory_tracker().GetSize());
   EXPECT_EQ(2, CountBuffers());
   CheckUnique();
   EXPECT_NE(current_image(), nullptr);
@@ -286,6 +320,7 @@ TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, CheckDoubleBuffering) {
   EXPECT_EQ(1U, available_images().size());
   EXPECT_TRUE(displayed_image());
   EXPECT_NE(GetCurrentImage(), nullptr);
+  EXPECT_NE(0U, memory_tracker().GetSize());
   EXPECT_EQ(2, CountBuffers());
   CheckUnique();
   EXPECT_TRUE(available_images().empty());
@@ -295,6 +330,7 @@ TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, CheckTripleBuffering) {
   // Check buffer flow through triple buffering path.
   output_device_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false,
                           gfx::OVERLAY_TRANSFORM_NONE);
+  EXPECT_EQ(0U, memory_tracker().GetSize());
 
   // This bit is the same sequence tested in the doublebuffering case.
   EXPECT_NE(GetCurrentImage(), nullptr);
@@ -304,11 +340,13 @@ TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, CheckTripleBuffering) {
   EXPECT_NE(GetCurrentImage(), nullptr);
   SwapBuffers();
 
+  EXPECT_NE(0U, memory_tracker().GetSize());
   EXPECT_EQ(2, CountBuffers());
   CheckUnique();
   EXPECT_EQ(1U, in_flight_images().size());
   EXPECT_TRUE(displayed_image());
   EXPECT_NE(GetCurrentImage(), nullptr);
+  EXPECT_NE(0U, memory_tracker().GetSize());
   EXPECT_EQ(3, CountBuffers());
   CheckUnique();
   EXPECT_NE(current_image(), nullptr);
@@ -330,8 +368,10 @@ TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, CheckEmptySwap) {
                           gfx::OVERLAY_TRANSFORM_NONE);
 
   EXPECT_EQ(0, CountBuffers());
+  EXPECT_EQ(0U, memory_tracker().GetSize());
   auto* image = GetCurrentImage();
   EXPECT_NE(image, nullptr);
+  EXPECT_NE(0U, memory_tracker().GetSize());
   EXPECT_EQ(1, CountBuffers());
   EXPECT_NE(current_image(), nullptr);
   EXPECT_FALSE(displayed_image());

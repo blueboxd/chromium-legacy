@@ -21,6 +21,7 @@
 namespace net {
 class HostPortPair;
 class NetLog;
+class NetworkIsolationKey;
 }  // namespace net
 
 namespace network {
@@ -33,6 +34,7 @@ class ResolveHostRequest : public mojom::ResolveHostHandle {
   ResolveHostRequest(
       net::HostResolver* resolver,
       const net::HostPortPair& host,
+      const net::NetworkIsolationKey& network_isolation_key,
       const base::Optional<net::HostResolver::ResolveHostParameters>&
           optional_parameters,
       net::NetLog* net_log);

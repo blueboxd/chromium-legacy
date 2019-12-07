@@ -27,6 +27,7 @@ class LockObserver;
 namespace performance_manager {
 class BrowserChildProcessWatcher;
 class GraphImpl;
+class PageLiveStateDecoratorHelper;
 class PerformanceManagerImpl;
 class SharedWorkerWatcher;
 }  // namespace performance_manager
@@ -87,6 +88,10 @@ class ChromeBrowserMainExtraPartsPerformanceManager
   base::flat_map<Profile*,
                  std::unique_ptr<performance_manager::SharedWorkerWatcher>>
       shared_worker_watchers_;
+
+  // Needed to properly maintain some of the PageLiveStateDecorator' properties.
+  std::unique_ptr<performance_manager::PageLiveStateDecoratorHelper>
+      page_live_state_data_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsPerformanceManager);
 };

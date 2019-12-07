@@ -802,6 +802,36 @@ luci.console_view(
             short_name = 'pxl2',
         ),
         luci.console_view_entry(
+            builder = 'ci/linux-swangle-tot-angle-x64',
+            category = 'week17|swangle|angle',
+            short_name = 'x64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/linux-swangle-tot-angle-x86',
+            category = 'week17|swangle|angle',
+            short_name = 'x86',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/linux-swangle-tot-swiftshader-x64',
+            category = 'week17|swangle|swift',
+            short_name = 'x64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/linux-swangle-tot-swiftshader-x86',
+            category = 'week17|swangle|swift',
+            short_name = 'x86',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/linux-swangle-x64',
+            category = 'week17|swangle',
+            short_name = 'x64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/linux-swangle-x86',
+            category = 'week17|swangle',
+            short_name = 'x86',
+        ),
+        luci.console_view_entry(
             builder = 'ci/Win ASan Release',
             category = 'win|week1|asan',
         ),

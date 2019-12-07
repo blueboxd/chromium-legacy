@@ -49,7 +49,9 @@ void WebKioskAppLauncher::ContinueWithNetworkReady() {
   delegate_->OnAppStartedInstalling();
   DCHECK(!is_installed_);
   install_task_.reset(new web_app::WebAppInstallTask(
-      profile_, /*shortcut_manager=*/nullptr, /*install_finalizer=*/nullptr,
+      profile_, /*registrar=*/nullptr, /*shortcut_manager=*/nullptr,
+      /*file_handler_manager=*/nullptr,
+      /*install_finalizer=*/nullptr,
       std::make_unique<web_app::WebAppDataRetriever>()));
   install_task_->LoadAndRetrieveWebApplicationInfoWithIcons(
       WebKioskAppManager::Get()->GetAppByAccountId(account_id_)->install_url(),

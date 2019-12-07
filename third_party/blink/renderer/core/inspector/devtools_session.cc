@@ -236,7 +236,7 @@ void DevToolsSession::DispatchProtocolCommandImpl(int call_id,
         protocol::Value::parseBinary(data.data(), data.size());
     // Don't pass protocol message further - there is no passthrough.
     inspector_backend_dispatcher_->dispatch(call_id, method, std::move(value),
-                                            protocol::ProtocolMessage());
+                                            crdtp::span<uint8_t>());
   }
   agent_->client_->DebuggerTaskFinished();
 }
@@ -268,7 +268,7 @@ void DevToolsSession::sendProtocolResponse(
 
 void DevToolsSession::fallThrough(int call_id,
                                   const String& method,
-                                  const protocol::ProtocolMessage& message) {
+                                  crdtp::span<uint8_t> message) {
   // There's no other layer to handle the command.
   NOTREACHED();
 }

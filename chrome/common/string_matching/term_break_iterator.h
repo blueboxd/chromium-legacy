@@ -18,8 +18,6 @@ class UTF16CharIterator;
 }
 }  // namespace base
 
-namespace string_matching {
-
 // TermBreakIterator breaks terms out of a word. Terms are broken on
 // camel case boundaries and alpha/number boundaries. Numbers are defined
 // as [0-9\.,]+.
@@ -66,7 +64,5 @@ class TermBreakIterator {
 
   DISALLOW_COPY_AND_ASSIGN(TermBreakIterator);
 };
-
-}  // namespace string_matching
 
 #endif  // CHROME_COMMON_STRING_MATCHING_TERM_BREAK_ITERATOR_H_

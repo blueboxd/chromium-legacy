@@ -134,41 +134,21 @@ TEST(TreeBuilderTest, TestNoNameUnderGroup) {
 
 TEST(TreeBuilderTest, TestJoinDexMethodClasses) {
   std::unique_ptr<SizeInfo> size_info = std::make_unique<SizeInfo>();
-  MakeSymbol(size_info.get(), SectionId::kDex, 30,
-             "chrome/android/features/start_surface/public/java/src/org/"
-             "chromium/chrome/features/start_surface/StartSurface.java",
-             "Mobile",
-             "org.chromium.chrome.features.start_surface.StartSurface$"
-             "OverviewModeObserver android.graphics.Bitmap a()");
-  MakeSymbol(size_info.get(), SectionId::kDex, 20,
-             "chrome/android/features/start_surface/public/java/src/org/"
-             "chromium/chrome/features/start_surface/StartSurface.java",
-             "Mobile",
-             "org.chromium.chrome.features.start_surface.StartSurface$"
-             "OverviewModeObserver <init>(android.graphics.Bitmap)");
+  MakeSymbol(size_info.get(), SectionId::kDex, 30, "a/b/c", "",
+             "zL2#foo(int,android.os.Parcel,android.os.Parcel,int): boolean");
 
   TreeBuilder builder(size_info.get());
   FilterList filters;
-  builder.Build(std::make_unique<ComponentLens>(), '>', false, filters);
+  builder.Build(std::make_unique<IdPathLens>(), '>', false, filters);
   CheckAllTreeNodesFindable(builder, builder.Open(""));
 
-  Json::Value class_symbol = (builder.Open(
-      "Mobile/chrome/android/features/start_surface/public/java/src/"
-      "org/chromium/chrome/features/start_surface/StartSurface.java"))
-      ["children"][0];
-  EXPECT_EQ("StartSurface$OverviewModeObserver", ShortName(class_symbol));
+  Json::Value class_symbol = builder.Open("a/b/c/zL2");
+  EXPECT_EQ("zL2", ShortName(class_symbol));
+  EXPECT_EQ(1u, class_symbol["children"].size());
 
-  EXPECT_EQ(
-      "Mobile/chrome/android/features/start_surface/public/java/src/"
-      "org/chromium/chrome/features/start_surface/StartSurface.java/"
-      "org.chromium.chrome.features.start_surface.StartSurface$"
-      "OverviewModeObserver",
-      class_symbol["idPath"].asString());
-  EXPECT_EQ(2u, class_symbol["children"].size());
-
-  Json::Value dex_symbol = class_symbol["children"][0];
-  EXPECT_EQ(0u, dex_symbol["children"].size());
-
-  EXPECT_EQ("android.graphics.Bitmap a()", ShortName(dex_symbol));
+  Json::Value method_symbol = builder.Open("a/b/c/zL2")["children"][0];
+  EXPECT_EQ("foo(int,android.os.Parcel,android.os.Parcel,int): boolean",
+            ShortName(method_symbol));
+  EXPECT_EQ(0u, method_symbol["children"].size());
 }
 }  // namespace caspian

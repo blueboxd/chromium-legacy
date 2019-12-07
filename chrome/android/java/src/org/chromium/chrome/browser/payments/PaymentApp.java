@@ -34,11 +34,6 @@ public interface PaymentApp {
     }
 
     /**
-     * TODO(sahel): Remove this stub after updating clank code. crbug.com/984694.
-     */
-    public interface PaymentMethodChangeCallback {}
-
-    /**
      * The interface for listener to payment method, shipping address, and shipping option change
      * events. Note: What the spec calls "payment methods" in the context of a "change event", this
      * code calls "instruments".
@@ -78,16 +73,6 @@ public interface PaymentApp {
          */
         boolean changeShippingAddressFromInvokedApp(PaymentAddress shippingAddress);
     }
-
-    /**
-     * Sets the listener to payment method change events. Should be called before a payment method
-     * has been selected, e.g., before getInstruments(), which constructs the payment methods.
-     * TODO(sahel): Remove this stub after updating clank code. crbug.com/984694.
-     *
-     * @param methodChangeCallback The object that will receive notifications of payment method
-     *                             changes.
-     */
-    default void setPaymentMethodChangeCallback(PaymentMethodChangeCallback methodChangeCallback) {}
 
     /**
      * Sets the listener to payment method, shipping address, or shipping option change events.

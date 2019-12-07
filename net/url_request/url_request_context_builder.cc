@@ -260,6 +260,11 @@ void URLRequestContextBuilder::set_ct_policy_enforcer(
   ct_policy_enforcer_ = std::move(ct_policy_enforcer);
 }
 
+void URLRequestContextBuilder::set_quic_context(
+    std::unique_ptr<QuicContext> quic_context) {
+  quic_context_ = std::move(quic_context);
+}
+
 void URLRequestContextBuilder::SetCertVerifier(
     std::unique_ptr<CertVerifier> cert_verifier) {
   DCHECK(!shared_cert_verifier_);
@@ -491,7 +496,11 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
         std::make_unique<DefaultCTPolicyEnforcer>());
   }
 
-  storage->set_quic_context(std::make_unique<QuicContext>());
+  if (quic_context_) {
+    storage->set_quic_context(std::move(quic_context_));
+  } else {
+    storage->set_quic_context(std::make_unique<QuicContext>());
+  }
 
   if (throttling_enabled_) {
     storage->set_throttler_manager(

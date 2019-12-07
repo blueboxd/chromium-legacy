@@ -38,6 +38,20 @@ JavaScriptAppModalDialogViews::JavaScriptAppModalDialogViews(
     message_box_view_->SetCheckBoxLabel(
         l10n_util::GetStringUTF16(IDS_JAVASCRIPT_MESSAGEBOX_SUPPRESS_OPTION));
   }
+
+  DialogDelegate::set_buttons(
+      parent_->javascript_dialog_type() == content::JAVASCRIPT_DIALOG_TYPE_ALERT
+          ? ui::DIALOG_BUTTON_OK
+          : (ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL));
+
+  if (parent_->is_before_unload_dialog()) {
+    DialogDelegate::set_button_label(
+        ui::DIALOG_BUTTON_OK,
+        l10n_util::GetStringUTF16(
+            parent_->is_reload()
+                ? IDS_BEFORERELOAD_MESSAGEBOX_OK_BUTTON_LABEL
+                : IDS_BEFOREUNLOAD_MESSAGEBOX_OK_BUTTON_LABEL));
+  }
 }
 
 JavaScriptAppModalDialogViews::~JavaScriptAppModalDialogViews() {
@@ -78,14 +92,6 @@ bool JavaScriptAppModalDialogViews::IsShowing() const {
 //////////////////////////////////////////////////////////////////////////////
 // JavaScriptAppModalDialogViews, views::DialogDelegate implementation:
 
-int JavaScriptAppModalDialogViews::GetDialogButtons() const {
-  if (parent_->javascript_dialog_type() ==
-      content::JAVASCRIPT_DIALOG_TYPE_ALERT)
-    return ui::DIALOG_BUTTON_OK;
-
-  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-}
-
 base::string16 JavaScriptAppModalDialogViews::GetWindowTitle() const {
   return parent_->title();
 }
@@ -103,16 +109,6 @@ bool JavaScriptAppModalDialogViews::Accept() {
   parent_->OnAccept(message_box_view_->GetInputText(),
                     message_box_view_->IsCheckBoxSelected());
   return true;
-}
-
-base::string16 JavaScriptAppModalDialogViews::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK && parent_->is_before_unload_dialog()) {
-    return l10n_util::GetStringUTF16(
-        parent_->is_reload() ? IDS_BEFORERELOAD_MESSAGEBOX_OK_BUTTON_LABEL
-                             : IDS_BEFOREUNLOAD_MESSAGEBOX_OK_BUTTON_LABEL);
-  }
-  return DialogDelegate::GetDialogButtonLabel(button);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

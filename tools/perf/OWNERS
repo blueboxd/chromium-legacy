@@ -4,10 +4,6 @@ crouleau@chromium.org
 jbudorick@chromium.org
 #hypan@google.com  Uncomment when hypan@ becomes a committer.
 
-# For core cli_tools, system health memory benchmarks, and
-# memory-infra related changes.
-perezju@chromium.org
-
 # For changes related to ChromeOS.
 achuith@chromium.org
 
@@ -24,3 +20,6 @@ sullivan@chromium.org
 
 # For page_cycler and loading benchmarks related changes.
 kouhei@chromium.org
+
+# emeritus:
+# perezju@chromium.org

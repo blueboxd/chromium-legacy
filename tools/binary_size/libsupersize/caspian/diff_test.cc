@@ -104,7 +104,7 @@ TEST(DiffTest, TestSimpleAdd) {
   size_info1->raw_symbols.erase(size_info1->raw_symbols.begin());
   DeltaSizeInfo diff = Diff(size_info1.get(), size_info2.get());
 
-  DeltaSizeInfo::Results expected_counts{0, 0, 1, 0};
+  DeltaSizeInfo::Results expected_counts{5, 0, 1, 0};
   EXPECT_EQ(expected_counts, diff.CountsByDiffStatus());
   EXPECT_EQ(0, SumOfSymbolPadding(diff));
   EXPECT_EQ(10, SumOfSymbolSizes(diff));
@@ -117,7 +117,7 @@ TEST(DiffTest, TestSimpleDelete) {
   size_info2->raw_symbols.erase(size_info2->raw_symbols.begin());
   DeltaSizeInfo diff = Diff(size_info1.get(), size_info2.get());
 
-  DeltaSizeInfo::Results expected_counts{0, 0, 0, 1};
+  DeltaSizeInfo::Results expected_counts{5, 0, 0, 1};
   EXPECT_EQ(expected_counts, diff.CountsByDiffStatus());
   EXPECT_EQ(0, SumOfSymbolPadding(diff));
   EXPECT_EQ(-10, SumOfSymbolSizes(diff));
@@ -132,7 +132,7 @@ TEST(DiffTest, TestSimpleChange) {
   size_info2->raw_symbols.back().size_ += 11;
   DeltaSizeInfo diff = Diff(size_info1.get(), size_info2.get());
 
-  DeltaSizeInfo::Results expected_counts{0, 2, 1, 0};
+  DeltaSizeInfo::Results expected_counts{4, 2, 1, 0};
   EXPECT_EQ(expected_counts, diff.CountsByDiffStatus());
   EXPECT_EQ(20, SumOfSymbolPadding(diff));
   EXPECT_EQ(22, SumOfSymbolSizes(diff));
@@ -149,7 +149,7 @@ TEST(DiffTest, TestDontMatchAcrossSections) {
 
   DeltaSizeInfo diff = Diff(size_info1.get(), size_info2.get());
 
-  DeltaSizeInfo::Results expected_counts{0, 0, 1, 1};
+  DeltaSizeInfo::Results expected_counts{6, 0, 1, 1};
   EXPECT_EQ(expected_counts, diff.CountsByDiffStatus());
   EXPECT_EQ(0, SumOfSymbolSizes(diff));
 }
@@ -163,7 +163,7 @@ TEST(DiffTest, TestAliasesRemove) {
 
   DeltaSizeInfo diff = Diff(size_info1.get(), size_info2.get());
 
-  DeltaSizeInfo::Results expected_counts{0, 3, 0, 0};
+  DeltaSizeInfo::Results expected_counts{3, 3, 0, 0};
   EXPECT_EQ(expected_counts, diff.CountsByDiffStatus());
   EXPECT_EQ(0, SumOfSymbolSizes(diff));
 }
@@ -177,7 +177,7 @@ TEST(DiffTest, TestAliasesAdd) {
 
   DeltaSizeInfo diff = Diff(size_info1.get(), size_info2.get());
 
-  DeltaSizeInfo::Results expected_counts{0, 3, 0, 0};
+  DeltaSizeInfo::Results expected_counts{3, 3, 0, 0};
   EXPECT_EQ(expected_counts, diff.CountsByDiffStatus());
   EXPECT_EQ(0, SumOfSymbolSizes(diff));
 }
@@ -193,7 +193,7 @@ TEST(DiffTest, TestAliasesChangeGroup) {
 
   DeltaSizeInfo diff = Diff(size_info1.get(), size_info2.get());
 
-  DeltaSizeInfo::Results expected_counts{0, 4, 0, 0};
+  DeltaSizeInfo::Results expected_counts{2, 4, 0, 0};
   EXPECT_EQ(expected_counts, diff.CountsByDiffStatus());
   EXPECT_EQ(0, SumOfSymbolSizes(diff));
 }
@@ -209,7 +209,7 @@ TEST(DiffTest, TestStarSymbolNormalization) {
 
   DeltaSizeInfo diff = Diff(size_info1.get(), size_info2.get());
 
-  DeltaSizeInfo::Results expected_counts{0, 0, 0, 0};
+  DeltaSizeInfo::Results expected_counts{6, 0, 0, 0};
   EXPECT_EQ(expected_counts, diff.CountsByDiffStatus());
   EXPECT_EQ(0, SumOfSymbolSizes(diff));
 }
@@ -238,7 +238,7 @@ TEST(DiffTest, TestNumberNormalization) {
 
   DeltaSizeInfo diff = Diff(size_info1.get(), size_info2.get());
 
-  DeltaSizeInfo::Results expected_counts{0, 0, 0, 0};
+  DeltaSizeInfo::Results expected_counts{10, 0, 0, 0};
   EXPECT_EQ(expected_counts, diff.CountsByDiffStatus());
   EXPECT_EQ(0, SumOfSymbolSizes(diff));
 }
@@ -255,7 +255,7 @@ TEST(DiffTest, TestChangedParams) {
 
   DeltaSizeInfo diff = Diff(size_info1.get(), size_info2.get());
 
-  DeltaSizeInfo::Results expected_counts{0, 0, 0, 0};
+  DeltaSizeInfo::Results expected_counts{6, 0, 0, 0};
   EXPECT_EQ(expected_counts, diff.CountsByDiffStatus());
   EXPECT_EQ(0, SumOfSymbolSizes(diff));
 }
@@ -268,7 +268,7 @@ TEST(DiffTest, TestChangedPathsNative) {
   size_info2->raw_symbols[1].object_path_ = "asdf";
   DeltaSizeInfo diff = Diff(size_info1.get(), size_info2.get());
 
-  DeltaSizeInfo::Results expected_counts{0, 0, 1, 1};
+  DeltaSizeInfo::Results expected_counts{5, 0, 1, 1};
   EXPECT_EQ(expected_counts, diff.CountsByDiffStatus());
   EXPECT_EQ(0, SumOfSymbolSizes(diff));
 }
@@ -281,7 +281,7 @@ TEST(DiffTest, TestChangedPathsJava) {
   size_info2->raw_symbols[0].object_path_ = "asdf";
   DeltaSizeInfo diff = Diff(size_info1.get(), size_info2.get());
 
-  DeltaSizeInfo::Results expected_counts{0, 0, 0, 0};
+  DeltaSizeInfo::Results expected_counts{6, 0, 0, 0};
   EXPECT_EQ(expected_counts, diff.CountsByDiffStatus());
   EXPECT_EQ(0, SumOfSymbolSizes(diff));
 }
@@ -298,7 +298,7 @@ TEST(DiffTest, TestChangedPathsChangedParams) {
   size_info2->raw_symbols[0].object_path_ = "asdf";
   DeltaSizeInfo diff = Diff(size_info1.get(), size_info2.get());
 
-  DeltaSizeInfo::Results expected_counts{0, 0, 1, 1};
+  DeltaSizeInfo::Results expected_counts{5, 0, 1, 1};
   EXPECT_EQ(expected_counts, diff.CountsByDiffStatus());
   EXPECT_EQ(0, SumOfSymbolSizes(diff));
 }

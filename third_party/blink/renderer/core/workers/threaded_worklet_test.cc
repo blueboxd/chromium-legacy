@@ -205,7 +205,7 @@ class ThreadedWorkletMessagingProxyForTest
             document->GetReferrerPolicy(), document->GetSecurityOrigin(),
             document->IsSecureContext(), document->GetHttpsState(),
             worker_clients, nullptr /* content_settings_client */,
-            document->AddressSpace(),
+            document->GetSecurityContext().AddressSpace(),
             OriginTrialContext::GetTokens(document).get(),
             base::UnguessableToken::Create(), std::move(worker_settings),
             kV8CacheOptionsDefault,

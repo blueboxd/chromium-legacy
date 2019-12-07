@@ -214,8 +214,8 @@ void PrintJobWorker::UpdatePrintSettings(base::Value new_settings,
     // not thread-safe and have to be accessed on the UI thread.
     base::ScopedAllowBlocking allow_blocking;
 #endif
-    scoped_refptr<PrintBackend> print_backend =
-        PrintBackend::CreateInstance(nullptr);
+    scoped_refptr<PrintBackend> print_backend = PrintBackend::CreateInstance(
+        nullptr, g_browser_process->GetApplicationLocale());
     std::string printer_name = *new_settings.FindStringKey(kSettingDeviceName);
     crash_key = std::make_unique<crash_keys::ScopedPrinterInfo>(
         print_backend->GetPrinterDriverInfo(printer_name));

@@ -238,9 +238,7 @@ class TestWebWidgetClient : public WebWidgetClient {
   void DidMeaningfulLayout(WebMeaningfulLayout) override;
   void SetBrowserControlsShownRatio(float top_ratio,
                                     float bottom_ratio) override;
-  void SetBrowserControlsHeight(float top_height,
-                                float bottom_height,
-                                bool shrink_viewport) override;
+  void SetBrowserControlsParams(cc::BrowserControlsParams) override;
   viz::FrameSinkId GetFrameSinkId() override;
 
   cc::LayerTreeHost* layer_tree_host() {

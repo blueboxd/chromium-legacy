@@ -155,7 +155,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
       CompositorFrame aggregated = aggregator_->Aggregate(
           SurfaceId(FrameSinkId(1, num_surfaces + 1),
                     LocalSurfaceId(num_surfaces + 1, root_token)),
-          next_fake_display_time);
+          next_fake_display_time, gfx::OVERLAY_TRANSFORM_NONE);
       next_fake_display_time += BeginFrameArgs::DefaultInterval();
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());

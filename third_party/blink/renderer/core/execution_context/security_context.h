@@ -67,9 +67,19 @@ enum class FeatureEnabledState { kDisabled, kReportOnly, kEnabled };
 // out-of-process) environments do not have an ExecutionContext in the local
 // process (as execution cannot occur locally), they do have a SecurityContext
 // to allow those properties to be queried.
-class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
+class CORE_EXPORT SecurityContext {
+  DISALLOW_NEW();
+
  public:
-  void Trace(blink::Visitor*) override;
+  enum SecurityContextType { kLocal, kRemote };
+
+  SecurityContext(scoped_refptr<SecurityOrigin> origin,
+                  WebSandboxFlags sandbox_flags,
+                  std::unique_ptr<FeaturePolicy> feature_policy,
+                  SecurityContextType context_type);
+  virtual ~SecurityContext() = default;
+
+  void Trace(blink::Visitor*);
 
   using InsecureNavigationsSet = HashSet<unsigned, WTF::AlreadyHashed>;
   static WTF::Vector<unsigned> SerializeInsecureNavigationSet(
@@ -83,20 +93,23 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   ContentSecurityPolicy* GetContentSecurityPolicy() const {
     return content_security_policy_.Get();
   }
+  void SetContentSecurityPolicy(ContentSecurityPolicy*);
 
-  // Explicitly override the security origin for this security context.
-  // Note: It is dangerous to change the security origin of a script context
-  //       that already contains content.
-  virtual void SetSecurityOrigin(scoped_refptr<SecurityOrigin>);
+  // Explicitly override the security origin for this security context with
+  // safety CHECKs.
+  void SetSecurityOrigin(scoped_refptr<SecurityOrigin>);
+
+  // Like SetSecurityOrigin(), but no security CHECKs.
+  void SetSecurityOriginForTesting(scoped_refptr<SecurityOrigin>);
 
   WebSandboxFlags GetSandboxFlags() const { return sandbox_flags_; }
   bool IsSandboxed(WebSandboxFlags mask) const;
+  void ApplySandboxFlags(WebSandboxFlags flags) { sandbox_flags_ |= flags; }
 
   void SetAddressSpace(network::mojom::IPAddressSpace space) {
     address_space_ = space;
   }
   network::mojom::IPAddressSpace AddressSpace() const { return address_space_; }
-  String addressSpaceForBindings() const;
 
   void SetRequireTrustedTypes();
   void SetRequireTrustedTypesForTesting();  // Skips sanity checks.
@@ -142,41 +155,17 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
       std::unique_ptr<DocumentPolicy> document_policy);
 
   // Tests whether the policy-controlled feature is enabled in this frame.
-  // Optionally sends a report to any registered reporting observers or
-  // Report-To endpoints, via ReportFeaturePolicyViolation(), if the feature is
-  // disabled. The optional ConsoleMessage will be sent to the console if
-  // present, or else a default message will be used instead.
-  bool IsFeatureEnabled(
-      mojom::FeaturePolicyFeature,
-      ReportOptions report_on_failure = ReportOptions::kDoNotReport,
-      const String& message = g_empty_string,
-      const String& source_file = g_empty_string) const;
+  // Use ExecutionContext::IsFeatureEnabled if a failure should be reported.
+  // If a non-null base::Optional<mojom::FeaturePolicyDisposition>* is provided
+  // and the feature is disabled via feature policy, it will be populated to
+  // indicate whether the feature usage should be blocked or merely reported.
+  bool IsFeatureEnabled(mojom::FeaturePolicyFeature) const;
   bool IsFeatureEnabled(
       mojom::FeaturePolicyFeature,
       PolicyValue threshold_value,
-      ReportOptions report_on_failure = ReportOptions::kDoNotReport,
-      const String& message = g_empty_string,
-      const String& source_file = g_empty_string) const;
-  FeatureEnabledState GetFeatureEnabledState(mojom::FeaturePolicyFeature) const;
-  FeatureEnabledState GetFeatureEnabledState(mojom::FeaturePolicyFeature,
-                                             PolicyValue threshold_value) const;
-  virtual void CountPotentialFeaturePolicyViolation(
-      mojom::FeaturePolicyFeature) const {}
-  virtual void ReportFeaturePolicyViolation(
-      mojom::FeaturePolicyFeature,
-      mojom::FeaturePolicyDisposition,
-      const String& message = g_empty_string,
-      const String& source_file = g_empty_string) const {}
+      base::Optional<mojom::FeaturePolicyDisposition>* = nullptr) const;
 
  protected:
-  SecurityContext();
-  SecurityContext(scoped_refptr<SecurityOrigin> origin,
-                  WebSandboxFlags sandbox_flags,
-                  std::unique_ptr<FeaturePolicy> feature_policy);
-  virtual ~SecurityContext();
-
-  void SetContentSecurityPolicy(ContentSecurityPolicy*);
-
   WebSandboxFlags sandbox_flags_;
   scoped_refptr<SecurityOrigin> security_origin_;
   std::unique_ptr<FeaturePolicy> feature_policy_;
@@ -184,12 +173,16 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   std::unique_ptr<DocumentPolicy> document_policy_;
 
  private:
+  FeatureEnabledState GetFeatureEnabledState(mojom::FeaturePolicyFeature,
+                                             PolicyValue threshold_value) const;
+
   Member<ContentSecurityPolicy> content_security_policy_;
 
   network::mojom::IPAddressSpace address_space_;
   WebInsecureRequestPolicy insecure_request_policy_;
   InsecureNavigationsSet insecure_navigations_to_upgrade_;
   bool require_safe_types_;
+  const SecurityContextType context_type_;
   DISALLOW_COPY_AND_ASSIGN(SecurityContext);
 };
 

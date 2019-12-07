@@ -153,7 +153,7 @@ public class AwMetricsIntegrationTest {
     public void testMetadata_miscellaneousSystemProfileInfo() throws Throwable {
         ChromeUserMetricsExtension log = mPlatformServiceBridge.waitForNextMetricsLog();
         SystemProfileProto systemProfile = log.getSystemProfile();
-        // TODO(ntfschr): assert UMA enabled date when https://crbug.com/995544 is resolved.
+        Assert.assertTrue("Should have some uma_enabled_date", systemProfile.hasUmaEnabledDate());
         Assert.assertTrue("Should have some install_date", systemProfile.hasInstallDate());
         // Don't assert application_locale's value, because we don't want to enforce capitalization
         // requirements on the metrics service (ex. in case it switches from "en-US" to "en-us" for

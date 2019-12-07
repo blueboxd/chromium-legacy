@@ -31,10 +31,10 @@ class WebUITabStripContainerViewTest : public TestWithBrowserView {
   ui::test::MaterialDesignControllerTestAPI touch_mode_;
 };
 
-TEST_F(WebUITabStripContainerViewTest, TabStripStartsOpen) {
+TEST_F(WebUITabStripContainerViewTest, TabStripStartsClosed) {
   EXPECT_TRUE(WebUITabStripContainerView::UseTouchableTabStrip());
   ASSERT_NE(nullptr, browser_view()->webui_tab_strip());
-  EXPECT_TRUE(browser_view()->webui_tab_strip()->GetVisible());
+  EXPECT_FALSE(browser_view()->webui_tab_strip()->GetVisible());
 }
 
 TEST_F(WebUITabStripContainerViewTest, TouchModeTransition) {
@@ -51,10 +51,7 @@ TEST_F(WebUITabStripContainerViewTest, TouchModeTransition) {
   browser_view()->Layout();
   EXPECT_TRUE(WebUITabStripContainerView::UseTouchableTabStrip());
   EXPECT_FALSE(browser_view()->IsTabStripVisible());
-  WebUITabStripContainerView* const container =
-      browser_view()->webui_tab_strip();
-  ASSERT_NE(nullptr, container);
-  EXPECT_TRUE(container->GetVisible());
+  ASSERT_NE(nullptr, browser_view()->webui_tab_strip());
 }
 
 class WebUITabStripDevToolsTest : public WebUITabStripContainerViewTest {

@@ -271,6 +271,9 @@ class ChromeContentRendererClient
   static bool IsNativeNaClAllowed(const GURL& app_url,
                                   bool is_nacl_unrestricted,
                                   const extensions::Extension* extension);
+  static void ReportNaClAppType(bool is_pnacl,
+                                bool is_extension_or_app,
+                                bool is_hosted_app);
 #endif
 
 #if defined(OS_WIN)

@@ -793,6 +793,8 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
   cc::PaintFlags grouping_flags;
   grouping_flags.setColor(grouping_color);
   grouping_flags.setStyle(cc::PaintFlags::kFill_Style);
+  grouping_flags.setStrokeWidth(kGroupingIndicatorSize);
+  grouping_flags.setStrokeCap(cc::PaintFlags::kRound_Cap);
   grouping_flags.setAntiAlias(true);
   const int group_indicator_x = GetMirroredXInView(
       GetCellBounds(0, 0).x() + cell_margin + kGroupingIndicatorSize / 2);
@@ -805,22 +807,12 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
     // to do this calculation.
     const int start = i - (model_index - range.start);
     const int last = start + range.length - 1;
-    const gfx::Rect start_cell_bounds(GetCellBounds(start, 0));
-    if (start != last) {
-      const gfx::Rect last_cell_bounds(GetCellBounds(last, 0));
-      canvas->FillRect(gfx::Rect(
-                           group_indicator_x - kGroupingIndicatorSize / 2,
-                           start_cell_bounds.CenterPoint().y(),
-                           kGroupingIndicatorSize,
-                           last_cell_bounds.y() - start_cell_bounds.y()),
-                       grouping_color);
-      canvas->DrawCircle(
-          gfx::Point(group_indicator_x, last_cell_bounds.CenterPoint().y()),
-          kGroupingIndicatorSize / 2, grouping_flags);
-    }
-    canvas->DrawCircle(
-        gfx::Point(group_indicator_x, start_cell_bounds.CenterPoint().y()),
-        kGroupingIndicatorSize / 2, grouping_flags);
+    const gfx::RectF start_cell_bounds(GetCellBounds(start, 0));
+    const gfx::RectF last_cell_bounds(GetCellBounds(last, 0));
+    canvas->DrawLine(
+        gfx::PointF(group_indicator_x, start_cell_bounds.CenterPoint().y()),
+        gfx::PointF(group_indicator_x, last_cell_bounds.CenterPoint().y()),
+        grouping_flags);
     i = last + 1;
   }
 }

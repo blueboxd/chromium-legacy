@@ -9,6 +9,10 @@
 #include "components/viz/common/switches.h"
 #include "gpu/config/gpu_finch_features.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 namespace features {
 
 // Enables running the display compositor as part of the viz service in the GPU
@@ -68,6 +72,14 @@ bool IsUsingSkiaForGLReadback() {
 }
 
 bool IsUsingSkiaRenderer() {
+#if defined(OS_ANDROID)
+  // We don't support KitKat. Check for it before looking at the feature flag
+  // so that KitKat doesn't show up in Control or Enabled experiment group.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <=
+      base::android::SDK_VERSION_KITKAT)
+    return false;
+#endif
+
   // We require OOP-D everywhere but WebView.
   bool enabled = base::FeatureList::IsEnabled(kUseSkiaRenderer) ||
                  base::FeatureList::IsEnabled(kVulkan);

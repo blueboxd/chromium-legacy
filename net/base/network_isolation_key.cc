@@ -70,6 +70,13 @@ NetworkIsolationKey NetworkIsolationKey::CreateTransient() {
   return NetworkIsolationKey(opaque_origin, opaque_origin);
 }
 
+NetworkIsolationKey NetworkIsolationKey::CreateWithNewFrameOrigin(
+    const url::Origin& new_frame_origin) const {
+  if (!top_frame_origin_)
+    return NetworkIsolationKey();
+  return NetworkIsolationKey(top_frame_origin_.value(), new_frame_origin);
+}
+
 std::string NetworkIsolationKey::ToString() const {
   if (IsTransient())
     return "";

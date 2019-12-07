@@ -186,10 +186,11 @@ static_library("dav1d_8bit") {
 static_library("dav1d_10bit") {
   configs -= [
     "//build/config/compiler:chromium_code",
+
     # Disable coverage for the 10 bit version to avoid confusing the
     # instrumentation about which version of the library is being run.
     # dav1d_10 bit was selected for this, as it's less used than dav1d_8bit,
-    # which still has coverage enabled.
+    # which still has coverage enabled. See crbug.com/1030350.
     "//build/config/coverage:default_coverage",
   ]
   configs += [

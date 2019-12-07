@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/performance_manager/browser_child_process_watcher.h"
 #include "chrome/browser/performance_manager/decorators/frozen_frame_aggregator.h"
+#include "chrome/browser/performance_manager/decorators/helpers/page_live_state_decorator_helper.h"
 #include "chrome/browser/performance_manager/decorators/page_aggregator.h"
 #include "chrome/browser/performance_manager/decorators/page_almost_idle_decorator.h"
 #include "chrome/browser/performance_manager/decorators/process_metrics_decorator.h"
@@ -109,6 +110,9 @@ void ChromeBrowserMainExtraPartsPerformanceManager::PostCreateThreads() {
   DCHECK(g_browser_process->profile_manager()->GetLoadedProfiles().empty());
 
   g_browser_process->profile_manager()->AddObserver(this);
+
+  page_live_state_data_helper_ =
+      std::make_unique<performance_manager::PageLiveStateDecoratorHelper>();
 }
 
 void ChromeBrowserMainExtraPartsPerformanceManager::PostMainMessageLoopRun() {
@@ -124,6 +128,8 @@ void ChromeBrowserMainExtraPartsPerformanceManager::PostMainMessageLoopRun() {
   for (auto& shared_worker_watcher : shared_worker_watchers_)
     shared_worker_watcher.second->TearDown();
   shared_worker_watchers_.clear();
+
+  page_live_state_data_helper_.reset();
 
   // There may still be WebContents with attached tab helpers at this point in
   // time, and there's no convenient later call-out to destroy the performance

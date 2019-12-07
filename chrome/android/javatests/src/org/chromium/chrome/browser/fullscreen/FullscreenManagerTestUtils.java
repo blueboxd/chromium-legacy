@@ -131,7 +131,8 @@ public class FullscreenManagerTestUtils {
             public void onContentOffsetChanged(int offset) {}
 
             @Override
-            public void onBottomControlsHeightChanged(int bottomControlsHeight) {}
+            public void onBottomControlsHeightChanged(
+                    int bottomControlsHeight, int bottomControlsMinHeight) {}
         });
 
         float dragX = 50f;

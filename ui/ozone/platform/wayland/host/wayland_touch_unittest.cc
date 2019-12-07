@@ -82,9 +82,9 @@ TEST_P(WaylandTouchTest, KeypressAndMotion) {
   CheckEventType(ui::ET_TOUCH_RELEASED, event.get());
 }
 
-INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,
+INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          WaylandTouchTest,
-                         ::testing::Values(kXdgShellV5));
+                         ::testing::Values(kXdgShellStable));
 INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
                          WaylandTouchTest,
                          ::testing::Values(kXdgShellV6));

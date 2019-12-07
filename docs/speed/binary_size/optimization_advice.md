@@ -1,12 +1,116 @@
-# Optimizing Chrome's Binary Size
+# Optimizing Chrome's Image Size
+
+The Chrome image size is important on all platforms as it affects download
+and update times.
 
  >
- > This advice focuses on Android.
+ > This document primarily focuses on Android and Chrome OS where image size
+ > is especially important.
  >
 
 [TOC]
 
-## How To Tell if It's Worth Spending Time on Binary Size?
+## General Advice
+
+* Chrome image size on Android and Chrome OS is tightly limited.
+* Non trivial increases to the Chrome image size need to be included in the
+  [Feature proposal process].
+* Use [Compressed resources] wherever possible. This is particularly important
+  for images and WebUI resources, which can be substantial.
+* Recently a [CrOS Image Size Code Mauve] (googlers only) was called due to
+  growth concerns.
+
+[CrOS Image Size Code Mauve]: http://go/cros-image-size-code-mauve
+[Compressed resources]: #Compressed-resources
+
+### Size Optimization Help
+Feel free to email [binary-size@chromium.org](https://groups.google.com/a/chromium.org/forum/#!forum/binary-size).
+
+### Compressed resources
+
+[Grit] supports gzip and brotli compression for resources in the .grd files
+used to build the `resources.pak` file.
+
+*   Ensure `compress="gzip"` or `compress="brotli"` is used for all
+    highly-compressible (e.g. text, WebUI) resources.
+    *   gzip compression for highly-compressible data typically has minimal
+        impact on load times (but it is worth measuring this, see
+        [webui_load_timer.cc] for an example of measuring load times).
+    *   Brotli compresses more but is much slower to decompress. Use brotli only
+        when performance doesn't matter (e.g. internals pages).
+* **Android**: Look at the SuperSize reports from the android-binary-size
+    trybot to look for unexpected resources, or unreasonably large symbols.
+
+[Grit]: https://www.chromium.org/developers/tools-we-use-in-chromium/grit
+[webui_load_timer.cc]: https://cs.corp.google.com/eureka_internal/chromium/src/chrome/browser/ui/webui/webui_load_timer.cc
+
+### Chrome binary size
+
+Changes that will significantly increase the [Chrome binary size] should be
+made with care and consideration:
+
+*   Changes that introduce new libraries can have significant impact and should
+    go through the [Feature proposal process].
+*   Changes intended to replace existing functionality with significant new code
+    should include a deprecation plan for the code being replaced.
+
+[Chrome binary size]: https://drive.google.com/a/google.com/open?id=1aeIxj8jPOimmlnqD7PvS6np51DZa96dcF72N6CtO6N8
+
+
+## Chrome OS Focused Advice
+
+### Compressed l10n Strings
+
+Strings do not compress well individually, but an entire l10n file compresses
+very well.
+
+There are two mechanisms for compressing Chrome l10n files.
+
+1.  Compressed .pak files
+    *   For desktop Chrome, string resource files generate individual .pak
+        files, e.g. `generated_resources_en.pak`.<br/>
+        These get combined into locale specific .pak files, e.g.
+        `locales/en-US.pak`
+    *   On Chrome OS, we set`'compress = true` in [chrome_repack_locales.gni],
+        which causes these .pak files to be gzip compressed.<br/>
+        (Chrome identifies them as compressed by parsing the file header).
+    *   So, *Chrome strings on Chrome OS will be compressed by default*,
+        nothing else needs to be done!
+1.  Compressing .json l10n files
+     *   Extensions and apps store l10n strings as `messages.json` files in
+         `{extension dir}/_locales/{locale}`.
+         *   For Chrome OS component extensions (e.g. ChromeVox), we include
+             these extensions as part of the Chrome image.
+         *   These strings get localized across 50+ languages, so it is
+             important to compress them.
+     *   For *component extensions only*, these files can be gzip compressed
+         (and named `messages.json.gz`) as part of their build step.
+     *   For extensions using GN:
+         1.  Specify `type="chrome_messages_json_gzip"` for each `<output>`
+             entry in the .grd file.
+         1.  Name the outputs `messages.json.gz` in the .grd and strings.gni
+             files.
+     * See https://crbug.com/1023568 for details and an example CL.
+
+[chrome_repack_locales.gni]: https://cs.chromium.org/chromium/src/chrome/chrome_repack_locales.gni
+
+### chromeos-assets
+
+*   Input methods, speech synthesis, and apps consume a great deal of disk space
+    on the Chrome OS rootfs partition.
+*   These assets are not part of the chromium repository, however they do
+    affect [rootfs size] on devices.
+*   Proposed additions or increases to chromeos-assets should go through the
+    [Feature proposal process] and should consider using some form of
+    [Downloadable Content] if possible.
+
+[rootfs size]: https://docs.google.com/document/d/1d3Y2ngMGEP_yfxBFrgOE-dinDILfyAUY9LT0JLlq6zg/edit?usp=sharing
+[Downloadable Content]: https://docs.google.com/presentation/d/1wM-eDX-BQavecQz20gPxRF6CxWp1k1sh7zSKMxz4BLI/edit?usp=sharing
+
+
+## Android Focused Advice
+
+### How To Tell if It's Worth Spending Time on Binary Size?
 
  * Binary size is a shared resource, and thus its growth is largely due to the
    tragedy of the commons.
@@ -18,22 +122,13 @@
 
 [milestone size breakdowns]: https://storage.googleapis.com/chrome-supersize/index.html
 
-## Optimizing Translations (Strings)
+### Optimizing Translations (Strings)
 
  * Use [Android System strings](https://developer.android.com/reference/android/R.string.html) where appropriate
  * Ensure that strings in .grd files need to be there. For strings that do
    not need to be translated, put them directly in source code.
 
-## Optimizing Non-Image Native Resources in .pak Files
-
- * Ensure `compress="gzip"` or `compress="brotli"` is used for all
-   highly-compressible (e.g. text) resources.
-   * Brotli compresses more but is much slower to decompress. Use brotli only
-     when performance doesn't matter (e.g. internals pages).
- * Look at the SuperSize reports from the android-binary-size trybot to look for
-   unexpected resources, or unreasonably large symbols.
-
-## Optimizing Images
+### Optimizing Images
 
  * Would a vector image work?
    * Images that can be described by a series of paths should generally be
@@ -58,7 +153,7 @@
    * Use [tools/resources/optimize-png-files.sh](https://cs.chromium.org/chromium/src/tools/resources/optimize-png-files.sh).
    * There is some [Googler-specific guidance](https://goto.google.com/clank/engineering/best-practices/adding-image-assets) as well.
 
-### What Build-Time Image Optimizations are There?
+#### What Build-Time Image Optimizations are There?
  * For non-ninepatch images, `drawable-xxxhdpi` are omitted (they are not
    perceptibly different from xxhdpi in most cases).
  * For non-ninepatch images within res/ directories (not for .pak file images),
@@ -67,13 +162,13 @@
      or just build `ChromePublic.apk` and use `unzip -l` to see the size of the
      images within the built apk.
 
-## Optimizing Android Resources
+### Optimizing Android Resources
  * Use config-specific resource directories sparingly.
    * Introducing a new config has [a large cost][arsc-bloat].
 
 [arsc-bloat]: https://medium.com/androiddevelopers/smallerapk-part-3-removing-unused-resources-1511f9e3f761#0b72
 
-## Optimizing Code
+### Optimizing Code
 
 In most parts of the codebase, you should try to optimize your code for binary
 size rather than performance. Most code runs "fast enough" and only needs to be
@@ -95,7 +190,7 @@ Practical advice:
    * Identical strings throughout the codebase are de-duped. Take advantage of
      this for error-related strings.
 
-### Optimizing Native Code
+#### Optimizing Native Code
  * If there's a notable increase in `.data.rel.ro`:
    * Ensure there are not [excessive relocations][relocations].
  * If there's a notable increase in `.rodata`:
@@ -125,7 +220,7 @@ Practical advice:
          separate `const char *` and `const std::string&` overloads rather than
          a single `base::StringPiece`.
 
-### Optimizing Java Code
+#### Optimizing Java Code
  * Prefer fewer large JNI calls over many small JNI calls.
  * Minimize the use of class initializers (`<clinit>()`).
    * If R8 cannot determine that they are "trivial", they will prevent
@@ -134,7 +229,7 @@ Practical advice:
      are created by executing code within `<clinit>()`. There is often little
      advantage to initializing class fields statically vs. upon first use.
  * Don't use default interface methods on interfaces with multiple implementers.
-   * Desugaring causes the methods to be added to every implementor separately.
+   * Desugaring causes the methods to be added to every implementer separately.
    * It's more efficient to use a base class to add default methods.
  * Use `String.format()` instead of concatenation.
    * Concatenation causes a lot of StringBuilder code to be generated.
@@ -161,7 +256,7 @@ Practical advice:
 [template_bloat]: https://bugs.chromium.org/p/chromium/issues/detail?id=716393
 [supersize-console]: /tools/binary_size/README.md#Usage_console
 
-## Optimizing Third-Party Android Dependencies
+### Optimizing Third-Party Android Dependencies
 
  * Look through SuperSize symbols to see whether unwanted functionality
    is being pulled in.
@@ -174,6 +269,6 @@ Practical advice:
 
 [-whyareyoukeeping]: https://r8-docs.preemptive.com/#keep-rules
 [-assumenosideeffects]: https://r8-docs.preemptive.com/#general-rules
-## Size Optimization Help
 
- * Feel free to email [binary-size@chromium.org](https://groups.google.com/a/chromium.org/forum/#!forum/binary-size).
+
+[Feature proposal process]: http://www.chromium.org/developers/new-features

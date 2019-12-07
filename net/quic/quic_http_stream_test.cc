@@ -1456,8 +1456,8 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequest) {
         packet_number++, GetNthClientInitiatedBidirectionalStreamId(0),
         kIncludeVersion, !kFin, DEFAULT_PRIORITY, 0,
         &spdy_request_headers_frame_length, {header, kUploadData}));
-    AddWrite(ConstructClientMultipleDataFramesPacket(
-        packet_number++, kIncludeVersion, kFin, {header, kUploadData}));
+    AddWrite(ConstructClientDataPacket(packet_number++, kIncludeVersion, kFin,
+                                       {header + kUploadData}));
   } else {
     AddWrite(ConstructRequestHeadersAndDataFramesPacket(
         packet_number++, GetNthClientInitiatedBidirectionalStreamId(0),

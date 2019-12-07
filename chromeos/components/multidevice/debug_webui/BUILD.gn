@@ -24,7 +24,6 @@ static_library("debug_webui") {
     "//chromeos/services/device_sync/proto",
     "//chromeos/services/device_sync/proto:util",
     "//chromeos/services/device_sync/public/cpp",
-    "//chromeos/services/device_sync/public/mojom",
     "//chromeos/services/multidevice_setup/public/mojom",
     "//chromeos/services/secure_channel/public/cpp/client",
     "//chromeos/services/secure_channel/public/mojom",
@@ -35,5 +34,8 @@ static_library("debug_webui") {
     "//device/bluetooth/public/cpp",
     "//ui/resources",
     "//ui/webui",
+  ]
+  public_deps = [
+    "//chromeos/services/device_sync/public/mojom",
   ]
 }

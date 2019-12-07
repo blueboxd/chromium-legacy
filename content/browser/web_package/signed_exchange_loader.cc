@@ -45,7 +45,7 @@ constexpr char kPrefetchLoadResultHistogram[] =
 constexpr char kContentTypeOptionsHeaderName[] = "x-content-type-options";
 constexpr char kNoSniffHeaderValue[] = "nosniff";
 
-bool HasNoSniffHeader(const network::ResourceResponseHead& response) {
+bool HasNoSniffHeader(const network::mojom::URLResponseHead& response) {
   std::string content_type_options;
   response.headers->EnumerateHeader(nullptr, kContentTypeOptionsHeaderName,
                                     &content_type_options);
@@ -58,7 +58,7 @@ SignedExchangeHandlerFactory* g_signed_exchange_factory_for_testing_ = nullptr;
 
 SignedExchangeLoader::SignedExchangeLoader(
     const network::ResourceRequest& outer_request,
-    const network::ResourceResponseHead& outer_response_head,
+    network::mojom::URLResponseHeadPtr outer_response_head,
     mojo::ScopedDataPipeConsumerHandle outer_response_body,
     mojo::PendingRemote<network::mojom::URLLoaderClient> forwarding_client,
     network::mojom::URLLoaderClientEndpointsPtr endpoints,
@@ -72,7 +72,7 @@ SignedExchangeLoader::SignedExchangeLoader(
     scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder,
     const std::string& accept_langs)
     : outer_request_(outer_request),
-      outer_response_head_(outer_response_head),
+      outer_response_head_(std::move(outer_response_head)),
       forwarding_client_(std::move(forwarding_client)),
       url_loader_options_(url_loader_options),
       should_redirect_on_failure_(should_redirect_on_failure),
@@ -88,12 +88,12 @@ SignedExchangeLoader::SignedExchangeLoader(
   // |metric_recorder_| could be null in some tests.
   if (!(outer_request_.load_flags & net::LOAD_PREFETCH) && metric_recorder_) {
     metric_recorder_->OnSignedExchangeNonPrefetch(
-        outer_request_.url, outer_response_head.response_time);
+        outer_request_.url, outer_response_head_->response_time);
   }
   // Can't use HttpResponseHeaders::GetMimeType() because SignedExchangeHandler
   // checks "v=" parameter.
-  outer_response_head.headers->EnumerateHeader(nullptr, "content-type",
-                                               &content_type_);
+  outer_response_head_->headers->EnumerateHeader(nullptr, "content-type",
+                                                 &content_type_);
 
   url_loader_.Bind(std::move(endpoints->url_loader));
 
@@ -163,7 +163,7 @@ void SignedExchangeLoader::OnStartLoadingResponseBody(
 
   signed_exchange_handler_ = std::make_unique<SignedExchangeHandler>(
       IsOriginSecure(outer_request_.url),
-      HasNoSniffHeader(outer_response_head_), content_type_,
+      HasNoSniffHeader(*outer_response_head_), content_type_,
       std::make_unique<network::DataPipeToSourceStream>(
           std::move(response_body)),
       base::BindOnce(&SignedExchangeLoader::OnHTTPExchangeFound,
@@ -226,7 +226,7 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
     SignedExchangeLoadResult result,
     net::Error error,
     const GURL& request_url,
-    const network::ResourceResponseHead& resource_response,
+    network::mojom::URLResponseHeadPtr resource_response,
     std::unique_ptr<net::SourceStream> payload_stream) {
   if (error) {
     DCHECK_NE(result, SignedExchangeLoadResult::kSuccess);
@@ -245,10 +245,10 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
     fallback_url_ = request_url;
     forwarding_client_->OnReceiveRedirect(
         signed_exchange_utils::CreateRedirectInfo(
-            request_url, outer_request_, outer_response_head_,
+            request_url, outer_request_, *outer_response_head_,
             true /* is_fallback_redirect */),
         signed_exchange_utils::CreateRedirectResponseHead(
-            outer_response_head_, true /* is_fallback_redirect */));
+            *outer_response_head_, true /* is_fallback_redirect */));
     forwarding_client_.reset();
     return;
   }
@@ -257,13 +257,13 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
 
   forwarding_client_->OnReceiveRedirect(
       signed_exchange_utils::CreateRedirectInfo(
-          request_url, outer_request_, outer_response_head_,
+          request_url, outer_request_, *outer_response_head_,
           false /* is_fallback_redirect */),
       signed_exchange_utils::CreateRedirectResponseHead(
-          outer_response_head_, false /* is_fallback_redirect */));
+          *outer_response_head_, false /* is_fallback_redirect */));
   forwarding_client_.reset();
 
-  const base::Optional<net::SSLInfo>& ssl_info = resource_response.ssl_info;
+  const base::Optional<net::SSLInfo>& ssl_info = resource_response->ssl_info;
   if (ssl_info.has_value() &&
       (url_loader_options_ &
        network::mojom::kURLLoadOptionSendSSLInfoForCertificateError) &&
@@ -271,16 +271,16 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
     ssl_info_ = ssl_info;
   }
 
-  network::ResourceResponseHead inner_response_head_shown_to_client =
-      resource_response;
+  network::mojom::URLResponseHeadPtr inner_response_head_shown_to_client =
+      std::move(resource_response);
   if (ssl_info.has_value() &&
       !(url_loader_options_ &
         network::mojom::kURLLoadOptionSendSSLInfoWithResponse)) {
-    inner_response_head_shown_to_client.ssl_info = base::nullopt;
+    inner_response_head_shown_to_client->ssl_info = base::nullopt;
   }
-  inner_response_head_shown_to_client.was_fetched_via_cache =
-      outer_response_head_.was_fetched_via_cache;
-  client_->OnReceiveResponse(inner_response_head_shown_to_client);
+  inner_response_head_shown_to_client->was_fetched_via_cache =
+      outer_response_head_->was_fetched_via_cache;
+  client_->OnReceiveResponse(std::move(inner_response_head_shown_to_client));
 
   // Currently we always assume that we have body.
   // TODO(https://crbug.com/80374): Add error handling and bail out
@@ -381,7 +381,7 @@ void SignedExchangeLoader::ReportLoadResult(SignedExchangeLoadResult result) {
   if ((outer_request_.load_flags & net::LOAD_PREFETCH) && metric_recorder_) {
     UMA_HISTOGRAM_ENUMERATION(kPrefetchLoadResultHistogram, result);
     metric_recorder_->OnSignedExchangePrefetchFinished(
-        outer_request_.url, outer_response_head_.response_time);
+        outer_request_.url, outer_response_head_->response_time);
   }
 
   if (reporter_)

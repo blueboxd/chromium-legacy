@@ -11,13 +11,11 @@
 #include "chromeos/components/multidevice/debug_webui/url_constants.h"
 #include "chromeos/grit/chromeos_resources.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
-#include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
 
@@ -26,8 +24,10 @@ namespace multidevice {
 ProximityAuthUI::ProximityAuthUI(
     content::WebUI* web_ui,
     device_sync::DeviceSyncClient* device_sync_client,
-    secure_channel::SecureChannelClient* secure_channel_client)
-    : ui::MojoWebUIController(web_ui, true /* enable_chrome_send */) {
+    secure_channel::SecureChannelClient* secure_channel_client,
+    MultiDeviceSetupBinder multidevice_setup_binder)
+    : ui::MojoWebUIController(web_ui, true /* enable_chrome_send */),
+      multidevice_setup_binder_(std::move(multidevice_setup_binder)) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(kChromeUIProximityAuthHost);
   source->SetDefaultResource(IDR_MULTIDEVICE_INDEX_HTML);
@@ -58,13 +58,7 @@ ProximityAuthUI::~ProximityAuthUI() = default;
 void ProximityAuthUI::BindMultiDeviceSetup(
     mojo::PendingReceiver<chromeos::multidevice_setup::mojom::MultiDeviceSetup>
         receiver) {
-  service_manager::Connector* connector =
-      content::BrowserContext::GetConnectorFor(
-          web_ui()->GetWebContents()->GetBrowserContext());
-  DCHECK(connector);
-
-  connector->Connect(chromeos::multidevice_setup::mojom::kServiceName,
-                     std::move(receiver));
+  multidevice_setup_binder_.Run(std::move(receiver));
 }
 
 }  // namespace multidevice

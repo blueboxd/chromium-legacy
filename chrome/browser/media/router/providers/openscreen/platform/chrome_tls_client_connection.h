@@ -39,10 +39,10 @@ class VectorIOBuffer : public net::IOBuffer {
   std::vector<uint8_t> buffer_;
 };
 
-class ChromeTlsClientConnection : public openscreen::platform::TlsConnection {
+class ChromeTlsClientConnection : public openscreen::TlsConnection {
  public:
   ChromeTlsClientConnection(
-      openscreen::platform::TaskRunner* task_runner,
+      openscreen::TaskRunner* task_runner,
       openscreen::IPEndpoint local_address,
       openscreen::IPEndpoint remote_address,
       std::unique_ptr<NetworkDataPump> data_pump,
@@ -64,7 +64,7 @@ class ChromeTlsClientConnection : public openscreen::platform::TlsConnection {
   void RequestRead();
 
   Client* client_ = nullptr;
-  openscreen::platform::TaskRunner* task_runner_ = nullptr;
+  openscreen::TaskRunner* task_runner_ = nullptr;
   openscreen::IPEndpoint local_address_;
   openscreen::IPEndpoint remote_address_;
 

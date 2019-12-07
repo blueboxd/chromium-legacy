@@ -27,7 +27,6 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "url/gurl.h"
 #include "url/ipc/url_param_traits.h"
-#include "url/origin.h"
 
 // Singly-included section for enums and custom IPC traits.
 #ifndef INTERNAL_CHROME_COMMON_RENDER_MESSAGES_H_

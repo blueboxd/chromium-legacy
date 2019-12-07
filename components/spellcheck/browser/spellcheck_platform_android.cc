@@ -35,8 +35,9 @@ void ShowSpellingPanel(bool show) {
 void UpdateSpellingPanelWithMisspelledWord(const base::string16& word) {
 }
 
-bool PlatformSupportsLanguage(const std::string& current_language) {
-  return true;
+void PlatformSupportsLanguage(const std::string& current_language,
+                              base::OnceCallback<void(bool)> callback) {
+  std::move(callback).Run(true);
 }
 
 void SetLanguage(const std::string& lang_to_set,

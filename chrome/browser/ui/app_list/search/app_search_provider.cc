@@ -130,13 +130,12 @@ class AppSearchProvider::App {
     }
   };
 
-  string_matching::TokenizedString* GetTokenizedIndexedName() {
+  TokenizedString* GetTokenizedIndexedName() {
     // Tokenizing a string is expensive. Don't pay the price for it at
     // construction of every App, but rather, only when needed (i.e. when the
     // query is not empty and cache the result.
     if (!tokenized_indexed_name_)
-      tokenized_indexed_name_ =
-          std::make_unique<string_matching::TokenizedString>(name_);
+      tokenized_indexed_name_ = std::make_unique<TokenizedString>(name_);
     return tokenized_indexed_name_.get();
   }
 
@@ -148,16 +147,16 @@ class AppSearchProvider::App {
     return base::Time();
   }
 
-  bool MatchSearchableText(const string_matching::TokenizedString& query) {
+  bool MatchSearchableText(const TokenizedString& query) {
     if (searchable_text_.empty())
       return false;
     if (tokenized_indexed_searchable_text_.empty()) {
       for (const base::string16& curr_text : searchable_text_) {
         tokenized_indexed_searchable_text_.push_back(
-            std::make_unique<string_matching::TokenizedString>(curr_text));
+            std::make_unique<TokenizedString>(curr_text));
       }
     }
-    string_matching::TokenizedStringMatch match;
+    TokenizedStringMatch match;
     for (auto& curr_text : tokenized_indexed_searchable_text_) {
       match.Calculate(query, *curr_text);
       if (match.relevance() > relevance_threshold())
@@ -197,8 +196,8 @@ class AppSearchProvider::App {
 
  private:
   AppSearchProvider::DataSource* data_source_;
-  std::unique_ptr<string_matching::TokenizedString> tokenized_indexed_name_;
-  std::vector<std::unique_ptr<string_matching::TokenizedString>>
+  std::unique_ptr<TokenizedString> tokenized_indexed_name_;
+  std::vector<std::unique_ptr<TokenizedString>>
       tokenized_indexed_searchable_text_;
   const std::string id_;
   const base::string16 name_;
@@ -498,15 +497,14 @@ void AppSearchProvider::UpdateQueriedResults() {
   const size_t apps_size = apps_.size();
   new_results.reserve(apps_size);
 
-  const string_matching::TokenizedString query_terms(query_);
+  const TokenizedString query_terms(query_);
   for (auto& app : apps_) {
     if (!app->searchable())
       continue;
 
-    string_matching::TokenizedString* indexed_name =
-        app->GetTokenizedIndexedName();
+    TokenizedString* indexed_name = app->GetTokenizedIndexedName();
     if (!app_list_features::IsFuzzyAppSearchEnabled()) {
-      string_matching::TokenizedStringMatch match;
+      TokenizedStringMatch match;
       if (match.Calculate(query_terms, *indexed_name)) {
         // Exact matches should be shown even if the threshold isn't reached,
         // e.g. due to a localized name being particularly short.
@@ -523,7 +521,7 @@ void AppSearchProvider::UpdateQueriedResults() {
       result->UpdateFromMatch(*indexed_name, match);
       MaybeAddResult(&new_results, std::move(result), &seen_or_filtered_apps);
     } else {
-      string_matching::FuzzyTokenizedStringMatch match;
+      FuzzyTokenizedStringMatch match;
 
       // TODO(crbug.com/1018613): consolidate finch parameters.
       const bool use_prefix_only = base::GetFieldTrialParamByFeatureAsBool(

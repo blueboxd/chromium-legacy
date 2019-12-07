@@ -18,6 +18,7 @@
 #include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
+#include "base/process/launch.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/test/task_environment.h"
@@ -770,6 +771,35 @@ TEST_F(CleanerInterfaceRegistryTest, NtChangeRegistryValue_AllowNormalization) {
                                            normalize_all_values));
 }
 
+// On Windows, sometimes the copied files don't have correct ACLs.
+// So we reset ACL before running the test.
+// See crbug.com/956016.
+void ResetACLs() {
+  base::FilePath exe_path;
+  ASSERT_TRUE(base::PathService::Get(base::BasePathKey::DIR_EXE, &exe_path));
+  base::FilePath abs_path = base::MakeAbsoluteFilePath(exe_path);
+#ifdef NDEBUG
+  base::FilePath ucrt_path = abs_path.Append(L"ucrtbase.dll");
+#else
+  base::FilePath ucrt_path = abs_path.Append(L"ucrtbased.dll");
+#endif
+  base::CommandLine cmd({L"icacls"});
+  cmd.AppendArgPath(ucrt_path);
+  cmd.AppendArg("/reset");
+  cmd.AppendArg("/t");
+  base::Process process = base::LaunchProcess(cmd, base::LaunchOptionsForTest());
+  int exit_code = 0;
+  ASSERT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_timeout(), &exit_code));
+  ASSERT_EQ(exit_code, 0);
+}
+
+class CleanerSandboxInterfaceTest : public ::testing::Test {
+ public:
+  static void SetUpTestCase() {
+    ResetACLs();
+  }
+};
+
 TEST(CleanerSandboxInterface, DeleteService_NotExisting) {
   EXPECT_TRUE(SandboxDeleteService(
       chrome_cleaner::RandomUnusedServiceNameForTesting().c_str()));
@@ -787,8 +817,7 @@ TEST(CleanerSandboxInterface, DeleteService_Success) {
   EXPECT_FALSE(chrome_cleaner::DoesServiceExist(service_handle.service_name()));
 }
 
-// Disabled: https://crbug.com/956016
-TEST(CleanerSandboxInterface, DISABLED_DeleteService_Running) {
+TEST_F(CleanerSandboxInterfaceTest, DeleteService_Running) {
   ASSERT_TRUE(chrome_cleaner::EnsureNoTestServicesRunning());
 
   chrome_cleaner::TestScopedServiceHandle service_handle;
@@ -801,8 +830,7 @@ TEST(CleanerSandboxInterface, DISABLED_DeleteService_Running) {
   EXPECT_FALSE(chrome_cleaner::DoesServiceExist(service_handle.service_name()));
 }
 
-// Disabled: https://crbug.com/956016
-TEST(CleanerSandboxInterface, DISABLED_DeleteService_HandleHeld) {
+TEST_F(CleanerSandboxInterfaceTest, DeleteService_HandleHeld) {
   ASSERT_TRUE(chrome_cleaner::EnsureNoTestServicesRunning());
 
   chrome_cleaner::TestScopedServiceHandle service_handle;

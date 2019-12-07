@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/compiler_specific.h"
+
 // MetricsAppInterface contains the app-side
 // implementation for helpers. These helpers are compiled into
 // the app binary and can be called from either app or test code.
@@ -34,6 +36,37 @@
 
 // Adds a new sourceID for UKM.
 + (void)UKMRecordDummySource:(int64_t)sourceId;
+
+// Creates a chrome_test_util::HistogramTester that will record every histograms
+// sent during test.
++ (NSError*)setupHistogramTester WARN_UNUSED_RESULT;
+
+// Released the chrome_test_util::HistogramTester.
++ (NSError*)releaseHistogramTester WARN_UNUSED_RESULT;
+
+// We don't know the values of the samples, but we know how many there are.
+// This measures the diff from the snapshot taken when this object was
+// constructed.
++ (NSError*)expectTotalCount:(int)count
+                forHistogram:(NSString*)histogram WARN_UNUSED_RESULT;
+
+// We know the exact number of samples in a bucket, but other buckets may
+// have samples as well. Measures the diff from the snapshot taken when this
+// object was constructed.
++ (NSError*)expectCount:(int)count
+              forBucket:(int)bucket
+           forHistogram:(NSString*)histogram WARN_UNUSED_RESULT;
+
+// We know the exact number of samples in a bucket, and that no other bucket
+// should have samples. Measures the diff from the snapshot taken when this
+// object was constructed.
++ (NSError*)expectUniqueSampleWithCount:(int)count
+                              forBucket:(int)bucket
+                           forHistogram:(NSString*)histogram WARN_UNUSED_RESULT;
+
+// Checks the sum of all samples recorder for |histogram|.
++ (NSError*)expectSum:(NSInteger)sum
+         forHistogram:(NSString*)histogram WARN_UNUSED_RESULT;
 
 @end
 

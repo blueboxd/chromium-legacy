@@ -207,7 +207,10 @@ void PreviewsLitePageRedirectPredictor::PreresolveOrPreconnect() const {
     UMA_HISTOGRAM_BOOLEAN(
         "Previews.ServerLitePage.PreresolvedToPreviewServer",
         previews::IsLitePageRedirectPreviewDomain(url_.value()));
-    loading_predictor->preconnect_manager()->StartPreresolveHost(url_.value());
+    loading_predictor->preconnect_manager()->StartPreresolveHost(
+        url_.value(),
+        net::NetworkIsolationKey(url::Origin::Create(url_.value()),
+                                 url::Origin::Create(url_.value())));
   }
 
   if (previews::params::LitePageRedirectPreviewShouldPreconnect() &&

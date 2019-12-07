@@ -509,13 +509,6 @@ group("jni_headers") {
   ]
 }
 
-android_library("bundle_canary_java") {
-  java_files = [ "//base/android/java/src/org/chromium/base/BundleCanary.java" ]
-  deps = [
-    "//base:base_java",
-  ]
-}
-
 action("chrome_android_java_google_api_keys_srcjar") {
   script = "//build/android/gyp/java_google_api_keys.py"
   _output_path = "$target_gen_dir/$target_name.srcjar"
@@ -644,6 +637,7 @@ junit_binary("chrome_junit_tests") {
     "//chrome/android/webapk/libs/common:common_java",
     "//chrome/android/webapk/test:junit_test_support",
     "//chrome/browser/image_fetcher:java",
+    "//chrome/browser/preferences:preferences_junit_tests",
     "//chrome/browser/ui/android/appmenu/internal:junit",
     "//chrome/browser/ui/android/widget:ui_widget_junit_tests",
     "//chrome/test/android:chrome_java_test_support",
@@ -1442,7 +1436,7 @@ template("libmonochrome_apk_or_bundle_tmpl") {
     ]
     deps = [
       "//android_webview/lib",
-      "//components/about_ui:about_ui_android",
+      "//android_webview/nonembedded",
       "//components/crash/android:crashpad_main",
     ]
 
@@ -1665,9 +1659,7 @@ chrome_public_apk_or_module_tmpl("chrome_modern_public_base_bundle_module") {
 
 android_library("monochrome_java") {
   deps = [
-    "//android_webview/glue",
-    "//android_webview/nonembedded:nonembedded_java",
-    "//android_webview/support_library:support_lib_glue_java",
+    "//android_webview:android_webview_step1_java",
     "//base:base_java",
     "//chrome/android:chrome_java",
     "//content/public/android:content_java",
@@ -2034,7 +2026,6 @@ chrome_test_apk_tmpl("chrome_public_test_apk") {
     "//chrome/android/webapk/libs/runtime_library:runtime_library_javatests",
     "//chrome/android/webapk/shell_apk:shell_apk_javatests",
     "//chrome/browser/download/android:download_java_tests",
-    "//chrome/browser/preferences:javatests",
     "//chrome/browser/profiling_host:profiling_host_javatests",
     "//chrome/browser/subresource_filter:subresource_filter_javatests",
     "//chrome/browser/touch_to_fill/android:test_java",
@@ -2067,8 +2058,14 @@ if (enable_vr) {
 
     deps = [
       ":chrome_test_vr_java",
+      ":vr_test_module_desc_java",
       "//third_party/android_sdk:android_test_mock_java",
     ]
+  }
+
+  # This is necessary since vr tests simulate a bundle build.
+  module_desc_java("vr_test_module_desc_java") {
+    module_name = "vr"
   }
 
   android_apk("vr_nfc_simulator_apk") {
@@ -2125,7 +2122,7 @@ if (enable_arcore) {
                          "target_out_dir") + "/com_google_ar_core_java/jni"
 
     # We store this as a separate .so in the APK and only load as needed.
-    if (android_64bit_target_cpu && build_apk_secondary_abi) {
+    if (android_64bit_target_cpu) {
       secondary_abi_loadable_modules =
           [ "$_libarcore_dir/armeabi-v7a/libarcore_sdk_c.so" ]
     } else {

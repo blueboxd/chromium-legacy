@@ -68,7 +68,7 @@ struct WebContentSecurityPolicyDirective {
 
 struct WebContentSecurityPolicy {
   network::mojom::ContentSecurityPolicyType disposition;
-  WebContentSecurityPolicySource source;
+  network::mojom::ContentSecurityPolicySource source;
   WebVector<WebContentSecurityPolicyDirective> directives;
   WebVector<WebString> report_endpoints;
   WebString header;

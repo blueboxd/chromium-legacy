@@ -12,15 +12,9 @@
 
 namespace blink {
 
-class CORE_EXPORT RemoteSecurityContext
-    : public GarbageCollected<RemoteSecurityContext>,
-      public SecurityContext {
-  USING_GARBAGE_COLLECTED_MIXIN(RemoteSecurityContext);
-
+class CORE_EXPORT RemoteSecurityContext final : public SecurityContext {
  public:
   RemoteSecurityContext();
-
-  void Trace(blink::Visitor*) override;
 
   void SetReplicatedOrigin(scoped_refptr<SecurityOrigin>);
   void ResetReplicatedContentSecurityPolicy();

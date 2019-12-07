@@ -120,6 +120,7 @@ class TestDriver {
   bool HasNativeFrames();
   bool IsRecordingAllAllocations();
 
+  void WaitForProfilingToStartForBrowserUIThread();
   void WaitForProfilingToStartForAllRenderersUIThread();
 
   // Android does not support nested RunLoops. Instead, it signals

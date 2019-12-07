@@ -1037,7 +1037,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
 
   // Simulate the portal being dropped, but not the destruction of the
   // WebContents.
-  portal->GetBindingForTesting()->SwapImplForTesting(nullptr);
+  web_contents_impl->GetMainFrame()->DestroyPortal(portal);
 
   // Get the portal renderer to access the WebContents.
   RenderProcessHostKillWaiter kill_waiter(portal_frame->GetProcess());

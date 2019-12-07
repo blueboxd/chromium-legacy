@@ -117,7 +117,8 @@ void SharingFCMHandler::OnMessage(const std::string& app_id,
         chrome_browser_sharing::SharingMessage::kAckMessage) {
       done_callback = base::BindOnce(
           &SharingFCMHandler::SendAckMessage, weak_ptr_factory_.GetWeakPtr(),
-          std::move(message_id), message_type, GetTargetInfo(sharing_message));
+          std::move(message_id), message_type, GetTargetInfo(sharing_message),
+          sync_preference_->GetDevicePlatform(sharing_message.sender_guid()));
     }
 
     handler->OnMessage(std::move(sharing_message), std::move(done_callback));
@@ -156,10 +157,11 @@ void SharingFCMHandler::SendAckMessage(
     std::string original_message_id,
     chrome_browser_sharing::MessageType original_message_type,
     base::Optional<syncer::DeviceInfo::SharingTargetInfo> target_info,
+    SharingDevicePlatform sender_device_type,
     std::unique_ptr<chrome_browser_sharing::ResponseMessage> response) {
   if (!target_info) {
     LOG(ERROR) << "Unable to find target info";
-    LogSendSharingAckMessageResult(original_message_type,
+    LogSendSharingAckMessageResult(original_message_type, sender_device_type,
                                    SharingSendMessageResult::kDeviceNotFound);
     return;
   }
@@ -176,15 +178,18 @@ void SharingFCMHandler::SendAckMessage(
       std::move(*target_info), kAckTimeToLive, std::move(sharing_message),
       base::BindOnce(&SharingFCMHandler::OnAckMessageSent,
                      weak_ptr_factory_.GetWeakPtr(),
-                     std::move(original_message_id), original_message_type));
+                     std::move(original_message_id), original_message_type,
+                     sender_device_type));
 }
 
 void SharingFCMHandler::OnAckMessageSent(
     std::string original_message_id,
     chrome_browser_sharing::MessageType original_message_type,
+    SharingDevicePlatform sender_device_type,
     SharingSendMessageResult result,
     base::Optional<std::string> message_id) {
-  LogSendSharingAckMessageResult(original_message_type, result);
+  LogSendSharingAckMessageResult(original_message_type, sender_device_type,
+                                 result);
   if (result != SharingSendMessageResult::kSuccessful)
     LOG(ERROR) << "Failed to send ack mesage for " << original_message_id;
 }

@@ -30,23 +30,14 @@
 
 #include "third_party/blink/public/web/web_scoped_user_gesture.h"
 
-#include "third_party/blink/public/web/web_user_gesture_token.h"
-#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 
 namespace blink {
 
-WebScopedUserGesture::WebScopedUserGesture(const WebUserGestureToken& token) {
-  if (!token.IsNull())
-    indicator_.reset(new UserGestureIndicator(token));
-}
-
 WebScopedUserGesture::WebScopedUserGesture(WebLocalFrame* frame) {
-  indicator_ = LocalFrame::NotifyUserActivation(
+  LocalFrame::NotifyUserActivation(
       frame ? To<WebLocalFrameImpl>(frame)->GetFrame() : nullptr);
 }
-
-WebScopedUserGesture::~WebScopedUserGesture() = default;
 
 }  // namespace blink

@@ -12,7 +12,7 @@ namespace blink {
 enum class WebTreeScopeType {
   kDocument,
   kShadow,
-  kLast = kShadow,
+  kMaxValue = kShadow,
 };
 
 }  // namespace blink

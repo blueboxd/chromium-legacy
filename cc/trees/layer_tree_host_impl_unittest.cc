@@ -5160,9 +5160,10 @@ class LayerTreeHostImplBrowserControlsTest : public LayerTreeHostImplTest {
     bool init = LayerTreeHostImplTest::CreateHostImpl(
         settings, std::move(layer_tree_frame_sink));
     if (init) {
-      host_impl_->active_tree()->SetTopControlsHeight(top_controls_height_);
-      host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(1, 1);
-      host_impl_->active_tree()->PushPageScaleFromMainThread(1, 1, 1);
+      host_impl_->active_tree()->SetBrowserControlsParams(
+          {top_controls_height_, 0, 0, 0, false, false});
+      host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(1.f, 1.f);
+      host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
     }
     return init;
   }
@@ -5182,10 +5183,10 @@ class LayerTreeHostImplBrowserControlsTest : public LayerTreeHostImplTest {
       const gfx::Size& inner_viewport_size,
       const gfx::Size& outer_viewport_size,
       const gfx::Size& scroll_layer_size) {
-    tree_impl->set_browser_controls_shrink_blink_size(true);
-    tree_impl->SetTopControlsHeight(top_controls_height_);
-    tree_impl->SetCurrentBrowserControlsShownRatio(1, 1);
-    tree_impl->PushPageScaleFromMainThread(1, 1, 1);
+    tree_impl->SetBrowserControlsParams(
+        {top_controls_height_, 0, 0, 0, false, true});
+    tree_impl->SetCurrentBrowserControlsShownRatio(1.f, 1.f);
+    tree_impl->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
     host_impl_->DidChangeBrowserControlsPosition();
 
     SetupViewportLayers(tree_impl, inner_viewport_size, outer_viewport_size,
@@ -5750,7 +5751,8 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
   DrawFrame();
 
   host_impl_->sync_tree()->PushBrowserControlsFromMainThread(1, 1);
-  host_impl_->sync_tree()->set_browser_controls_shrink_blink_size(true);
+  host_impl_->sync_tree()->SetBrowserControlsParams(
+      {top_controls_height_, 0, 0, 0, false, true});
 
   host_impl_->active_tree()->top_controls_shown_ratio()->PushMainToPending(1);
   host_impl_->active_tree()->top_controls_shown_ratio()->PushPendingToActive();
@@ -6037,14 +6039,16 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
     host_impl_->active_tree()->PushPageScaleFromMainThread(1, 1, 1);
 
     // Start off with the browser controls hidden on both main and impl.
-    host_impl_->active_tree()->set_browser_controls_shrink_blink_size(false);
+    host_impl_->active_tree()->SetBrowserControlsParams(
+        {top_controls_height_, 0, 0, 0, false, false});
     host_impl_->active_tree()->PushBrowserControlsFromMainThread(0, 0);
 
     CreatePendingTree();
     SetupBrowserControlsAndScrollLayerWithVirtualViewport(
         host_impl_->pending_tree(), inner_viewport_size, outer_viewport_size,
         content_size);
-    host_impl_->pending_tree()->set_browser_controls_shrink_blink_size(false);
+    host_impl_->pending_tree()->SetBrowserControlsParams(
+        {top_controls_height_, 0, 0, 0, false, false});
     UpdateDrawProperties(host_impl_->pending_tree());
 
     // Fully scroll the viewport.
@@ -7813,8 +7817,9 @@ TEST_F(LayerTreeHostImplTest, ScrollFromOuterViewportSibling) {
   const gfx::Size viewport_size(100, 100);
 
   SetupViewportLayersNoScrolls(viewport_size);
-  host_impl_->active_tree()->SetTopControlsHeight(10);
-  host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(1, 1);
+  host_impl_->active_tree()->SetBrowserControlsParams(
+      {10, 0, 0, 0, false, false});
+  host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(1.f, 1.f);
 
   LayerImpl* outer_scroll_layer = OuterViewportScrollLayer();
   LayerImpl* inner_scroll_layer = InnerViewportScrollLayer();
@@ -9886,8 +9891,9 @@ class LayerTreeHostImplWithBrowserControlsTest : public LayerTreeHostImplTest {
     LayerTreeSettings settings = DefaultSettings();
     settings.commit_to_active_tree = false;
     CreateHostImpl(settings, CreateLayerTreeFrameSink());
-    host_impl_->active_tree()->SetTopControlsHeight(top_controls_height_);
-    host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(1, 1);
+    host_impl_->active_tree()->SetBrowserControlsParams(
+        {top_controls_height_, 0, 0, 0, false, false});
+    host_impl_->active_tree()->SetCurrentBrowserControlsShownRatio(1.f, 1.f);
   }
 
  protected:
@@ -9916,7 +9922,8 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
   SetupViewportLayersInnerScrolls(gfx::Size(50, 50), gfx::Size(100, 100));
   EXPECT_FALSE(did_request_redraw_);
   CreatePendingTree();
-  host_impl_->sync_tree()->SetTopControlsHeight(100);
+  host_impl_->sync_tree()->SetBrowserControlsParams(
+      {100, 0, 0, 0, false, false});
   host_impl_->ActivateSyncTree();
   EXPECT_EQ(100, host_impl_->browser_controls_manager()->TopControlsHeight());
 }
@@ -9927,12 +9934,13 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
   EXPECT_EQ(0, host_impl_->browser_controls_manager()->ControlsTopOffset());
 
   CreatePendingTree();
-  host_impl_->sync_tree()->SetTopControlsHeight(0);
+  host_impl_->sync_tree()->SetBrowserControlsParams({0, 0, 0, 0, false, false});
   host_impl_->ActivateSyncTree();
   EXPECT_EQ(0, host_impl_->browser_controls_manager()->ControlsTopOffset());
 
   CreatePendingTree();
-  host_impl_->sync_tree()->SetTopControlsHeight(50);
+  host_impl_->sync_tree()->SetBrowserControlsParams(
+      {50, 0, 0, 0, false, false});
   host_impl_->ActivateSyncTree();
   EXPECT_EQ(0, host_impl_->browser_controls_manager()->ControlsTopOffset());
 }
@@ -10032,7 +10040,8 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
 TEST_F(LayerTreeHostImplWithBrowserControlsTest,
        WheelUnhandledByBrowserControls) {
   SetupViewportLayersInnerScrolls(gfx::Size(50, 100), gfx::Size(100, 200));
-  host_impl_->active_tree()->set_browser_controls_shrink_blink_size(true);
+  host_impl_->active_tree()->SetBrowserControlsParams(
+      {top_controls_height_, 0, 0, 0, false, true});
   host_impl_->browser_controls_manager()->UpdateBrowserControlsState(
       BrowserControlsState::kBoth, BrowserControlsState::kShown, false);
   DrawFrame();

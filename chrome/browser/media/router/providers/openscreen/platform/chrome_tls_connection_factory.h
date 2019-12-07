@@ -15,6 +15,7 @@
 #include "services/network/public/mojom/tcp_socket.mojom.h"
 #include "services/network/public/mojom/tls_socket.mojom.h"
 #include "third_party/openscreen/src/platform/api/tls_connection_factory.h"
+#include "third_party/openscreen/src/platform/base/ip_address.h"
 #include "third_party/openscreen/src/platform/base/tls_connect_options.h"
 
 namespace net {
@@ -22,39 +23,35 @@ class IPEndPoint;
 }
 
 namespace openscreen {
-struct IPEndpoint;
 
-namespace platform {
+class TaskRunner;
 struct TlsCredentials;
 struct TlsListenOptions;
-}  // namespace platform
 
 }  // namespace openscreen
 
 namespace media_router {
 
-class ChromeTlsConnectionFactory
-    : public openscreen::platform::TlsConnectionFactory {
+class ChromeTlsConnectionFactory : public openscreen::TlsConnectionFactory {
  public:
   // If provided, the network context is stored and dereferenced when attempting
   // to connect. If not provided, the network context is dynamically looked up.
-  ChromeTlsConnectionFactory(
-      openscreen::platform::TlsConnectionFactory::Client* client,
-      openscreen::platform::TaskRunner* task_runner,
-      network::mojom::NetworkContext* network_context);
+  ChromeTlsConnectionFactory(openscreen::TlsConnectionFactory::Client* client,
+                             openscreen::TaskRunner* task_runner,
+                             network::mojom::NetworkContext* network_context);
 
   ~ChromeTlsConnectionFactory() final;
 
   // TlsConnectionFactory overrides
   void Connect(const openscreen::IPEndpoint& remote_address,
-               const openscreen::platform::TlsConnectOptions& options) final;
+               const openscreen::TlsConnectOptions& options) final;
 
   // Since Chrome doesn't implement TLS server sockets, these methods are not
   // implemented.
   void SetListenCredentials(
-      const openscreen::platform::TlsCredentials& credentials) final;
+      const openscreen::TlsCredentials& credentials) final;
   void Listen(const openscreen::IPEndpoint& local_address,
-              const openscreen::platform::TlsListenOptions& options) final;
+              const openscreen::TlsListenOptions& options) final;
 
  private:
   // Note on TcpConnectRequest and TlsUpgradeRequest:
@@ -64,7 +61,7 @@ class ChromeTlsConnectionFactory
   // callbacks (OnTcpConnect and OnTlsUpgrade) using currying.
   struct TcpConnectRequest {
     TcpConnectRequest(
-        openscreen::platform::TlsConnectOptions options_in,
+        openscreen::TlsConnectOptions options_in,
         openscreen::IPEndpoint remote_address_in,
         mojo::Remote<network::mojom::TCPConnectedSocket> tcp_socket_in);
     TcpConnectRequest(const TcpConnectRequest&) = delete;
@@ -73,7 +70,7 @@ class ChromeTlsConnectionFactory
     TcpConnectRequest& operator=(TcpConnectRequest&&);
     ~TcpConnectRequest();
 
-    openscreen::platform::TlsConnectOptions options;
+    openscreen::TlsConnectOptions options;
     openscreen::IPEndpoint remote_address;
     mojo::Remote<network::mojom::TCPConnectedSocket> tcp_socket;
   };
@@ -109,8 +106,8 @@ class ChromeTlsConnectionFactory
                     mojo::ScopedDataPipeProducerHandle send_stream,
                     const base::Optional<net::SSLInfo>& ssl_info);
 
-  openscreen::platform::TlsConnectionFactory::Client* client_;
-  openscreen::platform::TaskRunner* const task_runner_;
+  openscreen::TlsConnectionFactory::Client* client_;
+  openscreen::TaskRunner* const task_runner_;
   network::mojom::NetworkContext* const network_context_;
   base::WeakPtrFactory<ChromeTlsConnectionFactory> weak_factory_{this};
 };

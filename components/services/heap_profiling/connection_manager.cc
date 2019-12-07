@@ -62,6 +62,8 @@ struct ConnectionManager::Connection {
   mojom::ProcessType process_type;
   mojom::StackMode stack_mode;
 
+  bool started_profiling = false;
+
   // When sampling is enabled, allocations are recorded with probability (size /
   // sampling_rate) when size < sampling_rate. When size >= sampling_rate, the
   // aggregate probability of an allocation being recorded is 1.0, but the math
@@ -106,7 +108,9 @@ void ConnectionManager::OnNewConnection(
   auto connection = std::make_unique<Connection>(
       std::move(complete_cb), std::move(client), process_type,
       params->sampling_rate, params->stack_mode);
-  connection->client->StartProfiling(std::move(params));
+  connection->client->StartProfiling(
+      std::move(params), base::BindOnce(&ConnectionManager::OnProfilingStarted,
+                                        weak_factory_.GetWeakPtr(), pid));
   connections_[pid] = std::move(connection);
 }
 
@@ -114,8 +118,10 @@ std::vector<base::ProcessId> ConnectionManager::GetConnectionPids() {
   base::AutoLock lock(connections_lock_);
   std::vector<base::ProcessId> results;
   results.reserve(connections_.size());
-  for (const auto& pair : connections_)
-    results.push_back(pair.first);
+  for (const auto& pair : connections_) {
+    if (pair.second->started_profiling)
+      results.push_back(pair.first);
+  }
   return results;
 }
 
@@ -136,6 +142,16 @@ void ConnectionManager::OnConnectionComplete(base::ProcessId pid) {
   auto found = connections_.find(pid);
   CHECK(found != connections_.end());
   connections_.erase(found);
+}
+
+void ConnectionManager::OnProfilingStarted(base::ProcessId pid) {
+  base::AutoLock lock(connections_lock_);
+
+  // It's possible that the client disconnected in the short time before
+  // profiling started.
+  auto found = connections_.find(pid);
+  if (found != connections_.end())
+    found->second->started_profiling = true;
 }
 
 void ConnectionManager::ReportMetrics() {

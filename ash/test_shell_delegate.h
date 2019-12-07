@@ -8,7 +8,10 @@
 #include <memory>
 
 #include "ash/shell_delegate.h"
+#include "base/callback.h"
 #include "base/macros.h"
+#include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace ash {
 
@@ -16,6 +19,15 @@ class TestShellDelegate : public ShellDelegate {
  public:
   TestShellDelegate();
   ~TestShellDelegate() override;
+
+  // Allows tests to override the MultiDeviceSetup binding behavior for this
+  // TestShellDelegate.
+  using MultiDeviceSetupBinder = base::RepeatingCallback<void(
+      mojo::PendingReceiver<
+          chromeos::multidevice_setup::mojom::MultiDeviceSetup>)>;
+  void SetMultiDeviceSetupBinder(MultiDeviceSetupBinder binder) {
+    multidevice_setup_binder_ = std::move(binder);
+  }
 
   // Overridden from ShellDelegate:
   bool CanShowWindowForUser(const aura::Window* window) const override;
@@ -25,12 +37,18 @@ class TestShellDelegate : public ShellDelegate {
   void BindNavigableContentsFactory(
       mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)
       override;
+  void BindMultiDeviceSetup(
+      mojo::PendingReceiver<
+          chromeos::multidevice_setup::mojom::MultiDeviceSetup> receiver)
+      override;
 
   void SetCanGoBack(bool can_go_back);
 
  private:
   // True if the current top window can back.
   bool can_go_back_ = true;
+
+  MultiDeviceSetupBinder multidevice_setup_binder_;
 
   DISALLOW_COPY_AND_ASSIGN(TestShellDelegate);
 };

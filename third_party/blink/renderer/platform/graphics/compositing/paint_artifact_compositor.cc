@@ -458,10 +458,21 @@ PaintArtifactCompositor::PendingLayer::PendingLayer(
   paint_chunk_indices.push_back(chunk_index);
 }
 
-void PaintArtifactCompositor::PendingLayer::Merge(const PendingLayer& guest) {
+void PaintArtifactCompositor::PendingLayer::Merge(
+    const PendingLayer& guest,
+    const PropertyTreeState& merged_state) {
   DCHECK(compositing_type != kRequiresOwnLayer &&
          guest.compositing_type != kRequiresOwnLayer);
+  DCHECK_EQ(&property_tree_state.Effect(), &merged_state.Effect());
+
   paint_chunk_indices.AppendVector(guest.paint_chunk_indices);
+  if (merged_state != property_tree_state) {
+    FloatClipRect new_home_bounds(bounds);
+    GeometryMapper::LocalToAncestorVisualRect(property_tree_state, merged_state,
+                                              new_home_bounds);
+    bounds = new_home_bounds.Rect();
+    property_tree_state = merged_state;
+  }
   FloatClipRect guest_bounds_in_home(guest.bounds);
   GeometryMapper::LocalToAncestorVisualRect(
       guest.property_tree_state, property_tree_state, guest_bounds_in_home);
@@ -472,26 +483,12 @@ void PaintArtifactCompositor::PendingLayer::Merge(const PendingLayer& guest) {
   // update rect_known_to_be_opaque accordingly.
 }
 
-static bool CanUpcastTo(const PropertyTreeState& guest,
-                        const PropertyTreeState& home);
-
-bool PaintArtifactCompositor::PendingLayer::CanMerge(
-    const PendingLayer& guest,
-    const PropertyTreeState& guest_state) const {
-  if (compositing_type == kRequiresOwnLayer ||
-      guest.compositing_type == kRequiresOwnLayer) {
-    return false;
-  }
-  if (&property_tree_state.Effect().Unalias() !=
-      &guest_state.Effect().Unalias()) {
-    return false;
-  }
-  return CanUpcastTo(guest_state, property_tree_state);
-}
-
 void PaintArtifactCompositor::PendingLayer::Upcast(
     const PropertyTreeState& new_state) {
   DCHECK(compositing_type != kRequiresOwnLayer);
+  if (property_tree_state == new_state)
+    return;
+
   FloatClipRect float_clip_rect(bounds);
   GeometryMapper::LocalToAncestorVisualRect(property_tree_state, new_state,
                                             float_clip_rect);
@@ -512,55 +509,91 @@ const PaintChunk& PaintArtifactCompositor::PendingLayer::FirstPaintChunk(
   return paint_artifact.PaintChunks()[paint_chunk_indices[0]];
 }
 
-static bool IsNonCompositingAncestorOf(
-    const TransformPaintPropertyNode& unaliased_ancestor,
-    const TransformPaintPropertyNode& node) {
-  for (const auto* n = &node; n != &unaliased_ancestor;
+static bool HasCompositedTransformToAncestor(
+    const TransformPaintPropertyNode& node,
+    const TransformPaintPropertyNode& unaliased_ancestor) {
+  for (const auto* n = &node.Unalias(); n != &unaliased_ancestor;
        n = SafeUnalias(n->Parent())) {
-    if (!n || n->HasDirectCompositingReasons())
-      return false;
+    if (n->HasDirectCompositingReasons())
+      return true;
   }
-  return true;
+  return false;
+}
+
+// Returns the lowest common ancestor if there is no composited transform
+// between the two transforms.
+static const TransformPaintPropertyNode* NonCompositedLowestCommonAncestor(
+    const TransformPaintPropertyNode& transform1,
+    const TransformPaintPropertyNode& transform2) {
+  const auto& lca = LowestCommonAncestor(transform1, transform2).Unalias();
+  if (HasCompositedTransformToAncestor(transform1, lca) ||
+      HasCompositedTransformToAncestor(transform2, lca))
+    return nullptr;
+  return &lca;
+}
+
+static bool ClipChainHasCompositedTransformTo(
+    const ClipPaintPropertyNode& node,
+    const ClipPaintPropertyNode& unaliased_ancestor,
+    const TransformPaintPropertyNode& transform) {
+  for (const auto* n = &node.Unalias(); n != &unaliased_ancestor;
+       n = SafeUnalias(n->Parent())) {
+    if (!NonCompositedLowestCommonAncestor(n->LocalTransformSpace(), transform))
+      return true;
+  }
+  return false;
 }
 
 // Determines whether drawings based on the 'guest' state can be painted into
-// a layer with the 'home' state. A number of criteria need to be met:
+// a layer with the 'home' state, and if yes, returns the common ancestor state
+// to which both layer will be upcasted.
+// A number of criteria need to be met:
 // 1. The guest effect must be a descendant of the home effect. However this
 //    check is enforced by the layerization recursion. Here we assume the
 //    guest has already been upcasted to the same effect.
 // 2. The guest transform and the home transform have compatible backface
 //    visibility.
-// 3. The guest clip must be a descendant of the home clip.
+// 3. The guest transform space must be within compositing boundary of the home
+//    transform space.
 // 4. The local space of each clip and effect node on the ancestor chain must
 //    be within compositing boundary of the home transform space.
-// 5. The guest transform space must be within compositing boundary of the
-// home
-//    transform space.
-static bool CanUpcastTo(const PropertyTreeState& guest,
-                        const PropertyTreeState& home) {
+base::Optional<PropertyTreeState> CanUpcastWith(const PropertyTreeState& guest,
+                                                const PropertyTreeState& home) {
   DCHECK_EQ(&home.Effect().Unalias(), &guest.Effect().Unalias());
 
   if (home.Transform().IsBackfaceHidden() !=
       guest.Transform().IsBackfaceHidden())
-    return false;
+    return base::nullopt;
 
-  const auto& home_clip = home.Clip().Unalias();
-  for (const auto* current_clip = &guest.Clip().Unalias();
-       current_clip != &home_clip;
-       current_clip = SafeUnalias(current_clip->Parent())) {
-    // If we had direct compositing reasons on a clip node, we would want to
-    // return false here.
-    if (!current_clip)
-      return false;
-    if (!IsNonCompositingAncestorOf(
-            home.Transform().Unalias(),
-            current_clip->LocalTransformSpace().Unalias())) {
-      return false;
-    }
+  auto* upcast_transform =
+      NonCompositedLowestCommonAncestor(home.Transform(), guest.Transform());
+  if (!upcast_transform)
+    return base::nullopt;
+
+  const auto& clip_lca =
+      LowestCommonAncestor(home.Clip(), guest.Clip()).Unalias();
+  if (ClipChainHasCompositedTransformTo(home.Clip(), clip_lca,
+                                        *upcast_transform) ||
+      ClipChainHasCompositedTransformTo(guest.Clip(), clip_lca,
+                                        *upcast_transform))
+    return base::nullopt;
+
+  return PropertyTreeState(*upcast_transform, clip_lca, home.Effect());
+}
+
+base::Optional<PropertyTreeState>
+PaintArtifactCompositor::PendingLayer::CanMerge(
+    const PendingLayer& guest,
+    const PropertyTreeState& guest_state) const {
+  if (compositing_type == kRequiresOwnLayer ||
+      guest.compositing_type == kRequiresOwnLayer) {
+    return base::nullopt;
   }
-
-  return IsNonCompositingAncestorOf(home.Transform().Unalias(),
-                                    guest.Transform().Unalias());
+  if (&property_tree_state.Effect().Unalias() !=
+      &guest_state.Effect().Unalias()) {
+    return base::nullopt;
+  }
+  return CanUpcastWith(guest_state, property_tree_state);
 }
 
 // Returns nullptr if 'ancestor' is not a strict ancestor of 'node'.
@@ -615,11 +648,12 @@ bool PaintArtifactCompositor::DecompositeEffect(
                                     ? *unaliased_effect.OutputClip()
                                     : layer.property_tree_state.Clip(),
                                 unaliased_effect);
-  if (!CanUpcastTo(layer.property_tree_state, group_state))
+  base::Optional<PropertyTreeState> upcast_state =
+      CanUpcastWith(layer.property_tree_state, group_state);
+  if (!upcast_state)
     return false;
 
-  PropertyTreeState upcast_state = group_state;
-  upcast_state.SetEffect(unaliased_parent_effect);
+  upcast_state->SetEffect(unaliased_parent_effect);
 
   // Exotic blending layer can be decomposited only if its parent group
   // (which defines the scope of the blending) has only one layer before it,
@@ -628,11 +662,11 @@ bool PaintArtifactCompositor::DecompositeEffect(
     if (layer_index - 1 != first_layer_in_parent_group_index)
       return false;
     if (!pending_layers_[first_layer_in_parent_group_index].CanMerge(
-            layer, upcast_state))
+            layer, *upcast_state))
       return false;
   }
 
-  layer.Upcast(upcast_state);
+  layer.Upcast(*upcast_state);
   return true;
 }
 
@@ -783,8 +817,10 @@ void PaintArtifactCompositor::LayerizeGroup(
     for (wtf_size_t candidate_index = pending_layers_.size() - 1;
          candidate_index-- > first_layer_in_current_group;) {
       PendingLayer& candidate_layer = pending_layers_[candidate_index];
-      if (candidate_layer.CanMerge(new_layer, new_layer.property_tree_state)) {
-        candidate_layer.Merge(new_layer);
+      if (const base::Optional<PropertyTreeState>& merged_state =
+              candidate_layer.CanMerge(new_layer,
+                                       new_layer.property_tree_state)) {
+        candidate_layer.Merge(new_layer, *merged_state);
         pending_layers_.pop_back();
         break;
       }

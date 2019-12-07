@@ -143,8 +143,6 @@ void GetRendererContentSettingRules(const HostContentSettingsMap* map,
 #endif
   map->GetSettingsForOneType(ContentSettingsType::JAVASCRIPT,
                              ResourceIdentifier(), &(rules->script_rules));
-  map->GetSettingsForOneType(ContentSettingsType::AUTOPLAY,
-                             ResourceIdentifier(), &(rules->autoplay_rules));
   map->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
                              ResourceIdentifier(),
                              &(rules->client_hints_rules));

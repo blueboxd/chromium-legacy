@@ -6,7 +6,7 @@
 
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
-#include "third_party/blink/renderer/core/execution_context/security_context.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
@@ -38,20 +38,11 @@ LayoutAnimationsPolicy::AffectedCSSProperties() {
 // static
 void LayoutAnimationsPolicy::ReportViolation(
     const CSSProperty& animated_property,
-    const SecurityContext& security_context) {
+    const ExecutionContext& context) {
   DCHECK(AffectedCSSProperties().Contains(&animated_property));
-  auto state = security_context.GetFeatureEnabledState(
-      mojom::FeaturePolicyFeature::kLayoutAnimations);
-  security_context.CountPotentialFeaturePolicyViolation(
-      mojom::FeaturePolicyFeature::kLayoutAnimations);
-  if (state == FeatureEnabledState::kEnabled)
-    return;
-  security_context.ReportFeaturePolicyViolation(
-      mojom::FeaturePolicyFeature::kLayoutAnimations,
-      state == FeatureEnabledState::kReportOnly
-          ? mojom::FeaturePolicyDisposition::kReport
-          : mojom::FeaturePolicyDisposition::kEnforce,
-      GetViolationMessage(animated_property));
+  context.IsFeatureEnabled(mojom::FeaturePolicyFeature::kLayoutAnimations,
+                           ReportOptions::kReportOnFailure,
+                           GetViolationMessage(animated_property));
 }
 
 }  // namespace blink

@@ -37,9 +37,9 @@ import org.chromium.chrome.browser.policy.PolicyAuditor.AuditEvent;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
-import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
@@ -306,9 +306,27 @@ public class ActivityTabWebContentsDelegateAndroid extends TabWebContentsDelegat
     }
 
     @Override
+    public int getTopControlsMinHeight() {
+        FullscreenManager manager = getFullscreenManager();
+        return manager != null ? manager.getTopControlsMinHeight() : 0;
+    }
+
+    @Override
     public int getBottomControlsHeight() {
         FullscreenManager manager = getFullscreenManager();
         return manager != null ? manager.getBottomControlsHeight() : 0;
+    }
+
+    @Override
+    public int getBottomControlsMinHeight() {
+        FullscreenManager manager = getFullscreenManager();
+        return manager != null ? manager.getBottomControlsMinHeight() : 0;
+    }
+
+    @Override
+    public boolean shouldAnimateBrowserControlsHeightChanges() {
+        FullscreenManager manager = getFullscreenManager();
+        return manager != null && manager.shouldAnimateBrowserControlsHeightChanges();
     }
 
     @Override

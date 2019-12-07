@@ -139,4 +139,11 @@ public class TabGroupUiToolbarView extends FrameLayout {
         mTitleTextView.setBackgroundColor(Color.TRANSPARENT);
         mMainContent.removeView(mMenuButton);
     }
+
+    /**
+     * Setup the drawable in the left button.
+     */
+    void setLeftButtonDrawableId(int drawableId) {
+        mLeftButton.setImageResource(drawableId);
+    }
 }

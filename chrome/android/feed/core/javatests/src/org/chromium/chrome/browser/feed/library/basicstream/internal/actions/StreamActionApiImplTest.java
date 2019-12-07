@@ -33,6 +33,7 @@ import org.mockito.Mockito;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.ContentMetadata;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.logging.ActionType;
@@ -46,7 +47,6 @@ import org.chromium.chrome.browser.feed.library.api.internal.actionmanager.Actio
 import org.chromium.chrome.browser.feed.library.api.internal.actionparser.ActionParser;
 import org.chromium.chrome.browser.feed.library.api.internal.actionparser.ActionSource;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.pendingdismiss.ClusterPendingDismissHelper;
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 import org.chromium.chrome.browser.feed.library.sharedstream.logging.StreamContentLoggingData;
 import org.chromium.chrome.browser.feed.library.sharedstream.pendingdismiss.PendingDismissCallback;
 import org.chromium.chrome.browser.feed.library.testing.sharedstream.contextmenumanager.FakeContextMenuManager;

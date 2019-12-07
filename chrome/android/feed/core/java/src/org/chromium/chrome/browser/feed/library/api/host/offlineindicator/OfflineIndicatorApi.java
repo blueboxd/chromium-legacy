@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.api.host.offlineindicator;
 
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
+import org.chromium.base.Consumer;
 
 import java.util.List;
 

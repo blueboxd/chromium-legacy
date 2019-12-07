@@ -4,12 +4,15 @@
 
 #include "third_party/openscreen/src/platform/api/logging.h"
 
+#include <cstring>
+#include <sstream>
+
 #include "base/debug/debugger.h"
 #include "base/immediate_crash.h"
 #include "base/logging.h"
 
 namespace openscreen {
-namespace platform {
+
 namespace {
 
 ::logging::LogSeverity MapLogLevel(LogLevel level) {
@@ -29,18 +32,19 @@ namespace {
 
 }  // namespace
 
-bool IsLoggingOn(LogLevel level, absl::string_view file) {
+bool IsLoggingOn(LogLevel level, const char* file) {
   if (level == LogLevel::kVerbose) {
-    return ::logging::GetVlogLevelHelper(file.data(), file.size()) > 0;
+    return ::logging::GetVlogLevelHelper(file, strlen(file)) > 0;
   }
   return ::logging::ShouldCreateLogMessage(MapLogLevel(level));
 }
 
 void LogWithLevel(LogLevel level,
-                  absl::string_view file,
+                  const char* file,
                   int line,
-                  absl::string_view msg) {
-  ::logging::LogMessage(file.data(), line, MapLogLevel(level)).stream() << msg;
+                  std::stringstream message) {
+  ::logging::LogMessage(file, line, MapLogLevel(level)).stream()
+      << message.rdbuf();
 }
 
 void Break() {
@@ -51,5 +55,4 @@ void Break() {
 #endif
 }
 
-}  // namespace platform
 }  // namespace openscreen

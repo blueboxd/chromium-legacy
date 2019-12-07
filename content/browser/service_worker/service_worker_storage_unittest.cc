@@ -1191,6 +1191,38 @@ TEST_F(ServiceWorkerStorageTest,
   EXPECT_TRUE(data_list_out.empty());
 }
 
+TEST_F(ServiceWorkerStorageTest, GetAllRegistrationsInfosFields) {
+  LazyInitialize();
+  const GURL kScope("http://www.example.com/scope/");
+  const GURL kScript("http://www.example.com/script1.js");
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScript);
+
+  // Set some fields to check ServiceWorkerStorage serializes/deserializes
+  // these fields correctly.
+  registration->SetUpdateViaCache(
+      blink::mojom::ServiceWorkerUpdateViaCache::kImports);
+  registration->EnableNavigationPreload(true);
+  registration->SetNavigationPreloadHeader("header");
+
+  storage()->NotifyInstallingRegistration(registration.get());
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
+            StoreRegistration(registration, registration->waiting_version()));
+  std::vector<ServiceWorkerRegistrationInfo> all_registrations;
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
+            GetAllRegistrationsInfos(&all_registrations));
+  ASSERT_EQ(1u, all_registrations.size());
+
+  ServiceWorkerRegistrationInfo info = all_registrations[0];
+  EXPECT_EQ(registration->scope(), info.scope);
+  EXPECT_EQ(registration->update_via_cache(), info.update_via_cache);
+  EXPECT_EQ(registration->id(), info.registration_id);
+  EXPECT_EQ(registration->navigation_preload_state().enabled,
+            info.navigation_preload_enabled);
+  EXPECT_EQ(registration->navigation_preload_state().header.size(),
+            info.navigation_preload_header_length);
+}
+
 class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTest {
  public:
   void SetUp() override {

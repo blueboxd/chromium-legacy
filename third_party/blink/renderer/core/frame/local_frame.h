@@ -48,7 +48,6 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
@@ -139,7 +138,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void Trace(blink::Visitor*) override;
   void Navigate(const FrameLoadRequest&, WebFrameLoadType) override;
   bool ShouldClose() override;
-  SecurityContext* GetSecurityContext() const override;
+  const SecurityContext* GetSecurityContext() const override;
   void PrintNavigationErrorMessage(const Frame&, const char* reason);
   void PrintNavigationWarning(const String&);
   bool DetachDocument() override;
@@ -206,11 +205,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   bool IsCaretBrowsingEnabled() const;
 
   // Activates the user activation states of the |LocalFrame| (provided it's
-  // non-null) and all its ancestors.  Also creates a |UserGestureIndicator|
-  // that contains a |UserGestureToken| with the given status.
-  static std::unique_ptr<UserGestureIndicator> NotifyUserActivation(
-      LocalFrame*,
-      bool need_browser_verification = false);
+  // non-null) and all its ancestors.
+  static void NotifyUserActivation(LocalFrame*,
+                                   bool need_browser_verification = false);
 
   // Returns the transient user activation state of the |LocalFrame|, provided
   // it is non-null.  Otherwise returns |false|.

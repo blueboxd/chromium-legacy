@@ -13,12 +13,11 @@
 #include "content/browser/web_package/signed_exchange_signature_verifier.h"
 #include "content/common/content_export.h"
 #include "net/url_request/redirect_util.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 
 namespace network {
 struct ResourceRequest;
-struct ResourceResponseHead;
 }  // namespace network
 
 namespace content {
@@ -80,13 +79,13 @@ SignedExchangeLoadResult GetLoadResultFromSignatureVerifierResult(
 net::RedirectInfo CreateRedirectInfo(
     const GURL& new_url,
     const network::ResourceRequest& outer_request,
-    const network::ResourceResponseHead& outer_response,
+    const network::mojom::URLResponseHead& outer_response,
     bool is_fallback_redirect);
 
-// Creates a ResourceResponseHead of synthesized redirect for signed exchange
+// Creates a URLResponseHead of synthesized redirect for signed exchange
 // loading.
-network::ResourceResponseHead CreateRedirectResponseHead(
-    const network::ResourceResponseHead& outer_response,
+network::mojom::URLResponseHeadPtr CreateRedirectResponseHead(
+    const network::mojom::URLResponseHead& outer_response,
     bool is_fallback_redirect);
 
 // Creates a new request ID for browser initiated requests. Can be called on

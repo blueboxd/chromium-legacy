@@ -8652,8 +8652,9 @@ class LayerTreeHostTopControlsDeltaTriggersViewportUpdate
     SetupViewport(root_layer, gfx::Size(50, 50), root_layer->bounds());
     layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 1.f, 1.f);
     // Set browser controls to be partially shown.
-    layer_tree_host()->SetBrowserControlsHeight(
-        kTopControlsHeight, kBottomControlsHeight, true /* shrink */);
+    layer_tree_host()->SetBrowserControlsParams(
+        {kTopControlsHeight, 0, kBottomControlsHeight, 0, false /* animate */,
+         true /* shrink */});
     layer_tree_host()->SetBrowserControlsShownRatio(kTopControlsShownRatio,
                                                     kBottomControlsShownRatio);
   }

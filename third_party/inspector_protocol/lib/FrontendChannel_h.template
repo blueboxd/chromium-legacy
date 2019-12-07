@@ -8,6 +8,7 @@
 #define {{"_".join(config.protocol.namespace)}}_FrontendChannel_h
 
 #include "{{config.crdtp.dir}}/serializable.h"
+#include "{{config.crdtp.dir}}/span.h"
 
 {% for namespace in config.protocol.namespace %}
 namespace {{namespace}} {
@@ -20,7 +21,8 @@ public:
     virtual ~FrontendChannel() { }
     virtual void sendProtocolResponse(int callId, std::unique_ptr<Serializable> message) = 0;
     virtual void sendProtocolNotification(std::unique_ptr<Serializable> message) = 0;
-    virtual void fallThrough(int callId, const String& method, const ProtocolMessage& message) = 0;
+
+    virtual void fallThrough(int callId, const String& method, {{config.crdtp.namespace}}::span<uint8_t> message) = 0;
     virtual void flushProtocolNotifications() = 0;
 };
 

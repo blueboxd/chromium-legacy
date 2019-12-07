@@ -463,6 +463,17 @@ TEST_F(NetworkIsolationKeyWithFrameOriginTest, UseRegistrableDomain) {
             key.GetFrameOrigin().value());
 }
 
+TEST_F(NetworkIsolationKeyWithFrameOriginTest, CreateWithNewFrameOrigin) {
+  url::Origin origin_a = url::Origin::Create(GURL("http://a.com"));
+  url::Origin origin_b = url::Origin::Create(GURL("http://b.com"));
+  url::Origin origin_c = url::Origin::Create(GURL("http://c.com"));
+
+  net::NetworkIsolationKey key(origin_a, origin_b);
+  NetworkIsolationKey key_c = key.CreateWithNewFrameOrigin(origin_c);
+  EXPECT_EQ(origin_c, key_c.GetFrameOrigin());
+  EXPECT_EQ(origin_a, key_c.GetTopFrameOrigin());
+}
+
 TEST(NetworkIsolationKeyTest, CreateTransient) {
   for (bool append_frame_origin : {false, true}) {
     base::test::ScopedFeatureList feature_list;

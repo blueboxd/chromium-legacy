@@ -8,6 +8,7 @@
 #include <memory>
 #include <queue>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -15,6 +16,7 @@
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/services/device_sync/feature_status_change.h"
+#include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -34,6 +36,7 @@ class FakeDeviceSyncClient : public DeviceSyncClient {
   int GetSetSoftwareFeatureStateCallbackQueueSize();
   int GetSetFeatureStatusCallbackQueueSize();
   int GetFindEligibleDevicesCallbackQueueSize();
+  int GetNotifyDevicesCallbackQueueSize();
   int GetGetDebugInfoCallbackQueueSize();
 
   void InvokePendingForceEnrollmentNowCallback(bool success);
@@ -46,6 +49,8 @@ class FakeDeviceSyncClient : public DeviceSyncClient {
       mojom::NetworkRequestResult result_code,
       multidevice::RemoteDeviceRefList eligible_devices,
       multidevice::RemoteDeviceRefList ineligible_devices);
+  void InvokePendingNotifyDevicesCallback(
+      mojom::NetworkRequestResult result_code);
   void InvokePendingGetDevicesActivityStatusCallback(
       mojom::NetworkRequestResult result_code,
       base::Optional<std::vector<mojom::DeviceActivityStatusPtr>>
@@ -86,6 +91,11 @@ class FakeDeviceSyncClient : public DeviceSyncClient {
       mojom::DeviceSync::SetFeatureStatusCallback callback) override;
   void FindEligibleDevices(multidevice::SoftwareFeature software_feature,
                            FindEligibleDevicesCallback callback) override;
+  void NotifyDevices(
+      const std::vector<std::string>& device_instance_ids,
+      cryptauthv2::TargetService target_service,
+      multidevice::SoftwareFeature feature,
+      mojom::DeviceSync::NotifyDevicesCallback callback) override;
   void GetDevicesActivityStatus(
       mojom::DeviceSync::GetDevicesActivityStatusCallback callback) override;
   void GetDebugInfo(mojom::DeviceSync::GetDebugInfoCallback callback) override;
@@ -102,6 +112,8 @@ class FakeDeviceSyncClient : public DeviceSyncClient {
   std::queue<mojom::DeviceSync::SetFeatureStatusCallback>
       set_feature_status_callback_queue_;
   std::queue<FindEligibleDevicesCallback> find_eligible_devices_callback_queue_;
+  std::queue<mojom::DeviceSync::NotifyDevicesCallback>
+      notify_devices_callback_queue_;
   std::queue<mojom::DeviceSync::GetDevicesActivityStatusCallback>
       get_devices_activity_status_callback_queue_;
   std::queue<mojom::DeviceSync::GetDebugInfoCallback>

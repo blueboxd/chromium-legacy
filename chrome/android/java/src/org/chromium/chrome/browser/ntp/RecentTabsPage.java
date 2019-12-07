@@ -108,7 +108,8 @@ public class RecentTabsPage
         if (!DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity)) {
             mFullscreenManager = activity.getFullscreenManager();
             mFullscreenManager.addListener(this);
-            onBottomControlsHeightChanged(mFullscreenManager.getBottomControlsHeight());
+            onBottomControlsHeightChanged(mFullscreenManager.getBottomControlsHeight(),
+                    mFullscreenManager.getBottomControlsMinHeight());
         } else {
             mFullscreenManager = null;
         }
@@ -309,7 +310,8 @@ public class RecentTabsPage
     public void onToggleOverlayVideoMode(boolean enabled) {}
 
     @Override
-    public void onBottomControlsHeightChanged(int bottomControlsHeight) {
+    public void onBottomControlsHeightChanged(
+            int bottomControlsHeight, int bottomControlsMinHeight) {
         final View recentTabsRoot = mView.findViewById(R.id.recent_tabs_root);
         ViewCompat.setPaddingRelative(recentTabsRoot, ViewCompat.getPaddingStart(recentTabsRoot),
                 mFullscreenManager.getTopControlsHeight(), ViewCompat.getPaddingEnd(recentTabsRoot),

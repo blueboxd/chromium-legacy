@@ -13,6 +13,7 @@
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace extensions {
 
@@ -47,6 +48,45 @@ void ReadExtensionIcon(Profile* profile,
       base::BindOnce(&OnExtensionIconLoaded, std::move(callback)));
 }
 
+void OnExtensionIconsLoaded(
+    BookmarkAppIconManager::ReadAllIconsCallback callback,
+    const gfx::Image& image) {
+  std::map<SquareSizePx, SkBitmap> icons_map;
+
+  gfx::ImageSkia image_skia = image.AsImageSkia();
+  for (const gfx::ImageSkiaRep& image_skia_rep : image_skia.image_reps())
+    icons_map[image_skia_rep.pixel_width()] = image_skia_rep.GetBitmap();
+
+  std::move(callback).Run(std::move(icons_map));
+}
+
+void ReadExtensionIcons(Profile* profile,
+                        const web_app::AppId& app_id,
+                        BookmarkAppIconManager::ReadAllIconsCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  const Extension* extension = GetBookmarkApp(profile, app_id);
+  DCHECK(extension);
+
+  const ExtensionIconSet& icons = IconsInfo::GetIcons(extension);
+
+  std::vector<ImageLoader::ImageRepresentation> info_list;
+  for (const ExtensionIconSet::IconMap::value_type& icon_info : icons.map()) {
+    const int size_in_px = icon_info.first;
+
+    ExtensionResource resource = IconsInfo::GetIconResource(
+        extension, size_in_px, ExtensionIconSet::MATCH_EXACTLY);
+    ImageLoader::ImageRepresentation image_rep{
+        resource, ImageLoader::ImageRepresentation::NEVER_RESIZE,
+        gfx::Size{size_in_px, size_in_px}, /*scale_factor=*/0.0f};
+    info_list.push_back(image_rep);
+  }
+
+  ImageLoader* loader = ImageLoader::Get(profile);
+  loader->LoadImagesAsync(
+      extension, info_list,
+      base::BindOnce(&OnExtensionIconsLoaded, std::move(callback)));
+}
+
 }  // anonymous namespace
 
 BookmarkAppIconManager::BookmarkAppIconManager(Profile* profile)
@@ -70,6 +110,11 @@ void BookmarkAppIconManager::ReadIcon(const web_app::AppId& app_id,
   DCHECK(HasIcon(app_id, icon_size_in_px));
   ReadExtensionIcon(profile_, app_id, icon_size_in_px,
                     ExtensionIconSet::MATCH_EXACTLY, std::move(callback));
+}
+
+void BookmarkAppIconManager::ReadAllIcons(const web_app::AppId& app_id,
+                                          ReadAllIconsCallback callback) const {
+  ReadExtensionIcons(profile_, app_id, std::move(callback));
 }
 
 void BookmarkAppIconManager::ReadSmallestIcon(const web_app::AppId& app_id,

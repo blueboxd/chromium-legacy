@@ -77,7 +77,7 @@ interface ProfilingClient {
   // |params.sender_pipe|, or accumulated in the profiled process depending on
   // the |params.use_in_process_storage|.
   // There is currently no mechanism to stop recording allocations.
-  StartProfiling(ProfilingParams params);
+  StartProfiling(ProfilingParams params) => ();
 
   RetrieveHeapProfile() => (HeapProfile profile);
 };

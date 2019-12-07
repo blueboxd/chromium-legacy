@@ -10,7 +10,7 @@
 #include <text-input-unstable-v1-client-protocol.h>
 #include <wayland-client.h>
 #include <wayland-drm-client-protocol.h>
-#include <xdg-shell-unstable-v5-client-protocol.h>
+#include <xdg-shell-client-protocol.h>
 #include <xdg-shell-unstable-v6-client-protocol.h>
 
 namespace wl {
@@ -168,15 +168,26 @@ const wl_interface* ObjectTraits<struct wp_presentation_feedback>::interface =
 void (*ObjectTraits<struct wp_presentation_feedback>::deleter)(
     struct wp_presentation_feedback*) = &wp_presentation_feedback_destroy;
 
-const wl_interface* ObjectTraits<xdg_shell>::interface = &xdg_shell_interface;
-void (*ObjectTraits<xdg_shell>::deleter)(xdg_shell*) = &xdg_shell_destroy;
+const wl_interface* ObjectTraits<xdg_wm_base>::interface =
+    &xdg_wm_base_interface;
+void (*ObjectTraits<xdg_wm_base>::deleter)(xdg_wm_base*) = &xdg_wm_base_destroy;
 
 const wl_interface* ObjectTraits<xdg_surface>::interface =
     &xdg_surface_interface;
 void (*ObjectTraits<xdg_surface>::deleter)(xdg_surface*) = &xdg_surface_destroy;
 
+const wl_interface* ObjectTraits<xdg_toplevel>::interface =
+    &xdg_toplevel_interface;
+void (*ObjectTraits<xdg_toplevel>::deleter)(xdg_toplevel*) =
+    &xdg_toplevel_destroy;
+
 const wl_interface* ObjectTraits<xdg_popup>::interface = &xdg_popup_interface;
 void (*ObjectTraits<xdg_popup>::deleter)(xdg_popup*) = &xdg_popup_destroy;
+
+const wl_interface* ObjectTraits<xdg_positioner>::interface =
+    &xdg_positioner_interface;
+void (*ObjectTraits<xdg_positioner>::deleter)(xdg_positioner*) =
+    &xdg_positioner_destroy;
 
 const wl_interface* ObjectTraits<zwp_linux_dmabuf_v1>::interface =
     &zwp_linux_dmabuf_v1_interface;

@@ -240,6 +240,16 @@ HostResolverFlags HostResolver::ParametersToHostResolverFlags(
   return flags;
 }
 
+// static
+int HostResolver::SquashErrorCode(int error) {
+  if (error == OK || error == ERR_IO_PENDING ||
+      error == ERR_NAME_NOT_RESOLVED) {
+    return error;
+  } else {
+    return ERR_NAME_NOT_RESOLVED;
+  }
+}
+
 HostResolver::HostResolver() = default;
 
 // static

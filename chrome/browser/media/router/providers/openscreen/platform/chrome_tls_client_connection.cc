@@ -27,7 +27,7 @@ std::vector<uint8_t> VectorIOBuffer::TakeResult() {
 }
 
 ChromeTlsClientConnection::ChromeTlsClientConnection(
-    openscreen::platform::TaskRunner* task_runner,
+    openscreen::TaskRunner* task_runner,
     openscreen::IPEndpoint local_address,
     openscreen::IPEndpoint remote_address,
     std::unique_ptr<NetworkDataPump> data_pump,

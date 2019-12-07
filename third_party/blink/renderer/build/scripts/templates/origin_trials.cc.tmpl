@@ -42,18 +42,29 @@ bool origin_trials::IsTrialValid(const String& trial_name) {
 }
 
 bool origin_trials::IsTrialEnabledForInsecureContext(const String& trial_name) {
-  // TODO(crbug.com/1027546): Generate the contents from config in runtime_enabled_features.json5.
-  if (trial_name == "FrobulateDeprecation") {
+  {% for feature in origin_trial_features if feature.origin_trial_allows_insecure %}
+  if (trial_name == "{{feature.origin_trial_feature_name}}") {
     return true;
   }
+  {% endfor %}
   return false;
+}
+
+OriginTrialType origin_trials::GetTrialType(OriginTrialFeature feature) {
+  switch (feature) {
+    {% for feature in origin_trial_features if feature.origin_trial_type %}
+    case OriginTrialFeature::k{{feature.name}}:
+      return OriginTrialType::k{{feature.origin_trial_type}};
+    {% endfor %}
+    default:
+      return OriginTrialType::kDefault;
+  }
 }
 
 const Vector<OriginTrialFeature>& origin_trials::FeaturesForTrial(const String& trial_name) {
   DCHECK(IsTrialValid(trial_name));
   return GetTrialToFeaturesMap().find(trial_name)->value;
 }
-
 
 Vector<OriginTrialFeature> origin_trials::GetImpliedFeatures(OriginTrialFeature feature) {
 {% for implied_by_name, implied_list in implied_origin_trial_features.items() %}
@@ -68,7 +79,6 @@ OriginTrialFeature::k{{implied_name}},
 {% endfor %}
   return Vector<OriginTrialFeature>();
 }
-
 
 bool origin_trials::FeatureEnabledForOS(OriginTrialFeature feature) {
   switch (feature) {

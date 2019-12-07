@@ -251,8 +251,10 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, E2E_ONLY(DeleteTwo)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordForms());
 
-  PasswordForm form0 = CreateTestPasswordForm(base::Hash(base::GenerateGUID()));
-  PasswordForm form1 = CreateTestPasswordForm(base::Hash(base::GenerateGUID()));
+  PasswordForm form0 =
+      CreateTestPasswordForm(base::FastHash(base::GenerateGUID()));
+  PasswordForm form1 =
+      CreateTestPasswordForm(base::FastHash(base::GenerateGUID()));
   AddLogin(GetPasswordStore(0), form0);
   AddLogin(GetPasswordStore(0), form1);
 

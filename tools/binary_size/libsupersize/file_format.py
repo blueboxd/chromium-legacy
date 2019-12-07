@@ -121,6 +121,17 @@ _SERIALIZATION_VERSION = 'Size File Format v1'
 _SIZEDIFF_HEADER = '# Created by //tools/binary_size\nDIFF\n'
 
 
+def SortSymbols(raw_symbols):
+  logging.debug('Sorting %d symbols', len(raw_symbols))
+  # TODO(agrieve): Either change this sort so that it's only sorting by section
+  #     (and not using .sort()), or have it specify a total ordering (which must
+  #     also include putting padding-only symbols before others of the same
+  #     address). Note: The sort as-is takes ~1.5 seconds.
+  raw_symbols.sort(
+      key=lambda s: (s.IsPak(), s.IsBss(), s.section_name, s.address))
+  logging.info('Processed %d symbols', len(raw_symbols))
+
+
 def CalculatePadding(raw_symbols):
   """Populates the |padding| field based on symbol addresses. """
   logging.info('Calculating padding')
@@ -167,6 +178,28 @@ def _LogSize(file_obj, desc):
   logging.debug('File size with %s: %d' % (desc, size))
 
 
+def _ExpandSparseSymbols(sparse_symbols):
+  """Expands a symbol list with all aliases of all symbols in the list.
+
+  Args:
+    sparse_symbols: A list or SymbolGroup to expand.
+  """
+  representative_symbols = set()
+  raw_symbols = set()
+  logging.debug('Expanding sparse_symbols with aliases of included symbols')
+  for sym in sparse_symbols:
+    if sym.aliases:
+      representative_symbols.add(sym.aliases[0])
+    else:
+      raw_symbols.add(sym)
+  for sym in representative_symbols:
+    raw_symbols.update(set(sym.aliases))
+  raw_symbols = list(raw_symbols)
+  SortSymbols(raw_symbols)
+  logging.debug('Done expanding sparse_symbols')
+  return models.SymbolGroup(raw_symbols)
+
+
 def _SaveSizeInfoToFile(size_info,
                         file_obj,
                         include_padding=False,
@@ -178,8 +211,12 @@ def _SaveSizeInfoToFile(size_info,
     file_object: File opened for writing
     sparse_symbols: If present, only save these symbols to the file
   """
-  raw_symbols = sparse_symbols
-  if raw_symbols is None:
+  if sparse_symbols is not None:
+    # Any aliases of sparse symbols must also be included, or else file parsing
+    # will attribute symbols that happen to follow an incomplete alias group to
+    # that alias group.
+    raw_symbols = _ExpandSparseSymbols(sparse_symbols)
+  else:
     raw_symbols = size_info.raw_symbols
   # Created by supersize header
   file_obj.write('# Created by //tools/binary_size\n')

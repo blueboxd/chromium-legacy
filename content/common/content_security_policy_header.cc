@@ -10,12 +10,12 @@ namespace content {
 ContentSecurityPolicyHeader::ContentSecurityPolicyHeader()
     : header_value(std::string()),
       type(network::mojom::ContentSecurityPolicyType::kEnforce),
-      source(blink::kWebContentSecurityPolicySourceHTTP) {}
+      source(network::mojom::ContentSecurityPolicySource::kHTTP) {}
 
 ContentSecurityPolicyHeader::ContentSecurityPolicyHeader(
     const std::string& header_value,
     network::mojom::ContentSecurityPolicyType type,
-    blink::WebContentSecurityPolicySource source)
+    network::mojom::ContentSecurityPolicySource source)
     : header_value(header_value), type(type), source(source) {}
 
 }  // namespace content

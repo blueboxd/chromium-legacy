@@ -73,7 +73,7 @@ class PublicURLManagerTest : public testing::Test {
     execution_context_ = MakeGarbageCollected<NullExecutionContext>();
     // By default this creates a unique origin, which is exactly what this test
     // wants.
-    execution_context_->SetUpSecurityContext();
+    execution_context_->SetUpSecurityContextForTesting();
 
     mojo::AssociatedRemote<BlobURLStore> url_store_remote;
     url_store_receiver_.Bind(
@@ -149,7 +149,7 @@ TEST_F(PublicURLManagerTest, RegisterMojoBlob) {
 
 TEST_F(PublicURLManagerTest, RevokeValidNonRegisteredURL) {
   execution_context_->SetURL(KURL("http://example.com/foo/bar"));
-  execution_context_->SetUpSecurityContext();
+  execution_context_->SetUpSecurityContextForTesting();
 
   KURL url = KURL("blob:http://example.com/id");
   url_manager().Revoke(url);
@@ -160,7 +160,7 @@ TEST_F(PublicURLManagerTest, RevokeValidNonRegisteredURL) {
 
 TEST_F(PublicURLManagerTest, RevokeInvalidURL) {
   execution_context_->SetURL(KURL("http://example.com/foo/bar"));
-  execution_context_->SetUpSecurityContext();
+  execution_context_->SetUpSecurityContextForTesting();
 
   KURL invalid_scheme_url = KURL("blb:http://example.com/id");
   KURL fragment_url = KURL("blob:http://example.com/id#fragment");

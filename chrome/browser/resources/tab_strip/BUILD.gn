@@ -46,6 +46,7 @@ js_library("tab") {
 
 js_library("tab_list") {
   deps = [
+    "//ui/webui/resources/js:util.m",
     "//ui/webui/resources/js/cr/ui:focus_outline_manager.m",
   ]
 }

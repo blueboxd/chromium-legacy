@@ -213,7 +213,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetAcceptLanguages(const std::string& accept_languages);
   void SetAllowFileAccessFromFileURLs(bool allow);
   void SetAllowRunningOfInsecureContent(bool allowed);
-  void SetAutoplayAllowed(bool allowed);
   void SetBlockThirdPartyCookies(bool block);
   void SetAudioData(const gin::ArrayBufferView& view);
   void SetBackingScaleFactor(double value, v8::Local<v8::Function> callback);
@@ -511,7 +510,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetAllowFileAccessFromFileURLs)
       .SetMethod("setAllowRunningOfInsecureContent",
                  &TestRunnerBindings::SetAllowRunningOfInsecureContent)
-      .SetMethod("setAutoplayAllowed", &TestRunnerBindings::SetAutoplayAllowed)
       .SetMethod("setBlockThirdPartyCookies",
                  &TestRunnerBindings::SetBlockThirdPartyCookies)
       .SetMethod("setAudioData", &TestRunnerBindings::SetAudioData)
@@ -1057,11 +1055,6 @@ void TestRunnerBindings::SetPluginsAllowed(bool allowed) {
 void TestRunnerBindings::SetAllowRunningOfInsecureContent(bool allowed) {
   if (runner_)
     runner_->SetAllowRunningOfInsecureContent(allowed);
-}
-
-void TestRunnerBindings::SetAutoplayAllowed(bool allowed) {
-  if (runner_)
-    runner_->SetAutoplayAllowed(allowed);
 }
 
 void TestRunnerBindings::DumpPermissionClientCallbacks() {
@@ -2346,11 +2339,6 @@ void TestRunner::SetPluginsAllowed(bool allowed) {
 
 void TestRunner::SetAllowRunningOfInsecureContent(bool allowed) {
   web_test_runtime_flags_.set_running_insecure_content_allowed(allowed);
-  OnWebTestRuntimeFlagsChanged();
-}
-
-void TestRunner::SetAutoplayAllowed(bool allowed) {
-  web_test_runtime_flags_.set_autoplay_allowed(allowed);
   OnWebTestRuntimeFlagsChanged();
 }
 

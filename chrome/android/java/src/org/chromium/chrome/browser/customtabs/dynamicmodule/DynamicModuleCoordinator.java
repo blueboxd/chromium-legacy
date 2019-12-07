@@ -492,7 +492,8 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
             mActivity.getToolbarManager().setToolbarShadowVisibility(
                     showTopBar ? View.GONE : mDefaultToolbarShadowVisibility);
             mFullscreenManager.get().setTopControlsHeight(
-                    showTopBar ? getTopBarHeight() : mDefaultTopControlContainerHeight);
+                    showTopBar ? getTopBarHeight() : mDefaultTopControlContainerHeight,
+                    mFullscreenManager.get().getTopControlsMinHeight());
             mActivity.getToolbarManager().setProgressBarAnchorView(
                     getProgressBarAnchorView(showTopBar));
         }

@@ -53,9 +53,8 @@ ScriptPromise WakeLock::request(ScriptState* script_state, const String& type) {
   // 2.2. If the user agent denies the wake lock of this type for document,
   //      reject promise with a "NotAllowedError" DOMException and return
   //      promise.
-  if (!context->GetSecurityContext().IsFeatureEnabled(
-          mojom::FeaturePolicyFeature::kWakeLock,
-          ReportOptions::kReportOnFailure)) {
+  if (!context->IsFeatureEnabled(mojom::FeaturePolicyFeature::kWakeLock,
+                                 ReportOptions::kReportOnFailure)) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         MakeGarbageCollected<DOMException>(

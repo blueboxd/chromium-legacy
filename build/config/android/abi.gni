@@ -26,10 +26,6 @@ declare_args() {
   # Only effective if use_order_profiling = true. When this is true the call
   # graph based instrumentation is used.
   use_call_graph = false
-
-  # Builds secondary abi for APKs, supports build 32-bit arch as secondary
-  # abi in 64-bit Monochrome and WebView.
-  build_apk_secondary_abi = true
 }
 
 assert(!devtools_instrumentation_dumping || use_order_profiling,

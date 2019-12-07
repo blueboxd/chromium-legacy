@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) \u003Cpseudo:after\u003E",
+          "object": "LayoutBlockFlow (positioned) ::after",
           "rect": [138, 8, 100, 100],
           "reason": "style change"
         },

@@ -60,7 +60,7 @@ ContentSecurityPolicy BuildPolicy(CSPDirective::Name directive_name,
       ContentSecurityPolicyHeader(
           std::string(),  // header
           network::mojom::ContentSecurityPolicyType::kEnforce,
-          blink::kWebContentSecurityPolicySourceHTTP),
+          network::mojom::ContentSecurityPolicySource::kHTTP),
       {CSPDirective(directive_name,
                     CSPSourceList(false, false, false, sources))},
       std::vector<std::string>(), false);  // report_end_points

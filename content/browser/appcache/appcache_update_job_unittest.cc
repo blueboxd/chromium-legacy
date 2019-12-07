@@ -444,9 +444,11 @@ class HttpHeadersRequestTestJob {
  public:
   // Call this at the start of each HTTP header-related test.
   static void Initialize(const std::string& expect_if_modified_since,
-                         const std::string& expect_if_none_match) {
+                         const std::string& expect_if_none_match,
+                         bool headers_allowed = true) {
     expect_if_modified_since_ = expect_if_modified_since;
     expect_if_none_match_ = expect_if_none_match;
+    headers_allowed_ = headers_allowed;
   }
 
   // Verifies results at end of test and resets class.
@@ -455,12 +457,16 @@ class HttpHeadersRequestTestJob {
       EXPECT_TRUE(saw_if_modified_since_);
     if (!expect_if_none_match_.empty())
       EXPECT_TRUE(saw_if_none_match_);
+    if (!headers_allowed_)
+      EXPECT_FALSE(saw_headers_);
 
     // Reset.
     expect_if_modified_since_.clear();
     saw_if_modified_since_ = false;
     expect_if_none_match_.clear();
     saw_if_none_match_ = false;
+    headers_allowed_ = true;
+    saw_headers_ = false;
     already_checked_ = false;
   }
 
@@ -472,15 +478,18 @@ class HttpHeadersRequestTestJob {
     already_checked_ = true;  // only check once for a test
 
     std::string header_value;
-    saw_if_modified_since_ =
-        extra_headers.GetHeader(net::HttpRequestHeaders::kIfModifiedSince,
-                                &header_value) &&
-        header_value == expect_if_modified_since_;
 
-    saw_if_none_match_ =
-        extra_headers.GetHeader(net::HttpRequestHeaders::kIfNoneMatch,
-                                &header_value) &&
-        header_value == expect_if_none_match_;
+    if (extra_headers.GetHeader(net::HttpRequestHeaders::kIfModifiedSince,
+                                &header_value)) {
+      saw_headers_ = true;
+      saw_if_modified_since_ = header_value == expect_if_modified_since_;
+    }
+
+    if (extra_headers.GetHeader(net::HttpRequestHeaders::kIfNoneMatch,
+                                &header_value)) {
+      saw_headers_ = true;
+      saw_if_none_match_ = header_value == expect_if_none_match_;
+    }
   }
 
  private:
@@ -488,6 +497,8 @@ class HttpHeadersRequestTestJob {
   static bool saw_if_modified_since_;
   static std::string expect_if_none_match_;
   static bool saw_if_none_match_;
+  static bool headers_allowed_;
+  static bool saw_headers_;
   static bool already_checked_;
 };
 
@@ -496,6 +507,8 @@ std::string HttpHeadersRequestTestJob::expect_if_modified_since_;
 bool HttpHeadersRequestTestJob::saw_if_modified_since_ = false;
 std::string HttpHeadersRequestTestJob::expect_if_none_match_;
 bool HttpHeadersRequestTestJob::saw_if_none_match_ = false;
+bool HttpHeadersRequestTestJob::headers_allowed_ = true;
+bool HttpHeadersRequestTestJob::saw_headers_ = false;
 bool HttpHeadersRequestTestJob::already_checked_ = false;
 
 // TODO(ananta/michaeln). Remove dependencies on URLRequest based
@@ -2907,7 +2920,78 @@ class AppCacheUpdateJobTest : public testing::Test,
                                   base::Unretained(this)));
   }
 
-  void IfModifiedSinceUpgradeTest() {
+  // AppCaches built with manifest parser version 0 should update without
+  // conditional request headers to force the server to send a 200 response
+  // back to the client rather than 304.  This test ensures that, when the cache
+  // has a response info with cached Last-Modified headers, the request does not
+  // include an If-Modified-Since conditioanl header.
+  void IfModifiedSinceUpgradeParserVersion0Test() {
+    HttpHeadersRequestTestJob::Initialize(std::string(), std::string(),
+                                          /*headers_allowed=*/false);
+
+    MakeService();
+    group_ = base::MakeRefCounted<AppCacheGroup>(
+        service_->storage(), MockHttpServer::GetMockUrl("files/manifest1"),
+        111);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
+    group_->update_job_ = update;
+
+    // Give the newest cache a manifest entry that is in storage.
+    response_writer_ =
+        service_->storage()->CreateResponseWriter(group_->manifest_url());
+
+    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(),
+                                        response_writer_->response_id());
+    cache->set_manifest_parser_version(0);
+    MockFrontend* frontend = MakeMockFrontend();
+    AppCacheHost* host = MakeHost(frontend);
+    host->AssociateCompleteCache(cache);
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = true;
+    expect_old_cache_ = cache;
+    tested_manifest_ = MANIFEST1;
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+
+    // Seed storage with expected manifest response info that will cause
+    // an If-Modified-Since header to be put in the manifest fetch request.
+    const char data[] =
+        "HTTP/1.1 200 OK\0"
+        "Last-Modified: Sat, 29 Oct 1994 19:43:31 GMT\0"
+        "\0";
+    scoped_refptr<net::HttpResponseHeaders> headers =
+        base::MakeRefCounted<net::HttpResponseHeaders>(
+            std::string(data, base::size(data)));
+    std::unique_ptr<net::HttpResponseInfo> response_info =
+        std::make_unique<net::HttpResponseInfo>();
+    response_info->headers = std::move(headers);
+    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
+        base::MakeRefCounted<HttpResponseInfoIOBuffer>(
+            std::move(response_info));
+    response_writer_->WriteInfo(
+        io_buffer.get(),
+        base::BindOnce(
+            &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
+            base::Unretained(this)));
+
+    // Start update after data write completes asynchronously.
+  }
+
+  void IfModifiedSinceUpgradeParserVersion1Test() {
     HttpHeadersRequestTestJob::Initialize("Sat, 29 Oct 1994 19:43:31 GMT",
                                           std::string());
 
@@ -2919,7 +3003,7 @@ class AppCacheUpdateJobTest : public testing::Test,
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
-    // Give the newest cache a manifest enry that is in storage.
+    // Give the newest cache a manifest entry that is in storage.
     response_writer_ =
         service_->storage()->CreateResponseWriter(group_->manifest_url());
 
@@ -2972,7 +3056,78 @@ class AppCacheUpdateJobTest : public testing::Test,
     // Start update after data write completes asynchronously.
   }
 
-  void IfNoneMatchUpgradeTest() {
+  // AppCaches built with manifest parser version 0 should update without
+  // conditional request headers to force the server to send a 200 response
+  // back to the client rather than 304.  This test ensures that, when the cache
+  // has a response info with cached ETag headers, the request does not include
+  // an If-None-Match conditioanl header.
+  void IfNoneMatchUpgradeParserVersion0Test() {
+    HttpHeadersRequestTestJob::Initialize(std::string(), std::string(),
+                                          /*headers_allowed=*/false);
+
+    MakeService();
+    group_ = base::MakeRefCounted<AppCacheGroup>(
+        service_->storage(), MockHttpServer::GetMockUrl("files/manifest1"),
+        111);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
+    group_->update_job_ = update;
+
+    // Give the newest cache a manifest entry that is in storage.
+    response_writer_ =
+        service_->storage()->CreateResponseWriter(group_->manifest_url());
+
+    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(),
+                                        response_writer_->response_id());
+    cache->set_manifest_parser_version(0);
+    MockFrontend* frontend = MakeMockFrontend();
+    AppCacheHost* host = MakeHost(frontend);
+    host->AssociateCompleteCache(cache);
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = true;
+    expect_old_cache_ = cache;
+    tested_manifest_ = MANIFEST1;
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+
+    // Seed storage with expected manifest response info that will cause
+    // an If-None-Match header to be put in the manifest fetch request.
+    const char data[] =
+        "HTTP/1.1 200 OK\0"
+        "ETag: \"LadeDade\"\0"
+        "\0";
+    scoped_refptr<net::HttpResponseHeaders> headers =
+        base::MakeRefCounted<net::HttpResponseHeaders>(
+            std::string(data, base::size(data)));
+    std::unique_ptr<net::HttpResponseInfo> response_info =
+        std::make_unique<net::HttpResponseInfo>();
+    response_info->headers = std::move(headers);
+    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
+        base::MakeRefCounted<HttpResponseInfoIOBuffer>(
+            std::move(response_info));
+    response_writer_->WriteInfo(
+        io_buffer.get(),
+        base::BindOnce(
+            &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
+            base::Unretained(this)));
+
+    // Start update after data write completes asynchronously.
+  }
+
+  void IfNoneMatchUpgradeParserVersion1Test() {
     HttpHeadersRequestTestJob::Initialize(std::string(), "\"LadeDade\"");
 
     MakeService();
@@ -2983,7 +3138,7 @@ class AppCacheUpdateJobTest : public testing::Test,
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
-    // Give the newest cache a manifest enry that is in storage.
+    // Give the newest cache a manifest entry that is in storage.
     response_writer_ =
         service_->storage()->CreateResponseWriter(group_->manifest_url());
 
@@ -3216,7 +3371,7 @@ class AppCacheUpdateJobTest : public testing::Test,
                               int64_t manifest_response_id) {
     AppCache* cache = new AppCache(service_->storage(), cache_id);
     cache->set_complete(true);
-    cache->set_manifest_parser_version(0);
+    cache->set_manifest_parser_version(1);
     cache->set_manifest_scope("/");
     cache->set_update_time(base::Time::Now() - kOneHour);
     group_->AddCache(cache);
@@ -3851,12 +4006,24 @@ TEST_F(AppCacheUpdateJobTest, IfModifiedLastModified) {
   RunTestOnUIThread(&AppCacheUpdateJobTest::IfModifiedTestLastModified);
 }
 
-TEST_F(AppCacheUpdateJobTest, IfModifiedSinceUpgrade) {
-  RunTestOnUIThread(&AppCacheUpdateJobTest::IfModifiedSinceUpgradeTest);
+TEST_F(AppCacheUpdateJobTest, IfModifiedSinceUpgradeParserVersion0) {
+  RunTestOnUIThread(
+      &AppCacheUpdateJobTest::IfModifiedSinceUpgradeParserVersion0Test);
 }
 
-TEST_F(AppCacheUpdateJobTest, IfNoneMatchUpgrade) {
-  RunTestOnUIThread(&AppCacheUpdateJobTest::IfNoneMatchUpgradeTest);
+TEST_F(AppCacheUpdateJobTest, IfModifiedSinceUpgradeParserVersion1) {
+  RunTestOnUIThread(
+      &AppCacheUpdateJobTest::IfModifiedSinceUpgradeParserVersion1Test);
+}
+
+TEST_F(AppCacheUpdateJobTest, IfNoneMatchUpgradeParserVersion0) {
+  RunTestOnUIThread(
+      &AppCacheUpdateJobTest::IfNoneMatchUpgradeParserVersion0Test);
+}
+
+TEST_F(AppCacheUpdateJobTest, IfNoneMatchUpgradeParserVersion1) {
+  RunTestOnUIThread(
+      &AppCacheUpdateJobTest::IfNoneMatchUpgradeParserVersion1Test);
 }
 
 TEST_F(AppCacheUpdateJobTest, IfNoneMatchRefetch) {

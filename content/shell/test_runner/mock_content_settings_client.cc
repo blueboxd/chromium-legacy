@@ -65,10 +65,6 @@ bool MockContentSettingsClient::AllowRunningInsecureContent(
   return enabled_per_settings || flags_->running_insecure_content_allowed();
 }
 
-bool MockContentSettingsClient::AllowAutoplay(bool default_value) {
-  return flags_->autoplay_allowed();
-}
-
 void MockContentSettingsClient::SetDelegate(WebTestDelegate* delegate) {
   delegate_ = delegate;
 }

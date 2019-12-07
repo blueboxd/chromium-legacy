@@ -77,13 +77,65 @@ void GetTopLevel(wl_client* client, wl_resource* resource, uint32_t id) {
     return;
   }
   wl_resource* xdg_toplevel_resource =
+      wl_resource_create(client, &xdg_toplevel_interface, 1, id);
+  if (!xdg_toplevel_resource) {
+    wl_client_post_no_memory(client);
+    return;
+  }
+  surface->set_xdg_toplevel(std::make_unique<MockXdgTopLevel>(
+      xdg_toplevel_resource, &kMockXdgToplevelImpl));
+}
+
+void GetTopLevelV6(wl_client* client, wl_resource* resource, uint32_t id) {
+  auto* surface = GetUserDataAs<MockXdgSurface>(resource);
+  if (surface->xdg_toplevel()) {
+    wl_resource_post_error(resource, ZXDG_SURFACE_V6_ERROR_ALREADY_CONSTRUCTED,
+                           "surface has already been constructed");
+    return;
+  }
+  wl_resource* xdg_toplevel_resource =
       wl_resource_create(client, &zxdg_toplevel_v6_interface, 1, id);
   if (!xdg_toplevel_resource) {
     wl_client_post_no_memory(client);
     return;
   }
-  surface->set_xdg_toplevel(
-      std::make_unique<MockXdgTopLevel>(xdg_toplevel_resource));
+  surface->set_xdg_toplevel(std::make_unique<MockXdgTopLevel>(
+      xdg_toplevel_resource, &kMockZxdgToplevelV6Impl));
+}
+
+void GetXdgPopup(struct wl_client* client,
+                 struct wl_resource* resource,
+                 uint32_t id,
+                 struct wl_resource* parent,
+                 struct wl_resource* positioner_resource) {
+  auto* mock_xdg_surface = GetUserDataAs<MockXdgSurface>(resource);
+  wl_resource* current_resource = mock_xdg_surface->resource();
+  if (current_resource &&
+      (ResourceHasImplementation(current_resource, &xdg_popup_interface,
+                                 &kXdgPopupImpl) ||
+       ResourceHasImplementation(current_resource, &xdg_positioner_interface,
+                                 &kTestXdgPositionerImpl))) {
+    wl_resource_post_error(resource, XDG_SURFACE_ERROR_ALREADY_CONSTRUCTED,
+                           "surface has already been constructed");
+    return;
+  }
+
+  wl_resource* xdg_popup_resource = wl_resource_create(
+      client, &xdg_popup_interface, wl_resource_get_version(resource), id);
+  auto* positioner = GetUserDataAs<TestPositioner>(positioner_resource);
+  DCHECK(positioner);
+
+  auto mock_xdg_popup =
+      std::make_unique<MockXdgPopup>(xdg_popup_resource, &kXdgPopupImpl);
+  mock_xdg_popup->set_position(positioner->position());
+  if (mock_xdg_popup->size().IsEmpty() ||
+      mock_xdg_popup->anchor_rect().IsEmpty()) {
+    wl_resource_post_error(resource, XDG_WM_BASE_ERROR_INVALID_POSITIONER,
+                           "Positioner object is not complete");
+    return;
+  }
+
+  mock_xdg_surface->set_xdg_popup(std::move(mock_xdg_popup));
 }
 
 void GetZXdgPopupV6(struct wl_client* client,
@@ -138,24 +190,32 @@ void SetMinSize(wl_client* client,
 
 const struct xdg_surface_interface kMockXdgSurfaceImpl = {
     &DestroyResource,    // destroy
-    nullptr,             // set_parent
-    &SetTitle,           // set_title
-    &SetAppId,           // set_app_id
-    nullptr,             // show_window_menu
-    &Move,               // move
-    &Resize,             // resize
-    &AckConfigure,       // ack_configure
+    &GetTopLevel,        // get_toplevel
+    &GetXdgPopup,        // get_popup
     &SetWindowGeometry,  // set_window_geometry
-    &SetMaximized,       // set_maximized
-    &UnsetMaximized,     // set_unmaximized
-    &SetFullscreen,      // set_fullscreen
-    &UnsetFullscreen,    // unset_fullscreen
-    &SetMinimized,       // set_minimized
+    &AckConfigure,       // ack_configure
+};
+
+const struct xdg_toplevel_interface kMockXdgToplevelImpl = {
+    &DestroyResource,  // destroy
+    nullptr,           // set_parent
+    &SetTitle,         // set_title
+    &SetAppId,         // set_app_id
+    nullptr,           // show_window_menu
+    &Move,             // move
+    &Resize,           // resize
+    &SetMaxSize,       // set_max_size
+    &SetMinSize,       // set_min_size
+    &SetMaximized,     // set_maximized
+    &UnsetMaximized,   // set_unmaximized
+    &SetFullscreen,    // set_fullscreen
+    &UnsetFullscreen,  // unset_fullscreen
+    &SetMinimized,     // set_minimized
 };
 
 const struct zxdg_surface_v6_interface kMockZxdgSurfaceV6Impl = {
     &DestroyResource,    // destroy
-    &GetTopLevel,        // get_toplevel
+    &GetTopLevelV6,      // get_toplevel
     &GetZXdgPopupV6,     // get_popup
     &SetWindowGeometry,  // set_window_geometry
     &AckConfigure,       // ack_configure
@@ -186,9 +246,10 @@ MockXdgSurface::MockXdgSurface(wl_resource* resource,
 
 MockXdgSurface::~MockXdgSurface() {}
 
-MockXdgTopLevel::MockXdgTopLevel(wl_resource* resource)
-    : MockXdgSurface(resource, &kMockZxdgSurfaceV6Impl) {
-  SetImplementationUnretained(resource, &kMockZxdgToplevelV6Impl, this);
+MockXdgTopLevel::MockXdgTopLevel(wl_resource* resource,
+                                 const void* implementation)
+    : MockXdgSurface(resource, implementation) {
+  SetImplementationUnretained(resource, implementation, this);
 }
 
 MockXdgTopLevel::~MockXdgTopLevel() {}

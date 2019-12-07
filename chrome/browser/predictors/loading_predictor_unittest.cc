@@ -48,9 +48,12 @@ class MockPreconnectManager : public PreconnectManager {
   MOCK_METHOD2(StartProxy,
                void(const GURL& url,
                     const std::vector<PreconnectRequest>& requests));
-  MOCK_METHOD1(StartPreresolveHost, void(const GURL& url));
-  MOCK_METHOD1(StartPreresolveHosts,
-               void(const std::vector<std::string>& hostnames));
+  MOCK_METHOD2(StartPreresolveHost,
+               void(const GURL& url,
+                    const net::NetworkIsolationKey& network_isolation_key));
+  MOCK_METHOD2(StartPreresolveHosts,
+               void(const std::vector<std::string>& hostnames,
+                    const net::NetworkIsolationKey& network_isolation_key));
   MOCK_METHOD3(StartPreconnectUrl,
                void(const GURL& url,
                     bool allow_credentials,
@@ -324,8 +327,10 @@ TEST_F(LoadingPredictorPreconnectTest, TestHandleOmniboxHint) {
                                  true);
 
   const GURL preresolve_suggestion = GURL("http://en.wikipedia.org/wiki/main");
+  url::Origin origin = url::Origin::Create(preresolve_suggestion);
   EXPECT_CALL(*mock_preconnect_manager_,
-              StartPreresolveHost(preresolve_suggestion));
+              StartPreresolveHost(preresolve_suggestion,
+                                  net::NetworkIsolationKey(origin, origin)));
   predictor_->PrepareForPageLoad(preresolve_suggestion, HintOrigin::OMNIBOX,
                                  false);
   // The second suggestions should be filtered out as well.

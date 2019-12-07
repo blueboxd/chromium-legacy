@@ -14,7 +14,12 @@
 namespace blink {
 
 struct WebFrameOwnerProperties {
-  enum class ScrollingMode { kAuto, kAlwaysOff, kAlwaysOn, kLast = kAlwaysOn };
+  enum class ScrollingMode {
+    kAuto,
+    kAlwaysOff,
+    kAlwaysOn,
+    kMaxValue = kAlwaysOn
+  };
 
   WebString name;  // browsing context container's name
   ScrollingMode scrolling_mode;

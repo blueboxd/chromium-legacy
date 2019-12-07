@@ -561,6 +561,14 @@ bool IsRecentHttpSameSiteAccessGrantsLegacyCookieSemanticsEnabled() {
                      .Get() > 0;
 }
 
+bool IsRecentCreationTimeGrantsLegacyCookieSemanticsEnabled() {
+  return IsSameSiteByDefaultCookiesEnabled() &&
+         base::FeatureList::IsEnabled(
+             features::kRecentCreationTimeGrantsLegacyCookieSemantics) &&
+         features::kRecentCreationTimeGrantsLegacyCookieSemanticsMilliseconds
+                 .Get() > 0;
+}
+
 bool DoesLastHttpSameSiteAccessGrantLegacySemantics(
     base::TimeTicks last_http_same_site_access) {
   if (last_http_same_site_access.is_null())
@@ -574,6 +582,19 @@ bool DoesLastHttpSameSiteAccessGrantLegacySemantics(
   DCHECK(!recency_threshold.is_zero());
   return (base::TimeTicks::Now() - last_http_same_site_access) <
          recency_threshold;
+}
+
+bool DoesCreationTimeGrantLegacySemantics(base::Time creation_date) {
+  if (creation_date.is_null())
+    return false;
+  if (!IsRecentCreationTimeGrantsLegacyCookieSemanticsEnabled())
+    return false;
+
+  base::TimeDelta recency_threshold = base::TimeDelta::FromMilliseconds(
+      features::kRecentCreationTimeGrantsLegacyCookieSemanticsMilliseconds
+          .Get());
+  DCHECK(!recency_threshold.is_zero());
+  return (base::Time::Now() - creation_date) < recency_threshold;
 }
 
 base::OnceCallback<void(net::CanonicalCookie::CookieInclusionStatus)>

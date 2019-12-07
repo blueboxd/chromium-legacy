@@ -50,6 +50,7 @@ class FakeHostResolver : public network::mojom::HostResolver {
   ~FakeHostResolver() override;
 
   void ResolveHost(const net::HostPortPair& host,
+                   const net::NetworkIsolationKey& network_isolation_key,
                    network::mojom::ResolveHostParametersPtr optional_parameters,
                    mojo::PendingRemote<network::mojom::ResolveHostClient>
                        pending_response_client) override;
@@ -73,6 +74,7 @@ class HangingHostResolver : public network::mojom::HostResolver {
   ~HangingHostResolver() override;
 
   void ResolveHost(const net::HostPortPair& host,
+                   const net::NetworkIsolationKey& network_isolation_key,
                    network::mojom::ResolveHostParametersPtr optional_parameters,
                    mojo::PendingRemote<network::mojom::ResolveHostClient>
                        response_client) override;

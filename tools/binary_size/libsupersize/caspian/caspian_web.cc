@@ -154,7 +154,6 @@ void BuildTree(bool method_count_mode,
   } else if (!strcmp(group_by, "generated_type")) {
     lens = std::make_unique<GeneratedLens>();
   } else {
-    // TODO(jaspercb): Support group by generated path type.
     std::cerr << "Unsupported group_by=" << group_by << std::endl;
     exit(1);
   }

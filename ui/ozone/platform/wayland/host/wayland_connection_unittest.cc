@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include <wayland-server-core.h>
-#include <xdg-shell-unstable-v5-server-protocol.h>
+#include <xdg-shell-server-protocol.h>
 
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
@@ -14,29 +14,14 @@
 namespace ui {
 
 namespace {
-constexpr uint32_t kXdgVersion5 = 5;
-}
-
-TEST(WaylandConnectionTest, UseUnstableVersion) {
-  base::test::SingleThreadTaskEnvironment task_environment(
-      base::test::SingleThreadTaskEnvironment::MainThreadType::UI);
-  wl::TestWaylandServerThread server;
-  EXPECT_CALL(*server.xdg_shell(),
-              UseUnstableVersion(XDG_SHELL_VERSION_CURRENT));
-  ASSERT_TRUE(server.Start(kXdgVersion5));
-  WaylandConnection connection;
-  ASSERT_TRUE(connection.Initialize());
-  connection.StartProcessingEvents();
-
-  base::RunLoop().RunUntilIdle();
-  server.Pause();
+constexpr uint32_t kXdgVersionStable = 7;
 }
 
 TEST(WaylandConnectionTest, Ping) {
   base::test::SingleThreadTaskEnvironment task_environment(
       base::test::SingleThreadTaskEnvironment::MainThreadType::UI);
   wl::TestWaylandServerThread server;
-  ASSERT_TRUE(server.Start(kXdgVersion5));
+  ASSERT_TRUE(server.Start(kXdgVersionStable));
   WaylandConnection connection;
   ASSERT_TRUE(connection.Initialize());
   connection.StartProcessingEvents();
@@ -44,7 +29,7 @@ TEST(WaylandConnectionTest, Ping) {
   base::RunLoop().RunUntilIdle();
   server.Pause();
 
-  xdg_shell_send_ping(server.xdg_shell()->resource(), 1234);
+  xdg_wm_base_send_ping(server.xdg_shell()->resource(), 1234);
   EXPECT_CALL(*server.xdg_shell(), Pong(1234));
 
   server.Resume();

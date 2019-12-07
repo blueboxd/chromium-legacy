@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "chrome/browser/status_icons/status_icon_menu_model.h"
 #include "content/public/browser/media_stream_request.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
@@ -51,6 +52,21 @@ class MediaStreamCaptureIndicator
     : public base::RefCountedThreadSafe<MediaStreamCaptureIndicator>,
       public StatusIconMenuModel::Delegate {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    virtual void OnIsCapturingVideoChanged(content::WebContents* web_contents,
+                                           bool is_capturing_video) {}
+    virtual void OnIsCapturingAudioChanged(content::WebContents* web_contents,
+                                           bool is_capturing_audio) {}
+    virtual void OnIsBeingMirroredChanged(content::WebContents* web_contents,
+                                          bool is_being_mirrored) {}
+    virtual void OnIsCapturingDesktopChanged(content::WebContents* web_contents,
+                                             bool is_capturing_desktop) {}
+
+   protected:
+    ~Observer() override;
+  };
+
   MediaStreamCaptureIndicator();
 
   // Registers a new media stream for |web_contents| and returns an object used
@@ -84,6 +100,11 @@ class MediaStreamCaptureIndicator
 
   // Called when STOP button in media capture notification is clicked.
   void NotifyStopped(content::WebContents* web_contents) const;
+
+  // Adds/Removes observers. Observers needs to be removed during the lifetime
+  // of this object.
+  void AddObserver(Observer* obs) { observers_.AddObserver(obs); }
+  void RemoveObserver(Observer* obs) { observers_.RemoveObserver(obs); }
 
  private:
   class UIDelegate;
@@ -129,6 +150,8 @@ class MediaStreamCaptureIndicator
   // updated.
   typedef std::vector<content::WebContents*> CommandTargets;
   CommandTargets command_targets_;
+
+  base::ObserverList<Observer, /* check_empty =*/true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamCaptureIndicator);
 };

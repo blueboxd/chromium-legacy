@@ -13,9 +13,9 @@ Polymer({
   is: 'settings-cups-printers',
 
   behaviors: [
-      NetworkListenerBehavior,
-      settings.RouteObserverBehavior,
-      WebUIListenerBehavior,
+    NetworkListenerBehavior,
+    settings.RouteObserverBehavior,
+    WebUIListenerBehavior,
   ],
 
   properties: {
@@ -199,7 +199,7 @@ Polymer({
         }
       default:
         assertNotReached();
-      }
+    }
 
     this.$.errorToast.show();
   },
@@ -244,9 +244,9 @@ Polymer({
 
   /** @private */
   onAddPrinterDialogClose_: function() {
-      cr.ui.focusWithoutInk(assert(
-          this.enableUpdatedUi_ ? this.$$('#addManualPrinterIcon')
-                                : this.$$('#addPrinter')));
+    cr.ui.focusWithoutInk(assert(
+        this.enableUpdatedUi_ ? this.$$('#addManualPrinterIcon') :
+                                this.$$('#addPrinter')));
   },
 
   /** @private */

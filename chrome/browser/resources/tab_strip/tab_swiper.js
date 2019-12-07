@@ -28,21 +28,6 @@ export const SWIPE_START_THRESHOLD_PX = 100;
 export const SWIPE_FINISH_THRESHOLD_PX = 200;
 
 /**
- * The pixel that maps to the time of the swipe away animation at which the tab
- * is in its original stable position.
- * @const {number}
- */
-const SWIPE_ANIMATION_BASELINE_PX = SWIPE_FINISH_THRESHOLD_PX;
-
-/**
- * The swipe away animation is bidirectional to allow the user to swipe in
- * either direction, so the total span of pixels is SWIPE_FINISH_THRESHOLD_PX in
- * both directions.
- * @const {number}
- */
-const SWIPE_ANIMATION_TOTAL_PX = SWIPE_FINISH_THRESHOLD_PX * 2;
-
-/**
  * The minimum velocity of pixels per milliseconds required for the tab to
  * register the set of pointer events as an intended swipe.
  * @const {number}
@@ -100,57 +85,35 @@ export class TabSwiper {
         this.element_,
         [
           {
-            // Fully swiped up.
-            maxWidth: '0px',
-            opacity: 0,
-            transform: `translateY(-${SWIPE_FINISH_THRESHOLD_PX}px)`
-          },
-          {
-            // Start of max-width and opacity animation swiping up.
-            maxWidth: 'var(--tabstrip-tab-width)',
-            offset: (SWIPE_ANIMATION_BASELINE_PX - SWIPE_START_THRESHOLD_PX) /
-                SWIPE_ANIMATION_TOTAL_PX,
-            opacity: 1,
-          },
-          {
-            // Start of transform animation swiping up.
-            offset: (SWIPE_ANIMATION_BASELINE_PX -
-                     TRANSLATE_ANIMATION_THRESHOLD_PX) /
-                SWIPE_ANIMATION_TOTAL_PX,
-            transform: `translateY(0)`
-          },
-          {
             // Base.
             opacity: 1,
             maxWidth: 'var(--tabstrip-tab-width)',
             transform: `translateY(0)`
           },
           {
-            // Start of transform animation swiping down.
-            offset: (SWIPE_ANIMATION_BASELINE_PX +
-                     TRANSLATE_ANIMATION_THRESHOLD_PX) /
-                SWIPE_ANIMATION_TOTAL_PX,
+            // Start of transform animation swiping up.
+            offset:
+                TRANSLATE_ANIMATION_THRESHOLD_PX / SWIPE_FINISH_THRESHOLD_PX,
             transform: `translateY(0)`
           },
           {
-            // Start of max-width and opacity animation swiping down.
+            // Start of max-width and opacity animation swiping up.
             maxWidth: 'var(--tabstrip-tab-width)',
-            offset: (SWIPE_ANIMATION_BASELINE_PX + SWIPE_START_THRESHOLD_PX) /
-                SWIPE_ANIMATION_TOTAL_PX,
+            offset: SWIPE_START_THRESHOLD_PX / SWIPE_FINISH_THRESHOLD_PX,
             opacity: 1,
           },
           {
-            // Fully swiped down.
+            // Fully swiped up.
             maxWidth: '0px',
             opacity: 0,
-            transform: `translateY(${SWIPE_FINISH_THRESHOLD_PX}px)`
+            transform: `translateY(-${SWIPE_FINISH_THRESHOLD_PX}px)`
           },
         ],
         {
-          duration: SWIPE_ANIMATION_TOTAL_PX,
+          duration: SWIPE_FINISH_THRESHOLD_PX,
           fill: 'both',
         }));
-    animation.currentTime = SWIPE_FINISH_THRESHOLD_PX;
+    animation.currentTime = 0;
     animation.onfinish = () => {
       this.element_.dispatchEvent(new CustomEvent('swipe'));
     };
@@ -166,7 +129,7 @@ export class TabSwiper {
       return;
     }
 
-    this.animation_.currentTime = SWIPE_ANIMATION_BASELINE_PX;
+    this.animation_.currentTime = 0;
     this.animationInitiated_ = false;
     this.currentPointerDownEvent_ = event;
 
@@ -197,10 +160,10 @@ export class TabSwiper {
       return;
     }
 
-    const yDiff = event.clientY - this.currentPointerDownEvent_.clientY;
-    const animationTime = SWIPE_ANIMATION_BASELINE_PX + yDiff;
+    const yDiff = this.currentPointerDownEvent_.clientY - event.clientY;
+    const animationTime = yDiff;
     this.animation_.currentTime =
-        Math.max(0, Math.min(SWIPE_ANIMATION_TOTAL_PX, animationTime));
+        Math.max(0, Math.min(SWIPE_FINISH_THRESHOLD_PX, animationTime));
 
     if (!this.animationInitiated_ &&
         Math.abs(yDiff) > TRANSLATE_ANIMATION_THRESHOLD_PX) {
@@ -218,27 +181,22 @@ export class TabSwiper {
       return;
     }
 
-    const pixelsSwiped =
-        this.animation_.currentTime - SWIPE_ANIMATION_BASELINE_PX;
-    const swipedEnoughToClose =
-        Math.abs(pixelsSwiped) > SWIPE_START_THRESHOLD_PX;
-    const wasHighVelocity =
-        Math.abs(
-            pixelsSwiped /
-            (event.timeStamp - this.currentPointerDownEvent_.timeStamp)) >
+    const pixelsSwiped = this.animation_.currentTime;
+    const swipedEnoughToClose = pixelsSwiped > SWIPE_START_THRESHOLD_PX;
+    const wasHighVelocity = pixelsSwiped /
+            (event.timeStamp - this.currentPointerDownEvent_.timeStamp) >
         SWIPE_VELOCITY_THRESHOLD;
 
-    if (Math.abs(pixelsSwiped) === SWIPE_FINISH_THRESHOLD_PX) {
+    if (pixelsSwiped === SWIPE_FINISH_THRESHOLD_PX) {
       // The user has swiped the max amount of pixels to swipe and the animation
       // has already completed all its keyframes, so just fire the onfinish
       // events on the animation.
       this.animation_.finish();
     } else if (swipedEnoughToClose || wasHighVelocity) {
-      this.animation_.playbackRate = Math.sign(pixelsSwiped);
       this.animation_.play();
     } else {
       this.animation_.cancel();
-      this.animation_.currentTime = SWIPE_FINISH_THRESHOLD_PX;
+      this.animation_.currentTime = 0;
     }
 
     this.clearPointerEvents_();

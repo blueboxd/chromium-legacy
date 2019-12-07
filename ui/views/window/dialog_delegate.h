@@ -108,12 +108,6 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // Returns whether the specified dialog button is enabled.
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const;
 
-  // Override this function to display a footnote view below the buttons.
-  // Overrides may construct the view; this will only be called once per dialog.
-  // DEPRECATED: Prefer to use SetFootnoteView() below; this method is being
-  // removed. See https://crbug.com/1011446.
-  virtual std::unique_ptr<View> CreateFootnoteView();
-
   // For Dialog boxes, if there is a "Cancel" button or no dialog button at all,
   // this is called when the user presses the "Cancel" button.
   // It can also be called on a close action if |Close| has not been
@@ -251,6 +245,10 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   ax::mojom::Role GetAccessibleWindowRole() override;
 
   const Params& GetParams() const { return params_; }
+
+  // Return ownership of the footnote view for this dialog. Only use this in
+  // subclass overrides of CreateNonClientFrameView.
+  std::unique_ptr<View> DisownFootnoteView();
 
  private:
   // Overridden from WidgetDelegate. If you need to hook after widget

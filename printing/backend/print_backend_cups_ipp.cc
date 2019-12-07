@@ -22,10 +22,11 @@
 namespace printing {
 
 PrintBackendCupsIpp::PrintBackendCupsIpp(
-    std::unique_ptr<CupsConnection> cups_connection)
-    : cups_connection_(std::move(cups_connection)) {}
+    std::unique_ptr<CupsConnection> cups_connection,
+    const std::string& locale)
+    : PrintBackend(locale), cups_connection_(std::move(cups_connection)) {}
 
-PrintBackendCupsIpp::~PrintBackendCupsIpp() {}
+PrintBackendCupsIpp::~PrintBackendCupsIpp() = default;
 
 bool PrintBackendCupsIpp::EnumeratePrinters(PrinterList* printer_list) {
   DCHECK(printer_list);

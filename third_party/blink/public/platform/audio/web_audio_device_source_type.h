@@ -24,7 +24,6 @@ enum class WebAudioDeviceSourceType {
   kWebAudioBalanced,
   kWebAudioPlayback,
   kWebAudioExact,
-  kLast = kWebAudioExact  // Only used for validation of format.
 };
 
 }  // namespace blink

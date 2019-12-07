@@ -50,13 +50,33 @@
         hidden="[[!isStep_(step_, 'pin')]]"
         on-cancel="onPinDialogCanceled_" on-completed="onPinDialogCompleted_">
     </security-token-pin>
-    <div id="gaia-step-contents" class="step-contents"
+    <oobe-dialog id="saml-interstitial" role="dialog" has-buttons
         hidden="[[!isStep_(step_, 'saml-interstitial')]]">
-      <div id="gaia-signin-form-container">
-        <saml-interstitial id="saml-interstitial" class="fit gaia-dialog">
-        </saml-interstitial>
+      <hd-iron-icon slot="oobe-icon" icon1x="oobe-32:googleg"
+          icon2x="oobe-64:googleg">
+      </hd-iron-icon>
+      <h1 slot="title">
+        [[i18nDynamic(locale, 'loginWelcomeMessage')]]
+      </h1>
+      <div slot="subtitle" hidden="[[isEmpty_(samlInterstitialDomain_)]]">
+        [[i18nDynamic(locale, 'enterpriseInfoMessage',
+                      samlInterstitialDomain_)]]
       </div>
-    </div>
+      <div slot="footer" class="flex layout vertical">
+        <html-echo hidden="[[isEmpty_(samlInterstitialDomain_)]]"
+            content="[[samlInterstitialMessage_]]"></html-echo>
+        <p>
+          <a href="#" class="oobe-local-link" on-tap="onSamlPageChangeAccount_"
+              id="interstitial-change-account">
+            [[i18nDynamic(locale, 'samlInterstitialChangeAccountLink')]]
+          </a>
+        </p>
+      </div>
+      <div slot="bottom-buttons" class="flex layout horizontal end-justified">
+        <oobe-next-button on-tap="onSamlInterstitialNext_"
+            id="interstitial-next" class="focus-on-show"></oobe-next-button>
+      </div>
+    </oobe-dialog>
     <div id="gaia-loading" class="step-loading gaia-dialog"
         hidden="[[!isStep_(step_, 'loading', 'gaia-loading')]]">
       <throbber-notice i18n-values="text:gaiaLoading"></throbber-notice>

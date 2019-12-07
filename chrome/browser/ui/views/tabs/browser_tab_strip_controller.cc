@@ -560,22 +560,26 @@ void BrowserTabStripController::OnTabStripModelChanged(
     tabstrip_->SetSelection(selection.new_model);
 }
 
-void BrowserTabStripController::OnTabGroupCreated(TabGroupId group) {
-  tabstrip_->OnGroupCreated(group);
-}
-
-void BrowserTabStripController::OnTabGroupContentsChanged(TabGroupId group) {
-  tabstrip_->OnGroupContentsChanged(group);
-}
-
-void BrowserTabStripController::OnTabGroupVisualsChanged(
-    TabGroupId group,
-    const TabGroupVisualData* visual_data) {
-  tabstrip_->OnGroupVisualsChanged(group);
-}
-
-void BrowserTabStripController::OnTabGroupClosed(TabGroupId group) {
-  tabstrip_->OnGroupDeleted(group);
+void BrowserTabStripController::OnTabGroupChanged(
+    const TabGroupChange& change) {
+  switch (change.type) {
+    case TabGroupChange::kCreated: {
+      tabstrip_->OnGroupCreated(change.group);
+      break;
+    }
+    case TabGroupChange::kContentsChanged: {
+      tabstrip_->OnGroupContentsChanged(change.group);
+      break;
+    }
+    case TabGroupChange::kVisualsChanged: {
+      tabstrip_->OnGroupVisualsChanged(change.group);
+      break;
+    }
+    case TabGroupChange::kClosed: {
+      tabstrip_->OnGroupClosed(change.group);
+      break;
+    }
+  }
 }
 
 void BrowserTabStripController::TabChangedAt(WebContents* contents,

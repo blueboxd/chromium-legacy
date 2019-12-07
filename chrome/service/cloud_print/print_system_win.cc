@@ -64,7 +64,8 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
 
   bool Start(const std::string& printer_name, Delegate* delegate) {
     scoped_refptr<printing::PrintBackend> print_backend(
-        printing::PrintBackend::CreateInstance(nullptr));
+        printing::PrintBackend::CreateInstance(nullptr,
+                                               /*locale=*/std::string()));
     printer_info_ = print_backend->GetPrinterDriverInfo(printer_name);
     crash_keys::ScopedPrinterInfo crash_key(printer_info_);
 
@@ -239,7 +240,8 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
              JobSpooler::Delegate* delegate) override {
     // TODO(gene): add tags handling.
     scoped_refptr<printing::PrintBackend> print_backend(
-        printing::PrintBackend::CreateInstance(nullptr));
+        printing::PrintBackend::CreateInstance(nullptr,
+                                               /*locale=*/std::string()));
     crash_keys::ScopedPrinterInfo crash_key(
         print_backend->GetPrinterDriverInfo(printer_name));
     return core_->Spool(print_ticket, print_ticket_mime_type,
@@ -659,7 +661,9 @@ class PrintSystemWin : public PrintSystem {
 };
 
 PrintSystemWin::PrintSystemWin()
-    : print_backend_(printing::PrintBackend::CreateInstance(nullptr)) {}
+    : print_backend_(
+          printing::PrintBackend::CreateInstance(nullptr,
+                                                 /*locale=*/std::string())) {}
 
 PrintSystem::PrintSystemResult PrintSystemWin::Init() {
   use_cdd_ = !base::CommandLine::ForCurrentProcess()->HasSwitch(

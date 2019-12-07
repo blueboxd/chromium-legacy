@@ -44,6 +44,12 @@ bool SetupTestConfigs();
 // |catalogs| instead of TestUwSCatalog.
 bool SetupTestConfigsWithCatalogs(const PUPData::UwSCatalogs& catalogs);
 
+// Launch Chrome Cleaner unit tests in the given test suite and given list of
+// UwSCatalogs. Returns the exit code.
+int RunChromeCleanerTestSuite(int argc,
+                              char** argv,
+                              const PUPData::UwSCatalogs& catalogs);
+
 // While this class is in scope, Rebooter::IsPostReboot will return true.
 class ScopedIsPostReboot {
  public:

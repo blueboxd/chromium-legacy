@@ -48,6 +48,7 @@
 #include "base/containers/small_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/post_task_and_reply_with_result_internal.h"
 #include "base/sequence_checker.h"
 #include "base/synchronization/atomic_flag.h"
@@ -137,13 +138,16 @@ class BASE_EXPORT CancelableTaskTracker {
   // See https://crbug.com/918948.
   using TaskCancellationFlag = RefCountedData<AtomicFlag>;
 
-  static void RunIfNotCanceled(const scoped_refptr<TaskCancellationFlag>& flag,
+  static void RunIfNotCanceled(const scoped_refptr<TaskRunner>& task_runner,
+                               const scoped_refptr<TaskCancellationFlag>& flag,
                                OnceClosure task);
   static void RunThenUntrackIfNotCanceled(
+      const scoped_refptr<TaskRunner>& task_runner,
       const scoped_refptr<TaskCancellationFlag>& flag,
       OnceClosure task,
       OnceClosure untrack);
-  static bool IsCanceled(const scoped_refptr<TaskCancellationFlag>& flag,
+  static bool IsCanceled(const scoped_refptr<TaskRunner>& task_runner,
+                         const scoped_refptr<TaskCancellationFlag>& flag,
                          const ScopedClosureRunner& cleanup_runner);
 
   void Track(TaskId id, scoped_refptr<TaskCancellationFlag> flag);
@@ -158,6 +162,10 @@ class BASE_EXPORT CancelableTaskTracker {
 
   TaskId next_id_ = 1;
   SequenceChecker sequence_checker_;
+
+  // TODO(https://crbug.com/1009795): Remove once crasher is resolved.
+  base::WeakPtr<CancelableTaskTracker> weak_this_;
+  base::WeakPtrFactory<CancelableTaskTracker> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CancelableTaskTracker);
 };

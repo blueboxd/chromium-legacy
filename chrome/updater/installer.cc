@@ -10,6 +10,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "chrome/updater/action_handler.h"
 #include "chrome/updater/updater_constants.h"
 #include "chrome/updater/util.h"
 #include "components/crx_file/crx_verifier.h"
@@ -47,6 +48,7 @@ Installer::~Installer() = default;
 update_client::CrxComponent Installer::MakeCrxComponent() {
   update_client::CrxComponent component;
   component.installer = scoped_refptr<Installer>(this);
+  component.action_handler = MakeActionHandler();
   component.requires_network_encryption = false;
   component.crx_format_requirement =
       crx_file::VerifierFormat::CRX3_WITH_PUBLISHER_PROOF;
@@ -116,7 +118,7 @@ void Installer::FindInstallOfApp() {
                          &install_info_->fingerprint);
 
   for (const auto& older_path : older_paths)
-    base::DeleteFile(older_path, true);
+    base::DeleteFileRecursively(older_path);
 }
 
 Installer::Result Installer::InstallHelper(const base::FilePath& unpack_path) {
@@ -149,7 +151,7 @@ Installer::Result Installer::InstallHelper(const base::FilePath& unpack_path) {
   const auto versioned_install_dir =
       app_install_dir.AppendASCII(manifest_version.GetString());
   if (base::PathExists(versioned_install_dir)) {
-    if (!base::DeleteFile(versioned_install_dir, true))
+    if (!base::DeleteFileRecursively(versioned_install_dir))
       return Result(update_client::InstallError::CLEAN_INSTALL_DIR_FAILED);
   }
 
@@ -157,7 +159,7 @@ Installer::Result Installer::InstallHelper(const base::FilePath& unpack_path) {
 
   if (!base::Move(unpack_path, versioned_install_dir)) {
     PLOG(ERROR) << "Move failed.";
-    base::DeleteFile(versioned_install_dir, true);
+    base::DeleteFileRecursively(versioned_install_dir);
     return Result(update_client::InstallError::MOVE_FILES_ERROR);
   }
 
@@ -186,13 +188,17 @@ void Installer::Install(const base::FilePath& unpack_path,
   base::FilePath install_path;
 
   const auto result = InstallHelper(unpack_path);
-  base::DeleteFile(unpack_path, true);
+  base::DeleteFileRecursively(unpack_path);
   std::move(callback).Run(result);
 }
 
 bool Installer::GetInstalledFile(const std::string& file,
                                  base::FilePath* installed_file) {
-  return false;
+  if (install_info_->version == base::Version(kNullVersion))
+    return false;  // No component has been installed yet.
+
+  *installed_file = install_info_->install_dir.AppendASCII(file);
+  return true;
 }
 
 bool Installer::Uninstall() {

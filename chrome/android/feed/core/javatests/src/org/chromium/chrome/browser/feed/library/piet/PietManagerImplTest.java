@@ -27,9 +27,9 @@ import org.mockito.Mock;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.Consumer;
+import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.feed.library.api.host.config.DebugBehavior;
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
-import org.chromium.chrome.browser.feed.library.common.functional.Supplier;
 import org.chromium.chrome.browser.feed.library.common.functional.Suppliers;
 import org.chromium.chrome.browser.feed.library.common.time.Clock;
 import org.chromium.chrome.browser.feed.library.common.time.SystemClockImpl;

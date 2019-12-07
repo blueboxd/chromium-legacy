@@ -63,13 +63,6 @@ class WebMouseWheelEvent : public WebMouseEvent {
   float acceleration_ratio_x;
   float acceleration_ratio_y;
 
-  // This field exists to allow BrowserPlugin to mark MouseWheel events as
-  // 'resent' to handle the case where an event is not consumed when first
-  // encountered; it should be handled differently by the plugin when it is
-  // sent for thesecond time. No code within Blink touches this, other than to
-  // plumb it through event conversions.
-  int resending_plugin_id;
-
   Phase phase;
   Phase momentum_phase;
 
@@ -104,7 +97,6 @@ class WebMouseWheelEvent : public WebMouseEvent {
         wheel_ticks_y(0.0f),
         acceleration_ratio_x(1.0f),
         acceleration_ratio_y(1.0f),
-        resending_plugin_id(-1),
         phase(kPhaseNone),
         momentum_phase(kPhaseNone),
         rails_mode(kRailsModeFree),
@@ -119,7 +111,6 @@ class WebMouseWheelEvent : public WebMouseEvent {
         wheel_ticks_y(0.0f),
         acceleration_ratio_x(1.0f),
         acceleration_ratio_y(1.0f),
-        resending_plugin_id(-1),
         phase(kPhaseNone),
         momentum_phase(kPhaseNone),
         rails_mode(kRailsModeFree),

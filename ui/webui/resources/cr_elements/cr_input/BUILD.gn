@@ -13,6 +13,7 @@ js_type_check("closure_compile") {
 
 js_library("cr_input") {
   deps = [
+    "//third_party/polymer/v1_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer-extracted",
     "//ui/webui/resources/js:assert",
   ]
 }
@@ -43,6 +44,7 @@ js_library("cr_input.m") {
   ]
   deps = [
     "../../js:assert.m",
+    "//third_party/polymer/v3_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
   extra_deps = [ ":cr_input_module" ]

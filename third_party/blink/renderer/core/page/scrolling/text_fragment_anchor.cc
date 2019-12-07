@@ -54,20 +54,31 @@ bool ParseTextDirective(const String& fragment,
 
 bool CheckSecurityRestrictions(LocalFrame& frame,
                                bool same_document_navigation) {
-  // For security reasons, we only allow text fragments on the main frame of a
-  // main window. So no iframes, no window.open. Also only on a full
-  // navigation.
-  if (frame.Tree().Parent() || frame.DomWindow()->opener() ||
-      same_document_navigation) {
-    return false;
-  }
+  // This algorithm checks the security restrictions detailed in
+  // https://wicg.github.io/ScrollToTextFragment/#should-allow-text-fragment
 
-  // For security reasons, we only allow text fragment anchors for user or
-  // browser initiated navigations, i.e. no script navigations.
+  // We only allow text fragment anchors for user or browser initiated
+  // navigations, i.e. no script navigations.
   if (!(frame.Loader().GetDocumentLoader()->HadTransientActivation() ||
         frame.Loader().GetDocumentLoader()->IsBrowserInitiated())) {
     return false;
   }
+
+  // We only allow text fragment anchors on a full navigation.
+  // TODO(crbug.com/1023640): Explore allowing scroll to text navigations from
+  // same-page bookmarks.
+  if (same_document_navigation)
+    return false;
+
+  // Allow text fragments on same-origin initiated navigations.
+  if (frame.Loader().GetDocumentLoader()->IsSameOriginNavigation())
+    return true;
+
+  // Otherwise, for cross origin initiated navigations, we only allow text
+  // fragments if the frame is not script accessible by another frame, i.e. no
+  // cross origin iframes or window.open.
+  if (frame.Tree().Parent() || frame.GetPage()->RelatedPages().size())
+    return false;
 
   return true;
 }
@@ -82,10 +93,10 @@ TextFragmentAnchor* TextFragmentAnchor::TryCreateFragmentDirective(
   DCHECK(RuntimeEnabledFeatures::TextFragmentIdentifiersEnabled(
       frame.GetDocument()));
 
-  if (!CheckSecurityRestrictions(frame, same_document_navigation))
+  if (!frame.GetDocument()->GetFragmentDirective())
     return nullptr;
 
-  if (!frame.GetDocument()->GetFragmentDirective())
+  if (!CheckSecurityRestrictions(frame, same_document_navigation))
     return nullptr;
 
   Vector<TextFragmentSelector> selectors;

@@ -194,43 +194,6 @@ bool LRACookieSorter(const CookieMonster::CookieMap::iterator& it1,
   return it1->second->CreationDate() < it2->second->CreationDate();
 }
 
-// Our strategy to find duplicates is:
-// (1) Build a map from (cookiename, cookiepath) to
-//     {list of cookies with this signature, sorted by creation time}.
-// (2) For each list with more than 1 entry, keep the cookie having the
-//     most recent creation time, and delete the others.
-//
-// Two cookies are considered equivalent if they have the same domain,
-// name, and path.
-struct CookieSignature {
- public:
-  CookieSignature(const std::string& name,
-                  const std::string& domain,
-                  const std::string& path)
-      : name(name), domain(domain), path(path) {}
-
-  // To be a key for a map this class needs to be assignable, copyable,
-  // and have an operator<.  The default assignment operator
-  // and copy constructor are exactly what we want.
-
-  bool operator<(const CookieSignature& cs) const {
-    // Name compare dominates, then domain, then path.
-    int diff = name.compare(cs.name);
-    if (diff != 0)
-      return diff < 0;
-
-    diff = domain.compare(cs.domain);
-    if (diff != 0)
-      return diff < 0;
-
-    return path.compare(cs.path) < 0;
-  }
-
-  std::string name;
-  std::string domain;
-  std::string path;
-};
-
 // For a CookieItVector iterator range [|it_begin|, |it_end|),
 // sorts the first |num_sort| elements by LastAccessDate().
 void SortLeastRecentlyAccessed(CookieMonster::CookieItVector::iterator it_begin,
@@ -566,15 +529,6 @@ void CookieMonster::DumpMemoryStats(
 
 CookieMonster::~CookieMonster() {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  // TODO(mmenke): Does it really make sense to run
-  // CookieChanged callbacks when the CookieStore is destroyed?
-  for (auto cookie_it = cookies_.begin(); cookie_it != cookies_.end();) {
-    auto current_cookie_it = cookie_it;
-    ++cookie_it;
-    InternalDeleteCookie(current_cookie_it, false /* sync_to_store */,
-                         DELETE_COOKIE_DONT_RECORD);
-  }
   net_log_.EndEvent(NetLogEventType::COOKIE_STORE_ALIVE);
 }
 
@@ -613,7 +567,7 @@ void CookieMonster::AttachAccessSemanticsListForCookieList(
     const CookieList& cookie_list) {
   std::vector<CookieAccessSemantics> access_semantics_list;
   for (const CanonicalCookie& cookie : cookie_list) {
-    access_semantics_list.push_back(GetAccessSemanticsForCookie(cookie));
+    access_semantics_list.push_back(GetAccessSemanticsForCookieGet(cookie));
   }
   MaybeRunCookieCallback(std::move(callback), cookie_list,
                          access_semantics_list);
@@ -672,7 +626,8 @@ void CookieMonster::DeleteAllMatchingInfo(CookieDeletionInfo delete_info,
     CanonicalCookie* cc = curit->second.get();
     ++it;
 
-    if (delete_info.Matches(*cc, GetAccessSemanticsForCookie(*cc))) {
+    if (delete_info.Matches(*cc, GetAccessSemanticsForCookie(
+                                     *cc, false /* legacy_access_granted */))) {
       InternalDeleteCookie(curit, true, /*sync_to_store*/
                            DELETE_COOKIE_EXPLICIT);
       ++num_deleted;
@@ -886,6 +841,12 @@ void CookieMonster::EnsureCookiesMapIsValid() {
   }
 }
 
+// Our strategy to find duplicates is:
+// (1) Build a map from cookie unique key to
+//     {list of cookies with this signature, sorted by creation time}.
+// (2) For each list with more than 1 entry, keep the cookie having the
+//     most recent creation time, and delete the others.
+//
 void CookieMonster::TrimDuplicateCookiesForKey(const std::string& key,
                                                CookieMap::iterator begin,
                                                CookieMap::iterator end) {
@@ -895,7 +856,7 @@ void CookieMonster::TrimDuplicateCookiesForKey(const std::string& key,
   typedef std::multiset<CookieMap::iterator, OrderByCreationTimeDesc> CookieSet;
 
   // Helper map we populate to find the duplicates.
-  typedef std::map<CookieSignature, CookieSet> EquivalenceMap;
+  typedef std::map<CanonicalCookie::UniqueCookieKey, CookieSet> EquivalenceMap;
   EquivalenceMap equivalent_cookies;
 
   // The number of duplicate cookies that have been found.
@@ -907,7 +868,7 @@ void CookieMonster::TrimDuplicateCookiesForKey(const std::string& key,
     DCHECK_EQ(key, it->first);
     CanonicalCookie* cookie = it->second.get();
 
-    CookieSignature signature(cookie->Name(), cookie->Domain(), cookie->Path());
+    CanonicalCookie::UniqueCookieKey signature(cookie->UniqueKey());
     CookieSet& set = equivalent_cookies[signature];
 
     // We found a duplicate!
@@ -930,7 +891,7 @@ void CookieMonster::TrimDuplicateCookiesForKey(const std::string& key,
   // and from the backing store.
   for (auto it = equivalent_cookies.begin(); it != equivalent_cookies.end();
        ++it) {
-    const CookieSignature& signature = it->first;
+    const CanonicalCookie::UniqueCookieKey& signature = it->first;
     CookieSet& dupes = it->second;
 
     if (dupes.size() <= 1)
@@ -945,8 +906,9 @@ void CookieMonster::TrimDuplicateCookiesForKey(const std::string& key,
     LOG(ERROR) << base::StringPrintf(
         "Found %d duplicate cookies for host='%s', "
         "with {name='%s', domain='%s', path='%s'}",
-        static_cast<int>(dupes.size()), key.c_str(), signature.name.c_str(),
-        signature.domain.c_str(), signature.path.c_str());
+        static_cast<int>(dupes.size()), key.c_str(),
+        std::get<0>(signature).c_str(), std::get<1>(signature).c_str(),
+        std::get<2>(signature).c_str());
 
     // Remove all the cookies identified by |dupes|. It is valid to delete our
     // list of iterators one at a time, since |cookies_| is a multimap (they
@@ -1004,7 +966,7 @@ void CookieMonster::FilterCookiesWithOptions(
     // given |url|. HTTP only cookies are filtered depending on the passed
     // cookie |options|.
     CanonicalCookie::CookieInclusionStatus status = (*it)->IncludeForRequestURL(
-        url, options, GetAccessSemanticsForCookie(**it));
+        url, options, GetAccessSemanticsForCookieGet(**it));
 
     if (!status.IsInclude()) {
       if (options.return_excluded_cookies())
@@ -1094,9 +1056,9 @@ void CookieMonster::MaybeDeleteEquivalentCookieAndUpdateStatus(
 
   if (maybe_delete_it != cookies_.end()) {
     CanonicalCookie* maybe_delete_cc = maybe_delete_it->second.get();
+    if (maybe_delete_cc->Value() == cookie_being_set.Value())
+      *creation_date_to_inherit = maybe_delete_cc->CreationDate();
     if (status->IsInclude()) {
-      if (maybe_delete_cc->Value() == cookie_being_set.Value())
-        *creation_date_to_inherit = maybe_delete_cc->CreationDate();
       InternalDeleteCookie(maybe_delete_it, true,
                            already_expired ? DELETE_COOKIE_EXPIRED_OVERWRITE
                                            : DELETE_COOKIE_OVERWRITE);
@@ -1119,6 +1081,31 @@ void CookieMonster::MaybeDeleteEquivalentCookieAndUpdateStatus(
   }
 }
 
+// Find the creation time of an equivalent cookie with the same value
+// ("identical", well, modulo other attributes that don't get compared)
+// if any. This iterates through the matching range of the |cookies_| map an
+// extra time, but this is ok because it is only used if
+// RecentCreationTimeGrantsLegacyCookieSemantics is enabled.
+base::Time CookieMonster::EffectiveCreationTimeForMaybePreexistingCookie(
+    const std::string& key,
+    const CanonicalCookie& cookie) const {
+  DCHECK(cookie_util::IsRecentCreationTimeGrantsLegacyCookieSemanticsEnabled());
+  base::Time effective_creation_time = cookie.CreationDate();
+  const auto range_its = cookies_.equal_range(key);
+  for (auto cur_it = range_its.first; cur_it != range_its.second; ++cur_it) {
+    CanonicalCookie* preexisting_maybe_identical_cookie = cur_it->second.get();
+    if (cookie.IsEquivalent(*preexisting_maybe_identical_cookie)) {
+      if (preexisting_maybe_identical_cookie->Value() == cookie.Value()) {
+        effective_creation_time =
+            preexisting_maybe_identical_cookie->CreationDate();
+      }
+      // There should only ever be at most one equivalent cookie in the store.
+      break;
+    }
+  }
+  return effective_creation_time;
+}
+
 CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
     const std::string& key,
     std::unique_ptr<CanonicalCookie> cc,
@@ -1139,7 +1126,8 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
 
   // See InitializeHistograms() for details.
   int32_t type_sample =
-      !cc_ptr->IsEffectivelySameSiteNone(GetAccessSemanticsForCookie(*cc_ptr))
+      !cc_ptr->IsEffectivelySameSiteNone(GetAccessSemanticsForCookie(
+          *cc_ptr, false /* legacy_access_granted */))
           ? 1 << COOKIE_TYPE_SAME_SITE
           : 0;
   type_sample |= cc_ptr->IsHttpOnly() ? 1 << COOKIE_TYPE_HTTPONLY : 0;
@@ -1147,7 +1135,9 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
   histogram_cookie_type_->Add(type_sample);
 
   change_dispatcher_.DispatchChange(
-      CookieChangeInfo(*cc_ptr, GetAccessSemanticsForCookie(*cc_ptr),
+      CookieChangeInfo(*cc_ptr,
+                       GetAccessSemanticsForCookie(
+                           *cc_ptr, false /* legacy_access_granted */),
                        CookieChangeCause::INSERTED),
       true);
 
@@ -1176,10 +1166,16 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
         CanonicalCookie::CookieInclusionStatus::EXCLUDE_NONCOOKIEABLE_SCHEME);
   }
 
-  cc->IsSetPermittedInContext(
-      options, GetAccessSemanticsForCookieSet(*cc, options), &status);
-
   const std::string key(GetKey(cc->Domain()));
+
+  cc->IsSetPermittedInContext(
+      options,
+      GetAccessSemanticsForCookieSet(
+          *cc, options,
+          cookie_util::IsRecentCreationTimeGrantsLegacyCookieSemanticsEnabled()
+              ? EffectiveCreationTimeForMaybePreexistingCookie(key, *cc)
+              : base::Time()),
+      &status);
 
   base::Time creation_date = cc->CreationDate();
   if (creation_date.is_null()) {
@@ -1345,7 +1341,10 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
     store_->DeleteCookie(*cc);
   }
   change_dispatcher_.DispatchChange(
-      CookieChangeInfo(*cc, GetAccessSemanticsForCookie(*cc), mapping.cause),
+      CookieChangeInfo(
+          *cc,
+          GetAccessSemanticsForCookie(*cc, false /* legacy_access_granted */),
+          mapping.cause),
       mapping.notify);
   cookies_.erase(it);
 }
@@ -1683,32 +1682,55 @@ bool CookieMonster::HasCookieableScheme(const GURL& url) {
 }
 
 CookieAccessSemantics CookieMonster::GetAccessSemanticsForCookie(
-    const CanonicalCookie& cookie) const {
-  if (cookie_util::DoesLastHttpSameSiteAccessGrantLegacySemantics(
-          LastAccessFromHttpSameSiteContext(cookie))) {
+    const CanonicalCookie& cookie,
+    bool legacy_semantics_granted) const {
+  if (legacy_semantics_granted)
     return CookieAccessSemantics::LEGACY;
-  }
   if (cookie_access_delegate())
     return cookie_access_delegate()->GetAccessSemantics(cookie);
   return CookieAccessSemantics::UNKNOWN;
 }
 
+CookieAccessSemantics CookieMonster::GetAccessSemanticsForCookieGet(
+    const CanonicalCookie& cookie) const {
+  bool legacy_semantics_granted =
+      cookie_util::DoesLastHttpSameSiteAccessGrantLegacySemantics(
+          LastAccessFromHttpSameSiteContext(cookie)) ||
+      cookie_util::DoesCreationTimeGrantLegacySemantics(cookie.CreationDate());
+  return GetAccessSemanticsForCookie(cookie, legacy_semantics_granted);
+}
+
 CookieAccessSemantics CookieMonster::GetAccessSemanticsForCookieSet(
     const CanonicalCookie& cookie,
-    const CookieOptions& options) const {
+    const CookieOptions& options,
+    base::Time effective_creation_time) const {
   // If the current cookie access is a set, directly treat the cookie as LEGACY
   // if the |options| qualify, because there may not be a time entry in
   // |last_http_same_site_accesses_| since it may be a new cookie without a
   // previous access. It will still only be added to the map as a qualifying
   // cookie access if the final inclusion status is include.
-  if (cookie_util::
-          IsRecentHttpSameSiteAccessGrantsLegacyCookieSemanticsEnabled() &&
-      IsHttpSameSiteContextAtLeast(
-          options, CookieOptions::SameSiteCookieContext::SAME_SITE_LAX)) {
-    return CookieAccessSemantics::LEGACY;
-  }
+  bool legacy_semantics_granted =
+      (cookie_util::
+           IsRecentHttpSameSiteAccessGrantsLegacyCookieSemanticsEnabled() &&
+       IsHttpSameSiteContextAtLeast(
+           options, CookieOptions::SameSiteCookieContext::SAME_SITE_LAX));
 
-  return GetAccessSemanticsForCookie(cookie);
+  // If the current cookie access is not itself http-and-same-site, but the last
+  // one that was, was recent enough, (and the corresponding feature is enabled)
+  // grant legacy semantics.
+  legacy_semantics_granted =
+      legacy_semantics_granted ||
+      cookie_util::DoesLastHttpSameSiteAccessGrantLegacySemantics(
+          LastAccessFromHttpSameSiteContext(cookie));
+
+  // If the cookie's creation time (or that of an identical preexisting cookie)
+  // was recent enough (and the corresponding feature is enabled), grant legacy
+  // semantics.
+  legacy_semantics_granted = legacy_semantics_granted ||
+                             cookie_util::DoesCreationTimeGrantLegacySemantics(
+                                 effective_creation_time);
+
+  return GetAccessSemanticsForCookie(cookie, legacy_semantics_granted);
 }
 
 base::TimeTicks CookieMonster::LastAccessFromHttpSameSiteContext(

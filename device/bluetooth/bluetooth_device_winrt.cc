@@ -245,15 +245,7 @@ bool BluetoothDeviceWinrt::IsGattConnected() const {
   if (!ble_device_)
     return false;
 
-  BluetoothConnectionStatus status;
-  HRESULT hr = ble_device_->get_ConnectionStatus(&status);
-  if (FAILED(hr)) {
-    BLUETOOTH_LOG(DEBUG) << "Getting ConnectionStatus failed: "
-                         << logging::SystemErrorCodeToString(hr);
-    return false;
-  }
-
-  return status == BluetoothConnectionStatus_Connected;
+  return connection_status_;
 }
 
 bool BluetoothDeviceWinrt::IsConnectable() const {
@@ -508,7 +500,7 @@ void BluetoothDeviceWinrt::OnFromBluetoothAddress(
   ClearEventRegistrations();
 
   ble_device_ = std::move(ble_device);
-
+  ble_device_->get_ConnectionStatus(&connection_status_);
   connection_changed_token_ = AddTypedEventHandler(
       ble_device_.Get(), &IBluetoothLEDevice::add_ConnectionStatusChanged,
       base::BindRepeating(&BluetoothDeviceWinrt::OnConnectionStatusChanged,
@@ -543,6 +535,14 @@ void BluetoothDeviceWinrt::OnFromBluetoothAddress(
 void BluetoothDeviceWinrt::OnConnectionStatusChanged(
     IBluetoothLEDevice* ble_device,
     IInspectable* object) {
+  BluetoothConnectionStatus new_status;
+  ble_device->get_ConnectionStatus(&new_status);
+  // Windows sometimes returns a status changed event with a status that has
+  // not changed.
+  if (new_status == connection_status_)
+    return;
+
+  connection_status_ = new_status;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (IsGattConnected()) {
     DidConnectGatt();

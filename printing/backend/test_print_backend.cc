@@ -12,7 +12,7 @@
 
 namespace printing {
 
-TestPrintBackend::TestPrintBackend() = default;
+TestPrintBackend::TestPrintBackend() : PrintBackend(/*locale=*/std::string()) {}
 
 TestPrintBackend::~TestPrintBackend() = default;
 

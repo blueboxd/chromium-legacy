@@ -45,7 +45,7 @@ bool PrintingHandler::OnMessageReceived(const IPC::Message& message) {
 void PrintingHandler::OnGetPrinterCapsAndDefaults(
     const std::string& printer_name) {
   scoped_refptr<PrintBackend> print_backend =
-      PrintBackend::CreateInstance(nullptr);
+      PrintBackend::CreateInstance(nullptr, /*locale=*/std::string());
   PrinterCapsAndDefaults printer_info;
 
   crash_keys::ScopedPrinterInfo crash_key(
@@ -64,7 +64,7 @@ void PrintingHandler::OnGetPrinterCapsAndDefaults(
 void PrintingHandler::OnGetPrinterSemanticCapsAndDefaults(
     const std::string& printer_name) {
   scoped_refptr<PrintBackend> print_backend =
-      PrintBackend::CreateInstance(nullptr);
+      PrintBackend::CreateInstance(nullptr, /*locale=*/std::string());
   PrinterSemanticCapsAndDefaults printer_info;
 
   crash_keys::ScopedPrinterInfo crash_key(

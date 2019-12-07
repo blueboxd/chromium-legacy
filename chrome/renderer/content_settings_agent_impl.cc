@@ -454,17 +454,6 @@ bool ContentSettingsAgentImpl::AllowRunningInsecureContent(
   return allow;
 }
 
-bool ContentSettingsAgentImpl::AllowAutoplay(bool default_value) {
-  if (!content_setting_rules_)
-    return default_value;
-
-  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
-  return GetContentSettingFromRules(
-             content_setting_rules_->autoplay_rules, frame,
-             url::Origin(frame->GetDocument().GetSecurityOrigin()).GetURL()) ==
-         CONTENT_SETTING_ALLOW;
-}
-
 bool ContentSettingsAgentImpl::AllowPopupsAndRedirects(bool default_value) {
   if (!content_setting_rules_)
     return default_value;

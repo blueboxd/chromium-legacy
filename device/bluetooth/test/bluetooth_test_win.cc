@@ -316,6 +316,13 @@ void BluetoothTestWin::SimulateGattConnection(BluetoothDevice* device) {
   gatt_discovery_attempts_++;
 }
 
+void BluetoothTestWin::SimulateStatusChangeToDisconnect(
+    BluetoothDevice* device) {
+  // OnConnectionStatusChanged events only get fired on WinRT. So this is just
+  // a mock for testing.
+  FinishPendingTasks();
+}
+
 void BluetoothTestWin::SimulateGattServicesDiscovered(
     BluetoothDevice* device,
     const std::vector<std::string>& uuids) {
@@ -839,6 +846,18 @@ void BluetoothTestWinrt::SimulateGattNameChange(BluetoothDevice* device,
       static_cast<TestBluetoothDeviceWinrt*>(device)->ble_device();
   DCHECK(ble_device);
   ble_device->SimulateGattNameChange(new_name);
+}
+
+void BluetoothTestWinrt::SimulateStatusChangeToDisconnect(
+    BluetoothDevice* device) {
+  if (!GetParam() || !PlatformSupportsLowEnergy())
+    return BluetoothTestWin::SimulateStatusChangeToDisconnect(device);
+  // Spin the message loop to make sure a device instance was obtained.
+  base::RunLoop().RunUntilIdle();
+  auto* const ble_device =
+      static_cast<TestBluetoothDeviceWinrt*>(device)->ble_device();
+  DCHECK(ble_device);
+  ble_device->SimulateStatusChangeToDisconnect();
 }
 
 void BluetoothTestWinrt::SimulateGattConnectionError(

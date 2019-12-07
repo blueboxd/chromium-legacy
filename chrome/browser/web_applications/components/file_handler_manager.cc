@@ -11,22 +11,18 @@
 namespace web_app {
 
 FileHandlerManager::FileHandlerManager(Profile* profile)
-    : profile_(profile), registrar_observer_(this), shortcut_observer_(this) {}
+    : profile_(profile), registrar_observer_(this) {}
 
 FileHandlerManager::~FileHandlerManager() = default;
 
-void FileHandlerManager::SetSubsystems(AppRegistrar* registrar,
-                                       AppShortcutManager* shortcut_manager) {
+void FileHandlerManager::SetSubsystems(AppRegistrar* registrar) {
   registrar_ = registrar;
-  shortcut_manager_ = shortcut_manager;
 }
 
 void FileHandlerManager::Start() {
   DCHECK(registrar_);
-  DCHECK(shortcut_manager_);
 
   registrar_observer_.Add(registrar_);
-  shortcut_observer_.Add(shortcut_manager_);
 }
 
 void FileHandlerManager::EnableAndRegisterOsFileHandlers(const AppId& app_id) {
@@ -68,14 +64,6 @@ void FileHandlerManager::OnWebAppProfileWillBeDeleted(const AppId& app_id) {
 
 void FileHandlerManager::OnAppRegistrarDestroyed() {
   registrar_observer_.RemoveAll();
-}
-
-void FileHandlerManager::OnShortcutsCreated(const AppId& app_id) {
-  EnableAndRegisterOsFileHandlers(app_id);
-}
-
-void FileHandlerManager::OnShortcutManagerDestroyed() {
-  shortcut_observer_.RemoveAll();
 }
 
 std::set<std::string> GetFileExtensionsFromFileHandlers(

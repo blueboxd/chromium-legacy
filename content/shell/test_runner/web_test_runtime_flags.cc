@@ -38,7 +38,6 @@ void WebTestRuntimeFlags::Reset() {
   set_storage_allowed(true);
   set_plugins_allowed(true);
   set_running_insecure_content_allowed(false);
-  set_autoplay_allowed(true);
 
   set_dump_editting_callbacks(false);
   set_dump_frame_load_callbacks(false);

@@ -85,8 +85,6 @@ function makeUnreached() {
     'viewInstanceId',
     'viewType',
     'webview',
-    'webviewBrowserPlugin',
-    'webviewbrowserplugin',
   ];
   // For objects that don't inherit directly from Object, we'll need to taint
   // existing properties on prototypes earlier in the prototype chain.

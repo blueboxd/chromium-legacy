@@ -59,9 +59,6 @@ if (enable_java_templates) {
     _lines += [ "android_secondary_abi_toolchain=" +
                 rebase_path(_secondary_label_info, root_build_dir) ]
   }
-  if (defined(build_apk_secondary_abi)) {
-    _lines += [ "build_apk_secondary_abi=$build_apk_secondary_abi" ]
-  }
   write_file(android_build_vars, _lines)
 }
 

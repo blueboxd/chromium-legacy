@@ -196,26 +196,22 @@ void SetInitialRttEstimate(base::TimeDelta estimate,
     config->SetInitialRoundTripTimeUsToSend(estimate.InMicroseconds());
 }
 
-quic::QuicConfig InitializeQuicConfig(
-    const quic::QuicTagVector& connection_options,
-    const quic::QuicTagVector& client_connection_options,
-    base::TimeDelta idle_connection_timeout,
-    base::TimeDelta max_time_before_crypto_handshake,
-    base::TimeDelta max_idle_time_before_crypto_handshake) {
-  DCHECK_GT(idle_connection_timeout, base::TimeDelta());
+quic::QuicConfig InitializeQuicConfig(const QuicParams& params) {
+  DCHECK_GT(params.idle_connection_timeout, base::TimeDelta());
   quic::QuicConfig config;
-  config.SetIdleNetworkTimeout(quic::QuicTime::Delta::FromMicroseconds(
-                                   idle_connection_timeout.InMicroseconds()),
-                               quic::QuicTime::Delta::FromMicroseconds(
-                                   idle_connection_timeout.InMicroseconds()));
+  config.SetIdleNetworkTimeout(
+      quic::QuicTime::Delta::FromMicroseconds(
+          params.idle_connection_timeout.InMicroseconds()),
+      quic::QuicTime::Delta::FromMicroseconds(
+          params.idle_connection_timeout.InMicroseconds()));
   config.set_max_time_before_crypto_handshake(
       quic::QuicTime::Delta::FromMicroseconds(
-          max_time_before_crypto_handshake.InMicroseconds()));
+          params.max_time_before_crypto_handshake.InMicroseconds()));
   config.set_max_idle_time_before_crypto_handshake(
       quic::QuicTime::Delta::FromMicroseconds(
-          max_idle_time_before_crypto_handshake.InMicroseconds()));
-  config.SetConnectionOptionsToSend(connection_options);
-  config.SetClientConnectionOptions(client_connection_options);
+          params.max_idle_time_before_crypto_handshake.InMicroseconds()));
+  config.SetConnectionOptionsToSend(params.connection_options);
+  config.SetClientConnectionOptions(params.client_connection_options);
   return config;
 }
 
@@ -252,22 +248,6 @@ std::set<std::string> HostsFromOrigins(std::set<HostPortPair> origins) {
 }
 
 }  // namespace
-
-QuicParams::QuicParams()
-    : max_packet_length(quic::kDefaultMaxPacketSize),
-      reduced_ping_timeout(
-          base::TimeDelta::FromSeconds(quic::kPingTimeoutSecs)),
-      max_time_before_crypto_handshake(
-          base::TimeDelta::FromSeconds(quic::kMaxTimeForCryptoHandshakeSecs)),
-      max_idle_time_before_crypto_handshake(
-          base::TimeDelta::FromSeconds(quic::kInitialIdleTimeoutSecs)) {
-  supported_versions.push_back(quic::ParsedQuicVersion(
-      quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_46));
-}
-
-QuicParams::QuicParams(const QuicParams& other) = default;
-
-QuicParams::~QuicParams() = default;
 
 // Responsible for verifying the certificates saved in
 // quic::QuicCryptoClientConfig, and for notifying any associated requests when
@@ -1223,8 +1203,7 @@ QuicStreamFactory::QuicStreamFactory(
     CTVerifier* cert_transparency_verifier,
     SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
     QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory,
-    QuicContext* quic_context,
-    const QuicParams& params)
+    QuicContext* quic_context)
     : is_quic_known_to_work_on_current_network_(false),
       net_log_(net_log),
       host_resolver_(host_resolver),
@@ -1238,21 +1217,19 @@ QuicStreamFactory::QuicStreamFactory(
       quic_crypto_client_stream_factory_(quic_crypto_client_stream_factory),
       random_generator_(quic_context->random_generator()),
       clock_(quic_context->clock()),
-      params_(params),
+      // TODO(vasilvv): figure out how to avoid having multiple copies of
+      // QuicParams.
+      params_(*quic_context->params()),
       clock_skew_detector_(base::TimeTicks::Now(), base::Time::Now()),
       socket_performance_watcher_factory_(socket_performance_watcher_factory),
       recent_crypto_config_map_(kMaxRecentCryptoConfigs),
-      config_(
-          InitializeQuicConfig(params.connection_options,
-                               params.client_connection_options,
-                               params.idle_connection_timeout,
-                               params.max_time_before_crypto_handshake,
-                               params.max_idle_time_before_crypto_handshake)),
+      config_(InitializeQuicConfig(*quic_context->params())),
       ping_timeout_(quic::QuicTime::Delta::FromSeconds(quic::kPingTimeoutSecs)),
       reduced_ping_timeout_(quic::QuicTime::Delta::FromMicroseconds(
-          params.reduced_ping_timeout.InMicroseconds())),
+          quic_context->params()->reduced_ping_timeout.InMicroseconds())),
       retransmittable_on_wire_timeout_(quic::QuicTime::Delta::FromMicroseconds(
-          params.retransmittable_on_wire_timeout.InMicroseconds())),
+          quic_context->params()
+              ->retransmittable_on_wire_timeout.InMicroseconds())),
       yield_after_packets_(kQuicYieldAfterPacketsRead),
       yield_after_duration_(quic::QuicTime::Delta::FromMilliseconds(
           kQuicYieldAfterDurationMilliseconds)),

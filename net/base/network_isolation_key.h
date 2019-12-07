@@ -41,6 +41,10 @@ class NET_EXPORT NetworkIsolationKey {
   // persisted to disk.
   static NetworkIsolationKey CreateTransient();
 
+  // Creates a new key using |top_frame_origin_| and |new_frame_origin|.
+  NetworkIsolationKey CreateWithNewFrameOrigin(
+      const url::Origin& new_frame_origin) const;
+
   // Intended for temporary use in locations that should be using a non-empty
   // NetworkIsolationKey(), but are not yet. This both reduces the chance of
   // accidentally copying the lack of a NIK where one should be used, and

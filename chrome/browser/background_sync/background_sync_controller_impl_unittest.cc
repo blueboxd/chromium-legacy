@@ -178,8 +178,6 @@ TEST_F(BackgroundSyncControllerImplTest, AllParamsSet) {
 }
 
 TEST_F(BackgroundSyncControllerImplTest, OneShotSyncMultipleAttempts) {
-  controller_ = std::make_unique<BackgroundSyncControllerImpl>(
-      profile_.GetOffTheRecordProfile());
   content::BackgroundSyncParameters sync_parameters;
   url::Origin origin = url::Origin::Create(GURL(kExampleUrl));
   SiteEngagementScore::SetParamValuesForTesting();
@@ -209,8 +207,6 @@ TEST_F(BackgroundSyncControllerImplTest, OneShotSyncMultipleAttempts) {
 }
 
 TEST_F(BackgroundSyncControllerImplTest, PeriodicSyncMultipleAttempts) {
-  controller_ = std::make_unique<BackgroundSyncControllerImpl>(
-      profile_.GetOffTheRecordProfile());
   content::BackgroundSyncParameters sync_parameters;
   url::Origin origin = url::Origin::Create(GURL(kExampleUrl));
   SiteEngagementScore::SetParamValuesForTesting();
@@ -241,8 +237,6 @@ TEST_F(BackgroundSyncControllerImplTest, PeriodicSyncMultipleAttempts) {
 
 TEST_F(BackgroundSyncControllerImplTest,
        GetNextEventDelayWithSiteEngagementPenalty) {
-  controller_ = std::make_unique<BackgroundSyncControllerImpl>(
-      profile_.GetOffTheRecordProfile());
   content::BackgroundSyncParameters sync_parameters;
   int64_t min_gap_between_periodic_sync_events_ms =
       sync_parameters.min_periodic_sync_events_interval.InMilliseconds();
@@ -295,8 +289,6 @@ TEST_F(BackgroundSyncControllerImplTest,
 }
 
 TEST_F(BackgroundSyncControllerImplTest, MaxFrequencyForOrigin) {
-  controller_ = std::make_unique<BackgroundSyncControllerImpl>(
-      profile_.GetOffTheRecordProfile());
   content::BackgroundSyncParameters sync_parameters;
   url::Origin origin = url::Origin::Create(GURL(kExampleUrl));
   SiteEngagementScore::SetParamValuesForTesting();
@@ -342,8 +334,6 @@ TEST_F(BackgroundSyncControllerImplTest, MaxFrequencyForOrigin) {
 }
 
 TEST_F(BackgroundSyncControllerImplTest, CrossRegistrationLimitsForOrigin) {
-  controller_ = std::make_unique<BackgroundSyncControllerImpl>(
-      profile_.GetOffTheRecordProfile());
   content::BackgroundSyncParameters sync_parameters;
   url::Origin origin = url::Origin::Create(GURL(kExampleUrl));
   SiteEngagementScore::SetParamValuesForTesting();

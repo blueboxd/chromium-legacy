@@ -20,7 +20,8 @@ class ProfilingClient : public mojom::ProfilingClient {
   ProfilingClient();
 
   // mojom::ProfilingClient overrides:
-  void StartProfiling(mojom::ProfilingParamsPtr params) override;
+  void StartProfiling(mojom::ProfilingParamsPtr params,
+                      StartProfilingCallback callback) override;
   void RetrieveHeapProfile(RetrieveHeapProfileCallback callback) override;
 
   void BindToInterface(mojo::PendingReceiver<mojom::ProfilingClient> receiver);
@@ -28,7 +29,8 @@ class ProfilingClient : public mojom::ProfilingClient {
  private:
   ~ProfilingClient() override;
 
-  void StartProfilingInternal(mojom::ProfilingParamsPtr params);
+  void StartProfilingInternal(mojom::ProfilingParamsPtr params,
+                              StartProfilingCallback callback);
 
   // Ideally, this would be a mojo::Receiver that would only keep alive one
   // client receiver. However, the service that makes the client requests

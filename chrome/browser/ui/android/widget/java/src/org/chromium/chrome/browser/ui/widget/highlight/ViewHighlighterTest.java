@@ -19,12 +19,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 
 /**
  * Tests the utility methods for highlighting of a view.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
+@RunWith(BaseJUnit4ClassRunner.class)
 public class ViewHighlighterTest {
     @Rule
     public UiThreadTestRule mRule = new UiThreadTestRule();

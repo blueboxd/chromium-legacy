@@ -74,6 +74,7 @@ HostResolver::~HostResolver() {
 
 void HostResolver::ResolveHost(
     const net::HostPortPair& host,
+    const net::NetworkIsolationKey& network_isolation_key,
     mojom::ResolveHostParametersPtr optional_parameters,
     mojo::PendingRemote<mojom::ResolveHostClient> response_client) {
 #if !BUILDFLAG(ENABLE_MDNS)
@@ -87,8 +88,8 @@ void HostResolver::ResolveHost(
     resolve_host_callback.Get().Run(host.host());
 
   auto request = std::make_unique<ResolveHostRequest>(
-      internal_resolver_, host, ConvertOptionalParameters(optional_parameters),
-      net_log_);
+      internal_resolver_, host, network_isolation_key,
+      ConvertOptionalParameters(optional_parameters), net_log_);
 
   mojo::PendingReceiver<mojom::ResolveHostHandle> control_handle_receiver;
   if (optional_parameters)

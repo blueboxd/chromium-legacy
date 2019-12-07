@@ -13,7 +13,7 @@ import android.support.test.filters.SmallTest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
  * - No keys are both in [keys in use] and in [deprecated keys].
  * - All keys follow the format "Chrome.[Feature].[Key]"
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 public class ChromePreferenceKeysTest {
     /**
      * The important test: verify that keys in {@link ChromePreferenceKeys} are not reused.

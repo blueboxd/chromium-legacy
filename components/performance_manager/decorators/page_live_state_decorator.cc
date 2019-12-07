@@ -26,9 +26,25 @@ class PageLiveStateDataImpl
 
   // PageLiveStateDecorator::Data:
   bool IsAttachedToUSB() const override { return is_attached_to_usb_; }
+  bool IsCapturingVideo() const override { return is_capturing_video_; }
+  bool IsCapturingAudio() const override { return is_capturing_audio_; }
+  bool IsBeingMirrored() const override { return is_being_mirrored_; }
+  bool IsCapturingDesktop() const override { return is_capturing_desktop_; }
 
   void set_is_attached_to_usb(bool is_attached_to_usb) {
     is_attached_to_usb_ = is_attached_to_usb;
+  }
+  void set_is_capturing_video(bool is_capturing_video) {
+    is_capturing_video_ = is_capturing_video;
+  }
+  void set_is_capturing_audio(bool is_capturing_audio) {
+    is_capturing_audio_ = is_capturing_audio;
+  }
+  void set_is_being_mirrored(bool is_being_mirrored) {
+    is_being_mirrored_ = is_being_mirrored;
+  }
+  void set_is_capturing_desktop(bool is_capturing_desktop) {
+    is_capturing_desktop_ = is_capturing_desktop;
   }
 
  private:
@@ -40,6 +56,10 @@ class PageLiveStateDataImpl
   explicit PageLiveStateDataImpl(const PageNodeImpl* page_node) {}
 
   bool is_attached_to_usb_ = false;
+  bool is_capturing_video_ = false;
+  bool is_capturing_audio_ = false;
+  bool is_being_mirrored_ = false;
+  bool is_capturing_desktop_ = false;
 };
 
 // Helper function to set a property in PageLiveStateDataImpl. This does the
@@ -70,12 +90,48 @@ void SetPropertyForWebContents(
 }  // namespace
 
 // static
-void PageLiveStateDecorator::OnWebContentsAttachedToUSBChange(
+void PageLiveStateDecorator::OnWebContentsAttachedToUSBChanged(
     content::WebContents* contents,
     bool is_attached_to_usb) {
   SetPropertyForWebContents(contents,
                             &PageLiveStateDataImpl::set_is_attached_to_usb,
                             is_attached_to_usb);
+}
+
+// static
+void PageLiveStateDecorator::OnIsCapturingVideoChanged(
+    content::WebContents* contents,
+    bool is_capturing_video) {
+  SetPropertyForWebContents(contents,
+                            &PageLiveStateDataImpl::set_is_capturing_video,
+                            is_capturing_video);
+}
+
+// static
+void PageLiveStateDecorator::OnIsCapturingAudioChanged(
+    content::WebContents* contents,
+    bool is_capturing_audio) {
+  SetPropertyForWebContents(contents,
+                            &PageLiveStateDataImpl::set_is_capturing_audio,
+                            is_capturing_audio);
+}
+
+// static
+void PageLiveStateDecorator::OnIsBeingMirroredChanged(
+    content::WebContents* contents,
+    bool is_being_mirrored) {
+  SetPropertyForWebContents(contents,
+                            &PageLiveStateDataImpl::set_is_being_mirrored,
+                            is_being_mirrored);
+}
+
+// static
+void PageLiveStateDecorator::OnIsCapturingDesktopChanged(
+    content::WebContents* contents,
+    bool is_capturing_desktop) {
+  SetPropertyForWebContents(contents,
+                            &PageLiveStateDataImpl::set_is_capturing_desktop,
+                            is_capturing_desktop);
 }
 
 PageLiveStateDecorator::Data::Data() = default;

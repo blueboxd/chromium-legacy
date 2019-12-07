@@ -522,16 +522,24 @@ class SharedImageRepresentationOverlayVideo
       : gpu::SharedImageRepresentationOverlay(manager, backing, tracker),
         stream_image_(backing->stream_texture_sii_) {}
 
+ protected:
   void BeginReadAccess() override {
-    TRACE_EVENT0("media",
-                 "SharedImageRepresentationOverlayVideo::BeginReadAccess");
-    // A |CodecImage| could only be overlaied if it is already in a SurfaceView.
-    DCHECK(!stream_image_->HasTextureOwner());
-
-    stream_image_->RenderToOverlay();
+    // A |CodecImage| is already in a SurfaceView, render content to the
+    // overlay.
+    if (!stream_image_->HasTextureOwner()) {
+      TRACE_EVENT0("media",
+                   "SharedImageRepresentationOverlayVideo::BeginReadAccess");
+      stream_image_->RenderToOverlay();
+    }
   }
 
   void EndReadAccess() override {}
+
+  gl::GLImage* GetGLImage() override {
+    DCHECK(stream_image_->HasTextureOwner())
+        << "The backing is already in a SurfaceView!";
+    return stream_image_.get();
+  }
 
   void NotifyOverlayPromotion(bool promotion,
                               const gfx::Rect& bounds) override {

@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
+#include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -50,12 +51,14 @@ PendingAppInstallTask::PendingAppInstallTask(
     Profile* profile,
     AppRegistrar* registrar,
     AppShortcutManager* shortcut_manger,
+    FileHandlerManager* file_handler_manager,
     WebAppUiManager* ui_manager,
     InstallFinalizer* install_finalizer,
     ExternalInstallOptions install_options)
     : profile_(profile),
       registrar_(registrar),
       shortcut_manager_(shortcut_manger),
+      file_handler_manager_(file_handler_manager),
       install_finalizer_(install_finalizer),
       ui_manager_(ui_manager),
       externally_installed_app_prefs_(profile_->GetPrefs()),
@@ -256,13 +259,19 @@ void PendingAppInstallTask::OnWebAppInstalled(bool is_placeholder,
     shortcut_manager_->CreateShortcuts(
         app_id, install_options_.add_to_desktop,
         base::BindOnce(
-            [](base::ScopedClosureRunner scoped_closure,
+            [](base::WeakPtr<PendingAppInstallTask> task, const AppId& app_id,
+               base::ScopedClosureRunner scoped_closure,
                bool shortcuts_created) {
+              if (task) {
+                task->file_handler_manager_->EnableAndRegisterOsFileHandlers(
+                    app_id);
+              }
+
               // Even if the shortcuts failed to be created, we consider the
               // installation successful since an app was created.
               scoped_closure.RunAndReset();
             },
-            std::move(scoped_closure)));
+            weak_ptr_factory_.GetWeakPtr(), app_id, std::move(scoped_closure)));
     return;
   }
 }

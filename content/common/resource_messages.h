@@ -29,6 +29,6 @@
 #endif  // INTERNAL_CONTENT_COMMON_RESOURCE_MESSAGES_H_
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebMixedContentContextType,
-                          blink::WebMixedContentContextType::kLast)
+                          blink::WebMixedContentContextType::kMaxValue)
 
 #endif  // CONTENT_COMMON_RESOURCE_MESSAGES_H_

@@ -15,7 +15,7 @@ template("unwind_table_asset") {
     }
 
     _root_dir = "$root_out_dir"
-    if (build_apk_secondary_abi && defined(android_secondary_abi_cpu)) {
+    if (defined(android_secondary_abi_cpu)) {
       _root_dir = get_label_info(":foo($android_secondary_abi_toolchain)",
                                  "root_out_dir")
     }

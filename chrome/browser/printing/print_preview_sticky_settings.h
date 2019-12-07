@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/containers/flat_map.h"
 #include "base/optional.h"
 #include "printing/print_job_constants.h"
 
@@ -35,6 +36,12 @@ class PrintPreviewStickySettings {
 
   void SaveInPrefs(PrefService* profile) const;
   void RestoreFromPrefs(PrefService* profile);
+
+  // Parses serialized printing sticky settings state and extracts the list of
+  // recently used printers. Returns a map with printers ids and their ranks.
+  // The rank is the position in the list of recently used printers. The lower
+  // the rank the more recent the printer was used.
+  base::flat_map<std::string, int> GetPrinterRecentlyUsedRanks();
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 

@@ -93,6 +93,14 @@ TabStripSelectionChange& TabStripSelectionChange::operator=(
     const TabStripSelectionChange& other) = default;
 
 ////////////////////////////////////////////////////////////////////////////////
+// TabGroupChange
+//
+TabGroupChange::TabGroupChange(TabGroupId group, Type type)
+    : group(group), type(type) {}
+
+TabGroupChange::~TabGroupChange() = default;
+
+////////////////////////////////////////////////////////////////////////////////
 // TabStripModelObserver
 //
 TabStripModelObserver::TabStripModelObserver() {}
@@ -110,15 +118,7 @@ void TabStripModelObserver::OnTabStripModelChanged(
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {}
 
-void TabStripModelObserver::OnTabGroupCreated(TabGroupId group) {}
-
-void TabStripModelObserver::OnTabGroupContentsChanged(TabGroupId group) {}
-
-void TabStripModelObserver::OnTabGroupVisualsChanged(
-    TabGroupId group,
-    const TabGroupVisualData* visual_data) {}
-
-void TabStripModelObserver::OnTabGroupClosed(TabGroupId group) {}
+void TabStripModelObserver::OnTabGroupChanged(const TabGroupChange& change) {}
 
 void TabStripModelObserver::TabChangedAt(WebContents* contents,
                                          int index,

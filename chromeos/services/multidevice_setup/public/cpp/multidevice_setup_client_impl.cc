@@ -10,9 +10,7 @@
 #include "base/bind.h"
 #include "base/no_destructor.h"
 #include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
 
@@ -42,18 +40,18 @@ MultiDeviceSetupClientImpl::Factory::~Factory() = default;
 
 std::unique_ptr<MultiDeviceSetupClient>
 MultiDeviceSetupClientImpl::Factory::BuildInstance(
-    service_manager::Connector* connector) {
-  return base::WrapUnique(new MultiDeviceSetupClientImpl(connector));
+    mojo::PendingRemote<mojom::MultiDeviceSetup> remote_setup) {
+  return base::WrapUnique(
+      new MultiDeviceSetupClientImpl(std::move(remote_setup)));
 }
 
 MultiDeviceSetupClientImpl::MultiDeviceSetupClientImpl(
-    service_manager::Connector* connector)
-    : remote_device_cache_(
+    mojo::PendingRemote<mojom::MultiDeviceSetup> remote_setup)
+    : multidevice_setup_remote_(std::move(remote_setup)),
+      remote_device_cache_(
           multidevice::RemoteDeviceCache::Factory::Get()->BuildInstance()),
       host_status_with_device_(GenerateDefaultHostStatusWithDevice()),
       feature_states_map_(GenerateDefaultFeatureStatesMap()) {
-  connector->Connect(mojom::kServiceName,
-                     multidevice_setup_remote_.BindNewPipeAndPassReceiver());
   multidevice_setup_remote_->AddHostStatusObserver(
       GenerateHostStatusObserverRemote());
   multidevice_setup_remote_->AddFeatureStateObserver(

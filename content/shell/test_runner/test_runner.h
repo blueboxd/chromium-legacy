@@ -375,7 +375,6 @@ class TestRunner : public WebTestRunner {
   void SetStorageAllowed(bool allowed);
   void SetPluginsAllowed(bool allowed);
   void SetAllowRunningOfInsecureContent(bool allowed);
-  void SetAutoplayAllowed(bool allowed);
   void DumpPermissionClientCallbacks();
 
   // Sets up a mock DocumentSubresourceFilter to disallow subsequent subresource

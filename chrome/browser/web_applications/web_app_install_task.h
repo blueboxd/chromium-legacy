@@ -34,6 +34,7 @@ class WebContents;
 namespace web_app {
 
 class AppShortcutManager;
+class FileHandlerManager;
 class InstallFinalizer;
 class WebAppDataRetriever;
 class WebAppUrlLoader;
@@ -44,7 +45,9 @@ class WebAppInstallTask : content::WebContentsObserver {
       base::OnceCallback<void(std::unique_ptr<WebApplicationInfo>)>;
 
   WebAppInstallTask(Profile* profile,
+                    AppRegistrar* registrar,
                     AppShortcutManager* shortcut_manager,
+                    FileHandlerManager* file_handler_manager,
                     InstallFinalizer* install_finalizer,
                     std::unique_ptr<WebAppDataRetriever> data_retriever);
   ~WebAppInstallTask() override;
@@ -243,7 +246,9 @@ class WebAppInstallTask : content::WebContentsObserver {
   std::unique_ptr<WebApplicationInfo> web_application_info_;
   std::unique_ptr<content::WebContents> web_contents_;
 
+  AppRegistrar* registrar_;
   AppShortcutManager* shortcut_manager_;
+  FileHandlerManager* file_handler_manager_;
   InstallFinalizer* install_finalizer_;
   Profile* const profile_;
 

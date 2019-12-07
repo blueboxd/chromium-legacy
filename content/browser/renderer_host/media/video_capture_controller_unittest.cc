@@ -551,7 +551,7 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   Mock::VerifyAndClearExpectations(client_b_.get());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          VideoCaptureControllerTest,
                          ::testing::Values(media::PIXEL_FORMAT_I420,
                                            media::PIXEL_FORMAT_Y16));

@@ -327,6 +327,12 @@ const base::Optional<url::Origin>& FakeDownloadItem::GetRequestInitiator()
   return dummy_origin;
 }
 
+const net::NetworkIsolationKey& FakeDownloadItem::GetNetworkIsolationKey()
+    const {
+  NOTREACHED();
+  return dummy_network_isolation_key;
+}
+
 std::string FakeDownloadItem::GetSuggestedFilename() const {
   NOTREACHED();
   return std::string();

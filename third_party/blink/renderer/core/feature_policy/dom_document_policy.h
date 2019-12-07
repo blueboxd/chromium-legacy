@@ -26,7 +26,7 @@ class CORE_EXPORT DOMDocumentPolicy final : public DOMFeaturePolicy {
 
  protected:
   const FeaturePolicy* GetPolicy() const override {
-    return document_->GetFeaturePolicy();
+    return document_->GetSecurityContext().GetFeaturePolicy();
   }
   Document* GetDocument() const override { return document_; }
 

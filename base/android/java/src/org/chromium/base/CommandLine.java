@@ -84,6 +84,12 @@ public abstract class CommandLine {
     public abstract void appendSwitchesAndArguments(String[] array);
 
     /**
+     * Remove the switch from the command line.  If no such switch is present, this has no effect.
+     * @param switchString The switch key to lookup. It should NOT start with '--' !
+     */
+    public abstract void removeSwitch(String switchString);
+
+    /**
      * Determine if the command line is bound to the native (JNI) implementation.
      * @return true if the underlying implementation is delegating to the native command line.
      */
@@ -332,6 +338,22 @@ public abstract class CommandLine {
                 }
             }
         }
+
+        @Override
+        public void removeSwitch(String switchString) {
+            mSwitches.remove(switchString);
+            String combinedSwitchString = SWITCH_PREFIX + switchString;
+
+            // Since we permit a switch to be added multiple times, we need to remove all instances
+            // from mArgs.
+            for (int i = mArgsBegin - 1; i > 0; i--) {
+                if (mArgs.get(i).equals(combinedSwitchString)
+                        || mArgs.get(i).startsWith(combinedSwitchString + SWITCH_VALUE_SEPARATOR)) {
+                    --mArgsBegin;
+                    mArgs.remove(i);
+                }
+            }
+        }
     }
 
     private static class NativeCommandLine extends CommandLine {
@@ -365,6 +387,11 @@ public abstract class CommandLine {
         }
 
         @Override
+        public void removeSwitch(String switchString) {
+            CommandLineJni.get().removeSwitch(switchString);
+        }
+
+        @Override
         public boolean isNativeImplementation() {
             return true;
         }
@@ -391,5 +418,6 @@ public abstract class CommandLine {
         void appendSwitch(String switchString);
         void appendSwitchWithValue(String switchString, String value);
         void appendSwitchesAndArguments(String[] array);
+        void removeSwitch(String switchString);
     }
 }

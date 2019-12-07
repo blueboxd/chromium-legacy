@@ -5,12 +5,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/strings/grit/components_strings.h"
+#include "net/dns/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace payments {
@@ -84,9 +86,31 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerNoShippingTest,
 class PaymentSheetViewControllerContactDetailsTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentSheetViewControllerContactDetailsTest() {}
+  PaymentSheetViewControllerContactDetailsTest()
+      : kylepay_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+
+  // Starts the test sever for kylepay.
+  void SetUpOnMainThread() override {
+    PaymentRequestBrowserTestBase::SetUpOnMainThread();
+
+    host_resolver()->AddRule("kylepay.com", "127.0.0.1");
+    EXPECT_TRUE(kylepay_server_.InitializeAndListen());
+    kylepay_server_.ServeFilesFromSourceDirectory(
+        "components/test/data/payments/kylepay.com");
+    kylepay_server_.StartAcceptingConnections();
+  }
+
+  void InstallKylePayForBasicCard() {
+    ui_test_utils::NavigateToURL(browser(),
+                                 kylepay_server_.GetURL("kylepay.com", "/"));
+    EXPECT_EQ("success", content::EvalJs(GetActiveWebContents(),
+                                         "install('basic-card');"));
+  }
 
  private:
+  // https://kylepay.com hosts a payment app which supports delegations.
+  net::EmbeddedTestServer kylepay_server_;
+
   DISALLOW_COPY_AND_ASSIGN(PaymentSheetViewControllerContactDetailsTest);
 };
 
@@ -166,8 +190,14 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
   EXPECT_EQ(expected,
             content::EvalJs(GetActiveWebContents(),
                             "enableDelegations(['shippingAddress'])"));
+
+  // Install KylePay which also supports shipping delegation to force showing
+  // payment sheet.
+  InstallKylePayForBasicCard();
+
   // Invoke a payment request with basic-card and methodName =
   // window.location.origin + '/pay' supportedMethods (see payment_handler.js).
+  NavigateTo("/payment_handler.html");
   ResetEventWaiterForDialogOpened();
   EXPECT_EQ(
       expected,
@@ -205,8 +235,14 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
       content::EvalJs(
           GetActiveWebContents(),
           "enableDelegations(['payerName', 'payerPhone', 'payerEmail'])"));
+
+  // Install KylePay which also supports contact delegation to force showing
+  // payment sheet.
+  InstallKylePayForBasicCard();
+
   // Invoke a payment request with basic-card and methodName =
   // window.location.origin + '/pay' supportedMethods (see payment_handler.js).
+  NavigateTo("/payment_handler.html");
   ResetEventWaiterForDialogOpened();
   EXPECT_EQ(
       expected,

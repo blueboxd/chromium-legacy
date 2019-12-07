@@ -33,7 +33,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::MediaContentType, media::MediaContentType::Max)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebFullscreenVideoStatus,
-                          blink::WebFullscreenVideoStatus::kMax)
+                          blink::WebFullscreenVideoStatus::kMaxValue)
 
 // ----------------------------------------------------------------------------
 // Messages from the browser to the renderer requesting playback state changes.

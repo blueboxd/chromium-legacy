@@ -622,8 +622,7 @@ PermissionRequestManager::DetermineCurrentRequestUIDispositionForUMA() {
 #else
   return !ShouldCurrentRequestUseQuietUI()
              ? PermissionPromptDisposition::ANCHORED_BUBBLE
-             : QuietNotificationPermissionUiConfig::UiFlavorToUse() ==
-                       QuietNotificationPermissionUiConfig::STATIC_ICON
+             : ReasonForUsingQuietUi() == QuietUiReason::kTriggeredByCrowdDeny
                    ? PermissionPromptDisposition::LOCATION_BAR_RIGHT_STATIC_ICON
                    : PermissionPromptDisposition::
                          LOCATION_BAR_RIGHT_ANIMATED_ICON;

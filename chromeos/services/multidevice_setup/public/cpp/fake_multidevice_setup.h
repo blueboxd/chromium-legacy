@@ -25,7 +25,6 @@ class FakeMultiDeviceSetup : public MultiDeviceSetupBase {
   FakeMultiDeviceSetup();
   ~FakeMultiDeviceSetup() override;
 
-  void BindHandle(mojo::ScopedMessagePipeHandle handle);
   void FlushForTesting();
 
   bool HasAtLeastOneHostStatusObserver();

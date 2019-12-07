@@ -34,6 +34,24 @@ source_set("infobars") {
   ]
 }
 
+source_set("overlays") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "infobar_banner_overlay_request_factory.h",
+    "infobar_banner_overlay_request_factory_impl.h",
+    "infobar_banner_overlay_request_factory_impl.mm",
+    "infobar_overlay_tab_helper.h",
+    "infobar_overlay_tab_helper.mm",
+  ]
+  deps = [
+    ":infobars",
+    "//base",
+    "//components/infobars/core",
+    "//ios/chrome/browser/overlays",
+    "//ios/web/public",
+  ]
+}
+
 source_set("badge_public") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -85,16 +103,21 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "infobar_badge_tab_helper_unittest.mm",
+    "infobar_overlay_tab_helper_unittest.mm",
   ]
   deps = [
     ":badge",
     ":infobars",
+    ":overlays",
     "//base/test:test_support",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/infobars:public",
+    "//ios/chrome/browser/overlays",
+    "//ios/chrome/browser/overlays/test",
     "//ios/chrome/browser/ui/badges:public",
     "//ios/chrome/browser/ui/infobars:feature_flags",
     "//ios/chrome/browser/ui/infobars:infobars_ui",
+    "//ios/chrome/browser/ui/infobars:test_support",
     "//ios/chrome/browser/ui/infobars:test_support",
     "//ios/chrome/browser/ui/infobars/coordinators",
     "//ios/chrome/browser/ui/infobars/test",

@@ -21334,6 +21334,11 @@
       }
     ]
   },
+  "android-arm64-proguard-rel": {
+    "additional_compile_targets": [
+      "all"
+    ]
+  },
   "android-cronet-arm-dbg": {
     "additional_compile_targets": [
       "cronet_package",

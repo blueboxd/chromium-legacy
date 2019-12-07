@@ -127,6 +127,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWinrt : public BluetoothDevice {
   void ClearGattServices();
   void ClearEventRegistrations();
 
+  ABI::Windows::Devices::Bluetooth::BluetoothConnectionStatus
+      connection_status_;
   uint64_t raw_address_;
   std::string address_;
   base::Optional<std::string> local_name_;

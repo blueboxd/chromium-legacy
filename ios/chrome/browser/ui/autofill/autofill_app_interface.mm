@@ -4,11 +4,17 @@
 
 #import "ios/chrome/browser/ui/autofill/autofill_app_interface.h"
 
+#include "base/memory/singleton.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/form_data_importer.h"
+#include "components/autofill/core/browser/payments/credit_card_save_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/ios/browser/autofill_driver_ios.h"
+#import "components/autofill/ios/browser/credit_card_save_manager_test_observer_bridge.h"
+#include "components/autofill/ios/browser/ios_test_event_waiter.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
@@ -16,6 +22,12 @@
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/app/tab_test_util.h"
+#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/web/public/js_messaging/web_frames_manager.h"
+#import "ios/web/public/web_state.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -154,6 +166,167 @@ void AddAutofillProfile(autofill::PersonalDataManager* personalDataManager) {
 
 }  // namespace
 
+namespace autofill {
+
+// Helper class that provides access to private members of AutofillManager,
+// FormDataImporter and CreditCardSaveManager.
+// This class is friend with some autofill internal classes to access private
+// fields.
+class SaveCardInfobarEGTestHelper
+    : public CreditCardSaveManager::ObserverForTest {
+ public:
+  static SaveCardInfobarEGTestHelper* SharedInstance() {
+    return base::Singleton<SaveCardInfobarEGTestHelper>::get();
+  }
+
+  SaveCardInfobarEGTestHelper() {}
+  ~SaveCardInfobarEGTestHelper() override {}
+  SaveCardInfobarEGTestHelper(const SaveCardInfobarEGTestHelper&) = delete;
+  SaveCardInfobarEGTestHelper& operator=(const SaveCardInfobarEGTestHelper&) =
+      delete;
+
+  // Access the CreditCardSaveManager.
+  static CreditCardSaveManager* GetCreditCardSaveManager() {
+    web::WebState* web_state = chrome_test_util::GetCurrentWebState();
+    web::WebFrame* main_frame =
+        web_state->GetWebFramesManager()->GetMainWebFrame();
+    return AutofillDriverIOS::FromWebStateAndWebFrame(web_state, main_frame)
+        ->autofill_manager()
+        ->client()
+        ->GetFormDataImporter()
+        ->credit_card_save_manager_.get();
+  }
+
+  // Access the PaymentsClient.
+  static payments::PaymentsClient* GetPaymentsClient() {
+    web::WebState* web_state = chrome_test_util::GetCurrentWebState();
+    web::WebFrame* main_frame =
+        web_state->GetWebFramesManager()->GetMainWebFrame();
+    DCHECK(web_state);
+    return AutofillDriverIOS::FromWebStateAndWebFrame(web_state, main_frame)
+        ->autofill_manager()
+        ->client()
+        ->GetPaymentsClient();
+  }
+
+  // Delete all failed attempds registered on every cards.
+  static void ClearCreditCardSaveStrikes() {
+    GetCreditCardSaveManager()
+        ->GetCreditCardSaveStrikeDatabase()
+        ->ClearAllStrikes();
+  }
+
+  // Set the number of failed attempds registered on a card.
+  static void SetFormFillMaxStrikes(NSString* card_key, int max) {
+    // The strike key is made of CreditCardSaveStrikeDatabase's project prefix
+    // and the last 4 digits of the card used in fillAndSubmitForm(), which can
+    // be found in credit_card_upload_form_address_and_cc.html.
+    GetCreditCardSaveManager()
+        ->GetCreditCardSaveStrikeDatabase()
+        ->strike_database_->SetStrikeData(base::SysNSStringToUTF8(card_key),
+                                          max);
+  }
+
+  // Reset the IOSTestEventWaiter and make it watch |events|.
+  void ResetEventWaiterForEvents(NSArray* events, NSTimeInterval timeout) {
+    std::list<CreditCardSaveManagerObserverEvent> events_list;
+    for (NSNumber* e : events) {
+      events_list.push_back(
+          static_cast<CreditCardSaveManagerObserverEvent>([e intValue]));
+    }
+    event_waiter_ = std::make_unique<
+        IOSTestEventWaiter<CreditCardSaveManagerObserverEvent>>(
+        std::move(events_list), timeout);
+  }
+
+  void OnOfferLocalSave() override {
+    OnEvent(CreditCardSaveManagerObserverEvent::kOnOfferLocalSaveCalled);
+  }
+
+  void OnDecideToRequestUploadSave() override {
+    OnEvent(
+        CreditCardSaveManagerObserverEvent::kOnDecideToRequestUploadSaveCalled);
+  }
+
+  void OnReceivedGetUploadDetailsResponse() override {
+    OnEvent(CreditCardSaveManagerObserverEvent::
+                kOnReceivedGetUploadDetailsResponseCalled);
+  }
+
+  void OnSentUploadCardRequest() override {
+    OnEvent(CreditCardSaveManagerObserverEvent::kOnSentUploadCardRequestCalled);
+  }
+
+  void OnReceivedUploadCardResponse() override {
+    OnEvent(CreditCardSaveManagerObserverEvent::
+                kOnReceivedUploadCardResponseCalled);
+  }
+
+  void OnShowCardSavedFeedback() override {
+    OnEvent(CreditCardSaveManagerObserverEvent::kOnShowCardSavedFeedbackCalled);
+  }
+
+  void OnStrikeChangeComplete() override {
+    OnEvent(CreditCardSaveManagerObserverEvent::kOnStrikeChangeCompleteCalled);
+  }
+
+  // Triggers |event| on the IOSTestEventWaiter.
+  bool OnEvent(CreditCardSaveManagerObserverEvent event) {
+    return event_waiter_->OnEvent(event);
+  }
+
+  // Waits until the expected events are triggered.
+  bool WaitForEvents() { return event_waiter_->Wait(); }
+
+  // Sets the response to payment server requests.
+  void SetPaymentsResponse(NSString* request, NSString* response, int error) {
+    test_url_loader_factory_->AddResponse(
+        base::SysNSStringToUTF8(request), base::SysNSStringToUTF8(response),
+        static_cast<net::HttpStatusCode>(error));
+  }
+
+  void SetPaymentsRiskData(const std::string& risk_data) {
+    GetCreditCardSaveManager()->OnDidGetUploadRiskData(risk_data);
+  }
+
+  void SetUp() {
+    test_url_loader_factory_ =
+        std::make_unique<network::TestURLLoaderFactory>();
+    // Set up the URL loader factory for the PaymentsClient so we can intercept
+    // those network requests.
+    shared_url_loader_factory_ =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            test_url_loader_factory_.get());
+
+    payments::PaymentsClient* payments_client =
+        SaveCardInfobarEGTestHelper::GetPaymentsClient();
+    payments_client->set_url_loader_factory_for_testing(
+        shared_url_loader_factory_);
+
+    // Observe actions in CreditCardSaveManager.
+    CreditCardSaveManager* credit_card_save_manager =
+        SaveCardInfobarEGTestHelper::GetCreditCardSaveManager();
+    credit_card_save_manager->SetEventObserverForTesting(this);
+  }
+
+  void TearDown() {
+    ClearCreditCardSaveStrikes();
+    CreditCardSaveManager* credit_card_save_manager =
+        SaveCardInfobarEGTestHelper::GetCreditCardSaveManager();
+    credit_card_save_manager->SetEventObserverForTesting(nullptr);
+    event_waiter_.reset();
+    shared_url_loader_factory_.reset();
+    test_url_loader_factory_.reset();
+  }
+
+ private:
+  std::unique_ptr<network::TestURLLoaderFactory> test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
+  std::unique_ptr<IOSTestEventWaiter<CreditCardSaveManagerObserverEvent>>
+      event_waiter_;
+};
+}
+
 @implementation AutofillAppInterface
 
 + (void)clearPasswordStore {
@@ -228,6 +401,10 @@ void AddAutofillProfile(autofill::PersonalDataManager* personalDataManager) {
   return base::SysUTF16ToNSString(card.NetworkAndLastFourDigits());
 }
 
++ (NSInteger)localCreditCount {
+  return [self personalDataManager] -> GetCreditCards().size();
+}
+
 + (void)saveMaskedCreditCard {
   autofill::PersonalDataManager* personalDataManager =
       [self personalDataManager];
@@ -237,6 +414,47 @@ void AddAutofillProfile(autofill::PersonalDataManager* personalDataManager) {
   personalDataManager->AddServerCreditCardForTest(
       std::make_unique<autofill::CreditCard>(card));
   personalDataManager->NotifyPersonalDataObserver();
+}
+
++ (void)setUpSaveCardInfobarEGTestHelper {
+  autofill::SaveCardInfobarEGTestHelper::SharedInstance()->SetUp();
+}
+
++ (void)tearDownSaveCardInfobarEGTestHelper {
+  autofill::SaveCardInfobarEGTestHelper::SharedInstance()->TearDown();
+}
+
++ (void)resetEventWaiterForEvents:(NSArray*)events
+                          timeout:(NSTimeInterval)timeout {
+  autofill::SaveCardInfobarEGTestHelper::SharedInstance()
+      ->ResetEventWaiterForEvents(events, timeout);
+}
+
++ (BOOL)waitForEvents {
+  return autofill::SaveCardInfobarEGTestHelper::SharedInstance()
+      ->WaitForEvents();
+}
+
++ (void)setPaymentsResponse:(NSString*)response
+                 forRequest:(NSString*)request
+              withErrorCode:(int)error {
+  return autofill::SaveCardInfobarEGTestHelper::SharedInstance()
+      ->SetPaymentsResponse(request, response, error);
+}
+
++ (void)setFormFillMaxStrikes:(int)max forCard:(NSString*)card {
+  return autofill::SaveCardInfobarEGTestHelper::SharedInstance()
+      ->SetFormFillMaxStrikes(card, max);
+}
+
++ (void)setPaymentsRiskData:(NSString*)riskData {
+  return autofill::SaveCardInfobarEGTestHelper::SharedInstance()
+      ->SetPaymentsRiskData(base::SysNSStringToUTF8(riskData));
+}
+
++ (NSString*)paymentsRiskData {
+  return base::SysUTF8ToNSString(
+      ios::GetChromeBrowserProvider()->GetRiskData());
 }
 
 #pragma mark - Private

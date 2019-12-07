@@ -81,6 +81,7 @@ const char kCapabilityIconMulti[] = "icon-multi";
 const char kCapabilityIconStatic[] = "icon-static";
 const char kCapabilityPersistence[] = "persistence";
 const char kCapabilitySound[] = "sound";
+const char kCapabilityXKdeOriginName[] = "x-kde-origin-name";
 
 // Button IDs.
 const char kCloseButtonId[] = "close";
@@ -568,41 +569,52 @@ class NotificationPlatformBridgeLinuxImpl
     writer.AppendString(
         base::UTF16ToUTF8(CreateNotificationTitle(*notification)));
 
+    std::string context_display_text;
+    bool linkify_context_if_possible = false;
+    if (notification->UseOriginAsContextMessage()) {
+      context_display_text =
+          base::UTF16ToUTF8(url_formatter::FormatUrlForSecurityDisplay(
+              notification->origin_url(),
+              url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS));
+      if (context_display_text.size() > kMaxAllowedOriginLength) {
+        std::string domain_and_registry =
+            net::registry_controlled_domains::GetDomainAndRegistry(
+                notification->origin_url(),
+                net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+        // localhost, raw IPs etc. are not handled by GetDomainAndRegistry.
+        if (!domain_and_registry.empty()) {
+          context_display_text = domain_and_registry;
+        }
+      }
+      linkify_context_if_possible = true;
+    } else {
+      context_display_text = base::UTF16ToUTF8(notification->context_message());
+    }
+
+    const bool has_support_for_kde_origin_name =
+        base::Contains(capabilities_, kCapabilityXKdeOriginName);
+
     std::ostringstream body;
     if (base::Contains(capabilities_, kCapabilityBody)) {
       const bool body_markup =
           base::Contains(capabilities_, kCapabilityBodyMarkup);
 
-      if (notification->UseOriginAsContextMessage()) {
-        std::string url_display_text =
-            base::UTF16ToUTF8(url_formatter::FormatUrlForSecurityDisplay(
-                notification->origin_url(),
-                url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS));
-        if (url_display_text.size() > kMaxAllowedOriginLength) {
-          std::string domain_and_registry =
-              net::registry_controlled_domains::GetDomainAndRegistry(
-                  notification->origin_url(),
-                  net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-          // localhost, raw IPs etc. are not handled by GetDomainAndRegistry.
-          if (!domain_and_registry.empty()) {
-            url_display_text = domain_and_registry;
+      if (!has_support_for_kde_origin_name) {
+        if (body_markup) {
+          EscapeUnsafeCharacters(&context_display_text);
+        }
+
+        if (linkify_context_if_possible) {
+          if (base::Contains(capabilities_, kCapabilityBodyHyperlinks)) {
+            body << "<a href=\""
+                 << net::EscapeForHTML(notification->origin_url().spec())
+                 << "\">" << context_display_text << "</a>\n\n";
+          } else {
+            body << context_display_text << "\n\n";
           }
+        } else if (!context_display_text.empty()) {
+          body << context_display_text << "\n\n";
         }
-        EscapeUnsafeCharacters(&url_display_text);
-        if (body_markup &&
-            base::Contains(capabilities_, kCapabilityBodyHyperlinks)) {
-          body << "<a href=\""
-               << net::EscapeForHTML(notification->origin_url().spec()) << "\">"
-               << url_display_text << "</a>\n\n";
-        } else {
-          body << url_display_text << "\n\n";
-        }
-      } else if (!notification->context_message().empty()) {
-        std::string context =
-            base::UTF16ToUTF8(notification->context_message());
-        if (body_markup)
-          EscapeUnsafeCharacters(&context);
-        body << context << "\n\n";
       }
 
       std::string message = base::UTF16ToUTF8(notification->message());
@@ -714,6 +726,14 @@ class NotificationPlatformBridgeLinuxImpl
         hints_writer.CloseContainer(&image_path_writer);
       }
       data->resource_files.push_back(std::move(icon_file));
+    }
+
+    if (has_support_for_kde_origin_name && !context_display_text.empty()) {
+      dbus::MessageWriter kde_origin_name_writer(nullptr);
+      hints_writer.OpenDictEntry(&kde_origin_name_writer);
+      kde_origin_name_writer.AppendString(kCapabilityXKdeOriginName);
+      kde_origin_name_writer.AppendVariantOfString(context_display_text);
+      hints_writer.CloseContainer(&kde_origin_name_writer);
     }
 
     writer.CloseContainer(&hints_writer);

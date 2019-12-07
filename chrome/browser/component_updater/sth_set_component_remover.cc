@@ -27,7 +27,7 @@ void CleanupOnWorker(const base::FilePath& sth_directory) {
     if (!version.IsValid())
       continue;
 
-    if (!base::DeleteFile(path, true)) {
+    if (!base::DeleteFileRecursively(path)) {
       DLOG(ERROR) << "Couldn't delete " << path.value();
     }
   }

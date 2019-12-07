@@ -137,6 +137,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
                                  float top_controls_height,
                                  float bottom_controls_height,
                                  bool browser_controls_shrink_layout) override;
+  void ResizeWithBrowserControls(const WebSize&,
+                                 cc::BrowserControlsParams) override;
   WebFrame* MainFrame() override;
   WebLocalFrame* FocusedFrame() override;
   void SetFocusedFrame(WebFrame*) override;
@@ -486,9 +488,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   void UpdateBrowserControlsConstraint(cc::BrowserControlsState constraint);
   void UpdateICBAndResizeViewport();
-  void ResizeViewWhileAnchored(float top_controls_height,
-                               float bottom_controls_height,
-                               bool browser_controls_shrink_layout);
+  void ResizeViewWhileAnchored(cc::BrowserControlsParams params);
 
   void UpdateBaseBackgroundColor();
 

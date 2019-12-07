@@ -480,9 +480,9 @@ TEST_P(WaylandKeyboardTest, NoEventAutoRepeatBeforeTimeout) {
   EXPECT_EQ(ET_KEY_RELEASED, key_event2->type());
 }
 
-INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,
+INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          WaylandKeyboardTest,
-                         ::testing::Values(kXdgShellV5));
+                         ::testing::Values(kXdgShellStable));
 INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
                          WaylandKeyboardTest,
                          ::testing::Values(kXdgShellV6));

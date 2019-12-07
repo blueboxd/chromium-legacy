@@ -14,6 +14,8 @@
 #include "services/network/public/mojom/udp_socket.mojom.h"
 #include "third_party/openscreen/src/platform/api/udp_socket.h"
 #include "third_party/openscreen/src/platform/base/error.h"
+#include "third_party/openscreen/src/platform/base/interface_info.h"
+#include "third_party/openscreen/src/platform/base/ip_address.h"
 
 namespace net {
 class IPEndPoint;
@@ -21,7 +23,7 @@ class IPEndPoint;
 
 namespace media_router {
 
-class ChromeUdpSocket : public openscreen::platform::UdpSocket,
+class ChromeUdpSocket : public openscreen::UdpSocket,
                         network::mojom::UDPSocketListener {
  public:
   ChromeUdpSocket(Client* client,
@@ -31,20 +33,19 @@ class ChromeUdpSocket : public openscreen::platform::UdpSocket,
                       pending_listener);
   ~ChromeUdpSocket() final;
 
-  // Implementations of openscreen::platform::UdpSocket methods.
+  // Implementations of openscreen::UdpSocket methods.
   bool IsIPv4() const final;
   bool IsIPv6() const final;
   openscreen::IPEndpoint GetLocalEndpoint() const final;
   void Bind() final;
   void SetMulticastOutboundInterface(
-      openscreen::platform::NetworkInterfaceIndex ifindex) final;
-  void JoinMulticastGroup(
-      const openscreen::IPAddress& address,
-      openscreen::platform::NetworkInterfaceIndex ifindex) final;
+      openscreen::NetworkInterfaceIndex ifindex) final;
+  void JoinMulticastGroup(const openscreen::IPAddress& address,
+                          openscreen::NetworkInterfaceIndex ifindex) final;
   void SendMessage(const void* data,
                    size_t length,
                    const openscreen::IPEndpoint& dest) final;
-  void SetDscp(openscreen::platform::UdpSocket::DscpMode state) final;
+  void SetDscp(openscreen::UdpSocket::DscpMode state) final;
 
   // network::mojom::UDPSocketListener overrides:
   void OnReceived(int32_t net_result,

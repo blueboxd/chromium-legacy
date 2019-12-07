@@ -84,9 +84,7 @@ std::unique_ptr<test_server::HttpResponse> HandleRequest(
   http_response->AddCustomHeader(
       "Alt-Svc",
       base::StringPrintf("quic=\"%s:%d\"; v=\"%u\"", kAltSvcHost, kAltSvcPort,
-                         HttpNetworkSession::Params()
-                             .quic_params.supported_versions[0]
-                             .transport_version));
+                         kDefaultSupportedQuicVersion.transport_version));
   http_response->set_code(HTTP_OK);
   http_response->set_content(kHelloOriginResponse);
   http_response->set_content_type("text/plain");
@@ -123,7 +121,7 @@ class URLRequestQuicPerfTest : public ::testing::Test {
         new HttpNetworkSession::Params);
     params->enable_quic = true;
     params->enable_user_alternate_protocol_ports = true;
-    params->quic_params.allow_remote_alt_svc = true;
+    quic_context_.params()->allow_remote_alt_svc = true;
     context_->set_host_resolver(host_resolver_.get());
     context_->set_http_network_session_params(std::move(params));
     context_->set_cert_verifier(&cert_verifier_);

@@ -14,7 +14,9 @@
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
+#include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/install_bounce_metric.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -68,11 +70,15 @@ constexpr bool kAddAppsToQuickLaunchBarByDefault = true;
 
 WebAppInstallTask::WebAppInstallTask(
     Profile* profile,
+    AppRegistrar* registrar,
     AppShortcutManager* shortcut_manager,
+    FileHandlerManager* file_handler_manager,
     InstallFinalizer* install_finalizer,
     std::unique_ptr<WebAppDataRetriever> data_retriever)
     : data_retriever_(std::move(data_retriever)),
+      registrar_(registrar),
       shortcut_manager_(shortcut_manager),
+      file_handler_manager_(file_handler_manager),
       install_finalizer_(install_finalizer),
       profile_(profile) {}
 
@@ -780,6 +786,10 @@ void WebAppInstallTask::OnShortcutsCreated(
     if (can_reparent_tab && install_finalizer_->CanRevealAppShim())
       install_finalizer_->RevealAppShim(app_id);
   }
+
+  // Enable file handlers, if the app is locally installed.
+  if (registrar_->IsLocallyInstalled(app_id))
+    file_handler_manager_->EnableAndRegisterOsFileHandlers(app_id);
 
   CallInstallCallback(app_id, InstallResultCode::kSuccessNewInstall);
 }

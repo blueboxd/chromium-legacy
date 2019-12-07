@@ -160,9 +160,8 @@ bool RenderWidgetTargeter::TargetingRequest::IsWebInputEventRequest() const {
   return !!event;
 }
 
-const blink::WebInputEvent& RenderWidgetTargeter::TargetingRequest::GetEvent()
-    const {
-  return *event.get();
+blink::WebInputEvent* RenderWidgetTargeter::TargetingRequest::GetEvent() {
+  return event.get();
 }
 
 RenderWidgetHostViewBase* RenderWidgetTargeter::TargetingRequest::GetRootView()
@@ -237,8 +236,9 @@ void RenderWidgetTargeter::ResolveTargetingRequest(TargetingRequest request) {
     result = is_autoscroll_in_progress_
                  ? middle_click_result_
                  : delegate_->FindTargetSynchronously(request_target,
-                                                      request.GetEvent());
-    if (!is_autoscroll_in_progress_ && IsMouseMiddleClick(request.GetEvent())) {
+                                                      *request.GetEvent());
+    if (!is_autoscroll_in_progress_ &&
+        IsMouseMiddleClick(*request.GetEvent())) {
       if (!result.should_query_view)
         middle_click_result_ = result;
     }
@@ -377,7 +377,7 @@ void RenderWidgetTargeter::FoundFrameSinkId(
   async_hit_test_timeout_.reset(nullptr);
 
   if (is_viz_hit_testing_debug_enabled_ && request.IsWebInputEventRequest() &&
-      request.GetEvent().GetType() == blink::WebInputEvent::Type::kMouseDown) {
+      request.GetEvent()->GetType() == blink::WebInputEvent::Type::kMouseDown) {
     hit_test_async_queried_debug_queue_.push_back(target->GetFrameSinkId());
   }
 
@@ -399,7 +399,7 @@ void RenderWidgetTargeter::FoundFrameSinkId(
     }
 
     if (request.IsWebInputEventRequest() &&
-        IsMouseMiddleClick(request.GetEvent())) {
+        IsMouseMiddleClick(*request.GetEvent())) {
       middle_click_result_ = {view, false, transformed_location, false};
     }
 

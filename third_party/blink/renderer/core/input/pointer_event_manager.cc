@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event_path.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
-#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -102,7 +101,6 @@ void PointerEventManager::Clear() {
   element_under_pointer_.clear();
   pointer_capture_target_.clear();
   pending_pointer_capture_target_.clear();
-  user_gesture_holder_.reset();
   dispatching_pointer_id_ = 0;
 }
 
@@ -531,7 +529,6 @@ WebInputEventResult PointerEventManager::SendTouchPointerEvent(
 
 WebInputEventResult PointerEventManager::FlushEvents() {
   WebInputEventResult result = touch_event_manager_->FlushEvents();
-  user_gesture_holder_.reset();
   return result;
 }
 
@@ -632,8 +629,7 @@ WebInputEventResult PointerEventManager::HandlePointerEvent(
   // associated with so just pick the pointer event that comes.
   if (event.GetType() == WebInputEvent::kPointerUp &&
       !non_hovering_pointers_canceled_ && pointer_event_target.target_frame) {
-    user_gesture_holder_ =
-        LocalFrame::NotifyUserActivation(pointer_event_target.target_frame);
+    LocalFrame::NotifyUserActivation(pointer_event_target.target_frame);
   }
 
   WebInputEventResult result = DispatchTouchPointerEvent(

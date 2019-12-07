@@ -1485,6 +1485,7 @@ enum HistogramValue {
   ENTERPRISEREPORTINGPRIVATE_GETDEVICEDATA = 1422,
   ENTERPRISEREPORTINGPRIVATE_SETDEVICEDATA = 1423,
   ENTERPRISEREPORTINGPRIVATE_GETDEVICEINFO = 1424,
+  PRINTING_GETPRINTERS = 1425,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

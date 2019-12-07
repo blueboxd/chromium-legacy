@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.api.host.storage;
 
+import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.common.Result;
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 
 import java.util.List;
 import java.util.Map;

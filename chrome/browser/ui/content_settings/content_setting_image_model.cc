@@ -358,7 +358,7 @@ void ContentSettingImageModel::SetAnimationHasRun(
 
 bool ContentSettingImageModel::ShouldNotifyAccessibility(
     content::WebContents* contents) const {
-  return image_type_should_notify_accessibility_ &&
+  return image_type_should_notify_accessibility_ && explanatory_string_id_ &&
          !ContentSettingImageModelStates::Get(contents)
               ->GetAccessibilityNotified(image_type());
 }
@@ -869,10 +869,6 @@ ContentSettingNotificationsImageModel::ContentSettingNotificationsImageModel()
   set_icon(vector_icons::kNotificationsOffIcon, gfx::kNoneIcon);
   set_tooltip(
       l10n_util::GetStringUTF16(IDS_NOTIFICATIONS_OFF_EXPLANATORY_TEXT));
-  if (QuietNotificationPermissionUiConfig::UiFlavorToUse() ==
-      QuietNotificationPermissionUiConfig::UiFlavor::ANIMATED_ICON) {
-    set_explanatory_string_id(IDS_NOTIFICATIONS_OFF_EXPLANATORY_TEXT);
-  }
 }
 
 bool ContentSettingNotificationsImageModel::UpdateAndGetVisibility(
@@ -881,15 +877,22 @@ bool ContentSettingNotificationsImageModel::UpdateAndGetVisibility(
   auto* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
+  if (!manager || !manager->ShouldCurrentRequestUseQuietUI())
+    return false;
   // |manager| may be null in tests.
   // Show promo the first time a quiet prompt is shown to the user.
   // TODO(hkamila) Check that this is only shown the first time the promo is
   // shown.
-  if (manager && manager->ShouldCurrentRequestUseQuietUI() &&
-      QuietNotificationPermissionUiState::ShouldShowPromo(profile)) {
+  if (QuietNotificationPermissionUiState::ShouldShowPromo(profile)) {
     set_should_show_promo(true);
   }
-  return manager ? manager->ShouldCurrentRequestUseQuietUI() : false;
+  if (manager->ReasonForUsingQuietUi() ==
+      PermissionRequestManager::QuietUiReason::kTriggeredByCrowdDeny) {
+    set_explanatory_string_id(0);
+  } else {
+    set_explanatory_string_id(IDS_NOTIFICATIONS_OFF_EXPLANATORY_TEXT);
+  }
+  return true;
 }
 
 void ContentSettingNotificationsImageModel::SetPromoWasShown(

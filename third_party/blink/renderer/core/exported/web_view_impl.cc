@@ -1328,9 +1328,7 @@ void WebViewImpl::DidUpdateBrowserControls() {
   DCHECK(client);
   client->SetBrowserControlsShownRatio(GetBrowserControls().TopShownRatio(),
                                        GetBrowserControls().BottomShownRatio());
-  client->SetBrowserControlsHeight(GetBrowserControls().TopHeight(),
-                                   GetBrowserControls().BottomHeight(),
-                                   GetBrowserControls().ShrinkViewport());
+  client->SetBrowserControlsParams(GetBrowserControls().Params());
 
   VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
 
@@ -1351,13 +1349,10 @@ BrowserControls& WebViewImpl::GetBrowserControls() {
   return GetPage()->GetBrowserControls();
 }
 
-void WebViewImpl::ResizeViewWhileAnchored(float top_controls_height,
-                                          float bottom_controls_height,
-                                          bool browser_controls_shrink_layout) {
+void WebViewImpl::ResizeViewWhileAnchored(cc::BrowserControlsParams params) {
   DCHECK(MainFrameImpl());
 
-  GetBrowserControls().SetHeight(top_controls_height, bottom_controls_height,
-                                 browser_controls_shrink_layout);
+  GetBrowserControls().SetParams(params);
 
   {
     // Avoids unnecessary invalidations while various bits of state in
@@ -1386,13 +1381,21 @@ void WebViewImpl::ResizeWithBrowserControls(
     float top_controls_height,
     float bottom_controls_height,
     bool browser_controls_shrink_layout) {
+  ResizeWithBrowserControls(
+      new_size, {top_controls_height, GetBrowserControls().TopMinHeight(),
+                 bottom_controls_height, GetBrowserControls().BottomMinHeight(),
+                 GetBrowserControls().AnimateHeightChanges(),
+                 browser_controls_shrink_layout});
+}
+
+void WebViewImpl::ResizeWithBrowserControls(
+    const WebSize& new_size,
+    cc::BrowserControlsParams browser_controls_params) {
   if (should_auto_resize_)
     return;
 
   if (size_ == new_size &&
-      GetBrowserControls().TopHeight() == top_controls_height &&
-      GetBrowserControls().BottomHeight() == bottom_controls_height &&
-      GetBrowserControls().ShrinkViewport() == browser_controls_shrink_layout)
+      GetBrowserControls().Params() == browser_controls_params)
     return;
 
   if (GetPage()->MainFrame() && !GetPage()->MainFrame()->IsLocalFrame()) {
@@ -1403,9 +1406,7 @@ void WebViewImpl::ResizeWithBrowserControls(
     size_ = new_size;
     GetPageScaleConstraintsSet().DidChangeInitialContainingBlockSize(size_);
     GetPage()->GetVisualViewport().SetSize(size_);
-    GetPage()->GetBrowserControls().SetHeight(top_controls_height,
-                                              bottom_controls_height,
-                                              browser_controls_shrink_layout);
+    GetPage()->GetBrowserControls().SetParams(browser_controls_params);
     return;
   }
 
@@ -1430,12 +1431,10 @@ void WebViewImpl::ResizeWithBrowserControls(
     RotationViewportAnchor anchor(*view, visual_viewport,
                                   viewport_anchor_coords,
                                   GetPageScaleConstraintsSet());
-    ResizeViewWhileAnchored(top_controls_height, bottom_controls_height,
-                            browser_controls_shrink_layout);
+    ResizeViewWhileAnchored(browser_controls_params);
   } else {
     ResizeViewportAnchor::ResizeScope resize_scope(*resize_viewport_anchor_);
-    ResizeViewWhileAnchored(top_controls_height, bottom_controls_height,
-                            browser_controls_shrink_layout);
+    ResizeViewWhileAnchored(browser_controls_params);
   }
   SendResizeEventForMainFrame();
 }

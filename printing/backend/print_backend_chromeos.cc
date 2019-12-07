@@ -43,7 +43,7 @@ std::unique_ptr<CupsConnection> CreateConnection(
 // implementation for use on ChromeOS.
 class PrintBackendChromeOS : public PrintBackend {
  public:
-  PrintBackendChromeOS();
+  explicit PrintBackendChromeOS(const std::string& locale);
 
   // PrintBackend implementation.
   bool EnumeratePrinters(PrinterList* printer_list) override;
@@ -60,7 +60,8 @@ class PrintBackendChromeOS : public PrintBackend {
   ~PrintBackendChromeOS() override = default;
 };
 
-PrintBackendChromeOS::PrintBackendChromeOS() = default;
+PrintBackendChromeOS::PrintBackendChromeOS(const std::string& locale)
+    : PrintBackend(locale) {}
 
 bool PrintBackendChromeOS::EnumeratePrinters(PrinterList* printer_list) {
   return true;
@@ -95,12 +96,13 @@ bool PrintBackendChromeOS::IsValidPrinter(const std::string& printer_name) {
 
 // static
 scoped_refptr<PrintBackend> PrintBackend::CreateInstanceImpl(
-    const base::DictionaryValue* print_backend_settings) {
+    const base::DictionaryValue* print_backend_settings,
+    const std::string& locale) {
 #if defined(USE_CUPS)
-  return base::WrapRefCounted(
-      new PrintBackendCupsIpp(CreateConnection(print_backend_settings)));
+  return base::MakeRefCounted<PrintBackendCupsIpp>(
+      CreateConnection(print_backend_settings), locale);
 #else
-  return base::MakeRefCounted<PrintBackendChromeOS>();
+  return base::MakeRefCounted<PrintBackendChromeOS>(locale);
 #endif  // defined(USE_CUPS)
 }
 

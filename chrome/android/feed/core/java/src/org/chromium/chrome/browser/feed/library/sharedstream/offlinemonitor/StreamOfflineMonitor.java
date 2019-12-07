@@ -6,9 +6,9 @@ package org.chromium.chrome.browser.feed.library.sharedstream.offlinemonitor;
 
 import android.support.annotation.VisibleForTesting;
 
+import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.host.offlineindicator.OfflineIndicatorApi;
 import org.chromium.chrome.browser.feed.library.api.host.offlineindicator.OfflineIndicatorApi.OfflineStatusListener;
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 
 import java.util.ArrayList;

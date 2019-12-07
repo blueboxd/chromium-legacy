@@ -9,8 +9,6 @@
 #include "base/strings/string_util.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 
-namespace string_matching {
-
 TermBreakIterator::TermBreakIterator(const base::string16& word)
     : word_(word),
       prev_(npos),
@@ -71,5 +69,3 @@ TermBreakIterator::State TermBreakIterator::GetNewState(base::char16 ch) {
 
   return STATE_CHAR;
 }
-
-}  // namespace string_matching

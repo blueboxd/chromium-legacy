@@ -24,6 +24,7 @@ if (enable_resource_whitelist_generation) {
 }
 
 if (public_android_sdk) {
+  # Standalone WebView APK.
   system_webview_apk_tmpl("system_webview_apk") {
     android_manifest = system_webview_android_manifest
     android_manifest_dep =
@@ -40,6 +41,7 @@ if (public_android_sdk) {
     ]
   }
 
+  # Trichrome WebView APK.
   system_webview_apk_tmpl("trichrome_webview_apk") {
     android_manifest = trichrome_webview_android_manifest
     android_manifest_dep =
@@ -61,6 +63,7 @@ if (public_android_sdk) {
     }
   }
 
+  # Trichrome WebView APK for a 64-bit Chrome.
   if (android_64bit_target_cpu) {
     system_webview_apk_tmpl("trichrome_webview_64_32_apk") {
       android_manifest = trichrome_webview_64_32_android_manifest
@@ -82,8 +85,10 @@ if (public_android_sdk) {
   }
 }
 
+# The shared library used by standalone WebView.
 shared_library("libwebviewchromium") {
   deps = [
+    "//android_webview/lib",
     "//android_webview/lib:webview_entry_point",
     "//android_webview/nonembedded",
   ]
@@ -91,12 +96,23 @@ shared_library("libwebviewchromium") {
   configs += [ "//build/config/android:hide_all_but_jni" ]
 }
 
-template("webview_library") {
+# This template is used to define WebView's alternate-ABI libraries, which are
+# used by Monochrome and Trichrome on 64-bit devices which support both 32 and
+# 64-bit ABIs. WebView's browser process must use the same ABI as the embedding
+# app (renderer processes used the ABI defined in the WebView APK manifest),
+# which requires us to have two copies of the library available, one for each
+# ABI.  The primary library is the one shared with Chrome, and the alternate is
+# a WebView-specific library defined here for whichever ABI isn't used by
+# Chrome.
+#
+# Note that this library only includes code needed for the embedded usecase,
+# as all non-embedded code uses the primary library.
+template("webview_alternate_library") {
   chrome_common_shared_library(target_name) {
     forward_variables_from(invoker, "*")
     deps = [
+      "//android_webview/lib",
       "//android_webview/lib:webview_entry_point",
-      "//android_webview/nonembedded",
     ]
     is_webview = true
   }
@@ -110,31 +126,47 @@ if (defined(android_secondary_abi_toolchain)) {
     # This target is the 32-bit WebView library that pairs with a 64-bit
     # browser. It is suffixed with _64 because its name must match the 64-bit
     # browser library.
-    webview_library("monochrome_64") {
+    webview_alternate_library("monochrome_64") {
     }
   } else {
     # Inverse of above, for the original 32-bit case.
-    webview_library("monochrome") {
+    webview_alternate_library("monochrome") {
     }
   }
 } else {
   # 32-bit WebView library used in 32-bit only builds of 64/32 targets.
-  webview_library("monochrome_64") {
+  webview_alternate_library("monochrome_64") {
   }
 }
 
-group("android_webview") {
-  if (public_android_sdk) {
-    deps = [
-      ":system_webview_apk",
+# Contains all Java dependencies used by WebView.
+# TODO(crbug.com/934152): Rename this to android_webview_java. It has a
+#                         temporary name because GN doesn't allow the direction
+#                         of existing dependencies to be reversed.
+java_group("android_webview_step1_java") {
+  deps = [
+    ":browser_java",
+
+    # This includes AwResource, which may be called via JNI. We're including it
+    # here because there's currently no good way to enforce that it gets included
+    # when it's depended on via JNI.
+    ":common_java",
+    "//android_webview/glue",
+    "//android_webview/nonembedded:nonembedded_java",
+    "//android_webview/support_library:support_lib_glue_java",
+  ]
+
+  if (webview_includes_weblayer) {
+    deps += [
+      "//components/viz/service:service_java",
+      "//weblayer/browser/java",
     ]
   }
 }
 
-java_group("android_webview_java") {
-  deps = [
-    ":browser_java",
-  ]
+# An empty group included in //BUILD.gn to make this and other WebView build
+# files reachable by GN.
+group("empty_group") {
 }
 
 generate_jni("common_jni_headers") {
@@ -192,13 +224,6 @@ generate_jni("browser_jni_headers") {
 
 generate_jar_jni("cancellation_signal_android_jar_jni_headers") {
   classes = [ "android/os/CancellationSignal.class" ]
-}
-
-# TODO(crbug.com/934152): Delete this once Clank uses the new manifest location.
-group("system_webview_manifest") {
-  deps = [
-    "//android_webview/nonembedded:system_webview_manifest",
-  ]
 }
 
 android_library("browser_java") {
@@ -296,10 +321,6 @@ android_library("browser_java") {
     ":common_aidl_java",
     ":common_commandline_java",
     ":common_crash_java",
-
-    # This includes AwResource, which may be called via JNI. We're including it
-    # here because there's currently no good way to enforce that it gets included
-    # when it's depended on via JNI.
     ":common_java",
     ":common_platform_services_java",
     ":common_variations_utils_java",
@@ -336,13 +357,6 @@ android_library("browser_java") {
 
   if (enable_spellcheck) {
     deps += [ "//components/spellcheck/browser/android:java" ]
-  }
-
-  if (webview_includes_weblayer) {
-    deps += [
-      "//components/viz/service:service_java",
-      "//weblayer/browser/java",
-    ]
   }
 
   srcjar_deps = [
@@ -591,7 +605,7 @@ android_assets("monochrome_webview_assets") {
   } else {
     deps += [ "//v8:v8_external_startup_data_assets" ]
   }
-  if (android_64bit_target_cpu && build_apk_secondary_abi) {
+  if (android_64bit_target_cpu) {
     deps += [ ":v8_snapshot_secondary_abi_assets" ]
   }
 }

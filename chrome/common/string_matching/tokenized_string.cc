@@ -13,8 +13,6 @@
 
 using base::i18n::BreakIterator;
 
-namespace string_matching {
-
 TokenizedString::TokenizedString(const base::string16& text) : text_(text) {
   Tokenize();
 }
@@ -43,5 +41,3 @@ void TokenizedString::Tokenize() {
     }
   }
 }
-
-}  // namespace string_matching

@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -20,12 +21,11 @@
 #include "chrome/grit/multidevice_setup_resources.h"
 #include "chrome/grit/multidevice_setup_resources_map.h"
 #include "chromeos/grit/chromeos_resources.h"
+#include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/services/multidevice_setup/public/cpp/url_provider.h"
-#include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
@@ -123,13 +123,11 @@ MultiDeviceSetupDialogUI::~MultiDeviceSetupDialogUI() = default;
 void MultiDeviceSetupDialogUI::BindMultiDeviceSetup(
     mojo::PendingReceiver<chromeos::multidevice_setup::mojom::MultiDeviceSetup>
         receiver) {
-  service_manager::Connector* connector =
-      content::BrowserContext::GetConnectorFor(
-          web_ui()->GetWebContents()->GetBrowserContext());
-  DCHECK(connector);
-
-  connector->Connect(chromeos::multidevice_setup::mojom::kServiceName,
-                     std::move(receiver));
+  MultiDeviceSetupService* service =
+      MultiDeviceSetupServiceFactory::GetForProfile(
+          Profile::FromWebUI(web_ui()));
+  if (service)
+    service->BindMultiDeviceSetup(std::move(receiver));
 }
 
 }  // namespace multidevice_setup

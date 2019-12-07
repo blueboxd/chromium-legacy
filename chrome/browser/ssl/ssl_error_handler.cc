@@ -998,8 +998,8 @@ void SSLErrorHandler::HandleCertDateInvalidError() {
   network_time::NetworkTimeTracker* tracker =
       g_config.Pointer()->network_time_tracker();
   if (!tracker->StartTimeFetch(
-          base::Bind(&SSLErrorHandler::HandleCertDateInvalidErrorImpl,
-                     weak_ptr_factory_.GetWeakPtr(), now))) {
+          base::BindOnce(&SSLErrorHandler::HandleCertDateInvalidErrorImpl,
+                         weak_ptr_factory_.GetWeakPtr(), now))) {
     HandleCertDateInvalidErrorImpl(now);
     return;
   }

@@ -75,6 +75,7 @@ Polymer({
     errorMessage: {
       type: String,
       value: '',
+      observer: 'errorMessageChanged_',
     },
 
     /**
@@ -91,6 +92,7 @@ Polymer({
     invalid: {
       type: Boolean,
       value: false,
+      notify: true,
       reflectToAttribute: true,
     },
 
@@ -202,6 +204,15 @@ Polymer({
     return ariaLabel || label || placeholder;
   },
 
+  /**
+   * Returns 'true' or 'false' as a string for the aria-invalid attribute.
+   * @return {string}
+   * @private
+   */
+  getAriaInvalid_: function(invalid) {
+    return invalid ? 'true' : 'false';
+  },
+
   /** @private */
   disabledChanged_: function(current, previous) {
     this.setAttribute('aria-disabled', this.disabled ? 'true' : 'false');
@@ -213,6 +224,15 @@ Polymer({
     if (previous !== undefined) {
       this.reconcileTabindex_();
     }
+  },
+
+  /**
+   * Uses IronA11yAnnouncer to notify screen readers that an error is set.
+   * @private
+   */
+  errorMessageChanged_: function() {
+    Polymer.IronA11yAnnouncer.requestAvailability();
+    this.fire('iron-announce', {text: this.errorMessage});
   },
 
   /**

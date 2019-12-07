@@ -72,6 +72,12 @@ static void JNI_CommandLine_AppendSwitchesAndArguments(
   JNI_CommandLine_AppendJavaStringArrayToCommandLine(env, array, false);
 }
 
+static void JNI_CommandLine_RemoveSwitch(JNIEnv* env,
+                                         const JavaParamRef<jstring>& jswitch) {
+  std::string switch_string(ConvertJavaStringToUTF8(env, jswitch));
+  CommandLine::ForCurrentProcess()->RemoveSwitch(switch_string);
+}
+
 static void JNI_CommandLine_Init(
     JNIEnv* env,
     const JavaParamRef<jobjectArray>& init_command_line) {

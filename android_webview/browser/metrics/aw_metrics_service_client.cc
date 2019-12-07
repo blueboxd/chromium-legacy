@@ -90,6 +90,27 @@ bool UintFallsInBottomPercentOfValues(uint32_t value, double percent) {
   return value < value_threshold;
 }
 
+// Normally kMetricsReportingEnabledTimestamp would be set by the
+// MetricsStateManager. However, it assumes kMetricsClientID and
+// kMetricsReportingEnabledTimestamp are always set together. Because WebView
+// previously persisted kMetricsClientID but not
+// kMetricsReportingEnabledTimestamp, we violated this invariant, and need to
+// manually set this pref to correct things.
+//
+// TODO(https://crbug.com/995544): remove this (and its call site) when the
+// kMetricsReportingEnabledTimestamp pref has been persisted for one or two
+// milestones.
+void SetReportingEnabledDateIfNotSet(PrefService* prefs) {
+  if (prefs->HasPrefPath(metrics::prefs::kMetricsReportingEnabledTimestamp))
+    return;
+  // Arbitrarily, backfill the date with 2014-01-01 00:00:00.000 UTC. This date
+  // is within the range of dates the backend will accept.
+  base::Time backfill_date =
+      base::Time::FromDeltaSinceWindowsEpoch(base::TimeDelta::FromDays(150845));
+  prefs->SetInt64(metrics::prefs::kMetricsReportingEnabledTimestamp,
+                  backfill_date.ToTimeT());
+}
+
 std::unique_ptr<metrics::MetricsService> CreateMetricsService(
     metrics::MetricsStateManager* state_manager,
     metrics::MetricsServiceClient* client,
@@ -189,6 +210,7 @@ void AwMetricsServiceClient::MaybeStartMetrics() {
       // MetricsService.
       RegisterForNotifications();
       metrics_state_manager_->ForceClientIdCreation();
+      SetReportingEnabledDateIfNotSet(pref_service_);
       is_in_sample_ = IsInSample();
       is_in_package_name_sample_ = IsInPackageNameSample();
       if (IsReportingEnabled()) {
@@ -198,6 +220,8 @@ void AwMetricsServiceClient::MaybeStartMetrics() {
       }
     } else {
       pref_service_->ClearPref(metrics::prefs::kMetricsClientID);
+      pref_service_->ClearPref(
+          metrics::prefs::kMetricsReportingEnabledTimestamp);
     }
   }
 }

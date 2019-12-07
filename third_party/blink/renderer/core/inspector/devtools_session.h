@@ -79,7 +79,7 @@ class CORE_EXPORT DevToolsSession : public GarbageCollected<DevToolsSession>,
       std::unique_ptr<protocol::Serializable> message) override;
   void fallThrough(int call_id,
                    const String& method,
-                   const protocol::ProtocolMessage& message) override;
+                   crdtp::span<uint8_t> message) override;
   void flushProtocolNotifications() override;
 
   // v8_inspector::V8Inspector::Channel implementation.

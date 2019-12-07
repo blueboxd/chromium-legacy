@@ -228,8 +228,7 @@ class HttpServerPropertiesManagerTest : public testing::Test,
 
   void SetUp() override {
     one_day_from_now_ = base::Time::Now() + base::TimeDelta::FromDays(1);
-    advertised_versions_ =
-        HttpNetworkSession::Params().quic_params.supported_versions;
+    advertised_versions_ = DefaultSupportedQuicVersions();
     pref_delegate_ = new MockPrefDelegate;
 
     http_server_props_ = std::make_unique<HttpServerProperties>(
@@ -2278,8 +2277,7 @@ TEST_F(HttpServerPropertiesManagerTest,
   AlternativeServiceInfo alt_service1 =
       AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
           AlternativeService(kProtoQUIC, "foopy.c.youtube.com", 1234),
-          expiration,
-          HttpNetworkSession::Params().quic_params.supported_versions);
+          expiration, DefaultSupportedQuicVersions());
   AlternativeServiceInfo alt_service2 =
       AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
           AlternativeService(kProtoHTTP2, "foopy.c.youtube.com", 443),

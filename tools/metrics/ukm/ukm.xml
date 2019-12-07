@@ -5308,6 +5308,19 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="MobileMenu.DirectShare">
+  <owner>sayman@chromium.org</owner>
+  <summary>
+    User pressed 'Share' in the app menu. The intent most recently used to share
+    was invoked directly. See also MobileMenu.Share.
+  </summary>
+  <metric name="HasOccurred" enum="Boolean">
+    <summary>
+      A boolean signaling that the event has occurred; only records true values.
+    </summary>
+  </metric>
+</event>
+
 <event name="MobileMenu.FindInPage">
   <owner>frechette@chromium.org</owner>
   <summary>
@@ -5317,6 +5330,19 @@ be describing additional metrics about the same event.
     <summary>
       A boolean signaling that the event has occurred (typically only records
       true values).
+    </summary>
+  </metric>
+</event>
+
+<event name="MobileMenu.Share">
+  <owner>sayman@chromium.org</owner>
+  <summary>
+    User pressed 'Share' in the app menu. A picker was shown. See also
+    MobileMenu.DirectShare.
+  </summary>
+  <metric name="HasOccurred" enum="Boolean">
+    <summary>
+      A boolean signaling that the event has occurred; only records true values.
     </summary>
   </metric>
 </event>

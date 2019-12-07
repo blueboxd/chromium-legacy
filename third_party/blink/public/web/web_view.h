@@ -41,6 +41,7 @@
 
 namespace cc {
 class PaintCanvas;
+struct BrowserControlsParams;
 }
 
 namespace gfx {
@@ -298,6 +299,12 @@ class WebView {
       float top_controls_height,
       float bottom_controls_height,
       bool browser_controls_shrink_layout) = 0;
+
+  // Same as ResizeWithBrowserControls(const WebSize&,float,float,bool), but
+  // includes all browser controls params such as the min heights.
+  virtual void ResizeWithBrowserControls(
+      const WebSize&,
+      cc::BrowserControlsParams browser_controls_params) = 0;
 
   // Same as ResizeWithBrowserControls, but keeps the same BrowserControl
   // settings.

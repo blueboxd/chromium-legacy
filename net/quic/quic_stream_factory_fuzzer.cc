@@ -92,7 +92,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Initialize this on each loop since some options mutate this.
   HttpServerProperties http_server_properties;
 
-  QuicParams params;
+  QuicParams& params = *env->quic_context.params();
   params.max_server_configs_stored_in_properties =
       data_provider.ConsumeBool() ? 1 : 0;
   params.close_sessions_on_ip_change = data_provider.ConsumeBool();
@@ -137,7 +137,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
           &http_server_properties, env->cert_verifier.get(),
           &env->ct_policy_enforcer, &env->transport_security_state,
           env->cert_transparency_verifier.get(), nullptr,
-          &env->crypto_client_stream_factory, &env->quic_context, params);
+          &env->crypto_client_stream_factory, &env->quic_context);
 
   SetQuicReloadableFlag(quic_supports_tls_handshake, true);
   SetQuicRestartFlag(quic_coalesce_stream_frames_2, true);

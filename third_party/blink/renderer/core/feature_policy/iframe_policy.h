@@ -34,8 +34,8 @@ class IFramePolicy final : public DOMFeaturePolicy {
       const ParsedFeaturePolicy& container_policy,
       scoped_refptr<const SecurityOrigin> src_origin) override {
     policy_ = FeaturePolicy::CreateFromParentPolicy(
-        parent_document_->GetFeaturePolicy(), container_policy,
-        src_origin->ToUrlOrigin());
+        parent_document_->GetSecurityContext().GetFeaturePolicy(),
+        container_policy, src_origin->ToUrlOrigin());
   }
 
   void Trace(blink::Visitor* visitor) override {

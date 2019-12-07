@@ -172,6 +172,43 @@ const DeviceCapabilities kiBuffaloGamepad = {
     base::size(kiBuffaloGamepadAbsAxes),
 };
 
+// Captured from Basking.
+const DeviceAbsoluteAxis kBaskingTouchScreenAbsAxes[] = {
+    {ABS_X, {0, 0, 3520, 0, 0, 14}},
+    {ABS_Y, {0, 0, 1984, 0, 0, 14}},
+    {ABS_PRESSURE, {0, 0, 255, 0, 0, 0}},
+    {ABS_MT_SLOT, {0, 0, 9, 0, 0, 0}},
+    {ABS_MT_TOUCH_MAJOR, {0, 0, 255, 0, 0, 0}},
+    {ABS_MT_POSITION_X, {0, 0, 3520, 0, 0, 14}},
+    {ABS_MT_POSITION_Y, {0, 0, 1984, 0, 0, 14}},
+    {ABS_MT_TRACKING_ID, {0, 0, 65535, 0, 0, 0}},
+    {ABS_MT_PRESSURE, {0, 0, 255, 0, 0, 0}},
+};
+
+const DeviceCapabilities kBaskingTouchScreen = {
+    /* path */
+    "/sys/devices/pci0000:00/0000:00:16.3/i2c_designware.3/i2c-9/"
+    "i2c-ELAN0001:00/input/input8/event8",
+    /* name */ "Elan Touchscreen",
+    /* phys */ "",
+    /* uniq */ "",
+    /* bustype */ "0018",
+    /* vendor */ "0000",
+    /* product */ "0000",
+    /* version */ "0000",
+    /* prop */ "2",
+    /* ev */ "b",
+    /* key */ "400 0 0 0 0 0",
+    /* rel */ "0",
+    /* abs */ "661800001000003",
+    /* msc */ "0",
+    /* sw */ "0",
+    /* led */ "0",
+    /* ff */ "0",
+    kBaskingTouchScreenAbsAxes,
+    base::size(kBaskingTouchScreenAbsAxes),
+};
+
 // Captured from Pixelbook.
 const DeviceAbsoluteAxis kEveTouchScreenAbsAxes[] = {
     {ABS_X, {0, 0, 10368, 0, 0, 40}},

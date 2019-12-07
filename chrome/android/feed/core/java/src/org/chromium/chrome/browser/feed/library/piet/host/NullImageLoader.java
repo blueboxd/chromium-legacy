@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.feed.library.piet.host;
 
 import android.graphics.drawable.Drawable;
 
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
+import org.chromium.base.Consumer;
 import org.chromium.components.feed.core.proto.ui.piet.ImagesProto.Image;
 
 /** {@link ImageLoader} that always returns {@link null}. For image-less clients. */

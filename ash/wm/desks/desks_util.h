@@ -5,7 +5,6 @@
 #ifndef ASH_WM_DESKS_DESKS_UTIL_H_
 #define ASH_WM_DESKS_DESKS_UTIL_H_
 
-#include <array>
 #include <vector>
 
 #include "ash/ash_export.h"

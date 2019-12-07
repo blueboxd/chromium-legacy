@@ -9,6 +9,7 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {addWebUIListener} from 'chrome://resources/js/cr.m.js';
 import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {isRTL} from 'chrome://resources/js/util.m.js';
 
 import {CustomElement} from './custom_element.js';
 import {TabElement} from './tab.js';
@@ -237,7 +238,12 @@ class TabListElement extends CustomElement {
     this.tabsApi_.getTabs().then(tabs => {
       this.tabStripEmbedderProxy_.reportTabDataReceivedDuration(
           tabs.length, Date.now() - getTabsStartTimestamp);
+
+      const createTabsStartTimestamp = Date.now();
       tabs.forEach(tab => this.onTabCreated_(tab));
+      this.tabStripEmbedderProxy_.reportTabCreationDuration(
+          tabs.length, Date.now() - createTabsStartTimestamp);
+
       addWebUIListener('tab-created', tab => this.onTabCreated_(tab));
       addWebUIListener(
           'tab-moved', (tabId, newIndex) => this.onTabMoved_(tabId, newIndex));
@@ -403,10 +409,10 @@ class TabListElement extends CustomElement {
     this.draggedItem_ = /** @type {!TabElement} */ (draggedItem);
     this.draggedItem_.setDragging(true);
     event.dataTransfer.effectAllowed = 'move';
+    const draggedItemRect = this.draggedItem_.getBoundingClientRect();
     event.dataTransfer.setDragImage(
-        this.draggedItem_.getDragImage(),
-        event.pageX - this.draggedItem_.offsetLeft,
-        event.pageY - this.draggedItem_.offsetTop);
+        this.draggedItem_.getDragImage(), event.clientX - draggedItemRect.left,
+        event.clientY - draggedItemRect.top);
   }
 
   /** @private */
@@ -569,7 +575,14 @@ class TabListElement extends CustomElement {
    * @private
    */
   scrollToTab_(tabElement) {
-    const tabElementLeft = tabElement.getBoundingClientRect().left;
+    const tabElementWidth = this.getLayoutVariable_(LayoutVariable.TAB_WIDTH);
+    const tabElementRect = tabElement.getBoundingClientRect();
+    // In RTL languages, the TabElement's scale animation scales from right to
+    // left. Therefore, the value of its getBoundingClientRect().left may not be
+    // accurate of its final rendered size because the element may not have
+    // fully scaled to the left yet.
+    const tabElementLeft =
+        isRTL() ? tabElementRect.right - tabElementWidth : tabElementRect.left;
 
     let scrollBy = 0;
     if (tabElementLeft === SCROLL_PADDING) {
@@ -580,7 +593,6 @@ class TabListElement extends CustomElement {
       // such that the element's left edge is aligned with the screen's edge.
       scrollBy = tabElementLeft - SCROLL_PADDING;
     } else {
-      const tabElementWidth = this.getLayoutVariable_(LayoutVariable.TAB_WIDTH);
       const tabElementRight = tabElementLeft + tabElementWidth;
       const viewportWidth =
           this.getLayoutVariable_(LayoutVariable.VIEWPORT_WIDTH);

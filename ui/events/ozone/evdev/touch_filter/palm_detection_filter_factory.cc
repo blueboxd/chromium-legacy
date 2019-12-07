@@ -42,6 +42,22 @@ std::vector<float> ParseRadiusPolynomial(const std::string& radius_string) {
 
 }  // namespace internal
 
+namespace {
+std::string FetchNeuralPalmRadiusPolynomial(const EventDeviceInfo& devinfo,
+                                            const std::string param_string) {
+  if (!param_string.empty()) {
+    return param_string;
+  }
+  // Basking. Does not report vendor_id / product_id
+  if (devinfo.name() == "Elan Touchscreen") {
+    return "0.17889799,4.22584412";
+  }
+
+  // By default, return the original.
+  return param_string;
+}
+}  // namespace
+
 std::unique_ptr<PalmDetectionFilter> CreatePalmDetectionFilter(
     const EventDeviceInfo& devinfo,
     SharedPalmDetectionFilterState* shared_palm_state) {
@@ -49,7 +65,8 @@ std::unique_ptr<PalmDetectionFilter> CreatePalmDetectionFilter(
       NeuralStylusPalmDetectionFilter::
           CompatibleWithNeuralStylusPalmDetectionFilter(devinfo)) {
     std::vector<float> radius_polynomial =
-        internal::ParseRadiusPolynomial(kNeuralPalmRadiusPolynomial.Get());
+        internal::ParseRadiusPolynomial(FetchNeuralPalmRadiusPolynomial(
+            devinfo, kNeuralPalmRadiusPolynomial.Get()));
     // Theres only one model right now.
     std::unique_ptr<NeuralStylusPalmDetectionFilterModel> model =
         std::make_unique<OneDeviceTrainNeuralStylusPalmDetectionFilterModel>(

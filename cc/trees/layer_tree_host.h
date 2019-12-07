@@ -35,6 +35,7 @@
 #include "cc/layers/layer_list_iterator.h"
 #include "cc/metrics/begin_main_frame_metrics.h"
 #include "cc/paint/node_id.h"
+#include "cc/trees/browser_controls_params.h"
 #include "cc/trees/compositor_mode.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_host_client.h"
@@ -384,9 +385,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   gfx::Rect device_viewport_rect() const { return device_viewport_rect_; }
 
-  void SetBrowserControlsHeight(float top_height,
-                                float bottom_height,
-                                bool shrink);
+  void SetBrowserControlsParams(const BrowserControlsParams& params);
   void SetBrowserControlsShownRatio(float top_ratio, float bottom_ratio);
 
   void SetOverscrollBehavior(const OverscrollBehavior& overscroll_behavior);
@@ -783,12 +782,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   ViewportPropertyIds viewport_property_ids_;
 
-  float top_controls_height_ = 0.f;
-  float top_controls_shown_ratio_ = 0.f;
-  bool browser_controls_shrink_blink_size_ = false;
   OverscrollBehavior overscroll_behavior_;
 
-  float bottom_controls_height_ = 0.f;
+  BrowserControlsParams browser_controls_params_;
+  float top_controls_shown_ratio_ = 0.f;
   float bottom_controls_shown_ratio_ = 0.f;
 
   float device_scale_factor_ = 1.f;

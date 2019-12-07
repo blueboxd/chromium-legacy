@@ -612,14 +612,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         if (mLayoutLocationBarInFocusedMode
                 || (mVisualState == VisualState.NEW_TAB_NORMAL
                         && mTabSwitcherState == STATIC_TAB)) {
-            int priorVisibleWidth = 0;
-            for (int i = 0; i < mLocationBar.getChildCount(); i++) {
-                View child = mLocationBar.getChildAt(i);
-                if (child == mLocationBar.getFirstViewVisibleWhenFocused()) break;
-                if (child.getVisibility() == GONE) continue;
-                priorVisibleWidth += child.getMeasuredWidth();
-            }
-
+            int priorVisibleWidth = mLocationBar.getOffsetOfFirstVisibleFocusedView();
             width = getFocusedLocationBarWidth(containerWidth, priorVisibleWidth);
             leftMargin = getFocusedLocationBarLeftMargin(priorVisibleWidth);
         } else {
@@ -2017,14 +2010,8 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
         animators.add(animator);
 
-        for (int i = 0; i < mLocationBar.getChildCount(); i++) {
-            View childView = mLocationBar.getChildAt(i);
-            if (childView == mLocationBar.getFirstViewVisibleWhenFocused()) break;
-            animator = ObjectAnimator.ofFloat(childView, ALPHA, 0);
-            animator.setDuration(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS);
-            animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
-            animators.add(animator);
-        }
+        mLocationBar.populateFadeAnimations(
+                animators, 0, URL_FOCUS_CHANGE_ANIMATION_DURATION_MS, 0);
 
         float density = getContext().getResources().getDisplayMetrics().density;
         boolean isRtl = getLayoutDirection() == LAYOUT_DIRECTION_RTL;
@@ -2129,15 +2116,8 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             animators.add(animator);
         }
 
-        for (int i = 0; i < mLocationBar.getChildCount(); i++) {
-            View childView = mLocationBar.getChildAt(i);
-            if (childView == mLocationBar.getFirstViewVisibleWhenFocused()) break;
-            animator = ObjectAnimator.ofFloat(childView, ALPHA, 1);
-            animator.setStartDelay(URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS);
-            animator.setDuration(URL_CLEAR_FOCUS_MENU_DELAY_MS);
-            animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
-            animators.add(animator);
-        }
+        mLocationBar.populateFadeAnimations(
+                animators, URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS, URL_CLEAR_FOCUS_MENU_DELAY_MS, 1);
 
         if (isLocationBarShownInNTP() && mNtpSearchBoxScrollPercent == 0f) return;
 

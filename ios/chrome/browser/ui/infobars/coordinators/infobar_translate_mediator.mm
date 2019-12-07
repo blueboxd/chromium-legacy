@@ -25,6 +25,14 @@ const int kInvalidLanguageIndex = -1;
 @property(nonatomic, assign, readonly)
     translate::TranslateInfoBarDelegate* translateInfobarDelegate;
 
+// Holds the new source language selected by the user. kInvalidLanguageIndex if
+// the user has not made any such selection.
+@property(nonatomic, assign) int newSourceLanguageIndex;
+
+// Holds the new target language selected by the user. kInvalidLanguageIndex if
+// the user has not made any such selection.
+@property(nonatomic, assign) int newTargetLanguageIndex;
+
 @end
 
 @implementation InfobarTranslateMediator
@@ -35,12 +43,34 @@ const int kInvalidLanguageIndex = -1;
   if (self) {
     DCHECK(infobarDelegate);
     _translateInfobarDelegate = infobarDelegate;
+    _newSourceLanguageIndex = kInvalidLanguageIndex;
+    _newTargetLanguageIndex = kInvalidLanguageIndex;
   }
   return self;
 }
 
+- (void)updateLanguagesIfNecessary {
+  if (self.newSourceLanguageIndex != kInvalidLanguageIndex) {
+    self.translateInfobarDelegate->UpdateOriginalLanguage(
+        self.translateInfobarDelegate->language_code_at(
+            self.newSourceLanguageIndex));
+    self.newSourceLanguageIndex = kInvalidLanguageIndex;
+  }
+  if (self.newTargetLanguageIndex != kInvalidLanguageIndex) {
+    self.translateInfobarDelegate->UpdateTargetLanguage(
+        self.translateInfobarDelegate->language_code_at(
+            self.newTargetLanguageIndex));
+    self.newTargetLanguageIndex = kInvalidLanguageIndex;
+  }
+}
+
 - (void)setModalConsumer:(id<InfobarTranslateModalConsumer>)modalConsumer {
   _modalConsumer = modalConsumer;
+
+  // Since this is displaying a new Modal, any new source/target language state
+  // should be reset.
+  self.newSourceLanguageIndex = kInvalidLanguageIndex;
+  self.newTargetLanguageIndex = kInvalidLanguageIndex;
 
   BOOL currentStepBeforeTranslate =
       self.currentStep ==
@@ -81,10 +111,28 @@ const int kInvalidLanguageIndex = -1;
     (BOOL)sourceLanguage {
   int originalLanguageIndex = kInvalidLanguageIndex;
   int targetLanguageIndex = kInvalidLanguageIndex;
+  // In the instance that the user has already selected a different original
+  // language, then we should be using that language as the one to potentially
+  // check or not show.
+  std::string originalLanguageCode =
+      self.translateInfobarDelegate->original_language_code();
+  if (self.newSourceLanguageIndex != kInvalidLanguageIndex) {
+    originalLanguageCode = self.translateInfobarDelegate->language_code_at(
+        self.newSourceLanguageIndex);
+  }
+  // In the instance that the user has already selected a different target
+  // language, then we should be using that language as the one to potentially
+  // check or not show.
+  std::string targetLanguageCode =
+      self.translateInfobarDelegate->target_language_code();
+  if (self.newTargetLanguageIndex != kInvalidLanguageIndex) {
+    targetLanguageCode = self.translateInfobarDelegate->language_code_at(
+        self.newTargetLanguageIndex);
+  }
   NSMutableArray<TableViewTextItem*>* items = [NSMutableArray array];
   for (size_t i = 0; i < self.translateInfobarDelegate->num_languages(); ++i) {
     if (self.translateInfobarDelegate->language_code_at(i) ==
-        self.translateInfobarDelegate->original_language_code()) {
+        originalLanguageCode) {
       originalLanguageIndex = i;
       if (!sourceLanguage) {
         // Skip creating item for source language if selecting the target
@@ -93,7 +141,7 @@ const int kInvalidLanguageIndex = -1;
       }
     }
     if (self.translateInfobarDelegate->language_code_at(i) ==
-        self.translateInfobarDelegate->target_language_code()) {
+        targetLanguageCode) {
       targetLanguageIndex = i;
       if (sourceLanguage) {
         // Skip creating item for target language if selecting the source
@@ -130,16 +178,22 @@ const int kInvalidLanguageIndex = -1;
                               languageIndex))]);
   DCHECK(self.modalConsumer);
 
+  self.newSourceLanguageIndex = languageIndex;
+
+  base::string16 targetLanguage =
+      self.translateInfobarDelegate->target_language_name();
+  if (self.newSourceLanguageIndex != kInvalidLanguageIndex) {
+    targetLanguage = self.translateInfobarDelegate->language_name_at(
+        self.newSourceLanguageIndex);
+  }
   [self.modalConsumer
       setupModalViewControllerWithPrefs:
           [self createPrefDictionaryForSourceLanguage:
                     base::SysUTF16ToNSString(
                         self.translateInfobarDelegate->language_name_at(
                             languageIndex))
-                                       targetLanguage:
-                                           base::SysUTF16ToNSString(
-                                               self.translateInfobarDelegate
-                                                   ->target_language_name())
+                                       targetLanguage:base::SysUTF16ToNSString(
+                                                          targetLanguage)
                                translateButtonEnabled:YES]];
 }
 
@@ -152,11 +206,19 @@ const int kInvalidLanguageIndex = -1;
                               languageIndex))]);
   DCHECK(self.modalConsumer);
 
+  self.newTargetLanguageIndex = languageIndex;
+
+  base::string16 sourceLanguage =
+      self.translateInfobarDelegate->original_language_name();
+  if (self.newSourceLanguageIndex != kInvalidLanguageIndex) {
+    sourceLanguage = self.translateInfobarDelegate->language_name_at(
+        self.newSourceLanguageIndex);
+  }
   [self.modalConsumer
       setupModalViewControllerWithPrefs:
-          [self createPrefDictionaryForSourceLanguage:
-                    base::SysUTF16ToNSString(
-                        self.translateInfobarDelegate->original_language_name())
+          [self createPrefDictionaryForSourceLanguage:base::SysUTF16ToNSString(
+                                                          sourceLanguage)
+
                                        targetLanguage:
                                            base::SysUTF16ToNSString(
                                                self.translateInfobarDelegate
@@ -180,11 +242,15 @@ const int kInvalidLanguageIndex = -1;
   BOOL currentStepAfterTranslate =
       self.currentStep ==
       translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE;
+  BOOL updateLanguageBeforeTranslate =
+      self.newSourceLanguageIndex != kInvalidLanguageIndex ||
+      self.newTargetLanguageIndex != kInvalidLanguageIndex;
 
   return @{
     kSourceLanguagePrefKey : sourceLanguage,
     kTargetLanguagePrefKey : targetLanguage,
     kEnableTranslateButtonPrefKey : @(translateButtonEnabled),
+    kUpdateLanguageBeforeTranslatePrefKey : @(updateLanguageBeforeTranslate),
     kEnableAndDisplayShowOriginalButtonPrefKey : @(currentStepAfterTranslate),
     kShouldAlwaysTranslatePrefKey :
         @(self.translateInfobarDelegate->ShouldAlwaysTranslate()),

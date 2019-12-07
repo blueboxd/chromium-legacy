@@ -41,6 +41,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/dns/host_resolver_source.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/dns/public/resolve_error_info.h"
@@ -230,6 +231,7 @@ void NetInternalsTest::MessageHandler::DnsLookup(
   content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
       ->GetNetworkContext()
       ->ResolveHost(net::HostPortPair(hostname, 80),
+                    net::NetworkIsolationKey::CreateTransient(),
                     std::move(resolve_host_parameters), std::move(client));
 }
 

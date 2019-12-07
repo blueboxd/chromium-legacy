@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabSelectionType;
 
 /**
  * This class serves as a callback from TabModel to TabModelSelector. Avoid adding unnecessary

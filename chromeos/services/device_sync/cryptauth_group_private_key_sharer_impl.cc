@@ -58,10 +58,18 @@ ShareGroupPrivateKeyNetworkRequestErrorToResultCode(NetworkRequestError error) {
   }
 }
 
+// The first 8 bytes of the SHA-256 hash of |str|, converted into a 64-bit
+// signed integer in little-endian order. This format is chosen to be consistent
+// with the CryptAuth backend implementation.
 int64_t CalculateInt64Sha256Hash(const std::string& str) {
-  int64_t hash;
-  crypto::SHA256HashString(str, &hash, sizeof(int64_t));
-  return hash;
+  uint8_t hash_bytes[sizeof(int64_t)];
+  crypto::SHA256HashString(str, hash_bytes, sizeof(hash_bytes));
+
+  int64_t hash_int64 = 0;
+  for (size_t i = 0; i < 8u; ++i)
+    hash_int64 |= static_cast<int64_t>(hash_bytes[i]) << (i * 8);
+
+  return hash_int64;
 }
 
 void RecordGroupPrivateKeyEncryptionMetrics(

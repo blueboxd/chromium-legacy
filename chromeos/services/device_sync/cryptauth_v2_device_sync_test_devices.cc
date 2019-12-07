@@ -18,6 +18,7 @@ namespace chromeos {
 namespace device_sync {
 
 const char kGroupPublicKey[] = "group_key";
+const int64_t kGroupPublicKeyHash = 0xf3666041a2db06e4;
 
 // TODO(nohle): Add last update time when relevant.
 const CryptAuthDevice& GetLocalDeviceForTest() {

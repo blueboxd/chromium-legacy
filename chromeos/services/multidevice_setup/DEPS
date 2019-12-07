@@ -6,5 +6,4 @@ include_rules = [
   "+components/sync_preferences/testing_pref_service_syncable.h",
   "+components/variations",
   "+mojo/public/cpp/bindings",
-  "+services/service_manager/public",
 ]

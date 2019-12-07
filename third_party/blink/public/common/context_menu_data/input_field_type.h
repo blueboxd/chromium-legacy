@@ -20,7 +20,7 @@ enum class ContextMenuDataInputFieldType {
   kTelephone,
   // type = <etc.>
   kOther,
-  kLast = kOther
+  kMaxValue = kOther
 };
 
 }  // namespace blink

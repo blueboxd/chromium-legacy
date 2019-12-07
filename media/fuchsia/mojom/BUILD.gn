@@ -6,6 +6,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
   sources = [
+    "fuchsia_audio_consumer_provider.mojom",
     "fuchsia_cdm_provider.mojom",
   ]
 }

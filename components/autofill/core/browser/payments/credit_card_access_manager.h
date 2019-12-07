@@ -148,6 +148,7 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // CreditCardFIDOAuthenticator::Requester:
   void OnFIDOAuthenticationComplete(bool did_succeed,
                                     const CreditCard* card = nullptr) override;
+  void OnFidoAuthorizationComplete(bool did_succeed) override;
 #endif
 
   bool is_authentication_in_progress() {
@@ -160,7 +161,7 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // If true, FetchCreditCard() should wait for OnDidGetUnmaskDetails() to begin
   // authentication. If false, FetchCreditCard() can begin authentication
   // immediately.
-  bool AuthenticationRequiresUnmaskDetails();
+  bool IsFidoAuthenticationEnabled();
 
   // TODO(crbug.com/991037): Move this function under the build flags after the
   // refactoring is done.
@@ -236,7 +237,12 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   base::WaitableEvent can_fetch_unmask_details_;
 
   // The credit card being accessed.
-  const CreditCard* card_;
+  std::unique_ptr<CreditCard> card_;
+
+  // When authorizing a new card, the CVC will be temporarily stored after the
+  // first CVC check, and then will be used to fill the form after FIDO
+  // authentication is complete.
+  base::string16 cvc_ = base::string16();
 
   // Set to true only if user has a verifying platform authenticator.
   // e.g. Touch/Face ID, Windows Hello, Android fingerprint, etc., is available

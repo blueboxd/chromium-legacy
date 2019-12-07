@@ -275,6 +275,11 @@ class BackgroundSyncManagerTest
     test_background_sync_manager()->RevivePeriodicSyncRegistrations(origin);
   }
 
+  void BlockContentSettingFor(url::Origin origin) {
+    GetController()->RemoveFromTrackedOrigins(origin);
+    test_background_sync_manager()->UnregisterPeriodicSyncForOrigin(origin);
+  }
+
  protected:
   MOCK_METHOD1(OnEventReceived,
                void(const devtools::proto::BackgroundServiceEvent&));
@@ -1373,6 +1378,26 @@ TEST_F(BackgroundSyncManagerTest, TestSupensionAndRevival) {
   EXPECT_TRUE(GetRegistration(sync_options_2_));
   Unregister(sync_options_1_);
   Unregister(sync_options_2_);
+}
+
+TEST_F(BackgroundSyncManagerTest, UnregisterForOrigin) {
+  InitPeriodicSyncEventTest();
+  auto thirteen_hours = base::TimeDelta::FromHours(13);
+  sync_options_2_.min_interval = thirteen_hours.InMilliseconds();
+  sync_options_1_.min_interval = thirteen_hours.InMilliseconds();
+
+  auto origin = url::Origin::Create(GURL(kScope1).GetOrigin());
+
+  EXPECT_TRUE(Register(sync_options_1_));
+  EXPECT_TRUE(GetRegistration(sync_options_1_));
+  EXPECT_TRUE(Register(sync_options_2_));
+  EXPECT_TRUE(GetRegistration(sync_options_2_));
+
+  BlockContentSettingFor(std::move(origin));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(GetRegistration(sync_options_1_));
+  EXPECT_FALSE(GetRegistration(sync_options_2_));
 }
 
 TEST_F(BackgroundSyncManagerTest, ReregisterMidSyncFirstAttemptFails) {

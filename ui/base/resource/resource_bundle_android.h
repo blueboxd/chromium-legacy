@@ -55,6 +55,9 @@ UI_BASE_EXPORT std::string GetPathForAndroidLocalePakWithinApk(
     const std::string& locale,
     bool in_split = false);
 
+// Called in test when there are no locale pak files available.
+UI_BASE_EXPORT void SetNoAvailableLocalePaksForTest();
+
 // Get the density of the primary display. Use this instead of using Display
 // to avoid initializing Display in child processes.
 float GetPrimaryDisplayScale();

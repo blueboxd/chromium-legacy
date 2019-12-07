@@ -82,9 +82,12 @@ public abstract class ListItem {
 
     /** A {@link ListItem} representing a card header. */
     public static class CardHeaderListItem extends CardDecorationListItem {
+        public String faviconUrl;
+
         /** Creates a {@link CardHeaderListItem} instance. */
-        public CardHeaderListItem(Pair<Date, String> dateAndDomain) {
+        public CardHeaderListItem(Pair<Date, String> dateAndDomain, String faviconUrl) {
             super(dateAndDomain, true);
+            this.faviconUrl = faviconUrl;
         }
     }
 

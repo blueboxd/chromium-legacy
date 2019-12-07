@@ -14,10 +14,6 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/mojom/ukm_interface.mojom.h"
 
-namespace service_manager {
-class Connector;
-}
-
 namespace ukm {
 
 /**
@@ -26,8 +22,14 @@ namespace ukm {
  *
  * Usage Example:
  *
- *  std::unique_ptr<ukm::MojoUkmRecorder> ukm_recorder =
- *      ukm::MojoUkmRecorder::Create(context()->connector());
+ *  mojo::PendingRemote<mojom::UkmRecorderInterface> recorder;
+ *
+ *  // This step depends on how the Metrics service is embedded in the
+ *  // application.
+ *  BindUkmRecorderSomewhere(recorder.InitWithNewPipeAndPassReceiver());
+ *
+ *  auto ukm_recorder =
+ *      std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder));
  *  ukm::builders::MyEvent(source_id)
  *      .SetMyMetric(metric_value)
  *      .Record(ukm_recorder.get());
@@ -37,10 +39,6 @@ class METRICS_EXPORT MojoUkmRecorder : public UkmRecorder {
   explicit MojoUkmRecorder(
       mojo::PendingRemote<mojom::UkmRecorderInterface> recorder_interface);
   ~MojoUkmRecorder() override;
-
-  // Helper for getting the wrapper from a connector.
-  static std::unique_ptr<MojoUkmRecorder> Create(
-      service_manager::Connector* connector);
 
   base::WeakPtr<MojoUkmRecorder> GetWeakPtr();
 

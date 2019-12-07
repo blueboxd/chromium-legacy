@@ -13,7 +13,7 @@ android_library("callback_java") {
   ]
 
   deps = [
-    "//android_webview:android_webview_java",
+    "//android_webview:browser_java",
     "//android_webview/support_library/boundary_interfaces:boundary_interface_java",
     "//base:base_java",
   ]

@@ -86,6 +86,7 @@ class HostVerifierImpl : public HostVerifier,
       device_sync::mojom::NetworkRequestResult result,
       multidevice::RemoteDeviceRefList eligible_devices,
       multidevice::RemoteDeviceRefList ineligible_devices);
+  void OnNotifyDevicesFinished(device_sync::mojom::NetworkRequestResult result);
   void OnSyncTimerFired();
 
   HostBackendDelegate* host_backend_delegate_;

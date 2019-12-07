@@ -7,8 +7,6 @@
 #include <algorithm>
 #include <queue>
 
-namespace string_matching {
-
 namespace {
 using Match = SequenceMatcher::Match;
 using Matches = std::vector<Match>;
@@ -196,5 +194,3 @@ double SequenceMatcher::Ratio() {
   }
   return block_matching_ratio_;
 }
-
-}  // namespace string_matching

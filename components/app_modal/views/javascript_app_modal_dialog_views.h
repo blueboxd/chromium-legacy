@@ -35,12 +35,10 @@ class JavaScriptAppModalDialogViews : public NativeAppModalDialog,
   bool IsShowing() const override;
 
   // Overridden from views::DialogDelegate:
-  int GetDialogButtons() const override;
   base::string16 GetWindowTitle() const override;
   void DeleteDelegate() override;
   bool Cancel() override;
   bool Accept() override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
 
   // Overridden from views::WidgetDelegate:
   ui::ModalType GetModalType() const override;

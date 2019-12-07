@@ -47,15 +47,6 @@ class IDBVersionChangeEvent final : public Event {
   }
   static IDBVersionChangeEvent* Create(
       const AtomicString& event_type,
-      uint64_t old_version,
-      const base::Optional<uint64_t>& new_version,
-      mojom::IDBDataLoss data_loss = mojom::IDBDataLoss::None,
-      const String& data_loss_message = String()) {
-    return MakeGarbageCollected<IDBVersionChangeEvent>(
-        event_type, old_version, new_version, data_loss, data_loss_message);
-  }
-  static IDBVersionChangeEvent* Create(
-      const AtomicString& event_type,
       const IDBVersionChangeEventInit* initializer) {
     return MakeGarbageCollected<IDBVersionChangeEvent>(event_type, initializer);
   }
@@ -64,8 +55,8 @@ class IDBVersionChangeEvent final : public Event {
   IDBVersionChangeEvent(const AtomicString& event_type,
                         uint64_t old_version,
                         const base::Optional<uint64_t>& new_version,
-                        mojom::IDBDataLoss,
-                        const String& data_loss);
+                        mojom::IDBDataLoss data_loss = mojom::IDBDataLoss::None,
+                        const String& data_loss_message = String());
   IDBVersionChangeEvent(const AtomicString& event_type,
                         const IDBVersionChangeEventInit*);
 

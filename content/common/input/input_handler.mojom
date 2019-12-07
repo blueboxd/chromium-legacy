@@ -61,7 +61,6 @@ struct WheelData {
   float wheel_ticks_y;
   float acceleration_ratio_x;
   float acceleration_ratio_y;
-  int32 resending_plugin_id;
   uint8 phase;
   uint8 momentum_phase;
   Cancelability cancelable;
@@ -123,7 +122,6 @@ struct GestureData {
   bool is_source_touch_event_set_non_blocking;
   PointerType primary_pointer_type;
   int32 unique_touch_event_id;
-  int32 resending_plugin_id;
   gfx.mojom.Size? contact_size;
   ScrollData? scroll_data;
   PinchBeginData? pinch_begin_data;

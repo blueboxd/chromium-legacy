@@ -5,11 +5,9 @@
 #include "third_party/openscreen/src/platform/api/trace_logging_platform.h"
 
 namespace openscreen {
-namespace platform {
 
 bool IsTraceLoggingEnabled(TraceCategory::Value category) {
   return false;
 }
 
-}  // namespace platform
 }  // namespace openscreen

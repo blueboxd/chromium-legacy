@@ -356,18 +356,20 @@ class AX_EXPORT AXNode final {
   bool IsCellOrHeaderOfARIATable() const;
   bool IsCellOrHeaderOfARIAGrid() const;
 
-  // Return an object containing information about the languages used.
+  // Return an object containing information about the languages detected on
+  // this node.
   // Callers should not retain this pointer, instead they should request it
   // every time it is needed.
   //
-  // Clients likely want to use GetLanguage instead.
-  //
   // Returns nullptr if the node has no language info.
-  AXLanguageInfo* GetLanguageInfo();
+  AXLanguageInfo* GetLanguageInfo() const;
 
-  // This should only be called by the LabelLanguageForSubtree and is used as
-  // part of the language detection feature.
+  // This should only be called by LabelLanguageForSubtree and is used as part
+  // of the language detection feature.
   void SetLanguageInfo(std::unique_ptr<AXLanguageInfo> lang_info);
+
+  // Destroy the language info for this node.
+  void ClearLanguageInfo();
 
   // Returns true if node has ignored state or ignored role.
   bool IsIgnored() const;

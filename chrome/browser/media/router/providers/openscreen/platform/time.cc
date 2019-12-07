@@ -12,7 +12,6 @@ using std::chrono::microseconds;
 using std::chrono::seconds;
 
 namespace openscreen {
-namespace platform {
 
 Clock::time_point Clock::now() noexcept {
   // Open Screen requires at least 10,000
@@ -34,5 +33,4 @@ std::chrono::seconds GetWallTimeSinceUnixEpoch() noexcept {
   return seconds(delta.InSeconds());
 }
 
-}  // namespace platform
 }  // namespace openscreen

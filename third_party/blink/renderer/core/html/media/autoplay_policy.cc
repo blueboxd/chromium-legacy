@@ -7,7 +7,6 @@
 #include "build/build_config.h"
 #include "third_party/blink/public/mojom/autoplay/autoplay.mojom-blink.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
-#include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
@@ -307,10 +306,9 @@ bool AutoplayPolicy::IsGestureNeededForPlayback() const {
   if (!IsLockedPendingUserGesture())
     return false;
 
-  // We want to allow muted video to autoplay if:
-  // - The element is allowed to autoplay muted;
-  // - Autoplay is enabled in settings.
-  return !(IsEligibleForAutoplayMuted() && IsAutoplayAllowedPerSettings());
+  // We want to allow muted video to autoplay if the element is allowed to
+  // autoplay muted.
+  return !IsEligibleForAutoplayMuted();
 }
 
 String AutoplayPolicy::GetPlayErrorMessage() const {
@@ -375,15 +373,6 @@ void AutoplayPolicy::MaybeSetAutoplayInitiated() {
     if (!feature_policy_enabled)
       break;
   }
-}
-
-bool AutoplayPolicy::IsAutoplayAllowedPerSettings() const {
-  LocalFrame* frame = element_->GetDocument().GetFrame();
-  if (!frame)
-    return false;
-  if (auto* settings_client = frame->GetContentSettingsClient())
-    return settings_client->AllowAutoplay(true /* default_value */);
-  return true;
 }
 
 bool AutoplayPolicy::ShouldAutoplay() {

@@ -104,10 +104,11 @@ TEST_F(PerAppTimeLimitsTest, PauseAndResumeWebActivity) {
   EnableWebTimeLimits();
   EXPECT_FALSE(service()->WebTimeLimitReached());
 
-  service()->PauseWebActivity();
+  const std::string app_id = "iniodglblcgmngkgdipeiclkdjjpnlbn";
+  service()->PauseWebActivity(app_id);
   EXPECT_TRUE(service()->WebTimeLimitReached());
 
-  service()->ResumeWebActivity();
+  service()->ResumeWebActivity(app_id);
   EXPECT_FALSE(service()->WebTimeLimitReached());
   EXPECT_EQ(base::TimeDelta(), service()->GetWebTimeLimit());
 }
@@ -116,10 +117,11 @@ TEST_F(PerAppTimeLimitsTest, PauseWebActivityTwice) {
   EnableWebTimeLimits();
   EXPECT_FALSE(service()->WebTimeLimitReached());
 
-  service()->PauseWebActivity();
+  const std::string app_id = "iniodglblcgmngkgdipeiclkdjjpnlbn";
+  service()->PauseWebActivity(app_id);
   EXPECT_TRUE(service()->WebTimeLimitReached());
 
-  service()->PauseWebActivity();
+  service()->PauseWebActivity(app_id);
   EXPECT_TRUE(service()->WebTimeLimitReached());
 }
 
@@ -127,12 +129,13 @@ TEST_F(PerAppTimeLimitsTest, ResumeWebActivityTwice) {
   EnableWebTimeLimits();
   EXPECT_FALSE(service()->WebTimeLimitReached());
 
-  service()->ResumeWebActivity();
+  const std::string app_id = "iniodglblcgmngkgdipeiclkdjjpnlbn";
+  service()->ResumeWebActivity(app_id);
 
   EXPECT_FALSE(service()->WebTimeLimitReached());
   EXPECT_EQ(base::TimeDelta(), service()->GetWebTimeLimit());
 
-  service()->ResumeWebActivity();
+  service()->ResumeWebActivity(app_id);
 
   EXPECT_FALSE(service()->WebTimeLimitReached());
   EXPECT_EQ(base::TimeDelta(), service()->GetWebTimeLimit());

@@ -8,7 +8,6 @@ import "content/common/input/input_handler.mojom";
 import "content/common/widget.mojom";
 import "mojo/public/mojom/base/thread_priority.mojom";
 import "mojo/public/mojom/base/time.mojom";
-import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
 interface RenderMessageFilter {

@@ -181,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTest, RetryOnWrongPassword) {
   test::OobeJS()
       .CreateWaiter(test::GetOobeElementPath(
                         {"gaia-password-changed", "oldPasswordInput"}) +
-                    ".isInvalid")
+                    ".invalid")
       ->Wait();
   test::OobeJS().ExpectEnabledPath(
       {"gaia-password-changed", "oldPasswordCard"});

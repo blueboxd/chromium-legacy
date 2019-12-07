@@ -146,9 +146,14 @@ class PaymentRequest : public mojom::PaymentRequest,
   // If the payment sheet is later hidden, this will return false.
   bool IsThisPaymentRequestShowing() const;
 
+  // Returns true when there is exactly one available payment app which can
+  // provide all requested information including shipping address and payer's
+  // contact information whenever needed.
+  bool OnlySingleAppCanProvideAllRequiredInformation() const;
+
   // Returns true if this payment request supports skipping the Payment Sheet.
-  // Typically, this means only one payment method is supported, it's a URL
-  // based method, and no other info is requested from the user.
+  // Typically, this means that exactly one payment app can provide requested
+  // information.
   bool SatisfiesSkipUIConstraints();
 
   // Only records the abort reason if it's the first completion for this Payment

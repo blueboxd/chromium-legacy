@@ -194,6 +194,41 @@ SkBitmap ReadIconBlocking(std::unique_ptr<FileUtilsWrapper> utils,
 }
 
 // Performs blocking I/O. May be called on another thread.
+std::map<SquareSizePx, SkBitmap> ReadAllIconsBlocking(
+    std::unique_ptr<FileUtilsWrapper> utils,
+    base::FilePath web_apps_directory,
+    AppId app_id,
+    const std::vector<SquareSizePx>& downloaded_icon_sizes) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+
+  std::map<SquareSizePx, SkBitmap> result;
+
+  for (SquareSizePx icon_size_px : downloaded_icon_sizes) {
+    base::FilePath icon_file =
+        GetIconFileName(web_apps_directory, app_id, icon_size_px);
+
+    auto icon_data = base::MakeRefCounted<base::RefCountedString>();
+
+    if (!utils->ReadFileToString(icon_file, &icon_data->data())) {
+      LOG(ERROR) << "Could not read icon file: " << icon_file;
+      continue;
+    }
+
+    SkBitmap bitmap;
+    if (!gfx::PNGCodec::Decode(icon_data->front(), icon_data->size(),
+                               &bitmap)) {
+      LOG(ERROR) << "Could not decode icon data for file " << icon_file;
+      continue;
+    }
+
+    result[icon_size_px] = bitmap;
+  }
+
+  return result;
+}
+
+// Performs blocking I/O. May be called on another thread.
 // Returns empty vector if any errors occurred.
 std::vector<uint8_t> ReadCompressedIconBlocking(
     std::unique_ptr<FileUtilsWrapper> utils,
@@ -281,6 +316,22 @@ void WebAppIconManager::ReadIcon(const AppId& app_id,
   DCHECK(HasIcon(app_id, icon_size_in_px));
 
   ReadIconInternal(app_id, icon_size_in_px, std::move(callback));
+}
+
+void WebAppIconManager::ReadAllIcons(const AppId& app_id,
+                                     ReadAllIconsCallback callback) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  const WebApp* web_app = registrar_.GetAppById(app_id);
+  if (!web_app) {
+    std::move(callback).Run(std::map<SquareSizePx, SkBitmap>());
+    return;
+  }
+
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, kTaskTraits,
+      base::BindOnce(ReadAllIconsBlocking, utils_->Clone(), web_apps_directory_,
+                     app_id, web_app->downloaded_icon_sizes()),
+      std::move(callback));
 }
 
 void WebAppIconManager::ReadSmallestIcon(const AppId& app_id,

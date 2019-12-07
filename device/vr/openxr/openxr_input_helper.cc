@@ -46,15 +46,31 @@ XrResult OpenXRInputHelper::CreateOpenXRInputHelper(
   std::unique_ptr<OpenXRInputHelper> new_helper =
       std::make_unique<OpenXRInputHelper>(session, local_space);
 
+  RETURN_IF_XR_FAILED(new_helper->Initialize(instance));
+  *helper = std::move(new_helper);
+  return XR_SUCCESS;
+}
+
+OpenXRInputHelper::OpenXRInputHelper(XrSession session, XrSpace local_space)
+    : session_(session),
+      local_space_(local_space),
+      path_helper_(std::make_unique<OpenXRPathHelper>()) {}
+
+OpenXRInputHelper::~OpenXRInputHelper() = default;
+
+XrResult OpenXRInputHelper::Initialize(XrInstance instance) {
+  RETURN_IF_XR_FAILED(path_helper_->Initialize(instance));
+
   // This map is used to store bindings for different kinds of interaction
   // profiles. This allows the runtime to choose a different input sources based
   // on availability.
   std::map<XrPath, std::vector<XrActionSuggestedBinding>> bindings;
 
-  for (size_t i = 0; i < new_helper->controller_states_.size(); i++) {
-    RETURN_IF_XR_FAILED(new_helper->controller_states_[i].controller.Initialize(
-        static_cast<OpenXrHandednessType>(i), instance, session, &bindings));
-    new_helper->controller_states_[i].primary_button_pressed = false;
+  for (size_t i = 0; i < controller_states_.size(); i++) {
+    RETURN_IF_XR_FAILED(controller_states_[i].controller.Initialize(
+        static_cast<OpenXrHandednessType>(i), instance, session_,
+        path_helper_.get(), &bindings));
+    controller_states_[i].primary_button_pressed = false;
   }
 
   for (auto it = bindings.begin(); it != bindings.end(); it++) {
@@ -68,26 +84,19 @@ XrResult OpenXRInputHelper::CreateOpenXRInputHelper(
         instance, &profile_suggested_bindings));
   }
 
-  std::vector<XrActionSet> action_sets(new_helper->controller_states_.size());
-  for (size_t i = 0; i < new_helper->controller_states_.size(); i++) {
-    action_sets[i] =
-        new_helper->controller_states_[i].controller.GetActionSet();
+  std::vector<XrActionSet> action_sets(controller_states_.size());
+  for (size_t i = 0; i < controller_states_.size(); i++) {
+    action_sets[i] = controller_states_[i].controller.GetActionSet();
   }
 
   XrSessionActionSetsAttachInfo attach_info = {
       XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO};
   attach_info.countActionSets = action_sets.size();
   attach_info.actionSets = action_sets.data();
-  RETURN_IF_XR_FAILED(xrAttachSessionActionSets(session, &attach_info));
+  RETURN_IF_XR_FAILED(xrAttachSessionActionSets(session_, &attach_info));
 
-  *helper = std::move(new_helper);
   return XR_SUCCESS;
 }
-
-OpenXRInputHelper::OpenXRInputHelper(XrSession session, XrSpace local_space)
-    : session_(session), local_space_(local_space) {}
-
-OpenXRInputHelper::~OpenXRInputHelper() = default;
 
 std::vector<mojom::XRInputSourceStatePtr> OpenXRInputHelper::GetInputState(
     XrTime predicted_display_time) {

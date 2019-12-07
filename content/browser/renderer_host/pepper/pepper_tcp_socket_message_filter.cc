@@ -29,6 +29,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
@@ -404,7 +405,9 @@ int32_t PepperTCPSocketMessageFilter::OnMsgConnect(
   if (!network_context)
     return PP_ERROR_FAILED;
 
-  network_context->ResolveHost(net::HostPortPair(host, port), nullptr,
+  // TODO(mmenke): Pass in correct NetworkIsolationKey.
+  network_context->ResolveHost(net::HostPortPair(host, port),
+                               net::NetworkIsolationKey::Todo(), nullptr,
                                receiver_.BindNewPipeAndPassRemote());
   receiver_.set_disconnect_handler(
       base::BindOnce(&PepperTCPSocketMessageFilter::OnComplete,

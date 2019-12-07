@@ -6,8 +6,8 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/modules/video_raf/video_frame_metadata.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
-#include "third_party/blink/renderer/modules/webgl/webgl_video_frame_metadata.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_video_texture_enum.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
@@ -46,7 +46,7 @@ void WebGLVideoTexture::Trace(blink::Visitor* visitor) {
   WebGLExtension::Trace(visitor);
 }
 
-WebGLVideoFrameMetadata* WebGLVideoTexture::VideoElementTargetVideoTexture(
+VideoFrameMetadata* WebGLVideoTexture::VideoElementTargetVideoTexture(
     ExecutionContext* execution_context,
     unsigned target,
     HTMLVideoElement* video,
@@ -97,8 +97,16 @@ WebGLVideoFrameMetadata* WebGLVideoTexture::VideoElementTargetVideoTexture(
   }
 
   if (frame_metadata_ptr) {
-    current_frame_metadata_ =
-        WebGLVideoFrameMetadata::Create(frame_metadata_ptr);
+    current_frame_metadata_ = VideoFrameMetadata::Create();
+    current_frame_metadata_->setPresentationTime(
+        frame_metadata_ptr->timestamp.InMicrosecondsF());
+    current_frame_metadata_->setExpectedPresentationTime(
+        frame_metadata_ptr->expected_timestamp.InMicrosecondsF());
+    current_frame_metadata_->setWidth(frame_metadata_ptr->visible_rect.width());
+    current_frame_metadata_->setHeight(
+        frame_metadata_ptr->visible_rect.height());
+    current_frame_metadata_->setPresentationTimestamp(
+        frame_metadata_ptr->timestamp.InSecondsF());
   }
 
   return current_frame_metadata_;

@@ -4,11 +4,11 @@
 
 package org.chromium.chrome.browser.feed.library.testing.network;
 
+import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.host.network.HttpRequest;
 import org.chromium.chrome.browser.feed.library.api.host.network.HttpResponse;
 import org.chromium.chrome.browser.feed.library.api.host.network.NetworkClient;
 import org.chromium.chrome.browser.feed.library.common.concurrent.testing.FakeThreadUtils;
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 
 import java.util.ArrayList;
 

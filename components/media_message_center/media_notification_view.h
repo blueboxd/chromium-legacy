@@ -39,6 +39,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationView
       const base::flat_set<media_session::mojom::MediaSessionAction>&
           actions) = 0;
   virtual void UpdateWithMediaArtwork(const gfx::ImageSkia& image) = 0;
+  virtual void UpdateWithFavicon(const gfx::ImageSkia& icon) = 0;
 };
 
 }  // namespace media_message_center

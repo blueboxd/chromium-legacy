@@ -25,6 +25,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
@@ -164,9 +165,9 @@ TEST_P(SignedExchangeLoaderTest, Simple) {
   network::ResourceRequest resource_request;
   resource_request.url = GURL("https://example.com/test.sxg");
 
-  network::ResourceResponseHead response;
+  auto response = network::mojom::URLResponseHead::New();
   std::string headers("HTTP/1.1 200 OK\nnContent-type: foo/bar\n\n");
-  response.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  response->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(headers));
 
   MockSignedExchangeHandlerFactory factory({MockSignedExchangeHandlerParams(
@@ -183,7 +184,7 @@ TEST_P(SignedExchangeLoaderTest, Simple) {
   ASSERT_EQ(MOJO_RESULT_OK, rv);
   std::unique_ptr<SignedExchangeLoader> signed_exchange_loader =
       std::make_unique<SignedExchangeLoader>(
-          resource_request, response, std::move(consumer_handle),
+          resource_request, std::move(response), std::move(consumer_handle),
           std::move(client), std::move(endpoints),
           network::mojom::kURLLoadOptionNone,
           false /* should_redirect_to_fallback */, nullptr /* devtools_proxy */,
@@ -246,7 +247,8 @@ TEST_P(SignedExchangeLoaderTest, Simple) {
     ASSERT_TRUE(ping_loader_client());
     EXPECT_CALL(mock_client_after_redirect, OnStartLoadingResponseBody(_));
     EXPECT_CALL(mock_client_after_redirect, OnComplete(_));
-    ping_loader_client()->OnReceiveResponse(network::ResourceResponseHead());
+    ping_loader_client()->OnReceiveResponse(
+        network::mojom::URLResponseHead::New());
     ping_loader_client()->OnComplete(
         network::URLLoaderCompletionStatus(net::OK));
     run_loop.Run();

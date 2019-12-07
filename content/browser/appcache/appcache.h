@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "content/browser/appcache/appcache_database.h"
 #include "content/browser/appcache/appcache_entry.h"
+#include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_manifest_parser.h"
 #include "content/browser/appcache/appcache_namespace.h"
 #include "content/common/content_export.h"
@@ -28,7 +29,6 @@
 namespace content {
 FORWARD_DECLARE_TEST(AppCacheTest, InitializeWithManifest);
 FORWARD_DECLARE_TEST(AppCacheTest, ToFromDatabaseRecords);
-class AppCacheGroup;
 class AppCacheHost;
 class AppCacheStorage;
 class AppCacheTest;

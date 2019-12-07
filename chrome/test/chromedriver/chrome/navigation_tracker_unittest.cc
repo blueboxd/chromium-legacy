@@ -481,3 +481,38 @@ TEST(NavigationTracker, OnSuccessfulNavigate) {
   ASSERT_NO_FATAL_FAILURE(
       AssertPendingState(&tracker, client_ptr->GetId(), false));
 }
+
+namespace {
+
+class TargetClosedDevToolsClient : public StubDevToolsClient {
+ public:
+  TargetClosedDevToolsClient() {}
+
+  ~TargetClosedDevToolsClient() override {}
+
+  Status SendCommandAndGetResult(
+      const std::string& method,
+      const base::DictionaryValue& params,
+      std::unique_ptr<base::DictionaryValue>* result) override {
+    return Status(kUnknownError, "Inspected target navigated or closed");
+  }
+};
+
+}  // namespace
+
+TEST(NavigationTracker, TargetClosedInIsPendingNavigation) {
+  BrowserInfo browser_info;
+  std::unique_ptr<DevToolsClient> client_uptr =
+      std::make_unique<TargetClosedDevToolsClient>();
+  DevToolsClient* client_ptr = client_uptr.get();
+  JavaScriptDialogManager dialog_manager(client_ptr, &browser_info);
+  WebViewImpl web_view(client_ptr->GetId(), true, nullptr, &browser_info,
+                       std::move(client_uptr), nullptr,
+                       PageLoadStrategy::kNormal);
+  NavigationTracker tracker(client_ptr, &web_view, &browser_info,
+                            &dialog_manager);
+
+  bool is_pending;
+  ASSERT_EQ(kOk, tracker.IsPendingNavigation("f", nullptr, &is_pending).code());
+  ASSERT_TRUE(is_pending);
+}

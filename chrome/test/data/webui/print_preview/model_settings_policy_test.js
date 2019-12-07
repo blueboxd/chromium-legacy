@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {BackgroundGraphicsModeRestriction, ColorModeRestriction, Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, DuplexModeRestriction, Margins, MarginsType, PinModeRestriction, Size} from 'chrome://print/print_preview.js';
+import {ColorModeRestriction, Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, DuplexModeRestriction, Margins, MarginsType, PinModeRestriction, Size} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {getCddTemplate} from 'chrome://test/print_preview/print_preview_test_utils.js';
 
@@ -321,85 +321,6 @@ suite('ModelSettingsPolicyTest', function() {
       assertEquals(subtestParams.expectedManaged, model.settingsManaged);
       assertEquals(
           subtestParams.expectedEnforced, model.settings.pin.setByPolicy);
-    });
-  });
-
-  test('background graphics managed', function() {
-    [{
-      // No policies, settings is modifiable.
-      documentIsModifiable: true,
-      expectedValue: false,
-      expectedAvailable: true,
-      expectedManaged: false,
-      expectedEnforced: false,
-    },
-     {
-       // Policy has no effect, setting is not available for non-modifiable
-       // content.
-       documentIsModifiable: false,
-       backgroundGraphicsPolicy: BackgroundGraphicsModeRestriction.UNSET,
-       backgroundGraphicsDefault: BackgroundGraphicsModeRestriction.ENABLED,
-       expectedValue: false,
-       expectedAvailable: false,
-       expectedManaged: false,
-       expectedEnforced: false,
-     },
-     {
-       // Policy is DISABLED, setting is not modifiable.
-       documentIsModifiable: true,
-       backgroundGraphicsPolicy: BackgroundGraphicsModeRestriction.DISABLED,
-       expectedValue: false,
-       expectedAvailable: true,
-       expectedManaged: true,
-       expectedEnforced: true,
-     },
-     {
-       // No restriction policy, setting is modifiable.
-       documentIsModifiable: true,
-       backgroundGraphicsPolicy: BackgroundGraphicsModeRestriction.UNSET,
-       backgroundGraphicsDefault: BackgroundGraphicsModeRestriction.DISABLED,
-       expectedValue: false,
-       expectedAvailable: true,
-       expectedManaged: false,
-       expectedEnforced: false,
-     },
-     {
-       // Policy overrides default.
-       documentIsModifiable: true,
-       backgroundGraphicsPolicy: BackgroundGraphicsModeRestriction.ENABLED,
-       // Default mismatches restriction and is ignored.
-       backgroundGraphicsDefault: BackgroundGraphicsModeRestriction.DISABLED,
-       expectedValue: true,
-       expectedAvailable: true,
-       expectedManaged: true,
-       expectedEnforced: true,
-     },
-     {
-       // Default defined by policy but setting is modifiable.
-       documentIsModifiable: true,
-       backgroundGraphicsDefault: BackgroundGraphicsModeRestriction.ENABLED,
-       expectedValue: true,
-       expectedAvailable: true,
-       expectedManaged: false,
-       expectedEnforced: false,
-     }].forEach(subtestParams => {
-      model.set(
-          'documentSettings.isModifiable', subtestParams.documentIsModifiable);
-      const policies = {
-        allowedBackgroundGraphicsModes: subtestParams.backgroundGraphicsPolicy,
-        defaultBackgroundGraphicsMode: subtestParams.backgroundGraphicsDefault,
-      };
-      model.set('destination.policies', policies);
-      model.applyDestinationSpecificPolicies();
-      assertEquals(
-          subtestParams.expectedValue, model.getSettingValue('cssBackground'));
-      assertEquals(
-          subtestParams.expectedAvailable,
-          model.settings.cssBackground.available);
-      assertEquals(subtestParams.expectedManaged, model.settingsManaged);
-      assertEquals(
-          subtestParams.expectedEnforced,
-          model.settings.cssBackground.setByPolicy);
     });
   });
 });

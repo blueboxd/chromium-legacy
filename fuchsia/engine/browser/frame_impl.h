@@ -21,6 +21,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "fuchsia/engine/browser/accessibility_bridge.h"
+#include "fuchsia/engine/browser/audio_consumer_provider_service.h"
 #include "fuchsia/engine/browser/discarding_event_filter.h"
 #include "fuchsia/engine/browser/navigation_controller_impl.h"
 #include "fuchsia/engine/browser/url_request_rewrite_rules_manager.h"
@@ -34,7 +35,7 @@ class WindowTreeHost;
 }  // namespace aura
 
 namespace content {
-class WebContents;
+class FromRenderFrameHost;
 }  // namespace content
 
 class ContextImpl;
@@ -44,10 +45,19 @@ class FrameImpl : public fuchsia::web::Frame,
                   public content::WebContentsObserver,
                   public content::WebContentsDelegate {
  public:
+  // Returns FrameImpl that owns the |render_frame_host| or nullptr if the
+  // |render_frame_host| is not owned by a FrameImpl.
+  static FrameImpl* FromRenderFrameHost(
+      content::RenderFrameHost* render_frame_host);
+
   FrameImpl(std::unique_ptr<content::WebContents> web_contents,
             ContextImpl* context,
             fidl::InterfaceRequest<fuchsia::web::Frame> frame_request);
   ~FrameImpl() override;
+
+  void BindAudioConsumerProvider(
+      mojo::PendingReceiver<media::mojom::FuchsiaAudioConsumerProvider>
+          receiver);
 
   zx::unowned_channel GetBindingChannelForTest() const;
   content::WebContents* web_contents_for_test() const {
@@ -153,6 +163,7 @@ class FrameImpl : public fuchsia::web::Frame,
       SetUrlRequestRewriteRulesCallback callback) override;
   void EnableHeadlessRendering() override;
   void DisableHeadlessRendering() override;
+  void SetMediaSessionId(uint64_t session_id) override;
 
   // content::WebContentsDelegate implementation.
   void CloseContents(content::WebContents* source) override;
@@ -201,6 +212,7 @@ class FrameImpl : public fuchsia::web::Frame,
   std::vector<uint64_t> before_load_scripts_order_;
   base::RepeatingCallback<void(base::StringPiece)> console_log_message_hook_;
   UrlRequestRewriteRulesManager url_request_rewrite_rules_manager_;
+  AudioConsumerProviderService audio_consumer_provider_service_;
 
   // Used for receiving and dispatching popup created by this Frame.
   fuchsia::web::PopupFrameCreationListenerPtr popup_listener_;

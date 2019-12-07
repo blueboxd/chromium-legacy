@@ -1238,7 +1238,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
   SiteInstance* current_instance = render_frame_host_->GetSiteInstance();
 
   // We do not currently swap processes for navigations in webview tag guests.
-  if (current_instance->GetSiteURL().SchemeIs(kGuestScheme))
+  if (current_instance->IsGuest())
     return current_instance;
 
   // Determine if we need a new BrowsingInstance for this entry.  If true, this

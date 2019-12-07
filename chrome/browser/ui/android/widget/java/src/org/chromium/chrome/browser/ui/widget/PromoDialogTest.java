@@ -20,10 +20,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.ui.widget.PromoDialog.DialogParams;
 import org.chromium.chrome.browser.ui.widget.test.R;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -32,7 +32,7 @@ import java.util.concurrent.Callable;
 /**
  * Tests for the PromoDialog and PromoDialogLayout.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
+@RunWith(BaseJUnit4ClassRunner.class)
 public class PromoDialogTest extends DummyUiActivityTestCase {
     /**
      * Creates a PromoDialog.  Doesn't call {@link PromoDialog#show} because there is no Window to

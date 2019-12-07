@@ -24,6 +24,10 @@ namespace content {
 class RenderFrameHostImpl;
 
 // The PortalInterceptorForTesting can be used in tests to inspect Portal IPCs.
+//
+// When in use, it is owned by the target Portal and replaces it in the
+// associated binding. It will be destructed when the Portal is; a weak pointer
+// should be used to determine whether this has happened.
 class PortalInterceptorForTesting final
     : public blink::mojom::PortalInterceptorForTesting {
  public:
@@ -37,7 +41,7 @@ class PortalInterceptorForTesting final
   static PortalInterceptorForTesting* Create(
       RenderFrameHostImpl* render_frame_host_impl,
       mojo::PendingAssociatedReceiver<blink::mojom::Portal> receiver,
-      mojo::AssociatedRemote<blink::mojom::PortalClient> client);
+      mojo::PendingAssociatedRemote<blink::mojom::PortalClient> client);
   static PortalInterceptorForTesting* Create(
       RenderFrameHostImpl* render_frame_host_impl,
       content::Portal* portal);
@@ -63,7 +67,7 @@ class PortalInterceptorForTesting final
   }
 
   // Test getters.
-  content::Portal* GetPortal() { return portal_.get(); }
+  content::Portal* GetPortal() { return portal_; }
   WebContentsImpl* GetPortalContents() { return portal_->GetPortalContents(); }
 
   // Useful in observing the intercepted activity.
@@ -78,14 +82,12 @@ class PortalInterceptorForTesting final
   }
 
  private:
-  explicit PortalInterceptorForTesting(
-      RenderFrameHostImpl* render_frame_host_impl);
   PortalInterceptorForTesting(RenderFrameHostImpl* render_frame_host_impl,
-                              std::unique_ptr<content::Portal> portal);
+                              content::Portal* portal);
 
   const scoped_refptr<base::RefCountedData<base::ObserverList<Observer>>>
       observers_;
-  std::unique_ptr<content::Portal> portal_;
+  content::Portal* portal_;  // Owns this.
   NavigateCallback navigate_callback_;
   base::WeakPtrFactory<PortalInterceptorForTesting> weak_ptr_factory_{this};
 };

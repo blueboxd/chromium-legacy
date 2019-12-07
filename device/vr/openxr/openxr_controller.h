@@ -11,6 +11,8 @@
 #include <vector>
 
 #include "base/optional.h"
+#include "device/vr/openxr/openxr_path_helper.h"
+#include "device/vr/openxr/openxr_util.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "third_party/openxr/src/include/openxr/openxr.h"
 #include "ui/gfx/transform.h"
@@ -44,10 +46,14 @@ class OpenXrController {
   OpenXrController();
   ~OpenXrController();
 
+  // The lifetime of OpenXRInputHelper is a superset of OpenXRController. Thus
+  // we may safely pass the OpenXRPathHelper of the parent class to
+  // OpenXRController as a dependency.
   XrResult Initialize(
       OpenXrHandednessType type,
       XrInstance instance,
       XrSession session,
+      const OpenXRPathHelper* path_helper,
       std::map<XrPath, std::vector<XrActionSuggestedBinding>>* bindings);
 
   XrActionSet GetActionSet() const;
@@ -89,7 +95,7 @@ class OpenXrController {
 
   XrResult CreateAction(
       XrActionType type,
-      const char* interaction_profile_name,
+      XrPath profilePath,
       const std::string& binding_string,
       const std::string& action_name,
       XrAction* action,
@@ -167,11 +173,13 @@ class OpenXrController {
   XrAction pointer_pose_action_;
   XrSpace pointer_pose_space_;
 
-  std::string interaction_profile_;
+  XrPath interaction_profile_;
   std::string top_level_user_path_string_;
 
   std::unordered_map<OpenXrButtonType, ActionButton> button_action_map_;
   std::unordered_map<OpenXrAxisType, XrAction> axis_action_map_;
+
+  const OpenXRPathHelper* path_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(OpenXrController);
 };

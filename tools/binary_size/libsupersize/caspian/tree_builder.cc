@@ -23,6 +23,7 @@ TreeBuilder::TreeBuilder(SizeInfo* size_info) {
   for (const Symbol& sym : size_info->raw_symbols) {
     symbols_.push_back(&sym);
   }
+  size_info_ = size_info;
 }
 
 TreeBuilder::TreeBuilder(DeltaSizeInfo* size_info) {
@@ -30,6 +31,7 @@ TreeBuilder::TreeBuilder(DeltaSizeInfo* size_info) {
   for (const DeltaSymbol& sym : size_info->delta_symbols) {
     symbols_.push_back(&sym);
   }
+  size_info_ = size_info;
 }
 
 TreeBuilder::~TreeBuilder() = default;
@@ -129,7 +131,7 @@ Json::Value TreeBuilder::Open(const char* path) {
     exit(1);
   }
   Json::Value v;
-  node->WriteIntoJson(1, node_sort_func, &v);
+  node->WriteIntoJson(1, node_sort_func, size_info_->IsSparse(), &v);
   return v;
 }
 
@@ -142,6 +144,31 @@ void TreeBuilder::AddFileEntry(GroupedPath grouped_path,
   // possible that a TreeNode has already been created for |grouped_path|. This
   // is made slightly more complicated by the fact that _parents[""] is root,
   // but we do want to create a a new (No path) file entry.
+
+  std::vector<TreeNode*> symbol_nodes;
+  // Create symbol nodes.
+  NodeStats node_stats;
+  for (const BaseSymbol* sym : symbols) {
+    if (sym->Pss() == 0.0f) {
+      // Even though unchanged symbols aren't displayed in the viewer, we need
+      // to aggregate counts of all symbol types in |node_stats.count| to know
+      // if all child symbols of a node have been added or removed, which is
+      // true if |count| == |added| or |count| == |removed|.
+      node_stats += NodeStats(*sym);
+      continue;
+    }
+    TreeNode* symbol_node = new TreeNode();
+    symbol_node->container_type = ContainerType::kSymbol;
+    symbol_node->id_path = GroupedPath{"", sym->FullName()};
+    symbol_node->size = sym->Pss();
+    symbol_node->node_stats = NodeStats(*sym);
+    symbol_node->symbol = sym;
+    symbol_nodes.push_back(symbol_node);
+  }
+
+  if (symbol_nodes.empty()) {
+    return;
+  }
 
   TreeNode* file_node = _parents[grouped_path];
   if (file_node == nullptr || grouped_path.path.empty()) {
@@ -156,16 +183,10 @@ void TreeBuilder::AddFileEntry(GroupedPath grouped_path,
     file_node->short_name_index =
         file_node->id_path.size() - file_node->id_path.ShortName(sep_).size();
     _parents[file_node->id_path] = file_node;
+    file_node->node_stats = node_stats;
   }
 
-  // Create symbol nodes.
-  for (const BaseSymbol* sym : symbols) {
-    TreeNode* symbol_node = new TreeNode();
-    symbol_node->container_type = ContainerType::kSymbol;
-    symbol_node->id_path = GroupedPath{"", sym->FullName()};
-    symbol_node->size = sym->Pss();
-    symbol_node->node_stats = NodeStats(*sym);
-    symbol_node->symbol = sym;
+  for (TreeNode* symbol_node : symbol_nodes) {
     AttachToParent(symbol_node, file_node);
   }
 
@@ -248,11 +269,7 @@ void TreeBuilder::JoinDexMethodClasses(TreeNode* node) {
 
   // Bucket dex symbols by their class.
   for (TreeNode* child : node->children) {
-    // Unlike in .ndjson fields, Java classes loaded from .size files are just
-    // the classname, such as "android.support.v7.widget.toolbar".
-    // Method names contain the classname followed by the method definition,
-    // like "android.support.v7.widget.toolbar void onMeasure(int, int)".
-    const size_t split_index = child->id_path.path.find_first_of(' ');
+    const size_t split_index = child->id_path.path.find_first_of('#');
     // No return type / field type means it's a class node.
     const bool is_class_node =
         child->id_path.path.find_first_of(' ', child->short_name_index) ==

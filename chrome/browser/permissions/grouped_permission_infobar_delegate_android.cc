@@ -110,9 +110,7 @@ bool GroupedPermissionInfoBarDelegate::ShouldShowMiniInfobar(
     ContentSettingsType type) {
   auto* manager = PermissionRequestManager::FromWebContents(web_contents);
   return type == ContentSettingsType::NOTIFICATIONS &&
-         manager->ShouldCurrentRequestUseQuietUI() &&
-         QuietNotificationPermissionUiConfig::UiFlavorToUse() ==
-             QuietNotificationPermissionUiConfig::UiFlavor::MINI_INFOBAR;
+         manager->ShouldCurrentRequestUseQuietUI();
 }
 
 GroupedPermissionInfoBarDelegate::GroupedPermissionInfoBarDelegate(

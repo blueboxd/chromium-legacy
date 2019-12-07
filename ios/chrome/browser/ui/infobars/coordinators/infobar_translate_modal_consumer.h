@@ -10,6 +10,8 @@ namespace {
 NSString* kSourceLanguagePrefKey = @"sourceLanguage";
 NSString* kTargetLanguagePrefKey = @"targetLanguage";
 NSString* kEnableTranslateButtonPrefKey = @"enableTranslateButton";
+NSString* kUpdateLanguageBeforeTranslatePrefKey =
+    @"updateLanguageBeforeTranslate";
 NSString* kEnableAndDisplayShowOriginalButtonPrefKey =
     @"enableAndDisplayShowOriginalButton";
 NSString* kShouldAlwaysTranslatePrefKey = @"shouldAlwaysTranslate";

@@ -314,7 +314,9 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   // BrowserControlsOffsetManagerClient implementation.
   float TopControlsHeight() const override;
+  float TopControlsMinHeight() const override;
   float BottomControlsHeight() const override;
+  float BottomControlsMinHeight() const override;
   void SetCurrentBrowserControlsShownRatio(float top_ratio,
                                            float bottom_ratio) override;
   float CurrentTopControlsShownRatio() const override;

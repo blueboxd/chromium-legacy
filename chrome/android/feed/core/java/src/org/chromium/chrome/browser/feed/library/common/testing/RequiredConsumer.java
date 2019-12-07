@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.common.testing;
 
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
+import org.chromium.base.Consumer;
 
 /** Test helper class that ensures that the asynchronous consumer is called. */
 public class RequiredConsumer<T> implements Consumer<T> {

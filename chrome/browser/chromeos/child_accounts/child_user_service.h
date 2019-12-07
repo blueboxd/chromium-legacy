@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_CHILD_USER_SERVICE_H_
 
 #include <memory>
+#include <string>
+
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_interface.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -50,8 +52,8 @@ class ChildUserService : public KeyedService,
   ~ChildUserService() override;
 
   // WebTimeLimitInterface:
-  void PauseWebActivity() override;
-  void ResumeWebActivity() override;
+  void PauseWebActivity(const std::string& app_id) override;
+  void ResumeWebActivity(const std::string& app_id) override;
 
   // Returns whether web time limit was reached for child user.
   // Always returns false if per-app times limits feature is disabled.

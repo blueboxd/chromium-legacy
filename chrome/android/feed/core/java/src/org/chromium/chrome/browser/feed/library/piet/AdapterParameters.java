@@ -9,7 +9,7 @@ import android.support.annotation.VisibleForTesting;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.chrome.browser.feed.library.common.functional.Supplier;
+import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.feed.library.common.time.Clock;
 import org.chromium.chrome.browser.feed.library.piet.PietStylesHelper.PietStylesHelperFactory;
 import org.chromium.chrome.browser.feed.library.piet.ui.RoundedCornerMaskCache;

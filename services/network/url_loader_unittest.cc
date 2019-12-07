@@ -397,13 +397,15 @@ class URLLoaderTest : public testing::Test {
 
     net::QuicSimpleTestServer::Start();
     net::HttpNetworkSession::Params params;
-    params.quic_params.origins_to_force_quic_on.insert(
+    auto quic_context = std::make_unique<net::QuicContext>();
+    quic_context->params()->origins_to_force_quic_on.insert(
         net::HostPortPair(net::QuicSimpleTestServer::GetHost(),
                           net::QuicSimpleTestServer::GetPort()));
     params.enable_quic = true;
 
     net::URLRequestContextBuilder context_builder;
     context_builder.set_http_network_session_params(params);
+    context_builder.set_quic_context(std::move(quic_context));
     context_builder.set_proxy_resolution_service(
         net::ProxyResolutionService::CreateDirect());
     auto test_network_delegate = std::make_unique<net::TestNetworkDelegate>();

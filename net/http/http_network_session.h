@@ -136,9 +136,6 @@ class NET_EXPORT HttpNetworkSession {
     // If true, HTTPS URLs can be sent to QUIC proxies.
     bool enable_quic_proxies_for_https_urls;
 
-    // QUIC runtime configuration options and active experiments.
-    QuicParams quic_params;
-
     // If non-empty, QUIC will only be spoken to hosts in this list.
     base::flat_set<std::string> quic_host_allowlist;
 

@@ -12,8 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace string_matching {
-namespace test {
+namespace {
 
 // Returns a string of |text| marked the hits in |match| using block bracket.
 // e.g. text= "Text", match.hits = [{0,1}], returns "[T]ext".
@@ -147,5 +146,4 @@ TEST(TokenizedStringMatchTest, AbsoluteRelevance) {
   }
 }
 
-}  // namespace test
-}  // namespace string_matching
+}  // namespace

@@ -8,7 +8,6 @@
 #include "base/optional.h"
 
 class TabGroupId;
-class TabGroupVisualData;
 
 namespace content {
 class WebContents;
@@ -18,8 +17,7 @@ class TabGroupController {
  public:
   virtual void CreateTabGroup(TabGroupId group) = 0;
   virtual void ChangeTabGroupContents(TabGroupId group) = 0;
-  virtual void ChangeTabGroupVisuals(TabGroupId group,
-                                     TabGroupVisualData* visual_data) = 0;
+  virtual void ChangeTabGroupVisuals(TabGroupId group) = 0;
   virtual void CloseTabGroup(TabGroupId group) = 0;
 
   // Methods from TabStipModel that are exposed to TabGroup.

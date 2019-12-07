@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
+#include "components/spellcheck/common/spellcheck_common.h"
 #include "components/spellcheck/common/spellcheck_features.h"
 #include "components/spellcheck/common/spellcheck_result.h"
 #include "components/spellcheck/renderer/spellcheck.h"
@@ -110,6 +111,40 @@ spellcheck::mojom::SpellCheckHost& SpellCheckProvider::GetSpellCheckHost() {
   return *spell_check_host_;
 }
 
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+void SpellCheckProvider::HybridSpellCheckParagraphComplete(
+    const base::string16& text,
+    const int request_id,
+    std::vector<SpellCheckResult> renderer_results) {
+  size_t renderer_languages = spellcheck_->EnabledLanguageCount();
+
+  // If there are no renderer results, either 1) there were no languages to
+  // check on the renderer side because all languages are supported by the
+  // platform; or 2) each word was marked correct by at least 1 language. In
+  // case of 2), we can skip the platform check, because we know all words are
+  // correctly spelled in at least 1 language.
+  // Additionally, if the renderer checked all languages, we can completely skip
+  // the browser side.
+  if ((renderer_results.empty() && renderer_languages > 0) ||
+      renderer_languages == spellcheck_->LanguageCount()) {
+    OnRespondTextCheck(request_id, text, renderer_results);
+  } else {
+    // We need to do a platform check. We must decide whether to find the
+    // replacement suggestions now, or wait until the user requests them. If all
+    // languages are checked by the platform, find the suggestions now, because
+    // the platform spellchecker is fast. If we had to check some languages via
+    // Hunspell, then wait until the user requests the replacements, because
+    //  Hunspell is extremely slow at finding them and can hang the page for a
+    // few seconds if the text is not small.
+    GetSpellCheckHost().RequestPartialTextCheck(
+        text, routing_id(), std::move(renderer_results),
+        renderer_languages == 0,
+        base::BindOnce(&SpellCheckProvider::OnRespondTextCheck,
+                       weak_factory_.GetWeakPtr(), request_id, text));
+  }
+}
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+
 void SpellCheckProvider::RequestTextChecking(
     const base::string16& text,
     std::unique_ptr<WebTextCheckingCompletion> completion) {
@@ -129,6 +164,22 @@ void SpellCheckProvider::RequestTextChecking(
   last_results_.Assign(blink::WebVector<blink::WebTextCheckingResult>());
   last_identifier_ = text_check_completions_.Add(std::move(completion));
 
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+  if (spellcheck::UseWinHybridSpellChecker()) {
+    // Do a first spellcheck pass with Hunspell, then check the rest of the
+    // locales with the native spellchecker.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &SpellCheck::HybridSpellCheckParagraph, spellcheck_->AsWeakPtr(),
+            text,
+            base::BindOnce(
+                &SpellCheckProvider::HybridSpellCheckParagraphComplete,
+                weak_factory_.GetWeakPtr(), text, last_identifier_)));
+    return;
+  }
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   if (spellcheck::UseBrowserSpellChecker()) {
     // Text check (unified request for grammar and spell check) is only
@@ -140,6 +191,7 @@ void SpellCheckProvider::RequestTextChecking(
                        weak_factory_.GetWeakPtr(), last_identifier_, text));
   }
 #endif
+
 #if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
   if (!spellcheck::UseBrowserSpellChecker()) {
     GetSpellCheckHost().CallSpellingService(
@@ -176,12 +228,32 @@ void SpellCheckProvider::CheckSpelling(
     size_t& length,
     WebVector<WebString>* optional_suggestions) {
   base::string16 word = text.Utf16();
-  std::vector<base::string16> suggestions;
   const int kWordStart = 0;
-  spellcheck_->SpellCheckWord(word.c_str(), kWordStart, word.size(),
-                              routing_id(), &offset, &length,
-                              optional_suggestions ? &suggestions : nullptr);
+
   if (optional_suggestions) {
+    spellcheck::PerLanguageSuggestions per_language_suggestions;
+    spellcheck_->SpellCheckWord(word.c_str(), kWordStart, word.size(),
+                                routing_id(), &offset, &length,
+                                &per_language_suggestions);
+
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+    if (spellcheck::UseWinHybridSpellChecker()) {
+      // Also fetch suggestions from the browser process (native spellchecker).
+      // This is a synchronous Mojo call, because this method must return
+      // synchronously.
+      spellcheck::PerLanguageSuggestions browser_suggestions;
+      GetSpellCheckHost().GetPerLanguageSuggestions(word, &browser_suggestions);
+
+      per_language_suggestions.reserve(per_language_suggestions.size() +
+                                       browser_suggestions.size());
+      per_language_suggestions.insert(per_language_suggestions.end(),
+                                      browser_suggestions.begin(),
+                                      browser_suggestions.end());
+    }
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+
+    std::vector<base::string16> suggestions;
+    spellcheck::FillSuggestions(per_language_suggestions, &suggestions);
     WebVector<WebString> web_suggestions(suggestions.size());
     std::transform(
         suggestions.begin(), suggestions.end(), web_suggestions.begin(),
@@ -190,10 +262,13 @@ void SpellCheckProvider::CheckSpelling(
     UMA_HISTOGRAM_COUNTS_1M("SpellCheck.api.check.suggestions",
                             base::saturated_cast<int>(word.size()));
   } else {
+    spellcheck_->SpellCheckWord(word.c_str(), kWordStart, word.size(),
+                                routing_id(), &offset, &length,
+                                /* optional suggestions vector */ nullptr);
     UMA_HISTOGRAM_COUNTS_1M("SpellCheck.api.check",
                             base::saturated_cast<int>(word.size()));
     // If optional_suggestions is not requested, the API is called
-    // for marking.  So we use this for counting markable words.
+    // for marking. So we use this for counting markable words.
     GetSpellCheckHost().NotifyChecked(word, 0 < length);
   }
 }

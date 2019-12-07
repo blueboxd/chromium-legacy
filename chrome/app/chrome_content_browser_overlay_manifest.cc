@@ -44,7 +44,6 @@
 #include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
 #include "chromeos/services/media_perception/public/mojom/media_perception.mojom.h"
-#include "chromeos/services/multidevice_setup/public/cpp/manifest.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "chromeos/services/network_config/public/mojom/constants.mojom.h"  // nogncheck
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
@@ -115,9 +114,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         .RequireCapability("util_win", "util_win")
         .RequireCapability("xr_device_service", "xr_device_provider")
         .RequireCapability("xr_device_service", "xr_device_test_hook")
-#if defined(OS_CHROMEOS)
-        .RequireCapability("multidevice_setup", "multidevice_setup")
-#endif
         .ExposeInterfaceFilterCapability_Deprecated(
             "navigation:frame", "renderer",
             service_manager::Manifest::InterfaceList<
@@ -164,9 +160,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                 mojom::SiteEngagementDetailsProvider,
                 mojom::UsbInternalsPageHandler,
                 snippets_internals::mojom::PageHandlerFactory>())
-#if defined(OS_CHROMEOS)
-        .PackageService(chromeos::multidevice_setup::GetManifest())
-#endif  // defined(OS_CHROMEOS)
         .Build()
   };
   return *manifest;

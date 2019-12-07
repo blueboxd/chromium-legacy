@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.feed.library.api.host.imageloader;
 
 import android.graphics.drawable.Drawable;
 
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
+import org.chromium.base.Consumer;
 
 import java.util.List;
 

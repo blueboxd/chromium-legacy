@@ -30,7 +30,7 @@ TabGroup::~TabGroup() {}
 
 void TabGroup::SetVisualData(TabGroupVisualData visual_data) {
   visual_data_ = std::make_unique<TabGroupVisualData>(visual_data);
-  controller_->ChangeTabGroupVisuals(id_, visual_data_.get());
+  controller_->ChangeTabGroupVisuals(id_);
 }
 
 base::string16 TabGroup::GetDisplayedTitle() const {
@@ -55,7 +55,7 @@ base::string16 TabGroup::GetDisplayedTitle() const {
 void TabGroup::AddTab() {
   if (tab_count_ == 0) {
     controller_->CreateTabGroup(id_);
-    controller_->ChangeTabGroupVisuals(id_, visual_data_.get());
+    controller_->ChangeTabGroupVisuals(id_);
   }
   controller_->ChangeTabGroupContents(id_);
   ++tab_count_;

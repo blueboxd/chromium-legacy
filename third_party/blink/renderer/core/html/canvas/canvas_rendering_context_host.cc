@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_host.h"
 
 #include "base/feature_list.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_async_blob_creator.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
@@ -18,10 +19,6 @@
 #include "third_party/skia/include/core/SkSurface.h"
 
 namespace blink {
-namespace {
-const base::Feature kLowLatencyCanvas2dSwapChain{
-    "LowLatencyCanvas2dSwapChain", base::FEATURE_DISABLED_BY_DEFAULT};
-}  // namespace
 
 CanvasRenderingContextHost::CanvasRenderingContextHost(HostType host_type)
     : host_type_(host_type) {}
@@ -120,9 +117,10 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
           presentation_mode |=
               CanvasResourceProvider::kAllowImageChromiumPresentationMode;
         }
-        // Allow swap chain presentation only if 3d context is using a swap
-        // chain since we'll be importing it as a passthrough texture.
         if (RenderingContext() && RenderingContext()->UsingSwapChain()) {
+          DCHECK(LowLatencyEnabled());
+          // Allow swap chain presentation only if 3d context is using a swap
+          // chain since we'll be importing it as a passthrough texture.
           presentation_mode |=
               CanvasResourceProvider::kAllowSwapChainPresentationMode;
         }
@@ -147,13 +145,8 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
                 kAcceleratedCompositedResourceUsage;
           }
         } else {
-          if (LowLatencyEnabled()) {
-            usage = CanvasResourceProvider::ResourceUsage::
-                kSoftwareCompositedDirect2DResourceUsage;
-          } else {
-            usage = CanvasResourceProvider::ResourceUsage::
-                kSoftwareCompositedResourceUsage;
-          }
+          usage = CanvasResourceProvider::ResourceUsage::
+              kSoftwareCompositedResourceUsage;
         }
 
         uint8_t presentation_mode =
@@ -161,13 +154,16 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
         // Allow GMB image resources if the runtime feature is enabled or if
         // we want to use it for low latency mode.
         if (RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled() ||
-            (LowLatencyEnabled() && want_acceleration)) {
+            (base::FeatureList::IsEnabled(
+                 features::kLowLatencyCanvas2dImageChromium) &&
+             LowLatencyEnabled() && want_acceleration)) {
           presentation_mode |=
               CanvasResourceProvider::kAllowImageChromiumPresentationMode;
         }
         // Allow swap chains only if the runtime feature is enabled and we're
         // in low latency mode too.
-        if (base::FeatureList::IsEnabled(kLowLatencyCanvas2dSwapChain) &&
+        if (base::FeatureList::IsEnabled(
+                features::kLowLatencyCanvas2dSwapChain) &&
             LowLatencyEnabled() && want_acceleration) {
           presentation_mode |=
               CanvasResourceProvider::kAllowSwapChainPresentationMode;

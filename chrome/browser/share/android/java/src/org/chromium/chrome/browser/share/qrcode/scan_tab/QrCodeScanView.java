@@ -14,8 +14,15 @@ import android.widget.FrameLayout;
  */
 class QrCodeScanView {
     private final Context mContext;
-    private final View mView;
+    private final FrameLayout mView;
+    private boolean mHasCameraPermission;
+    private boolean mIsOnForeground;
+    private CameraPreview mCameraPreview;
 
+    /**
+     * The QrCodeScanView constructor.
+     * @param context The context to use for user permissions.
+     */
     public QrCodeScanView(Context context) {
         mContext = context;
 
@@ -26,5 +33,52 @@ class QrCodeScanView {
 
     public View getView() {
         return mView;
+    }
+
+    /**
+     * Sets camera if possible.
+     * @param hasCameraPermission Indicates whether camera permissions wertr granted.
+     */
+    public void cameraPermissionsChanged(Boolean hasCameraPermission) {
+        if (mHasCameraPermission != hasCameraPermission) {
+            mHasCameraPermission = hasCameraPermission;
+            setCameraPreview();
+        }
+    }
+
+    /**
+     * Applies changes necessary to camera preview.
+     * @param isOnForeground Indicates whether this component UI is current on foreground.
+     */
+    public void onForegroundChanged(Boolean isOnForeground) {
+        mIsOnForeground = isOnForeground;
+        updateCameraPreviewState();
+    }
+
+    /** Creates and sets the camera preview. */
+    private void setCameraPreview() {
+        mView.removeAllViews();
+        if (mCameraPreview != null) {
+            mCameraPreview.stopCamera();
+            mCameraPreview = null;
+        }
+
+        if (mHasCameraPermission) {
+            mCameraPreview = new CameraPreview(mContext);
+            mView.addView(mCameraPreview);
+
+            updateCameraPreviewState();
+        }
+    }
+
+    /** Starts or stops camera if necessary. */
+    private void updateCameraPreviewState() {
+        if (mCameraPreview == null) return;
+
+        if (mIsOnForeground) {
+            mCameraPreview.startCamera();
+        } else {
+            mCameraPreview.stopCamera();
+        }
     }
 }

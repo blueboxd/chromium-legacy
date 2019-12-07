@@ -1164,6 +1164,7 @@ interface NetworkContext {
   // All outstanding requests are cancelled if the NetworkContext is destroyed.
   // Such requests will receive ERR_FAILED via |response_client|.
   ResolveHost(HostPortPair host,
+              NetworkIsolationKey network_isolation_key,
               ResolveHostParameters? optional_parameters,
               pending_remote<ResolveHostClient> response_client);
 

@@ -10,8 +10,7 @@
 #include "chrome/common/string_matching/tokenized_string.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace string_matching {
-
+namespace {
 constexpr double kPartialMatchPenaltyRate = 0.9;
 
 class FuzzyTokenizedStringMatchTest : public testing::Test {};
@@ -170,22 +169,22 @@ TEST_F(FuzzyTokenizedStringMatchTest, FirstCharacterMatchTest) {
   {
     base::string16 query(base::UTF8ToUTF16("COC"));
     base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
-    EXPECT_EQ(internal::FirstCharacterMatch(TokenizedString(query),
-                                            TokenizedString(text)),
+    EXPECT_EQ(FuzzyTokenizedStringMatch::FirstCharacterMatch(
+                  TokenizedString(query), TokenizedString(text)),
               1.0);
   }
   {
     base::string16 query(base::UTF8ToUTF16("CC"));
     base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
-    EXPECT_EQ(internal::FirstCharacterMatch(TokenizedString(query),
-                                            TokenizedString(text)),
+    EXPECT_EQ(FuzzyTokenizedStringMatch::FirstCharacterMatch(
+                  TokenizedString(query), TokenizedString(text)),
               0.8);
   }
   {
     base::string16 query(base::UTF8ToUTF16("C o C"));
     base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
-    EXPECT_EQ(internal::FirstCharacterMatch(TokenizedString(query),
-                                            TokenizedString(text)),
+    EXPECT_EQ(FuzzyTokenizedStringMatch::FirstCharacterMatch(
+                  TokenizedString(query), TokenizedString(text)),
               0.0);
   }
 }
@@ -194,30 +193,30 @@ TEST_F(FuzzyTokenizedStringMatchTest, PrefixMatchTest) {
   {
     base::string16 query(base::UTF8ToUTF16("clas"));
     base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
-    EXPECT_EQ(
-        internal::PrefixMatch(TokenizedString(query), TokenizedString(text)),
-        1.0);
+    EXPECT_EQ(FuzzyTokenizedStringMatch::PrefixMatch(TokenizedString(query),
+                                                     TokenizedString(text)),
+              1.0);
   }
   {
     base::string16 query(base::UTF8ToUTF16("clash clan"));
     base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
-    EXPECT_EQ(
-        internal::PrefixMatch(TokenizedString(query), TokenizedString(text)),
-        0.9);
+    EXPECT_EQ(FuzzyTokenizedStringMatch::PrefixMatch(TokenizedString(query),
+                                                     TokenizedString(text)),
+              0.9);
   }
   {
     base::string16 query(base::UTF8ToUTF16("c o c"));
     base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
-    EXPECT_EQ(
-        internal::PrefixMatch(TokenizedString(query), TokenizedString(text)),
-        1.0);
+    EXPECT_EQ(FuzzyTokenizedStringMatch::PrefixMatch(TokenizedString(query),
+                                                     TokenizedString(text)),
+              1.0);
   }
   {
     base::string16 query(base::UTF8ToUTF16("clam"));
     base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
-    EXPECT_EQ(
-        internal::PrefixMatch(TokenizedString(query), TokenizedString(text)),
-        0.0);
+    EXPECT_EQ(FuzzyTokenizedStringMatch::PrefixMatch(TokenizedString(query),
+                                                     TokenizedString(text)),
+              0.0);
   }
 }
 
@@ -281,4 +280,4 @@ TEST_F(FuzzyTokenizedStringMatchTest, OtherParamTest) {
   EXPECT_NEAR(match.relevance(), 0.33 / 2, 0.01);
 }
 
-}  // namespace string_matching
+}  // namespace

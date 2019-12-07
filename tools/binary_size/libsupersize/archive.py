@@ -1549,23 +1549,12 @@ def CreateSectionSizesAndSymbols(map_path=None,
   return section_sizes, raw_symbols
 
 
-def SortSymbols(raw_symbols):
-  logging.debug('Sorting %d symbols', len(raw_symbols))
-  # TODO(agrieve): Either change this sort so that it's only sorting by section
-  #     (and not using .sort()), or have it specify a total ordering (which must
-  #     also include putting padding-only symbols before others of the same
-  #     address). Note: The sort as-is takes ~1.5 seconds.
-  raw_symbols.sort(
-      key=lambda s: (s.IsPak(), s.IsBss(), s.section_name, s.address))
-  logging.info('Processed %d symbols', len(raw_symbols))
-
-
 def CreateSizeInfo(section_sizes,
                    raw_symbols,
                    metadata=None,
                    normalize_names=True):
   """Performs operations on all symbols and creates a SizeInfo object."""
-  SortSymbols(raw_symbols)
+  file_format.SortSymbols(raw_symbols)
   file_format.CalculatePadding(raw_symbols)
 
   # Do not call _NormalizeNames() during archive since that method tends to need

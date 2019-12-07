@@ -23,14 +23,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.chrome.browser.ui.widget.DualControlLayout.DualControlLayoutAlignment;
 import org.chromium.chrome.browser.ui.widget.test.R;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 /**
  * Tests for DualControlLayout.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
+@RunWith(BaseJUnit4ClassRunner.class)
 public class DualControlLayoutTest {
     private static final int PRIMARY_HEIGHT = 16;
     private static final int SECONDARY_HEIGHT = 8;

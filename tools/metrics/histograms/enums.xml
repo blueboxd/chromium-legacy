@@ -7657,6 +7657,7 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="Accelerated Composited"/>
   <int value="4" label="Accelerated Direct 2D"/>
   <int value="5" label="Accelerated Direct 3D"/>
+  <int value="6" label="Software Composited Direct 2D (deprecated)"/>
 </enum>
 
 <enum name="CAPSUpdaterStep">
@@ -16048,6 +16049,8 @@ Called by update_net_error_codes.py.-->
   <int value="391" label="accda"/>
   <int value="392" label="cer"/>
   <int value="393" label="der"/>
+  <int value="394" label="fileloc"/>
+  <int value="395" label="webloc"/>
 </enum>
 
 <enum name="DownloadItem.DangerType">
@@ -21482,6 +21485,7 @@ Called by update_net_error_codes.py.-->
   <int value="1422" label="ENTERPRISEREPORTINGPRIVATE_GETDEVICEDATA"/>
   <int value="1423" label="ENTERPRISEREPORTINGPRIVATE_SETDEVICEDATA"/>
   <int value="1424" label="ENTERPRISEREPORTINGPRIVATE_GETDEVICEINFO"/>
+  <int value="1425" label="PRINTING_GETPRINTERS"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -24578,7 +24582,7 @@ Called by update_net_error_codes.py.-->
   <int value="2085" label="ARIAFlowToAttribute"/>
   <int value="2086" label="ARIAGrabbedAttribute"/>
   <int value="2087" label="ARIAHasPopupAttribute"/>
-  <int value="2088" label="ARIAHelpAttribute"/>
+  <int value="2088" label="OBSOLETE_ARIAHelpAttribute"/>
   <int value="2089" label="ARIAHiddenAttribute"/>
   <int value="2090" label="ARIAInvalidAttribute"/>
   <int value="2091" label="ARIAKeyShortcutsAttribute"/>
@@ -25653,6 +25657,7 @@ Called by update_net_error_codes.py.-->
   <int value="3112" label="HTMLMetaElementReferrerPolicy"/>
   <int value="3113" label="NonWebbyMixedContent"/>
   <int value="3114" label="V8SharedArrayBufferConstructed"/>
+  <int value="3115" label="ScrollSnapCausesScrollOnInitialLayout"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -36768,7 +36773,6 @@ from previous Chrome versions.
       label="SupervisedUserCommittedInterstitials:enabled"/>
   <int value="-1096595907" label="disable-new-virtual-keyboard-behavior"/>
   <int value="-1095947169" label="ModalPermissionDialogView:disabled"/>
-  <int value="-1093104008" label="PeriodicBackgroundSync:disabled"/>
   <int value="-1088804127" label="DuetTabStripIntegrationAndroid:disabled"/>
   <int value="-1086728979" label="kids-management-url-classification:enabled"/>
   <int value="-1085492638" label="FetchKeepaliveTimeoutSetting:enabled"/>
@@ -36948,7 +36952,6 @@ from previous Chrome versions.
       label="OmniboxEnableClipboardProviderTextSuggestions:enabled"/>
   <int value="-874602599" label="HorizontalTabSwitcherAndroid:enabled"/>
   <int value="-872764392" label="ContextualSuggestionsBottomSheet:disabled"/>
-  <int value="-872302695" label="PeriodicBackgroundSync:enabled"/>
   <int value="-871520682"
       label="AccessibilityInternalsPageImprovements:enabled"/>
   <int value="-870120067" label="EnableSearchBoxSelection:enabled"/>
@@ -37659,6 +37662,7 @@ from previous Chrome versions.
   <int value="42844603" label="AndroidSurfaceControl:disabled"/>
   <int value="43951968" label="DesktopPWAsCustomTabUI:enabled"/>
   <int value="44088203" label="ExpensiveBackgroundTimerThrottling:enabled"/>
+  <int value="44240181" label="SharingQRCodeGenerator:disabled"/>
   <int value="48159177" label="reduced-referrer-granularity"/>
   <int value="49113130" label="OmniboxOnDeviceHeadProvider:disabled"/>
   <int value="51793504" label="protect-sync-credential-on-reauth:disabled"/>
@@ -37874,6 +37878,7 @@ from previous Chrome versions.
   <int value="339671131" label="disable-per-user-timezone"/>
   <int value="341152650" label="SoundContentSetting:enabled"/>
   <int value="341851350" label="EnableDbusAndX11StatusIcons:enabled"/>
+  <int value="342960463" label="SharingQRCodeGenerator:enabled"/>
   <int value="345664265" label="BlinkHeapIncrementalMarking:disabled"/>
   <int value="346711293" label="enable-save-password-bubble"/>
   <int value="347981012" label="TabToGTSAnimation:disabled"/>
@@ -37978,6 +37983,7 @@ from previous Chrome versions.
   <int value="468959230"
       label="enable-non-validating-reload-on-refresh-content"/>
   <int value="470011024" label="NonValidatingReloadOnNormalReload:enabled"/>
+  <int value="471224152" label="WinUseHybridSpellChecker:enabled"/>
   <int value="471969274" label="MediaControlsExpandGesture:enabled"/>
   <int value="473958125" label="OmniboxWrapPopupPosition:enabled"/>
   <int value="474743272" label="material-design-ink-drop"/>
@@ -38747,6 +38753,7 @@ from previous Chrome versions.
   <int value="1459803015" label="WebRtcEnableCaptureMultiChannelApm:enabled"/>
   <int value="1460747747" label="GdiTextPrinting:enabled"/>
   <int value="1460958818" label="NTPForeignSessionsSuggestions:enabled"/>
+  <int value="1464028544" label="WinUseHybridSpellChecker:disabled"/>
   <int value="1465624446" label="disable-zero-copy"/>
   <int value="1466380480" label="enable-device-discovery-notifications"/>
   <int value="1466502102" label="DelayNavigation:disabled"/>
@@ -42538,6 +42545,15 @@ Called by update_use_counter_css.py.-->
   <int value="4" label="Panel"/>
   <int value="5" label="Popup"/>
   <int value="6" label="Unknown"/>
+</enum>
+
+<enum name="NaClAppTypeEnum">
+  <int value="0" label="PNaCl Open Web"/>
+  <int value="1" label="PNaCl Hosted App"/>
+  <int value="2" label="PNaCl Packaged App"/>
+  <int value="3" label="NaCl Open Web"/>
+  <int value="4" label="NaCl Hosted App"/>
+  <int value="5" label="NaCl Packaged App"/>
 </enum>
 
 <enum name="NaClHelperStatus">
@@ -49094,6 +49110,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Has password field"/>
 </enum>
 
+<enum name="PasswordStoreChange">
+  <int value="0" label="Add - If the PasswordForm login was added."/>
+  <int value="1" label="Update - If the PasswordForm login was updated."/>
+  <int value="2" label="Remove - If the PasswordForm login was removed."/>
+</enum>
+
 <enum name="PasswordSubmissionEvent">
   <int value="0" label="Password submission succeeded"/>
   <int value="1" label="Password submission failed"/>
@@ -50045,6 +50067,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="4"
       label="User cancelled setup while downloading Plugin VM image"/>
   <int value="5" label="User cancelled setup while importing Plugin VM image"/>
+  <int value="6" label="Error while downloading Plugin VM DLC"/>
+  <int value="7" label="User cancelled setup while downloading Plugin VM DLC"/>
 </enum>
 
 <enum name="PNaClOptionsOptLevelEnum">
@@ -55896,6 +55920,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="391" label="ACCDA"/>
   <int value="392" label="CER"/>
   <int value="393" label="DER"/>
+  <int value="394" label="FILELOC"/>
+  <int value="395" label="WEBLOC"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary">
@@ -58408,6 +58434,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="History push state or replace state"/>
   <int value="1" label="Same document backward or forward"/>
   <int value="2" label="Other fragment navigation"/>
+</enum>
+
+<enum name="SiteEngagementLevel">
+  <int value="0" label="None"/>
+  <int value="1" label="Minimal"/>
+  <int value="2" label="Low"/>
+  <int value="3" label="Medium"/>
+  <int value="4" label="High"/>
+  <int value="5" label="Max"/>
 </enum>
 
 <enum name="SiteEngagementServiceEngagementType">

@@ -126,6 +126,7 @@ class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
   gfx::Rect drag_image_final_bounds_for_cancel_animation_;
 
   std::unique_ptr<gfx::LinearAnimation> cancel_animation_;
+  std::unique_ptr<gfx::AnimationDelegate> cancel_animation_notifier_;
 
   // Window that started the drag.
   aura::Window* drag_source_window_;

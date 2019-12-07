@@ -5,8 +5,12 @@
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/chromeos/device_sync/device_sync_client_factory.h"
+#include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client_impl.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
@@ -17,7 +21,6 @@
 #include "content/public/browser/browser_context.h"
 
 namespace chromeos {
-
 namespace multidevice_setup {
 
 namespace {
@@ -27,28 +30,51 @@ bool IsAllowedByPolicy(content::BrowserContext* context) {
       Profile::FromBrowserContext(context)->GetPrefs());
 }
 
-}  // namespace
-
 // Class that wraps MultiDeviceSetupClient in a KeyedService.
 class MultiDeviceSetupClientHolder : public KeyedService {
  public:
   explicit MultiDeviceSetupClientHolder(content::BrowserContext* context)
-      : multidevice_setup_client_(
-            MultiDeviceSetupClientImpl::Factory::Get()->BuildInstance(
-                content::BrowserContext::GetConnectorFor(context))) {}
+      : profile_(Profile::FromBrowserContext(context)) {
+    mojo::PendingRemote<mojom::MultiDeviceSetup> remote_setup;
+    auto receiver = remote_setup.InitWithNewPipeAndPassReceiver();
+    multidevice_setup_client_ =
+        MultiDeviceSetupClientImpl::Factory::Get()->BuildInstance(
+            std::move(remote_setup));
+
+    // NOTE: We bind the receiver asynchronously, because we can't synchronously
+    // depend on MultiDeviceSetupServiceFactory at construction time. This is
+    // due to a circular dependency among the AndroidSmsServiceFactory,
+    // MultiDeviceSetupServiceFactory, and MultiDeviceSetupClientFactory
+    base::PostTask(
+        FROM_HERE, {base::CurrentThread()},
+        base::BindOnce(&MultiDeviceSetupClientHolder::BindService,
+                       weak_factory_.GetWeakPtr(), std::move(receiver)));
+  }
 
   MultiDeviceSetupClient* multidevice_setup_client() {
     return multidevice_setup_client_.get();
   }
 
  private:
-  // KeyedService:
-  void Shutdown() override { multidevice_setup_client_.reset(); }
+  void BindService(mojo::PendingReceiver<mojom::MultiDeviceSetup> receiver) {
+    MultiDeviceSetupServiceFactory::GetForProfile(profile_)
+        ->BindMultiDeviceSetup(std::move(receiver));
+  }
 
+  // KeyedService:
+  void Shutdown() override {
+    multidevice_setup_client_.reset();
+    weak_factory_.InvalidateWeakPtrs();
+  }
+
+  Profile* const profile_;
   std::unique_ptr<MultiDeviceSetupClient> multidevice_setup_client_;
+  base::WeakPtrFactory<MultiDeviceSetupClientHolder> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupClientHolder);
 };
+
+}  // namespace
 
 MultiDeviceSetupClientFactory::MultiDeviceSetupClientFactory()
     : BrowserContextKeyedServiceFactory(
@@ -67,7 +93,8 @@ MultiDeviceSetupClient* MultiDeviceSetupClientFactory::GetForProfile(
 
   MultiDeviceSetupClientHolder* holder =
       static_cast<MultiDeviceSetupClientHolder*>(
-          GetInstance()->GetServiceForBrowserContext(profile, true));
+          MultiDeviceSetupClientFactory::GetInstance()
+              ->GetServiceForBrowserContext(profile, true));
 
   return holder ? holder->multidevice_setup_client() : nullptr;
 }
@@ -90,5 +117,4 @@ bool MultiDeviceSetupClientFactory::ServiceIsNULLWhileTesting() const {
 }
 
 }  // namespace multidevice_setup
-
 }  // namespace chromeos

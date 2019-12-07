@@ -3824,6 +3824,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSharingPeerConnectionSenderDescription, kOsAll,
      FEATURE_VALUE_TYPE(kSharingPeerConnectionSender)},
 
+    {"sharing-qr-code-generator",
+     flag_descriptions::kSharingQRCodeGeneratorName,
+     flag_descriptions::kSharingQRCodeGeneratorDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(kSharingQRCodeGenerator)},
+
     {"sharing-rename-devices", flag_descriptions::kSharingRenameDevicesName,
      flag_descriptions::kSharingRenameDevicesDescription, kOsAll,
      FEATURE_VALUE_TYPE(send_tab_to_self::kSharingRenameDevices)},
@@ -4328,10 +4333,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsWin | kOsMac | kOsLinux,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillCreditCardUploadFeedback)},
 
-    {"periodic-background-sync", flag_descriptions::kPeriodicBackgroundSyncName,
-     flag_descriptions::kPeriodicBackgroundSyncDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kPeriodicBackgroundSync)},
-
     {"font-src-local-matching", flag_descriptions::kFontSrcLocalMatchingName,
      flag_descriptions::kFontSrcLocalMatchingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kFontSrcLocalMatching)},
@@ -4370,6 +4371,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWinUseBrowserSpellCheckerName,
      flag_descriptions::kWinUseBrowserSpellCheckerDescription, kOsWin,
      FEATURE_VALUE_TYPE(spellcheck::kWinUseBrowserSpellChecker)},
+
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+    {"win-use-hybrid-spellchecker",
+     flag_descriptions::kWinUseHybridSpellCheckerName,
+     flag_descriptions::kWinUseHybridSpellCheckerDescription, kOsWin,
+     FEATURE_VALUE_TYPE(spellcheck::kWinUseHybridSpellChecker)},
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK) && defined(OS_WIN)
 
     {"safety-tips", flag_descriptions::kSafetyTipName,

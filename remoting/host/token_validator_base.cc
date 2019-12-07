@@ -42,6 +42,7 @@ namespace {
 
 constexpr int kBufferSize = 4096;
 constexpr char kCertIssuerWildCard[] = "*";
+constexpr char kJsonSafetyPrefix[] = ")]}'\n";
 
 // Returns a value from the issuer field for certificate selection, in order of
 // preference.  If the O or OU entries are populated with multiple values, we
@@ -293,7 +294,14 @@ std::string TokenValidatorBase::ProcessResponse(int net_result) {
   }
 
   // Decode the JSON data from the response.
-  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(data_);
+  // Server can potentially pad the JSON response with a magic prefix. We need
+  // to strip that off if that exists.
+  std::string responseData =
+      base::StartsWith(data_, kJsonSafetyPrefix, base::CompareCase::SENSITIVE)
+          ? data_.substr(sizeof(kJsonSafetyPrefix) - 1)
+          : data_;
+
+  base::Optional<base::Value> value = base::JSONReader::Read(responseData);
   base::DictionaryValue* dict;
   if (!value || !value->GetAsDictionary(&dict)) {
     LOG(ERROR) << "Invalid token validation response: '" << data_ << "'";

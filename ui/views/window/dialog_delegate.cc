@@ -140,10 +140,6 @@ bool DialogDelegate::IsDialogButtonEnabled(ui::DialogButton button) const {
   return true;
 }
 
-std::unique_ptr<View> DialogDelegate::CreateFootnoteView() {
-  return std::move(footnote_view_);
-}
-
 bool DialogDelegate::Cancel() {
   return true;
 }
@@ -217,7 +213,7 @@ NonClientFrameView* DialogDelegate::CreateDialogFrameView(Widget* widget) {
               ? provider->GetCornerRadiusMetric(views::EMPHASIS_HIGH)
               : 2);
     }
-    frame->SetFootnoteView(delegate->CreateFootnoteView());
+    frame->SetFootnoteView(delegate->DisownFootnoteView());
   }
   frame->SetBubbleBorder(std::move(border));
   return frame;
@@ -323,6 +319,10 @@ DialogDelegate::~DialogDelegate() {
 
 ax::mojom::Role DialogDelegate::GetAccessibleWindowRole() {
   return ax::mojom::Role::kDialog;
+}
+
+std::unique_ptr<View> DialogDelegate::DisownFootnoteView() {
+  return std::move(footnote_view_);
 }
 
 void DialogDelegate::OnWidgetInitialized() {

@@ -51,6 +51,7 @@ class MockMediaNotificationView
   MOCK_METHOD1(UpdateWithMediaActions,
                void(const base::flat_set<MediaSessionAction>&));
   MOCK_METHOD1(UpdateWithMediaArtwork, void(const gfx::ImageSkia&));
+  MOCK_METHOD1(UpdateWithFavicon, void(const gfx::ImageSkia&));
 };
 
 class MockSessionController : public CastMediaSessionController {

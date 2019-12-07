@@ -357,7 +357,6 @@ if (is_android) {
       "$java_src_dir/org/chromium/chromecast/base/BiPredicate.java",
       "$java_src_dir/org/chromium/chromecast/base/Both.java",
       "$java_src_dir/org/chromium/chromecast/base/Controller.java",
-      "$java_src_dir/org/chromium/chromecast/base/Consumer.java",
       "$java_src_dir/org/chromium/chromecast/base/Function.java",
       "$java_src_dir/org/chromium/chromecast/base/Itertools.java",
       "$java_src_dir/org/chromium/chromecast/base/Observable.java",
@@ -368,7 +367,6 @@ if (is_android) {
       "$java_src_dir/org/chromium/chromecast/base/Predicate.java",
       "$java_src_dir/org/chromium/chromecast/base/Subscription.java",
       "$java_src_dir/org/chromium/chromecast/base/Sequencer.java",
-      "$java_src_dir/org/chromium/chromecast/base/Supplier.java",
       "$java_src_dir/org/chromium/chromecast/base/Unit.java",
 
       # TODO(sanfin): Move these files to another target.

@@ -113,8 +113,11 @@ Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
     // control to the test so that it can dismiss the dialog.
     *is_pending = false;
     return Status(kOk);
-  } else if (status.IsError() ||
-             !result->GetInteger("result.value", &value) ||
+  } else if (status.code() == kUnknownError &&
+             status.message().find(kTargetClosedMessage) != std::string::npos) {
+    *is_pending = true;
+    return Status(kOk);
+  } else if (status.IsError() || !result->GetInteger("result.value", &value) ||
              value != 1) {
     return MakeNavigationCheckFailedStatus(status);
   }

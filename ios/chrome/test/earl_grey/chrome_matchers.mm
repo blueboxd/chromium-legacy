@@ -495,6 +495,14 @@ id<GREYMatcher> ContentViewSmallerThanScrollView() {
   return [ChromeMatchersAppInterface contentViewSmallerThanScrollView];
 }
 
+id<GREYMatcher> AutofillSaveCardLocallyInfobar() {
+  return [ChromeMatchersAppInterface autofillSaveCardLocallyInfobar];
+}
+
+id<GREYMatcher> AutofillUploadCardInfobar() {
+  return [ChromeMatchersAppInterface autofillUploadCardInfobar];
+}
+
 #pragma mark - Manual Fallback
 
 id<GREYMatcher> ManualFallbackFormSuggestionViewMatcher() {

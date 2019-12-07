@@ -24,6 +24,8 @@ An archive of all packages built so far is at https://is.gd/chromeclang
             gs://chromium-browser-clang/$x/clang-$rev.tgz ; \
         gsutil.py cp -n -a public-read gs://chromium-browser-clang-staging/$x/clang-$rev-buildlog.txt \
             gs://chromium-browser-clang/$x/clang-$rev-buildlog.txt ; \
+        gsutil.py cp -n -a public-read gs://chromium-browser-clang-staging/$x/clang-tidy-$rev.tgz \
+            gs://chromium-browser-clang/$x/clang-tidy-$rev.tgz ; \
         gsutil.py cp -n -a public-read gs://chromium-browser-clang-staging/$x/llvmobjdump-$rev.tgz \
             gs://chromium-browser-clang/$x/llvmobjdump-$rev.tgz ; \
         gsutil.py cp -n -a public-read gs://chromium-browser-clang-staging/$x/translation_unit-$rev.tgz \

@@ -33,6 +33,7 @@ import org.mockito.Mock;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
 import org.chromium.chrome.browser.feed.library.api.host.stream.CardConfiguration;
@@ -41,7 +42,6 @@ import org.chromium.chrome.browser.feed.library.api.internal.actionparser.Action
 import org.chromium.chrome.browser.feed.library.api.internal.actionparser.ActionSourceConverter;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.actions.StreamActionApiImpl;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.scroll.BasicStreamScrollMonitor;
-import org.chromium.chrome.browser.feed.library.common.functional.Supplier;
 import org.chromium.chrome.browser.feed.library.common.time.testing.FakeClock;
 import org.chromium.chrome.browser.feed.library.piet.PietManager;
 import org.chromium.chrome.browser.feed.library.piet.host.ActionHandler;

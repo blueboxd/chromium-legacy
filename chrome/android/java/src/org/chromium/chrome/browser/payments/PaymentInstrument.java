@@ -13,7 +13,6 @@ import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
-import org.chromium.payments.mojom.PaymentMethodChangeResponse;
 import org.chromium.payments.mojom.PaymentMethodData;
 import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.payments.mojom.PaymentRequestDetailsUpdate;
@@ -48,15 +47,6 @@ public abstract class PaymentInstrument extends EditableOption {
          * time to show a "loading" progress indicator UI.
          */
         void onInstrumentDetailsLoadingWithoutUI();
-
-        /**
-         * Called after retrieving instrument details.
-         * TODO(crbug.com/984694): Remove this stub once the clank side changes are landed.
-         *
-         * @param methodName         Method name. For example, "visa".
-         * @param stringifiedDetails JSON-serialized object. For example, {"card": "123"}.
-         */
-        void onInstrumentDetailsReady(String methodName, String stringifiedDetails);
 
         /**
          * Called after retrieving instrument details.
@@ -218,34 +208,6 @@ public abstract class PaymentInstrument extends EditableOption {
      *
      * The callback will be invoked with the resulting payment details or error.
      *
-     * TODO(crbug.com/984694): Remove this stub function once the clank side changes are landed.
-     *
-     * @param id               The unique identifier of the PaymentRequest.
-     * @param merchantName     The name of the merchant.
-     * @param origin           The origin of this merchant.
-     * @param iframeOrigin     The origin of the iframe that invoked PaymentRequest.
-     * @param certificateChain The site certificate chain of the merchant. Can be null for localhost
-     *                         or local file, which are secure contexts without SSL.
-     * @param methodDataMap    The payment-method specific data for all applicable payment methods,
-     *                         e.g., whether the app should be invoked in test or production, a
-     *                         merchant identifier, or a public key.
-     * @param total            The total amount.
-     * @param displayItems     The shopping cart items.
-     * @param modifiers        The relevant payment details modifiers.
-     * @param callback         The object that will receive the instrument details.
-     */
-    public void invokePaymentApp(String id, String merchantName, String origin, String iframeOrigin,
-            @Nullable byte[][] certificateChain, Map<String, PaymentMethodData> methodDataMap,
-            PaymentItem total, List<PaymentItem> displayItems,
-            Map<String, PaymentDetailsModifier> modifiers, InstrumentDetailsCallback callback) {
-        // Overridden by AndroidPayPaymentInstrument.java in clank.
-    }
-
-    /**
-     * Invoke the payment app to retrieve the instrument details.
-     *
-     * The callback will be invoked with the resulting payment details or error.
-     *
      * @param id               The unique identifier of the PaymentRequest.
      * @param merchantName     The name of the merchant.
      * @param origin           The origin of this merchant.
@@ -266,15 +228,7 @@ public abstract class PaymentInstrument extends EditableOption {
             @Nullable byte[][] certificateChain, Map<String, PaymentMethodData> methodDataMap,
             PaymentItem total, List<PaymentItem> displayItems,
             Map<String, PaymentDetailsModifier> modifiers, PaymentOptions paymentOptions,
-            List<PaymentShippingOption> shippingOptions, InstrumentDetailsCallback callback) {
-        // Overridden by AndroidPaymentApp.java,
-        // ServiceWorkerPaymentApp.java,AutofillPaymentInstrument.java, and
-        // PaymentRequestTestRule.java. The stub implementation here is for
-        // AndroidPayPaymentInstrument.java. TODO(crbug.com/984694): Remove this stub implementation
-        // and make the function abstract once the clank side changes are landed.
-        invokePaymentApp(id, merchantName, origin, iframeOrigin, certificateChain, methodDataMap,
-                total, displayItems, modifiers, callback);
-    }
+            List<PaymentShippingOption> shippingOptions, InstrumentDetailsCallback callback) {}
 
     /**
      * Update the payment information in response to payment method, shipping address, or shipping
@@ -285,26 +239,11 @@ public abstract class PaymentInstrument extends EditableOption {
      */
     public void updateWith(PaymentRequestDetailsUpdate response) {}
 
-    // TODO(sahel): Remove this stub after updating clank code. crbug.com/984694
-    public void updateWith(PaymentMethodChangeResponse response) {}
-
-    /** Called when the merchant ignored the payment method change event. */
+    /**
+     * Called when the merchant ignored the payment method, shipping address or shipping option
+     * change event.
+     */
     public void onPaymentDetailsNotUpdated() {}
-
-    /**
-     * Called when the merchant ignored the payment method change event.
-     * TODO(sahel): Remove this stub after updating clank code. crbug.com/984694
-     */
-    public void noUpdatedPaymentDetails() {}
-
-    /**
-     * @return True after changePaymentMethodFromInvokedApp(), before update updateWith() or
-     * onPaymentDetailsNotUpdated().
-     * TODO(sahel): Remove this stub after updating clank code. crbug.com/984694
-     */
-    public boolean isChangingPaymentMethod() {
-        return false;
-    }
 
     /**
      * @return True after changePaymentMethodFromInvokedApp(), changeShippingOptionFromInvokedApp(),

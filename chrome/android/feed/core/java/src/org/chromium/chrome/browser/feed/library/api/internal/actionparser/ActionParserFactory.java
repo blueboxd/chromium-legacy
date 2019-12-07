@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.feed.library.api.internal.actionparser;
 
+import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.ContentMetadata;
-import org.chromium.chrome.browser.feed.library.common.functional.Supplier;
 
 /** Factory for {@link ActionParser}. */
 public interface ActionParserFactory {

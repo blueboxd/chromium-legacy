@@ -104,7 +104,7 @@ class JavaScriptAppModalDialog {
   void CompleteDialog();
 
   // The title of the dialog.
-  base::string16 title_;
+  const base::string16 title_;
 
   // // True if CompleteDialog was called.
   bool completed_;
@@ -125,11 +125,11 @@ class JavaScriptAppModalDialog {
 
   // Information about the message box is held in the following variables.
   const content::JavaScriptDialogType javascript_dialog_type_;
-  base::string16 message_text_;
-  base::string16 default_prompt_text_;
-  bool display_suppress_checkbox_;
-  bool is_before_unload_dialog_;
-  bool is_reload_;
+  const base::string16 message_text_;
+  const base::string16 default_prompt_text_;
+  const bool display_suppress_checkbox_;
+  const bool is_before_unload_dialog_;
+  const bool is_reload_;
 
   content::JavaScriptDialogManager::DialogClosedCallback callback_;
 

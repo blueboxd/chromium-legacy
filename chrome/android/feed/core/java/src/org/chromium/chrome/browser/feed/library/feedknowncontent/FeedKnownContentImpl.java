@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.feedknowncontent;
 
+import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.ContentMetadata;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.ContentRemoval;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.KnownContent;
@@ -12,7 +13,6 @@ import org.chromium.chrome.browser.feed.library.api.internal.knowncontent.FeedKn
 import org.chromium.chrome.browser.feed.library.api.internal.sessionmanager.FeedSessionManager;
 import org.chromium.chrome.browser.feed.library.common.Result;
 import org.chromium.chrome.browser.feed.library.common.concurrent.MainThreadRunner;
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 import org.chromium.components.feed.core.proto.ui.stream.StreamStructureProto.Content;
 

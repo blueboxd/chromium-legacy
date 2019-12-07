@@ -530,9 +530,24 @@ int WebContentsViewAndroid::GetTopControlsHeight() const {
   return delegate ? delegate->GetTopControlsHeight() : 0;
 }
 
+int WebContentsViewAndroid::GetTopControlsMinHeight() const {
+  auto* delegate = web_contents_->GetDelegate();
+  return delegate ? delegate->GetTopControlsMinHeight() : 0;
+}
+
 int WebContentsViewAndroid::GetBottomControlsHeight() const {
   auto* delegate = web_contents_->GetDelegate();
   return delegate ? delegate->GetBottomControlsHeight() : 0;
+}
+
+int WebContentsViewAndroid::GetBottomControlsMinHeight() const {
+  auto* delegate = web_contents_->GetDelegate();
+  return delegate ? delegate->GetBottomControlsMinHeight() : 0;
+}
+
+bool WebContentsViewAndroid::ShouldAnimateBrowserControlsHeightChanges() const {
+  auto* delegate = web_contents_->GetDelegate();
+  return delegate && delegate->ShouldAnimateBrowserControlsHeightChanges();
 }
 
 bool WebContentsViewAndroid::DoBrowserControlsShrinkRendererSize() const {

@@ -35,6 +35,8 @@ class OpenXRInputHelper {
   base::WeakPtr<OpenXRInputHelper> GetWeakPtr();
 
  private:
+  XrResult Initialize(XrInstance instance);
+
   base::Optional<Gamepad> GetWebXRGamepad(
       const OpenXrController& controller) const;
 
@@ -50,6 +52,8 @@ class OpenXRInputHelper {
   std::array<OpenXrControllerState,
              static_cast<size_t>(OpenXrHandednessType::kCount)>
       controller_states_;
+
+  std::unique_ptr<OpenXRPathHelper> path_helper_;
 
   // This must be the last member
   base::WeakPtrFactory<OpenXRInputHelper> weak_ptr_factory_{this};

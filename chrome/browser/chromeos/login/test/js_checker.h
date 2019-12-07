@@ -126,6 +126,9 @@ class JSChecker {
   void TapOnPath(std::initializer_list<base::StringPiece> element_ids);
   void TapOn(const std::string& element_id);
 
+  // Clicks on the indicated UI element that should be a link.
+  void TapLinkOnPath(std::initializer_list<base::StringPiece> element_ids);
+
   // Select particular radio button.
   void SelectRadioPath(std::initializer_list<base::StringPiece> element_ids);
 

@@ -15,10 +15,10 @@ import org.chromium.ui.modelutil.PropertyModel;
  */
 class TabStripToolbarViewProperties {
     public static final PropertyModel
-            .WritableObjectPropertyKey<OnClickListener> EXPAND_CLICK_LISTENER =
+            .WritableObjectPropertyKey<OnClickListener> LEFT_BUTTON_ON_CLICK_LISTENER =
             new PropertyModel.WritableObjectPropertyKey<OnClickListener>();
     public static final PropertyModel
-            .WritableObjectPropertyKey<OnClickListener> ADD_CLICK_LISTENER =
+            .WritableObjectPropertyKey<OnClickListener> RIGHT_BUTTON_ON_CLICK_LISTENER =
             new PropertyModel.WritableObjectPropertyKey<OnClickListener>();
     public static final PropertyModel.WritableBooleanPropertyKey IS_MAIN_CONTENT_VISIBLE =
             new PropertyModel.WritableBooleanPropertyKey();
@@ -26,7 +26,10 @@ class TabStripToolbarViewProperties {
             new PropertyModel.WritableIntPropertyKey();
     public static final PropertyModel.WritableObjectPropertyKey<ColorStateList> TINT =
             new PropertyModel.WritableObjectPropertyKey<>();
+    public static final PropertyModel.WritableIntPropertyKey LEFT_BUTTON_DRAWABLE_ID =
+            new PropertyModel.WritableIntPropertyKey();
 
-    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {EXPAND_CLICK_LISTENER,
-            ADD_CLICK_LISTENER, IS_MAIN_CONTENT_VISIBLE, PRIMARY_COLOR, TINT};
+    public static final PropertyKey[] ALL_KEYS =
+            new PropertyKey[] {LEFT_BUTTON_ON_CLICK_LISTENER, RIGHT_BUTTON_ON_CLICK_LISTENER,
+                    IS_MAIN_CONTENT_VISIBLE, PRIMARY_COLOR, TINT, LEFT_BUTTON_DRAWABLE_ID};
 }

@@ -13,8 +13,6 @@
 #include "base/macros.h"
 #include "chrome/common/string_matching/tokenized_string_char_iterator.h"
 
-namespace string_matching {
-
 namespace {
 
 // The factors below are applied when the current char of query matches
@@ -234,5 +232,3 @@ bool TokenizedStringMatch::Calculate(const base::string16& query,
   const TokenizedString tokenized_text(text);
   return Calculate(tokenized_query, tokenized_text);
 }
-
-}  // namespace string_matching

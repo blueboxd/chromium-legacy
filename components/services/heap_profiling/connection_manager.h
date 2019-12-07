@@ -61,7 +61,11 @@ class ConnectionManager {
                        mojom::ProcessType process_type,
                        mojom::ProfilingParamsPtr params);
 
+  // Returns pids of clients that have started profiling.
   std::vector<base::ProcessId> GetConnectionPids();
+
+  // Returns pids of all connected clients that need vm regions, regardless of
+  // whether they've started profiling.
   std::vector<base::ProcessId> GetConnectionPidsThatNeedVmRegions();
 
  private:
@@ -80,11 +84,15 @@ class ConnectionManager {
                                     uint32_t sampling_rate,
                                     ExportParams* out_params);
 
-  // Notification that a connection is complete. Unlike OnNewConnection which
+  // Notification that the client has disconnected. Unlike OnNewConnection which
   // is signaled by the pipe server, this is signaled by the allocation tracker
   // to ensure that the pipeline for this process has been flushed of all
   // messages.
   void OnConnectionComplete(base::ProcessId pid);
+
+  // Indicates that the client has enabled profiling. Necessary for tests to
+  // know when initialization is complete.
+  void OnProfilingStarted(base::ProcessId pid);
 
   // Reports the ProcessTypes of the processes being profiled.
   void ReportMetrics();

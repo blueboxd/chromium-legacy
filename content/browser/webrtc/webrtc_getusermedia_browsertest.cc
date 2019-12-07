@@ -788,9 +788,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
       "getUserMediaEchoCancellationOnAndOffAndVideo()");
 }
 
-// Fails on macOS, Linux, and Windows: https://crbug.com/1031033
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       DISABLED_RecoverFromCrashInAudioService) {
+                       RecoverFromCrashInAudioService) {
   // This test only makes sense with the audio service running out of process,
   // with or without sandbox.
   if (!base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess))

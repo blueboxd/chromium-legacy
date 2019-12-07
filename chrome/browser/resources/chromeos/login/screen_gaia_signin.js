@@ -70,7 +70,7 @@ const DialogMode = {
 Polymer({
   is: 'gaia-signin',
 
-  behaviors: [LoginScreenBehavior, OobeDialogHostBehavior],
+  behaviors: [I18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
 
   EXTERNAL_API: [
     'loadAuthExtension',
@@ -141,6 +141,24 @@ Polymer({
     },
 
     /**
+     * Management domain displayed on SAML interstitial page.
+     * @private
+     */
+    samlInterstitialDomain_: {
+      type: String,
+      value: null,
+    },
+
+    /**
+     * Message displayed on SAML interstitial page.
+     * @private
+     */
+    samlInterstitialMessage_: {
+      type: String,
+      computed: 'calculateSamlMessage_(locale, samlInterstitialDomain_)',
+    },
+
+    /**
      * Contains the security token PIN dialog parameters object when the dialog
      * is shown. Is null when no PIN dialog is shown.
      * @type {OobeTypes.SecurityTokenPinDialogParameter}
@@ -191,7 +209,7 @@ Polymer({
 
   observers: [
     'refreshDialogStep_(screenMode_, pinDialogParameters_, isLoadingUiShown_,' +
-    'isWhitelistErrorShown_)'
+        'isWhitelistErrorShown_)',
   ],
 
   /**
@@ -251,12 +269,6 @@ Polymer({
    * @private
    */
   lastBackMessageValue_: false,
-
-  /**
-   * Flag for tests that saml page was loaded.
-   * @type {boolean}
-   */
-  samlInterstitialPageReady: false,
 
   /**
    * SAML password confirmation attempt count.
@@ -387,21 +399,6 @@ Polymer({
       chrome.send('launchHelpApp', [HELP_CANT_ACCESS_ACCOUNT]);
     });
 
-    // Register handlers for the saml interstitial page events.
-    this.$['saml-interstitial'].addEventListener(
-        'samlPageNextClicked', function() {
-          this.screenMode_ = AuthMode.DEFAULT;
-          this.loadAuthenticator_(true /* doSamlRedirect */);
-        }.bind(this));
-    this.$['saml-interstitial'].addEventListener(
-        'samlPageChangeAccountClicked', function() {
-          // The user requests to change the account. We must clear the email
-          // field of the auth params.
-          this.authenticatorParams_.email = '';
-          this.screenMode_ = AuthMode.DEFAULT;
-          this.loadAuthenticator_(false /* doSamlRedirect */);
-        }.bind(this));
-
     this.$['offline-ad-auth'].addEventListener('cancel', function() {
       this.cancel();
     }.bind(this));
@@ -519,7 +516,6 @@ Polymer({
       // value.
       return;
     }
-    this.updateSigninFrameContainers_();
     chrome.send('updateOfflineLogin', [this.isOffline_()]);
     this.updateGuestButtonVisibility_();
   },
@@ -549,58 +545,6 @@ Polymer({
     // (completely transparent) during loading, since setting the "hidden"
     // attribute would affect its loading events.
     return isLoadingUiShown ? 'transparent' : 'non-transparent';
-  },
-
-  /**
-   * Whether the offline-gaia element should be visible.
-   * @param {number} screenMode
-   * @param {boolean} isLoadingUiShown
-   * @param {OobeTypes.SecurityTokenPinDialogParameters} pinDialogParameters
-   * @return {boolean}
-   * @private
-   */
-  isOfflineGaiaVisible_: function(
-      screenMode, isLoadingUiShown, pinDialogParameters) {
-    return screenMode == AuthMode.OFFLINE && !isLoadingUiShown &&
-        pinDialogParameters === null;
-  },
-
-  /**
-   * Whether the saml-interstitial element should be visible.
-   * @param {number} screenMode
-   * @param {boolean} isLoadingUiShown
-   * @param {OobeTypes.SecurityTokenPinDialogParameters} pinDialogParameters
-   * @return {boolean}
-   * @private
-   */
-  isSamlInterstitialVisible_: function(
-      screenMode, isLoadingUiShown, pinDialogParameters) {
-    return screenMode == AuthMode.SAML_INTERSTITIAL && !isLoadingUiShown &&
-        pinDialogParameters === null;
-  },
-
-  /**
-   * Whether the offline-ad-auth element should be visible.
-   * @param {number} screenMode
-   * @param {boolean} isLoadingUiShown
-   * @param {OobeTypes.SecurityTokenPinDialogParameters} pinDialogParameters
-   * @return {boolean}
-   * @private
-   */
-  isOfflineAdAuthVisible_: function(
-      screenMode, isLoadingUiShown, pinDialogParameters) {
-    return screenMode == AuthMode.AD_AUTH && !isLoadingUiShown &&
-        pinDialogParameters === null;
-  },
-
-  /**
-   * Whether the pinDialog element should be visible.
-   * @param {OobeTypes.SecurityTokenPinDialogParameters} pinDialogParameters
-   * @return {boolean}
-   * @private
-   */
-  isPinDialogVisible_: function(pinDialogParameters) {
-    return pinDialogParameters !== null;
   },
 
   /**
@@ -839,7 +783,6 @@ Polymer({
 
     this.authenticator_.setWebviewPartition(data.webviewPartitionName);
 
-    // This triggers updateSigninFrameContainers_()
     this.screenMode_ = data.screenMode;
     this.email_ = '';
     this.authCompleted_ = false;
@@ -852,8 +795,6 @@ Polymer({
 
     // Reset the PIN dialog, in case it's shown.
     this.closePinDialog();
-
-    this.updateSigninFrameContainers_();
 
     let params = {};
     for (let i in cr.login.Authenticator.SUPPORTED_PARAMS) {
@@ -887,32 +828,12 @@ Polymer({
         break;
 
       case AuthMode.SAML_INTERSTITIAL:
-        this.$['saml-interstitial'].domain = data.enterpriseDisplayDomain;
+        this.samlInterstitialDomain_ = data.enterpriseDisplayDomain;
         this.isLoadingUiShown_ = false;
-        // This event is for the browser tests.
-        this.samlInterstitialPageReady = true;
-        this.$['saml-interstitial'].fire('samlInterstitialPageReady');
         break;
     }
     this.updateGuestButtonVisibility_();
     chrome.send('authExtensionLoaded');
-  },
-
-  /**
-   * Displays correct screen container for given mode and APi version.
-   * @private
-   */
-  updateSigninFrameContainers_: function() {
-    const samlClass = 'saml-interstitial';
-    const containedSamlClass = this.classList.contains(samlClass);
-    this.classList.toggle(
-        samlClass, this.screenMode_ == AuthMode.SAML_INTERSTITIAL);
-    if (Oobe.getInstance().currentScreen.id != 'gaia-signin')
-      return;
-    // Switching between signin-frame-dialog and gaia-step-contents
-    // updates screen size.
-    if (containedSamlClass != this.classList.contains(samlClass))
-      Oobe.getInstance().updateScreenSize(this);
   },
 
   /**
@@ -1610,6 +1531,7 @@ Polymer({
    * @param {OobeTypes.SecurityTokenPinDialogParameter} pinParams
    * @param {boolean} isLoading
    * @param {boolean} isWhitelistError
+   * @private
    */
   refreshDialogStep_: function(mode, pinParams, isLoading, isWhitelistError) {
     if (pinParams !== null) {
@@ -1642,6 +1564,49 @@ Polymer({
         this.step_ = DialogMode.OFFLINE_AD;
         break;
     }
+  },
+
+  /**
+   * Invoked when "Next" button is pressed on SAML Interstitial screen.
+   * @param {!CustomEvent} e
+   * @private
+   */
+  onSamlInterstitialNext_: function() {
+    this.screenMode_ = AuthMode.DEFAULT;
+    this.loadAuthenticator_(true /* doSamlRedirect */);
+  },
+
+  /**
+   * Invoked when "Change account" link is pressed on SAML Interstitial screen.
+   * @param {!CustomEvent} e
+   * @private
+   */
+  onSamlPageChangeAccount_: function() {
+    // The user requests to change the account. We must clear the email
+    // field of the auth params.
+    this.authenticatorParams_.email = '';
+    this.screenMode_ = AuthMode.DEFAULT;
+    this.loadAuthenticator_(false /* doSamlRedirect */);
+  },
+
+  /**
+   * Calculates samlInterstitialMessage_, as it can not be easily evaluated via
+   * current i18n functions (HTML + substitutions).
+   * @param {string} locale
+   * @param {string} domain
+   * @private
+   */
+  calculateSamlMessage_: function(locale, domain) {
+    return loadTimeData.getStringF('samlInterstitialMessage', domain);
+  },
+
+  /**
+   * Checks if string is empty
+   * @param {string} value
+   * @private
+   */
+  isEmpty_: function(value) {
+    return !value;
   },
 });
 })();

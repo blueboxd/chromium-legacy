@@ -221,7 +221,7 @@ class CORE_EXPORT HTMLCanvasElement final
   bool ShouldAccelerate2dContext() const override;
   unsigned GetMSAASampleCountFor2dContext() const override;
   SkFilterQuality FilterQuality() const override;
-  bool LowLatencyEnabled() const override { return !!frame_dispatcher_; }
+  bool LowLatencyEnabled() const override;
   CanvasResourceProvider* GetOrCreateCanvasResourceProvider(
       AccelerationHint hint) override;
   bool IsPrinting() const override;

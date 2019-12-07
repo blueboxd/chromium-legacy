@@ -23,7 +23,7 @@ using ::testing::StrictMock;
 namespace media_router {
 
 using openscreen::Error;
-using openscreen::platform::TlsConnection;
+using openscreen::TlsConnection;
 
 namespace {
 const openscreen::IPEndpoint kValidEndpointOne{

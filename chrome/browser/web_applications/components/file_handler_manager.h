@@ -22,15 +22,13 @@ class Profile;
 
 namespace web_app {
 
-class FileHandlerManager : public AppRegistrarObserver,
-                           public AppShortcutObserver {
+class FileHandlerManager : public AppRegistrarObserver {
  public:
   explicit FileHandlerManager(Profile* profile);
   ~FileHandlerManager() override;
 
   // |registrar| is used to observe OnWebAppInstalled/Uninstalled events.
-  void SetSubsystems(AppRegistrar* registrar,
-                     AppShortcutManager* shortcut_manager);
+  void SetSubsystems(AppRegistrar* registrar);
   void Start();
 
   // Enables and registers OS specific file handlers for OSs that need them.
@@ -55,19 +53,13 @@ class FileHandlerManager : public AppRegistrarObserver,
  private:
   Profile* const profile_;
   AppRegistrar* registrar_ = nullptr;
-  AppShortcutManager* shortcut_manager_ = nullptr;
 
   // AppRegistrarObserver:
   void OnWebAppUninstalled(const AppId& app_id) override;
   void OnWebAppProfileWillBeDeleted(const AppId& app_id) override;
   void OnAppRegistrarDestroyed() override;
 
-  // AppShortcutObserver:
-  void OnShortcutsCreated(const AppId& app_id) override;
-  void OnShortcutManagerDestroyed() override;
-
   ScopedObserver<AppRegistrar, AppRegistrarObserver> registrar_observer_;
-  ScopedObserver<AppShortcutManager, AppShortcutObserver> shortcut_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(FileHandlerManager);
 };

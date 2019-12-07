@@ -19,7 +19,9 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_animation.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
+#include "chrome/browser/ui/views/tabs/tab_group_highlight.h"
 #include "chrome/browser/ui/views/tabs/tab_group_underline.h"
+#include "chrome/browser/ui/views/tabs/tab_group_views.h"
 #include "chrome/browser/ui/views/tabs/tab_icon.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
@@ -217,17 +219,10 @@ class TabStripTest : public ChromeViewsTestBase,
     }
   }
 
-  std::vector<TabGroupHeader*> ListGroupHeaders() const {
-    std::vector<TabGroupHeader*> result;
+  std::vector<TabGroupViews*> ListGroupViews() const {
+    std::vector<TabGroupViews*> result;
     for (auto const& group_view_pair : tab_strip_->group_views_)
-      result.push_back(group_view_pair.second->header());
-    return result;
-  }
-
-  std::vector<TabGroupUnderline*> ListGroupUnderlines() const {
-    std::vector<TabGroupUnderline*> result;
-    for (auto const& group_view_pair : tab_strip_->group_views_)
-      result.push_back(group_view_pair.second->underline());
+      result.push_back(group_view_pair.second.get());
     return result;
   }
 
@@ -1018,9 +1013,9 @@ TEST_P(TabStripTest, GroupHeaderBasics) {
   controller_->MoveTabIntoGroup(0, group);
   CompleteAnimationAndLayout();
 
-  std::vector<TabGroupHeader*> headers = ListGroupHeaders();
-  EXPECT_EQ(1u, headers.size());
-  TabGroupHeader* header = headers[0];
+  std::vector<TabGroupViews*> views = ListGroupViews();
+  EXPECT_EQ(1u, views.size());
+  TabGroupHeader* header = views[0]->header();
   EXPECT_EQ(first_slot_x, header->x());
   EXPECT_GT(header->width(), 0);
   EXPECT_EQ(header->bounds().right() - TabStyle::GetTabOverlap(), tab->x());
@@ -1039,7 +1034,7 @@ TEST_P(TabStripTest, GroupHeaderBetweenTabs) {
   base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
   controller_->MoveTabIntoGroup(1, group);
 
-  TabGroupHeader* header = ListGroupHeaders()[0];
+  TabGroupHeader* header = ListGroupViews()[0]->header();
   EXPECT_EQ(header->x(), second_slot_x);
 }
 
@@ -1054,7 +1049,7 @@ TEST_P(TabStripTest, GroupHeaderMovesRightWithTab) {
   controller_->MoveTab(1, 2);
   CompleteAnimationAndLayout();
 
-  TabGroupHeader* header = ListGroupHeaders()[0];
+  TabGroupHeader* header = ListGroupViews()[0]->header();
   // Header is now left of tab 2.
   EXPECT_LT(tab_strip_->tab_at(1)->x(), header->x());
   EXPECT_LT(header->x(), tab_strip_->tab_at(2)->x());
@@ -1071,7 +1066,7 @@ TEST_P(TabStripTest, GroupHeaderMovesLeftWithTab) {
   controller_->MoveTab(2, 1);
   CompleteAnimationAndLayout();
 
-  TabGroupHeader* header = ListGroupHeaders()[0];
+  TabGroupHeader* header = ListGroupViews()[0]->header();
   // Header is now left of tab 1.
   EXPECT_LT(tab_strip_->tab_at(0)->x(), header->x());
   EXPECT_LT(header->x(), tab_strip_->tab_at(1)->x());
@@ -1086,7 +1081,7 @@ TEST_P(TabStripTest, GroupHeaderDoesntMoveReorderingTabsInGroup) {
   controller_->MoveTabIntoGroup(2, group);
   CompleteAnimationAndLayout();
 
-  TabGroupHeader* header = ListGroupHeaders()[0];
+  TabGroupHeader* header = ListGroupViews()[0]->header();
   const int initial_header_x = header->x();
   Tab* tab1 = tab_strip_->tab_at(1);
   const int initial_tab_1_x = tab1->x();
@@ -1113,20 +1108,21 @@ TEST_P(TabStripTest, GroupHeaderMovesOnRegrouping) {
   controller_->MoveTabIntoGroup(2, group1);
   CompleteAnimationAndLayout();
 
-  std::vector<TabGroupHeader*> headers = ListGroupHeaders();
-  auto header1_it = std::find_if(
-      headers.begin(), headers.end(),
-      [&group1](TabGroupHeader* header) { return header->group() == group1; });
-  ASSERT_TRUE(header1_it != headers.end());
-  TabGroupHeader* header1 = *header1_it;
+  std::vector<TabGroupViews*> views = ListGroupViews();
+  auto views_it =
+      std::find_if(views.begin(), views.end(), [&group1](TabGroupViews* view) {
+        return view->header()->group() == group1;
+      });
+  ASSERT_TRUE(views_it != views.end());
+  TabGroupViews* view = *views_it;
 
   // Change groups in a way so that the header should swap with the tab, without
   // an explicit MoveTab call.
   controller_->MoveTabIntoGroup(1, group0);
 
   // Header is now right of tab 1.
-  EXPECT_LT(tab_strip_->tab_at(1)->x(), header1->x());
-  EXPECT_LT(header1->x(), tab_strip_->tab_at(2)->x());
+  EXPECT_LT(tab_strip_->tab_at(1)->x(), view->header()->x());
+  EXPECT_LT(view->header()->x(), tab_strip_->tab_at(2)->x());
 }
 
 TEST_P(TabStripTest, UngroupedTabMovesLeftOfHeader) {
@@ -1141,7 +1137,7 @@ TEST_P(TabStripTest, UngroupedTabMovesLeftOfHeader) {
   CompleteAnimationAndLayout();
 
   // Header is right of tab 0.
-  TabGroupHeader* header = ListGroupHeaders()[0];
+  TabGroupHeader* header = ListGroupViews()[0]->header();
   EXPECT_LT(tab_strip_->tab_at(0)->x(), header->x());
   EXPECT_LT(header->x(), tab_strip_->tab_at(1)->x());
 }
@@ -1161,12 +1157,12 @@ TEST_P(TabStripTest, DiscontinuousGroup) {
   controller_->MoveTabIntoGroup(0, group);
   controller_->MoveTabIntoGroup(2, group);
 
-  std::vector<TabGroupHeader*> headers = ListGroupHeaders();
-  EXPECT_EQ(1u, headers.size());
-  EXPECT_EQ(first_slot_x, headers[0]->x());
+  std::vector<TabGroupViews*> views = ListGroupViews();
+  EXPECT_EQ(1u, views.size());
+  EXPECT_EQ(first_slot_x, views[0]->header()->x());
 }
 
-TEST_P(TabStripTest, DeleteTabGroupHeaderAndUnderlineWhenEmpty) {
+TEST_P(TabStripTest, DeleteTabGroupViewsWhenEmpty) {
   tab_strip_->AddTabAt(0, TabRendererData(), false);
   tab_strip_->AddTabAt(1, TabRendererData(), false);
   base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
@@ -1174,11 +1170,9 @@ TEST_P(TabStripTest, DeleteTabGroupHeaderAndUnderlineWhenEmpty) {
   controller_->MoveTabIntoGroup(1, group);
   controller_->MoveTabIntoGroup(0, base::nullopt);
 
-  EXPECT_EQ(1u, ListGroupHeaders().size());
-  EXPECT_EQ(1u, ListGroupUnderlines().size());
+  EXPECT_EQ(1u, ListGroupViews().size());
   controller_->MoveTabIntoGroup(1, base::nullopt);
-  EXPECT_EQ(0u, ListGroupHeaders().size());
-  EXPECT_EQ(0u, ListGroupUnderlines().size());
+  EXPECT_EQ(0u, ListGroupViews().size());
 }
 
 TEST_P(TabStripTest, GroupUnderlineBasics) {
@@ -1190,9 +1184,9 @@ TEST_P(TabStripTest, GroupUnderlineBasics) {
   controller_->MoveTabIntoGroup(0, group);
   CompleteAnimationAndLayout();
 
-  std::vector<TabGroupUnderline*> underlines = ListGroupUnderlines();
-  EXPECT_EQ(1u, underlines.size());
-  TabGroupUnderline* underline = underlines[0];
+  std::vector<TabGroupViews*> views = ListGroupViews();
+  EXPECT_EQ(1u, views.size());
+  TabGroupUnderline* underline = views[0]->underline();
   // Update underline manually in the absence of a real Paint cycle.
   underline->UpdateBounds();
 
@@ -1212,6 +1206,34 @@ TEST_P(TabStripTest, GroupUnderlineBasics) {
   EXPECT_EQ(underline->bounds().right(),
             tab_strip_->tab_at(1)->bounds().right() +
                 TabGroupUnderline::kStrokeThickness);
+}
+
+TEST_P(TabStripTest, GroupHighlightBasics) {
+  tab_strip_->SetBounds(0, 0, 1000, 100);
+  bounds_animator()->SetAnimationDuration(base::TimeDelta());
+  controller_->AddTab(0, false);
+
+  base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
+  controller_->MoveTabIntoGroup(0, group);
+  CompleteAnimationAndLayout();
+
+  std::vector<TabGroupViews*> views = ListGroupViews();
+  EXPECT_EQ(1u, views.size());
+
+  // Highlights should not be painted by default.
+  EXPECT_FALSE(views[0]->ShouldPaintGroupBackground());
+
+  // Highlights should be painted when the group header is dragging.
+  views[0]->header()->set_dragging(true);
+  EXPECT_TRUE(views[0]->ShouldPaintGroupBackground());
+
+  // The highlight bounds match the group view bounds. Grab this manually
+  // here, since there isn't a real paint cycle to trigger OnPaint().
+  gfx::Rect bounds = views[0]->GetBounds();
+  EXPECT_EQ(bounds.x(), 0);
+  EXPECT_GT(bounds.width(), 0);
+  EXPECT_EQ(bounds.right(), tab_strip_->tab_at(0)->bounds().right());
+  EXPECT_EQ(bounds.height(), tab_strip_->tab_at(0)->bounds().height());
 }
 
 TEST_P(TabStripTest, ChangingLayoutTypeResizesTabs) {

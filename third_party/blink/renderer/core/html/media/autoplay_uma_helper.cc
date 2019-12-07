@@ -69,9 +69,6 @@ void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
   DEFINE_STATIC_LOCAL(EnumerationHistogram, audio_histogram,
                       ("Media.Audio.Autoplay",
                        static_cast<int>(AutoplaySource::kNumberOfUmaSources)));
-  DEFINE_STATIC_LOCAL(
-      EnumerationHistogram, blocked_muted_video_histogram,
-      ("Media.Video.Autoplay.Muted.Blocked", kAutoplayBlockedReasonMax));
 
   // Autoplay already initiated
   if (sources_.Contains(source))
@@ -99,14 +96,6 @@ void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
     } else {
       audio_histogram.Count(static_cast<int>(AutoplaySource::kDualSource));
     }
-  }
-
-  // Record if it will be blocked by the Autoplay setting.
-  if (IsA<HTMLVideoElement>(element_.Get()) && element_->muted() &&
-      AutoplayPolicy::DocumentShouldAutoplayMutedVideos(
-          element_->GetDocument()) &&
-      !element_->GetAutoplayPolicy().IsAutoplayAllowedPerSettings()) {
-    blocked_muted_video_histogram.Count(kAutoplayBlockedReasonSetting);
   }
 
   element_->addEventListener(event_type_names::kPlaying, this, false);

@@ -152,6 +152,9 @@ BrailleCommandData.init_ = function() {
 
   // g.
   map([1, 2, 4, 5], 'toggleBrailleTable');
+
+  // Stop speech.
+  map([5, 6, 7], 'stopSpeech');
 };
 
 BrailleCommandData.init_();

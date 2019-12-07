@@ -116,6 +116,9 @@ class TabStyle {
   // Hides the hover animation.
   virtual void HideHover(HideHoverStyle style) = 0;
 
+  // Opacity of the active tab background painted over inactive selected tabs.
+  static constexpr float kSelectedTabOpacity = 0.75f;
+
   // Returns the preferred width of a single Tab, assuming space is
   // available.
   static int GetStandardWidth();

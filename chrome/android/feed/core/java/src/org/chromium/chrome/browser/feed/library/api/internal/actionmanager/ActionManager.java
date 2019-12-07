@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.api.internal.actionmanager;
 
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
+import org.chromium.base.Consumer;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamDataOperation;
 import org.chromium.components.feed.core.proto.wire.ActionPayloadProto.ActionPayload;
 

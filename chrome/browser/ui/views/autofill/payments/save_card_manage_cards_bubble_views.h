@@ -24,11 +24,9 @@ class SaveCardManageCardsBubbleViews : public SaveCardBubbleViews,
                                  content::WebContents* web_contents,
                                  SaveCardBubbleController* controller);
 
-  // views::WidgetDelegate:
-  std::unique_ptr<views::View> CreateFootnoteView() override;
-
  private:
   std::unique_ptr<views::View> CreateMainContentView() override;
+  std::unique_ptr<views::View> CreateSigninPromoView();
 
   // views::ButtonListener:
   // The button listener method for the extra view that contains

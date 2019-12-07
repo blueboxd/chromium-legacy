@@ -36,5 +36,9 @@ bool ShellDelegateImpl::CanGoBack(gfx::NativeWindow window) const {
 void ShellDelegateImpl::BindNavigableContentsFactory(
     mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver) {}
 
+void ShellDelegateImpl::BindMultiDeviceSetup(
+    mojo::PendingReceiver<chromeos::multidevice_setup::mojom::MultiDeviceSetup>
+        receiver) {}
+
 }  // namespace shell
 }  // namespace ash

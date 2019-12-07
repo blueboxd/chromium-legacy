@@ -302,7 +302,9 @@ class FakeMultiDeviceSetupClientImplFactory
 
   // chromeos::multidevice_setup::MultiDeviceSetupClientImpl::Factory:
   std::unique_ptr<chromeos::multidevice_setup::MultiDeviceSetupClient>
-  BuildInstance(service_manager::Connector* connector) override {
+  BuildInstance(
+      mojo::PendingRemote<chromeos::multidevice_setup::mojom::MultiDeviceSetup>)
+      override {
     auto fake_multidevice_setup_client = std::make_unique<
         chromeos::multidevice_setup::FakeMultiDeviceSetupClient>();
     fake_multidevice_setup_client_ = fake_multidevice_setup_client.get();

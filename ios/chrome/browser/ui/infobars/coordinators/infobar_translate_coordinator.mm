@@ -168,45 +168,7 @@
 }
 
 - (void)performInfobarAction {
-  switch (self.currentStep) {
-    case translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE: {
-      self.userAction |= UserActionTranslate;
-
-      // TODO(crbug.com/1014959): Add metrics
-      if (self.translateInfobarDelegate->ShouldAutoAlwaysTranslate()) {
-        // TODO(crbug.com/1014959): Figure out if we should prompt user with
-        // snackbar to auto always translate.
-        self.translateInfobarDelegate->ToggleAlwaysTranslate();
-      }
-      self.translateInfobarDelegate->Translate();
-      self.infobarAccepted = YES;
-      break;
-    }
-    case translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE: {
-      self.userAction |= UserActionRevert;
-
-      // TODO(crbug.com/1014959): Add metrics
-
-      self.translateInfobarDelegate->RevertWithoutClosingInfobar();
-      self.infobarAccepted = NO;
-      // There is no completion signal (i.e. change of TranslateStep) in
-      // translateInfoBarDelegate:didChangeTranslateStep:withErrorType: in
-      // response to RevertWithoutClosingInfobar(), so revert Infobar badge
-      // accepted state here.
-      self.currentStep =
-          translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE;
-      self.mediator.currentStep = self.currentStep;
-      [self.badgeDelegate infobarWasReverted:self.infobarType
-                                 forWebState:self.webState];
-      break;
-    }
-    case translate::TranslateStep::TRANSLATE_STEP_TRANSLATING:
-    case translate::TranslateStep::TRANSLATE_STEP_TRANSLATE_ERROR:
-    case translate::TranslateStep::TRANSLATE_STEP_NEVER_TRANSLATE:
-      NOTREACHED() << "Translate infobar should not be able to perform its "
-                      "action in this state.";
-      break;
-  }
+  [self performInfobarActionForStep:self.currentStep];
 }
 
 - (void)infobarWasDismissed {
@@ -284,6 +246,13 @@
   [self dismissInfobarModal:self animated:YES completion:nil];
 }
 
+- (void)translateWithNewLanguages {
+  [self.mediator updateLanguagesIfNecessary];
+  [self performInfobarActionForStep:translate::TranslateStep::
+                                        TRANSLATE_STEP_BEFORE_TRANSLATE];
+  [self dismissInfobarModal:self animated:YES completion:nil];
+}
+
 - (void)showChangeSourceLanguageOptions {
   InfobarTranslateLanguageSelectionTableViewController* languageSelectionTVC =
       [[InfobarTranslateLanguageSelectionTableViewController alloc]
@@ -317,8 +286,13 @@
   self.userAction |= UserActionAlwaysTranslate;
   // TODO(crbug.com/1014959): Add metrics
   self.translateInfobarDelegate->ToggleAlwaysTranslate();
-  // Since toggle turned on always translate, translate now.
-  [self performInfobarAction];
+
+  // Since toggle turned on always translate, translate now if not already
+  // translated.
+  if (self.currentStep ==
+      translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE)
+    [self performInfobarAction];
+
   [self dismissInfobarModal:self animated:YES completion:nil];
 }
 
@@ -384,6 +358,51 @@
 }
 
 #pragma mark - Private
+
+// Helper method for performInfobarAction, which also allows for
+// translateWithNewLanguages() to execute a specific action without having to
+// tempoarily modify self.currentStep.
+- (void)performInfobarActionForStep:(translate::TranslateStep)step {
+  switch (step) {
+    case translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE: {
+      self.userAction |= UserActionTranslate;
+
+      // TODO(crbug.com/1014959): Add metrics
+      if (self.translateInfobarDelegate->ShouldAutoAlwaysTranslate()) {
+        // TODO(crbug.com/1014959): Figure out if we should prompt user with
+        // snackbar to auto always translate.
+        self.translateInfobarDelegate->ToggleAlwaysTranslate();
+      }
+      self.translateInfobarDelegate->Translate();
+      self.infobarAccepted = YES;
+      break;
+    }
+    case translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE: {
+      self.userAction |= UserActionRevert;
+
+      // TODO(crbug.com/1014959): Add metrics
+
+      self.translateInfobarDelegate->RevertWithoutClosingInfobar();
+      self.infobarAccepted = NO;
+      // There is no completion signal (i.e. change of TranslateStep) in
+      // translateInfoBarDelegate:didChangeTranslateStep:withErrorType: in
+      // response to RevertWithoutClosingInfobar(), so revert Infobar badge
+      // accepted state here.
+      self.currentStep =
+          translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE;
+      self.mediator.currentStep = self.currentStep;
+      [self.badgeDelegate infobarWasReverted:self.infobarType
+                                 forWebState:self.webState];
+      break;
+    }
+    case translate::TranslateStep::TRANSLATE_STEP_TRANSLATING:
+    case translate::TranslateStep::TRANSLATE_STEP_TRANSLATE_ERROR:
+    case translate::TranslateStep::TRANSLATE_STEP_NEVER_TRANSLATE:
+      NOTREACHED() << "Translate infobar should not be able to perform its "
+                      "action in this state.";
+      break;
+  }
+}
 
 // Presents the "Show Original" banner only if |self.displayShowOriginalBanner|
 // is YES, meaning a translate event took place.

@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 
 namespace blink {
 
@@ -96,6 +97,26 @@ TEST_F(CompositingReasonFinderTest, PromoteNonTrivial3D) {
   PaintLayer* paint_layer =
       ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
   EXPECT_EQ(kPaintsIntoOwnBacking, paint_layer->GetCompositingState());
+}
+
+class CompositingReasonFinderTestLowEndPlatform
+    : public TestingPlatformSupport {
+ public:
+  bool IsLowEndDevice() override { return true; }
+};
+
+TEST_F(CompositingReasonFinderTest, DontPromoteTrivial3DWithLowEndDevice) {
+  ScopedTestingPlatformSupport<CompositingReasonFinderTestLowEndPlatform>
+      platform;
+  SetBodyInnerHTML(R"HTML(
+    <div id='target'
+      style='width: 100px; height: 100px; transform: translateZ(0)'></div>
+  )HTML");
+
+  Element* target = GetDocument().getElementById("target");
+  PaintLayer* paint_layer =
+      ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
+  EXPECT_EQ(kNotComposited, paint_layer->GetCompositingState());
 }
 
 TEST_F(CompositingReasonFinderTest, OnlyAnchoredStickyPositionPromoted) {

@@ -83,9 +83,8 @@ ScriptPromise IdleDetector::start(ScriptState* script_state) {
   ExecutionContext* context = ExecutionContext::From(script_state);
   DCHECK(context->IsContextThread());
 
-  if (!context->GetSecurityContext().IsFeatureEnabled(
-          mojom::FeaturePolicyFeature::kIdleDetection,
-          ReportOptions::kReportOnFailure)) {
+  if (!context->IsFeatureEnabled(mojom::FeaturePolicyFeature::kIdleDetection,
+                                 ReportOptions::kReportOnFailure)) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError,

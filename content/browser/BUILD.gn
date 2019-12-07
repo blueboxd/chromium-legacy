@@ -163,7 +163,6 @@ jumbo_source_set("browser") {
     "//services/media_session/public/cpp:manifest",
     "//services/media_session/public/mojom",
     "//services/metrics",
-    "//services/metrics/public/cpp:manifest",
     "//services/metrics/public/cpp:metrics_cpp",
     "//services/network:network_service",
     "//services/network/public/cpp",

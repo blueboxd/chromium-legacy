@@ -52,4 +52,15 @@ Polymer({
     this.$.submit.disabled = true;
     this.fire('password-submitted', {password: password.value});
   },
+
+  /**
+   * Returns |message| if input is invalid, otherwise empty string.
+   * This avoids setting the error message (which announces to screen readers)
+   * when there is no error.
+   * @param {string} message
+   * @return {string}
+   */
+  getErrorMessage_: function(message) {
+    return this.invalid ? message : '';
+  }
 });

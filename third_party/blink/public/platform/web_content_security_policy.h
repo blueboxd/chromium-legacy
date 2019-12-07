@@ -33,14 +33,6 @@
 
 namespace blink {
 
-enum WebContentSecurityPolicySource {
-  kWebContentSecurityPolicySourceHTTP,
-  kWebContentSecurityPolicySourceMeta,
-  kWebContentSecurityPolicySourceOriginPolicy,
-  kWebContentSecurityPolicySourceLast =
-      kWebContentSecurityPolicySourceOriginPolicy
-};
-
 enum WebContentSecurityPolicyDisposition {
   kWebContentSecurityPolicyDispositionDoNotCheck,
   kWebContentSecurityPolicyDispositionCheck,

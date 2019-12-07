@@ -5,10 +5,14 @@
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d.h"
 
 #include <memory>
+
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "components/viz/test/test_context_provider.h"
+#include "components/viz/test/test_gles2_interface.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
@@ -35,11 +39,13 @@
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_canvas_resource_host.h"
+#include "third_party/blink/renderer/platform/graphics/test/gpu_memory_buffer_test_platform.h"
 #include "third_party/blink/renderer/platform/graphics/test/gpu_test_utils.h"
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
@@ -105,6 +111,10 @@ class CanvasRenderingContext2DTest : public ::testing::Test {
   CanvasRenderingContext2DTest();
   void SetUp() override;
   virtual bool AllowsAcceleration() { return false; }
+
+  virtual scoped_refptr<viz::TestContextProvider> CreateContextProvider() {
+    return viz::TestContextProvider::Create();
+  }
 
   HTMLCanvasElement& CanvasElement() const { return *canvas_element_; }
   bool IsCanvasResourceHostSet(Canvas2DLayerBridge* bridge) {
@@ -203,7 +213,7 @@ void CanvasRenderingContext2DTest::CreateContext(OpacityMode opacity_mode,
 }
 
 void CanvasRenderingContext2DTest::SetUp() {
-  test_context_provider_ = viz::TestContextProvider::Create();
+  test_context_provider_ = CreateContextProvider();
   InitializeSharedGpuContext(test_context_provider_.get());
   allow_accelerated_.reset(
       new ScopedAccelerated2dCanvasForTest(AllowsAcceleration()));
@@ -252,6 +262,13 @@ void CanvasRenderingContext2DTest::TearDown() {
       BlinkGC::kNoHeapPointersOnStack);
 
   ReplaceMemoryCacheForTesting(global_memory_cache_.Release());
+
+  // Tear down WebViewHelper because we override Platform in some tests which
+  // must be torn down after WebViewHelper.
+  web_view_helper_ = nullptr;
+
+  // Must be torn down after WebViewHelper since its destructor can create a
+  // fresh context provider otherwise.
   SharedGpuContext::ResetForTesting();
 }
 
@@ -1098,10 +1115,22 @@ TEST_F(CanvasRenderingContext2DTest, ColorManagedPutImageDataOnP3Canvas) {
       CanvasElement(), CanvasColorSpaceSettings::CANVAS_P3);
 }
 
+TEST_F(CanvasRenderingContext2DTest,
+       UnacceleratedLowLatencyIsNotSingleBuffered) {
+  CreateContext(kNonOpaque, kLowLatency);
+  // No need to set-up the layer bridge when testing low latency mode.
+  DrawSomething();
+  EXPECT_TRUE(Context2D()->getContextAttributes()->desynchronized());
+  EXPECT_TRUE(CanvasElement().LowLatencyEnabled());
+  EXPECT_FALSE(CanvasElement()
+                   .GetOrCreateCanvasResourceProvider(kPreferNoAcceleration)
+                   ->SupportsSingleBuffering());
+  EXPECT_FALSE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
+}
+
 class CanvasRenderingContext2DTestAccelerated
     : public CanvasRenderingContext2DTest {
  protected:
-  CanvasRenderingContext2DTestAccelerated() = default;
   bool AllowsAcceleration() override { return true; }
 };
 
@@ -1183,28 +1212,109 @@ TEST_F(CanvasRenderingContext2DTestAccelerated,
   EXPECT_FALSE(layer->NeedsCompositingInputsUpdate());
 }
 
-TEST_F(CanvasRenderingContext2DTest, LowLatencyIsSingleBuffered) {
-#if defined(OS_MACOSX)
-  // TODO(crbug.com/922218): enable desynchronized on Mac.
-  return;
-#endif
+TEST_F(CanvasRenderingContext2DTestAccelerated, LowLatencyIsNotSingleBuffered) {
   CreateContext(kNonOpaque, kLowLatency);
   // No need to set-up the layer bridge when testing low latency mode.
   DrawSomething();
-  // This test relies on a non-accelerated code path, and the software shared
-  // bitmap resource provider.
-  EXPECT_FALSE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
+  EXPECT_TRUE(Context2D()->getContextAttributes()->desynchronized());
+  EXPECT_TRUE(CanvasElement().LowLatencyEnabled());
+  EXPECT_FALSE(CanvasElement()
+                   .GetOrCreateCanvasResourceProvider(kPreferAcceleration)
+                   ->SupportsSingleBuffering());
+  EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
+}
+
+class CanvasRenderingContext2DTestImageChromium
+    : public CanvasRenderingContext2DTestAccelerated {
+ protected:
+  CanvasRenderingContext2DTestImageChromium()
+      : CanvasRenderingContext2DTestAccelerated() {
+    // This test relies on overlays being supported and enabled for low latency
+    // canvas.  The latter is true only on ChromeOS in production.
+    feature_list_.InitAndEnableFeature(
+        features::kLowLatencyCanvas2dImageChromium);
+  }
+
+  scoped_refptr<viz::TestContextProvider> CreateContextProvider() override {
+    auto context_provider = viz::TestContextProvider::Create();
+    auto* test_gl = context_provider->UnboundTestContextGL();
+    test_gl->set_max_texture_size(1024);
+    test_gl->set_support_texture_storage_image(true);
+    test_gl->set_supports_gpu_memory_buffer_format(gfx::BufferFormat::BGRA_8888,
+                                                   true);
+    return context_provider;
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform_;
+};
+
+TEST_F(CanvasRenderingContext2DTestImageChromium, LowLatencyIsSingleBuffered) {
+  CreateContext(kNonOpaque, kLowLatency);
+  // No need to set-up the layer bridge when testing low latency mode.
+  DrawSomething();
+  EXPECT_TRUE(Context2D()->getContextAttributes()->desynchronized());
+  EXPECT_TRUE(CanvasElement().LowLatencyEnabled());
+  EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
+  EXPECT_TRUE(CanvasElement()
+                  .GetOrCreateCanvasResourceProvider(kPreferAcceleration)
+                  ->SupportsSingleBuffering());
   auto frame1_resource =
       CanvasElement()
-          .GetOrCreateCanvasResourceProvider(kPreferNoAcceleration)
+          .GetOrCreateCanvasResourceProvider(kPreferAcceleration)
           ->ProduceCanvasResource();
-  EXPECT_TRUE(!!frame1_resource);
+  EXPECT_TRUE(frame1_resource);
   DrawSomething();
   auto frame2_resource =
       CanvasElement()
-          .GetOrCreateCanvasResourceProvider(kPreferNoAcceleration)
+          .GetOrCreateCanvasResourceProvider(kPreferAcceleration)
           ->ProduceCanvasResource();
-  EXPECT_TRUE(!!frame2_resource);
+  EXPECT_TRUE(frame2_resource);
+  EXPECT_EQ(frame1_resource.get(), frame2_resource.get());
+}
+
+class CanvasRenderingContext2DTestSwapChain
+    : public CanvasRenderingContext2DTestAccelerated {
+ protected:
+  CanvasRenderingContext2DTestSwapChain()
+      : CanvasRenderingContext2DTestAccelerated() {
+    feature_list_.InitAndEnableFeature(features::kLowLatencyCanvas2dSwapChain);
+  }
+
+  scoped_refptr<viz::TestContextProvider> CreateContextProvider() override {
+    auto context_provider = viz::TestContextProvider::Create();
+    auto* test_gl = context_provider->UnboundTestContextGL();
+    test_gl->set_max_texture_size(1024);
+    test_gl->set_supports_shared_image_swap_chain(true);
+    return context_provider;
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_F(CanvasRenderingContext2DTestSwapChain, LowLatencyIsSingleBuffered) {
+  CreateContext(kNonOpaque, kLowLatency);
+  // No need to set-up the layer bridge when testing low latency mode.
+  DrawSomething();
+  EXPECT_TRUE(Context2D()->getContextAttributes()->desynchronized());
+  EXPECT_TRUE(CanvasElement().LowLatencyEnabled());
+  EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
+  EXPECT_TRUE(CanvasElement()
+                  .GetOrCreateCanvasResourceProvider(kPreferAcceleration)
+                  ->SupportsSingleBuffering());
+  auto frame1_resource =
+      CanvasElement()
+          .GetOrCreateCanvasResourceProvider(kPreferAcceleration)
+          ->ProduceCanvasResource();
+  EXPECT_TRUE(frame1_resource);
+  DrawSomething();
+  auto frame2_resource =
+      CanvasElement()
+          .GetOrCreateCanvasResourceProvider(kPreferAcceleration)
+          ->ProduceCanvasResource();
+  EXPECT_TRUE(frame2_resource);
   EXPECT_EQ(frame1_resource.get(), frame2_resource.get());
 }
 

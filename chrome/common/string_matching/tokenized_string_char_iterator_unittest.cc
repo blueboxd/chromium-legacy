@@ -12,9 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace string_matching {
-namespace test {
-
 namespace {
 
 // Returns a string represents the current state of |iter|. The state string
@@ -82,8 +79,6 @@ void TestFirstTwoCharInEveryToken(const std::string& text,
   TestBeyondTheEnd(&iter);
 }
 
-}  // namespace
-
 TEST(TokenizedStringCharIteratorTest, NoTerms) {
   const char* text;
 
@@ -147,5 +142,4 @@ TEST(TokenizedStringCharIteratorTest, Basic) {
   TestFirstTwoCharInEveryToken(text, "f0! a1 s9! i10");
 }
 
-}  // namespace test
-}  // namespace string_matching
+}  // namespace

@@ -37,8 +37,8 @@ class ContentSecurityPolicyTest : public testing::Test {
   NullExecutionContext* CreateExecutionContext() {
     NullExecutionContext* context =
         MakeGarbageCollected<NullExecutionContext>();
-    context->SetUpSecurityContext();
-    context->SetSecurityOrigin(secure_origin);
+    context->SetUpSecurityContextForTesting();
+    context->GetSecurityContext().SetSecurityOriginForTesting(secure_origin);
     return context;
   }
 
@@ -74,10 +74,13 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
                             .WithURL(secure_url);
     auto* document = MakeGarbageCollected<Document>(init);
     csp->BindToDelegate(document->GetContentSecurityPolicyDelegate());
-    EXPECT_EQ(test.expected_policy, document->GetInsecureRequestPolicy());
+    EXPECT_EQ(test.expected_policy,
+              document->GetSecurityContext().GetInsecureRequestPolicy());
     bool expect_upgrade = test.expected_policy & kUpgradeInsecureRequests;
-    EXPECT_EQ(expect_upgrade, document->InsecureNavigationsToUpgrade().Contains(
-                                  document->Url().Host().Impl()->GetHash()));
+    EXPECT_EQ(
+        expect_upgrade,
+        document->GetSecurityContext().InsecureNavigationsToUpgrade().Contains(
+            document->Url().Host().Impl()->GetHash()));
   }
 
   // Report-Only
@@ -90,12 +93,14 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
     EXPECT_EQ(kLeaveInsecureRequestsAlone, csp->GetInsecureRequestPolicy());
 
     execution_context = CreateExecutionContext();
-    execution_context->SetSecurityOrigin(secure_origin);
+    execution_context->GetSecurityContext().SetSecurityOrigin(secure_origin);
     csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
-    EXPECT_EQ(kLeaveInsecureRequestsAlone,
-              execution_context->GetInsecureRequestPolicy());
-    EXPECT_FALSE(execution_context->InsecureNavigationsToUpgrade().Contains(
-        secure_origin->Host().Impl()->GetHash()));
+    EXPECT_EQ(
+        kLeaveInsecureRequestsAlone,
+        execution_context->GetSecurityContext().GetInsecureRequestPolicy());
+    EXPECT_FALSE(execution_context->GetSecurityContext()
+                     .InsecureNavigationsToUpgrade()
+                     .Contains(secure_origin->Host().Impl()->GetHash()));
   }
 }
 
@@ -219,7 +224,8 @@ TEST_F(ContentSecurityPolicyTest, SandboxInMeta) {
   csp->DidReceiveHeader("sandbox;", kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceMeta);
   EXPECT_EQ(WebSandboxFlags::kNone, csp->GetSandboxMask());
-  execution_context->SetSandboxFlags(WebSandboxFlags::kAll);
+  execution_context->GetSecurityContext().ApplySandboxFlags(
+      WebSandboxFlags::kAll);
   csp->DidReceiveHeader("sandbox;", kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
   EXPECT_EQ(WebSandboxFlags::kAll, csp->GetSandboxMask());
@@ -1038,7 +1044,8 @@ TEST_F(ContentSecurityPolicyTest, Subsumes) {
 TEST_F(ContentSecurityPolicyTest, RequestsAllowedWhenBypassingCSP) {
   const KURL base;
   execution_context = CreateExecutionContext();
-  execution_context->SetSecurityOrigin(secure_origin);  // https://example.com
+  execution_context->GetSecurityContext().SetSecurityOrigin(
+      secure_origin);                                   // https://example.com
   execution_context->SetURL(secure_url);                // https://example.com
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("default-src https://example.com",
@@ -1078,7 +1085,8 @@ TEST_F(ContentSecurityPolicyTest, RequestsAllowedWhenBypassingCSP) {
 TEST_F(ContentSecurityPolicyTest, FilesystemAllowedWhenBypassingCSP) {
   const KURL base;
   execution_context = CreateExecutionContext();
-  execution_context->SetSecurityOrigin(secure_origin);  // https://example.com
+  execution_context->GetSecurityContext().SetSecurityOrigin(
+      secure_origin);                                   // https://example.com
   execution_context->SetURL(secure_url);                // https://example.com
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("default-src https://example.com",
@@ -1123,7 +1131,8 @@ TEST_F(ContentSecurityPolicyTest, FilesystemAllowedWhenBypassingCSP) {
 TEST_F(ContentSecurityPolicyTest, BlobAllowedWhenBypassingCSP) {
   const KURL base;
   execution_context = CreateExecutionContext();
-  execution_context->SetSecurityOrigin(secure_origin);  // https://example.com
+  execution_context->GetSecurityContext().SetSecurityOrigin(
+      secure_origin);                                   // https://example.com
   execution_context->SetURL(secure_url);                // https://example.com
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("default-src https://example.com",
@@ -1166,7 +1175,7 @@ TEST_F(ContentSecurityPolicyTest, BlobAllowedWhenBypassingCSP) {
 TEST_F(ContentSecurityPolicyTest, CSPBypassDisabledWhenSchemeIsPrivileged) {
   const KURL base;
   execution_context = CreateExecutionContext();
-  execution_context->SetSecurityOrigin(secure_origin);
+  execution_context->GetSecurityContext().SetSecurityOrigin(secure_origin);
   execution_context->SetURL(BlankURL());
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("script-src http://example.com",
@@ -1348,7 +1357,7 @@ TEST_F(ContentSecurityPolicyTest, IsValidCSPAttrTest) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypesNoDirective) {
-  execution_context->SetRequireTrustedTypesForTesting();
+  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("", kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
@@ -1357,7 +1366,7 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypesNoDirective) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypesSimpleDirective) {
-  execution_context->SetRequireTrustedTypesForTesting();
+  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types one two three",
                         kContentSecurityPolicyHeaderTypeEnforce,
@@ -1365,7 +1374,7 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypesSimpleDirective) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypesWhitespace) {
-  execution_context->SetRequireTrustedTypesForTesting();
+  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types one\ntwo\rthree",
                         kContentSecurityPolicyHeaderTypeEnforce,
@@ -1379,7 +1388,7 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypesWhitespace) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypesEmpty) {
-  execution_context->SetRequireTrustedTypesForTesting();
+  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types",
                         kContentSecurityPolicyHeaderTypeEnforce,
@@ -1389,7 +1398,7 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypesEmpty) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypesStar) {
-  execution_context->SetRequireTrustedTypesForTesting();
+  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types *",
                         kContentSecurityPolicyHeaderTypeEnforce,
@@ -1399,7 +1408,7 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypesStar) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypesReserved) {
-  execution_context->SetRequireTrustedTypesForTesting();
+  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types one \"two\" 'three'",
                         kContentSecurityPolicyHeaderTypeEnforce,
@@ -1419,7 +1428,7 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypesReserved) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypesReportingStar) {
-  execution_context->SetRequireTrustedTypesForTesting();
+  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types *",
                         kContentSecurityPolicyHeaderTypeReport,
@@ -1429,7 +1438,7 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypesReportingStar) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypeReportingSimple) {
-  execution_context->SetRequireTrustedTypesForTesting();
+  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types a b c",
                         kContentSecurityPolicyHeaderTypeReport,
@@ -1439,7 +1448,7 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypeReportingSimple) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypeEnforce) {
-  execution_context->SetRequireTrustedTypesForTesting();
+  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types one\ntwo\rthree",
                         kContentSecurityPolicyHeaderTypeEnforce,
@@ -1449,7 +1458,7 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypeEnforce) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypeReport) {
-  execution_context->SetRequireTrustedTypesForTesting();
+  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types one\ntwo\rthree",
                         kContentSecurityPolicyHeaderTypeReport,
@@ -1459,7 +1468,7 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypeReport) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypeReportAndEnforce) {
-  execution_context->SetRequireTrustedTypesForTesting();
+  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types one",
                         kContentSecurityPolicyHeaderTypeReport,
@@ -1472,7 +1481,7 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypeReportAndEnforce) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypeReportAndNonTTEnforce) {
-  execution_context->SetRequireTrustedTypesForTesting();
+  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types one",
                         kContentSecurityPolicyHeaderTypeReport,
@@ -1485,7 +1494,7 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypeReportAndNonTTEnforce) {
 }
 
 TEST_F(ContentSecurityPolicyTest, DefaultPolicy) {
-  execution_context->SetRequireTrustedTypesForTesting();
+  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types *",
                         kContentSecurityPolicyHeaderTypeEnforce,

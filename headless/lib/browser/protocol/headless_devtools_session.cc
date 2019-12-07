@@ -58,7 +58,8 @@ void HeadlessDevToolsSession::HandleCommand(
   if (!dispatcher_.parseCommand(value.get(), &call_id, &unused))
     return;
   pending_commands_[call_id] = std::move(callback);
-  dispatcher_.dispatch(call_id, method, std::move(value), message);
+  dispatcher_.dispatch(call_id, method, std::move(value),
+                       crdtp::SpanFrom(message));
 }
 
 void HeadlessDevToolsSession::AddHandler(
@@ -102,10 +103,10 @@ void HeadlessDevToolsSession::flushProtocolNotifications() {}
 
 void HeadlessDevToolsSession::fallThrough(int call_id,
                                           const std::string& method,
-                                          const std::string& message) {
+                                          crdtp::span<uint8_t> message) {
   auto callback = std::move(pending_commands_[call_id]);
   pending_commands_.erase(call_id);
-  std::move(callback).Run(message);
+  std::move(callback).Run(std::string(message.begin(), message.end()));
 }
 }  // namespace protocol
 }  // namespace headless

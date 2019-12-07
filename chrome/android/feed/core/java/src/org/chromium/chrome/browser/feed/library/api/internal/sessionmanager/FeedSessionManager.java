@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.api.internal.sessionmanager;
 
+import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.KnownContent;
 import org.chromium.chrome.browser.feed.library.api.common.MutationContext;
 import org.chromium.chrome.browser.feed.library.api.host.logging.RequestReason;
@@ -13,7 +14,6 @@ import org.chromium.chrome.browser.feed.library.api.internal.lifecycle.Resettabl
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.ModelProvider;
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.ModelProvider.ViewDepthProvider;
 import org.chromium.chrome.browser.feed.library.common.Result;
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 import org.chromium.chrome.browser.feed.library.common.functional.Function;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamDataOperation;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamPayload;

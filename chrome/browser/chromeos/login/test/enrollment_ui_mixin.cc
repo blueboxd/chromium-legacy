@@ -125,8 +125,8 @@ void EnrollmentUIMixin::LeaveSuccessScreen() {
 
 void EnrollmentUIMixin::SubmitDeviceAttributes(const std::string& asset_id,
                                                const std::string& location) {
-  OobeJS().TypeIntoPath(asset_id, {kEnrollmentUI, "oauth-enroll-asset-id"});
-  OobeJS().TypeIntoPath(location, {kEnrollmentUI, "oauth-enroll-location"});
+  OobeJS().TypeIntoPath(asset_id, {kEnrollmentUI, "asset-id"});
+  OobeJS().TypeIntoPath(location, {kEnrollmentUI, "location"});
   OobeJS().TapOnPath({kEnrollmentUI, "attributes-submit"});
 }
 

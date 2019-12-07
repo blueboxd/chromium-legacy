@@ -128,6 +128,7 @@ QuicTestPacketMaker::QuicTestPacketMaker(
       connection_id_(connection_id),
       clock_(clock),
       host_(host),
+      max_allowed_push_id_(0),
       spdy_request_framer_(spdy::SpdyFramer::ENABLE_COMPRESSION),
       spdy_response_framer_(spdy::SpdyFramer::ENABLE_COMPRESSION),
       coalesce_http_frames_(false),
@@ -154,6 +155,10 @@ QuicTestPacketMaker::~QuicTestPacketMaker() {
 
 void QuicTestPacketMaker::set_hostname(const std::string& host) {
   host_.assign(host);
+}
+
+void QuicTestPacketMaker::set_max_allowed_push_id(quic::QuicStreamId push_id) {
+  max_allowed_push_id_ = push_id;
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
@@ -368,10 +373,10 @@ QuicTestPacketMaker::MakeRstAndRequestHeadersPacket(
     }
 
     // STREAM frames for HEADERS.
-    std::vector<std::string> data = QpackEncodeHeaders(
-        stream_id, std::move(headers), spdy_headers_frame_length);
-    for (const auto& frame : GenerateNextStreamFrames(stream_id, fin, data))
-      frames.push_back(frame);
+    std::string data = QpackEncodeHeaders(stream_id, std::move(headers),
+                                          spdy_headers_frame_length);
+
+    frames.push_back(GenerateNextStreamFrame(stream_id, fin, data));
 
     InitializeHeader(num, include_version);
     return MakeMultipleFramesPacket(header_, frames, nullptr);
@@ -810,19 +815,15 @@ QuicTestPacketMaker::MakeRequestHeadersAndMultipleDataFramesPacket(
           GenerateHttp3PriorityData(priority, stream_id);
       frames.push_back(GenerateNextStreamFrame(2, false, priority_data));
     }
-    // STREAM frames for HEADERS.
-    std::vector<std::string> data = QpackEncodeHeaders(
-        stream_id, std::move(headers), spdy_headers_frame_length);
 
-    for (const auto& frame : GenerateNextStreamFrames(stream_id, false, data))
-      frames.push_back(frame);
+    std::string data = QpackEncodeHeaders(stream_id, std::move(headers),
+                                          spdy_headers_frame_length);
 
     // STREAM frames for DATA.
     for (size_t i = 0; i < data_writes.size(); ++i) {
-      bool is_fin = fin && (i == data_writes.size() - 1);
-      frames.push_back(GenerateNextStreamFrame(
-          stream_id, is_fin, quic::QuicStringPiece(data_writes[i])));
+      data += data_writes[i];
     }
+    frames.push_back(GenerateNextStreamFrame(stream_id, fin, data));
 
     return MakeMultipleFramesPacket(header_, frames, nullptr);
   }
@@ -873,11 +874,10 @@ QuicTestPacketMaker::MakeRequestHeadersPacket(
           GenerateHttp3PriorityData(priority, stream_id);
       frames.push_back(GenerateNextStreamFrame(2, false, priority_data));
     }
-    std::vector<std::string> data = QpackEncodeHeaders(
-        stream_id, std::move(headers), spdy_headers_frame_length);
+    std::string data = QpackEncodeHeaders(stream_id, std::move(headers),
+                                          spdy_headers_frame_length);
+    frames.push_back(GenerateNextStreamFrame(stream_id, fin, data));
 
-    for (const auto& frame : GenerateNextStreamFrames(stream_id, fin, data))
-      frames.push_back(frame);
     return MakeMultipleFramesPacket(header_, frames, nullptr);
   }
 
@@ -915,11 +915,10 @@ QuicTestPacketMaker::MakeRequestHeadersAndRstPacket(
           GenerateHttp3PriorityData(priority, stream_id);
       frames.push_back(GenerateNextStreamFrame(2, false, priority_data));
     }
-    std::vector<std::string> data = QpackEncodeHeaders(
-        stream_id, std::move(headers), spdy_headers_frame_length);
+    std::string data = QpackEncodeHeaders(stream_id, std::move(headers),
+                                          spdy_headers_frame_length);
 
-    for (const auto& frame : GenerateNextStreamFrames(stream_id, fin, data))
-      frames.push_back(frame);
+    frames.push_back(GenerateNextStreamFrame(stream_id, fin, data));
 
     quic::QuicRstStreamFrame rst_frame(1, stream_id, error_code,
                                        stream_offsets_[stream_id]);
@@ -1059,14 +1058,11 @@ QuicTestPacketMaker::MakeResponseHeadersPacket(
   InitializeHeader(packet_number, should_include_version);
 
   if (quic::VersionUsesHttp3(version_.transport_version)) {
-    // STREAM frames for HEADERS.
-    std::vector<std::string> data = QpackEncodeHeaders(
-        stream_id, std::move(headers), spdy_headers_frame_length);
+    // STREAM frame for HEADERS.
+    std::string data = QpackEncodeHeaders(stream_id, std::move(headers),
+                                          spdy_headers_frame_length);
 
-    quic::QuicFrames frames;
-    for (const auto& frame : GenerateNextStreamFrames(stream_id, fin, data))
-      frames.push_back(frame);
-    return MakeMultipleFramesPacket(header_, frames, nullptr);
+    return MakePacket(header_, GenerateNextStreamFrame(stream_id, fin, data));
   }
 
   spdy::SpdySerializedFrame spdy_frame;
@@ -1309,6 +1305,7 @@ QuicTestPacketMaker::MakeAckAndMultiplePriorityFramesPacket(
   const bool exclusive = client_headers_include_h2_stream_dependency_;
   // Keep SpdySerializedFrames alive until MakeMultipleFramesPacket is done.
   std::vector<std::unique_ptr<spdy::SpdySerializedFrame>> spdy_frames;
+  std::string coalesced_data;
   for (const Http2StreamDependency& info : priority_frames) {
     spdy::SpdyPriorityIR priority_frame(
         info.stream_id, info.parent_stream_id,
@@ -1318,12 +1315,14 @@ QuicTestPacketMaker::MakeAckAndMultiplePriorityFramesPacket(
         spdy_request_framer_.SerializeFrame(priority_frame)));
 
     spdy::SpdySerializedFrame* spdy_frame = spdy_frames.back().get();
-    frames.push_back(GenerateNextStreamFrame(
-        quic::VersionUsesHttp3(version_.transport_version)
-            ? GetFirstBidirectionalStreamId()
-            : GetHeadersStreamId(),
-        false, quic::QuicStringPiece(spdy_frame->data(), spdy_frame->size())));
+    coalesced_data += std::string(spdy_frame->data(), spdy_frame->size());
   }
+
+  frames.push_back(
+      GenerateNextStreamFrame(quic::VersionUsesHttp3(version_.transport_version)
+                                  ? GetFirstBidirectionalStreamId()
+                                  : GetHeadersStreamId(),
+                              false, coalesced_data));
 
   InitializeHeader(packet_number, should_include_version);
   return MakeMultipleFramesPacket(header_, frames, nullptr);
@@ -1406,12 +1405,12 @@ quic::QuicFrame QuicTestPacketMaker::GenerateNextStreamFrame(
   return quic::QuicFrame(frame);
 }
 
-std::vector<std::string> QuicTestPacketMaker::QpackEncodeHeaders(
+std::string QuicTestPacketMaker::QpackEncodeHeaders(
     quic::QuicStreamId stream_id,
     spdy::SpdyHeaderBlock headers,
     size_t* encoded_data_length) {
   DCHECK(quic::VersionUsesHttp3(version_.transport_version));
-  std::vector<std::string> data;
+  std::string data;
 
   std::string encoded_headers =
       qpack_encoder_.EncodeHeaderList(stream_id, headers, nullptr);
@@ -1426,28 +1425,17 @@ std::vector<std::string> QuicTestPacketMaker::QpackEncodeHeaders(
   if (!quic::QuicUtils::IsBidirectionalStreamId(stream_id) &&
       stream_offsets_[stream_id] == 0) {
     // Push stream type header
-    data.push_back("\x01");
+    data += "\x01";
   }
 
   // Add the HEADERS frame header.
-  data.push_back(
-      std::string(headers_frame_header.get(), headers_frame_header_length));
+  data += std::string(headers_frame_header.get(), headers_frame_header_length);
   // Add the HEADERS frame payload.
-  data.push_back(encoded_headers);
-
-  if (coalesce_http_frames_) {
-    std::string coalesced;
-    for (const auto& d : data) {
-      coalesced += d;
-    }
-    data = {coalesced};
-  }
+  data += encoded_headers;
 
   // Compute the total data length.
   if (encoded_data_length) {
-    *encoded_data_length = 0;
-    for (const auto& d : data)
-      *encoded_data_length += d.length();
+    *encoded_data_length = data.length();
   }
   return data;
 }
@@ -1534,6 +1522,15 @@ std::string QuicTestPacketMaker::GenerateHttp3SettingsData() {
   return std::string(buffer.get(), frame_length);
 }
 
+std::string QuicTestPacketMaker::GenerateHttp3MaxPushIdData() {
+  quic::MaxPushIdFrame max_push_id;
+  max_push_id.push_id = max_allowed_push_id_;
+  std::unique_ptr<char[]> buffer;
+  quic::QuicByteCount frame_length =
+      quic::HttpEncoder::SerializeMaxPushIdFrame(max_push_id, &buffer);
+  return std::string(buffer.get(), frame_length);
+}
+
 std::string QuicTestPacketMaker::GenerateHttp3PriorityData(
     spdy::SpdyPriority priority,
     quic::QuicStreamId stream_id) {
@@ -1564,19 +1561,13 @@ void QuicTestPacketMaker::MaybeAddHttp3SettingsFrames(
   // stream first.
   std::string type(1, 0x00);
   std::string settings_data = GenerateHttp3SettingsData();
+  std::string max_push_id_data = GenerateHttp3MaxPushIdData();
 
   // The type and the SETTINGS frame may be sent in multiple QUIC STREAM
   // frames.
-  std::vector<std::string> data;
-  if (coalesce_http_frames_) {
-    data = {type + settings_data};
-  } else {
-    data = {type, settings_data};
-  }
+  std::string data = type + settings_data + max_push_id_data;
 
-  for (const auto& frame : GenerateNextStreamFrames(stream_id, false, data))
-    frames->push_back(frame);
-
+  frames->push_back(GenerateNextStreamFrame(stream_id, false, data));
   frames->push_back(GenerateNextStreamFrame(stream_id + 4, false, "\x03"));
   frames->push_back(GenerateNextStreamFrame(stream_id + 8, false, "\x02"));
 }

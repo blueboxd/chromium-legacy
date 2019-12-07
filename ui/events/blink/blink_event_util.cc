@@ -329,8 +329,7 @@ bool CanCoalesce(const WebMouseWheelEvent& event_to_coalesce,
                  const WebMouseWheelEvent& event) {
   return event.GetModifiers() == event_to_coalesce.GetModifiers() &&
          event.delta_units == event_to_coalesce.delta_units &&
-         HaveConsistentPhase(event_to_coalesce, event) &&
-         event.resending_plugin_id == event_to_coalesce.resending_plugin_id;
+         HaveConsistentPhase(event_to_coalesce, event);
 }
 
 void Coalesce(const WebMouseWheelEvent& event_to_coalesce,
@@ -431,7 +430,6 @@ void Coalesce(const WebTouchEvent& event_to_coalesce, WebTouchEvent* event) {
 bool CanCoalesce(const WebGestureEvent& event_to_coalesce,
                  const WebGestureEvent& event) {
   if (event.GetType() != event_to_coalesce.GetType() ||
-      event.resending_plugin_id != event_to_coalesce.resending_plugin_id ||
       event.SourceDevice() != event_to_coalesce.SourceDevice() ||
       event.GetModifiers() != event_to_coalesce.GetModifiers())
     return false;

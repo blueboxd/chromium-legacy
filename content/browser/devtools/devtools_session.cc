@@ -155,7 +155,7 @@ void DevToolsSession::AttachToAgent(blink::mojom::DevToolsAgent* agent) {
   for (const Message& message : pending_messages_) {
     if (waiting_for_response_.count(message.call_id)) {
       DispatchProtocolMessageToAgent(message.call_id, message.method,
-                                     message.message);
+                                     crdtp::SpanFrom(message.message));
     }
   }
 }
@@ -247,20 +247,22 @@ void DevToolsSession::HandleCommand(
                            "DevToolsSession::HandleCommand in Browser", call_id,
                            TRACE_EVENT_FLAG_FLOW_OUT, "method", method.c_str(),
                            "call_id", call_id);
-    dispatcher_->dispatch(call_id, method, std::move(value), message);
+    dispatcher_->dispatch(call_id, method, std::move(value),
+                          crdtp::SpanFrom(message));
   } else {
-    fallThrough(call_id, method, message);
+    fallThrough(call_id, method, crdtp::SpanFrom(message));
   }
 }
 
 void DevToolsSession::fallThrough(int call_id,
                                   const std::string& method,
-                                  const std::string& message) {
+                                  crdtp::span<uint8_t> message) {
   // In browser-only mode, we should've handled everything in dispatcher.
   DCHECK(!browser_only_);
 
-  auto it = pending_messages_.insert(pending_messages_.end(),
-                                     {call_id, method, message});
+  auto it = pending_messages_.insert(
+      pending_messages_.end(),
+      {call_id, method, std::string(message.begin(), message.end())});
   if (suspended_sending_messages_to_agent_)
     return;
 
@@ -271,11 +273,11 @@ void DevToolsSession::fallThrough(int call_id,
 void DevToolsSession::DispatchProtocolMessageToAgent(
     int call_id,
     const std::string& method,
-    const std::string& message) {
+    crdtp::span<uint8_t> message) {
   DCHECK(!browser_only_);
   auto message_ptr = blink::mojom::DevToolsMessage::New();
-  message_ptr->data = mojo_base::BigBuffer(base::make_span(
-      reinterpret_cast<const uint8_t*>(message.data()), message.length()));
+  message_ptr->data =
+      mojo_base::BigBuffer(base::make_span(message.data(), message.size()));
   if (io_session_) {
     TRACE_EVENT_WITH_FLOW2("devtools",
                            "DevToolsSession::DispatchProtocolMessageToAgent",
@@ -300,7 +302,7 @@ void DevToolsSession::ResumeSendingMessagesToAgent() {
     if (waiting_for_response_.count(message.call_id))
       continue;
     DispatchProtocolMessageToAgent(message.call_id, message.method,
-                                   message.message);
+                                   crdtp::SpanFrom(message.message));
     waiting_for_response_[message.call_id] = it;
   }
 }

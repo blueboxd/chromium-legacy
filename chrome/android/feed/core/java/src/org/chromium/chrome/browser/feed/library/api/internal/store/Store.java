@@ -4,11 +4,11 @@
 
 package org.chromium.chrome.browser.feed.library.api.internal.store;
 
+import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.feed.library.api.internal.common.PayloadWithId;
 import org.chromium.chrome.browser.feed.library.api.internal.common.SemanticPropertiesWithId;
 import org.chromium.chrome.browser.feed.library.common.Result;
 import org.chromium.chrome.browser.feed.library.common.feedobservable.Observable;
-import org.chromium.chrome.browser.feed.library.common.functional.Supplier;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamDataOperation;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamLocalAction;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamSharedState;

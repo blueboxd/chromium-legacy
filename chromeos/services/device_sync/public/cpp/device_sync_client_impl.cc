@@ -8,6 +8,7 @@
 
 #include "chromeos/services/device_sync/public/cpp/device_sync_client_impl.h"
 
+#include "base/base64url.h"
 #include "base/bind.h"
 #include "base/no_destructor.h"
 #include "chromeos/components/multidevice/expiring_remote_device_cache.h"
@@ -18,6 +19,32 @@
 namespace chromeos {
 
 namespace device_sync {
+
+namespace {
+
+bool IsValidInstanceId(const std::string& instance_id) {
+  if (instance_id.empty()) {
+    PA_LOG(ERROR) << "Instance ID cannot be empty.";
+    return false;
+  }
+
+  std::string decoded_iid;
+  if (!base::Base64UrlDecode(instance_id,
+                             base::Base64UrlDecodePolicy::IGNORE_PADDING,
+                             &decoded_iid)) {
+    PA_LOG(ERROR) << "Instance ID must be Base64Url encoded.";
+    return false;
+  }
+
+  if (decoded_iid.size() != 8u) {
+    PA_LOG(ERROR) << "Instance ID must be 8 bytes after Base64Url decoding.";
+    return false;
+  }
+
+  return true;
+}
+
+}  // namespace
 
 // static
 DeviceSyncClientImpl::Factory* DeviceSyncClientImpl::Factory::test_factory_ =
@@ -121,6 +148,11 @@ void DeviceSyncClientImpl::SetFeatureStatus(
     multidevice::SoftwareFeature feature,
     FeatureStatusChange status_change,
     mojom::DeviceSync::SetFeatureStatusCallback callback) {
+  if (!IsValidInstanceId(device_instance_id)) {
+    std::move(callback).Run(mojom::NetworkRequestResult::kBadRequest);
+    return;
+  }
+
   device_sync_->SetFeatureStatus(device_instance_id, feature, status_change,
                                  std::move(callback));
 }
@@ -132,6 +164,21 @@ void DeviceSyncClientImpl::FindEligibleDevices(
       software_feature,
       base::BindOnce(&DeviceSyncClientImpl::OnFindEligibleDevicesCompleted,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+void DeviceSyncClientImpl::NotifyDevices(
+    const std::vector<std::string>& device_instance_ids,
+    cryptauthv2::TargetService target_service,
+    multidevice::SoftwareFeature feature,
+    mojom::DeviceSync::NotifyDevicesCallback callback) {
+  for (const std::string& iid : device_instance_ids) {
+    if (!IsValidInstanceId(iid)) {
+      std::move(callback).Run(mojom::NetworkRequestResult::kBadRequest);
+      return;
+    }
+  }
+
+  device_sync_->NotifyDevices(device_instance_ids, target_service, feature,
+                              std::move(callback));
 }
 
 void DeviceSyncClientImpl::GetDevicesActivityStatus(

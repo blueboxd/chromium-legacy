@@ -493,9 +493,9 @@ AutomationRichEditableText.prototype = {
               new Range(prev.start_, prev.end_), Output.EventType.NAVIGATE)
           .go();
     } else if (
-        !cur.hasCollapsedSelection() &&
-        (curBase.isSameLine(prevStartLine) ||
-         curBase.isSameLine(prevEndLine))) {
+        !prev.hasCollapsedSelection() && !cur.hasCollapsedSelection() &&
+        (curBase.isSameLineAndSelection(prevStartLine) ||
+         curBase.isSameLineAndSelection(prevEndLine))) {
       // This is a selection that gets extended from the same anchor.
 
       // Speech requires many more states than braille.
@@ -553,6 +553,16 @@ AutomationRichEditableText.prototype = {
       ChromeVox.tts.speak(text, QueueMode.CATEGORY_FLUSH);
       ChromeVox.tts.speak(Msgs.getMsg(suffixMsg), QueueMode.QUEUE);
       this.brailleCurrentRichLine_();
+    } else if (!cur.hasCollapsedSelection()) {
+      // Without any other information, try describing the selection. This state
+      // catches things like select all.
+      var text = this.getTextSelection_(
+          cur.startContainer_, cur.localStartOffset, cur.endContainer_,
+          cur.localEndOffset);
+      ChromeVox.tts.speak(text, QueueMode.CATEGORY_FLUSH);
+      ChromeVox.tts.speak(Msgs.getMsg('selected'), QueueMode.QUEUE);
+      this.brailleCurrentRichLine_();
+
     } else {
       // A catch-all for any other transitions.
 
@@ -865,7 +875,11 @@ AutomationRichEditableText.prototype = {
    * @param {editing.EditableLine} cur Current line.
    */
   updateIntraLineState_: function(cur) {
-    this.value = cur.text;
+    var text = cur.text;
+    if (text == '\n') {
+      text = '';
+    }
+    this.value = text;
     this.start = cur.startOffset;
     this.end = cur.endOffset;
   }
@@ -942,13 +956,14 @@ editing.EditableLine = function(
   // cursors.Cursor.deepEquivalent results in cursors to different container
   // nodes. The cursors can point directly to inline text boxes, in which case
   // we should not adjust the container start or end index.
-  if (startNode.role == RoleType.STATIC_TEXT && this.start_.node != startNode &&
-      this.start_.node.parent != startNode) {
+  if (startNode.role != RoleType.INLINE_TEXT_BOX &&
+      this.start_.node != startNode && this.start_.node.parent != startNode) {
     startIndex = this.start_.index == cursors.NODE_INDEX ?
         this.start_.node.name.length :
         this.start_.index;
   }
-  if (endNode.role == RoleType.STATIC_TEXT && this.end_.node != endNode &&
+
+  if (endNode.role != RoleType.INLINE_TEXT_BOX && this.end_.node != endNode &&
       this.end_.node.parent != endNode) {
     endIndex = this.end_.index == cursors.NODE_INDEX ?
         this.end_.node.name.length :

@@ -190,7 +190,8 @@ TEST(DOMWebSocketTest, insecureRequestsUpgrade) {
         .WillOnce(Return(true));
   }
 
-  scope.GetDocument().SetInsecureRequestPolicy(kUpgradeInsecureRequests);
+  scope.GetDocument().GetSecurityContext().SetInsecureRequestPolicy(
+      kUpgradeInsecureRequests);
   websocket_scope.Socket().Connect("ws://example.com/endpoint",
                                    Vector<String>(), scope.GetExceptionState());
 
@@ -209,7 +210,8 @@ TEST(DOMWebSocketTest, insecureRequestsUpgradePotentiallyTrustworthy) {
         .WillOnce(Return(true));
   }
 
-  scope.GetDocument().SetInsecureRequestPolicy(kUpgradeInsecureRequests);
+  scope.GetDocument().GetSecurityContext().SetInsecureRequestPolicy(
+      kUpgradeInsecureRequests);
   websocket_scope.Socket().Connect("ws://127.0.0.1/endpoint", Vector<String>(),
                                    scope.GetExceptionState());
 
@@ -228,7 +230,8 @@ TEST(DOMWebSocketTest, insecureRequestsDoNotUpgrade) {
         .WillOnce(Return(true));
   }
 
-  scope.GetDocument().SetInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
+  scope.GetDocument().GetSecurityContext().SetInsecureRequestPolicy(
+      kLeaveInsecureRequestsAlone);
   websocket_scope.Socket().Connect("ws://example.com/endpoint",
                                    Vector<String>(), scope.GetExceptionState());
 

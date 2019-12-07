@@ -89,11 +89,12 @@ public class GroupCardLabelAdder implements DateOrderedListMutator.LabelAdder {
         }
 
         Pair<Date, String> dateAndDomain = getDateAndDomainForItem(candidateCardItems.get(0));
+        String url = ((ListItem.OfflineItemListItem) candidateCardItems.get(0)).item.pageUrl;
         mCardPaginator.initializeEntry(dateAndDomain);
 
         // Add the card header, and the divider above it.
         outList.add(createDivider(CardDividerListItem.Position.TOP));
-        outList.add(new ListItem.CardHeaderListItem(dateAndDomain));
+        outList.add(new ListItem.CardHeaderListItem(dateAndDomain, url));
 
         int itemsBeforePagination = mCardPaginator.getItemCountForCard(dateAndDomain);
         int numItemsToShow = Math.min(itemsBeforePagination, candidateCardItems.size());

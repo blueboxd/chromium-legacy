@@ -28,8 +28,8 @@
 #include "services/network/public/cpp/cross_origin_resource_policy.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/initiator_lock_compatibility.h"
-#include "services/network/public/cpp/resource_response_info.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 using base::StringPiece;
 using MimeType = network::CrossOriginReadBlocking::MimeType;
@@ -503,7 +503,7 @@ SniffingResult CrossOriginReadBlocking::SniffForFetchOnlyResource(
 
 // static
 void CrossOriginReadBlocking::SanitizeBlockedResponse(
-    network::ResourceResponseInfo* response) {
+    network::mojom::URLResponseHead* response) {
   DCHECK(response);
   response->content_length = 0;
   if (response->headers)
@@ -594,7 +594,7 @@ class CrossOriginReadBlocking::ResponseAnalyzer::SimpleConfirmationSniffer
 CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
     const GURL& request_url,
     const base::Optional<url::Origin>& request_initiator,
-    const ResourceResponseInfo& response,
+    const network::mojom::URLResponseHead& response,
     base::Optional<url::Origin> request_initiator_site_lock,
     mojom::RequestMode request_mode)
     : seems_sensitive_from_cors_heuristic_(
@@ -673,7 +673,7 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
     mojom::RequestMode request_mode,
     const GURL& request_url,
     const base::Optional<url::Origin>& request_initiator,
-    const ResourceResponseInfo& response,
+    const network::mojom::URLResponseHead& response,
     const base::Optional<url::Origin>& request_initiator_site_lock,
     MimeType canonical_mime_type) {
   // The checks in this method are ordered to rule out blocking in most cases as
@@ -839,7 +839,7 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
 
 // static
 bool CrossOriginReadBlocking::ResponseAnalyzer::HasNoSniff(
-    const ResourceResponseInfo& response) {
+    const network::mojom::URLResponseHead& response) {
   if (!response.headers)
     return false;
   std::string nosniff_header;
@@ -850,7 +850,7 @@ bool CrossOriginReadBlocking::ResponseAnalyzer::HasNoSniff(
 
 // static
 bool CrossOriginReadBlocking::ResponseAnalyzer::SeemsSensitiveFromCORSHeuristic(
-    const ResourceResponseInfo& response) {
+    const network::mojom::URLResponseHead& response) {
   // Check if the response has an Access-Control-Allow-Origin with a value other
   // than "*" or "null" ("null" offers no more protection than "*" because it
   // matches any unique origin).
@@ -868,7 +868,8 @@ bool CrossOriginReadBlocking::ResponseAnalyzer::SeemsSensitiveFromCORSHeuristic(
 
 // static
 bool CrossOriginReadBlocking::ResponseAnalyzer::
-    SeemsSensitiveFromCacheHeuristic(const ResourceResponseInfo& response) {
+    SeemsSensitiveFromCacheHeuristic(
+        const network::mojom::URLResponseHead& response) {
   // Check if the response has both Vary: Origin and Cache-Control: Private
   // headers, which we take as a signal that it may be a sensitive resource. We
   // require both to reduce the number of false positives (as both headers are
@@ -884,7 +885,7 @@ bool CrossOriginReadBlocking::ResponseAnalyzer::
 
 // static
 bool CrossOriginReadBlocking::ResponseAnalyzer::SupportsRangeRequests(
-    const ResourceResponseInfo& response) {
+    const network::mojom::URLResponseHead& response) {
   if (response.headers) {
     std::string value;
     response.headers->GetNormalizedHeader("accept-ranges", &value);
@@ -898,7 +899,7 @@ bool CrossOriginReadBlocking::ResponseAnalyzer::SupportsRangeRequests(
 // static
 CrossOriginReadBlocking::ResponseAnalyzer::MimeTypeBucket
 CrossOriginReadBlocking::ResponseAnalyzer::GetMimeTypeBucket(
-    const ResourceResponseInfo& response) {
+    const network::mojom::URLResponseHead& response) {
   std::string mime_type;
   if (response.headers)
     response.headers->GetMimeType(&mime_type);

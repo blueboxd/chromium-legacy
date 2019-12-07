@@ -52,6 +52,7 @@ source_set("test_support") {
   deps = [
     ":heap_profiling",
     "//base",
+    "//base/test:test_support",
     "//components/services/heap_profiling/public/cpp",
     "//content/public/browser",
     "//content/public/common",

@@ -183,7 +183,7 @@ void SandboxPrioritizedOriginDatabase::MaybeMigrateDatabase(
       base::FilePath to_path = file_system_directory_.Append(kPrimaryDirectory);
 
       if (base::PathExists(to_path))
-        base::DeleteFile(to_path, true /* recursive */);
+        base::DeleteFileRecursively(to_path);
       base::Move(from_path, to_path);
     }
 

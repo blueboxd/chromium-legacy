@@ -55,7 +55,7 @@ class WebAppIconManagerTest : public WebAppTest {
 
     for (size_t i = 0; i < sizes_px.size(); ++i) {
       std::string icon_name = base::StringPrintf("app-%d.ico", sizes_px[i]);
-      AddGeneratedIcon(web_app_info.get(), sizes_px[i], colors[i]);
+      AddGeneratedIcon(&web_app_info->icon_bitmaps, sizes_px[i], colors[i]);
     }
 
     base::RunLoop run_loop;
@@ -142,6 +142,34 @@ TEST_F(WebAppIconManagerTest, WriteAndReadIcon) {
           EXPECT_EQ(colors[0], bitmap.getColor(0, 0));
           run_loop.Quit();
         }));
+
+    run_loop.Run();
+  }
+}
+
+TEST_F(WebAppIconManagerTest, ReadAllIcons) {
+  auto web_app = CreateWebApp();
+  const AppId app_id = web_app->app_id();
+
+  const std::vector<int> sizes_px{icon_size::k256, icon_size::k512};
+  const std::vector<SkColor> colors{SK_ColorGREEN, SK_ColorYELLOW};
+  WriteIcons(app_id, sizes_px, colors);
+
+  web_app->SetDownloadedIconSizes(sizes_px);
+
+  controller().RegisterApp(std::move(web_app));
+  {
+    base::RunLoop run_loop;
+
+    icon_manager().ReadAllIcons(
+        app_id,
+        base::BindLambdaForTesting(
+            [&](std::map<SquareSizePx, SkBitmap> icons_map) {
+              EXPECT_EQ(2u, icons_map.size());
+              EXPECT_EQ(colors[0], icons_map[sizes_px[0]].getColor(0, 0));
+              EXPECT_EQ(colors[1], icons_map[sizes_px[1]].getColor(0, 0));
+              run_loop.Quit();
+            }));
 
     run_loop.Run();
   }

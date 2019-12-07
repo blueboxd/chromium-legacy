@@ -1445,7 +1445,7 @@ TEST_F(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
   std::unique_ptr<TestWebContents> web_contents(
       TestWebContents::Create(browser_context(), instance));
 
-  EXPECT_TRUE(instance->GetSiteURL().SchemeIs(kGuestScheme));
+  EXPECT_TRUE(instance->IsGuest());
 
   RenderFrameHostManager* manager = web_contents->GetRenderManagerForTesting();
 

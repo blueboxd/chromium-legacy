@@ -152,7 +152,7 @@ void PrefetchURLLoader::OnReceiveResponse(
     DCHECK(!signed_exchange_prefetch_handler_);
     if (prefetched_signed_exchange_cache_adapter_) {
       prefetched_signed_exchange_cache_adapter_->OnReceiveOuterResponse(
-          response);
+          response.Clone());
     }
     // Note that after this point this doesn't directly get upcalls from the
     // network. (Until |this| calls the handler's FollowRedirect.)
@@ -183,7 +183,8 @@ void PrefetchURLLoader::OnReceiveResponse(
 
   if (prefetched_signed_exchange_cache_adapter_ &&
       signed_exchange_prefetch_handler_) {
-    prefetched_signed_exchange_cache_adapter_->OnReceiveInnerResponse(response);
+    prefetched_signed_exchange_cache_adapter_->OnReceiveInnerResponse(
+        response.Clone());
   }
 
   forwarding_client_->OnReceiveResponse(std::move(response));

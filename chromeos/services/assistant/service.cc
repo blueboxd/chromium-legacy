@@ -343,6 +343,14 @@ void Service::UpdateAssistantManagerState() {
       break;
     case AssistantManagerService::State::STARTING:
     case AssistantManagerService::State::STARTED:
+      // If the Assistant is disabled by domain policy, the libassistant will
+      // never becomes ready. Stop waiting for the state change and stop the
+      // service.
+      if (assistant_state_.allowed_state() ==
+          ash::mojom::AssistantAllowedState::DISALLOWED_BY_POLICY) {
+        StopAssistantManagerService();
+        return;
+      }
       // Wait if |assistant_manager_service_| is not at a stable state.
       update_assistant_manager_callback_.Cancel();
       update_assistant_manager_callback_.Reset(

@@ -19,8 +19,6 @@ class UTF16CharIterator;
 }
 }  // namespace base
 
-namespace string_matching {
-
 // An UTF16 char iterator for a TokenizedString.
 class TokenizedStringCharIterator {
  public:
@@ -74,7 +72,5 @@ class TokenizedStringCharIterator {
 
   DISALLOW_COPY_AND_ASSIGN(TokenizedStringCharIterator);
 };
-
-}  // namespace string_matching
 
 #endif  // CHROME_COMMON_STRING_MATCHING_TOKENIZED_STRING_CHAR_ITERATOR_H_

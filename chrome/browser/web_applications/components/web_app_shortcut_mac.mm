@@ -895,7 +895,7 @@ void WebAppShortcutCreator::CreateShortcutsAt(
     }
 
     // Delete any old copies that may exist.
-    base::DeleteFile(dst_app_path, true);
+    base::DeleteFileRecursively(dst_app_path);
 
     // Copy the bundle to |dst_app_path|.
     if (!base::CopyDirectory(staging_path, dst_app_path, true)) {
@@ -1220,7 +1220,7 @@ void DeletePlatformShortcuts(const base::FilePath& app_data_path,
                                                     shortcut_info.profile_path);
   auto bundle_infos = SearchForBundlesById(bundle_id);
   for (const auto& bundle_info : bundle_infos)
-    base::DeleteFile(bundle_info.bundle_path(), true /* recursive */);
+    base::DeleteFileRecursively(bundle_info.bundle_path());
 }
 
 void DeleteMultiProfileShortcutsForApp(const std::string& app_id) {
@@ -1229,7 +1229,7 @@ void DeleteMultiProfileShortcutsForApp(const std::string& app_id) {
   const std::string bundle_id = GetBundleIdentifier(app_id);
   auto bundle_infos = SearchForBundlesById(bundle_id);
   for (const auto& bundle_info : bundle_infos) {
-    base::DeleteFile(bundle_info.bundle_path(), true /* recursive */);
+    base::DeleteFileRecursively(bundle_info.bundle_path());
   }
 }
 
@@ -1261,7 +1261,7 @@ void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
       continue;
     if (!info.IsForProfile(profile_path))
       continue;
-    base::DeleteFile(info.bundle_path(), true /* recursive */);
+    base::DeleteFileRecursively(info.bundle_path());
   }
 }
 

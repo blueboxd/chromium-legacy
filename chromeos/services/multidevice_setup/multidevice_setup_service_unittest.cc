@@ -21,11 +21,9 @@
 #include "chromeos/services/multidevice_setup/public/cpp/fake_auth_token_validator.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup.h"
 #include "chromeos/services/multidevice_setup/public/cpp/oobe_completion_tracker.h"
-#include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -141,22 +139,16 @@ class MultiDeviceSetupServiceTest : public testing::Test {
         fake_multidevice_setup_factory_.get());
 
     service_ = std::make_unique<MultiDeviceSetupService>(
-        connector_factory_.RegisterInstance(mojom::kServiceName),
         test_pref_service_.get(), fake_device_sync_client_.get(),
         fake_auth_token_validator_.get(), fake_oobe_completion_tracker_.get(),
         fake_android_sms_app_helper_delegate_.get(),
         fake_android_sms_pairing_state_tracker_.get(),
         fake_gcm_device_info_provider_.get());
 
-    auto* connector = connector_factory_.GetDefaultConnector();
-    connector->Connect(mojom::kServiceName,
-                       multidevice_setup_remote_.BindNewPipeAndPassReceiver());
-    multidevice_setup_remote_.FlushForTesting();
-
-    connector->Connect(
-        mojom::kServiceName,
+    service_->BindMultiDeviceSetup(
+        multidevice_setup_remote_.BindNewPipeAndPassReceiver());
+    service_->BindPrivilegedHostDeviceSetter(
         privileged_host_device_setter_remote_.BindNewPipeAndPassReceiver());
-    privileged_host_device_setter_remote_.FlushForTesting();
   }
 
   void TearDown() override {
@@ -222,7 +214,6 @@ class MultiDeviceSetupServiceTest : public testing::Test {
 
   std::unique_ptr<FakeMultiDeviceSetupFactory> fake_multidevice_setup_factory_;
 
-  service_manager::TestConnectorFactory connector_factory_;
   std::unique_ptr<MultiDeviceSetupService> service_;
   base::Optional<bool> last_debug_event_success_;
 

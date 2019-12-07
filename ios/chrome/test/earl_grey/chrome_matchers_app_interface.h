@@ -402,6 +402,12 @@
 // smaller than the scroll view bounds.
 + (id<GREYMatcher>)contentViewSmallerThanScrollView;
 
+// Returns a matcher for the infobar asking to save a credit card locally.
++ (id<GREYMatcher>)autofillSaveCardLocallyInfobar;
+
+// Returns a matcher for the infobar asking to upload a credit card.
++ (id<GREYMatcher>)autofillUploadCardInfobar;
+
 #pragma mark - Manual Fallback
 
 // Returns a matcher for the scroll view in keyboard accessory bar.

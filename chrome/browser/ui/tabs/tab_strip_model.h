@@ -667,8 +667,7 @@ class TabStripModel : public TabGroupController {
   // TabGroupController:
   void CreateTabGroup(TabGroupId group) override;
   void ChangeTabGroupContents(TabGroupId group) override;
-  void ChangeTabGroupVisuals(TabGroupId group,
-                             TabGroupVisualData* visual_data) override;
+  void ChangeTabGroupVisuals(TabGroupId group) override;
   void CloseTabGroup(TabGroupId group) override;
   // The same as count(), but overridden for TabGroup to access.
   int GetTabCount() const override;

@@ -1663,7 +1663,7 @@ HTMLDataListElement* HTMLInputElement::DataList() const {
   if (!input_type_->ShouldRespectListAttribute())
     return nullptr;
 
-  return ToHTMLDataListElementOrNull(
+  return DynamicTo<HTMLDataListElement>(
       GetTreeScope().getElementById(FastGetAttribute(html_names::kListAttr)));
 }
 

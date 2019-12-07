@@ -17,8 +17,12 @@
 namespace content {
 namespace responsiveness {
 
-Watcher::Metadata::Metadata(const void* identifier) : identifier(identifier) {}
-
+Watcher::Metadata::Metadata(const void* identifier,
+                            bool was_blocked_or_low_priority,
+                            base::TimeTicks execution_start_time)
+    : identifier(identifier),
+      was_blocked_or_low_priority(was_blocked_or_low_priority),
+      execution_start_time(execution_start_time) {}
 
 std::unique_ptr<Calculator> Watcher::CreateCalculator() {
   return std::make_unique<Calculator>();
@@ -28,10 +32,12 @@ std::unique_ptr<MetricSource> Watcher::CreateMetricSource() {
   return std::make_unique<MetricSource>(this);
 }
 
-void Watcher::WillRunTaskOnUIThread(const base::PendingTask* task) {
+void Watcher::WillRunTaskOnUIThread(const base::PendingTask* task,
+                                    bool was_blocked_or_low_priority) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  WillRunTask(task, &currently_running_metadata_ui_);
+  WillRunTask(task, was_blocked_or_low_priority,
+              &currently_running_metadata_ui_);
 }
 
 void Watcher::DidRunTaskOnUIThread(const base::PendingTask* task) {
@@ -47,10 +53,12 @@ void Watcher::DidRunTaskOnUIThread(const base::PendingTask* task) {
              &mismatched_task_identifiers_ui_, std::move(callback));
 }
 
-void Watcher::WillRunTaskOnIOThread(const base::PendingTask* task) {
+void Watcher::WillRunTaskOnIOThread(const base::PendingTask* task,
+                                    bool was_blocked_or_low_priority) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  WillRunTask(task, &currently_running_metadata_io_);
+  WillRunTask(task, was_blocked_or_low_priority,
+              &currently_running_metadata_io_);
 }
 
 void Watcher::DidRunTaskOnIOThread(const base::PendingTask* task) {
@@ -66,15 +74,16 @@ void Watcher::DidRunTaskOnIOThread(const base::PendingTask* task) {
 }
 
 void Watcher::WillRunTask(const base::PendingTask* task,
+                          bool was_blocked_or_low_priority,
                           std::vector<Metadata>* currently_running_metadata) {
   // Reentrancy should be rare.
   if (UNLIKELY(!currently_running_metadata->empty())) {
     currently_running_metadata->back().caused_reentrancy = true;
   }
 
-  currently_running_metadata->emplace_back(task);
-  currently_running_metadata->back().execution_start_time =
-      base::TimeTicks::Now();
+  const base::TimeTicks execution_start_time = base::TimeTicks::Now();
+  currently_running_metadata->emplace_back(task, was_blocked_or_low_priority,
+                                           execution_start_time);
 }
 
 void Watcher::DidRunTask(const base::PendingTask* task,
@@ -99,18 +108,40 @@ void Watcher::DidRunTask(const base::PendingTask* task,
     return;
   }
 
-  bool caused_reentrancy = currently_running_metadata->back().caused_reentrancy;
-  base::TimeTicks execution_start_time =
-      currently_running_metadata->back().execution_start_time;
+  const Metadata metadata = currently_running_metadata->back();
   currently_running_metadata->pop_back();
 
   // Ignore tasks that caused reentrancy, since their execution latency will
   // be very large, but Chrome was still responsive.
-  if (UNLIKELY(caused_reentrancy))
+  if (UNLIKELY(metadata.caused_reentrancy))
     return;
 
-  DCHECK(!execution_start_time.is_null());
-  std::move(callback).Run(execution_start_time, base::TimeTicks::Now());
+  // Immediate tasks which were posted before the MessageLoopObserver was
+  // created will not have a queue_time nor a delayed run time, and should be
+  // ignored.
+  if (UNLIKELY(task->queue_time.is_null()) &&
+      UNLIKELY(task->delayed_run_time.is_null())) {
+    return;
+  }
+
+  // For delayed tasks and tasks that were blocked or low priority, pretend that
+  // the queuing duration is zero. It is normal to have long queueing time for
+  // these tasks, so it shouldn't be used to measure jank.
+  const bool is_delayed_task = !task->delayed_run_time.is_null();
+  const base::TimeTicks queue_time =
+      is_delayed_task || metadata.was_blocked_or_low_priority
+          ? metadata.execution_start_time
+          : task->queue_time;
+  const base::TimeTicks execution_finish_time = base::TimeTicks::Now();
+
+  DCHECK(!queue_time.is_null());
+  DCHECK(!metadata.execution_start_time.is_null());
+  DCHECK(!execution_finish_time.is_null());
+  DCHECK_LE(queue_time, metadata.execution_start_time);
+  DCHECK_LE(metadata.execution_start_time, execution_finish_time);
+
+  std::move(callback).Run(queue_time, metadata.execution_start_time,
+                          execution_finish_time);
 }
 
 void Watcher::WillRunEventOnUIThread(const void* opaque_identifier) {
@@ -120,9 +151,10 @@ void Watcher::WillRunEventOnUIThread(const void* opaque_identifier) {
     currently_running_metadata_ui_.back().caused_reentrancy = true;
   }
 
-  currently_running_metadata_ui_.emplace_back(opaque_identifier);
-  currently_running_metadata_ui_.back().execution_start_time =
-      base::TimeTicks::Now();
+  const base::TimeTicks execution_start_time = base::TimeTicks::Now();
+  currently_running_metadata_ui_.emplace_back(
+      opaque_identifier, /* was_blocked_or_low_priority= */ false,
+      execution_start_time);
 }
 
 void Watcher::DidRunEventOnUIThread(const void* opaque_identifier) {
@@ -145,9 +177,9 @@ void Watcher::DidRunEventOnUIThread(const void* opaque_identifier) {
     return;
   }
 
-  bool caused_reentrancy =
+  const bool caused_reentrancy =
       currently_running_metadata_ui_.back().caused_reentrancy;
-  base::TimeTicks execution_start_time =
+  const base::TimeTicks execution_start_time =
       currently_running_metadata_ui_.back().execution_start_time;
   currently_running_metadata_ui_.pop_back();
 
@@ -156,8 +188,10 @@ void Watcher::DidRunEventOnUIThread(const void* opaque_identifier) {
   if (UNLIKELY(caused_reentrancy))
     return;
 
-  calculator_->TaskOrEventFinishedOnUIThread(execution_start_time,
-                                             base::TimeTicks::Now());
+  const base::TimeTicks queue_time = execution_start_time;
+  const base::TimeTicks execution_finish_time = base::TimeTicks::Now();
+  calculator_->TaskOrEventFinishedOnUIThread(queue_time, execution_start_time,
+                                             execution_finish_time);
 }
 
 Watcher::Watcher() = default;

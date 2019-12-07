@@ -4,7 +4,6 @@
 
 #include "chrome/browser/media/router/providers/openscreen/platform/chrome_udp_socket.h"
 
-#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -21,10 +20,9 @@
 // Open Screen expects us to provide linked implementations of some of its
 // static create methods, which have to be in their namespace.
 namespace openscreen {
-namespace platform {
 
 // static
-ErrorOr<UdpSocketUniquePtr> UdpSocket::Create(
+ErrorOr<std::unique_ptr<UdpSocket>> UdpSocket::Create(
     TaskRunner* task_runner,
     Client* client,
     const IPEndpoint& local_endpoint) {
@@ -43,13 +41,12 @@ ErrorOr<UdpSocketUniquePtr> UdpSocket::Create(
   network_context->CreateUDPSocket(socket.BindNewPipeAndPassReceiver(),
                                    std::move(listener_remote));
 
-  return ErrorOr<UdpSocketUniquePtr>(
+  return ErrorOr<std::unique_ptr<UdpSocket>>(
       std::make_unique<media_router::ChromeUdpSocket>(
           client, local_endpoint, std::move(socket),
           std::move(pending_listener)));
 }
 
-}  // namespace platform
 }  // namespace openscreen
 
 namespace media_router {
@@ -59,9 +56,7 @@ namespace {
 using openscreen::Error;
 using openscreen::IPAddress;
 using openscreen::IPEndpoint;
-using openscreen::platform::TaskRunner;
-using openscreen::platform::UdpPacket;
-using openscreen::platform::UdpSocket;
+using openscreen::UdpPacket;
 
 constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("open_screen_message", R"(
@@ -126,13 +121,13 @@ void ChromeUdpSocket::Bind() {
 // mojom::UDPSocket doesn't have a concept of network interface indices, so
 // this is a noop.
 void ChromeUdpSocket::SetMulticastOutboundInterface(
-    openscreen::platform::NetworkInterfaceIndex ifindex) {}
+    openscreen::NetworkInterfaceIndex ifindex) {}
 
 // mojom::UDPSocket doesn't have a concept of network interface indices, so
 // the ifindex argument is ignored here.
 void ChromeUdpSocket::JoinMulticastGroup(
     const IPAddress& address,
-    openscreen::platform::NetworkInterfaceIndex ifindex) {
+    openscreen::NetworkInterfaceIndex ifindex) {
   const auto join_address = network_util::ToChromeNetAddress(address);
   udp_socket_->JoinGroup(join_address,
                          base::BindOnce(&ChromeUdpSocket::JoinGroupCallback,
@@ -154,8 +149,7 @@ void ChromeUdpSocket::SendMessage(const void* data,
 }
 
 // mojom::UDPSocket doesn't have a concept of DSCP, so this is a noop.
-void ChromeUdpSocket::SetDscp(openscreen::platform::UdpSocket::DscpMode state) {
-}
+void ChromeUdpSocket::SetDscp(openscreen::UdpSocket::DscpMode state) {}
 
 void ChromeUdpSocket::OnReceived(
     int32_t net_result,
@@ -168,11 +162,7 @@ void ChromeUdpSocket::OnReceived(
   if (net_result != net::OK) {
     client_->OnRead(this, Error::Code::kSocketReadFailure);
   } else if (data) {
-    // TODO(jophba): fixup when UdpPacket provides a data copy constructor.
-    UdpPacket packet;
-    packet.reserve(data.value().size_bytes());
-    std::copy(data.value().begin(), data.value().end(),
-              std::back_inserter(packet));
+    UdpPacket packet(data->begin(), data->end());
     packet.set_socket(this);
     if (source_endpoint) {
       packet.set_source(

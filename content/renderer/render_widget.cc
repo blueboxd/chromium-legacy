@@ -812,10 +812,7 @@ void RenderWidget::OnUpdateVisualProperties(
                       visual_properties.max_size_for_auto_resize,
                       visual_properties.screen_info.device_scale_factor);
 
-    browser_controls_shrink_blink_size_ =
-        visual_properties.browser_controls_shrink_blink_size;
-    top_controls_height_ = visual_properties.top_controls_height;
-    bottom_controls_height_ = visual_properties.bottom_controls_height;
+    browser_controls_params_ = visual_properties.browser_controls_params;
   }
 
   if (for_frame()) {
@@ -840,10 +837,8 @@ void RenderWidget::OnUpdateVisualProperties(
     }
   }
 
-  layer_tree_host_->SetBrowserControlsHeight(
-      visual_properties.top_controls_height,
-      visual_properties.bottom_controls_height,
-      visual_properties.browser_controls_shrink_blink_size);
+  layer_tree_host_->SetBrowserControlsParams(
+      visual_properties.browser_controls_params);
 
   if (!auto_resize_mode_) {
     if (visual_properties.is_fullscreen_granted != is_fullscreen_granted_) {
@@ -1740,9 +1735,8 @@ void RenderWidget::ResizeWebWidget() {
     // When associated with a RenderView, the RenderView is in control of the
     // main frame's size, because it includes other factors for top and bottom
     // controls.
-    delegate()->ResizeWebWidgetForWidget(size_for_blink, top_controls_height_,
-                                         bottom_controls_height_,
-                                         browser_controls_shrink_blink_size_);
+    delegate()->ResizeWebWidgetForWidget(size_for_blink,
+                                         browser_controls_params_);
 
     RenderFrameImpl* render_frame =
         RenderFrameImpl::FromWebFrame(GetFrameWidget()->LocalRoot());
@@ -3678,11 +3672,8 @@ void RenderWidget::SetBrowserControlsShownRatio(float top_ratio,
   layer_tree_host_->SetBrowserControlsShownRatio(top_ratio, bottom_ratio);
 }
 
-void RenderWidget::SetBrowserControlsHeight(float top_height,
-                                            float bottom_height,
-                                            bool shrink_viewport) {
-  layer_tree_host_->SetBrowserControlsHeight(top_height, bottom_height,
-                                             shrink_viewport);
+void RenderWidget::SetBrowserControlsParams(cc::BrowserControlsParams params) {
+  layer_tree_host_->SetBrowserControlsParams(params);
 }
 
 viz::FrameSinkId RenderWidget::GetFrameSinkId() {

@@ -4,7 +4,7 @@
 
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 
-#include <xdg-shell-unstable-v5-client-protocol.h>
+#include <xdg-shell-client-protocol.h>
 #include <xdg-shell-unstable-v6-client-protocol.h>
 #include <memory>
 
@@ -28,8 +28,6 @@
 #include "ui/ozone/platform/wayland/host/wayland_shm.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/ozone/platform/wayland/host/wayland_zwp_linux_dmabuf.h"
-
-static_assert(XDG_SHELL_VERSION_CURRENT == 5, "Unsupported xdg-shell version");
 
 namespace ui {
 
@@ -90,7 +88,7 @@ bool WaylandConnection::Initialize() {
     return false;
   }
   if (!shell_v6_ && !shell_) {
-    LOG(ERROR) << "No xdg_shell object";
+    LOG(ERROR) << "No Wayland shell found";
     return false;
   }
 
@@ -272,7 +270,7 @@ void WaylandConnection::Global(void* data,
       &WaylandConnection::Capabilities,
       &WaylandConnection::Name,
   };
-  static const xdg_shell_listener shell_listener = {
+  static const xdg_wm_base_listener shell_listener = {
       &WaylandConnection::Ping,
   };
   static const zxdg_shell_v6_listener shell_v6_listener = {
@@ -311,23 +309,21 @@ void WaylandConnection::Global(void* data,
     connection->shell_v6_ = wl::Bind<zxdg_shell_v6>(
         registry, name, std::min(version, kMaxXdgShellVersion));
     if (!connection->shell_v6_) {
-      LOG(ERROR) << "Failed to  bind to zxdg_shell_v6 global";
+      LOG(ERROR) << "Failed to bind to zxdg_shell_v6 global";
       return;
     }
     zxdg_shell_v6_add_listener(connection->shell_v6_.get(), &shell_v6_listener,
                                connection);
   } else if (!connection->shell_v6_ && !connection->shell_ &&
-             strcmp(interface, "xdg_shell") == 0) {
-    connection->shell_ = wl::Bind<xdg_shell>(
+             strcmp(interface, "xdg_wm_base") == 0) {
+    connection->shell_ = wl::Bind<xdg_wm_base>(
         registry, name, std::min(version, kMaxXdgShellVersion));
     if (!connection->shell_) {
-      LOG(ERROR) << "Failed to  bind to xdg_shell global";
+      LOG(ERROR) << "Failed to bind to xdg_wm_base global";
       return;
     }
-    xdg_shell_add_listener(connection->shell_.get(), &shell_listener,
-                           connection);
-    xdg_shell_use_unstable_version(connection->shell_.get(),
-                                   XDG_SHELL_VERSION_CURRENT);
+    xdg_wm_base_add_listener(connection->shell_.get(), &shell_listener,
+                             connection);
   } else if (base::EqualsCaseInsensitiveASCII(interface, "wl_output")) {
     if (version < kMinWlOutputVersion) {
       LOG(ERROR)
@@ -485,9 +481,9 @@ void WaylandConnection::PingV6(void* data,
 }
 
 // static
-void WaylandConnection::Ping(void* data, xdg_shell* shell, uint32_t serial) {
+void WaylandConnection::Ping(void* data, xdg_wm_base* shell, uint32_t serial) {
   WaylandConnection* connection = static_cast<WaylandConnection*>(data);
-  xdg_shell_pong(shell, serial);
+  xdg_wm_base_pong(shell, serial);
   connection->ScheduleFlush();
 }
 

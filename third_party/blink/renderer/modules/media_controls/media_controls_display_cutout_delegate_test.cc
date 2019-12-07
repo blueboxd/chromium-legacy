@@ -59,8 +59,7 @@ class MediaControlsDisplayCutoutDelegateTest
 
   void SimulateEnterFullscreen() {
     {
-      std::unique_ptr<UserGestureIndicator> gesture =
-          LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+      LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
       Fullscreen::RequestFullscreen(GetVideoElement());
     }
 

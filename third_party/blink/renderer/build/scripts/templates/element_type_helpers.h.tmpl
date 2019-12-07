@@ -14,42 +14,14 @@ namespace blink {
 // Type checking.
 {% for tag in tags|sort if not tag.multipleTagNames and not tag.noTypeHelpers %}
 class {{tag.interface}};
-// Catch unnecessary runtime check of type known at compile time.
-void Is{{tag.interface}}(const {{tag.interface}}&);
-void Is{{tag.interface}}(const {{tag.interface}}*);
-
-inline bool Is{{tag.interface}}(const {{namespace}}Element& element) {
-  {% if tag.runtimeEnabled %}
-  if (!RuntimeEnabledFeatures::{{tag.runtimeEnabled}}Enabled())
-    return false;
-  {% endif %}
-  return element.HasTagName({{cpp_namespace}}::{{tag|symbol}}Tag);
-}
-inline bool Is{{tag.interface}}(const {{namespace}}Element* element) {
-  return element && Is{{tag.interface}}(*element);
-}
-inline bool Is{{tag.interface}}(const Node& node) {
-  return node.Is{{namespace}}Element() && Is{{tag.interface}}(To<{{namespace}}Element>(node));
-}
-inline bool Is{{tag.interface}}(const Node* node) {
-  return node && Is{{tag.interface}}(*node);
-}
 template <>
 inline bool IsElementOfType<const {{tag.interface}}>(const Node& node) {
-  return Is{{tag.interface}}(node);
+  return IsA<{{tag.interface}}>(node);
 }
 template <>
 inline bool IsElementOfType<const {{tag.interface}}>(const {{namespace}}Element& element) {
-  return Is{{tag.interface}}(element);
+  return IsA<{{tag.interface}}>(element);
 }
-
-{% endfor %}
-// Using macros because the types are forward-declared and we don't want to use
-// reinterpret_cast in the casting functions above. reinterpret_cast would be
-// unsafe due to multiple inheritence.
-
-// TODO(abhijeet@igalia.com): Remove below type casting macros.
-{% for tag in tags|sort if not tag.multipleTagNames and not tag.noTypeHelpers %}
 template <>
 struct DowncastTraits<{{tag.interface}}> {
   static bool AllowFrom(const Element& element) {
@@ -63,8 +35,6 @@ struct DowncastTraits<{{tag.interface}}> {
     return node.Is{{namespace}}Element() && IsA<{{tag.interface}}>(To<{{namespace}}Element>(node));
   }
 };
-#define To{{tag.interface}}(x) blink::To<blink::{{tag.interface}}>(x)
-#define To{{tag.interface}}OrNull(x) blink::DynamicTo<blink::{{tag.interface}}>(x)
 
 {% endfor %}
 

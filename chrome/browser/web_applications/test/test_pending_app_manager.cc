@@ -24,7 +24,7 @@ TestPendingAppManager::TestPendingAppManager(TestAppRegistrar* registrar)
       deduped_uninstall_count_(0),
       registrar_(registrar) {
   // TODO(crbug.com/973324): Wire this up to a TestInstallFinalizer.
-  SetSubsystems(registrar, nullptr, nullptr, nullptr);
+  SetSubsystems(registrar, nullptr, nullptr, nullptr, nullptr);
 }
 
 TestPendingAppManager::~TestPendingAppManager() = default;

@@ -49,9 +49,8 @@ PrefetchedSignedExchangeCacheAdapter::~PrefetchedSignedExchangeCacheAdapter() {
 }
 
 void PrefetchedSignedExchangeCacheAdapter::OnReceiveOuterResponse(
-    const network::ResourceResponseHead& response) {
-  cached_exchange_->SetOuterResponse(
-      std::make_unique<network::ResourceResponseHead>(response));
+    network::mojom::URLResponseHeadPtr response) {
+  cached_exchange_->SetOuterResponse(std::move(response));
 }
 
 void PrefetchedSignedExchangeCacheAdapter::OnReceiveRedirect(
@@ -67,12 +66,10 @@ void PrefetchedSignedExchangeCacheAdapter::OnReceiveRedirect(
 }
 
 void PrefetchedSignedExchangeCacheAdapter::OnReceiveInnerResponse(
-    const network::ResourceResponseHead& response) {
-  std::unique_ptr<network::ResourceResponseHead> inner_response =
-      std::make_unique<network::ResourceResponseHead>(response);
-  inner_response->was_fetched_via_cache = true;
-  inner_response->was_in_prefetch_cache = true;
-  cached_exchange_->SetInnerResponse(std::move(inner_response));
+    network::mojom::URLResponseHeadPtr response) {
+  response->was_fetched_via_cache = true;
+  response->was_in_prefetch_cache = true;
+  cached_exchange_->SetInnerResponse(std::move(response));
 }
 
 void PrefetchedSignedExchangeCacheAdapter::OnStartLoadingResponseBody(

@@ -62,14 +62,30 @@
     // feature with the Origin Trials framework. The framework allows the
     // feature to be enabled at runtime on a per-page basis through a signed
     // token for the corresponding feature name. Declaring the
-    // origin_trial_feature_name will cause a static method to be generated in
-    // origin_trials.h/cpp. This static method allows the feature implementation
-    // to check if it is enabled for the current context.
+    // origin_trial_feature_name will modify the generation of the static
+    // methods in runtime_enabled_features.h/cpp. The static method then allows
+    // the feature implementation to check if the trial is enabled for the
+    // current context.
     origin_trial_feature_name: {
     },
+    // origin_trial_os specifies the platforms where the trial is available.
+    // The default is empty, meaning all platforms.
     origin_trial_os: {
       default: [],
       valid_type: "list",
+    },
+    // origin_trial_type specifies the unique type of the trial, when not the
+    // usual trial for a new experimental feature.
+    origin_trial_type: {
+      default: "",
+      valid_type: "str",
+      valid_values: ["deprecation", "intervention", ""],
+    },
+    // origin_trial_allows_insecure specifies whether the trial can be enabled
+    // in an insecure context, with default being false. This can only be set
+    // to true for a "deprecation" type trial.
+    origin_trial_allows_insecure: {
+      valid_type: "bool",
     },
 
     // settable_from_internals specifies whether a feature can be set from
@@ -1164,6 +1180,8 @@
     {
       name: "OriginTrialsSampleAPIDeprecation",
       origin_trial_feature_name: "FrobulateDeprecation",
+      origin_trial_type: "deprecation",
+      origin_trial_allows_insecure: true,
     },
     // As above. Do not change this flag to stable, as it exists solely to
     // generate code used by the origin trials sample API implementation.
@@ -1242,7 +1260,7 @@
     },
     {
       name: "PaymentHandlerHandlesShippingAndContact",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "PaymentMethodChangeEvent",
@@ -1273,9 +1291,7 @@
     },
     {
       name: "PeriodicBackgroundSync",
-      origin_trial_feature_name: "PeriodicBackgroundSync",
-      settable_from_internals: true,
-      status: "test",
+      status: "stable",
     },
     {
       name: "PerMethodCanMakePaymentQuota",

@@ -402,6 +402,9 @@ class RuleBasedHostResolverProc : public HostResolverProc {
   // Simulate a lookup failure for |host| (it also can be a pattern).
   void AddSimulatedFailure(const std::string& host);
 
+  // Simulate a lookup timeout failure for |host| (it also can be a pattern).
+  void AddSimulatedTimeoutFailure(const std::string& host);
+
   // Deletes all the rules that have been added.
   void ClearRules();
 
@@ -420,6 +423,7 @@ class RuleBasedHostResolverProc : public HostResolverProc {
   struct Rule {
     enum ResolverType {
       kResolverTypeFail,
+      kResolverTypeFailTimeout,
       // TODO(mmenke): Is it really reasonable for a "mock" host resolver to
       // fall back to the system resolver?
       kResolverTypeSystem,

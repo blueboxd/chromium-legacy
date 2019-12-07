@@ -318,7 +318,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   void DispatchEventToTarget(
       RenderWidgetHostViewBase* root_view,
       RenderWidgetHostViewBase* target,
-      const blink::WebInputEvent& event,
+      blink::WebInputEvent* event,
       const ui::LatencyInfo& latency,
       const base::Optional<gfx::PointF>& target_location) override;
   // Notify whether the events in the queue are being flushed due to touch ack

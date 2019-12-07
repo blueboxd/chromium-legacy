@@ -110,6 +110,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
 
   void SetCorsFlagIfNeeded();
 
+  // Returns true if request's origin has special access to the destination
+  // URL (via |origin_access_list_| and |factory_bound_origin_access_list_|).
+  bool HasSpecialAccessToDestination() const;
+
   static base::Optional<std::string> GetHeaderString(
       const mojom::URLResponseHead& response,
       const std::string& header_name);

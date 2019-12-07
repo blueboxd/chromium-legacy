@@ -12,6 +12,8 @@
 #include "ash/session/test_session_controller_client.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/ash_test_helper.h"
+#include "ash/test_shell_delegate.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -19,11 +21,8 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/token.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup.h"
-#include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/mojom/connector.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/fake_message_center.h"
 #include "ui/message_center/message_center.h"
@@ -102,24 +101,15 @@ class MultiDeviceNotificationPresenterTest : public NoSessionAshTestBase {
 
     test_system_tray_client_ = GetSystemTrayClient();
 
-    mojo::PendingReceiver<service_manager::mojom::Connector> receiver;
-    connector_ = service_manager::Connector::Create(&receiver);
-
     fake_multidevice_setup_ =
         std::make_unique<chromeos::multidevice_setup::FakeMultiDeviceSetup>();
-    service_manager::Connector::TestApi test_api(connector_.get());
-    test_api.OverrideBinderForTesting(
-        service_manager::ServiceFilter::ByNameInGroup(
-            chromeos::multidevice_setup::mojom::kServiceName,
-            kTestServiceInstanceGroup),
-        chromeos::multidevice_setup::mojom::MultiDeviceSetup::Name_,
-        base::BindRepeating(
-            &chromeos::multidevice_setup::FakeMultiDeviceSetup::BindHandle,
-            base::Unretained(fake_multidevice_setup_.get())));
-
     notification_presenter_ =
         std::make_unique<MultiDeviceNotificationPresenter>(
-            &test_message_center_, connector_.get());
+            &test_message_center_);
+    ash_test_helper()->test_shell_delegate()->SetMultiDeviceSetupBinder(
+        base::BindRepeating(
+            &chromeos::multidevice_setup::MultiDeviceSetupBase::BindReceiver,
+            base::Unretained(fake_multidevice_setup_.get())));
   }
 
   void TearDown() override {
@@ -241,7 +231,6 @@ class MultiDeviceNotificationPresenterTest : public NoSessionAshTestBase {
   base::HistogramTester histogram_tester_;
   TestSystemTrayClient* test_system_tray_client_;
   TestMessageCenter test_message_center_;
-  std::unique_ptr<service_manager::Connector> connector_;
   std::unique_ptr<chromeos::multidevice_setup::FakeMultiDeviceSetup>
       fake_multidevice_setup_;
   std::unique_ptr<MultiDeviceNotificationPresenter> notification_presenter_;

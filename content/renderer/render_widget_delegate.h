@@ -74,9 +74,7 @@ class CONTENT_EXPORT RenderWidgetDelegate {
   // happens.
   virtual void ResizeWebWidgetForWidget(
       const gfx::Size& size,
-      float top_controls_height,
-      float bottom_controls_height,
-      bool browser_controls_shrink_blink_size) = 0;
+      cc::BrowserControlsParams browser_controls_params) = 0;
 
   // Called when RenderWidget services RenderWidgetScreenMetricsEmulatorDelegate
   // SetScreenMetricsEmulationParameters().

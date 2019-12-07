@@ -154,10 +154,9 @@ class CORE_EXPORT PointerEventFactory {
       pointer_incoming_id_mapping_;
   PointerIdKeyMap<PointerAttributes> pointer_id_mapping_;
   int primary_id_[static_cast<int>(
-                      WebPointerProperties::PointerType::kLastEntry) +
+                      WebPointerProperties::PointerType::kMaxValue) +
                   1];
-  int id_count_[static_cast<int>(
-                    WebPointerProperties::PointerType::kLastEntry) +
+  int id_count_[static_cast<int>(WebPointerProperties::PointerType::kMaxValue) +
                 1];
 
   PointerIdKeyMap<FloatPoint> pointer_id_last_position_mapping_;

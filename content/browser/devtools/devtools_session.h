@@ -72,7 +72,7 @@ class DevToolsSession : public protocol::FrontendChannel,
   void MojoConnectionDestroyed();
   void DispatchProtocolMessageToAgent(int call_id,
                                       const std::string& method,
-                                      const std::string& message);
+                                      crdtp::span<uint8_t> message);
   void HandleCommand(std::unique_ptr<protocol::DictionaryValue> value,
                      const std::string& message);
   bool DispatchProtocolMessageInternal(
@@ -88,7 +88,7 @@ class DevToolsSession : public protocol::FrontendChannel,
   void flushProtocolNotifications() override;
   void fallThrough(int call_id,
                    const std::string& method,
-                   const std::string& message) override;
+                   crdtp::span<uint8_t> message) override;
 
   // blink::mojom::DevToolsSessionHost implementation.
   void DispatchProtocolResponse(

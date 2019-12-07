@@ -48,8 +48,7 @@ RemoteFrame::RemoteFrame(
             page,
             owner,
             MakeGarbageCollected<RemoteWindowProxyManager>(*this),
-            inheriting_agent_factory),
-      security_context_(MakeGarbageCollected<RemoteSecurityContext>()) {
+            inheriting_agent_factory) {
   dom_window_ = MakeGarbageCollected<RemoteDOMWindow>(*this);
 
   interface_registry->AddAssociatedInterface(WTF::BindRepeating(
@@ -175,8 +174,8 @@ void RemoteFrame::CheckCompleted() {
   Client()->CheckCompleted();
 }
 
-RemoteSecurityContext* RemoteFrame::GetSecurityContext() const {
-  return security_context_.Get();
+const RemoteSecurityContext* RemoteFrame::GetSecurityContext() const {
+  return &security_context_;
 }
 
 bool RemoteFrame::ShouldClose() {
@@ -260,6 +259,18 @@ void RemoteFrame::SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
   ApplyReplicatedFeaturePolicyHeader();
 }
 
+void RemoteFrame::SetReplicatedSandboxFlags(WebSandboxFlags flags) {
+  security_context_.ResetAndEnforceSandboxFlags(flags);
+}
+
+void RemoteFrame::SetInsecureRequestPolicy(WebInsecureRequestPolicy policy) {
+  security_context_.SetInsecureRequestPolicy(policy);
+}
+
+void RemoteFrame::SetInsecureNavigationsSet(const WebVector<unsigned>& set) {
+  security_context_.SetInsecureNavigationsSet(set);
+}
+
 void RemoteFrame::WillEnterFullscreen() {
   // This should only ever be called when the FrameOwner is local.
   HTMLFrameOwnerElement* owner_element = To<HTMLFrameOwnerElement>(Owner());
@@ -282,12 +293,12 @@ void RemoteFrame::WillEnterFullscreen() {
 }
 
 void RemoteFrame::ResetReplicatedContentSecurityPolicy() {
-  GetSecurityContext()->ResetReplicatedContentSecurityPolicy();
+  security_context_.ResetReplicatedContentSecurityPolicy();
 }
 
 void RemoteFrame::EnforceInsecureNavigationsSet(
     const WTF::Vector<uint32_t>& set) {
-  GetSecurityContext()->SetInsecureNavigationsSet(set);
+  security_context_.SetInsecureNavigationsSet(set);
 }
 
 void RemoteFrame::SetReplicatedOrigin(
@@ -296,7 +307,7 @@ void RemoteFrame::SetReplicatedOrigin(
   scoped_refptr<SecurityOrigin> security_origin = origin->IsolatedCopy();
   security_origin->SetOpaqueOriginIsPotentiallyTrustworthy(
       is_potentially_trustworthy_unique_origin);
-  GetSecurityContext()->SetReplicatedOrigin(security_origin);
+  security_context_.SetReplicatedOrigin(security_origin);
   ApplyReplicatedFeaturePolicyHeader();
 
   // If the origin of a remote frame changed, the accessibility object for the
@@ -384,7 +395,7 @@ void RemoteFrame::ApplyReplicatedFeaturePolicyHeader() {
     container_policy = Owner()->GetFramePolicy().container_policy;
   const FeaturePolicy::FeatureState& opener_feature_state =
       OpenerFeatureState();
-  GetSecurityContext()->InitializeFeaturePolicy(
+  security_context_.InitializeFeaturePolicy(
       feature_policy_header_, container_policy, parent_feature_policy,
       opener_feature_state.empty() ? nullptr : &opener_feature_state);
 }

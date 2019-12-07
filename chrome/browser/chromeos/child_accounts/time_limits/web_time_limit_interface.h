@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_TIME_LIMITS_WEB_TIME_LIMIT_INTERFACE_H_
 #define CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_TIME_LIMITS_WEB_TIME_LIMIT_INTERFACE_H_
 
+#include <string>
+
 #include "base/time/time.h"
 
 class Profile;
@@ -25,12 +27,18 @@ class WebTimeLimitInterface {
 
   // Blocks access to Chrome and web apps. Should be called when the daily
   // time limit is reached. Calling it multiple times is safe.
-  virtual void PauseWebActivity() = 0;
+  // |app_id| identifies web application active when limit was reached.
+  // Currently the web time limit is shared between all PWAs and Chrome and all
+  // of them will be paused regardless |app_id|.
+  virtual void PauseWebActivity(const std::string& app_id) = 0;
 
   // Resumes access to Chrome and web apps. Should be called when the daily time
   // limit is lifted. Calling it multiple times is safe. Subsequent calls will
   // be ignored.
-  virtual void ResumeWebActivity() = 0;
+  // |app_id| identifies web application active when limit was reached.
+  // Currently the web time limit is shared between all PWAs and Chrome and all
+  // of them will be resumed regardless |app_id|.
+  virtual void ResumeWebActivity(const std::string& app_id) = 0;
 };
 
 }  // namespace app_time

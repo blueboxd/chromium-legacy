@@ -166,8 +166,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   static RenderProcessHost* CreateRenderProcessHost(
       BrowserContext* browser_context,
       StoragePartitionImpl* storage_partition_impl,
-      SiteInstance* site_instance,
-      bool is_for_guests_only);
+      SiteInstance* site_instance);
 
   ~RenderProcessHostImpl() override;
 

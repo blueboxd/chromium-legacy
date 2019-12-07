@@ -28,6 +28,7 @@ enum class InstallResultCode;
 class InstallFinalizer;
 class AppRegistrar;
 class AppShortcutManager;
+class FileHandlerManager;
 
 // TODO(loyso): Rework this interface. Unify the API and merge similar
 // InstallWebAppZZZZ functions.
@@ -142,6 +143,7 @@ class InstallManager {
 
   void SetSubsystems(AppRegistrar* registrar,
                      AppShortcutManager* shortcut_manager,
+                     FileHandlerManager* file_handler_manager,
                      InstallFinalizer* finalizer);
 
   // Loads |web_app_url| in a new WebContents and determines whether it is
@@ -155,6 +157,7 @@ class InstallManager {
   Profile* profile() { return profile_; }
   AppRegistrar* registrar() { return registrar_; }
   AppShortcutManager* shortcut_manager() { return shortcut_manager_; }
+  FileHandlerManager* file_handler_manager() { return file_handler_manager_; }
   InstallFinalizer* finalizer() { return finalizer_; }
 
  private:
@@ -163,6 +166,7 @@ class InstallManager {
 
   AppRegistrar* registrar_ = nullptr;
   AppShortcutManager* shortcut_manager_ = nullptr;
+  FileHandlerManager* file_handler_manager_ = nullptr;
   InstallFinalizer* finalizer_ = nullptr;
 };
 

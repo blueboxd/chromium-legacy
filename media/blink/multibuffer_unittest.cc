@@ -517,7 +517,7 @@ class ReadHelper {
     read_size_ = std::min(1 + rnd_->Rand() % (max_read_size_ - 1), end_ - pos_);
     if (!Read()) {
       reader_.Wait(read_size_,
-                   base::Bind(&ReadHelper::WaitCB, base::Unretained(this)));
+                   base::BindOnce(&ReadHelper::WaitCB, base::Unretained(this)));
     }
   }
 

@@ -900,32 +900,24 @@ void Performance::ActivateObserver(PerformanceObserver& observer) {
   if (active_observers_.IsEmpty())
     deliver_observations_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 
+  if (suspended_observers_.Contains(&observer))
+    suspended_observers_.erase(&observer);
   active_observers_.insert(&observer);
 }
 
-void Performance::ResumeSuspendedObservers() {
-  if (suspended_observers_.IsEmpty())
+void Performance::SuspendObserver(PerformanceObserver& observer) {
+  DCHECK(!suspended_observers_.Contains(&observer));
+  if (!active_observers_.Contains(&observer))
     return;
-
-  PerformanceObserverVector suspended;
-  CopyToVector(suspended_observers_, suspended);
-  for (wtf_size_t i = 0; i < suspended.size(); ++i) {
-    if (!suspended[i]->ShouldBeSuspended()) {
-      suspended_observers_.erase(suspended[i]);
-      ActivateObserver(*suspended[i]);
-    }
-  }
+  active_observers_.erase(&observer);
+  suspended_observers_.insert(&observer);
 }
 
 void Performance::DeliverObservationsTimerFired(TimerBase*) {
   decltype(active_observers_) observers;
   active_observers_.Swap(observers);
-  for (const auto& observer : observers) {
-    if (observer->ShouldBeSuspended())
-      suspended_observers_.insert(observer);
-    else
-      observer->Deliver();
-  }
+  for (const auto& observer : observers)
+    observer->Deliver();
 }
 
 // static

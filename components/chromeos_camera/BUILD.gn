@@ -164,7 +164,7 @@ if (use_v4l2_codec || use_vaapi) {
       "//base/test:test_support",
       "//media:test_support",
       "//media/gpu:buildflags",
-      "//media/gpu/linux:video_frame_mapper",
+      "//media/gpu/chromeos:video_frame_mapper",
       "//media/gpu/test:helpers",
       "//media/gpu/test:local_gpu_memory_buffer_manager",
       "//media/parsers",

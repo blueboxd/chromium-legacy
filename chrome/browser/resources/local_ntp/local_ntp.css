@@ -218,6 +218,17 @@ body.hide-fakebox #fakebox {
   display: none;
 }
 
+/* The realbox is a "loupe" (.search-icon) by default, but when the selection
+ * ends up on match with a different icon, the realbox also gets that icon.
+ * Example: typing the start of a URL with a favicon or the user pressing
+ * up/down to select matches sets a background-image here and disables the
+ * -webkit-mask applied by .search-icon. */
+#realbox-icon {
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: 24px;
+}
+
 #realbox-matches {
   background-color: var(--search-box-results-bg, white);
   border-radius: 16px;

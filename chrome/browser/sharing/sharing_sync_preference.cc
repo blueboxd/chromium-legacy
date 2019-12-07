@@ -11,6 +11,7 @@
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/sharing/features.h"
+#include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync_device_info/device_info_sync_service.h"
@@ -259,6 +260,32 @@ SharingSyncPreference::GetTargetInfo(const std::string& guid) const {
     return base::nullopt;
 
   return ValueToTargetInfo(*value);
+}
+
+SharingDevicePlatform SharingSyncPreference::GetDevicePlatform(
+    const std::string& guid) const {
+  auto device_info = device_info_tracker_->GetDeviceInfo(guid);
+  if (!device_info)
+    return SharingDevicePlatform::kUnknown;
+
+  switch (device_info->device_type()) {
+    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_CROS:
+      return SharingDevicePlatform::kChromeOS;
+    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_LINUX:
+      return SharingDevicePlatform::kLinux;
+    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_MAC:
+      return SharingDevicePlatform::kMac;
+    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_WIN:
+      return SharingDevicePlatform::kWindows;
+    case sync_pb::SyncEnums_DeviceType_TYPE_PHONE:
+    case sync_pb::SyncEnums_DeviceType_TYPE_TABLET:
+      if (device_info->hardware_info().manufacturer == "Apple Inc.")
+        return SharingDevicePlatform::kIOS;
+      return SharingDevicePlatform::kAndroid;
+    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_UNSET:
+    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_OTHER:
+      return SharingDevicePlatform::kUnknown;
+  }
 }
 
 base::Optional<syncer::DeviceInfo::SharingInfo>

@@ -25,7 +25,6 @@
 #include "net/url_request/url_request_job_factory.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom-forward.h"
 #include "services/network/public/mojom/cors_origin_pattern.mojom-forward.h"
-#include "services/service_manager/public/mojom/service.mojom-forward.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-forward.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom-forward.h"
 
@@ -46,7 +45,6 @@ class InProgressDownloadManager;
 
 namespace service_manager {
 class Connector;
-class Service;
 }  // namespace service_manager
 
 namespace storage {
@@ -143,7 +141,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
                                       const StoragePartitionCallback& callback);
   static void AsyncObliterateStoragePartition(
       BrowserContext* browser_context,
-      const GURL& site,
+      const std::string& partition_domain,
       const base::Closure& on_gc_required);
 
   // This function clears the contents of |active_paths| but does not take
@@ -332,12 +330,6 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
 
   // Returns true if OOR-CORS should be enabled.
   virtual bool ShouldEnableOutOfBlinkCors();
-
-  // Handles a service request for a service expected to run an instance per
-  // BrowserContext.
-  virtual std::unique_ptr<service_manager::Service> HandleServiceRequest(
-      const std::string& service_name,
-      service_manager::mojom::ServiceRequest request);
 
   // Binds a NavigableContentsFactory interface receiver to this browser
   // context.

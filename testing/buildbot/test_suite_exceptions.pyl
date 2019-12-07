@@ -265,6 +265,13 @@
           'shards': 15,
         }
       },
+      'win-asan': {
+        # browser_tests shards were reaching a timeout limit of 60 minutes on win-asan
+	# (https://crbug.com/1031096).
+        'swarming': {
+          'shards': 20,
+        },
+      },
       # client.v8.chromium
       'Linux - Future (dbg)': {
         'swarming': {
@@ -418,6 +425,9 @@
       'Fuchsia x64', # https://crbug.com/961457
       # chromium.fyi
       'android-code-coverage-native', # crbug/1018431
+      'fuchsia-fyi-arm64-rel',  # https://crbug.com/961457
+      'fuchsia-fyi-x64-dbg',  # https://crbug.com/961457
+      'fuchsia-fyi-x64-rel',  # https://crbug.com/961457
     ],
     'modifications': {
       'android-pie-arm64-rel': {
@@ -495,9 +505,6 @@
         # crbug.com/868082
         'args': [
           '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
-          # TODO(https://crbug.com/1007013): Remove this flag when it's no
-          # longer necessary to figure out why the renderer process is crashing.
-          '--no-sandbox',
         ],
       },
       'Win10 Tests x64': {

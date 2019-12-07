@@ -322,9 +322,12 @@ const newTreeElement = (() => {
     if (!isLeaf) {
       const symbolStyle = getIconStyle(data.type[1]);
       icon.setAttribute('fill', symbolStyle.color);
-    } else {
-      const diffstatus = getDiffStatusTemplate(data);
-      link.insertBefore(diffstatus, link.firstElementChild);
+    }
+
+    // Insert an SVG icon at the start of the link to represent adds/removals.
+    const diffStatusIcon = getDiffStatusTemplate(data);
+    if (diffStatusIcon) {
+      link.insertBefore(diffStatusIcon, link.firstElementChild);
     }
 
     // Insert an SVG icon at the start of the link to represent type

@@ -10,11 +10,11 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.junit.Test;
 
+import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.host.storage.CommitResult;
 import org.chromium.chrome.browser.feed.library.api.host.storage.JournalMutation;
 import org.chromium.chrome.browser.feed.library.api.host.storage.JournalStorage;
 import org.chromium.chrome.browser.feed.library.common.Result;
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 import org.chromium.chrome.browser.feed.library.common.testing.RequiredConsumer;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamLocalAction;
 

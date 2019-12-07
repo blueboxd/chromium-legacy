@@ -11,7 +11,7 @@
 #include "net/http/http_response_headers.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/initiator_lock_compatibility.h"
-#include "services/network/public/cpp/resource_response_info.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
@@ -172,7 +172,7 @@ const char CrossOriginResourcePolicy::kHeaderName[] =
 CrossOriginResourcePolicy::VerificationResult CrossOriginResourcePolicy::Verify(
     const GURL& request_url,
     const base::Optional<url::Origin>& request_initiator,
-    const ResourceResponseInfo& response,
+    const network::mojom::URLResponseHead& response,
     mojom::RequestMode request_mode,
     base::Optional<url::Origin> request_initiator_site_lock,
     mojom::CrossOriginEmbedderPolicy embedder_policy) {

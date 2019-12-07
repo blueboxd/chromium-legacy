@@ -382,7 +382,6 @@ std::unique_ptr<BackgroundSyncManager> BackgroundSyncManager::Create(
 
 BackgroundSyncManager::~BackgroundSyncManager() {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-
   service_worker_context_->RemoveObserver(this);
 }
 
@@ -466,6 +465,92 @@ void BackgroundSyncManager::GetPeriodicSyncRegistrations(
     StatusAndRegistrationsCallback callback) {
   GetRegistrations(BackgroundSyncType::PERIODIC, sw_registration_id,
                    std::move(callback));
+}
+
+void BackgroundSyncManager::UnregisterPeriodicSyncForOrigin(
+    const url::Origin& origin) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+
+  auto id = op_scheduler_.CreateId();
+  op_scheduler_.ScheduleOperation(
+      id, CacheStorageSchedulerMode::kExclusive,
+      CacheStorageSchedulerOp::kBackgroundSync,
+      CacheStorageSchedulerPriority::kNormal,
+      base::BindOnce(&BackgroundSyncManager::UnregisterForOriginImpl,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(origin),
+                     MakeEmptyCompletion(id)));
+}
+
+void BackgroundSyncManager::UnregisterForOriginImpl(
+    const url::Origin& origin,
+    base::OnceClosure callback) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+
+  if (disabled_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(callback));
+    return;
+  }
+
+  std::vector<int64_t> service_worker_registrations_affected;
+
+  for (const auto& service_worker_and_registration : active_registrations_) {
+    const auto registrations = service_worker_and_registration.second;
+    if (registrations.origin != origin)
+      continue;
+
+    service_worker_registrations_affected.emplace_back(
+        service_worker_and_registration.first);
+  }
+
+  for (auto service_worker_registration_id :
+       service_worker_registrations_affected) {
+    active_registrations_.erase(service_worker_registration_id);
+  }
+
+  if (service_worker_registrations_affected.empty()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(callback));
+    return;
+  }
+
+  base::RepeatingClosure barrier_closure = base::BarrierClosure(
+      service_worker_registrations_affected.size(),
+      base::BindOnce(
+          &BackgroundSyncManager::UnregisterForOriginScheduleDelayedProcessing,
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+
+  for (int64_t service_worker_registration_id :
+       service_worker_registrations_affected) {
+    StoreRegistrations(
+        service_worker_registration_id,
+        base::BindOnce(&BackgroundSyncManager::UnregisterForOriginDidStore,
+                       weak_ptr_factory_.GetWeakPtr(), barrier_closure));
+  }
+}
+
+void BackgroundSyncManager::UnregisterForOriginDidStore(
+    base::OnceClosure done_closure,
+    blink::ServiceWorkerStatusCode status) {
+  if (status == blink::ServiceWorkerStatusCode::kErrorNotFound) {
+    // The service worker registration is gone.
+    std::move(done_closure).Run();
+    return;
+  }
+
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
+    DisableAndClearManager(std::move(done_closure));
+    return;
+  }
+
+  std::move(done_closure).Run();
+}
+
+void BackgroundSyncManager::UnregisterForOriginScheduleDelayedProcessing(
+    base::OnceClosure callback) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  ScheduleOrCancelDelayedProcessing(BackgroundSyncType::PERIODIC);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
 void BackgroundSyncManager::GetRegistrations(
@@ -678,6 +763,7 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
   }
 
   std::set<url::Origin> suspended_periodic_sync_origins;
+  std::set<url::Origin> registered_origins;
   for (const std::pair<int64_t, std::string>& data : user_data) {
     BackgroundSyncRegistrationsProto registrations_proto;
     if (registrations_proto.ParseFromString(data.second)) {
@@ -714,6 +800,7 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
         registration->set_delay_until(
             base::Time::FromInternalValue(registration_proto.delay_until()));
         registration->set_origin(registrations->origin);
+        registered_origins.insert(registration->origin());
         if (registration->is_suspended()) {
           suspended_periodic_sync_origins.insert(registration->origin());
         }
@@ -732,6 +819,7 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
                   base::DoNothing::Once());
   proxy_->SendSuspendedPeriodicSyncOrigins(
       std::move(suspended_periodic_sync_origins));
+  proxy_->SendRegisteredPeriodicSyncOrigins(std::move(registered_origins));
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
@@ -1183,6 +1271,10 @@ void BackgroundSyncManager::RegisterDidStore(
     return;
   }
 
+  // Update controller of this new origin.
+  if (registration.sync_type() == BackgroundSyncType::PERIODIC)
+    proxy_->AddToTrackedOrigins(registration.origin());
+
   BackgroundSyncMetrics::RegistrationCouldFire registration_could_fire =
       AreOptionConditionsMet()
           ? BackgroundSyncMetrics::REGISTRATION_COULD_FIRE
@@ -1258,6 +1350,22 @@ void BackgroundSyncManager::RemoveActiveRegistration(
 
   registrations->registration_map.erase(
       {registration_info.tag, registration_info.sync_type});
+
+  // Update controller's list of registered origin if necessary.
+  if (registrations->registration_map.empty())
+    proxy_->RemoveFromTrackedOrigins(origin);
+  else {
+    bool no_more_periodic_sync_registrations = true;
+    for (auto& key_and_registration : registrations->registration_map) {
+      if (key_and_registration.second.sync_type() ==
+          BackgroundSyncType::PERIODIC) {
+        no_more_periodic_sync_registrations = false;
+        break;
+      }
+    }
+    if (no_more_periodic_sync_registrations)
+      proxy_->RemoveFromTrackedOrigins(origin);
+  }
 
   if (registration_info.sync_type == BackgroundSyncType::PERIODIC &&
       ShouldLogToDevTools(registration_info.sync_type)) {

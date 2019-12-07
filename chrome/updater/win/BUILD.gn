@@ -114,6 +114,7 @@ source_set("com") {
 
 source_set("core") {
   sources = [
+    "action_handler.cc",
     "net/net_util.cc",
     "net/net_util.h",
     "net/network.h",

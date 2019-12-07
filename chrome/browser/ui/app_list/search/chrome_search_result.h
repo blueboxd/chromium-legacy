@@ -15,14 +15,13 @@
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "ui/base/models/simple_menu_model.h"
 
+class TokenizedString;
+class TokenizedStringMatch;
+
 namespace app_list {
 class AppContextMenu;
 }  // namespace app_list
 
-namespace string_matching {
-class TokenizedString;
-class TokenizedStringMatch;
-}  // namespace string_matching
 
 // ChromeSearchResult consists of an icon, title text and details text. Title
 // and details text can have tagged ranges that are displayed differently from
@@ -131,8 +130,8 @@ class ChromeSearchResult {
 
   // Updates the result's relevance score, and sets its title and title tags,
   // based on a string match result.
-  void UpdateFromMatch(const string_matching::TokenizedString& title,
-                       const string_matching::TokenizedStringMatch& match);
+  void UpdateFromMatch(const TokenizedString& title,
+                       const TokenizedStringMatch& match);
 
   // Returns the context menu model for this item, or NULL if there is currently
   // no menu for the item (e.g. during install). |callback| takes the ownership

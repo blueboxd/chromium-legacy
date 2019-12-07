@@ -137,6 +137,7 @@ const IDS = {
   OGB: 'one-google',
   PROMO: 'promo',
   REALBOX: 'realbox',
+  REALBOX_ICON: 'realbox-icon',
   REALBOX_INPUT_WRAPPER: 'realbox-input-wrapper',
   REALBOX_MATCHES: 'realbox-matches',
   REALBOX_MICROPHONE: 'realbox-microphone',
@@ -347,6 +348,8 @@ function autocompleteResultChanged(result) {
       assert(lastEnterEvent);
       navigateToMatch(first, lastEnterEvent);
     }
+  } else {
+    setRealboxIcon(undefined);
   }
 }
 
@@ -375,6 +378,7 @@ function clearAutocompleteMatches() {
   // Autocomplete sends updates once it is stopped. Invalidate those results
   // by setting the last queried input to its uninitialized value.
   lastQueriedInput = undefined;
+  setRealboxIcon(undefined);
 }
 
 /**
@@ -646,6 +650,19 @@ function floatUpNotification(notification, notificationContainer) {
     floatDownNotification(notification, notificationContainer, !executedEarly);
   }, NOTIFICATION_TIMEOUT);
   currNotification = notificationContainer;
+}
+
+/**
+ * @param {string} url
+ * @return {string} The chrome-search://ntpicon/ corresponding to |url|.
+ */
+function getIconUrl(url) {
+  // TODO(crbug.com/997229): use chrome://favicon/<url> when perms allow.
+  const iconUrl = new URL('chrome-search://ntpicon/');
+  iconUrl.searchParams.set('show_fallback_monogram', 'false');
+  iconUrl.searchParams.set('size', '24@' + window.devicePixelRatio + 'x');
+  iconUrl.searchParams.set('url', url);
+  return iconUrl.toString();
 }
 
 /**
@@ -1578,12 +1595,8 @@ function renderAutocompleteMatches(matches) {
           isSearchHistory ? CLASSES.CLOCK_ICON : CLASSES.SEARCH_ICON);
       matchEl.appendChild(icon);
     } else {
-      // TODO(crbug.com/997229): use chrome://favicon/<url> when perms allow.
-      const iconUrl = new URL('chrome-search://ntpicon/');
-      iconUrl.searchParams.set('show_fallback_monogram', 'false');
-      iconUrl.searchParams.set('size', '24@' + window.devicePixelRatio + 'x');
-      iconUrl.searchParams.set('url', match.destinationUrl);
-      matchEl.style.backgroundImage = 'url(' + iconUrl.toString() + ')';
+      const iconUrl = getIconUrl(match.destinationUrl);
+      matchEl.style.backgroundImage = `url(${iconUrl})`;
     }
 
     const contentsEls =
@@ -1870,6 +1883,10 @@ function selectMatchEl(elToSelect) {
       selectedIndex = i;
     }
   });
+
+  const matches = autocompleteResult ? autocompleteResult.matches : [];
+  setRealboxIcon(matches[selectedIndex]);
+
   return selectedIndex;
 }
 
@@ -1946,6 +1963,17 @@ function setFakeboxFocus(focus) {
  */
 function setFakeboxVisibility(show) {
   document.body.classList.toggle(CLASSES.HIDE_FAKEBOX, !show);
+}
+
+/** @param {!AutocompleteMatch|undefined} match */
+function setRealboxIcon(match) {
+  const showIcon = match && !match.isSearchType;
+
+  const realboxIcon = $(IDS.REALBOX_ICON);
+  realboxIcon.style.webkitMask = showIcon ? 'none' : '';
+  realboxIcon.style.backgroundColor = showIcon ? 'transparent' : '';
+  realboxIcon.style.backgroundImage =
+      showIcon ? `url(${getIconUrl(match.destinationUrl)})` : '';
 }
 
 /** @param {boolean} visible */

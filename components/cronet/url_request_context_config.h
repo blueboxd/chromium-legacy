@@ -21,6 +21,7 @@
 
 namespace net {
 class CertVerifier;
+struct QuicParams;
 class URLRequestContextBuilder;
 }  // namespace net
 
@@ -203,7 +204,8 @@ struct URLRequestContextConfig {
   // the URLRequestContextConfig and URLRequestContextBuilder.
   void ParseAndSetExperimentalOptions(
       net::URLRequestContextBuilder* context_builder,
-      net::HttpNetworkSession::Params* session_params);
+      net::HttpNetworkSession::Params* session_params,
+      net::QuicParams* quic_params);
 
   // Experimental options encoded as a string in a JSON format containing
   // experiments and their corresponding configuration options. The format

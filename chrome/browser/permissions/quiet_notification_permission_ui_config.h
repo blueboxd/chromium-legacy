@@ -10,18 +10,6 @@
 // Field trial configuration for the quiet notificaiton permission request UI.
 class QuietNotificationPermissionUiConfig {
  public:
-  enum UiFlavor {
-    NONE,
-#if defined(OS_ANDROID)
-    QUIET_NOTIFICATION,
-    HEADS_UP_NOTIFICATION,
-    MINI_INFOBAR,
-#else   // OS_ANDROID
-    STATIC_ICON,
-    ANIMATED_ICON,
-#endif  // OS_ANDROID
-  };
-
   // Name of the boolean variation parameter that determines if the quiet
   // notification permission prompt UI should be enabled adaptively after three
   // consecutive prompt denies.
@@ -32,12 +20,6 @@ class QuietNotificationPermissionUiConfig {
   // crowd deny data, that is, on sites with a low notification permission grant
   // rate.
   static const char kEnableCrowdDenyTriggering[];
-
-  // Which flavor of the quiet UI to use.
-  //
-  // Deprecated: The UI flavor is now hardcoded on each platform and no longer
-  // controlled by field trials.
-  static UiFlavor UiFlavorToUse();
 
   // Whether or not adaptive activation is enabled. Adaptive activation means
   // that quiet notifications permission prompts will be turned on after three

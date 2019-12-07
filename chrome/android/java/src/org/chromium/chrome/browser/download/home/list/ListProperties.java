@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.download.home.list;
 
+import android.graphics.Bitmap;
 import android.util.Pair;
 
 import org.chromium.base.Callback;
@@ -34,6 +35,17 @@ public interface ListProperties {
          */
         Runnable getVisuals(
                 OfflineItem item, int iconWidthPx, int iconHeightPx, VisualsCallback callback);
+    }
+
+    /** A helper interface to support retrieving favicon asynchronously. */
+    @FunctionalInterface
+    interface FaviconProvider {
+        /**
+         * @param url         The URL to get the favicon for.
+         * @param faviconSizePx  The desired size of the icon in pixels.
+         * @param callback     A {@link Callback} that will be run on completion.
+         */
+        void getFavicon(String url, int faviconSizePx, Callback<Bitmap> callback);
     }
 
     /** Whether or not item animations should be enabled. */
@@ -70,6 +82,9 @@ public interface ListProperties {
     /** The provider to retrieve expensive assets for a {@link OfflineItem}. */
     WritableObjectPropertyKey<VisualsProvider> PROVIDER_VISUALS = new WritableObjectPropertyKey<>();
 
+    /** The provider to retrieve favicon for a URL. */
+    WritableObjectPropertyKey<FaviconProvider> PROVIDER_FAVICON = new WritableObjectPropertyKey<>();
+
     /** The callback to trigger when a UI action selects or deselects a {@link ListItem}. */
     WritableObjectPropertyKey<Callback<ListItem>> CALLBACK_SELECTION =
             new WritableObjectPropertyKey<>();
@@ -87,6 +102,6 @@ public interface ListProperties {
 
     PropertyKey[] ALL_KEYS = new PropertyKey[] {ENABLE_ITEM_ANIMATIONS, CALLBACK_OPEN,
             CALLBACK_PAUSE, CALLBACK_RESUME, CALLBACK_CANCEL, CALLBACK_SHARE, CALLBACK_REMOVE,
-            CALLBACK_RENAME, PROVIDER_VISUALS, CALLBACK_SELECTION, SELECTION_MODE_ACTIVE,
-            CALLBACK_PAGINATION_CLICK, CALLBACK_GROUP_PAGINATION_CLICK};
+            CALLBACK_RENAME, PROVIDER_VISUALS, PROVIDER_FAVICON, CALLBACK_SELECTION,
+            SELECTION_MODE_ACTIVE, CALLBACK_PAGINATION_CLICK, CALLBACK_GROUP_PAGINATION_CLICK};
 }

@@ -128,6 +128,8 @@ TEST_F(AwMetricsServiceClientTest, TestSetConsentTrueBeforeInit) {
   client->Initialize(prefs.get());
   EXPECT_TRUE(client->IsRecordingActive());
   EXPECT_TRUE(prefs->HasPrefPath(metrics::prefs::kMetricsClientID));
+  EXPECT_TRUE(
+      prefs->HasPrefPath(metrics::prefs::kMetricsReportingEnabledTimestamp));
 }
 
 TEST_F(AwMetricsServiceClientTest, TestSetConsentFalseBeforeInit) {
@@ -137,6 +139,8 @@ TEST_F(AwMetricsServiceClientTest, TestSetConsentFalseBeforeInit) {
   client->Initialize(prefs.get());
   EXPECT_FALSE(client->IsRecordingActive());
   EXPECT_FALSE(prefs->HasPrefPath(metrics::prefs::kMetricsClientID));
+  EXPECT_FALSE(
+      prefs->HasPrefPath(metrics::prefs::kMetricsReportingEnabledTimestamp));
 }
 
 TEST_F(AwMetricsServiceClientTest, TestSetConsentTrueAfterInit) {
@@ -145,6 +149,8 @@ TEST_F(AwMetricsServiceClientTest, TestSetConsentTrueAfterInit) {
   client->SetHaveMetricsConsent(true, true);
   EXPECT_TRUE(client->IsRecordingActive());
   EXPECT_TRUE(prefs->HasPrefPath(metrics::prefs::kMetricsClientID));
+  EXPECT_TRUE(
+      prefs->HasPrefPath(metrics::prefs::kMetricsReportingEnabledTimestamp));
 }
 
 TEST_F(AwMetricsServiceClientTest, TestSetConsentFalseAfterInit) {
@@ -153,26 +159,50 @@ TEST_F(AwMetricsServiceClientTest, TestSetConsentFalseAfterInit) {
   client->SetHaveMetricsConsent(false, false);
   EXPECT_FALSE(client->IsRecordingActive());
   EXPECT_FALSE(prefs->HasPrefPath(metrics::prefs::kMetricsClientID));
+  EXPECT_FALSE(
+      prefs->HasPrefPath(metrics::prefs::kMetricsReportingEnabledTimestamp));
 }
 
-// If there is already a valid client ID, it should be reused.
-TEST_F(AwMetricsServiceClientTest, TestKeepExistingClientId) {
+// If there is already a valid client ID and enabled date, they should be
+// reused.
+TEST_F(AwMetricsServiceClientTest, TestKeepExistingClientIdAndEnabledDate) {
+  auto prefs = CreateTestPrefs();
+  prefs->SetString(metrics::prefs::kMetricsClientID, kTestClientId);
+  int64_t enabled_date = 12345;
+  prefs->SetInt64(metrics::prefs::kMetricsReportingEnabledTimestamp,
+                  enabled_date);
+  auto client = CreateAndInitTestClient(prefs.get());
+  client->SetHaveMetricsConsent(true, true);
+  EXPECT_TRUE(client->IsRecordingActive());
+  EXPECT_TRUE(prefs->HasPrefPath(metrics::prefs::kMetricsClientID));
+  EXPECT_EQ(kTestClientId, prefs->GetString(metrics::prefs::kMetricsClientID));
+  EXPECT_EQ(enabled_date,
+            prefs->GetInt64(metrics::prefs::kMetricsReportingEnabledTimestamp));
+}
+
+// TODO(https://crbug.com/995544): remove this when the
+// kMetricsReportingEnabledTimestamp pref has been persisted for one or two
+// milestones.
+TEST_F(AwMetricsServiceClientTest, TestBackfillEnabledDateIfMissing) {
   auto prefs = CreateTestPrefs();
   prefs->SetString(metrics::prefs::kMetricsClientID, kTestClientId);
   auto client = CreateAndInitTestClient(prefs.get());
   client->SetHaveMetricsConsent(true, true);
   EXPECT_TRUE(client->IsRecordingActive());
   EXPECT_TRUE(prefs->HasPrefPath(metrics::prefs::kMetricsClientID));
-  EXPECT_EQ(kTestClientId, prefs->GetString(metrics::prefs::kMetricsClientID));
+  EXPECT_TRUE(
+      prefs->HasPrefPath(metrics::prefs::kMetricsReportingEnabledTimestamp));
 }
 
-TEST_F(AwMetricsServiceClientTest, TestSetConsentFalseClearsClientId) {
+TEST_F(AwMetricsServiceClientTest, TestSetConsentFalseClearsIdAndEnabledDate) {
   auto prefs = CreateTestPrefs();
   prefs->SetString(metrics::prefs::kMetricsClientID, kTestClientId);
   auto client = CreateAndInitTestClient(prefs.get());
   client->SetHaveMetricsConsent(false, false);
   EXPECT_FALSE(client->IsRecordingActive());
   EXPECT_FALSE(prefs->HasPrefPath(metrics::prefs::kMetricsClientID));
+  EXPECT_FALSE(
+      prefs->HasPrefPath(metrics::prefs::kMetricsReportingEnabledTimestamp));
 }
 
 TEST_F(AwMetricsServiceClientTest, TestShouldNotUploadPackageName_AppType) {

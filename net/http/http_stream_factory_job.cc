@@ -177,7 +177,8 @@ HttpStreamFactory::Job::Job(Delegate* delegate,
   if (quic_version_ == quic::UnsupportedQuicVersion() &&
       ShouldForceQuic(session, destination, origin_url, proxy_info,
                       using_ssl_)) {
-    quic_version_ = session->params().quic_params.supported_versions[0];
+    quic_version_ =
+        session->context().quic_context->params()->supported_versions[0];
   }
 
   if (using_quic_)
@@ -360,10 +361,10 @@ bool HttpStreamFactory::Job::ShouldForceQuic(HttpNetworkSession* session,
   // handled by the socket pools, using an HttpProxyConnectJob.
   if (proxy_info.is_quic())
     return !using_ssl;
-  return (base::Contains(session->params().quic_params.origins_to_force_quic_on,
+  const QuicParams* quic_params = session->context().quic_context->params();
+  return (base::Contains(quic_params->origins_to_force_quic_on,
                          HostPortPair()) ||
-          base::Contains(session->params().quic_params.origins_to_force_quic_on,
-                         destination)) &&
+          base::Contains(quic_params->origins_to_force_quic_on, destination)) &&
          proxy_info.is_direct() && origin_url.SchemeIs(url::kHttpsScheme);
 }
 

@@ -23,6 +23,7 @@ namespace net {
 class HostResolver;
 class HostPortPair;
 class NetLog;
+class NetworkIsolationKey;
 }  // namespace net
 
 namespace network {
@@ -51,6 +52,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) HostResolver
 
   void ResolveHost(
       const net::HostPortPair& host,
+      const net::NetworkIsolationKey& network_isolation_key,
       mojom::ResolveHostParametersPtr optional_parameters,
       mojo::PendingRemote<mojom::ResolveHostClient> response_client) override;
   void MdnsListen(const net::HostPortPair& host,

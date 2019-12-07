@@ -298,7 +298,7 @@ bool InstallIconFromFileThread(const base::FilePath& icon_path,
 void DeleteIconFolderFromFileThread(const base::FilePath& path) {
   DCHECK(path.DirName().BaseName().MaybeAsASCII() == kCrostiniIconFolder &&
          (!base::PathExists(path) || base::DirectoryExists(path)));
-  const bool deleted = base::DeleteFile(path, true);
+  const bool deleted = base::DeleteFileRecursively(path);
   DCHECK(deleted);
 }
 

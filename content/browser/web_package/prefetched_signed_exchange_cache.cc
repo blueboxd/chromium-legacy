@@ -30,11 +30,11 @@
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/mojo_blob_reader.h"
@@ -48,7 +48,7 @@ namespace {
 constexpr size_t kMaxEntrySize = 100u;
 
 void UpdateRequestResponseStartTime(
-    network::ResourceResponseHead* response_head) {
+    network::mojom::URLResponseHead* response_head) {
   const base::TimeTicks now_ticks = base::TimeTicks::Now();
   const base::Time now = base::Time::Now();
   response_head->request_start = now_ticks;
@@ -85,19 +85,18 @@ class RedirectResponseURLLoader : public network::mojom::URLLoader {
   RedirectResponseURLLoader(
       const network::ResourceRequest& url_request,
       const GURL& inner_url,
-      const network::ResourceResponseHead& outer_response,
+      const network::mojom::URLResponseHead& outer_response,
       mojo::PendingRemote<network::mojom::URLLoaderClient> client)
       : client_(std::move(client)) {
-    network::ResourceResponseHead response_head =
-        signed_exchange_utils::CreateRedirectResponseHead(
-            outer_response, false /* is_fallback_redirect */);
-    response_head.was_fetched_via_cache = true;
-    response_head.was_in_prefetch_cache = true;
-    UpdateRequestResponseStartTime(&response_head);
+    auto response_head = signed_exchange_utils::CreateRedirectResponseHead(
+        outer_response, false /* is_fallback_redirect */);
+    response_head->was_fetched_via_cache = true;
+    response_head->was_in_prefetch_cache = true;
+    UpdateRequestResponseStartTime(response_head.get());
     client_->OnReceiveRedirect(signed_exchange_utils::CreateRedirectInfo(
                                    inner_url, url_request, outer_response,
                                    false /* is_fallback_redirect */),
-                               response_head);
+                               std::move(response_head));
   }
   ~RedirectResponseURLLoader() override {}
 
@@ -131,17 +130,17 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
  public:
   InnerResponseURLLoader(
       const network::ResourceRequest& request,
-      const network::ResourceResponseHead& inner_response,
+      network::mojom::URLResponseHeadPtr inner_response,
       const url::Origin& request_initiator_site_lock,
       std::unique_ptr<const storage::BlobDataHandle> blob_data_handle,
       const network::URLLoaderCompletionStatus& completion_status,
       mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       bool is_navigation_request)
-      : response_(inner_response),
+      : response_(std::move(inner_response)),
         blob_data_handle_(std::move(blob_data_handle)),
         completion_status_(completion_status),
         client_(std::move(client)) {
-    DCHECK(response_.headers);
+    DCHECK(response_->headers);
     DCHECK(request.request_initiator);
 
     // Keep the SSLInfo only when the request is for main frame main resource,
@@ -150,12 +149,12 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
     // DevTools' Security panel.
     if ((request.resource_type != static_cast<int>(ResourceType::kMainFrame)) &&
         !request.report_raw_headers) {
-      response_.ssl_info = base::nullopt;
+      response_->ssl_info = base::nullopt;
     }
-    UpdateRequestResponseStartTime(&response_);
-    response_.encoded_data_length = 0;
+    UpdateRequestResponseStartTime(response_.get());
+    response_->encoded_data_length = 0;
     if (is_navigation_request) {
-      client_->OnReceiveResponse(response_);
+      client_->OnReceiveResponse(std::move(response_));
       SendResponseBody();
       return;
     }
@@ -163,12 +162,12 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
     if (network::cors::ShouldCheckCors(request.url, request.request_initiator,
                                        request.mode)) {
       const auto error_status = network::cors::CheckAccess(
-          request.url, response_.headers->response_code(),
+          request.url, response_->headers->response_code(),
           GetHeaderString(
-              response_,
+              *response_,
               network::cors::header_names::kAccessControlAllowOrigin),
           GetHeaderString(
-              response_,
+              *response_,
               network::cors::header_names::kAccessControlAllowCredentials),
           request.credentials_mode, *request.request_initiator);
       if (error_status) {
@@ -178,7 +177,7 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
     }
 
     corb_checker_ = std::make_unique<CrossOriginReadBlockingChecker>(
-        request, response_, request_initiator_site_lock, *blob_data_handle_,
+        request, *response_, request_initiator_site_lock, *blob_data_handle_,
         base::BindOnce(
             &InnerResponseURLLoader::OnCrossOriginReadBlockingCheckComplete,
             base::Unretained(this)));
@@ -187,7 +186,7 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
 
  private:
   static base::Optional<std::string> GetHeaderString(
-      const network::ResourceResponseHead& response,
+      const network::mojom::URLResponseHead& response,
       const std::string& header_name) {
     DCHECK(response.headers);
     std::string header_value;
@@ -200,7 +199,7 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
       CrossOriginReadBlockingChecker::Result result) {
     switch (result) {
       case CrossOriginReadBlockingChecker::Result::kAllowed:
-        client_->OnReceiveResponse(response_);
+        client_->OnReceiveResponse(std::move(response_));
         SendResponseBody();
         return;
       case CrossOriginReadBlockingChecker::Result::kNetError:
@@ -214,8 +213,8 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
     }
 
     // Send sanitized response.
-    network::CrossOriginReadBlocking::SanitizeBlockedResponse(&response_);
-    client_->OnReceiveResponse(response_);
+    network::CrossOriginReadBlocking::SanitizeBlockedResponse(response_.get());
+    client_->OnReceiveResponse(std::move(response_));
 
     // Send an empty response's body.
     mojo::ScopedDataPipeProducerHandle pipe_producer_handle;
@@ -316,7 +315,7 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
                                   std::move(loader), result));
   }
 
-  network::ResourceResponseHead response_;
+  network::mojom::URLResponseHeadPtr response_;
   std::unique_ptr<const storage::BlobDataHandle> blob_data_handle_;
   const network::URLLoaderCompletionStatus completion_status_;
   mojo::Remote<network::mojom::URLLoaderClient> client_;
@@ -358,7 +357,8 @@ class SubresourceSignedExchangeURLLoaderFactory
     DCHECK_EQ(request.url, entry_->inner_url());
     mojo::MakeSelfOwnedReceiver(
         std::make_unique<InnerResponseURLLoader>(
-            request, *entry_->inner_response(), request_initiator_site_lock_,
+            request, entry_->inner_response().Clone(),
+            request_initiator_site_lock_,
             std::make_unique<const storage::BlobDataHandle>(
                 *entry_->blob_data_handle()),
             *entry_->completion_status(), std::move(client),
@@ -457,7 +457,7 @@ class PrefetchedNavigationLoaderInterceptor
       mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
     mojo::MakeSelfOwnedReceiver(
         std::make_unique<InnerResponseURLLoader>(
-            resource_request, *exchange_->inner_response(),
+            resource_request, exchange_->inner_response().Clone(),
             url::Origin::Create(exchange_->inner_url()),
             std::make_unique<const storage::BlobDataHandle>(
                 *exchange_->blob_data_handle()),
@@ -502,8 +502,7 @@ bool CanUseEntry(const PrefetchedSignedExchangeCache::Entry& entry,
   if (entry.signature_expire_time() < verification_time)
     return false;
 
-  const std::unique_ptr<const network::ResourceResponseHead>& outer_response =
-      entry.outer_response();
+  auto& outer_response = entry.outer_response();
 
   // Use the prefetched entry within kPrefetchReuseMins minutes without
   // validation.
@@ -582,7 +581,7 @@ void PrefetchedSignedExchangeCache::Entry::SetOuterUrl(const GURL& outer_url) {
   outer_url_ = outer_url;
 }
 void PrefetchedSignedExchangeCache::Entry::SetOuterResponse(
-    std::unique_ptr<const network::ResourceResponseHead> outer_response) {
+    network::mojom::URLResponseHeadPtr outer_response) {
   outer_response_ = std::move(outer_response);
 }
 void PrefetchedSignedExchangeCache::Entry::SetHeaderIntegrity(
@@ -593,7 +592,7 @@ void PrefetchedSignedExchangeCache::Entry::SetInnerUrl(const GURL& inner_url) {
   inner_url_ = inner_url;
 }
 void PrefetchedSignedExchangeCache::Entry::SetInnerResponse(
-    std::unique_ptr<const network::ResourceResponseHead> inner_response) {
+    network::mojom::URLResponseHeadPtr inner_response) {
   inner_response_ = std::move(inner_response);
 }
 void PrefetchedSignedExchangeCache::Entry::SetCompletionStatus(
@@ -623,13 +622,11 @@ PrefetchedSignedExchangeCache::Entry::Clone() const {
 
   std::unique_ptr<Entry> clone = std::make_unique<Entry>();
   clone->SetOuterUrl(outer_url_);
-  clone->SetOuterResponse(
-      std::make_unique<const network::ResourceResponseHead>(*outer_response_));
+  clone->SetOuterResponse(outer_response_.Clone());
   clone->SetHeaderIntegrity(
       std::make_unique<const net::SHA256HashValue>(*header_integrity_));
   clone->SetInnerUrl(inner_url_);
-  clone->SetInnerResponse(
-      std::make_unique<const network::ResourceResponseHead>(*inner_response_));
+  clone->SetInnerResponse(inner_response_.Clone());
   clone->SetCompletionStatus(
       std::make_unique<const network::URLLoaderCompletionStatus>(
           *completion_status_));
@@ -757,7 +754,7 @@ PrefetchedSignedExchangeCache::GetInfoListForNavigation(
           exchange->Clone(), request_initiator_site_lock);
       info_list.emplace_back(mojom::PrefetchedSignedExchangeInfo::New(
           exchange->outer_url(), *exchange->header_integrity(),
-          exchange->inner_url(), *exchange->inner_response(),
+          exchange->inner_url(), exchange->inner_response().Clone(),
           std::move(pending_loader_factory)));
     }
     ++exchanges_it;

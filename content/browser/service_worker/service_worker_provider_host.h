@@ -91,13 +91,12 @@ class ServiceWorkerVersion;
 class CONTENT_EXPORT ServiceWorkerProviderHost
     : public base::SupportsWeakPtr<ServiceWorkerProviderHost> {
  public:
-  // Used to pre-create a ServiceWorkerProviderHost for a navigation. The
-  // ServiceWorkerProviderContext will later be created in the renderer, should
-  // the navigation succeed. |are_ancestors_secure| should be true for main
-  // frames. Otherwise it is true iff all ancestor frames of this frame have a
-  // secure origin. |frame_tree_node_id| is FrameTreeNode
-  // id. |web_contents_getter| indicates the tab where the navigation is
-  // occurring.
+  // Used to create a ServiceWorkerProviderHost for a window during a
+  // navigation. The ServiceWorkerProviderContext will later be created in the
+  // enderer, should the navigation succeed. |are_ancestors_secure| should be
+  // true for main frames. Otherwise it is true iff all ancestor frames of this
+  // frame have a secure origin. |frame_tree_node_id| is FrameTreeNode id.
+  // |web_contents_getter| indicates the tab where the navigation is occurring.
   //
   // The returned host stays alive as long as the corresponding host ptr for
   // |host_request| stays alive.
@@ -105,7 +104,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // TODO(https://crbug.com/931087): ServiceWorkerProviderHost is not necessary
   // for window clients. We should remove this creation function, and instead
   // directly create ServiceWorkerContainerHost for the clients.
-  static base::WeakPtr<ServiceWorkerProviderHost> PreCreateNavigationHost(
+  static base::WeakPtr<ServiceWorkerProviderHost> CreateForWindow(
       base::WeakPtr<ServiceWorkerContextCore> context,
       bool are_ancestors_secure,
       int frame_tree_node_id,

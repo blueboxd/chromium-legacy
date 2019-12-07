@@ -68,7 +68,6 @@ Bug(none) compositing/layer-creation/overlap-animation.html [ Failure ]
 
 # Overlap testing seems inaccurate.
 Bug(none) compositing/layer-creation/overlap-transformed-3d.html [ Failure ]
-Bug(none) compositing/layer-creation/overlap-transformed-layer-with-transform-body.html [ Failure ]
 Bug(none) compositing/layer-creation/overlap-transformed-preserved-3d.html [ Failure ]
 
 Bug(none) compositing/masks/mask-with-removed-filters.html [ Failure ]
@@ -76,9 +75,6 @@ crbug.com/667946 compositing/overflow/scrolls-with-respect-to-nested.html [ Fail
 crbug.com/667946 compositing/overflow/scrolls-with-respect-to-transform.html [ Failure ]
 crbug.com/667946 compositing/overflow/scrolls-with-respect-to.html [ Failure ]
 Bug(none) compositing/squashing/do-not-squash-scroll-child-with-composited-descendants.html [ Failure ]
-Bug(none) compositing/squashing/squash-transform-repainting-child.html [ Failure ]
-Bug(none) compositing/squashing/squash-transform-repainting-transformed-child.html [ Failure ]
-Bug(none) compositing/squashing/squash-transform.html [ Failure ]
 Bug(none) compositing/squashing/squashed-repaints.html [ Failure ]
 Bug(none) compositing/squashing/squashing-sparsity-heuristic.html [ Failure ]
 Bug(none) compositing/visibility/layer-visible-content.html [ Failure ]
@@ -104,6 +100,8 @@ Bug(none) transforms/3d/general/background-visibility-layers.html [ Failure ]
 Bug(none) virtual/forced-high-contrast-colors/fast/css/forced-colors-mode/forced-colors-mode-22.html [ Crash ]
 Bug(none) virtual/scalefactor200/external/wpt/largest-contentful-paint/invisible-images.html [ Failure ]
 Bug(none) virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/invisible-images.html [ Failure ]
+Bug(none) virtual/threaded/external/wpt/web-animations/timing-model/animations/update-playback-rate-slow.html [ Failure ]
+Bug(none) virtual/threaded/external/wpt/web-animations/timing-model/animations/update-playback-rate-zero.html [ Failure ]
 Bug(none) virtual/threaded-prefer-compositing/fast/scrolling/keyboard-scroll-page-scale.html [ Failure Pass ]
 Bug(none) virtual/threaded-prefer-compositing/fast/scrolling/no-hover-during-scroll.html [ Failure Pass ]
 Bug(none) virtual/threaded-prefer-compositing/fast/scrolling/no-hover-during-smooth-js-scroll.html [ Crash Pass ]
@@ -155,7 +153,6 @@ Bug(none) paint/invalidation/compositing/should-not-repaint-composited-descendan
 # Subpixel or invisible color differences that look benign, but we can't rebaseline ref tests.
 Bug(benign) compositing/overflow/ancestor-with-clip-path.html [ Failure ]
 Bug(benign) fast/multicol/mixed-opacity-fixed-test.html [ Failure ]
-Bug(benign) fast/multicol/mixed-positioning-stacking-order.html [ Failure ]
 Bug(benign) fullscreen/rendering/backdrop-object.html [ Failure ]
 Bug(benign) external/wpt/svg/render/reftests/blending-001.svg [ Failure ]
 Bug(benign) external/wpt/svg/render/reftests/blending-002.svg [ Failure ]
@@ -192,7 +189,6 @@ Bug(none) paint/pagination/composited-paginated-outlined-box.html [ Failure ]
 Bug(none) paint/invalidation/media-audio-no-spurious-repaints.html [ Failure ]
 Bug(none) paint/invalidation/reflection/scroll-fixed-layer-with-reflection.html [ Failure ]
 Bug(none) paint/invalidation/reflection/scroll-fixed-reflected-layer.html [ Failure ]
-Bug(none) paint/invalidation/svg/mask-clip-target-transform.svg [ Failure ]
 
 # Extra raster invalidation on start/end of animation. Caused by animation
 # element id namespaces
@@ -231,8 +227,6 @@ Bug(none) fast/multicol/composited-layer-will-change.html [ Crash ]
 Bug(none) paint/clipath/change-mask-clip-path-multicol-crash.html [ Crash ]
 
 # Clip-path and mask.
-crbug.com/979369 external/wpt/css/css-masking/clip-path-svg-content/mask-nested-clip-path-002.svg [ Failure ]
-crbug.com/979369 external/wpt/css/css-masking/clip-path-svg-content/mask-nested-clip-path-panning-001.svg [ Failure ]
 crbug.com/979369 svg/clip-path/deep-nested-clip-in-mask.svg [ Failure ]
 
 # These failures need to be triaged and are being added to unblock the CQ (see: https://crbug.com/966981).

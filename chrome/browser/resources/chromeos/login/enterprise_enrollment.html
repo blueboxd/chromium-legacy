@@ -3,6 +3,7 @@
      found in the LICENSE file. -->
 
 <link rel="import" href="chrome://oobe/custom_elements.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="stylesheet" href="gaia_card_parameters.css">
 
@@ -127,17 +128,13 @@
                 [[i18nDynamic(locale, 'oauthEnrollExplainAttributeLink')]]
               </a>
             </div>
-            <gaia-input id="oauth-enroll-asset-id" type="text"
-                        class="focus-on-show">
-              <div slot="label">
-                [[i18nDynamic(locale, 'oauthEnrollAssetIdLabel')]]
-              </div>
-            </gaia-input>
-            <gaia-input id="oauth-enroll-location" type="text">
-              <div slot="label">
-                [[i18nDynamic(locale, 'oauthEnrollLocationLabel')]]
-              </div>
-            </gaia-input>
+            <cr-input id="asset-id" type="text" value="{{assetId_}}"
+                class="focus-on-show"
+                label="[[i18nDynamic(locale, 'enrollmentAssetIdLabel')]]">
+            </cr-input>
+            <cr-input id="location" type="text" value="{{deviceLocation_}}"
+                label="[[i18nDynamic(locale, 'enrollmentLocationLabel')]]">
+            </cr-input>
           </div>
           <div slot="bottom-buttons" class="layout horizontal end-justified">
             <oobe-text-button id="attributes-skip" on-tap="skipAttributes_">

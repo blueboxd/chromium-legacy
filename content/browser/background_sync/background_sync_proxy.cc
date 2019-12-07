@@ -100,6 +100,41 @@ class BackgroundSyncProxy::Core {
     controller->NoteSuspendedPeriodicSyncOrigins(std::move(suspended_origins));
   }
 
+  void SendRegisteredPeriodicSyncOrigins(
+      std::set<url::Origin> registered_origins) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    if (!browser_context())
+      return;
+
+    auto* controller = browser_context()->GetBackgroundSyncController();
+    DCHECK(controller);
+
+    controller->NoteRegisteredPeriodicSyncOrigins(
+        std::move(registered_origins));
+  }
+
+  void AddToTrackedOrigins(url::Origin origin) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    if (!browser_context())
+      return;
+
+    auto* controller = browser_context()->GetBackgroundSyncController();
+    DCHECK(controller);
+
+    controller->AddToTrackedOrigins(origin);
+  }
+
+  void RemoveFromTrackedOrigins(url::Origin origin) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    if (!browser_context())
+      return;
+
+    auto* controller = browser_context()->GetBackgroundSyncController();
+    DCHECK(controller);
+
+    controller->RemoveFromTrackedOrigins(origin);
+  }
+
  private:
   base::WeakPtr<BackgroundSyncProxy> io_parent_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
@@ -150,6 +185,32 @@ void BackgroundSyncProxy::SendSuspendedPeriodicSyncOrigins(
       FROM_HERE, BrowserThread::UI,
       base::BindOnce(&Core::SendSuspendedPeriodicSyncOrigins, ui_core_weak_ptr_,
                      std::move(suspended_origins)));
+}
+
+void BackgroundSyncProxy::SendRegisteredPeriodicSyncOrigins(
+    std::set<url::Origin> registered_origins) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+
+  RunOrPostTaskOnThread(
+      FROM_HERE, BrowserThread::UI,
+      base::BindOnce(&Core::SendSuspendedPeriodicSyncOrigins, ui_core_weak_ptr_,
+                     std::move(registered_origins)));
+}
+
+void BackgroundSyncProxy::AddToTrackedOrigins(url::Origin origin) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+
+  RunOrPostTaskOnThread(FROM_HERE, BrowserThread::UI,
+                        base::BindOnce(&Core::AddToTrackedOrigins,
+                                       ui_core_weak_ptr_, std::move(origin)));
+}
+
+void BackgroundSyncProxy::RemoveFromTrackedOrigins(url::Origin origin) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+
+  RunOrPostTaskOnThread(FROM_HERE, BrowserThread::UI,
+                        base::BindOnce(&Core::RemoveFromTrackedOrigins,
+                                       ui_core_weak_ptr_, std::move(origin)));
 }
 
 }  // namespace content

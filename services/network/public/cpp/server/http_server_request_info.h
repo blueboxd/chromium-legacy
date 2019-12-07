@@ -48,8 +48,8 @@ class COMPONENT_EXPORT(NETWORK_CPP) HttpServerRequestInfo {
 
   // A map of the names -> values for HTTP headers. These should always
   // contain lower case field names.
-  typedef std::map<std::string, std::string> HeadersMap;
-  mutable HeadersMap headers;
+  using HeadersMap = std::map<std::string, std::string>;
+  HeadersMap headers;
 };
 
 }  // namespace server

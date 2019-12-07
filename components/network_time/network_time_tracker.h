@@ -126,7 +126,7 @@ class NetworkTimeTracker {
   // Returns true if a time query is started or was already in progress,
   // and false otherwise. For example, this method may return false if
   // time queries are disabled or if network time is already available.
-  bool StartTimeFetch(const base::Closure& callback);
+  bool StartTimeFetch(base::OnceClosure callback);
 
   // Calculates corresponding time ticks according to the given parameters.
   // The provided |network_time| is precise at the given |resolution| and
@@ -223,7 +223,7 @@ class NetworkTimeTracker {
   base::Time last_fetched_time_;
 
   // Callbacks to run when the in-progress time fetch completes.
-  std::vector<base::Closure> fetch_completion_callbacks_;
+  std::vector<base::OnceClosure> fetch_completion_callbacks_;
 
   base::ThreadChecker thread_checker_;
 

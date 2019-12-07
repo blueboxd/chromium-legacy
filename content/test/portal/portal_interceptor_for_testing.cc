@@ -17,65 +17,47 @@ namespace content {
 PortalInterceptorForTesting* PortalInterceptorForTesting::Create(
     RenderFrameHostImpl* render_frame_host_impl,
     mojo::PendingAssociatedReceiver<blink::mojom::Portal> receiver,
-    mojo::AssociatedRemote<blink::mojom::PortalClient> client) {
-  auto test_portal_ptr =
-      base::WrapUnique(new PortalInterceptorForTesting(render_frame_host_impl));
-  PortalInterceptorForTesting* test_portal = test_portal_ptr.get();
-  test_portal->GetPortal()->SetReceiverForTesting(
-      mojo::MakeSelfOwnedAssociatedReceiver<blink::mojom::Portal>(
-          std::move(test_portal_ptr), std::move(receiver)));
-  test_portal->GetPortal()->SetClientForTesting(std::move(client));
-  return test_portal;
+    mojo::PendingAssociatedRemote<blink::mojom::PortalClient> client) {
+  auto portal = std::make_unique<content::Portal>(render_frame_host_impl);
+  portal->Bind(std::move(receiver), std::move(client));
+  auto* portal_raw = portal.get();
+  render_frame_host_impl->OnPortalCreatedForTesting(std::move(portal));
+  return Create(render_frame_host_impl, portal_raw);
 }
 
 PortalInterceptorForTesting* PortalInterceptorForTesting::Create(
     RenderFrameHostImpl* render_frame_host_impl,
     content::Portal* portal) {
-  // Take ownership of the portal.
-  std::unique_ptr<blink::mojom::Portal> mojom_portal_ptr =
-      portal->GetBindingForTesting()->SwapImplForTesting(nullptr);
-  std::unique_ptr<content::Portal> portal_ptr = base::WrapUnique(
-      static_cast<content::Portal*>(mojom_portal_ptr.release()));
-
-  // Create PortalInterceptorForTesting.
-  auto test_portal_ptr = base::WrapUnique(new PortalInterceptorForTesting(
-      render_frame_host_impl, std::move(portal_ptr)));
-  PortalInterceptorForTesting* test_portal = test_portal_ptr.get();
-
-  // Set the binding for the PortalInterceptorForTesting.
-  portal->GetBindingForTesting()->SwapImplForTesting(
-      std::move(test_portal_ptr));
-
-  return test_portal;
+  auto interceptor = base::WrapUnique(
+      new PortalInterceptorForTesting(render_frame_host_impl, portal));
+  auto* raw_interceptor = interceptor.get();
+  portal->SetInterceptorForTesting(std::move(interceptor));
+  return raw_interceptor;
 }
 
 // static
 PortalInterceptorForTesting* PortalInterceptorForTesting::From(
     content::Portal* portal) {
-  blink::mojom::Portal* impl = portal->GetBindingForTesting()->impl();
-  auto* interceptor = static_cast<PortalInterceptorForTesting*>(impl);
+  blink::mojom::Portal* impl = portal->GetInterceptorForTesting();
   CHECK_NE(static_cast<blink::mojom::Portal*>(portal), impl);
+  auto* interceptor = static_cast<PortalInterceptorForTesting*>(impl);
   CHECK_EQ(interceptor->GetPortal(), portal);
   return interceptor;
 }
 
 PortalInterceptorForTesting::PortalInterceptorForTesting(
-    RenderFrameHostImpl* render_frame_host_impl)
-    : PortalInterceptorForTesting(
-          render_frame_host_impl,
-          content::Portal::CreateForTesting(render_frame_host_impl)) {}
-
-PortalInterceptorForTesting::PortalInterceptorForTesting(
     RenderFrameHostImpl* render_frame_host_impl,
-    std::unique_ptr<content::Portal> portal)
+    content::Portal* portal)
     : observers_(base::MakeRefCounted<
                  base::RefCountedData<base::ObserverList<Observer>>>()),
-      portal_(std::move(portal)) {}
+      portal_(portal) {
+  DCHECK_EQ(render_frame_host_impl, portal->owner_render_frame_host());
+}
 
 PortalInterceptorForTesting::~PortalInterceptorForTesting() = default;
 
 blink::mojom::Portal* PortalInterceptorForTesting::GetForwardingInterface() {
-  return portal_.get();
+  return portal_;
 }
 
 void PortalInterceptorForTesting::Activate(blink::TransferableMessage data,

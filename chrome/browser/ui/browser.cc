@@ -144,6 +144,8 @@
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
+#include "chrome/browser/ui/tabs/tab_group.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
@@ -1073,14 +1075,18 @@ void Browser::OnTabStripModelChanged(TabStripModel* tab_strip_model,
                      selection.new_model.active(), selection.reason);
 }
 
-void Browser::OnTabGroupVisualsChanged(TabGroupId group,
-                                       const TabGroupVisualData* visual_data) {
-  SessionService* const session_service =
-      SessionServiceFactory::GetForProfile(profile_);
-  if (session_service) {
-    session_service->SetTabGroupMetadata(session_id(), group.token(),
-                                         visual_data->title(),
-                                         visual_data->color());
+void Browser::OnTabGroupChanged(const TabGroupChange& change) {
+  if (change.type == TabGroupChange::kVisualsChanged) {
+    SessionService* const session_service =
+        SessionServiceFactory::GetForProfile(profile_);
+    if (session_service) {
+      TabGroupVisualData* visual_data = tab_strip_model_->group_model()
+                                            ->GetTabGroup(change.group)
+                                            ->visual_data();
+      session_service->SetTabGroupMetadata(session_id(), change.group.token(),
+                                           visual_data->title(),
+                                           visual_data->color());
+    }
   }
 }
 

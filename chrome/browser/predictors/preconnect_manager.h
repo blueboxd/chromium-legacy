@@ -149,11 +149,16 @@ class PreconnectManager {
   // Starts special preconnect and preresolve jobs that are not cancellable and
   // don't report about their completion. They are considered more important
   // than trackable requests thus they are put in the front of the jobs queue.
-  virtual void StartPreresolveHost(const GURL& url);
-  virtual void StartPreresolveHosts(const std::vector<std::string>& hostnames);
-  // |network_isolation_key| specifies the key that network requests for the
-  // preconnected URL are expected to use. If a request is issued with a
-  // different key, it may not use the preconnected socket.
+  //
+  // |network_isolation_key| specifies the key that the corresponding network
+  // requests are expected to use. If a request is issued with a different key,
+  // it may not use the prefetched DNS entry or preconnected socket.
+  virtual void StartPreresolveHost(
+      const GURL& url,
+      const net::NetworkIsolationKey& network_isolation_key);
+  virtual void StartPreresolveHosts(
+      const std::vector<std::string>& hostnames,
+      const net::NetworkIsolationKey& network_isolation_key);
   virtual void StartPreconnectUrl(
       const GURL& url,
       bool allow_credentials,
@@ -185,6 +190,7 @@ class PreconnectManager {
       const net::NetworkIsolationKey& network_isolation_key) const;
   std::unique_ptr<ResolveHostClientImpl> PreresolveUrl(
       const GURL& url,
+      const net::NetworkIsolationKey& network_isolation_key,
       ResolveHostCallback callback) const;
   std::unique_ptr<ProxyLookupClientImpl> LookupProxyForUrl(
       const GURL& url,

@@ -10,7 +10,9 @@ namespace cc {
 class CC_EXPORT BrowserControlsOffsetManagerClient {
  public:
   virtual float TopControlsHeight() const = 0;
+  virtual float TopControlsMinHeight() const = 0;
   virtual float BottomControlsHeight() const = 0;
+  virtual float BottomControlsMinHeight() const = 0;
   virtual void SetCurrentBrowserControlsShownRatio(float top_ratio,
                                                    float bottom_ratio) = 0;
   virtual float CurrentTopControlsShownRatio() const = 0;

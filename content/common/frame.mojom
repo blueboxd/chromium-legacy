@@ -181,8 +181,9 @@ interface FrameNavigationControl {
       mojo_base.mojom.String16 javascript,
       bool wants_result) => (mojo_base.mojom.Value result);
 
-  // ONLY FOR TESTS: Same as above but adds a fake UserGestureIndicator around
-  // execution. (crbug.com/408426)
+  // ONLY FOR TESTS: Same as above but this can optionally trigger a fake user
+  // activation notification to test functionalities that are gated by user
+  // activation.
   JavaScriptExecuteRequestForTests(
       mojo_base.mojom.String16 javascript,
       bool wants_result,

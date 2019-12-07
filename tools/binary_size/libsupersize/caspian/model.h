@@ -249,6 +249,8 @@ struct BaseSizeInfo {
   BaseSizeInfo();
   BaseSizeInfo(const BaseSizeInfo&);
   virtual ~BaseSizeInfo();
+  virtual bool IsSparse() const = 0;
+
   Json::Value metadata;
   std::deque<std::string> owned_strings;
   SectionId ShortSectionName(const char* section_name);
@@ -259,6 +261,7 @@ struct SizeInfo : BaseSizeInfo {
   ~SizeInfo() override;
   SizeInfo(const SizeInfo& other) = delete;
   SizeInfo& operator=(const SizeInfo& other) = delete;
+  bool IsSparse() const override;
 
   // Entries in |raw_symbols| hold pointers to this data.
   std::vector<const char*> object_paths;
@@ -271,6 +274,8 @@ struct SizeInfo : BaseSizeInfo {
 
   // A container for each symbol group.
   std::deque<std::vector<Symbol*>> alias_groups;
+
+  bool is_sparse = false;
 };
 
 struct DeltaSizeInfo : BaseSizeInfo {
@@ -278,6 +283,7 @@ struct DeltaSizeInfo : BaseSizeInfo {
   ~DeltaSizeInfo() override;
   DeltaSizeInfo(const DeltaSizeInfo&);
   DeltaSizeInfo& operator=(const DeltaSizeInfo&);
+  bool IsSparse() const override;
 
   using Results = std::array<int32_t, 4>;
   Results CountsByDiffStatus() const {
@@ -319,6 +325,9 @@ struct NodeStats {
   NodeStats& operator+=(const NodeStats& other);
   SectionId ComputeBiggestSection() const;
   int32_t SumCount() const;
+  int32_t SumAdded() const;
+  int32_t SumRemoved() const;
+  DiffStatus GetGlobalDiffStatus() const;
 
   std::map<SectionId, Stat> child_stats;
 };
@@ -329,7 +338,10 @@ struct TreeNode {
 
   using CompareFunc =
       std::function<bool(const TreeNode* const& l, const TreeNode* const& r)>;
-  void WriteIntoJson(int depth, CompareFunc compare_func, Json::Value* out);
+  void WriteIntoJson(int depth,
+                     CompareFunc compare_func,
+                     bool is_sparse,
+                     Json::Value* out);
 
   GroupedPath id_path;
   const char* src_path = nullptr;

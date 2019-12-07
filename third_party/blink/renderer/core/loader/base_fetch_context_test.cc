@@ -119,7 +119,7 @@ class BaseFetchContextTest : public testing::Test {
   void SetUp() override {
     execution_context_ = MakeGarbageCollected<NullExecutionContext>();
     static_cast<NullExecutionContext*>(execution_context_.Get())
-        ->SetUpSecurityContext();
+        ->SetUpSecurityContextForTesting();
     resource_fetcher_properties_ =
         MakeGarbageCollected<TestResourceFetcherProperties>(
             *MakeGarbageCollected<FetchClientSettingsObjectImpl>(

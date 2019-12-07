@@ -2232,7 +2232,7 @@
           'caption': '''Allow printing only without background graphics''',
         },
       ],
-      'supported_on': ['chrome_os:79-'],
+      'supported_on': ['chrome_os:79-', 'chrome.*:80-'],
       'features': {
         'can_be_recommended': False,
         'dynamic_refresh': True,
@@ -2413,7 +2413,7 @@
           'caption': '''Disable background graphics printing mode by default''',
         },
       ],
-      'supported_on': ['chrome_os:79-'],
+      'supported_on': ['chrome_os:79-', 'chrome.*:80-'],
       'features': {
         'can_be_recommended': False,
         'dynamic_refresh': True,

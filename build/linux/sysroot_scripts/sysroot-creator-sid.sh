@@ -19,7 +19,7 @@ DIST=sid
 # from sid.  It will be needed until gnome keyring is removed
 # (http://crbug.com/466975 and http://crbug.com/355223).
 ARCHIVE_URL="https://snapshot.debian.org/archive/debian"
-ARCHIVE_TIMESTAMP=20191015T084824Z
+ARCHIVE_TIMESTAMP=20191205T152154Z
 APT_SOURCES_LIST="${ARCHIVE_URL}/${ARCHIVE_TIMESTAMP}/ stretch main
 ${ARCHIVE_URL}/${ARCHIVE_TIMESTAMP}/ experimental main
 ${ARCHIVE_URL}/${ARCHIVE_TIMESTAMP}/ sid main"
@@ -103,7 +103,7 @@ DEBIAN_PACKAGES="\
   libelf1
   libepoxy-dev
   libepoxy0
-  libevent-2.1-6
+  libevent-2.1-7
   libexpat1
   libexpat1-dev
   libffi-dev
@@ -114,7 +114,7 @@ DEBIAN_PACKAGES="\
   libfontconfig1
   libfontconfig1-dev
   libfreetype6
-  libfreetype6-dev
+  libfreetype-dev
   libfribidi-dev
   libfribidi0
   libgbm-dev
@@ -162,7 +162,7 @@ DEBIAN_PACKAGES="\
   libharfbuzz-gobject0
   libharfbuzz-icu0
   libharfbuzz0b
-  libhogweed4
+  libhogweed5
   libice6
   libicu-le-hb0
   libicu63
@@ -194,7 +194,7 @@ DEBIAN_PACKAGES="\
   libminizip1
   libmount-dev
   libmount1
-  libnettle6
+  libnettle7
   libnspr4
   libnspr4-dev
   libnss-db
@@ -299,9 +299,11 @@ DEBIAN_PACKAGES="\
   libxcb-dri2-0
   libxcb-dri2-0-dev
   libxcb-dri3-0
+  libxcb-dri3-dev
   libxcb-glx0
   libxcb-glx0-dev
   libxcb-present0
+  libxcb-present-dev
   libxcb-render0
   libxcb-render0-dev
   libxcb-shm0

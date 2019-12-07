@@ -1247,6 +1247,14 @@ void UiControllerAndroid::OnUserDataChanged(
     return;
   }
   DCHECK(ui_delegate_ != nullptr);
+  const CollectUserDataOptions* collect_user_data_options =
+      ui_delegate_->GetCollectUserDataOptions();
+  if (collect_user_data_options == nullptr) {
+    // If there are no options, there currently is no active
+    // CollectUserDataAction, the UI is not shown and does not need to be
+    // updated.
+    return;
+  }
 
   // TODO(crbug.com/806868): Add |setContactDetails|, |setShippingAddress| and
   // |setPaymentMethod|.
@@ -1259,8 +1267,6 @@ void UiControllerAndroid::OnUserDataChanged(
 
   if (field_change == UserData::FieldChange::ALL ||
       field_change == UserData::FieldChange::AVAILABLE_PROFILES) {
-    const CollectUserDataOptions* collect_user_data_options =
-        ui_delegate_->GetCollectUserDataOptions();
     auto jlist =
         Java_AssistantCollectUserDataModel_createAutofillProfileList(env);
     auto profile_indices = SortByCompleteness(*collect_user_data_options,
@@ -1276,8 +1282,6 @@ void UiControllerAndroid::OnUserDataChanged(
 
   if (field_change == UserData::FieldChange::ALL ||
       field_change == UserData::FieldChange::AVAILABLE_PAYMENT_INSTRUMENTS) {
-    const CollectUserDataOptions* collect_user_data_options =
-        ui_delegate_->GetCollectUserDataOptions();
     auto jlist =
         Java_AssistantCollectUserDataModel_createAutofillPaymentMethodList(env);
     auto sorted_payment_instrument_indices = SortByCompleteness(

@@ -198,6 +198,20 @@ TEST_F(TokenValidatorFactoryImplTest, Success) {
   run_loop_.Run();
 }
 
+TEST_F(TokenValidatorFactoryImplTest,
+       ValidResponseWithJsonSafetyPrefix_Success) {
+  token_validator_ =
+      token_validator_factory_->CreateTokenValidator(kLocalJid, kRemoteJid);
+
+  SetResponse(net::URLRequestTestJob::test_headers(),
+              ")]}'\n" + CreateResponse(token_validator_->token_scope()));
+
+  token_validator_->ValidateThirdPartyToken(
+      kToken, base::Bind(&TokenValidatorFactoryImplTest::SuccessCallback,
+                         base::Unretained(this)));
+  run_loop_.Run();
+}
+
 TEST_F(TokenValidatorFactoryImplTest, BadToken) {
   token_validator_ =
       token_validator_factory_->CreateTokenValidator(kLocalJid, kRemoteJid);

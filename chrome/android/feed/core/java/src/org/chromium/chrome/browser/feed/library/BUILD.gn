@@ -178,10 +178,8 @@ feed_lib_java_sources = [
   "common/feedobservable/Observable.java",
   "common/feedobservable/ObservableNotifier.java",
   "common/functional/Committer.java",
-  "common/functional/Consumer.java",
   "common/functional/Function.java",
   "common/functional/Predicate.java",
-  "common/functional/Supplier.java",
   "common/functional/Suppliers.java",
   "common/intern/HashPoolInterner.java",
   "common/intern/InternedMap.java",
@@ -467,6 +465,7 @@ android_library("feed_lib_java") {
     ":piet_resources",
     ":shared_stream_publicapi_menumeasurer_resources",
     ":sharedstream_contextmenumanager_resources",
+    "//base:base_java",
     "//components/feed/core/proto:proto_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:com_android_support_cardview_v7_java",
@@ -490,6 +489,7 @@ android_library("feed_conformance_test_lib_android_java") {
   testonly = true
   deps = [
     ":feed_lib_java",
+    "//base:base_java",
     "//components/feed/core/proto:proto_java",
     "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",
     "//third_party/google-truth:google_truth_java",

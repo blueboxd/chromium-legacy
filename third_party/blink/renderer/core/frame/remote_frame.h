@@ -43,7 +43,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   // Frame overrides:
   void Trace(blink::Visitor*) override;
   void Navigate(const FrameLoadRequest&, WebFrameLoadType) override;
-  RemoteSecurityContext* GetSecurityContext() const override;
+  const RemoteSecurityContext* GetSecurityContext() const override;
   bool DetachDocument() override;
   void CheckCompleted() override;
   bool ShouldClose() override;
@@ -83,6 +83,10 @@ class CORE_EXPORT RemoteFrame final : public Frame,
       const ParsedFeaturePolicy& parsed_header,
       const FeaturePolicy::FeatureState&);
 
+  void SetReplicatedSandboxFlags(WebSandboxFlags);
+  void SetInsecureRequestPolicy(WebInsecureRequestPolicy);
+  void SetInsecureNavigationsSet(const WebVector<unsigned>&);
+
   // blink::mojom::LocalFrame overrides:
   void WillEnterFullscreen() override;
   void ResetReplicatedContentSecurityPolicy() override;
@@ -111,7 +115,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
       mojo::PendingAssociatedReceiver<mojom::blink::RemoteFrame> receiver);
 
   Member<RemoteFrameView> view_;
-  Member<RemoteSecurityContext> security_context_;
+  RemoteSecurityContext security_context_;
   cc::Layer* cc_layer_ = nullptr;
   bool prevent_contents_opaque_changes_ = false;
   bool is_surface_layer_ = false;

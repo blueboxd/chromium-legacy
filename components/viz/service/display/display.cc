@@ -472,6 +472,20 @@ bool Display::DrawAndSwap() {
     return true;
   }
 
+  gfx::OverlayTransform current_display_transform = gfx::OVERLAY_TRANSFORM_NONE;
+  Surface* surface = surface_manager_->GetSurfaceForId(current_surface_id_);
+  if (surface->HasActiveFrame()) {
+    current_display_transform =
+        surface->GetActiveFrame().metadata.display_transform_hint;
+    if (current_display_transform != output_surface_->GetDisplayTransform()) {
+      output_surface_->SetDisplayTransformHint(current_display_transform);
+
+      // Gets the transform from |output_surface_| back so that if it ignores
+      // the hint, the rest of the code ignores the hint too.
+      current_display_transform = output_surface_->GetDisplayTransform();
+    }
+  }
+
   // During aggregation, SurfaceAggregator marks all resources used for a draw
   // in the resource provider.  This has the side effect of deleting unused
   // resources and their textures, generating sync tokens, and returning the
@@ -493,7 +507,7 @@ bool Display::DrawAndSwap() {
     frame = aggregator_->Aggregate(
         current_surface_id_,
         scheduler_ ? scheduler_->current_frame_display_time() : now_time,
-        ++swapped_trace_id_);
+        current_display_transform, ++swapped_trace_id_);
   }
 
   UMA_HISTOGRAM_COUNTS_1M("Compositing.SurfaceAggregator.AggregateUs",
@@ -522,11 +536,6 @@ bool Display::DrawAndSwap() {
   gfx::Size surface_size;
   bool have_damage = false;
   auto& last_render_pass = *frame.render_pass_list.back();
-
-  const gfx::OverlayTransform current_display_transform =
-      frame.metadata.display_transform_hint;
-  if (current_display_transform != output_surface_->GetDisplayTransform())
-    output_surface_->SetDisplayTransformHint(current_display_transform);
 
   // The CompositorFrame provided by the SurfaceAggregator includes the display
   // transform while |current_surface_size_| is the pre-transform size received

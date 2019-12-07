@@ -14,6 +14,7 @@ import android.util.Base64;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
 import org.chromium.chrome.browser.feed.library.api.host.logging.InternalFeedError;
@@ -36,7 +37,6 @@ import org.chromium.chrome.browser.feed.library.api.internal.store.UploadableAct
 import org.chromium.chrome.browser.feed.library.common.Result;
 import org.chromium.chrome.browser.feed.library.common.concurrent.MainThreadRunner;
 import org.chromium.chrome.browser.feed.library.common.concurrent.TaskQueue;
-import org.chromium.chrome.browser.feed.library.common.functional.Supplier;
 import org.chromium.chrome.browser.feed.library.common.intern.Interner;
 import org.chromium.chrome.browser.feed.library.common.intern.InternerWithStats;
 import org.chromium.chrome.browser.feed.library.common.intern.WeakPoolInterner;

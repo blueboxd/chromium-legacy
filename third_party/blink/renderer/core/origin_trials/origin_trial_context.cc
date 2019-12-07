@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/common/origin_trials/trial_token.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
@@ -31,12 +32,8 @@ namespace blink {
 
 namespace {
 
-static EnumerationHistogram& TokenValidationResultHistogram() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      EnumerationHistogram, histogram,
-      ("OriginTrials.ValidationResult",
-       static_cast<int>(OriginTrialTokenStatus::kLast)));
-  return histogram;
+void RecordTokenValidationResultHistogram(OriginTrialTokenStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("OriginTrials.ValidationResult", status);
 }
 
 bool IsWhitespace(UChar chr) {
@@ -305,8 +302,7 @@ bool OriginTrialContext::EnableTrialFromToken(const SecurityOrigin* origin,
   DCHECK(!token.IsEmpty());
 
   if (!trial_token_validator_) {
-    TokenValidationResultHistogram().Count(
-        static_cast<int>(OriginTrialTokenStatus::kNotSupported));
+    RecordTokenValidationResultHistogram(OriginTrialTokenStatus::kNotSupported);
     return false;
   }
 
@@ -343,7 +339,7 @@ bool OriginTrialContext::EnableTrialFromToken(const SecurityOrigin* origin,
     }
   }
 
-  TokenValidationResultHistogram().Count(static_cast<int>(token_result));
+  RecordTokenValidationResultHistogram(token_result);
   return valid;
 }
 

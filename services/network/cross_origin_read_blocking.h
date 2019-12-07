@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece_forward.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -25,8 +26,6 @@ FORWARD_DECLARE_TEST(CrossSiteDocumentResourceHandlerTest,
 }  // namespace content
 
 namespace network {
-
-struct ResourceResponseInfo;
 
 // CrossOriginReadBlocking (CORB) implements response blocking
 // policy for Site Isolation.  CORB will monitor network responses to a
@@ -106,7 +105,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     // whether |response| needs to be blocked.
     ResponseAnalyzer(const GURL& request_url,
                      const base::Optional<url::Origin>& request_initiator,
-                     const ResourceResponseInfo& response,
+                     const network::mojom::URLResponseHead& response,
                      base::Optional<url::Origin> request_initiator_site_lock,
                      mojom::RequestMode request_mode);
 
@@ -180,34 +179,34 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
         mojom::RequestMode request_mode,
         const GURL& request_url,
         const base::Optional<url::Origin>& request_initiator,
-        const ResourceResponseInfo& response,
+        const network::mojom::URLResponseHead& response,
         const base::Optional<url::Origin>& request_initiator_site_lock,
         MimeType canonical_mime_type);
 
     // Returns true if the response has a nosniff header.
-    static bool HasNoSniff(const ResourceResponseInfo& response);
+    static bool HasNoSniff(const network::mojom::URLResponseHead& response);
 
     // Checks if the response seems sensitive for CORB protection logging.
     // Returns true if the Access-Control-Allow-Origin header has a value other
     // than *.
     static bool SeemsSensitiveFromCORSHeuristic(
-        const ResourceResponseInfo& response);
+        const network::mojom::URLResponseHead& response);
 
     // Checks if the response seems sensitive for CORB protection logging.
     // Returns true if the response has Vary: Origin and Cache-Control: Private
     // headers.
     static bool SeemsSensitiveFromCacheHeuristic(
-        const ResourceResponseInfo& response);
+        const network::mojom::URLResponseHead& response);
 
     // Checks if a response has an Accept-Ranges header. This indicates the
     // server supports range requests which may allow bypassing CORB due to
     // their multipart content type.
     static bool SupportsRangeRequests(
-        const ResourceResponseInfo& response_headers);
+        const network::mojom::URLResponseHead& response_headers);
 
     // Determines the MIME type bucket for CORB protection logging.
     static MimeTypeBucket GetMimeTypeBucket(
-        const ResourceResponseInfo& response);
+        const network::mojom::URLResponseHead& response);
 
     // Translates a blocking decision into a protection decision for use by
     // LogSensitiveResponseProtection.
@@ -268,7 +267,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
   };
 
   // Used to strip response headers if a decision to block has been made.
-  static void SanitizeBlockedResponse(ResourceResponseInfo* response);
+  static void SanitizeBlockedResponse(
+      network::mojom::URLResponseHead* response);
 
   // This enum backs a histogram, so do not change the order of entries or
   // remove entries. When adding new entries update |kMaxValue| and enums.xml

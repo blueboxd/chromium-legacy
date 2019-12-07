@@ -44,8 +44,9 @@ const int kDefaultNativeDesktopMediaListUpdatePeriod = 1000;
 // Returns a hash of a DesktopFrame content to detect when image for a desktop
 // media source has changed.
 uint32_t GetFrameHash(webrtc::DesktopFrame* frame) {
+  // TODO(dcheng): Is this vulnerable to overflow??
   int data_size = frame->stride() * frame->size().height();
-  return base::Hash(frame->data(), data_size);
+  return base::FastHash(base::make_span(frame->data(), data_size));
 }
 
 gfx::ImageSkia ScaleDesktopFrame(std::unique_ptr<webrtc::DesktopFrame> frame,

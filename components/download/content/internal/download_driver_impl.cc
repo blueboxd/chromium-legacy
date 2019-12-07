@@ -165,8 +165,8 @@ void DownloadDriverImpl::Start(
     return;
 
   std::unique_ptr<DownloadUrlParameters> download_url_params(
-      new DownloadUrlParameters(request_params.url,
-                                traffic_annotation));
+      new DownloadUrlParameters(request_params.url, traffic_annotation,
+                                net::NetworkIsolationKey::Todo()));
 
   // TODO(xingliu): Make content::DownloadManager handle potential guid
   // collision and return an error to fail the download cleanly.

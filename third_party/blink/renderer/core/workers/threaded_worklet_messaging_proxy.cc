@@ -65,7 +65,7 @@ void ThreadedWorkletMessagingProxy::Initialize(
           document->GetSecurityOrigin(), document->IsSecureContext(),
           document->GetHttpsState(), worker_clients,
           document->GetFrame()->Client()->CreateWorkerContentSettingsClient(),
-          document->AddressSpace(),
+          document->GetSecurityContext().AddressSpace(),
           OriginTrialContext::GetTokens(document).get(),
           base::UnguessableToken::Create(),
           std::make_unique<WorkerSettings>(document->GetSettings()),

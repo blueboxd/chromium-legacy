@@ -239,7 +239,7 @@ HRESULT DoUninstall(const base::FilePath& installer_path,
 
   // Delete all files in the destination directory.  This directory does not
   // contain any configuration files or anything else user generated.
-  if (!base::DeleteFile(dest_path, true)) {
+  if (!base::DeleteFileRecursively(dest_path)) {
     has_failures = true;
     ScheduleDirectoryForDeletion(dest_path);
   }

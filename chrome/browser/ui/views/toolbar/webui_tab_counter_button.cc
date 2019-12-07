@@ -14,12 +14,15 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/chrome_view_class_properties.h"
+#include "chrome/browser/ui/views/feature_promos/feature_promo_colors.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/animation/tween.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/controls/label.h"
@@ -99,15 +102,67 @@ class WebUITabCounterButton : public views::Button {
   explicit WebUITabCounterButton(views::ButtonListener* listener);
   ~WebUITabCounterButton() override;
 
+  void UpdateColors();
+
+  // views::Button:
+  void AfterPropertyChange(const void* key, int64_t old_value) override;
   void AddLayerBeneathView(ui::Layer* new_layer) override;
   void RemoveLayerBeneathView(ui::Layer* old_layer) override;
-
   void OnThemeChanged() override;
 
   std::unique_ptr<TabCounterUpdater> counter_updater_;
   views::InkDropContainerView* ink_drop_container_;
   views::Label* label_;
 };
+
+WebUITabCounterButton::WebUITabCounterButton(views::ButtonListener* listener)
+    : views::Button(listener) {}
+
+WebUITabCounterButton::~WebUITabCounterButton() = default;
+
+void WebUITabCounterButton::UpdateColors() {
+  const ui::ThemeProvider* theme_provider = GetThemeProvider();
+  const SkColor toolbar_color =
+      theme_provider ? theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR)
+                     : gfx::kPlaceholderColor;
+  label_->SetBackgroundColor(toolbar_color);
+
+  const SkColor normal_text_color =
+      theme_provider
+          ? theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON)
+          : gfx::kPlaceholderColor;
+  const SkColor current_text_color =
+      GetProperty(kHasInProductHelpPromoKey)
+          ? GetFeaturePromoHighlightColorForToolbar(theme_provider)
+          : normal_text_color;
+
+  label_->SetEnabledColor(current_text_color);
+  label_->SetBorder(views::CreateRoundedRectBorder(
+      2,
+      views::LayoutProvider::Get()->GetCornerRadiusMetric(
+          views::EMPHASIS_MEDIUM),
+      current_text_color));
+}
+
+void WebUITabCounterButton::AfterPropertyChange(const void* key,
+                                                int64_t old_value) {
+  if (key != kHasInProductHelpPromoKey)
+    return;
+  UpdateColors();
+}
+
+void WebUITabCounterButton::AddLayerBeneathView(ui::Layer* new_layer) {
+  ink_drop_container_->AddLayerBeneathView(new_layer);
+}
+
+void WebUITabCounterButton::RemoveLayerBeneathView(ui::Layer* old_layer) {
+  ink_drop_container_->RemoveLayerBeneathView(old_layer);
+}
+
+void WebUITabCounterButton::OnThemeChanged() {
+  UpdateColors();
+  ConfigureInkDropForToolbar(this);
+}
 
 }  // namespace
 
@@ -149,30 +204,4 @@ std::unique_ptr<views::View> CreateWebUITabCounterButton(
   tab_counter->counter_updater_->UpdateCounter(tab_strip_model);
 
   return tab_counter;
-}
-
-WebUITabCounterButton::WebUITabCounterButton(views::ButtonListener* listener)
-    : views::Button(listener) {}
-
-WebUITabCounterButton::~WebUITabCounterButton() = default;
-
-void WebUITabCounterButton::AddLayerBeneathView(ui::Layer* new_layer) {
-  ink_drop_container_->AddLayerBeneathView(new_layer);
-}
-
-void WebUITabCounterButton::RemoveLayerBeneathView(ui::Layer* old_layer) {
-  ink_drop_container_->RemoveLayerBeneathView(old_layer);
-}
-
-void WebUITabCounterButton::OnThemeChanged() {
-  const SkColor contents_color =
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
-  label_->SetEnabledColor(contents_color);
-  label_->SetBorder(views::CreateRoundedRectBorder(
-      2,
-      views::LayoutProvider::Get()->GetCornerRadiusMetric(
-          views::EMPHASIS_MEDIUM),
-      contents_color));
-
-  ConfigureInkDropForToolbar(this);
 }

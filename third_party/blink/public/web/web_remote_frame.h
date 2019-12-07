@@ -115,7 +115,7 @@ class WebRemoteFrame : public WebFrame {
   virtual void AddReplicatedContentSecurityPolicyHeader(
       const WebString& header_value,
       network::mojom::ContentSecurityPolicyType,
-      WebContentSecurityPolicySource) = 0;
+      network::mojom::ContentSecurityPolicySource) = 0;
 
   // Resets replicated CSP headers to an empty set.
   virtual void ResetReplicatedContentSecurityPolicy() = 0;

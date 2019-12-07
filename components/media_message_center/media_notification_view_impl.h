@@ -78,6 +78,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
       const base::flat_set<media_session::mojom::MediaSessionAction>& actions)
       override;
   void UpdateWithMediaArtwork(const gfx::ImageSkia& image) override;
+  void UpdateWithFavicon(const gfx::ImageSkia& icon) override;
 
   const views::Label* title_label_for_testing() const { return title_label_; }
 

@@ -4,6 +4,7 @@
 
 #include "components/heap_profiling/test_driver.h"
 
+#include <algorithm>
 #include <string>
 
 #include "base/bind.h"
@@ -15,6 +16,7 @@
 #include "base/sampling_heap_profiler/poisson_allocation_sampler.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/heap_profiler_event_filter.h"
 #include "base/values.h"
@@ -54,8 +56,8 @@ constexpr int kVariadicAllocCount = 157;
 // The sample rate should not affect the sampled allocations. Intentionally
 // choose an odd number.
 constexpr int kSampleRate = 7777;
-constexpr int kSamplingAllocSize = 100;
-constexpr int kSamplingAllocCount = 10000;
+constexpr int kSamplingAllocSize = 1000;
+constexpr int kSamplingAllocCount = 1000;
 const char kSamplingAllocTypeName[] = "kSamplingAllocTypeName";
 
 // Test fixed-size partition alloc. The size must be aligned to system pointer
@@ -718,11 +720,7 @@ bool TestDriver::CheckOrStartProfilingOnUIThreadWithNestedRunLoops() {
     // Even if profiling has started, it's possible that the allocator shim
     // has not yet been initialized. Wait for it.
     if (ShouldProfileBrowser()) {
-      std::unique_ptr<base::RunLoop> run_loop(new base::RunLoop);
-      bool already_initialized = SetOnInitAllocatorShimCallbackForTesting(
-          run_loop->QuitClosure(), base::ThreadTaskRunnerHandle::Get());
-      if (!already_initialized)
-        run_loop->Run();
+      WaitForProfilingToStartForBrowserUIThread();
     }
     return true;
   }
@@ -746,8 +744,10 @@ bool TestDriver::CheckOrStartProfilingOnUIThreadWithNestedRunLoops() {
                                : 1;
   Supervisor::GetInstance()->Start(options_.mode, options_.stack_mode,
                                    sampling_rate, std::move(start_callback));
-
   run_loop->Run();
+  if (ShouldProfileBrowser()) {
+    WaitForProfilingToStartForBrowserUIThread();
+  }
 
   return true;
 }
@@ -984,6 +984,26 @@ bool TestDriver::HasNativeFrames() {
 
 bool TestDriver::IsRecordingAllAllocations() {
   return !options_.should_sample || options_.sample_everything;
+}
+
+void TestDriver::WaitForProfilingToStartForBrowserUIThread() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  while (true) {
+    std::vector<base::ProcessId> profiled_pids;
+    base::RunLoop run_loop;
+    auto callback = base::BindLambdaForTesting(
+        [&profiled_pids, &run_loop](std::vector<base::ProcessId> pids) {
+          profiled_pids = std::move(pids);
+          run_loop.Quit();
+        });
+    Supervisor::GetInstance()->GetProfiledPids(std::move(callback));
+    run_loop.Run();
+
+    if (std::find(profiled_pids.begin(), profiled_pids.end(),
+                  base::GetCurrentProcId()) != profiled_pids.end()) {
+      break;
+    }
+  }
 }
 
 void TestDriver::WaitForProfilingToStartForAllRenderersUIThread() {

@@ -1031,7 +1031,8 @@ TEST_F(ChromeDownloadManagerDelegateTest, SanitizeGoogleSearchLink) {
     prefs->SetBoolean(prefs::kForceGoogleSafeSearch, is_safe_search_enabled);
 
     download::DownloadUrlParameters params(kGoogleSearchUrl,
-                                           TRAFFIC_ANNOTATION_FOR_TESTS);
+                                           TRAFFIC_ANNOTATION_FOR_TESTS,
+                                           net::NetworkIsolationKey());
 
     delegate()->SanitizeDownloadParameters(&params);
     const auto& actual_url =

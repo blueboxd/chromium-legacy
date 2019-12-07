@@ -58,10 +58,10 @@ class StringSplitter {
 
    private:
     void Advance() {
-      auto begin = current_.end();
+      base::StringPiece::const_iterator begin = current_.end();
       while (begin != end_ && splitter_->is_separator_(*begin))
         ++begin;
-      auto end = begin;
+      base::StringPiece::const_iterator end = begin;
       while (end != end_ && !splitter_->is_separator_(*end))
         ++end;
       current_ = base::StringPiece(begin, end - begin);

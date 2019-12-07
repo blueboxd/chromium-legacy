@@ -155,9 +155,6 @@ LayerTreeImpl::LayerTreeImpl(
       handle_visibility_changed_(false),
       have_scroll_event_handlers_(false),
       event_listener_properties_(),
-      browser_controls_shrink_blink_size_(false),
-      top_controls_height_(0),
-      bottom_controls_height_(0),
       top_controls_shown_ratio_(std::move(top_controls_shown_ratio)),
       bottom_controls_shown_ratio_(std::move(bottom_controls_shown_ratio)) {
   property_trees()->is_main_thread = false;
@@ -380,15 +377,16 @@ void LayerTreeImpl::UpdateViewportContainerSizes() {
   float top_controls_layout_height =
       browser_controls_shrink_blink_size() ? top_controls_height() : 0.f;
   float top_content_offset =
-      top_controls_height_ > 0 ? top_controls_height_ * top_controls_shown_ratio
-                               : 0.f;
+      top_controls_height() > 0
+          ? top_controls_height() * top_controls_shown_ratio
+          : 0.f;
   float delta_from_top_controls =
       top_controls_layout_height - top_content_offset;
   float bottom_controls_layout_height =
       browser_controls_shrink_blink_size() ? bottom_controls_height() : 0.f;
   float bottom_content_offset =
-      bottom_controls_height_ > 0
-          ? bottom_controls_height_ * bottom_controls_shown_ratio
+      bottom_controls_height() > 0
+          ? bottom_controls_height() * bottom_controls_shown_ratio
           : 0.f;
   delta_from_top_controls +=
       bottom_controls_layout_height - bottom_content_offset;
@@ -562,10 +560,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
                                             max_page_scale_factor());
   target_tree->SetExternalPageScaleFactor(external_page_scale_factor_);
 
-  target_tree->set_browser_controls_shrink_blink_size(
-      browser_controls_shrink_blink_size_);
-  target_tree->SetTopControlsHeight(top_controls_height_);
-  target_tree->SetBottomControlsHeight(bottom_controls_height_);
+  target_tree->SetBrowserControlsParams(browser_controls_params_);
   target_tree->PushBrowserControls(nullptr, nullptr);
 
   target_tree->set_overscroll_behavior(overscroll_behavior_);
@@ -1013,28 +1008,17 @@ void LayerTreeImpl::PushPageScaleFactorAndLimits(const float* page_scale_factor,
     UpdatePageScaleNode();
 }
 
-void LayerTreeImpl::set_browser_controls_shrink_blink_size(bool shrink) {
-  if (browser_controls_shrink_blink_size_ == shrink)
+void LayerTreeImpl::SetBrowserControlsParams(
+    const BrowserControlsParams& params) {
+  if (browser_controls_params_ == params)
     return;
 
-  browser_controls_shrink_blink_size_ = shrink;
+  browser_controls_params_ = params;
   UpdateViewportContainerSizes();
-}
 
-void LayerTreeImpl::SetTopControlsHeight(float top_controls_height) {
-  if (top_controls_height_ == top_controls_height)
-    return;
-
-  top_controls_height_ = top_controls_height;
-  UpdateViewportContainerSizes();
-}
-
-void LayerTreeImpl::SetBottomControlsHeight(float bottom_controls_height) {
-  if (bottom_controls_height_ == bottom_controls_height)
-    return;
-
-  bottom_controls_height_ = bottom_controls_height;
-  UpdateViewportContainerSizes();
+  if (IsActiveTree())
+    host_impl_->browser_controls_manager()->OnBrowserControlsParamsChanged(
+        params.animate_browser_controls_height_changes);
 }
 
 void LayerTreeImpl::set_overscroll_behavior(

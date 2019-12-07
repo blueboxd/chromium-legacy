@@ -9,6 +9,8 @@ import static org.chromium.chrome.browser.feed.library.common.Validators.checkSt
 import android.support.annotation.VisibleForTesting;
 import android.support.v7.widget.RecyclerView;
 
+import org.chromium.base.Consumer;
+import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.ContentMetadata;
 import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
@@ -34,8 +36,6 @@ import org.chromium.chrome.browser.feed.library.basicstream.internal.viewlogging
 import org.chromium.chrome.browser.feed.library.basicstream.internal.viewloggingupdater.ViewLoggingUpdater;
 import org.chromium.chrome.browser.feed.library.common.concurrent.CancelableTask;
 import org.chromium.chrome.browser.feed.library.common.concurrent.MainThreadRunner;
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
-import org.chromium.chrome.browser.feed.library.common.functional.Supplier;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 import org.chromium.chrome.browser.feed.library.sharedstream.constants.Constants;
 import org.chromium.chrome.browser.feed.library.sharedstream.contextmenumanager.ContextMenuManager;

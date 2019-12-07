@@ -11,7 +11,6 @@
 from __future__ import print_function
 
 import argparse
-import collections
 import os
 import re
 import sys
@@ -20,64 +19,60 @@ from xml.dom import minidom
 _BUILD_ANDROID_DIR = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(_BUILD_ANDROID_DIR)
 
-from pylib.constants import host_paths
-
 _TMP_DIR_RE = re.compile(r'^/tmp/.*/(SRC_ROOT[0-9]+|PRODUCT_DIR)/')
 _THIS_FILE = os.path.abspath(__file__)
 _DEFAULT_CONFIG_PATH = os.path.join(os.path.dirname(_THIS_FILE),
                                     'suppressions.xml')
-_DOC = (
-    '\nSTOP! It looks like you want to suppress some lint errors:\n'
-    '- Have you tried identifing the offending patch?\n'
-    '  Ask the author for a fix and/or revert the patch.\n'
-    '- It is preferred to add suppressions in the code instead of\n'
-    '  sweeping it under the rug here. See:\n\n'
-    '    http://developer.android.com/tools/debugging/improving-w-lint.html\n'
-    '\n'
-    'Still reading?\n'
-    '- You can edit this file manually to suppress an issue\n'
-    '  globally if it is not applicable to the project.\n'
-    '  When inserting new tags, keep this file in sorted order.\n'
-    '- You can also automatically add issues found so for in the\n'
-    '  build process by running:\n\n'
-    '    ' + os.path.relpath(_THIS_FILE, host_paths.DIR_SOURCE_ROOT) + '\n\n'
-    '  which will generate this file (Comments are not preserved).\n'
-    '  Note: PRODUCT_DIR will be substituted at run-time with actual\n'
-    '  directory path (e.g. out/Debug)\n')
+_INSERT_COMMENT = ('TODO: This line was added by suppress.py,'
+                   ' please add an explanation.')
 
 
-_Issue = collections.namedtuple('Issue', ['severity', 'paths', 'regexps'])
+class _Issue(object):
+
+  def __init__(self, dom_element):
+    self.regexps = set()
+    self.dom_element = dom_element
 
 
-def _ParseConfigFile(config_path):
-  print('Parsing %s' % config_path)
+def _CollectIssuesFromDom(dom):
   issues_dict = {}
-  dom = minidom.parse(config_path)
-  for issue in dom.getElementsByTagName('issue'):
-    issue_id = issue.attributes['id'].value
-    severity = issue.getAttribute('severity')
+  for issue_element in dom.getElementsByTagName('issue'):
+    issue_id = issue_element.attributes['id'].value
+    issue = _Issue(issue_element)
+    issues_dict[issue_id] = issue
+    for child in issue_element.childNodes:
+      if child.nodeType != minidom.Node.ELEMENT_NODE:
+        continue
+      if child.tagName == 'ignore' and child.getAttribute('regexp'):
+        issue.regexps.add(child.getAttribute('regexp'))
 
-    path_elements = (
-        p.attributes.get('path')
-        for p in issue.getElementsByTagName('ignore'))
-    paths = set(p.value for p in path_elements if p)
-
-    regexp_elements = (
-        p.attributes.get('regexp')
-        for p in issue.getElementsByTagName('ignore'))
-    regexps = set(r.value for r in regexp_elements if r)
-
-    issues_dict[issue_id] = _Issue(severity, paths, regexps)
   return issues_dict
 
 
-def _ParseAndMergeResultFile(result_path, issues_dict):
+def _TrimWhitespaceNodes(n):
+  """Remove all whitespace-only TEXT_NODEs."""
+  rm_children = []
+  for c in n.childNodes:
+    if c.nodeType == minidom.Node.TEXT_NODE and c.data.strip() == '':
+      rm_children.append(c)
+    else:
+      _TrimWhitespaceNodes(c)
+
+  for c in rm_children:
+    n.removeChild(c)
+
+
+def _ParseAndInsertNewSuppressions(result_path, config_path):
+  print('Parsing %s' % config_path)
+  config_dom = minidom.parse(config_path)
+  issues_dict = _CollectIssuesFromDom(config_dom)
   print('Parsing and merging %s' % result_path)
   dom = minidom.parse(result_path)
-  for issue in dom.getElementsByTagName('issue'):
-    issue_id = issue.attributes['id'].value
-    severity = issue.attributes['severity'].value
-    path = issue.getElementsByTagName('location')[0].attributes['file'].value
+  for issue_element in dom.getElementsByTagName('issue'):
+    issue_id = issue_element.attributes['id'].value
+    severity = issue_element.attributes['severity'].value
+    path = issue_element.getElementsByTagName(
+        'location')[0].attributes['file'].value
     # Strip temporary file path.
     path = re.sub(_TMP_DIR_RE, '', path)
     # Escape Java inner class name separator and suppress with regex instead
@@ -85,41 +80,38 @@ def _ParseAndMergeResultFile(result_path, issues_dict):
     # escapes '_', causing trouble with PRODUCT_DIR.
     regexp = path.replace('$', r'\$')
     if issue_id not in issues_dict:
-      issues_dict[issue_id] = _Issue(severity, set(), set())
-    issues_dict[issue_id].regexps.add(regexp)
-
-
-def _WriteConfigFile(config_path, issues_dict):
-  new_dom = minidom.getDOMImplementation().createDocument(None, 'lint', None)
-  top_element = new_dom.documentElement
-  top_element.appendChild(new_dom.createComment(_DOC))
-  for issue_id, issue in sorted(issues_dict.iteritems(), key=lambda i: i[0]):
-    issue_element = new_dom.createElement('issue')
-    issue_element.attributes['id'] = issue_id
-    if issue.severity:
-      issue_element.attributes['severity'] = issue.severity
-    if issue.severity == 'ignore':
-      print('Warning: [%s] is suppressed globally.' % issue_id)
+      element = config_dom.createElement('issue')
+      element.attributes['id'] = issue_id
+      element.attributes['severity'] = severity
+      config_dom.documentElement.appendChild(element)
+      issue = _Issue(element)
+      issues_dict[issue_id] = issue
     else:
-      for path in sorted(issue.paths):
-        ignore_element = new_dom.createElement('ignore')
-        ignore_element.attributes['path'] = path
-        issue_element.appendChild(ignore_element)
-      for regexp in sorted(issue.regexps):
-        ignore_element = new_dom.createElement('ignore')
-        ignore_element.attributes['regexp'] = regexp
-        issue_element.appendChild(ignore_element)
-    top_element.appendChild(issue_element)
+      issue = issues_dict[issue_id]
+      if issue.dom_element.getAttribute('severity') == 'ignore':
+        continue
+
+    if regexp not in issue.regexps:
+      issue.regexps.add(regexp)
+      ignore_element = config_dom.createElement('ignore')
+      ignore_element.attributes['regexp'] = regexp
+      issue.dom_element.appendChild(config_dom.createComment(_INSERT_COMMENT))
+      issue.dom_element.appendChild(ignore_element)
+
+    for issue_id, issue in issues_dict.iteritems():
+      if issue.dom_element.getAttribute('severity') == 'ignore':
+        print('Warning: [%s] is suppressed globally.' % issue_id)
+
+  # toprettyxml inserts whitespace, so delete whitespace first.
+  _TrimWhitespaceNodes(config_dom.documentElement)
 
   with open(config_path, 'w') as f:
-    f.write(new_dom.toprettyxml(indent='  ', encoding='utf-8'))
+    f.write(config_dom.toprettyxml(indent='  ', encoding='utf-8'))
   print('Updated %s' % config_path)
 
 
 def _Suppress(config_path, result_path):
-  issues_dict = _ParseConfigFile(config_path)
-  _ParseAndMergeResultFile(result_path, issues_dict)
-  _WriteConfigFile(config_path, issues_dict)
+  _ParseAndInsertNewSuppressions(result_path, config_path)
 
 
 def main():

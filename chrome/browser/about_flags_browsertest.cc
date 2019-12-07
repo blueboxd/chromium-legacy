@@ -178,7 +178,7 @@ class AboutFlagsBrowserTest : public InProcessBrowserTest,
   base::test::ScopedFeatureList feature_list_;
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          AboutFlagsBrowserTest,
                          ::testing::Values(true, false));
 

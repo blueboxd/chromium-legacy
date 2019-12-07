@@ -117,6 +117,23 @@ void TestingSpellCheckProvider::FillSuggestionList(const base::string16&,
 }
 #endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+void TestingSpellCheckProvider::GetPerLanguageSuggestions(
+    const base::string16& word,
+    GetPerLanguageSuggestionsCallback callback) {
+  NOTREACHED();
+}
+
+void TestingSpellCheckProvider::RequestPartialTextCheck(
+    const base::string16& text,
+    int route_id,
+    const std::vector<SpellCheckResult>& partial_results,
+    bool fill_suggestions,
+    RequestPartialTextCheckCallback callback) {
+  NOTREACHED();
+}
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+
 #if defined(OS_ANDROID)
 void TestingSpellCheckProvider::DisconnectSessionBridge() {
   NOTREACHED();

@@ -306,8 +306,8 @@ class SignedExchangeHandlerTest
   SignedExchangeLoadResult result() const { return result_; }
   net::Error error() const { return error_; }
   const GURL& inner_url() const { return inner_url_; }
-  const network::ResourceResponseHead& resource_response() const {
-    return resource_response_;
+  const network::mojom::URLResponseHead& resource_response() const {
+    return *resource_response_;
   }
 
   // Creates a TestURLRequestContext that uses |mock_ct_policy_enforcer_|.
@@ -385,13 +385,13 @@ class SignedExchangeHandlerTest
   void OnHeaderFound(SignedExchangeLoadResult result,
                      net::Error error,
                      const GURL& url,
-                     const network::ResourceResponseHead& resource_response,
+                     network::mojom::URLResponseHeadPtr resource_response,
                      std::unique_ptr<net::SourceStream> payload_stream) {
     read_header_ = true;
     result_ = result;
     error_ = error;
     inner_url_ = url;
-    resource_response_ = resource_response;
+    resource_response_ = std::move(resource_response);
     payload_stream_ = std::move(payload_stream);
   }
 
@@ -421,7 +421,7 @@ class SignedExchangeHandlerTest
   SignedExchangeLoadResult result_;
   net::Error error_;
   GURL inner_url_;
-  network::ResourceResponseHead resource_response_;
+  network::mojom::URLResponseHeadPtr resource_response_;
   std::unique_ptr<net::SourceStream> payload_stream_;
   std::string source_stream_contents_;
 };

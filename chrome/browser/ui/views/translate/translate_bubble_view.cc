@@ -1501,9 +1501,10 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
                      COLUMN_SET_ID_ALWAYS_CHECKBOX);
     advanced_always_translate_checkbox_ =
         layout->AddView(std::move(advanced_always_translate_checkbox));
+    layout->AddPaddingRow(views::GridLayout::kFixedSize, vertical_spacing * 2);
+  } else {
+    layout->AddPaddingRow(views::GridLayout::kFixedSize, vertical_spacing * 3);
   }
-
-  layout->AddPaddingRow(views::GridLayout::kFixedSize, vertical_spacing * 3);
 
   layout->StartRow(views::GridLayout::kFixedSize, COLUMN_SET_ID_BUTTONS);
   layout->SkipColumns(1);
@@ -1555,6 +1556,13 @@ views::Checkbox* TranslateBubbleView::GetAlwaysTranslateCheckbox() {
 void TranslateBubbleView::SwitchView(
     TranslateBubbleModel::ViewState view_state) {
   UpdateInsets(view_state);
+
+  if (view_state == TranslateBubbleModel::VIEW_STATE_SOURCE_LANGUAGE ||
+      view_state == TranslateBubbleModel::VIEW_STATE_TARGET_LANGUAGE) {
+    GetBubbleFrameView()->SetFootnoteView(nullptr);
+  } else {
+    GetBubbleFrameView()->SetFootnoteView(CreateWordmarkView(bubble_ui_model_));
+  }
 
   if (bubble_ui_model_ == language::TranslateUIBubbleModel::TAB) {
     SwitchTabForViewState(view_state);

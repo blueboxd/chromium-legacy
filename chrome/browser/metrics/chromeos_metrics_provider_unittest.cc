@@ -71,7 +71,9 @@ class FakeMultiDeviceSetupClientImplFactory
   // chromeos::multidevice_setup::MultiDeviceSetupClientImpl::Factory:
   // NOTE: At most, one client should be created per-test.
   std::unique_ptr<chromeos::multidevice_setup::MultiDeviceSetupClient>
-  BuildInstance(service_manager::Connector* connector) override {
+  BuildInstance(
+      mojo::PendingRemote<chromeos::multidevice_setup::mojom::MultiDeviceSetup>)
+      override {
     EXPECT_TRUE(fake_multidevice_setup_client_);
     return std::move(fake_multidevice_setup_client_);
   }

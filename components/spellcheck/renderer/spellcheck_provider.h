@@ -116,6 +116,13 @@ class SpellCheckProvider : public content::RenderFrameObserver,
       const std::vector<SpellCheckResult>& results);
 #endif
 
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+  void HybridSpellCheckParagraphComplete(
+      const base::string16& text,
+      const int request_id,
+      std::vector<SpellCheckResult> renderer_results);
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+
   // Holds ongoing spellchecking operations.
   WebTextCheckCompletions text_check_completions_;
 

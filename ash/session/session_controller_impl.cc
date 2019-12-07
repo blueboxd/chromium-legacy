@@ -352,16 +352,15 @@ void SessionControllerImpl::SetUserSessionOrder(
     // most-recently active user with a loaded PrefService.
     PrefService* user_pref_service =
         GetUserPrefServiceForUser(user_sessions_[0]->user_info.account_id);
-    if (user_pref_service)
+    if (user_pref_service && last_active_user_prefs_ != user_pref_service) {
       last_active_user_prefs_ = user_pref_service;
+      MaybeNotifyOnActiveUserPrefServiceChanged();
+    }
 
     for (auto& observer : observers_) {
       observer.OnActiveUserSessionChanged(
           user_sessions_[0]->user_info.account_id);
     }
-
-    if (user_pref_service)
-      MaybeNotifyOnActiveUserPrefServiceChanged();
 
     UpdateLoginStatus();
   }

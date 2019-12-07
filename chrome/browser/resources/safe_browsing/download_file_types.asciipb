@@ -8,7 +8,7 @@
 ##
 ## Top level settings
 ##
-version_id: 40
+version_id: 41
 sampled_ping_probability: 0.01
 max_archived_binaries_to_report: 10
 default_file_type {
@@ -1706,6 +1706,29 @@ file_types {
   ping_setting: FULL_PING
   platform_settings {
     platform: PLATFORM_WINDOWS
+    danger_level: DANGEROUS
+    auto_open_hint: DISALLOW_AUTO_OPEN
+  }
+}
+
+# Internet shortcuts for MacOS. These are similar in functionality to .url or
+# .website, allowing automatic opening of files or URLs.
+file_types {
+  extension: "fileloc"
+  uma_value: 394
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_MAC
+    danger_level: DANGEROUS
+    auto_open_hint: DISALLOW_AUTO_OPEN
+  }
+}
+file_types {
+  extension: "webloc"
+  uma_value: 395
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_MAC
     danger_level: DANGEROUS
     auto_open_hint: DISALLOW_AUTO_OPEN
   }

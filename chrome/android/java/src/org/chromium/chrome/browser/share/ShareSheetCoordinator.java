@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.share;
 
-import android.content.Context;
+import android.app.Activity;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -42,20 +42,25 @@ public class ShareSheetCoordinator {
     }
 
     protected void showShareSheet(ShareParams params) {
-        Context context = params.getWindow().getContext().get();
-        ShareSheetBottomSheetContent bottomSheet = new ShareSheetBottomSheetContent(context);
+        Activity activity = params.getWindow().getActivity().get();
+        if (activity == null) {
+            return;
+        }
+
+        ShareSheetBottomSheetContent bottomSheet = new ShareSheetBottomSheetContent(activity);
 
         // QR Codes
         PropertyModel qrcodePropertyModel =
                 new PropertyModel.Builder(ShareSheetItemViewProperties.ALL_KEYS)
                         .with(ShareSheetItemViewProperties.ICON,
-                                AppCompatResources.getDrawable(context, R.drawable.qr_code))
+                                AppCompatResources.getDrawable(activity, R.drawable.qr_code))
                         .with(ShareSheetItemViewProperties.LABEL,
-                                context.getResources().getString(R.string.qr_code_share_icon_label))
+                                activity.getResources().getString(
+                                        R.string.qr_code_share_icon_label))
                         .with(ShareSheetItemViewProperties.CLICK_LISTENER,
                                 (currentContext) -> {
                                     QrCodeCoordinator qrCodeCoordinator =
-                                            new QrCodeCoordinator(context);
+                                            new QrCodeCoordinator(activity);
                                     qrCodeCoordinator.show();
                                 })
                         .build();
@@ -64,15 +69,14 @@ public class ShareSheetCoordinator {
         PropertyModel sttsPropertyModel =
                 new PropertyModel.Builder(ShareSheetItemViewProperties.ALL_KEYS)
                         .with(ShareSheetItemViewProperties.ICON,
-                                AppCompatResources.getDrawable(context, R.drawable.send_tab))
+                                AppCompatResources.getDrawable(activity, R.drawable.send_tab))
                         .with(ShareSheetItemViewProperties.LABEL,
-                                context.getResources().getString(
+                                activity.getResources().getString(
                                         R.string.send_tab_to_self_share_activity_title))
                         .with(ShareSheetItemViewProperties.CLICK_LISTENER,
                                 (shareParams) -> {
                                     mBottomSheetController.hideContent(bottomSheet, true);
-                                    SendTabToSelfShareActivity.actionHandler(
-                                            params.getWindow().getContext().get(),
+                                    SendTabToSelfShareActivity.actionHandler(activity,
                                             mActivityTabProvider.get()
                                                     .getWebContents()
                                                     .getNavigationController()
@@ -88,12 +92,12 @@ public class ShareSheetCoordinator {
         RecyclerView rcView =
                 bottomSheet.getContentView().findViewById(R.id.share_sheet_chrome_apps);
         adapter.registerType(SHARE_SHEET_ITEM, () -> {
-            return (ViewGroup) LayoutInflater.from(context).inflate(
+            return (ViewGroup) LayoutInflater.from(activity).inflate(
                     R.layout.share_sheet_item, (ViewGroup) rcView, false);
         }, ShareSheetCoordinator::bindShareItem);
 
         LinearLayoutManager layoutManager =
-                new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false);
+                new LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false);
         rcView.setLayoutManager(layoutManager);
         rcView.setAdapter(adapter);
 

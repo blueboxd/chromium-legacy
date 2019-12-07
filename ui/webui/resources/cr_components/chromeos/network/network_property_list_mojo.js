@@ -373,7 +373,7 @@ Polymer({
     if (key == 'tether.carrier') {
       assert(typeof value == 'string');
       return (!value || value == 'unknown-carrier') ?
-          this.i18n('tetherUnknownCarrier') :
+          this.i18n('OncTether-Carrier_Unknown') :
           value;
     }
 

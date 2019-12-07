@@ -63,6 +63,8 @@ jumbo_static_library("browser") {
     "android_affiliation/test_affiliation_fetcher_factory.h",
     "browser_save_password_progress_logger.cc",
     "browser_save_password_progress_logger.h",
+    "compromised_credentials_observer.cc",
+    "compromised_credentials_observer.h",
     "compromised_credentials_table.cc",
     "compromised_credentials_table.h",
     "credential_cache.cc",

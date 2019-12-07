@@ -34,7 +34,7 @@ class LeveldbScopedDatabaseUnitTest : public testing::Test {
 
   void TearDown() override {
     db_ = nullptr;
-    base::DeleteFile(database_dir_.GetPath(), true);
+    base::DeleteFileRecursively(database_dir_.GetPath());
   }
 
   ValueStore::Status ReadAllValues(

@@ -27,28 +27,37 @@ const int kMessageTextMaxRows = 32;
 const int kMessageTextMaxCols = 132;
 const int kDefaultPromptMaxRows = 24;
 const int kDefaultPromptMaxCols = 132;
-void EnforceMaxTextSize(const base::string16& in_string,
-                        base::string16* out_string) {
-  gfx::ElideRectangleString(in_string, kMessageTextMaxRows,
-                           kMessageTextMaxCols, false, out_string);
+
+base::string16 EnforceMaxTextSize(const base::string16& in_string) {
+  base::string16 out_string;
+  gfx::ElideRectangleString(in_string, kMessageTextMaxRows, kMessageTextMaxCols,
+                            false, &out_string);
+  return out_string;
 }
-void EnforceMaxPromptSize(const base::string16& in_string,
-                          base::string16* out_string) {
+
+base::string16 EnforceMaxPromptSize(const base::string16& in_string) {
+  base::string16 out_string;
   gfx::ElideRectangleString(in_string, kDefaultPromptMaxRows,
-                           kDefaultPromptMaxCols, false, out_string);
+                            kDefaultPromptMaxCols, false, &out_string);
+  return out_string;
 }
+
 #else
 // One-dimensional eliding.  Trust the window system to break the string
 // appropriately, but limit its overall length to something reasonable.
 const size_t kMessageTextMaxSize = 2000;
 const size_t kDefaultPromptMaxSize = 2000;
-void EnforceMaxTextSize(const base::string16& in_string,
-                        base::string16* out_string) {
-  gfx::ElideString(in_string, kMessageTextMaxSize, out_string);
+
+base::string16 EnforceMaxTextSize(const base::string16& in_string) {
+  base::string16 out_string;
+  gfx::ElideString(in_string, kMessageTextMaxSize, &out_string);
+  return out_string;
 }
-void EnforceMaxPromptSize(const base::string16& in_string,
-                          base::string16* out_string) {
-  gfx::ElideString(in_string, kDefaultPromptMaxSize, out_string);
+
+base::string16 EnforceMaxPromptSize(const base::string16& in_string) {
+  base::string16 out_string;
+  gfx::ElideString(in_string, kDefaultPromptMaxSize, &out_string);
+  return out_string;
 }
 #endif
 
@@ -76,14 +85,13 @@ JavaScriptAppModalDialog::JavaScriptAppModalDialog(
       web_contents_(web_contents),
       extra_data_map_(extra_data_map),
       javascript_dialog_type_(javascript_dialog_type),
+      message_text_(EnforceMaxTextSize(message_text)),
+      default_prompt_text_(EnforceMaxPromptSize(default_prompt_text)),
       display_suppress_checkbox_(display_suppress_checkbox),
       is_before_unload_dialog_(is_before_unload_dialog),
       is_reload_(is_reload),
       callback_(std::move(callback)),
-      use_override_prompt_text_(false) {
-  EnforceMaxTextSize(message_text, &message_text_);
-  EnforceMaxPromptSize(default_prompt_text, &default_prompt_text_);
-}
+      use_override_prompt_text_(false) {}
 
 JavaScriptAppModalDialog::~JavaScriptAppModalDialog() {
   CompleteDialog();

@@ -544,6 +544,20 @@ void TestGLES2Interface::set_supports_oop_raster(bool support) {
   test_capabilities_.supports_oop_raster = support;
 }
 
+void TestGLES2Interface::set_supports_shared_image_swap_chain(bool support) {
+  test_capabilities_.shared_image_swap_chain = support;
+}
+
+void TestGLES2Interface::set_supports_gpu_memory_buffer_format(
+    gfx::BufferFormat format,
+    bool support) {
+  if (support) {
+    test_capabilities_.gpu_memory_buffer_formats.Add(format);
+  } else {
+    test_capabilities_.gpu_memory_buffer_formats.Remove(format);
+  }
+}
+
 size_t TestGLES2Interface::NumTextures() const {
   return textures_.size();
 }

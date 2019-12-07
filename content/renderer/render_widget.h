@@ -26,6 +26,7 @@
 #include "build/build_config.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/input/touch_action.h"
+#include "cc/trees/browser_controls_params.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/managed_memory_policy.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
@@ -494,9 +495,7 @@ class CONTENT_EXPORT RenderWidget
   int GetLayerTreeId() const override;
   void SetBrowserControlsShownRatio(float top_ratio,
                                     float bottom_ratio) override;
-  void SetBrowserControlsHeight(float top_height,
-                                float bottom_height,
-                                bool shrink_viewport) override;
+  void SetBrowserControlsParams(cc::BrowserControlsParams params) override;
   viz::FrameSinkId GetFrameSinkId() override;
 
   // Returns the scale being applied to the document in blink by the device
@@ -1147,13 +1146,9 @@ class CONTENT_EXPORT RenderWidget
   // Object to record tab switch time into this RenderWidget
   TabSwitchTimeRecorder tab_switch_time_recorder_;
 
-  // Whether or not Blink's viewport size should be shrunk by the height of the
-  // URL-bar.
-  bool browser_controls_shrink_blink_size_ = false;
-  // The height of the browser top controls.
-  float top_controls_height_ = 0.f;
-  // The height of the browser bottom controls.
-  float bottom_controls_height_ = 0.f;
+  // Browser controls params such as top and bottom controls heights, whether
+  // controls shrink blink size etc.
+  cc::BrowserControlsParams browser_controls_params_;
 
   // The last seen page scale state, which comes from the main frame and is
   // propagated through the RenderWidget tree. This state is passed to any new

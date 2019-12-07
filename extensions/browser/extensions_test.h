@@ -64,6 +64,11 @@ class ExtensionsTest : public testing::Test {
 
   PrefService* pref_service() { return pref_service_.get(); }
 
+  MockExtensionSystem* extension_system() {
+    return static_cast<MockExtensionSystem*>(
+        extension_system_factory_.GetForBrowserContext(browser_context_.get()));
+  }
+
   // testing::Test overrides:
   void SetUp() override;
   void TearDown() override;

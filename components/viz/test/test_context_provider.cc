@@ -183,15 +183,16 @@ TestSharedImageInterface::CreateSwapChain(ResourceFormat format,
                                           const gfx::Size& size,
                                           const gfx::ColorSpace& color_space,
                                           uint32_t usage) {
-  NOTREACHED();
-  return {};
+  auto front_buffer = gpu::Mailbox::GenerateForSharedImage();
+  auto back_buffer = gpu::Mailbox::GenerateForSharedImage();
+  shared_images_.insert(front_buffer);
+  shared_images_.insert(back_buffer);
+  return {front_buffer, back_buffer};
 }
 
 void TestSharedImageInterface::PresentSwapChain(
     const gpu::SyncToken& sync_token,
-    const gpu::Mailbox& mailbox) {
-  NOTREACHED();
-}
+    const gpu::Mailbox& mailbox) {}
 
 #if defined(OS_FUCHSIA)
 void TestSharedImageInterface::RegisterSysmemBufferCollection(

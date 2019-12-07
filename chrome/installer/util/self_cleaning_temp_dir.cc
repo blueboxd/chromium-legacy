@@ -78,7 +78,7 @@ bool SelfCleaningTempDir::Delete() {
 
   // First try to recursively delete the leaf directory managed by our
   // base::ScopedTempDir.
-  if (!base::DeleteFile(path(), true)) {
+  if (!base::DeleteFileRecursively(path())) {
     // That failed, so schedule the temp dir and its contents for deletion after
     // reboot.
     LOG(WARNING) << "Failed to delete temporary directory " << path().value()

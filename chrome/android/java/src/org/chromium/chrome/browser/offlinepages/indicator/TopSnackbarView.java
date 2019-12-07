@@ -14,11 +14,14 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarView;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Visual representation of a snackbar positioned at the top.
  */
 public class TopSnackbarView extends SnackbarView {
+    private final Activity mActivity;
+
     /**
      * Creates an instance of the {@link SnackbarView}.
      * @param activity The activity that displays the snackbar.
@@ -29,8 +32,10 @@ public class TopSnackbarView extends SnackbarView {
      *                   will determine where to attach the snackbar.
      */
     public TopSnackbarView(Activity activity, OnClickListener listener, Snackbar snackbar,
-            @Nullable ViewGroup parentView) {
-        super(activity, listener, snackbar, parentView);
+            @Nullable WindowAndroid windowAndroid) {
+        super(activity, listener, snackbar, (ViewGroup) activity.findViewById(android.R.id.content),
+                windowAndroid);
+        mActivity = activity;
     }
 
     @Override
@@ -41,12 +46,6 @@ public class TopSnackbarView extends SnackbarView {
     @Override
     protected int getBottomMarginForLayout() {
         return mParent.getHeight() - mSnackbarView.getHeight() - getOffsetFromTop();
-    }
-
-    @Override
-    protected ViewGroup findParentView(Activity activity) {
-        // Override this in order not to associate top snackbar view with bottom container view.
-        return (ViewGroup) activity.findViewById(android.R.id.content);
     }
 
     @Override

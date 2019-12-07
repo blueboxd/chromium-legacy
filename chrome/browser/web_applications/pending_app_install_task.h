@@ -26,6 +26,7 @@ class WebContents;
 namespace web_app {
 
 class AppShortcutManager;
+class FileHandlerManager;
 class InstallFinalizer;
 class WebAppUiManager;
 enum class InstallResultCode;
@@ -58,6 +59,7 @@ class PendingAppInstallTask {
   explicit PendingAppInstallTask(Profile* profile,
                                  AppRegistrar* registrar,
                                  AppShortcutManager* shortcut_manager,
+                                 FileHandlerManager* file_handler_manager,
                                  WebAppUiManager* ui_manager,
                                  InstallFinalizer* install_finalizer,
                                  ExternalInstallOptions install_options);
@@ -91,6 +93,7 @@ class PendingAppInstallTask {
   Profile* const profile_;
   AppRegistrar* const registrar_;
   AppShortcutManager* const shortcut_manager_;
+  FileHandlerManager* const file_handler_manager_;
   InstallFinalizer* const install_finalizer_;
   WebAppUiManager* const ui_manager_;
 

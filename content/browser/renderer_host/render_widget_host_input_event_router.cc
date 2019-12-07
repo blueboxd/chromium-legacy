@@ -1811,30 +1811,31 @@ void RenderWidgetHostInputEventRouter::SetTouchscreenGestureTarget(
 void RenderWidgetHostInputEventRouter::DispatchEventToTarget(
     RenderWidgetHostViewBase* root_view,
     RenderWidgetHostViewBase* target,
-    const blink::WebInputEvent& event,
+    blink::WebInputEvent* event,
     const ui::LatencyInfo& latency,
     const base::Optional<gfx::PointF>& target_location) {
-  if (target && target->ScreenRectIsUnstableFor(event))
-    event.SetTargetFrameMovedRecently();
-  if (blink::WebInputEvent::IsMouseEventType(event.GetType())) {
-    if (target && event.GetType() == blink::WebInputEvent::kMouseDown) {
+  DCHECK(event);
+  if (target && target->ScreenRectIsUnstableFor(*event))
+    event->SetTargetFrameMovedRecently();
+  if (blink::WebInputEvent::IsMouseEventType(event->GetType())) {
+    if (target && event->GetType() == blink::WebInputEvent::kMouseDown) {
       mouse_down_post_transformed_coordinate_.SetPoint(target_location->x(),
                                                        target_location->y());
       last_mouse_down_target_ = target;
     }
     DispatchMouseEvent(root_view, target,
-                       static_cast<const blink::WebMouseEvent&>(event), latency,
+                       *static_cast<blink::WebMouseEvent*>(event), latency,
                        target_location);
     return;
   }
-  if (event.GetType() == blink::WebInputEvent::kMouseWheel) {
-    DispatchMouseWheelEvent(
-        root_view, target, static_cast<const blink::WebMouseWheelEvent&>(event),
-        latency, target_location);
+  if (event->GetType() == blink::WebInputEvent::kMouseWheel) {
+    DispatchMouseWheelEvent(root_view, target,
+                            *static_cast<blink::WebMouseWheelEvent*>(event),
+                            latency, target_location);
     return;
   }
-  if (blink::WebInputEvent::IsTouchEventType(event.GetType())) {
-    auto& touch_event = static_cast<const blink::WebTouchEvent&>(event);
+  if (blink::WebInputEvent::IsTouchEventType(event->GetType())) {
+    auto& touch_event = *static_cast<blink::WebTouchEvent*>(event);
     TouchEventWithLatencyInfo touch_with_latency(touch_event, latency);
     if (touch_emulator_ &&
         touch_emulator_->HandleTouchEvent(touch_with_latency.event)) {
@@ -1849,8 +1850,8 @@ void RenderWidgetHostInputEventRouter::DispatchEventToTarget(
                        false /* not emulated */);
     return;
   }
-  if (blink::WebInputEvent::IsGestureEventType(event.GetType())) {
-    auto gesture_event = static_cast<const blink::WebGestureEvent&>(event);
+  if (blink::WebInputEvent::IsGestureEventType(event->GetType())) {
+    auto& gesture_event = *static_cast<blink::WebGestureEvent*>(event);
     if (gesture_event.SourceDevice() == blink::WebGestureDevice::kTouchscreen) {
       DispatchTouchscreenGestureEvent(root_view, target, gesture_event, latency,
                                       target_location);

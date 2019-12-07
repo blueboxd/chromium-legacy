@@ -64,7 +64,6 @@ class SVGMarkerDataBuilder {
  public:
   explicit SVGMarkerDataBuilder(Vector<MarkerPosition>& positions)
       : positions_(positions),
-        element_index_(0),
         last_moveto_index_(0),
         last_element_type_(kPathElementMoveToPoint) {}
 
@@ -82,7 +81,7 @@ class SVGMarkerDataBuilder {
   double CurrentAngle(AngleType) const;
   AngleType DetermineAngleType(bool ends_subpath) const;
 
-  void OutputPendingMarker(SVGMarkerType marker_type, bool ends_subpath);
+  void UpdateAngle(bool ends_subpath);
 
   struct SegmentData {
     FloatSize start_tangent;  // Tangent in the start point of the segment.
@@ -98,7 +97,6 @@ class SVGMarkerDataBuilder {
   void UpdateFromPathElement(const PathElement&);
 
   Vector<MarkerPosition>& positions_;
-  unsigned element_index_;
   unsigned last_moveto_index_;
   PathElementType last_element_type_;
   FloatPoint origin_;

@@ -8,6 +8,7 @@ import static org.chromium.chrome.browser.feed.library.feedstore.internal.FeedSt
 import static org.chromium.chrome.browser.feed.library.feedstore.internal.FeedStoreConstants.SHARED_STATE_PREFIX;
 import static org.chromium.chrome.browser.feed.library.feedstore.internal.FeedStoreConstants.UPLOADABLE_ACTION_PREFIX;
 
+import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration.ConfigKey;
 import org.chromium.chrome.browser.feed.library.api.host.logging.Task;
@@ -17,7 +18,6 @@ import org.chromium.chrome.browser.feed.library.api.host.storage.ContentStorageD
 import org.chromium.chrome.browser.feed.library.common.Result;
 import org.chromium.chrome.browser.feed.library.common.concurrent.TaskQueue;
 import org.chromium.chrome.browser.feed.library.common.concurrent.TaskQueue.TaskType;
-import org.chromium.chrome.browser.feed.library.common.functional.Supplier;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 import org.chromium.chrome.browser.feed.library.common.time.TimingUtils;
 import org.chromium.chrome.browser.feed.library.common.time.TimingUtils.ElapsedTimeTracker;

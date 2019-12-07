@@ -39,13 +39,6 @@ PermissionPromptAndroid::PermissionPromptAndroid(
     return;
   }
 
-  if (PermissionRequestNotificationAndroid::ShouldShowAsNotification(
-          web_contents, GetContentSettingType(0u /* position */))) {
-    permission_request_notification_ =
-        PermissionRequestNotificationAndroid::Create(web_contents_, delegate_);
-    return;
-  }
-
   PermissionDialogDelegate::Create(web_contents_, this);
 }
 

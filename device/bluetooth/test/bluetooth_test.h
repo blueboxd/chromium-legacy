@@ -332,6 +332,9 @@ class BluetoothTestBase : public testing::Test {
   virtual void SimulateGattNameChange(BluetoothDevice* device,
                                       const std::string& new_name) {}
 
+  // Simulates a connection status change to disconnect.
+  virtual void SimulateStatusChangeToDisconnect(BluetoothDevice* device) {}
+
   // Simulates success of discovering services. |uuids| is used to create a
   // service for each UUID string. Multiple UUIDs with the same value produce
   // multiple service instances.

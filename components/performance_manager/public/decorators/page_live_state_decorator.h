@@ -32,8 +32,18 @@ class PageLiveStateDecorator {
   // Should be called whenever a WebContents gets connected or disconnected to
   // a USB device.
   // TODO(sebmarchand|olivierli): Call this from USBTabHelper.
-  static void OnWebContentsAttachedToUSBChange(content::WebContents* contents,
-                                               bool is_attached_to_usb);
+  static void OnWebContentsAttachedToUSBChanged(content::WebContents* contents,
+                                                bool is_attached_to_usb);
+
+  // Functions that should be called by a MediaStreamCaptureIndicator::Observer.
+  static void OnIsCapturingVideoChanged(content::WebContents* contents,
+                                        bool is_capturing_video);
+  static void OnIsCapturingAudioChanged(content::WebContents* contents,
+                                        bool is_capturing_audio);
+  static void OnIsBeingMirroredChanged(content::WebContents* contents,
+                                       bool is_being_mirrored);
+  static void OnIsCapturingDesktopChanged(content::WebContents* contents,
+                                          bool is_capturing_desktop);
 };
 
 class PageLiveStateDecorator::Data {
@@ -44,6 +54,10 @@ class PageLiveStateDecorator::Data {
   Data& operator=(const Data&) = delete;
 
   virtual bool IsAttachedToUSB() const = 0;
+  virtual bool IsCapturingVideo() const = 0;
+  virtual bool IsCapturingAudio() const = 0;
+  virtual bool IsBeingMirrored() const = 0;
+  virtual bool IsCapturingDesktop() const = 0;
 
   static Data* GetOrCreateForTesting(PageNode* page_node);
 };

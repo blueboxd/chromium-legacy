@@ -62,8 +62,6 @@ TEST_F(RenderWidgetTest, OnSynchronizeVisualProperties) {
   visual_properties.screen_info = ScreenInfo();
   visual_properties.new_size = gfx::Size();
   visual_properties.compositor_viewport_pixel_rect = gfx::Rect();
-  visual_properties.top_controls_height = 0.f;
-  visual_properties.browser_controls_shrink_blink_size = false;
   visual_properties.is_fullscreen_granted = false;
   OnSynchronizeVisualProperties(visual_properties);
 

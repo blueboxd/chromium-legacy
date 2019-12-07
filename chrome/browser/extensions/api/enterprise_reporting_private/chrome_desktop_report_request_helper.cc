@@ -38,6 +38,9 @@
 #include "base/win/registry.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "crypto/apple_keychain.h"
+#endif
 
 namespace em = enterprise_management;
 
@@ -314,27 +317,52 @@ std::string CreateRandomSecret() {
   return secret;
 }
 
-#else  // defined(OS_WIN)
+#elif defined(OS_MACOSX)  // defined(OS_WIN)
+
+constexpr char kServiceName[] = "Endpoint Verification Safe Storage";
+constexpr char kAccountName[] = "Endpoint Verification";
+
+std::string AddRandomPasswordToKeychain(const crypto::AppleKeychain& keychain) {
+  // Generate a password with 128 bits of randomness.
+  const int kBytes = 128 / 8;
+  std::string password;
+  base::Base64Encode(base::RandBytesAsString(kBytes), &password);
+  void* password_data =
+      const_cast<void*>(static_cast<const void*>(password.data()));
+
+  OSStatus error = keychain.AddGenericPassword(
+      strlen(kServiceName), kServiceName, strlen(kAccountName), kAccountName,
+      password.size(), password_data, nullptr);
+
+  if (error != noErr)
+    return std::string();
+  return password;
+}
 
 std::string ReadEncryptedSecret() {
+  UInt32 password_length = 0;
+  void* password_data = nullptr;
+  crypto::AppleKeychain keychain;
+  OSStatus error = keychain.FindGenericPassword(
+      strlen(kServiceName), kServiceName, strlen(kAccountName), kAccountName,
+      &password_length, &password_data, nullptr);
+
+  if (error == noErr) {
+    std::string password =
+        std::string(static_cast<char*>(password_data), password_length);
+    keychain.ItemFreeContent(password_data);
+    return password;
+  }
+
+  if (error == errSecItemNotFound) {
+    std::string password = AddRandomPasswordToKeychain(keychain);
+    return password;
+  }
+
   return std::string();
 }
 
-// Decrypts the |cyphertext| and write the result in |plaintext|. This
-// function was taken from os_crypt/os_crypt_win.cc (Chromium).
-bool DecryptString(const std::string& ciphertext, std::string* plaintext) {
-  return false;
-}
-
-std::string CreateRandomSecret() {
-  // Generate a password with 128 bits of randomness.
-  const int kBytes = 128 / 8;
-  std::string secret;
-  base::Base64Encode(base::RandBytesAsString(kBytes), &secret);
-  // TODO(pastarmovj): Replace with non-dummy impl.
-  return secret;
-}
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_MACOSX)
 
 // Returns "AppData\Local\Google\Endpoint Verification".
 base::FilePath GetEndpointVerificationDir() {
@@ -448,6 +476,7 @@ void RetrieveDeviceData(
 void RetrieveDeviceSecret(
     base::OnceCallback<void(const std::string&, bool)> callback) {
   std::string secret;
+#if defined(OS_WIN)
   std::string encrypted_secret = ReadEncryptedSecret();
   if (encrypted_secret.empty()) {
     secret = CreateRandomSecret();
@@ -458,6 +487,12 @@ void RetrieveDeviceSecret(
     std::move(callback).Run("", false);
     return;
   }
+#elif defined(OS_MACOSX)
+  secret = ReadEncryptedSecret();
+  if (secret.empty())
+    std::move(callback).Run(secret, false);
+
+#endif
   std::move(callback).Run(secret, true);
 }
 

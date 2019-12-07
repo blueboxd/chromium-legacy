@@ -4,12 +4,12 @@
 
 package org.chromium.chrome.browser.feed.library.hostimpl.network;
 
+import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.host.network.HttpRequest;
 import org.chromium.chrome.browser.feed.library.api.host.network.HttpResponse;
 import org.chromium.chrome.browser.feed.library.api.host.network.NetworkClient;
 import org.chromium.chrome.browser.feed.library.api.internal.common.ThreadUtils;
 import org.chromium.chrome.browser.feed.library.common.concurrent.MainThreadRunner;
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 
 /** A {@link NetworkClient} which wraps a NetworkClient to make calls on the Main thread. */
 public final class NetworkClientWrapper implements NetworkClient {

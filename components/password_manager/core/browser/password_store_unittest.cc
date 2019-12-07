@@ -372,6 +372,133 @@ TEST_F(PasswordStoreTest, RemoveLoginsCreatedBetweenCallbackIsCalled) {
   store->ShutdownOnUIThread();
 }
 
+// Verify that when a login is removed that the corresponding row is also
+// removed from the compromised credentials table.
+TEST_F(PasswordStoreTest, CompromisedCredentialsObserverOnRemoveLogin) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(password_manager::features::kLeakHistory);
+  CompromisedCredentials compromised_credentials(
+      GURL(kTestWebRealm1), base::ASCIIToUTF16("username_value_1"),
+      base::Time::FromTimeT(1), CompromiseType::kLeaked);
+
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
+  store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
+
+  store->AddCompromisedCredentials(compromised_credentials);
+
+  /* clang-format off */
+  static const PasswordFormData kTestCredential =
+      {PasswordForm::Scheme::kHtml,
+       kTestWebRealm1,
+       kTestWebOrigin1,
+       "", L"", L"username_element_1",  L"password_element_1",
+       L"username_value_1",
+       L"", true, 1};
+  /* clang-format on */
+
+  std::unique_ptr<PasswordForm> test_form(
+      FillPasswordFormWithData(kTestCredential));
+  store->AddLogin(*test_form);
+  WaitForPasswordStore();
+
+  MockPasswordLeakHistoryConsumer consumer;
+  base::RunLoop run_loop;
+  store->RemoveLoginsCreatedBetween(base::Time::FromDoubleT(0),
+                                    base::Time::FromDoubleT(2),
+                                    run_loop.QuitClosure());
+  run_loop.Run();
+
+  EXPECT_CALL(consumer, OnGetCompromisedCredentials(testing::IsEmpty()));
+  store->GetAllCompromisedCredentials(&consumer);
+  WaitForPasswordStore();
+
+  store->ShutdownOnUIThread();
+}
+
+// Verify that when a login password is updated that the corresponding row is
+// removed from the compromised credentials table.
+TEST_F(PasswordStoreTest, CompromisedCredentialsObserverOnLoginUpdated) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(password_manager::features::kLeakHistory);
+  CompromisedCredentials compromised_credentials(
+      GURL(kTestWebRealm1), base::ASCIIToUTF16("username_value_1"),
+      base::Time::FromTimeT(1), CompromiseType::kLeaked);
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
+  store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
+
+  store->AddCompromisedCredentials(compromised_credentials);
+
+  /* clang-format off */
+  PasswordFormData kTestCredential =
+      {PasswordForm::Scheme::kHtml,
+       kTestWebRealm1,
+       kTestWebOrigin1,
+       "", L"", L"username_element_1",  L"password_element_1",
+       L"username_value_1",
+       L"password_value_1", true, 1};
+  /* clang-format on */
+
+  std::unique_ptr<PasswordForm> test_form(
+      FillPasswordFormWithData(kTestCredential));
+  store->AddLogin(*test_form);
+  WaitForPasswordStore();
+
+  MockPasswordLeakHistoryConsumer consumer;
+  kTestCredential.password_value = L"password_value_2";
+  std::unique_ptr<PasswordForm> test_form_2(
+      FillPasswordFormWithData(kTestCredential));
+  store->UpdateLogin(*test_form_2);
+  WaitForPasswordStore();
+
+  EXPECT_CALL(consumer, OnGetCompromisedCredentials(testing::IsEmpty()));
+  store->GetAllCompromisedCredentials(&consumer);
+  WaitForPasswordStore();
+
+  store->ShutdownOnUIThread();
+}
+
+// Verify that when a login password is added with the password changed that the
+// corresponding row is removed from the compromised credentials table.
+TEST_F(PasswordStoreTest, CompromisedCredentialsObserverOnLoginAdded) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(password_manager::features::kLeakHistory);
+  CompromisedCredentials compromised_credentials(
+      GURL(kTestWebRealm1), base::ASCIIToUTF16("username_value_1"),
+      base::Time::FromTimeT(1), CompromiseType::kLeaked);
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
+  store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
+
+  store->AddCompromisedCredentials(compromised_credentials);
+
+  /* clang-format off */
+  PasswordFormData kTestCredential =
+      {PasswordForm::Scheme::kHtml,
+       kTestWebRealm1,
+       kTestWebOrigin1,
+       "", L"", L"username_element_1",  L"password_element_1",
+       L"username_value_1",
+       L"password_value_1", true, 1};
+  /* clang-format on */
+
+  std::unique_ptr<PasswordForm> test_form(
+      FillPasswordFormWithData(kTestCredential));
+  store->AddLogin(*test_form);
+  WaitForPasswordStore();
+
+  MockPasswordLeakHistoryConsumer consumer;
+  kTestCredential.password_value = L"password_value_2";
+  std::unique_ptr<PasswordForm> test_form_2(
+      FillPasswordFormWithData(kTestCredential));
+  store->AddLogin(*test_form_2);
+  WaitForPasswordStore();
+
+  EXPECT_CALL(consumer, OnGetCompromisedCredentials(testing::IsEmpty()));
+  store->GetAllCompromisedCredentials(&consumer);
+  WaitForPasswordStore();
+
+  store->ShutdownOnUIThread();
+}
+
 // When no Android applications are actually affiliated with the realm of the
 // observed form, GetLoginsWithAffiliations() should still return the exact and
 // PSL matching results, but not any stored Android credentials.

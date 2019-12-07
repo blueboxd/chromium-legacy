@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.feed;
 
 import org.junit.Assert;
 
+import org.chromium.base.Consumer;
 import org.chromium.base.task.PostTask;
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.concurrent.CountDownLatch;

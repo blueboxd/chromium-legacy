@@ -31,16 +31,6 @@
       use_base_dir="false"
       type="BINDATA"
       compress="gzip" />
-  <include name="IDR_MULTIDEVICE_MULTIDEVICE_SETUP_CONSTANTS_MOJOM_HTML"
-      file="${mojom_root}/chromeos/services/multidevice_setup/public/mojom/constants.mojom.html"
-      use_base_dir="false"
-      type="BINDATA"
-      compress="gzip" />
-  <include name="IDR_MULTIDEVICE_MULTIDEVICE_SETUP_CONSTANTS_MOJOM_LITE_JS"
-      file="${mojom_root}/chromeos/services/multidevice_setup/public/mojom/constants.mojom-lite.js"
-      use_base_dir="false"
-      type="BINDATA"
-      compress="gzip" />
 
   <!-- Web resources shared by both the ProximityAuth and Pollux debug pages.. -->
   <include name="IDR_MULTIDEVICE_INDEX_HTML"

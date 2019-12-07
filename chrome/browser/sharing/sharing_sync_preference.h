@@ -16,7 +16,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "components/sync/protocol/device_info_specifics.pb.h"
 #include "components/sync_device_info/device_info.h"
 
 namespace syncer {
@@ -30,6 +29,8 @@ class PrefRegistrySyncable;
 }
 
 class PrefService;
+
+enum class SharingDevicePlatform;
 
 // SharingSyncPreference manages all preferences related to Sharing using Sync,
 // such as storing list of user devices synced via Chrome and VapidKey used
@@ -90,6 +91,8 @@ class SharingSyncPreference {
   // Returns the SharingTargetInfo of device with specified |device_info|.
   base::Optional<syncer::DeviceInfo::SharingTargetInfo> GetTargetInfo(
       const std::string& guid) const;
+
+  SharingDevicePlatform GetDevicePlatform(const std::string& guid) const;
 
   base::Optional<syncer::DeviceInfo::SharingInfo> GetLocalSharingInfo() const;
 

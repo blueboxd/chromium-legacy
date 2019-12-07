@@ -261,7 +261,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   void RegisterPerformanceObserver(PerformanceObserver&);
   void UpdatePerformanceObserverFilterOptions();
   void ActivateObserver(PerformanceObserver&);
-  void ResumeSuspendedObservers();
+  void SuspendObserver(PerformanceObserver&);
 
   bool HasObserverFor(PerformanceEntry::EntryType) const;
 

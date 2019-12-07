@@ -2225,8 +2225,20 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
     auto* touchBar = scopedTouchBar.get();
     touchBar.customizationIdentifier = ui::GetTouchBarId(kWebContentTouchBarId);
     touchBar.templateItems = [NSSet setWithObject:candidateListTouchBarItem_];
-    touchBar.defaultItemIdentifiers =
-        @[ NSTouchBarItemIdentifierCandidateList ];
+    bool includeEmojiPicker =
+        textInputType_ == ui::TEXT_INPUT_TYPE_TEXT ||
+        textInputType_ == ui::TEXT_INPUT_TYPE_SEARCH ||
+        textInputType_ == ui::TEXT_INPUT_TYPE_TEXT_AREA ||
+        textInputType_ == ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE;
+    if (includeEmojiPicker) {
+      touchBar.defaultItemIdentifiers = @[
+        NSTouchBarItemIdentifierCharacterPicker,
+        NSTouchBarItemIdentifierCandidateList
+      ];
+    } else {
+      touchBar.defaultItemIdentifiers =
+          @[ NSTouchBarItemIdentifierCandidateList ];
+    }
     return scopedTouchBar.autorelease();
   }
 

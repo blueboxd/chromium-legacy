@@ -30,6 +30,9 @@ const char kClaimsKeyAudience[] = "aud";
 const char kFCMServerAudience[] = "https://fcm.googleapis.com";
 
 const char kClaimsKeyExpirationTime[] = "exp";
+// It's 12 hours rather than 24 hours to avoid any issues with clock differences
+// between the sending application and the push service.
+constexpr base::TimeDelta kClaimsValidPeriod = base::TimeDelta::FromHours(12);
 
 const char kAuthorizationRequestHeaderFormat[] = "vapid t=%s, k=%s";
 
@@ -46,13 +49,13 @@ const char kContentCodingAes128Gcm[] = "aes128gcm";
 // Other constants.
 const char kContentEncodingOctetStream[] = "application/octet-stream";
 
-base::Optional<std::string> GetAuthHeader(crypto::ECPrivateKey* vapid_key,
-                                          int time_to_live) {
+base::Optional<std::string> GetAuthHeader(crypto::ECPrivateKey* vapid_key) {
   base::Value claims(base::Value::Type::DICTIONARY);
   claims.SetKey(kClaimsKeyAudience, base::Value(kFCMServerAudience));
 
   int64_t exp =
-      (base::Time::Now() - base::Time::UnixEpoch()).InSeconds() + time_to_live;
+      (base::Time::Now() + kClaimsValidPeriod - base::Time::UnixEpoch())
+          .InSeconds();
   // TODO: Year 2038 problem, base::Value does not support int64_t.
   if (exp > INT_MAX)
     return base::nullopt;
@@ -153,8 +156,7 @@ void WebPushSender::SendMessage(const std::string& fcm_token,
   DCHECK(vapid_key);
   DCHECK_LE(message.time_to_live, message.kMaximumTTL);
 
-  base::Optional<std::string> auth_header =
-      GetAuthHeader(vapid_key, message.time_to_live);
+  base::Optional<std::string> auth_header = GetAuthHeader(vapid_key);
   if (!auth_header) {
     DLOG(ERROR) << "Failed to create JWT";
     InvokeWebPushCallback(std::move(callback),

@@ -31,36 +31,17 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SCOPED_USER_GESTURE_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SCOPED_USER_GESTURE_H_
 
-#include <memory>
 #include "third_party/blink/public/platform/web_common.h"
 
 namespace blink {
 
-class UserGestureIndicator;
 class WebLocalFrame;
-class WebUserGestureToken;
 
-// An instance of this class, while kept alive, will indicate that we are in
-// the context of a known user gesture. To use, create one, perform whatever
-// actions were done under color of a known user gesture, and then delete it.
-// Usually this will be done on the stack.
-//
-// SECURITY WARNING: Do not create several instances of this class for the same
-// user gesture. Doing so might enable malicious code to work around certain
-// restrictions such as opening multiple windows.
-// Instead, obtain the current WebUserGestureToken from the
-// WebUserGestureIndicator, and use this token to create a
-// WebScopedUserGesture. If the token was alrady consumed, the new
-// WebScopedUserGesture will not indicate that we are in the context of a user
-// gesture.
+// TODO(mustaq): This class is obsolete.  Define a UAv2 interface on
+// WebLocalFrame and remove this.  crbug.com/959850
 class WebScopedUserGesture {
  public:
-  BLINK_EXPORT explicit WebScopedUserGesture(const WebUserGestureToken& token);
   BLINK_EXPORT WebScopedUserGesture(WebLocalFrame*);
-  BLINK_EXPORT ~WebScopedUserGesture();
-
- private:
-  std::unique_ptr<UserGestureIndicator> indicator_;
 };
 
 }  // namespace blink

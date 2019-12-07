@@ -206,6 +206,9 @@ ConvertExtensionInstallStatusForAPI(ExtensionInstallStatus status) {
     case kBlacklisted:
       return api::webstore_private::ExtensionInstallStatus::
           EXTENSION_INSTALL_STATUS_BLACKLISTED;
+    case kCustodianApprovalRequired:
+      return api::webstore_private::ExtensionInstallStatus::
+          EXTENSION_INSTALL_STATUS_CUSTODIAN_APPROVAL_REQUIRED;
   }
   return api::webstore_private::EXTENSION_INSTALL_STATUS_NONE;
 }

@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/i18n/time_formatting.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
@@ -245,6 +246,8 @@ void FCMNetworkHandler::OnMessage(const std::string& app_id,
 
   InvalidationParsingStatus status = ParseIncomingMessage(
       message, &payload, &private_topic, &public_topic, &version);
+  // This histogram is recorded quite frequently, so use the macro rather than
+  // the function.
   UMA_HISTOGRAM_ENUMERATION("FCMInvalidations.FCMMessageStatus", status);
 
   if (status == InvalidationParsingStatus::kSuccess)
@@ -252,9 +255,11 @@ void FCMNetworkHandler::OnMessage(const std::string& app_id,
 }
 
 void FCMNetworkHandler::OnMessagesDeleted(const std::string& app_id) {
-  // TODO(crbug.com/1023813): Record UMA. Then, if this actually happens in
-  // practice, consider notifying the client that messages were deleted, so it
-  // can act on it, e.g. in case of sync, trigger a GetUpdates.
+  DCHECK_EQ(app_id, app_id_);
+  base::UmaHistogramBoolean("FCMInvalidations.FCMMessagesDeleted", true);
+  // Note: If this actually happens in practice, consider notifying the client
+  // that messages were deleted so it can act on it, e.g. in case of sync by
+  // triggering a GetUpdates.
 }
 
 void FCMNetworkHandler::OnSendError(

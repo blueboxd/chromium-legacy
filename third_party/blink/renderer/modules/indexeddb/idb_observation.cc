@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -72,7 +73,7 @@ IDBObservation::IDBObservation(int64_t object_store_id,
     : object_store_id_(object_store_id),
       operation_type_(type),
       key_range_(key_range) {
-  value_ = IDBAny::Create(std::move(value));
+  value_ = MakeGarbageCollected<IDBAny>(std::move(value));
 }
 
 void IDBObservation::SetIsolate(v8::Isolate* isolate) {

@@ -44,13 +44,13 @@ import org.chromium.chrome.browser.settings.MainPreferences;
 import org.chromium.chrome.browser.settings.PreferencesLauncher;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
-import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.widget.prefeditor.Completable;
 import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
@@ -309,11 +309,11 @@ public class PaymentRequestImpl
      * Rule 1: Non-autofill before autofill.
      * Rule 2: Complete instruments before incomplete intsruments.
      * Rule 3: Exact type matching instruments before non-exact type matching instruments.
-     * Rule 4: Preselectable instruments before non-preselectable instruments.
-     * Rule 5: When shipping address is requested instruments which will handle shipping address
+     * Rule 4: When shipping address is requested instruments which will handle shipping address
      * before others.
-     * Rule 6: When payer's contact information is requested instruments which will handle more
+     * Rule 5: When payer's contact information is requested instruments which will handle more
      * required contact fields (name, email, phone) come before others.
+     * Rule 6: Preselectable instruments before non-preselectable instruments.
      * Rule 7: Frequently and recently used instruments before rarely and non-recently used
      * instruments.
      */
@@ -330,14 +330,6 @@ public class PaymentRequestImpl
         int typeMatch = (b.isExactlyMatchingMerchantRequest() ? 1 : 0)
                 - (a.isExactlyMatchingMerchantRequest() ? 1 : 0);
         if (typeMatch != 0) return typeMatch;
-
-        // Preselectable instruments before non-preselectable instruments.
-        // Note that this only affects service worker payment apps' instruments for now
-        // since autofill payment instruments have already been sorted by preselect
-        // after sorting by completeness and typeMatch. And the other payment apps'
-        // instruments can always be preselected.
-        int canPreselect = (b.canPreselect() ? 1 : 0) - (a.canPreselect() ? 1 : 0);
-        if (canPreselect != 0) return canPreselect;
 
         // Payment apps which handle shipping address before others.
         if (mRequestShipping) {
@@ -364,6 +356,14 @@ public class PaymentRequestImpl
         if (bSupportedContactDelegationsNum != aSupportedContactDelegationsNum) {
             return bSupportedContactDelegationsNum - aSupportedContactDelegationsNum > 0 ? 1 : -1;
         }
+
+        // Preselectable instruments before non-preselectable instruments.
+        // Note that this only affects service worker payment apps' instruments for now
+        // since autofill payment instruments have already been sorted by preselect
+        // after sorting by completeness and typeMatch. And the other payment apps'
+        // instruments can always be preselected.
+        int canPreselect = (b.canPreselect() ? 1 : 0) - (a.canPreselect() ? 1 : 0);
+        if (canPreselect != 0) return canPreselect;
 
         // More frequently and recently used instruments first.
         return compareInstrumentsByFrecency(b, a);
@@ -496,6 +496,11 @@ public class PaymentRequestImpl
     private TabModel mObservedTabModel;
     private OverviewModeBehavior mOverviewModeBehavior;
     private PaymentHandlerHost mPaymentHandlerHost;
+
+    /**
+     * True when at least one url payment method identifier is specified in payment request.
+     */
+    private boolean mURLPaymentMethodIdentifiersSupported;
 
     /**
      * A mapping of the payment method names to the corresponding payment method specific data. If
@@ -678,15 +683,15 @@ public class PaymentRequestImpl
                 && SkipToGPayHelper.canActivateExperiment(mWebContents, methodData);
 
         mMethodData = getValidatedMethodData(methodData, googlePayBridgeActivated, mCardEditor);
-        if (googlePayBridgeActivated) {
-            PaymentMethodData data = mMethodData.get(MethodStrings.GOOGLE_PAY);
-            mSkipToGPayHelper = new SkipToGPayHelper(options, data.gpayBridgeData);
-        }
-
         if (mMethodData == null) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_PAYMENT_METHODS_OR_DATA);
             return;
+        }
+
+        if (googlePayBridgeActivated) {
+            PaymentMethodData data = mMethodData.get(MethodStrings.GOOGLE_PAY);
+            mSkipToGPayHelper = new SkipToGPayHelper(options, data.gpayBridgeData);
         }
 
         mQueryForQuota = new HashMap<>(mMethodData);
@@ -763,11 +768,14 @@ public class PaymentRequestImpl
         // Log the various types of payment methods that were requested by the merchant.
         boolean requestedMethodGoogle = false;
         boolean requestedMethodOther = false;
+        mURLPaymentMethodIdentifiersSupported = false;
         for (String methodName : mMethodData.keySet()) {
             if (methodName.equals(MethodStrings.ANDROID_PAY)
                     || methodName.equals(MethodStrings.GOOGLE_PAY)) {
+                mURLPaymentMethodIdentifiersSupported = true;
                 requestedMethodGoogle = true;
             } else if (methodName.startsWith(UrlConstants.HTTPS_URL_PREFIX)) {
+                mURLPaymentMethodIdentifiersSupported = true;
                 // Any method that starts with https and is not Android pay or Google pay is in the
                 // "other" category.
                 requestedMethodOther = true;
@@ -790,26 +798,54 @@ public class PaymentRequestImpl
         PaymentInstrument selectedInstrument =
                 (PaymentInstrument) mPaymentMethodsSection.getSelectedItem();
 
-        // If there is a single payment method and the merchant has not requested any other
-        // information, we can safely go directly to the payment app instead of showing
-        // Payment Request UI.
+        // If there is only a single payment app which can provide all merchant requested
+        // information, we can safely go directly to the payment app instead of showing Payment
+        // Request UI.
         mShouldSkipShowingPaymentRequestUi =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_PAYMENTS_SINGLE_APP_UI_SKIP)
-                && mMethodData.size() == 1 && !shouldShowShippingSection()
-                && !shouldShowContactSection()
                 // Only allowing payment apps that own their own UIs.
                 // This excludes AutofillPaymentApp as its UI is rendered inline in
                 // the payment request UI, thus can't be skipped.
-                && mMethodData.keySet().iterator().next() != null
-                && (mMethodData.keySet().iterator().next().startsWith(UrlConstants.HTTPS_URL_PREFIX)
+                && (mURLPaymentMethodIdentifiersSupported
                         || mSkipUiForNonUrlPaymentMethodIdentifiers)
-                // Skip to payment app only if it is the only available payment instrument, and it
-                // can be pre-selected.
-                && mPaymentMethodsSection.getSize() == 1
+                && mPaymentMethodsSection.getSize() >= 1
+                && onlySingleAppCanProvideAllRequiredInformation()
+                // Skip to payment app only if it can be pre-selected.
                 && selectedInstrument != null
                 // Skip to payment app only if user gesture is provided when it is required to
                 // skip-UI.
                 && (mIsUserGestureShow || !selectedInstrument.isUserGestureRequiredToSkipUi());
+    }
+
+    /**
+     * @return true when there is exactly one available payment app which can provide all requested
+     * information including shipping address and payer's contact information whenever needed.
+     */
+    private boolean onlySingleAppCanProvideAllRequiredInformation() {
+        assert mPaymentMethodsSection != null;
+
+        if (!mRequestShipping && !mRequestPayerName && !mRequestPayerPhone && !mRequestPayerEmail) {
+            return mPaymentMethodsSection.getSize() == 1
+                    && !((PaymentInstrument) mPaymentMethodsSection.getItem(0))
+                                .isAutofillInstrument();
+        }
+
+        boolean anAppCanProvideAllInfo = false;
+        int sectionSize = mPaymentMethodsSection.getSize();
+        for (int i = 0; i < sectionSize; i++) {
+            PaymentInstrument instrument = (PaymentInstrument) mPaymentMethodsSection.getItem(i);
+            if ((!mRequestShipping || instrument.handlesShippingAddress())
+                    && (!mRequestPayerName || instrument.handlesPayerName())
+                    && (!mRequestPayerPhone || instrument.handlesPayerPhone())
+                    && (!mRequestPayerEmail || instrument.handlesPayerEmail())) {
+                // There is more than one available app that can provide all merchant requested
+                // information information.
+                if (anAppCanProvideAllInfo) return false;
+
+                anAppCanProvideAllInfo = true;
+            }
+        }
+        return anAppCanProvideAllInfo;
     }
 
     /** @return Whether the UI was built. */
@@ -2251,13 +2287,16 @@ public class PaymentRequestImpl
     @Override
     public void complete(int result) {
         if (mClient == null) return;
-        mJourneyLogger.setCompleted();
-        if (!PaymentPreferencesUtil.isPaymentCompleteOnce()) {
-            PaymentPreferencesUtil.setPaymentCompleteOnce();
+
+        if (result != PaymentComplete.FAIL) {
+            mJourneyLogger.setCompleted();
+            if (!PaymentPreferencesUtil.isPaymentCompleteOnce()) {
+                PaymentPreferencesUtil.setPaymentCompleteOnce();
+            }
+            assert mRawTotal != null;
+            mJourneyLogger.recordTransactionAmount(
+                    mRawTotal.amount.currency, mRawTotal.amount.value, true /*completed*/);
         }
-        assert mRawTotal != null;
-        mJourneyLogger.recordTransactionAmount(
-                mRawTotal.amount.currency, mRawTotal.amount.value, true /*completed*/);
 
         /**
          * Update records of the used payment instrument for sorting payment apps and instruments
@@ -2790,14 +2829,6 @@ public class PaymentRequestImpl
 
         mPaymentResponseHelper.onInstrumentDetailsReceived(
                 methodName, stringifiedDetails, payerData);
-    }
-
-    /**
-     * Called after retrieving instrument details.
-     */
-    @Override
-    public void onInstrumentDetailsReady(String methodName, String stringifiedDetails) {
-        onInstrumentDetailsReady(methodName, stringifiedDetails, new PayerData());
     }
 
     @Override

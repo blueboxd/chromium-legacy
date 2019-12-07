@@ -16,6 +16,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
+import org.chromium.chrome.browser.download.home.FaviconProvider;
 import org.chromium.chrome.browser.download.home.StableIds;
 import org.chromium.chrome.browser.download.home.empty.EmptyCoordinator;
 import org.chromium.chrome.browser.download.home.filter.FilterCoordinator;
@@ -101,8 +102,8 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
             OfflineContentProvider provider, DeleteController deleteController,
             SelectionDelegate<ListItem> selectionDelegate,
             FilterCoordinator.Observer filterObserver,
-            DateOrderedListObserver dateOrderedListObserver,
-            ModalDialogManager modalDialogManager) {
+            DateOrderedListObserver dateOrderedListObserver, ModalDialogManager modalDialogManager,
+            FaviconProvider faviconProvider) {
         mContext = context;
 
         ListItemModel model = new ListItemModel();
@@ -111,8 +112,9 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
                 new DateOrderedListView(context, config, decoratedModel, dateOrderedListObserver);
         mRenameDialogManager = new RenameDialogManager(context, modalDialogManager);
 
-        mMediator = new DateOrderedListMediator(provider, this::startShareIntent, deleteController,
-                this::startRename, selectionDelegate, config, dateOrderedListObserver, model);
+        mMediator = new DateOrderedListMediator(provider, faviconProvider, this::startShareIntent,
+                deleteController, this::startRename, selectionDelegate, config,
+                dateOrderedListObserver, model);
 
         mEmptyCoordinator = new EmptyCoordinator(context, mMediator.getEmptySource());
 

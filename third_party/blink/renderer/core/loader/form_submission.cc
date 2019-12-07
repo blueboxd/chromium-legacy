@@ -212,7 +212,8 @@ FormSubmission* FormSubmission::Create(HTMLFormElement* form,
                                              ? document.Url().GetString()
                                              : copied_attributes.Action());
 
-  if (document.GetInsecureRequestPolicy() & kUpgradeInsecureRequests &&
+  if (document.GetSecurityContext().GetInsecureRequestPolicy() &
+          kUpgradeInsecureRequests &&
       action_url.ProtocolIs("http") &&
       !SecurityOrigin::Create(action_url)->IsPotentiallyTrustworthy()) {
     UseCounter::Count(document,

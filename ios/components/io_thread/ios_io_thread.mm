@@ -279,7 +279,8 @@ void IOSIOThread::Init() {
   // Set up field trials, ignoring debug command line options.
   network_session_configurator::ParseCommandLineAndFieldTrials(
       base::CommandLine(base::CommandLine::NO_PROGRAM),
-      /*is_quic_force_disabled=*/false, quic_user_agent_id, &params_);
+      /*is_quic_force_disabled=*/false, quic_user_agent_id, &params_,
+      globals_->quic_context->params());
 
   globals_->system_proxy_resolution_service =
       ProxyServiceFactory::CreateProxyResolutionService(

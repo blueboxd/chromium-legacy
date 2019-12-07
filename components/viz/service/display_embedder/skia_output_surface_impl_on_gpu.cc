@@ -1424,7 +1424,8 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
       if (gl_surface_->IsSurfaceless()) {
         std::unique_ptr<SkiaOutputDeviceBufferQueue> onscreen_device =
             std::make_unique<SkiaOutputDeviceBufferQueue>(
-                gl_surface_, dependency_, did_swap_buffer_complete_callback_);
+                gl_surface_, dependency_, did_swap_buffer_complete_callback_,
+                memory_tracker_.get());
         supports_alpha_ = onscreen_device->supports_alpha();
         output_device_ = std::move(onscreen_device);
 
@@ -1473,7 +1474,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
     }
 #else
     auto output_device = SkiaOutputDeviceBufferQueue::Create(
-        dependency_, did_swap_buffer_complete_callback_);
+        dependency_, did_swap_buffer_complete_callback_, memory_tracker_.get());
     if (output_device) {
       // TODO(https://crbug.com/1012401): don't depend on GL.
       gl_surface_ = output_device->gl_surface();
@@ -1655,8 +1656,8 @@ void SkiaOutputSurfaceImplOnGpu::RenderToOverlay(
   // BeginReadAccess.
   shared_image_overlay->NotifyOverlayPromotion(
       true, ToNearestRect(overlay.display_rect));
-  shared_image_overlay->BeginReadAccess();
-  shared_image_overlay->EndReadAccess();
+  gpu::SharedImageRepresentationOverlay::ScopedReadAccess scoped_access(
+      shared_image_overlay.get(), false /* needs_gl_image */);
 }
 #endif
 

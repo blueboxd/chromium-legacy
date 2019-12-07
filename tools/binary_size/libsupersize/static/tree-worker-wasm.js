@@ -114,6 +114,8 @@ async function loadSizeFile(isBefore, fetcher) {
 async function buildTree(
     groupBy, includeRegex, excludeRegex, includeSections, minSymbolSize,
     flagToFilter, methodCountMode, onProgress) {
+
+  onProgress({percent: 0.1, id: 0});
   return await LoadWasm.then(async () => {
     if (!sizeFileLoaded) {
       const current = loadSizeFile(false, fetcher);
@@ -121,6 +123,7 @@ async function buildTree(
           beforeFetcher !== null ? loadSizeFile(true, beforeFetcher) : null;
       await current;
       await before;
+      onProgress({percent: 0.4, id: 0});
       sizeFileLoaded = true;
     }
 
@@ -134,6 +137,7 @@ async function buildTree(
     console.log(
         'Constructed tree in ' + (Date.now() - start_time) / 1000.0 +
         ' seconds');
+    onProgress({percent: 0.8, id: 0});
 
     const root = await Open('');
     return {

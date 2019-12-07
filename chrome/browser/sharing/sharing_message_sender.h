@@ -27,6 +27,7 @@ class LocalDeviceInfoProvider;
 
 class SharingFCMSender;
 class SharingSyncPreference;
+enum class SharingDevicePlatform;
 enum class SharingSendMessageResult;
 
 class SharingMessageSender {
@@ -75,6 +76,8 @@ class SharingMessageSender {
   std::map<std::string, base::TimeTicks> send_message_times_;
   // Map of FCM message_id to random GUID.
   std::map<std::string, std::string> message_guids_;
+  // Map of random message guid to platform of receiver device for metrics.
+  std::map<std::string, SharingDevicePlatform> receiver_device_platform_;
 
   base::WeakPtrFactory<SharingMessageSender> weak_ptr_factory_{this};
 

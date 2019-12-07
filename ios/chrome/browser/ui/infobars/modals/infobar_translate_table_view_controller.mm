@@ -48,6 +48,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @property(nonatomic, copy) NSString* targetLanguage;
 // YES if the pref is set to enable the Translate button.
 @property(nonatomic, assign) BOOL enableTranslateActionButton;
+// YES if the pref is set to configure the Translate button to trigger
+// translateWithNewLanguages().
+@property(nonatomic, assign) BOOL updateLanguageBeforeTranslate;
 // YES if the pref is set to enable and display the "Show Original" Button.
 // Otherwise, hide it.
 @property(nonatomic, assign) BOOL enableAndDisplayShowOriginalButton;
@@ -98,8 +101,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
-  if ([self isMovingFromParentViewController]) {
-    // Only call delegate method if the modal is being dismissed.
+  // Only call delegate method if the modal is being dismissed, if this VC is
+  // inside a NavigationController we need to check if the NavigationController
+  // is being dismissed.
+  if ([self.navigationController isBeingDismissed] || [self isBeingDismissed]) {
     [self.infobarModalDelegate modalInfobarWasDismissed:self];
   }
   [super viewDidDisappear:animated];
@@ -197,6 +202,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.targetLanguage = prefs[kTargetLanguagePrefKey];
   self.enableTranslateActionButton =
       [prefs[kEnableTranslateButtonPrefKey] boolValue];
+  self.updateLanguageBeforeTranslate =
+      [prefs[kUpdateLanguageBeforeTranslatePrefKey] boolValue];
   self.enableAndDisplayShowOriginalButton =
       [prefs[kEnableAndDisplayShowOriginalButtonPrefKey] boolValue];
   self.shouldAlwaysTranslate = [prefs[kShouldAlwaysTranslatePrefKey] boolValue];
@@ -227,8 +234,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       tableViewTextButtonCell.selectionStyle =
           UITableViewCellSelectionStyleNone;
       [tableViewTextButtonCell.button
-                 addTarget:self.infobarModalDelegate
-                    action:@selector(modalInfobarButtonWasAccepted:)
+                 addTarget:self
+                    action:@selector(translateButtonWasTapped:)
           forControlEvents:UIControlEventTouchUpInside];
       tableViewTextButtonCell.button.enabled = self.enableTranslateActionButton;
       break;
@@ -351,6 +358,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self.infobarModalDelegate dismissInfobarModal:sender
                                         animated:YES
                                       completion:nil];
+}
+
+// Call the appropriate method to trigger Translate depending on if the
+// languages need to be updated first.
+- (void)translateButtonWasTapped:(UIButton*)sender {
+  if (self.updateLanguageBeforeTranslate) {
+    [self.infobarModalDelegate translateWithNewLanguages];
+  } else {
+    [self.infobarModalDelegate modalInfobarButtonWasAccepted:sender];
+  }
 }
 
 // Returns the text of the modal button allowing the user to always translate

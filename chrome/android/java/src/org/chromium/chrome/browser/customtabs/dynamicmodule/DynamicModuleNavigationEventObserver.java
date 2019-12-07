@@ -21,8 +21,9 @@ import androidx.browser.customtabs.CustomTabsCallback;
 
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabImpl;
-import org.chromium.chrome.browser.tabmodel.TabSelectionType;
+import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.net.NetError;
@@ -119,7 +120,7 @@ public class DynamicModuleNavigationEventObserver extends EmptyTabObserver {
     }
 
     @Override
-    public void onHidden(Tab tab, @Tab.TabHidingType int type) {
+    public void onHidden(Tab tab, @TabHidingType int type) {
         notifyOnNavigationEvent(TAB_HIDDEN, getExtrasBundleForNavigationEvent(tab));
     }
 

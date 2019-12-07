@@ -25,9 +25,6 @@
   ],
 
   'linux_component': [
-    # https://crbug.com/900696
-    'remoting-webapp.v2.zip',
-
     # https://crbug.com/937268
     'swiftshader/libGLESv2.so',
     'swiftshader_vertex_routine_fuzzer',

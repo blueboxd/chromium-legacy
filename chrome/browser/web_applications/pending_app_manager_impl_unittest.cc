@@ -175,12 +175,14 @@ class TestPendingAppManagerImpl : public PendingAppManagerImpl {
         TestPendingAppManagerImpl* pending_app_manager_impl,
         Profile* profile,
         ExternalInstallOptions install_options)
-        : PendingAppInstallTask(profile,
-                                pending_app_manager_impl->registrar(),
-                                pending_app_manager_impl->shortcut_manager(),
-                                pending_app_manager_impl->ui_manager(),
-                                pending_app_manager_impl->finalizer(),
-                                install_options),
+        : PendingAppInstallTask(
+              profile,
+              pending_app_manager_impl->registrar(),
+              pending_app_manager_impl->shortcut_manager(),
+              pending_app_manager_impl->file_handler_manager(),
+              pending_app_manager_impl->ui_manager(),
+              pending_app_manager_impl->finalizer(),
+              install_options),
           pending_app_manager_impl_(pending_app_manager_impl),
           externally_installed_app_prefs_(profile->GetPrefs()) {}
     ~TestPendingAppInstallTask() override = default;

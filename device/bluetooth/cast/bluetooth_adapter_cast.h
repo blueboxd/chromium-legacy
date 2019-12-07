@@ -101,6 +101,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterCast
   void RemovePairingDelegateInternal(
       BluetoothDevice::PairingDelegate* pairing_delegate) override;
 
+  base::WeakPtr<BluetoothAdapterCast> GetCastWeakPtr();
+
   // |factory_cb| is used to inject a factory method from ChromecastService into
   // this class. It will be invoked when Create() is called.
   // TODO(slan): Remove this once this class talks to a dedicated Bluetooth

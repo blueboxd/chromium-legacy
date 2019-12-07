@@ -26,6 +26,7 @@
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -308,6 +309,10 @@ void SharingDialogView::InitListView() {
   // Apps need more padding at the top and bottom as they only have one line.
   const gfx::Insets app_border = device_border + gfx::Insets(2, 0, 2, 0);
 
+  auto button_list = std::make_unique<views::View>();
+  button_list->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
+
   // Devices:
   LogSharingDevicesToShow(data_.prefix, kSharingUiDialog, data_.devices.size());
   for (const auto& device : data_.devices) {
@@ -319,7 +324,8 @@ void SharingDialogView::InitListView() {
     dialog_button->SetEnabled(true);
     dialog_button->set_tag(tag++);
     dialog_button->SetBorder(views::CreateEmptyBorder(device_border));
-    dialog_buttons_.push_back(AddChildView(std::move(dialog_button)));
+    dialog_buttons_.push_back(
+        button_list->AddChildView(std::move(dialog_button)));
   }
 
   // Apps:
@@ -333,7 +339,26 @@ void SharingDialogView::InitListView() {
     dialog_button->SetEnabled(true);
     dialog_button->set_tag(tag++);
     dialog_button->SetBorder(views::CreateEmptyBorder(app_border));
-    dialog_buttons_.push_back(AddChildView(std::move(dialog_button)));
+    dialog_buttons_.push_back(
+        button_list->AddChildView(std::move(dialog_button)));
+  }
+
+  // Allow up to 5 buttons in the list and let the rest scroll.
+  constexpr size_t kMaxDialogButtons = 5;
+  if (dialog_buttons_.size() > kMaxDialogButtons) {
+    const int bubble_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
+        DISTANCE_BUBBLE_PREFERRED_WIDTH);
+
+    int max_list_height = 0;
+    for (size_t i = 0; i < kMaxDialogButtons; ++i)
+      max_list_height += dialog_buttons_[i]->GetHeightForWidth(bubble_width);
+    DCHECK_GT(max_list_height, 0);
+
+    auto* scroll_view = AddChildView(std::make_unique<views::ScrollView>());
+    scroll_view->ClipHeightTo(0, max_list_height);
+    scroll_view->SetContents(std::move(button_list));
+  } else {
+    AddChildView(std::move(button_list));
   }
 }
 

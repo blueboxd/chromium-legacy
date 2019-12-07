@@ -30,7 +30,7 @@ public abstract class SnackbarActivity extends SynchronousInitializationActivity
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.O) {
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         }
-        mSnackbarManager = new SnackbarManager(this, null);
+        mSnackbarManager = new SnackbarManager(this, findViewById(android.R.id.content), null);
     }
 
     @Override

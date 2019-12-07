@@ -95,8 +95,10 @@ void CreditCardFIDOAuthenticator::Register(std::string card_authorization_token,
 }
 
 void CreditCardFIDOAuthenticator::Authorize(
+    base::WeakPtr<Requester> requester,
     std::string card_authorization_token,
     base::Value request_options) {
+  requester_ = requester;
   card_authorization_token_ = card_authorization_token;
   if (IsValidRequestOptions(request_options)) {
     // If user is already opted-in, then a new card is trying to be
@@ -350,6 +352,8 @@ void CreditCardFIDOAuthenticator::OnDidGetAssertion(
     // Report failure to |requester_| if card unmasking was requested.
     if (current_flow_ == AUTHENTICATION_FLOW)
       requester_->OnFIDOAuthenticationComplete(/*did_succeed=*/false);
+    if (current_flow_ == FOLLOWUP_AFTER_CVC_AUTH_FLOW)
+      requester_->OnFidoAuthorizationComplete(/*did_succeed=*/false);
 
     // Treat failure to perform user verification as a strong signal not to
     // offer opt-in in the future.
@@ -381,6 +385,12 @@ void CreditCardFIDOAuthenticator::OnDidGetAssertion(
   } else {
     DCHECK(current_flow_ == FOLLOWUP_AFTER_CVC_AUTH_FLOW ||
            current_flow_ == OPT_IN_WITH_CHALLENGE_FLOW);
+    // The user facing portion of the authorization is complete, which should be
+    // reported so that the form can be filled if in the FOLLOWUP_AFTER_CVC
+    // flow.
+    if (current_flow_ == FOLLOWUP_AFTER_CVC_AUTH_FLOW)
+      requester_->OnFidoAuthorizationComplete(/*did_succeed=*/true);
+
     base::Value response = base::Value(base::Value::Type::DICTIONARY);
     response.SetKey("fido_assertion_info",
                     ParseAssertionResponse(std::move(assertion_response)));
@@ -441,7 +451,7 @@ void CreditCardFIDOAuthenticator::OnDidGetOptChangeResult(
       Register(card_authorization_token_,
                std::move(response.fido_creation_options.value()));
     } else if (response.fido_request_options.has_value()) {
-      Authorize(card_authorization_token_,
+      Authorize(/*requester=*/nullptr, card_authorization_token_,
                 std::move(response.fido_request_options.value()));
     }
   } else {

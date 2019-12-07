@@ -98,6 +98,22 @@ Polymer({
       type: Boolean,
       value: true,
     },
+
+    /**
+     * Device attribute : Asset ID.
+     */
+    assetId_: {
+      type: String,
+      value: '',
+    },
+
+    /**
+     * Device attribute : Location.
+     */
+    deviceLocation_: {
+      type: String,
+      value: '',
+    },
   },
 
   /**
@@ -328,8 +344,8 @@ Polymer({
    * location.
    */
   showAttributePromptStep: function(annotatedAssetId, annotatedLocation) {
-    this.$['oauth-enroll-asset-id'].value = annotatedAssetId;
-    this.$['oauth-enroll-location'].value = annotatedLocation;
+    this.assetId_ = annotatedAssetId;
+    this.deviceLocation_ = annotatedLocation;
     this.showStep(ENROLLMENT_STEP.ATTRIBUTE_PROMPT);
   },
 
@@ -494,8 +510,7 @@ Polymer({
    * |chrome| and launches the device attribute update negotiation.
    */
   submitAttributes_: function() {
-    this.screen.onAttributesEntered_(this.$['oauth-enroll-asset-id'].value,
-        this.$['oauth-enroll-location'].value);
+    this.screen.onAttributesEntered_(this.assetId_, this.deviceLocation_);
   },
 
   /**

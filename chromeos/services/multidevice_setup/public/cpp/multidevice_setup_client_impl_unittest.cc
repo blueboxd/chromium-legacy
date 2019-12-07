@@ -20,9 +20,7 @@
 #include "chromeos/services/multidevice_setup/public/cpp/android_sms_app_helper_delegate.h"
 #include "chromeos/services/multidevice_setup/public/cpp/android_sms_pairing_state_tracker.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup.h"
-#include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -124,7 +122,6 @@ class MultiDeviceSetupClientImplTest : public testing::Test {
         fake_multidevice_setup_impl_factory_.get());
 
     service_ = std::make_unique<MultiDeviceSetupService>(
-        connector_factory_.RegisterInstance(mojom::kServiceName),
         nullptr /* pref_service */, nullptr /* device_sync_client */,
         nullptr /* auth_token_validator */,
         nullptr /* oobe_completion_tracker */,
@@ -139,8 +136,11 @@ class MultiDeviceSetupClientImplTest : public testing::Test {
               MultiDeviceSetupClient::GenerateDefaultHostStatusWithDevice(),
       const MultiDeviceSetupClient::FeatureStatesMap& feature_states_map =
           MultiDeviceSetupClient::GenerateDefaultFeatureStatesMap()) {
+    mojo::PendingRemote<mojom::MultiDeviceSetup> remote_setup;
+    service_->BindMultiDeviceSetup(
+        remote_setup.InitWithNewPipeAndPassReceiver());
     client_ = MultiDeviceSetupClientImpl::Factory::Get()->BuildInstance(
-        connector_factory_.GetDefaultConnector());
+        std::move(remote_setup));
     SendPendingMojoMessages();
 
     // When |client_| is created, it requests the current host status and
@@ -407,7 +407,6 @@ class MultiDeviceSetupClientImplTest : public testing::Test {
   FakeMultiDeviceSetup* fake_multidevice_setup_;
   std::unique_ptr<FakeMultiDeviceSetupInitializerFactory>
       fake_multidevice_setup_impl_factory_;
-  service_manager::TestConnectorFactory connector_factory_;
   std::unique_ptr<MultiDeviceSetupService> service_;
   std::unique_ptr<MultiDeviceSetupClient> client_;
 

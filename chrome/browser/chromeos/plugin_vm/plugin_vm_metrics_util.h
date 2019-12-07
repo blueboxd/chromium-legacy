@@ -40,7 +40,10 @@ enum class PluginVmSetupResult {
   kUserCancelledDownloadingPluginVmImage = 4,
   kUserCancelledImportingPluginVmImage = 5,
 
-  kMaxValue = kUserCancelledImportingPluginVmImage,
+  kErrorDownloadingPluginVmDlc = 6,
+  kUserCancelledDownloadingPluginVmDlc = 7,
+
+  kMaxValue = kUserCancelledDownloadingPluginVmDlc,
 };
 
 void RecordPluginVmImageDownloadedSizeHistogram(uint64_t bytes_downloaded);

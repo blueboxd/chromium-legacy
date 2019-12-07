@@ -7,6 +7,7 @@
 
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "cc/trees/browser_controls_params.h"
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "content/common/content_export.h"
 #include "content/public/common/screen_info.h"
@@ -90,20 +91,13 @@ struct CONTENT_EXPORT VisualProperties {
   // for what, and how they should relate or not.
   gfx::Rect compositor_viewport_pixel_rect;
 
-  // Whether or not Blink's viewport size should be shrunk by the height of the
-  // URL-bar (always false on platforms where URL-bar hiding isn't supported).
-  bool browser_controls_shrink_blink_size = false;
+  // Browser controls params such as top and bottom controls heights, whether
+  // controls shrink blink size etc.
+  cc::BrowserControlsParams browser_controls_params;
 
   // Whether or not the focused node should be scrolled into view after the
   // resize.
   bool scroll_focused_node_into_view = false;
-
-  // The height of the top controls (always 0 on platforms where URL-bar hiding
-  // isn't supported).
-  float top_controls_height = 0.f;
-
-  // The height of the bottom controls.
-  float bottom_controls_height = 0.f;
 
   // The local surface ID to use (if valid) and its allocation time.
   base::Optional<viz::LocalSurfaceIdAllocation> local_surface_id_allocation;

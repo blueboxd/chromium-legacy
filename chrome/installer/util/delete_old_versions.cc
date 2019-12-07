@@ -91,7 +91,7 @@ bool DeleteDirectoriesWithoutMatchingExecutable(
       const base::FilePath directory_path = install_dir.Append(directory_name);
       LOG(WARNING) << "Attempting to delete stray directory "
                    << directory_path.value();
-      if (!base::DeleteFile(directory_path, true)) {
+      if (!base::DeleteFileRecursively(directory_path)) {
         PLOG(ERROR) << "Failed to delete stray directory "
                     << directory_path.value();
         success = false;
@@ -197,7 +197,7 @@ bool DeleteVersion(const base::FilePath& version_directory,
   locks.clear();
 
   // Delete the version directory.
-  if (!base::DeleteFile(version_directory, true)) {
+  if (!base::DeleteFileRecursively(version_directory)) {
     PLOG(ERROR) << "Failed to delete version directory "
                 << version_directory.value();
     success = false;

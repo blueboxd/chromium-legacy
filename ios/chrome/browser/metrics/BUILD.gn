@@ -325,6 +325,8 @@ source_set("eg_app_support+eg2") {
     "//components/ukm",
     "//ios/chrome/browser",
     "//ios/chrome/browser/metrics",
+    "//ios/chrome/test/app:test_support",
+    "//ios/testing:nserror_support",
     "//services/metrics/public/cpp:metrics_cpp",
   ]
 }
@@ -341,6 +343,7 @@ source_set("eg_test_support+eg2") {
     "metrics_app_interface_stub.mm",
   ]
   deps = [
+    "//base",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
   ]

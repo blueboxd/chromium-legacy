@@ -18,6 +18,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Manager for the snackbar showing at the bottom of activity. There should be only one
@@ -72,6 +73,7 @@ public class SnackbarManager implements OnClickListener, ActivityStateListener {
     private boolean mActivityInForeground;
     private boolean mIsDisabledForTesting;
     private ViewGroup mSnackbarParentView;
+    private final WindowAndroid mWindowAndroid;
     private final Runnable mHideRunnable = new Runnable() {
         @Override
         public void run() {
@@ -83,13 +85,16 @@ public class SnackbarManager implements OnClickListener, ActivityStateListener {
     /**
      * Constructs a SnackbarManager to show snackbars in the given window.
      * @param activity The embedding activity.
-     * @param snackbarParentView The ViewGroup used to display snackbars. If this is null, the
-     *                           {@link SnackbarView} will determine where to attach the snackbar.
+     * @param snackbarParentView The ViewGroup used to display this snackbar.
+     * @param windowAndroid The WindowAndroid used for starting animation. If it is null,
+     *                      Animator#start is called instead.
      */
-    public SnackbarManager(Activity activity, @Nullable ViewGroup snackbarParentView) {
+    public SnackbarManager(Activity activity, ViewGroup snackbarParentView,
+            @Nullable WindowAndroid windowAndroid) {
         mActivity = activity;
         mUIThreadHandler = new Handler();
         mSnackbarParentView = snackbarParentView;
+        mWindowAndroid = windowAndroid;
 
         ApplicationStatus.registerStateListenerForActivity(this, mActivity);
         if (ApplicationStatus.getStateForActivity(mActivity) == ActivityState.STARTED
@@ -225,7 +230,8 @@ public class SnackbarManager implements OnClickListener, ActivityStateListener {
         } else {
             boolean viewChanged = true;
             if (mView == null) {
-                mView = new SnackbarView(mActivity, this, currentSnackbar, mSnackbarParentView);
+                mView = new SnackbarView(
+                        mActivity, this, currentSnackbar, mSnackbarParentView, mWindowAndroid);
                 mView.show();
             } else {
                 viewChanged = mView.update(currentSnackbar);

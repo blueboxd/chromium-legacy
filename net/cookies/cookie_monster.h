@@ -430,6 +430,14 @@ class NET_EXPORT CookieMonster : public CookieStore {
       base::Time* creation_date_to_inherit,
       CanonicalCookie::CookieInclusionStatus* status);
 
+  // This is only used if the RecentCreationTimeGrantsLegacyCookieSemantics
+  // feature is enabled. It finds an equivalent cookie (based on name, domain,
+  // path) with the same value, if there is any, and returns its creation time,
+  // or the creation time of the |cookie| itself, if there is none.
+  base::Time EffectiveCreationTimeForMaybePreexistingCookie(
+      const std::string& key,
+      const CanonicalCookie& cookie) const;
+
   // Inserts |cc| into cookies_. Returns an iterator that points to the inserted
   // cookie in cookies_. Guarantee: all iterators to cookies_ remain valid.
   CookieMap::iterator InternalInsertCookie(const std::string& key,
@@ -505,21 +513,31 @@ class NET_EXPORT CookieMonster : public CookieStore {
   bool HasCookieableScheme(const GURL& url);
 
   // Get the cookie's access semantics (LEGACY or NONLEGACY), considering any
-  // features providing time-based special conditions. If none are active, this
-  // then checks for a value from the cookie access delegate, if it is non-null.
-  // Otherwise returns UNKNOWN.
+  // features granting legacy semantics for special conditions (if any are
+  // active and meet the conditions for granting legacy access, pass true for
+  // |legacy_semantics_granted|). If none are active, this then checks for a
+  // value from the cookie access delegate, if it is non-null. Otherwise returns
+  // UNKNOWN.
   CookieAccessSemantics GetAccessSemanticsForCookie(
+      const CanonicalCookie& cookie,
+      bool legacy_semantics_granted) const;
+
+  // This is called for getting a cookie.
+  CookieAccessSemantics GetAccessSemanticsForCookieGet(
       const CanonicalCookie& cookie) const;
 
   // This is called for setting a cookie with the options specified by
-  // |options|. This is the same as the above, except if the feature
-  // RecentHttpSameSiteAccessGrantsLegacyCookieSemantics is enabled, in which
-  // case it always returns LEGACY for a same-site access that permits HttpOnly
-  // access. For setting a cookie, a same-site access is lax or better (since
+  // |options|. For setting a cookie, a same-site access is lax or better (since
   // CookieOptions for setting a cookie will never be strict).
+  // |effective_creation_time| is the time that should be used for deciding
+  // whether the RecentCreationTimeGrantsLegacyCookieSemantics feature should
+  // grant legacy semantics. This may differ from the CreationDate() field of
+  // the cookie, if there was a preexisting equivalent cookie (in which case it
+  // is the creation time of that equivalent cookie).
   CookieAccessSemantics GetAccessSemanticsForCookieSet(
       const CanonicalCookie& cookie,
-      const CookieOptions& options) const;
+      const CookieOptions& options,
+      base::Time effective_creation_time) const;
 
   // Looks up the last time a cookie matching the (name, domain, path) of
   // |cookie| was accessed in a same-site context permitting HttpOnly

@@ -47,6 +47,7 @@ class OriginTrialsWriter(make_runtime_features.BaseRuntimeFeatureWriter):
         }
         self._implied_mappings = self._make_implied_mappings()
         self._trial_to_features_map = self._make_trial_to_features_map()
+        self._set_trial_types()
 
     def _make_implied_mappings(self):
         # Set up the implied_by relationships between trials.
@@ -87,6 +88,15 @@ class OriginTrialsWriter(make_runtime_features.BaseRuntimeFeatureWriter):
             else:
                 trial_feature_mappings[trial_name] = [feature]
         return trial_feature_mappings
+
+    def _set_trial_types(self):
+        for feature in self._origin_trial_features:
+            trial_type = feature['origin_trial_type']
+            if feature['origin_trial_allows_insecure'] and trial_type != 'deprecation':
+                raise Exception('Origin trial must have type deprecation to '
+                                'specify origin_trial_allows_insecure: %s' % feature['name'])
+            if trial_type:
+                feature['origin_trial_type'] = name_utilities._upper_camel_case(trial_type)
 
     @template_expander.use_jinja('templates/' + file_basename + '.cc.tmpl')
     def generate_implementation(self):

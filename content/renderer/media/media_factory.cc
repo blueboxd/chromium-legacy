@@ -72,6 +72,7 @@
 #endif
 
 #if defined(OS_FUCHSIA)
+#include "content/renderer/media/fuchsia_renderer_factory.h"
 #include "media/fuchsia/cdm/client/fuchsia_cdm_util.h"
 #elif BUILDFLAG(ENABLE_MOJO_CDM)
 #include "media/mojo/clients/mojo_cdm_factory.h"  // nogncheck
@@ -482,10 +483,10 @@ MediaFactory::CreateRendererFactorySelector(
       FactoryType::kFlinging, std::move(flinging_factory), is_flinging_cb);
 #endif  // defined(OS_ANDROID)
 
-  bool use_mojo_renderer_factory = false;
+  bool use_default_renderer_factory = true;
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
-  use_mojo_renderer_factory = enable_mojo_renderer;
-  if (use_mojo_renderer_factory) {
+  if (enable_mojo_renderer) {
+    use_default_renderer_factory = false;
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
     factory_selector->AddBaseFactory(
         FactoryType::kCast, std::make_unique<CastRendererClientFactory>(
@@ -502,7 +503,21 @@ MediaFactory::CreateRendererFactorySelector(
   }
 #endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
 
-  if (!use_mojo_renderer_factory) {
+#if defined(OS_FUCHSIA)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableFuchsiaAudioConsumer)) {
+    use_default_renderer_factory = false;
+    factory_selector->AddBaseFactory(
+        FactoryType::kFuchsia,
+        std::make_unique<FuchsiaRendererFactory>(
+            media_log, decoder_factory,
+            base::BindRepeating(&RenderThreadImpl::GetGpuFactories,
+                                base::Unretained(render_thread)),
+            render_frame_->GetBrowserInterfaceBroker()));
+  }
+#endif  // defined(OS_FUCHSIA)
+
+  if (use_default_renderer_factory) {
     factory_selector->AddBaseFactory(
         FactoryType::kDefault,
         std::make_unique<media::DefaultRendererFactory>(

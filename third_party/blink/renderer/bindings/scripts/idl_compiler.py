@@ -29,7 +29,7 @@
 
 """Compile an .idl file to Blink V8 bindings (.h and .cpp files).
 
-Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
+Design doc: https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/renderer/bindings/IDLCompiler.md
 """
 
 import abc

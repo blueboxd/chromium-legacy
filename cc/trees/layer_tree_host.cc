@@ -1204,17 +1204,12 @@ void LayerTreeHost::SetViewportVisibleRect(const gfx::Rect& visible_rect) {
   viewport_visible_rect_ = visible_rect;
 }
 
-void LayerTreeHost::SetBrowserControlsHeight(float top_height,
-                                             float bottom_height,
-                                             bool shrink) {
-  if (top_controls_height_ == top_height &&
-      bottom_controls_height_ == bottom_height &&
-      browser_controls_shrink_blink_size_ == shrink)
+void LayerTreeHost::SetBrowserControlsParams(
+    const BrowserControlsParams& params) {
+  if (browser_controls_params_ == params)
     return;
 
-  top_controls_height_ = top_height;
-  bottom_controls_height_ = bottom_height;
-  browser_controls_shrink_blink_size_ = shrink;
+  browser_controls_params_ = params;
   SetNeedsCommit();
 }
 
@@ -1523,10 +1518,7 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
   tree_impl->PushPageScaleFromMainThread(
       page_scale_factor_, min_page_scale_factor_, max_page_scale_factor_);
 
-  tree_impl->set_browser_controls_shrink_blink_size(
-      browser_controls_shrink_blink_size_);
-  tree_impl->SetTopControlsHeight(top_controls_height_);
-  tree_impl->SetBottomControlsHeight(bottom_controls_height_);
+  tree_impl->SetBrowserControlsParams(browser_controls_params_);
   tree_impl->set_overscroll_behavior(overscroll_behavior_);
   tree_impl->PushBrowserControlsFromMainThread(top_controls_shown_ratio_,
                                                bottom_controls_shown_ratio_);

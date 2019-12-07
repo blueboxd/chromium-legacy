@@ -21,6 +21,7 @@ namespace web_app {
 
 class AppRegistrar;
 class AppShortcutManager;
+class FileHandlerManager;
 class InstallFinalizer;
 class PendingAppManager;
 class SystemWebAppManager;

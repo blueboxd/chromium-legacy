@@ -38,7 +38,6 @@ class MockContentSettingsClient : public blink::WebContentSettingsClient {
   bool AllowStorage(bool local) override;
   bool AllowRunningInsecureContent(bool enabled_per_settings,
                                    const blink::WebURL& url) override;
-  bool AllowAutoplay(bool default_value) override;
   void PersistClientHints(
       const blink::WebEnabledClientHints& enabled_client_hints,
       base::TimeDelta duration,

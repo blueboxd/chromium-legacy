@@ -63,9 +63,11 @@ class DnsLookupRequest : public network::ResolveHostClientBase {
     // Make a note that this is a speculative resolve request. This allows
     // separating it from real navigations in the observer's callback.
     resolve_host_parameters->is_speculative = true;
+    // TODO(https://crbug.com/997049): Pass in a non-empty NetworkIsolationKey.
     render_process_host->GetStoragePartition()
         ->GetNetworkContext()
-        ->ResolveHost(host_port_pair, std::move(resolve_host_parameters),
+        ->ResolveHost(host_port_pair, net::NetworkIsolationKey::Todo(),
+                      std::move(resolve_host_parameters),
                       receiver_.BindNewPipeAndPassRemote());
     receiver_.set_disconnect_handler(
         base::BindOnce(&DnsLookupRequest::OnComplete, base::Unretained(this),

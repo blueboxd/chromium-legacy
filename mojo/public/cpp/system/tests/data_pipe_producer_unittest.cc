@@ -271,8 +271,8 @@ TEST_F(DataPipeProducerTest, TinyFile) {
 
 TEST_F(DataPipeProducerTest, HugeFile) {
   // We want a file size that is many times larger than the data pipe size.
-  // 63MB is large enough, while being small enough to fit in a typical tmpfs.
-  constexpr size_t kHugeFileSize = 63 * 1024 * 1024;
+  // 5MB is large enough, while being small enough to fit in a typical tmpfs.
+  constexpr size_t kHugeFileSize = 5 * 1024 * 1024;
   constexpr uint32_t kDataPipeSize = 512 * 1024;
 
   std::string test_string(kHugeFileSize, 'a');

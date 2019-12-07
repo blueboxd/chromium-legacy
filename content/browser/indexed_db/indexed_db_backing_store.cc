@@ -606,7 +606,7 @@ leveldb::Status IndexedDBBackingStore::Initialize(bool clean_active_journal) {
         PutInt(write_batch.get(), data_version_key, db_data_version.Encode()));
     // If a blob directory already exists for this database, blow it away.  It's
     // leftover from a partially-purged previous generation of data.
-    if (!base::DeleteFile(blob_path_, true)) {
+    if (!base::DeleteFileRecursively(blob_path_)) {
       INTERNAL_WRITE_ERROR_UNTESTED(SET_UP_METADATA);
       return IOErrorStatus();
     }
@@ -659,8 +659,8 @@ leveldb::Status IndexedDBBackingStore::Initialize(bool clean_active_journal) {
       // the updated schema version to disk. In consequence, any database that
       // started out as schema version <= 2 will remain at schema version 2
       // indefinitely. Furthermore, this migration path used to call
-      // "base::DeleteFile(blob_path_, true)", so databases stuck at version 2
-      // would lose their stored Blobs on every open call.
+      // "base::DeleteFileRecursively(blob_path_)", so databases stuck at
+      // version 2 would lose their stored Blobs on every open call.
       //
       // In order to prevent corrupt databases, when upgrading from 2 to 3 this
       // will consider any v2 databases with BlobEntryKey entries as corrupt.
@@ -1810,7 +1810,7 @@ bool IndexedDBBackingStore::RemoveBlobFile(int64_t database_id,
 bool IndexedDBBackingStore::RemoveBlobDirectory(int64_t database_id) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   FilePath path = GetBlobDirectoryName(blob_path_, database_id);
-  return base::DeleteFile(path, true);
+  return base::DeleteFileRecursively(path);
 }
 
 Status IndexedDBBackingStore::CleanUpBlobJournal(

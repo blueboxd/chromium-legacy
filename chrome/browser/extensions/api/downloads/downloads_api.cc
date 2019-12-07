@@ -1050,7 +1050,8 @@ bool DownloadsDownloadFunction::RunAsync() {
       new download::DownloadUrlParameters(
           download_url, source_process_id(),
           render_frame_host()->GetRenderViewHost()->GetRoutingID(),
-          render_frame_host()->GetRoutingID(), traffic_annotation));
+          render_frame_host()->GetRoutingID(), traffic_annotation,
+          render_frame_host()->GetNetworkIsolationKey()));
 
   base::FilePath creator_suggested_filename;
   if (options.filename.get()) {

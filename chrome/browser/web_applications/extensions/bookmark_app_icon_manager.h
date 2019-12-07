@@ -27,6 +27,8 @@ class BookmarkAppIconManager : public web_app::AppIconManager {
   void ReadIcon(const web_app::AppId& app_id,
                 int icon_size_in_px,
                 ReadIconCallback callback) const override;
+  void ReadAllIcons(const web_app::AppId& app_id,
+                    ReadAllIconsCallback callback) const override;
   void ReadSmallestIcon(const web_app::AppId& app_id,
                         int icon_size_in_px,
                         ReadIconCallback callback) const override;

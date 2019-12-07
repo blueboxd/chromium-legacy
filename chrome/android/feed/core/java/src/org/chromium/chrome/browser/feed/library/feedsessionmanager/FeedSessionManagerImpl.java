@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.feed.library.feedsessionmanager;
 
 import android.support.annotation.VisibleForTesting;
 
+import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.KnownContent;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.KnownContent.Listener;
 import org.chromium.chrome.browser.feed.library.api.common.MutationContext;
@@ -37,7 +38,6 @@ import org.chromium.chrome.browser.feed.library.common.concurrent.MainThreadRunn
 import org.chromium.chrome.browser.feed.library.common.concurrent.TaskQueue;
 import org.chromium.chrome.browser.feed.library.common.concurrent.TaskQueue.TaskType;
 import org.chromium.chrome.browser.feed.library.common.feedobservable.FeedObservable;
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
 import org.chromium.chrome.browser.feed.library.common.functional.Function;
 import org.chromium.chrome.browser.feed.library.common.intern.HashPoolInterner;
 import org.chromium.chrome.browser.feed.library.common.intern.InternedMap;

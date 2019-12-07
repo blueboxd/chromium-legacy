@@ -136,7 +136,7 @@ class SpellcheckHunspellDictionary
 #endif
 
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  void SpellCheckPlatformSetLanguageCompleted(bool result);
+  void SpellCheckPlatformSetLanguageComplete(bool result);
 #endif
 
   // The reply point for PostTaskAndReplyWithResult, called after the dictionary
@@ -148,6 +148,10 @@ class SpellcheckHunspellDictionary
 
   // Notify listeners that the dictionary download failed.
   void InformListenersOfDownloadFailure();
+
+  // Callback for asynchronously checking if the platform supports a language
+  // for spellchecking.
+  void PlatformSupportsLanguageComplete(bool platform_supports_language);
 
   // Task runner where the file operations takes place.
   scoped_refptr<base::SequencedTaskRunner> const task_runner_;

@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
 #include "chrome/browser/chromeos/extensions/login_screen/login_state/session_state_changed_event_dispatcher.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
-#include "chrome/browser/chromeos/extensions/printing/printing_api_handler.h"
 #include "chrome/browser/chromeos/extensions/printing_metrics/print_job_finished_event_dispatcher.h"
 #include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager_factory.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_factory.h"
@@ -24,7 +23,6 @@
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager_factory.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
-#include "chrome/browser/chromeos/printing/cups_proxy_service_manager_factory.h"
 #include "chrome/browser/chromeos/printing/history/print_job_history_service_factory.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
@@ -36,6 +34,11 @@
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_private_api.h"
 #include "extensions/browser/api/vpn_provider/vpn_service_factory.h"
 #include "extensions/browser/api/webcam_private/webcam_private_api.h"
+
+#if defined(USE_CUPS)
+#include "chrome/browser/chromeos/extensions/printing/printing_api_handler.h"
+#include "chrome/browser/chromeos/printing/cups_proxy_service_manager_factory.h"
+#endif
 
 namespace chromeos {
 
@@ -57,7 +60,9 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::MediaPlayerAPI::GetFactoryInstance();
   extensions::NetworkingConfigServiceFactory::GetInstance();
   extensions::SessionStateChangedEventDispatcher::GetFactoryInstance();
+#if defined(USE_CUPS)
   extensions::PrintingAPIHandler::GetFactoryInstance();
+#endif
   extensions::PrintJobFinishedEventDispatcher::GetFactoryInstance();
   extensions::TerminalPrivateAPI::GetFactoryInstance();
   extensions::VerifyTrustAPI::GetFactoryInstance();

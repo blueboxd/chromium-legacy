@@ -4,11 +4,13 @@
 
 package org.chromium.chrome.browser.share.qrcode;
 
-import android.content.Context;
+import android.annotation.SuppressLint;
+import android.app.Dialog;
+import android.app.DialogFragment;
+import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
-import android.view.LayoutInflater;
 import android.view.View;
 
 import org.chromium.chrome.R;
@@ -19,39 +21,69 @@ import java.util.ArrayList;
 /**
  * QrCodeDialog is the main view for QR code sharing and scanning.
  */
-public class QrCodeDialog extends AlertDialog {
-    private final TabLayout mTabLayout;
-    private final ViewPager mViewPager;
+public class QrCodeDialog extends DialogFragment {
+    private ArrayList<QrCodeDialogTab> mTabs;
+
+    /** The QrCodeDialog constructor. */
+    public QrCodeDialog() {}
 
     /**
      * The QrCodeDialog constructor.
-     * @param context The context to use.
-     * @param shareView The view for displaying in the share tab.
-     * @param scanView The view for displaying in the scan tab.
+     * @param tabs The array of tabs for the tab layout.
      */
-    public QrCodeDialog(Context context, View shareView, View scanView) {
-        super(context, R.style.Theme_Chromium_Fullscreen);
+    /**
+     * TODO(gayane): Resolve lint warning. Per warning, tabs should be passed through Bundle, but I
+     * don't want to make all the classes parcelable.
+     */
+    @SuppressLint("ValidFragment")
+    public QrCodeDialog(ArrayList<QrCodeDialogTab> tabs) {
+        mTabs = tabs;
+    }
 
-        View dialogView = (View) LayoutInflater.from(context).inflate(
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        AlertDialog.Builder builder =
+                new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_Fullscreen);
+        builder.setView(getDialogView());
+        return builder.create();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        for (QrCodeDialogTab tab : mTabs) {
+            tab.onResume();
+        }
+    }
+    @Override
+    public void onPause() {
+        super.onPause();
+        for (QrCodeDialogTab tab : mTabs) {
+            tab.onPause();
+        }
+    }
+
+    private View getDialogView() {
+        View dialogView = (View) getActivity().getLayoutInflater().inflate(
                 org.chromium.chrome.browser.share.qrcode.R.layout.qrcode_dialog, null);
         ChromeImageButton closeButton =
                 (ChromeImageButton) dialogView.findViewById(R.id.close_button);
-        closeButton.setOnClickListener(v -> cancel());
+        closeButton.setOnClickListener(v -> dismiss());
 
         // Setup page adapter and tab layout.
         ArrayList<View> pages = new ArrayList<View>();
-        pages.add(shareView);
-        pages.add(scanView);
+        for (QrCodeDialogTab tab : mTabs) {
+            pages.add(tab.getView());
+        }
         QrCodePageAdapter pageAdapter = new QrCodePageAdapter(pages);
 
-        mTabLayout =
+        TabLayout tabLayout =
                 dialogView.findViewById(org.chromium.chrome.browser.share.qrcode.R.id.tab_layout);
-        mViewPager = dialogView.findViewById(
+        ViewPager viewPager = dialogView.findViewById(
                 org.chromium.chrome.browser.share.qrcode.R.id.qrcode_view_pager);
-        mViewPager.setAdapter(pageAdapter);
-        mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(mTabLayout));
-        mTabLayout.addOnTabSelectedListener(
-                new TabLayout.ViewPagerOnTabSelectedListener(mViewPager));
-        setView(dialogView);
+        viewPager.setAdapter(pageAdapter);
+        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+        tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(viewPager));
+        return dialogView;
     }
 }

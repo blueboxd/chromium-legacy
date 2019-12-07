@@ -79,7 +79,9 @@ constexpr net::NetworkTrafficAnnotationTag kCleanerReportTrafficAnnotation =
               "Contents of files are never reported. No user identifiers are "
               "reported, and common user identifiers found in metadata are "
               "replaced with generic strings, but it is possible some metadata "
-              "may contain personally identifiable information."
+              "may contain personally identifiable information. The complete "
+              "data specification is at "
+              "https://cs.chromium.org/chromium/src/chrome/chrome_cleaner/logging/proto/chrome_cleaner_report.proto."
             destination: GOOGLE_OWNED_SERVICE
           }
           policy {

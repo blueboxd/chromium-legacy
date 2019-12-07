@@ -34,14 +34,6 @@ namespace {
 const base::TimeDelta kRefreshFromTokenServiceDelay =
     base::TimeDelta::FromHours(24);
 
-bool AccountSupportsUserInfo(const CoreAccountId& account_id) {
-  // Supervised users use a specially scoped token which when used for general
-  // purposes causes the token service to raise spurious auth errors.
-  // TODO(treib): this string is also used in supervised_user_constants.cc.
-  // Should put in a common place.
-  return account_id.ToString() != "managed_user@localhost";
-}
-
 }  // namespace
 
 const char kImageFetcherUmaClient[] = "AccountFetcherService";
@@ -155,8 +147,6 @@ void AccountFetcherService::UpdateChildInfo() {
       return;
     if (!child_request_account_id_.empty())
       ResetChildInfo();
-    if (!AccountSupportsUserInfo(candidate))
-      return;
     child_request_account_id_ = candidate;
     StartFetchingChildInfo(candidate);
   } else {
@@ -249,8 +239,6 @@ void AccountFetcherService::RefreshAccountInfo(const CoreAccountId& account_id,
   account_tracker_service_->StartTrackingAccount(account_id);
   const AccountInfo& info =
       account_tracker_service_->GetAccountInfo(account_id);
-  if (!AccountSupportsUserInfo(account_id))
-    return;
 
 // |only_fetch_if_invalid| is false when the service is due for a timed update.
 #if defined(OS_ANDROID)

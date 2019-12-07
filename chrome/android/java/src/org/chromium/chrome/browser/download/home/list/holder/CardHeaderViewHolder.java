@@ -4,12 +4,15 @@
 
 package org.chromium.chrome.browser.download.home.list.holder;
 
+import android.graphics.drawable.BitmapDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.chrome.browser.download.home.list.ListItem;
+import org.chromium.chrome.browser.download.home.list.ListProperties;
 import org.chromium.chrome.download.R;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -35,5 +38,17 @@ public class CardHeaderViewHolder extends ListItemViewHolder {
         ListItem.CardHeaderListItem headerListItem = (ListItem.CardHeaderListItem) item;
         TextView domainView = itemView.findViewById(R.id.domain);
         domainView.setText(headerListItem.dateAndDomain.second);
+
+        // TODO(shaktisahu): Use AsyncImageView.
+        ImageView faviconView = itemView.findViewById(R.id.favicon);
+        int faviconSizePx = itemView.getContext().getResources().getDimensionPixelSize(
+                org.chromium.chrome.R.dimen.default_favicon_size);
+        if (faviconView != null) {
+            properties.get(ListProperties.PROVIDER_FAVICON)
+                    .getFavicon(headerListItem.faviconUrl, faviconSizePx, (bitmap) -> {
+                        faviconView.setImageDrawable(
+                                new BitmapDrawable(itemView.getResources(), bitmap));
+                    });
+        }
     }
 }

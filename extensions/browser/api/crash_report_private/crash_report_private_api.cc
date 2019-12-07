@@ -10,7 +10,9 @@
 #include "base/task/post_task.h"
 #include "base/time/default_clock.h"
 #include "components/crash/content/app/client_upload_info.h"
+#include "components/feedback/anonymizer_tool.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/common/api/crash_report_private.h"
 #include "net/base/escape.h"
@@ -105,7 +107,7 @@ PlatformInfo GetPlatformInfo() {
   return info;
 }
 
-void SendReport(network::mojom::URLLoaderFactory* loader_factory,
+void SendReport(scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
                 const GURL& url,
                 const std::string& body,
                 base::OnceCallback<void()> callback) {
@@ -142,15 +144,17 @@ void SendReport(network::mojom::URLLoaderFactory* loader_factory,
 
   network::SimpleURLLoader* loader = url_loader.get();
   loader->DownloadToString(
-      loader_factory,
+      loader_factory.get(),
       base::BindOnce(&OnRequestComplete, std::move(url_loader),
                      std::move(callback)),
       kCrashEndpointResponseMaxSizeInBytes);
 }
 
-void ReportJavaScriptError(network::mojom::URLLoaderFactory* loader_factory,
-                           const crash_report_private::ErrorInfo& error,
-                           base::OnceCallback<void()> callback) {
+void ReportJavaScriptError(
+    scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
+    const crash_report_private::ErrorInfo& error,
+    base::OnceCallback<void()> callback,
+    const std::string& anonymized_message) {
   const auto platform = GetPlatformInfo();
 
   const GURL source(error.url);
@@ -161,7 +165,7 @@ void ReportJavaScriptError(network::mojom::URLLoaderFactory* loader_factory,
   params["prod"] = net::EscapeQueryParamValue(product, /* use_plus */ false);
   params["ver"] = net::EscapeQueryParamValue(version, /* use_plus */ false);
   params["type"] = "JavascriptError";
-  // TODO(https://crbug.com/986178): Include |error.message| once we scrub PII.
+  params["error_message"] = anonymized_message;
   params["browser"] = "Chrome";
   params["browser_version"] = platform.version;
   params["channel"] = platform.channel;
@@ -175,7 +179,6 @@ void ReportJavaScriptError(network::mojom::URLLoaderFactory* loader_factory,
   if (error.column_number)
     params["column"] = *error.column_number;
 
-  // The network request must be made on the UI thread.
   const GURL url(base::StrCat(
       {GetCrashEndpoint(), "?", BuildPostRequestQueryString(params)}));
   const std::string body =
@@ -184,6 +187,12 @@ void ReportJavaScriptError(network::mojom::URLLoaderFactory* loader_factory,
           : "";
 
   SendReport(loader_factory, url, body, std::move(callback));
+}
+
+std::string AnonymizeErrorMessage(const std::string& message) {
+  DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  return feedback::AnonymizerTool(/*first_party_extension_ids=*/nullptr)
+      .Anonymize(message);
 }
 
 }  // namespace
@@ -209,14 +218,18 @@ ExtensionFunction::ResponseAction CrashReportPrivateReportErrorFunction::Run() {
   const auto params = crash_report_private::ReportError::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  ReportJavaScriptError(
+  scoped_refptr<network::SharedURLLoaderFactory> loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(browser_context())
-          ->GetURLLoaderFactoryForBrowserProcess()
-          .get(),
-      params->info,
-      base::BindOnce(&CrashReportPrivateReportErrorFunction::OnReportComplete,
-                     this));
+          ->GetURLLoaderFactoryForBrowserProcess();
 
+  // Don't anonymize the report on the UI thread as it can take some time.
+  PostTaskAndReplyWithResult(
+      FROM_HERE, base::BindOnce(&AnonymizeErrorMessage, params->info.message),
+      base::BindOnce(
+          &ReportJavaScriptError, std::move(loader_factory),
+          std::move(params->info),
+          base::BindOnce(
+              &CrashReportPrivateReportErrorFunction::OnReportComplete, this)));
   g_last_called_time = base::Time::Now();
 
   return RespondLater();

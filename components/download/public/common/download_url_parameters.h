@@ -80,7 +80,8 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
   // non-privileged frame.
   DownloadUrlParameters(
       const GURL& url,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation);
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
+      const net::NetworkIsolationKey& network_isolation_key);
 
   // The RenderView routing ID must correspond to the RenderView of the
   // RenderFrame, both of which share the same RenderProcess. This may be a
@@ -90,7 +91,8 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
       int render_process_host_id,
       int render_view_host_routing_id,
       int render_frame_host_routing_id,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation);
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
+      const net::NetworkIsolationKey& network_isolation_key);
 
   ~DownloadUrlParameters();
 
@@ -254,11 +256,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
   // downloaded content.
   void set_require_safety_checks(bool require_safety_checks) {
     require_safety_checks_ = require_safety_checks;
-  }
-
-  void set_network_isolation_key(
-      const net::NetworkIsolationKey& network_isolation_key) {
-    network_isolation_key_ = network_isolation_key;
   }
 
   OnStartedCallback& callback() { return callback_; }

@@ -32,10 +32,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace {
-
-// Opacity of the active tab background painted over inactive selected tabs.
-constexpr float kSelectedTabOpacity = 0.75f;
-
 // How the tab shape path is modified for selected tabs.
 using ShapeModifier = int;
 // No modification should be done.
@@ -594,8 +590,10 @@ float GM2TabStyle::GetSeparatorOpacity(bool for_layout, bool leading) const {
   // the separator if it's adjacent to other selected tabs.
   if (tab_->IsSelected()) {
     // If the adjacent view is actually a group header, hide the separator since
-    // group headers currently cannot be selected.
-    // TODO(crbug.com/1017822): Update this if headers become selectable.
+    // group headers normally cannot be selected. Group headers can become
+    // selected when dragging groups, but in that case it is always the first
+    // view dragging followed by the active tab (which has a group outline
+    // instead of a separator). So a separator is still not necessary here.
     if (adjacent_to_header)
       return 0.0f;
 
@@ -611,7 +609,6 @@ float GM2TabStyle::GetSeparatorOpacity(bool for_layout, bool leading) const {
 
   // If the adjacent view is actually a group header, show the separator since
   // the group header takes up a slot.
-  // TODO(crbug.com/1017822): Update this if headers become selectable.
   if (adjacent_to_header)
     return GetHoverInterpolatedSeparatorOpacity(for_layout, nullptr);
 

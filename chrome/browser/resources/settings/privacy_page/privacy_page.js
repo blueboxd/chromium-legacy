@@ -162,6 +162,13 @@ Polymer({
       }
     },
 
+    /** @private */
+    enableQuietNotificationPromptsSetting_: {
+      type: Boolean,
+      value: () =>
+          loadTimeData.getBoolean('enableQuietNotificationPromptsSetting'),
+    },
+
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,

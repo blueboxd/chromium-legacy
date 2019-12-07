@@ -37,7 +37,12 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
   bool Cancel() override;
   gfx::Size CalculatePreferredSize() const override;
 
-  // plugin_vm::PluginVmImageDownloadObserver implementation.
+  // plugin_vm::PluginVmImageDownload::Observer implementation.
+  void OnDlcDownloadStarted() override;
+  void OnDlcDownloadProgressUpdated(double progress,
+                                    base::TimeDelta elapsed_time) override;
+  void OnDlcDownloadCompleted() override;
+  void OnDlcDownloadCancelled() override;
   void OnDownloadStarted() override;
   void OnDownloadProgressUpdated(uint64_t bytes_downloaded,
                                  int64_t content_length,
@@ -62,6 +67,8 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
 
  private:
   enum class State {
+    START_DLC_DOWNLOADING,  // PluginVm DLC downloading should be started.
+    DOWNLOADING_DLC,    // PluginVm DLC downloading and installing in progress.
     START_DOWNLOADING,  // PluginVm image downloading should be started.
     DOWNLOADING,        // PluginVm image downloading is in progress.
     IMPORTING,          // Downloaded PluginVm image importing is in progress.

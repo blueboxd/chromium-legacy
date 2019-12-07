@@ -50,18 +50,44 @@ class SpellcheckPlatformWinTest : public testing::Test {
       std::move(quit_).Run();
   }
 
+#if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
+  void RetrieveSupportedWindowsPreferredLanguagesCallback(
+      const std::vector<std::string>& preferred_languages) {
+    callback_finished_ = true;
+    preferred_languages_ = preferred_languages;
+    for (const auto& preferred_language : preferred_languages_) {
+      DLOG(INFO) << "RetrieveSupportedWindowsPreferredLanguagesCallback: "
+                    "Dictionary supported for locale: "
+                 << preferred_language;
+    }
+    if (quit_)
+      std::move(quit_).Run();
+  }
+#endif  // BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK
+
  protected:
   bool callback_finished_ = false;
 
   bool set_language_result_;
   std::vector<SpellCheckResult> spell_check_results_;
+#if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
+  std::vector<std::string> preferred_languages_;
+#endif  // BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK
   base::OnceClosure quit_;
 
+  // The WindowsSpellChecker class is instantiated with static storage using
+  // base::NoDestructor (see GetWindowsSpellChecker) and creates its own task
+  // runner. The thread pool is destroyed together with TaskEnvironment when the
+  // test fixture object is destroyed. Therefore without some elaborate
+  // test-only code added to the WindowsSpellChecker class or a means to keep
+  // the TaskEnvironment alive (which would set off leak detection), easiest
+  // approach for now is to add all test coverage for Windows spellchecking to
+  // a single test.
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::MainThreadType::UI};
 };
 
-TEST_F(SpellcheckPlatformWinTest, SpellCheckSuggestions_EN_US) {
+TEST_F(SpellcheckPlatformWinTest, SpellCheckAsyncMethods) {
   static const struct {
     const char* input;           // A string to be tested.
     const char* suggested_word;  // A suggested word that should occur.
@@ -89,6 +115,8 @@ TEST_F(SpellcheckPlatformWinTest, SpellCheckSuggestions_EN_US) {
 
   RunUntilResultReceived();
 
+  ASSERT_TRUE(set_language_result_);
+
   for (const auto& test_case : kTestCases) {
     const base::string16 word(base::ASCIIToUTF16(test_case.input));
 
@@ -113,6 +141,20 @@ TEST_F(SpellcheckPlatformWinTest, SpellCheckSuggestions_EN_US) {
 
     ASSERT_NE(suggestions.end(), position);
   }
+
+#if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
+  spellcheck_platform::RetrieveSupportedWindowsPreferredLanguages(
+      base::BindOnce(&SpellcheckPlatformWinTest::
+                         RetrieveSupportedWindowsPreferredLanguagesCallback,
+                     base::Unretained(this)));
+
+  RunUntilResultReceived();
+
+  ASSERT_LE(1u, preferred_languages_.size());
+  ASSERT_NE(preferred_languages_.end(),
+            std::find(preferred_languages_.begin(), preferred_languages_.end(),
+                      "en-US"));
+#endif  // BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK
 }
 
 }  // namespace

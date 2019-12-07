@@ -600,8 +600,6 @@ AttributeTriggers* HTMLElement::TriggersForAttributeName(
        kNoEvent, nullptr},
       {html_names::kAriaHaspopupAttr, WebFeature::kARIAHasPopupAttribute,
        kNoEvent, nullptr},
-      {html_names::kAriaHelpAttr, WebFeature::kARIAHelpAttribute, kNoEvent,
-       nullptr},
       {html_names::kAriaHiddenAttr, WebFeature::kARIAHiddenAttribute, kNoEvent,
        nullptr},
       {html_names::kAriaInvalidAttr, WebFeature::kARIAInvalidAttribute,
@@ -743,12 +741,8 @@ void HTMLElement::ParseAttribute(const AttributeModificationParams& params) {
 
   if (triggers->web_feature != kNoWebFeature) {
     // Count usage of attributes but ignore attributes in user agent shadow DOM.
-    if (!IsInUserAgentShadowRoot()) {
-      if (triggers->web_feature == WebFeature::kARIAHelpAttribute)
-        Deprecation::CountDeprecation(GetDocument(), triggers->web_feature);
-      else
-        UseCounter::Count(GetDocument(), triggers->web_feature);
-    }
+    if (!IsInUserAgentShadowRoot())
+      UseCounter::Count(GetDocument(), triggers->web_feature);
   }
   if (triggers->function)
     ((*this).*(triggers->function))(params);

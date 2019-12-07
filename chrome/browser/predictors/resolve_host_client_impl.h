@@ -15,6 +15,10 @@
 
 class GURL;
 
+namespace net {
+class NetworkIsolationKey;
+}
+
 namespace network {
 namespace mojom {
 class NetworkContext;
@@ -32,6 +36,7 @@ class ResolveHostClientImpl : public network::ResolveHostClientBase {
   // Starts the host resolution for |url|. |callback| is called when the host is
   // resolved or when an error occurs.
   ResolveHostClientImpl(const GURL& url,
+                        const net::NetworkIsolationKey& network_isolation_key,
                         ResolveHostCallback callback,
                         network::mojom::NetworkContext* network_context);
   // Cancels the request if it hasn't been completed yet.

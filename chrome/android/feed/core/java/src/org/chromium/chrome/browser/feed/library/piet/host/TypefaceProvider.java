@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.feed.library.piet.host;
 import android.graphics.Typeface;
 import android.support.annotation.StringDef;
 
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
+import org.chromium.base.Consumer;
 
 /** Allows the host to provide Typefaces to Piet. */
 public interface TypefaceProvider {

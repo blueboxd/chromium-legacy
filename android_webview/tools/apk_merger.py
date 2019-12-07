@@ -26,7 +26,7 @@ anything.
 
 To use this script, you need to
 1. Build 32-bit APK as usual.
-2. Build 64-bit APK with GN variable build_apk_secondary_abi=false OR true.
+2. Build 64-bit APK.
 3. Use this script to merge the 2 APKs.
 
 """

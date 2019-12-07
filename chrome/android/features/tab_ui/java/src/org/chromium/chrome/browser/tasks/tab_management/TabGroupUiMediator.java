@@ -4,9 +4,12 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import android.view.View;
+
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.annotations.CheckDiscard;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ThemeColorProvider;
@@ -14,16 +17,16 @@ import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
-import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
-import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.tasks.tab_groups.EmptyTabGroupModelFilterObserver;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
@@ -38,6 +41,24 @@ import java.util.List;
  * internal state of the component.
  */
 public class TabGroupUiMediator {
+    /**
+     * An interface to control the TabGroupUi component.
+     */
+    @CheckDiscard("crbug.com/1022827")
+    interface TabGroupUiController {
+        /**
+         * Setup the drawable in TabGroupUi left button with a drawable ID.
+         * @param drawableId Resource ID of the drawable to setup the left button.
+         */
+        void setupLeftButtonDrawable(int drawableId);
+
+        /**
+         * Setup the {@link View.OnClickListener} of the left button in TabGroupUi.
+         * @param listener {@link View.OnClickListener} to setup the left button.
+         */
+        void setupLeftButtonOnClickListener(View.OnClickListener listener);
+    }
+
     /**
      * Defines an interface for a {@link TabGroupUiMediator} reset event
      * handler.
@@ -214,29 +235,44 @@ public class TabGroupUiMediator {
         }
     }
 
+    @CheckDiscard("crbug.com/1022827")
+    void setupLeftButtonDrawable(int drawableId) {
+        mToolbarPropertyModel.set(
+                TabStripToolbarViewProperties.LEFT_BUTTON_DRAWABLE_ID, drawableId);
+    }
+
+    @CheckDiscard("crbug.com/1022827")
+    void setupLeftButtonOnClickListener(View.OnClickListener listener) {
+        mToolbarPropertyModel.set(
+                TabStripToolbarViewProperties.LEFT_BUTTON_ON_CLICK_LISTENER, listener);
+    }
+
     private void setupToolbarClickHandlers() {
-        mToolbarPropertyModel.set(TabStripToolbarViewProperties.EXPAND_CLICK_LISTENER, view -> {
-            Tab currentTab = mTabModelSelector.getCurrentTab();
-            if (currentTab == null) return;
-            mResetHandler.resetGridWithListOfTabs(getRelatedTabsForId(currentTab.getId()));
-            if (FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
-                RecordUserAction.record("TabGroup.ExpandedFromStrip.TabGridDialog");
-            }
-        });
-        mToolbarPropertyModel.set(TabStripToolbarViewProperties.ADD_CLICK_LISTENER, view -> {
-            Tab currentTab = mTabModelSelector.getCurrentTab();
-            List<Tab> relatedTabs = mTabModelSelector.getTabModelFilterProvider()
-                                            .getCurrentTabModelFilter()
-                                            .getRelatedTabList(currentTab.getId());
+        mToolbarPropertyModel.set(
+                TabStripToolbarViewProperties.LEFT_BUTTON_ON_CLICK_LISTENER, view -> {
+                    Tab currentTab = mTabModelSelector.getCurrentTab();
+                    if (currentTab == null) return;
+                    mResetHandler.resetGridWithListOfTabs(getRelatedTabsForId(currentTab.getId()));
+                    if (FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
+                        RecordUserAction.record("TabGroup.ExpandedFromStrip.TabGridDialog");
+                    }
+                });
+        mToolbarPropertyModel.set(
+                TabStripToolbarViewProperties.RIGHT_BUTTON_ON_CLICK_LISTENER, view -> {
+                    Tab currentTab = mTabModelSelector.getCurrentTab();
+                    List<Tab> relatedTabs = mTabModelSelector.getTabModelFilterProvider()
+                                                    .getCurrentTabModelFilter()
+                                                    .getRelatedTabList(currentTab.getId());
 
-            assert relatedTabs.size() > 0;
+                    assert relatedTabs.size() > 0;
 
-            Tab parentTabToAttach = relatedTabs.get(relatedTabs.size() - 1);
-            mTabCreatorManager.getTabCreator(currentTab.isIncognito())
-                    .createNewTab(new LoadUrlParams(UrlConstants.NTP_URL),
-                            TabLaunchType.FROM_CHROME_UI, parentTabToAttach);
-            RecordUserAction.record("MobileNewTabOpened." + TabGroupUiCoordinator.COMPONENT_NAME);
-        });
+                    Tab parentTabToAttach = relatedTabs.get(relatedTabs.size() - 1);
+                    mTabCreatorManager.getTabCreator(currentTab.isIncognito())
+                            .createNewTab(new LoadUrlParams(UrlConstants.NTP_URL),
+                                    TabLaunchType.FROM_CHROME_UI, parentTabToAttach);
+                    RecordUserAction.record(
+                            "MobileNewTabOpened." + TabGroupUiCoordinator.COMPONENT_NAME);
+                });
     }
 
     private void resetTabStripWithRelatedTabsForId(int id) {

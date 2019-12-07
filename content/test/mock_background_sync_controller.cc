@@ -117,9 +117,24 @@ MockBackgroundSyncController::CreateBackgroundSyncEventKeepAlive() {
 
 void MockBackgroundSyncController::NoteSuspendedPeriodicSyncOrigins(
     std::set<url::Origin> suspended_origins) {
-  for (auto& origin : suspended_origins) {
+  for (auto& origin : suspended_origins)
     suspended_periodic_sync_origins_.insert(std::move(origin));
-  }
+}
+
+void MockBackgroundSyncController::NoteRegisteredPeriodicSyncOrigins(
+    std::set<url::Origin> registered_origins) {
+  for (auto& origin : registered_origins)
+    suspended_periodic_sync_origins_.insert(std::move(origin));
+}
+
+void MockBackgroundSyncController::AddToTrackedOrigins(
+    const url::Origin& origin) {
+  periodic_sync_origins_.insert(origin);
+}
+
+void MockBackgroundSyncController::RemoveFromTrackedOrigins(
+    const url::Origin& origin) {
+  periodic_sync_origins_.erase(origin);
 }
 
 }  // namespace content

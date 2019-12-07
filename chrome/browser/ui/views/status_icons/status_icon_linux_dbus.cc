@@ -173,7 +173,7 @@ base::FilePath WriteIconFile(size_t icon_file_id,
   base::FilePath file_path = temp_dir.Append(
       "status_icon_" + base::NumberToString(icon_file_id) + ".png");
   if (!base::WriteFile(file_path, data->front_as<char>(), data->size())) {
-    base::DeleteFile(temp_dir, true);
+    base::DeleteFileRecursively(temp_dir);
     return {};
   }
 

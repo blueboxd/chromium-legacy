@@ -491,7 +491,8 @@ WorkerGlobalScope::WorkerGlobalScope(
   // A FeaturePolicy is created by FeaturePolicy::CreateFromParentPolicy, even
   // if the parent policy is null.
   DCHECK(creation_params->worker_feature_policy);
-  SetFeaturePolicy(std::move(creation_params->worker_feature_policy));
+  GetSecurityContext().SetFeaturePolicy(
+      std::move(creation_params->worker_feature_policy));
 }
 
 void WorkerGlobalScope::ExceptionThrown(ErrorEvent* event) {

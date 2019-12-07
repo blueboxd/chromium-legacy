@@ -124,7 +124,6 @@ static_library("tether") {
     "//chromeos/network",
     "//chromeos/services/device_sync/public/cpp",
     "//chromeos/services/multidevice_setup/public/cpp:cpp",
-    "//chromeos/services/multidevice_setup/public/mojom:mojom",
     "//chromeos/services/secure_channel/public/cpp/client",
     "//chromeos/services/secure_channel/public/cpp/shared",
     "//chromeos/services/secure_channel/public/mojom",
@@ -138,6 +137,7 @@ static_library("tether") {
 
   public_deps = [
     "//chromeos/services/device_sync/proto",
+    "//chromeos/services/multidevice_setup/public/mojom",
   ]
 }
 

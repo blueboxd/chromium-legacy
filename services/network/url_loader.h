@@ -53,7 +53,6 @@ constexpr size_t kMaxFileUploadRequestsPerBatch = 64;
 class NetToMojoPendingBuffer;
 class NetworkUsageAccumulator;
 class KeepaliveStatisticsRecorder;
-struct ResourceResponse;
 class ScopedThrottlingToken;
 struct OriginPolicy;
 
@@ -300,7 +299,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   // Used when deferring sending the data to the client until mime sniffing is
   // finished.
-  scoped_refptr<ResourceResponse> response_;
+  mojom::URLResponseHeadPtr response_;
   mojo::ScopedDataPipeConsumerHandle consumer_handle_;
 
   // Sniffing state.

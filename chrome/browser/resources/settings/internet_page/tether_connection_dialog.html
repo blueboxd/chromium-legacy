@@ -73,14 +73,19 @@
           $i18n{tetherConnectionAvailableDeviceTitle}
         </span>
         <div id="host-device-container">
-          <!-- TODO(hsuregan): Add an a11y label. -->
-          <iron-icon icon="[[getSignalStrengthIconName_(managedProperties)]]">
+          <iron-icon id="host-device-signal-strength-icon"
+              icon="[[getSignalStrengthIconName_(managedProperties)]]"
+              aria-label$="[[getSignalStrengthLabel_(managedProperties)]]"
+              aria-hidden="true">
           </iron-icon>
           <div id="host-device-text-container">
-            <span id="host-device-text-name">
+            <span id="host-device-text-name"
+                aria-describedby="host-device-signal-strength-icon
+                host-device-text-battery">
               [[getDeviceName_(managedProperties)]]
             </span>
-            <span id="host-device-text-battery" class="secondary">
+            <span id="host-device-text-battery" class="secondary"
+                aria-hidden="true">
               [[getBatteryPercentageString_(managedProperties)]]
             </span>
           </div>

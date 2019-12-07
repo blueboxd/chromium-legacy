@@ -8,8 +8,8 @@ import android.content.Context;
 import android.support.annotation.VisibleForTesting;
 import android.view.ViewGroup;
 
+import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.feed.library.api.host.config.DebugBehavior;
-import org.chromium.chrome.browser.feed.library.common.functional.Supplier;
 import org.chromium.chrome.browser.feed.library.common.time.Clock;
 import org.chromium.chrome.browser.feed.library.piet.host.ActionHandler;
 import org.chromium.chrome.browser.feed.library.piet.host.AssetProvider;

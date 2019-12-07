@@ -17,6 +17,7 @@ print_preview_app_test.TestNames = {
   PrintPresets: 'print presets',
   DestinationsManaged: 'destinations managed',
   HeaderFooterManaged: 'header footer managed',
+  CssBackgroundManaged: 'css background managed'
 };
 
 suite(print_preview_app_test.suiteName, function() {
@@ -129,6 +130,15 @@ suite(print_preview_app_test.suiteName, function() {
       assert(print_preview_app_test.TestNames.HeaderFooterManaged),
       async () => {
         initialSettings.policies = {headerFooter: {allowedMode: true}};
+        await initialize();
+        const sidebar = page.$$('print-preview-sidebar');
+        assertTrue(sidebar.controlsManaged);
+      });
+
+  test(
+      assert(print_preview_app_test.TestNames.CssBackgroundManaged),
+      async () => {
+        initialSettings.policies = {cssBackground: {allowedMode: 1}};
         await initialize();
         const sidebar = page.$$('print-preview-sidebar');
         assertTrue(sidebar.controlsManaged);

@@ -30,7 +30,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 
-import org.chromium.chrome.browser.feed.library.common.functional.Consumer;
+import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 import org.chromium.chrome.browser.feed.library.common.ui.LayoutUtils;
 import org.chromium.chrome.browser.feed.library.piet.DebugLogger.MessageType;

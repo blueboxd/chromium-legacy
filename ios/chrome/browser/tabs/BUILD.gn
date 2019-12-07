@@ -72,6 +72,7 @@ source_set("tabs_internal") {
     "//ios/chrome/browser/history:tab_helper",
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/infobars:badge",
+    "//ios/chrome/browser/infobars:overlays",
     "//ios/chrome/browser/itunes_urls",
     "//ios/chrome/browser/main",
     "//ios/chrome/browser/metrics",

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.feed.library.feedsessionmanager.internal;
 
 import android.support.annotation.VisibleForTesting;
 
+import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.feed.library.api.host.logging.Task;
 import org.chromium.chrome.browser.feed.library.api.internal.common.PayloadWithId;
 import org.chromium.chrome.browser.feed.library.api.internal.common.ThreadUtils;
@@ -15,7 +16,6 @@ import org.chromium.chrome.browser.feed.library.common.Result;
 import org.chromium.chrome.browser.feed.library.common.Validators;
 import org.chromium.chrome.browser.feed.library.common.concurrent.TaskQueue;
 import org.chromium.chrome.browser.feed.library.common.concurrent.TaskQueue.TaskType;
-import org.chromium.chrome.browser.feed.library.common.functional.Supplier;
 import org.chromium.chrome.browser.feed.library.common.logging.Dumpable;
 import org.chromium.chrome.browser.feed.library.common.logging.Dumper;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;

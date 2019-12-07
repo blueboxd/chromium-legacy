@@ -43,4 +43,15 @@ enum class SharingFeatureName {
   kMaxValue = kSharedClipboard,
 };
 
+// The device platform that the user is sharing from/with.
+enum class SharingDevicePlatform {
+  kUnknown,
+  kAndroid,
+  kChromeOS,
+  kIOS,
+  kLinux,
+  kMac,
+  kWindows,
+};
+
 #endif  // CHROME_BROWSER_SHARING_SHARING_CONSTANTS_H_

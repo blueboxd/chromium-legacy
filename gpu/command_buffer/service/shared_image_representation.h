@@ -23,6 +23,10 @@
 typedef unsigned int GLenum;
 class SkPromiseImageTexture;
 
+namespace gl {
+class GLImage;
+}
+
 namespace gpu {
 namespace gles2 {
 class Texture;
@@ -318,6 +322,44 @@ class SharedImageRepresentationOverlay : public SharedImageRepresentation {
                                    MemoryTypeTracker* tracker)
       : SharedImageRepresentation(manager, backing, tracker) {}
 
+  class ScopedReadAccess {
+   public:
+    ScopedReadAccess(SharedImageRepresentationOverlay* representation,
+                              bool needs_gl_image)
+        : representation_(representation) {
+      representation_->BeginReadAccess();
+      gl_image_ = needs_gl_image ? representation_->GetGLImage() : nullptr;
+    }
+    ScopedReadAccess(ScopedReadAccess&& other) { *this = std::move(other); }
+    ~ScopedReadAccess() {
+      if (representation_)
+        representation_->EndReadAccess();
+    }
+
+    ScopedReadAccess& operator=(ScopedReadAccess&& other) {
+      representation_ = other.representation_;
+      other.representation_ = nullptr;
+      gl_image_ = other.gl_image_;
+      other.gl_image_ = nullptr;
+      return *this;
+    }
+
+    gl::GLImage* gl_image() const {
+      DCHECK(representation_);
+      return gl_image_;
+    }
+
+   private:
+    SharedImageRepresentationOverlay* representation_;
+    gl::GLImage* gl_image_;
+  };
+
+#if defined(OS_ANDROID)
+  virtual void NotifyOverlayPromotion(bool promotion,
+                                      const gfx::Rect& bounds) = 0;
+#endif
+
+ protected:
   // TODO(weiliangc): Currently this only handles Android pre-SurfaceControl
   // case. Add appropriate fence later.
   virtual void BeginReadAccess() = 0;
@@ -325,10 +367,9 @@ class SharedImageRepresentationOverlay : public SharedImageRepresentation {
 
   // TODO(weiliangc): Add API to backing AHardwareBuffer.
 
-#if defined(OS_ANDROID)
-  virtual void NotifyOverlayPromotion(bool promotion,
-                                      const gfx::Rect& bounds) = 0;
-#endif
+  // TODO(penghuang): Refactor it to not depend on GL.
+  // Get the backing as GLImage for GLSurface::ScheduleOverlayPlane.
+  virtual gl::GLImage* GetGLImage() = 0;
 };
 
 }  // namespace gpu

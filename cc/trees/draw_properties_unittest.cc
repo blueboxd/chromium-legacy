@@ -6159,8 +6159,7 @@ TEST_F(DrawPropertiesTest, ViewportBoundsDeltaAffectVisibleContentRect) {
 
   LayerTreeImpl* active_tree = host_impl()->active_tree();
   active_tree->SetDeviceViewportRect(device_viewport_rect);
-  active_tree->set_browser_controls_shrink_blink_size(true);
-  active_tree->SetTopControlsHeight(50);
+  active_tree->SetBrowserControlsParams({50, 0, 0, 0, false, true});
   active_tree->PushPageScaleFromMainThread(1.0f, 1.0f, 1.0f);
 
   LayerImpl* root = root_layer();

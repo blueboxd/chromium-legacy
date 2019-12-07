@@ -102,9 +102,7 @@ int MatchSymbols(
               after_sym->PaddingPss() - before_sym->PaddingPss();
         }
         caspian::DeltaSymbol delta_sym(before_sym, after_sym);
-        if (delta_sym.Pss() != 0.0) {
-          delta_symbols->push_back(delta_sym);
-        }
+        delta_symbols->push_back(delta_sym);
         // Null associated pointers in |unmatched_before|, |unmatched_after|.
         before_sym = nullptr;
         after_sym = nullptr;

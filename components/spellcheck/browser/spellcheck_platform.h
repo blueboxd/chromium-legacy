@@ -14,23 +14,44 @@
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 
 #if defined(OS_WIN)
 #include "components/spellcheck/browser/spellcheck_host_metrics.h"
 #endif  // defined(OS_WIN)
 
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#include "components/spellcheck/common/spellcheck_common.h"
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+
 struct SpellCheckResult;
 
 namespace spellcheck_platform {
 
-typedef base::OnceCallback<void(
-    const std::vector<SpellCheckResult>& /* results */)>
+typedef base::OnceCallback<void(const std::vector<SpellCheckResult>&)>
     TextCheckCompleteCallback;
+
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+typedef base::OnceCallback<void(const spellcheck::PerLanguageSuggestions&)>
+    GetSuggestionsCallback;
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+
+#if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
+typedef base::OnceCallback<void(const std::vector<std::string>& /* results */)>
+    RetrieveSupportedLanguagesCompleteCallback;
+#endif  // BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK
 
 // Get the languages supported by the platform spellchecker and store them in
 // |spellcheck_languages|. Note that they must be converted to
 // Chromium style codes (en-US not en_US). See spellchecker.cc for a full list.
 void GetAvailableLanguages(std::vector<std::string>* spellcheck_languages);
+
+#if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
+// Retrieve language tags for installed Windows language packs that also have
+// spellchecking support.
+void RetrieveSupportedWindowsPreferredLanguages(
+    RetrieveSupportedLanguagesCompleteCallback callback);
+#endif  // BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK
 
 // Returns the language used for spellchecking on the platform.
 std::string GetSpellCheckerLanguage();
@@ -51,11 +72,11 @@ void ShowSpellingPanel(bool show);
 // spelling panel need not be displayed for this to work.
 void UpdateSpellingPanelWithMisspelledWord(const base::string16& word);
 
-// Translates the codes used by chrome to the language codes used by os x
-// and checks the given language agains the languages that the current system
-// supports. If the platform-specific spellchecker supports the language,
-// then returns true, otherwise false.
-bool PlatformSupportsLanguage(const std::string& current_language);
+// Asynchronously checks whether the current system's spellchecker supports the
+// given language. If the platform-specific spellchecker supports the language,
+// then the callback is invoked with true, otherwise it is invoked with false.
+void PlatformSupportsLanguage(const std::string& current_language,
+                              base::OnceCallback<void(bool)> callback);
 
 // Sets the language for the platform-specific spellchecker asynchronously. The
 // callback will be invoked with boolean parameter indicating the status of the
@@ -97,10 +118,24 @@ void IgnoreWord(const base::string16& word);
 // document can now be forgotten.
 void CloseDocumentWithTag(int tag);
 
-// Requests an asyncronous spell and grammar checking.
+// Requests an asynchronous spell and grammar checking.
 void RequestTextCheck(int document_tag,
                       const base::string16& text,
                       TextCheckCompleteCallback callback);
+
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+// Requests an asynchronous spell and grammar checking for the languages that
+// couldn't be handled by the renderer spellchecker.
+void RequestTextCheck(int document_tag,
+                      const base::string16& text,
+                      const std::vector<SpellCheckResult>& partial_results,
+                      bool fill_suggestions,
+                      TextCheckCompleteCallback callback);
+
+// Finds the replacement suggestions for each language for the given word.
+void GetPerLanguageSuggestions(const base::string16& word,
+                               GetSuggestionsCallback callback);
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
 #if defined(OS_WIN)
 // Records how many user spellcheck languages are currently not supported by the

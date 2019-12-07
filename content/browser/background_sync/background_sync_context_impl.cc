@@ -182,6 +182,17 @@ void BackgroundSyncContextImpl::RevivePeriodicBackgroundSyncRegistrations(
                      this, std::move(origin)));
 }
 
+void BackgroundSyncContextImpl::UnregisterPeriodicSyncForOrigin(
+    url::Origin origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  RunOrPostTaskOnThread(
+      FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
+      base::BindOnce(&BackgroundSyncContextImpl::
+                         UnregisterPeriodicSyncForOriginOnCoreThread,
+                     this, std::move(origin)));
+}
+
 base::TimeDelta BackgroundSyncContextImpl::GetSoonestWakeupDeltaOnCoreThread(
     blink::mojom::BackgroundSyncType sync_type,
     base::Time last_browser_wakeup_for_periodic_sync) {
@@ -213,6 +224,16 @@ void BackgroundSyncContextImpl::
     return;
 
   background_sync_manager_->RevivePeriodicSyncRegistrations(std::move(origin));
+}
+
+void BackgroundSyncContextImpl::UnregisterPeriodicSyncForOriginOnCoreThread(
+    url::Origin origin) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+
+  if (!background_sync_manager_)
+    return;
+
+  background_sync_manager_->UnregisterPeriodicSyncForOrigin(origin);
 }
 
 void BackgroundSyncContextImpl::FireBackgroundSyncEvents(

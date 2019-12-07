@@ -49,7 +49,7 @@ class HeadlessDevToolsSession : public FrontendChannel {
   void flushProtocolNotifications() override;
   void fallThrough(int call_id,
                    const std::string& method,
-                   const std::string& message) override;
+                   crdtp::span<uint8_t> message) override;
 
   base::WeakPtr<HeadlessBrowserImpl> browser_;
   content::DevToolsAgentHost* const agent_host_;

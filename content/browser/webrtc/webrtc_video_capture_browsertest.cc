@@ -15,6 +15,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "media/base/media_switches.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/video_capture/public/mojom/testing_controls.mojom.h"
 
@@ -78,9 +79,9 @@ IN_PROC_BROWSER_TEST_F(WebRtcVideoCaptureBrowserTest,
   ASSERT_EQ("OK", result);
 
   // Simulate crash in video capture process
-  video_capture::mojom::TestingControlsPtr service_controls;
+  mojo::Remote<video_capture::mojom::TestingControls> service_controls;
   GetVideoCaptureService().BindControlsForTesting(
-      mojo::MakeRequest(&service_controls));
+      service_controls.BindNewPipeAndPassReceiver());
   service_controls->Crash();
 
   // Wait for video element to turn black

@@ -1142,7 +1142,6 @@ jumbo_source_set("unit_tests") {
     "dom/text_test.cc",
     "dom/tree_scope_adopter_test.cc",
     "dom/tree_scope_test.cc",
-    "dom/user_gesture_indicator_test.cc",
     "dom/weak_identifier_map_test.cc",
     "dom/whitespace_attacher_test.cc",
     "editing/caret_display_item_client_test.cc",

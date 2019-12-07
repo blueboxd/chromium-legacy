@@ -8,7 +8,7 @@
 #include <memory>
 #include <utility>
 
-#include <xdg-shell-unstable-v5-server-protocol.h>
+#include <xdg-shell-server-protocol.h>
 #include <xdg-shell-unstable-v6-server-protocol.h>
 
 #include "testing/gmock/include/gmock/gmock.h"
@@ -20,6 +20,7 @@ struct wl_resource;
 namespace wl {
 
 extern const struct xdg_surface_interface kMockXdgSurfaceImpl;
+extern const struct xdg_toplevel_interface kMockXdgToplevelImpl;
 extern const struct zxdg_surface_v6_interface kMockZxdgSurfaceV6Impl;
 extern const struct zxdg_toplevel_v6_interface kMockZxdgToplevelV6Impl;
 
@@ -74,7 +75,7 @@ class MockXdgSurface : public ServerObject {
 // Manage zxdg_toplevel for providing desktop UI.
 class MockXdgTopLevel : public MockXdgSurface {
  public:
-  explicit MockXdgTopLevel(wl_resource* resource);
+  explicit MockXdgTopLevel(wl_resource* resource, const void* implementation);
   ~MockXdgTopLevel() override;
 
   // TODO(msisov): mock other zxdg_toplevel specific methods once

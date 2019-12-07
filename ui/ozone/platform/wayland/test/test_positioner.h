@@ -7,6 +7,7 @@
 
 #include <utility>
 
+#include <xdg-shell-server-protocol.h>
 #include <xdg-shell-unstable-v6-server-protocol.h>
 
 #include "base/macros.h"
@@ -18,6 +19,7 @@ struct wl_resource;
 
 namespace wl {
 
+extern const struct xdg_positioner_interface kTestXdgPositionerImpl;
 extern const struct zxdg_positioner_v6_interface kTestZxdgPositionerV6Impl;
 
 // A simple positioner object that provides a collection of rules of a child

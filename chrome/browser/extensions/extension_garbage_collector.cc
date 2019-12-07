@@ -60,7 +60,7 @@ void CheckExtensionDirectory(const base::FilePath& path,
   // Clean up temporary files left if Chrome crashed or quit in the middle
   // of an extension install.
   if (basename.value() == file_util::kTempDirectoryName) {
-    base::DeleteFile(path, true);  // Recursive.
+    base::DeleteFileRecursively(path);
     return;
   }
 
@@ -74,7 +74,7 @@ void CheckExtensionDirectory(const base::FilePath& path,
 
   // Delete directories that aren't valid IDs.
   if (extension_id.empty()) {
-    base::DeleteFile(path, true);  // Recursive.
+    base::DeleteFileRecursively(path);
     return;
   }
 
@@ -85,7 +85,7 @@ void CheckExtensionDirectory(const base::FilePath& path,
   // move on. This can legitimately happen when an uninstall does not
   // complete, for example, when a plugin is in use at uninstall time.
   if (iter_pair.first == iter_pair.second) {
-    base::DeleteFile(path, true);  // Recursive.
+    base::DeleteFileRecursively(path);
     return;
   }
 
@@ -103,7 +103,7 @@ void CheckExtensionDirectory(const base::FilePath& path,
       }
     }
     if (!known_version)
-      base::DeleteFile(version_dir, true);  // Recursive.
+      base::DeleteFileRecursively(version_dir);
   }
 }
 

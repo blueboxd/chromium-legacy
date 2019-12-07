@@ -307,9 +307,8 @@ void MediaNotificationBackground::UpdateArtwork(const gfx::ImageSkia& image) {
     return;
 
   artwork_ = image;
-  background_color_ = GetNotificationBackgroundColor(artwork_.bitmap());
-  foreground_color_ =
-      GetNotificationForegroundColor(background_color_, artwork_.bitmap());
+
+  UpdateColorsInternal();
 }
 
 bool MediaNotificationBackground::UpdateCornerRadius(int top_radius,
@@ -329,6 +328,18 @@ bool MediaNotificationBackground::UpdateArtworkMaxWidthPct(
 
   artwork_max_width_pct_ = max_width_pct;
   return true;
+}
+
+void MediaNotificationBackground::UpdateFavicon(const gfx::ImageSkia& icon) {
+  if (favicon_.BackedBySameObjectAs(icon))
+    return;
+
+  favicon_ = icon;
+
+  if (!artwork_.isNull())
+    return;
+
+  UpdateColorsInternal();
 }
 
 SkColor MediaNotificationBackground::GetBackgroundColor(
@@ -416,6 +427,31 @@ SkColor MediaNotificationBackground::GetDefaultBackgroundColor(
     const views::View& owner) const {
   return owner.GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_BubbleBackground);
+}
+
+void MediaNotificationBackground::UpdateColorsInternal() {
+  // If there is an artwork, it should be used.
+  // If there is no artwork, neither a favicon, the artwork bitmap will be used
+  // which is going to be a null bitmap and produce a default value.
+  // In the case of there is a favicon and no artwork, the favicon should be
+  // used to generate the colors.
+  if (!artwork_.isNull() || favicon_.isNull()) {
+    background_color_ = GetNotificationBackgroundColor(artwork_.bitmap());
+    foreground_color_ =
+        GetNotificationForegroundColor(background_color_, artwork_.bitmap());
+    return;
+  }
+
+  background_color_ = GetNotificationBackgroundColor(favicon_.bitmap());
+  if (background_color_) {
+    // Apply a shade factor on the color as favicons often are fairly bright.
+    *background_color_ = SkColorSetRGB(
+        SkColorGetR(*background_color_) * kBackgroundFaviconColorShadeFactor,
+        SkColorGetG(*background_color_) * kBackgroundFaviconColorShadeFactor,
+        SkColorGetB(*background_color_) * kBackgroundFaviconColorShadeFactor);
+  }
+  foreground_color_ =
+      GetNotificationForegroundColor(background_color_, favicon_.bitmap());
 }
 
 }  // namespace media_message_center

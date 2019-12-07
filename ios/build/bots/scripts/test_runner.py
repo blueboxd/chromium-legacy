@@ -10,7 +10,6 @@ import sys
 
 import collections
 import distutils.version
-import glob
 import json
 import logging
 from multiprocessing import pool
@@ -25,6 +24,7 @@ import threading
 import time
 
 import gtest_utils
+import iossim_util
 import xctest_utils
 
 LOGGER = logging.getLogger(__name__)
@@ -885,6 +885,7 @@ class SimulatorTestRunner(TestRunner):
     self.version = version
     self.shards = shards
     self.wpr_tools_path = wpr_tools_path
+    self.udid = iossim_util.get_simulator(self.platform, self.version)
 
   @staticmethod
   def kill_simulators():
@@ -912,21 +913,11 @@ class SimulatorTestRunner(TestRunner):
 
   def wipe_simulator(self):
     """Wipes the simulator."""
-    subprocess.check_call([
-        self.iossim_path,
-        '-d', self.platform,
-        '-s', self.version,
-        '-w',
-    ])
+    iossim_util.wipe_simulator_by_udid(self.udid)
 
   def get_home_directory(self):
     """Returns the simulator's home directory."""
-    return subprocess.check_output([
-        self.iossim_path,
-        '-d', self.platform,
-        '-p',
-        '-s', self.version,
-    ]).rstrip()
+    return iossim_util.get_home_directory(self.platform, self.version)
 
   def set_up(self):
     """Performs setup actions which must occur prior to every test launch."""
@@ -1016,9 +1007,8 @@ class SimulatorTestRunner(TestRunner):
       udid: (string) Name of the simulator device in the run.
       returncode: (int) Return code of subprocess.
     """
-    udid = self.getSimulator()
     cmd = self.sharding_cmd[:]
-    cmd.extend(['-u', udid])
+    cmd.extend(['-u', self.udid])
     if test_shard:
       for test in test_shard:
         cmd.extend(['-t', test])
@@ -1030,43 +1020,22 @@ class SimulatorTestRunner(TestRunner):
     proc = self.start_proc(cmd)
     out = print_process_output(proc, 'xcodebuild',
                                xctest_utils.XCTestLogParser())
-    self.deleteSimulator(udid)
-    return (out, udid, proc.returncode)
+    self.deleteSimulator(self.udid)
+    return (out, self.udid, proc.returncode)
 
   def getSimulator(self):
-    """Creates a simulator device by device types and runtimes. Returns the
-      udid for the created simulator instance.
+    """Gets a simulator or creates a new one by device types and runtimes.
+      Returns the udid for the created simulator instance.
 
     Returns:
       An udid of a simulator device.
     """
-    simctl_list = json.loads(subprocess.check_output(
-                             ['xcrun', 'simctl', 'list', '-j']))
-    runtimes = simctl_list['runtimes']
-    devices = simctl_list['devicetypes']
-
-    device_type_id = ''
-    for device in devices:
-      if device['name'] == self.platform:
-        device_type_id = device['identifier']
-
-    runtime_id = ''
-    for runtime in runtimes:
-      if runtime['name'] == 'iOS %s' % self.version:
-        runtime_id = runtime['identifier']
-
-    name = '%s test' % self.platform
-    LOGGER.info('creating simulator %s', name)
-    udid = subprocess.check_output([
-      'xcrun', 'simctl', 'create', name, device_type_id, runtime_id]).rstrip()
-    LOGGER.info(udid)
-    return udid
+    return iossim_util.get_simulator(self.platform, self.version)
 
   def deleteSimulator(self, udid=None):
     """Removes dynamically created simulator devices."""
     if udid:
-      LOGGER.info('deleting simulator %s', udid)
-      subprocess.call(['xcrun', 'simctl', 'delete', udid])
+      iossim_util.delete_simulator_by_udid(udid)
 
   def get_launch_command(self, test_filter=None, invert=False, test_shard=None):
     """Returns the command that can be used to launch the test app.

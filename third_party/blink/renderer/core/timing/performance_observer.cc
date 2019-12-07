@@ -80,14 +80,14 @@ PerformanceObserver::PerformanceObserver(
     ExecutionContext* execution_context,
     Performance* performance,
     V8PerformanceObserverCallback* callback)
-    : ContextClient(execution_context),
-      execution_context_(execution_context),
+    : ContextLifecycleStateObserver(execution_context),
       callback_(callback),
       performance_(performance),
       filter_options_(PerformanceEntry::kInvalid),
       type_(PerformanceObserverType::kUnknown),
       is_registered_(false) {
   DCHECK(performance_);
+  UpdateStateIfNeeded();
 }
 
 void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
@@ -245,15 +245,10 @@ bool PerformanceObserver::HasPendingActivity() const {
   return is_registered_;
 }
 
-bool PerformanceObserver::ShouldBeSuspended() const {
-  return execution_context_->IsContextPaused();
-}
-
 void PerformanceObserver::Deliver() {
-  DCHECK(!ShouldBeSuspended());
-
   if (!GetExecutionContext())
     return;
+  DCHECK(!GetExecutionContext()->IsContextPaused());
 
   if (performance_entries_.IsEmpty())
     return;
@@ -265,13 +260,20 @@ void PerformanceObserver::Deliver() {
   callback_->InvokeAndReportException(this, entry_list, this);
 }
 
+void PerformanceObserver::ContextLifecycleStateChanged(
+    mojom::FrameLifecycleState state) {
+  if (state == mojom::FrameLifecycleState::kRunning)
+    performance_->ActivateObserver(*this);
+  else
+    performance_->SuspendObserver(*this);
+}
+
 void PerformanceObserver::Trace(blink::Visitor* visitor) {
-  visitor->Trace(execution_context_);
   visitor->Trace(callback_);
   visitor->Trace(performance_);
   visitor->Trace(performance_entries_);
   ScriptWrappable::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ContextLifecycleStateObserver::Trace(visitor);
 }
 
 }  // namespace blink

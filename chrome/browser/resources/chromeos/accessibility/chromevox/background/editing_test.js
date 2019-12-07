@@ -1309,3 +1309,57 @@ TEST_F('ChromeVoxEditingTest', 'GrammarErrors', function() {
         input.focus();
       });
 });
+
+TEST_F('ChromeVoxEditingTest', 'CharacterTypedAfterNewLine', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(
+      `
+    <div contenteditable role="textbox">
+      <p>hello</p>
+    </div>
+  `,
+      function(root) {
+        var input = root.find({role: RoleType.TEXT_FIELD});
+        this.listenOnce(input, 'focus', function() {
+          mockFeedback.call(this.press(35 /* end */, {ctrl: true}))
+              .expectSpeech('hello')
+              .call(this.press(13 /* return */))
+              .expectSpeech('\n')
+              .call(this.press(65 /* a */))
+              .expectSpeech('a')
+              .replay();
+        });
+        input.focus();
+      });
+});
+
+TEST_F('ChromeVoxEditingTest', 'SelectAll', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(
+      `
+    <div contenteditable role="textbox">
+      <p>first line</p>
+      <p>second line</p>
+      <p>third line</p>
+    </div>
+  `,
+      function(root) {
+        var input = root.find({role: RoleType.TEXT_FIELD});
+        this.listenOnce(input, 'focus', function() {
+          mockFeedback.call(this.press(35 /* end */, {ctrl: true}))
+              .expectSpeech('third line')
+              .call(this.press(65 /* a */, {ctrl: true}))
+              .expectSpeech('first line second line third line', 'selected')
+              .call(this.press(38 /* up arrow */))
+              .expectSpeech('second line')
+              .call(this.press(65 /* a */, {ctrl: true}))
+              .expectSpeech('first line second line third line', 'selected')
+              .call(this.press(36 /* home */, {ctrl: true}))
+              .expectSpeech('first line')
+              .call(this.press(65 /* a */, {ctrl: true}))
+              .expectSpeech('first line second line third line', 'selected')
+              .replay();
+        });
+        input.focus();
+      });
+});

@@ -77,6 +77,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemFactory {
       const base::FilePath& path,
       const GURL& url,
       const std::string& mime_type,
+      const net::NetworkIsolationKey& network_isolation_key,
       download::DownloadJob::CancelRequestCallback cancel_request_callback) = 0;
 };
 

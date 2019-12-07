@@ -136,19 +136,14 @@ bool IsBrowserFullscreen(Browser* browser) {
   return browser->window()->IsFullscreen();
 }
 
-views::View* GetAnchorViewForBrowser(Browser* browser, bool is_fullscreen) {
+views::View* GetAnchorViewForBrowser(Browser* browser) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  if (!is_fullscreen ||
+  if (!IsBrowserFullscreen(browser) || browser_view->IsToolbarVisible() ||
       browser_view->immersive_mode_controller()->IsRevealed()) {
     return browser_view->toolbar_button_provider()->GetAnchorView(
         PageActionIconType::kZoom);
   }
   return nullptr;
-}
-
-views::View* GetAnchorViewForBrowser(Browser* browser) {
-  const bool is_fullscreen = IsBrowserFullscreen(browser);
-  return GetAnchorViewForBrowser(browser, is_fullscreen);
 }
 
 ImmersiveModeController* GetImmersiveModeControllerForBrowser(
@@ -199,8 +194,7 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
   // bubble must be closed and a new one created.
   CloseCurrentBubble();
 
-  const bool is_fullscreen = IsBrowserFullscreen(browser);
-  views::View* anchor_view = GetAnchorViewForBrowser(browser, is_fullscreen);
+  views::View* anchor_view = GetAnchorViewForBrowser(browser);
   ImmersiveModeController* immersive_mode_controller =
       GetImmersiveModeControllerForBrowser(browser);
 
@@ -217,7 +211,7 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
 
   ParentToBrowser(browser, zoom_bubble_, anchor_view, web_contents);
 
-  if (is_fullscreen)
+  if (!anchor_view && IsBrowserFullscreen(browser))
     zoom_bubble_->AdjustForFullscreen(browser->window()->GetBounds());
 
   // Do not announce hotkey for refocusing inactive Zoom bubble as it

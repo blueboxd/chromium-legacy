@@ -12,11 +12,17 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/unguessable_token.h"
+#include "build/build_config.h"
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
 #include "components/services/paint_preview_compositor/paint_preview_compositor_impl.h"
 #include "components/services/paint_preview_compositor/public/mojom/paint_preview_compositor.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+
+#if defined(OS_LINUX)
+#include "components/services/font/public/cpp/font_loader.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
+#endif
 
 namespace discardable_memory {
 class ClientDiscardableSharedMemoryManager;
@@ -61,6 +67,10 @@ class PaintPreviewCompositorCollectionImpl
   base::flat_map<base::UnguessableToken,
                  std::unique_ptr<PaintPreviewCompositorImpl>>
       compositors_;
+
+#if defined(OS_LINUX)
+  sk_sp<font_service::FontLoader> font_loader_;
+#endif
 
   PaintPreviewCompositorCollectionImpl(
       const PaintPreviewCompositorCollectionImpl&) = delete;

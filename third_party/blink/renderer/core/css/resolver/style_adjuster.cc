@@ -149,7 +149,7 @@ static bool StopPropagateTextDecorations(const ComputedStyle& style,
          style.Display() == EDisplay::kWebkitInlineBox ||
          IsAtUAShadowBoundary(element) || style.IsFloating() ||
          style.HasOutOfFlowPosition() || IsOutermostSVGElement(element) ||
-         IsHTMLRTElement(element);
+         IsA<HTMLRTElement>(element);
 }
 
 // Certain elements (<a>, <font>) override text decoration colors.  "The font
@@ -255,7 +255,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     return;
   }
 
-  if (IsHTMLRTElement(element)) {
+  if (IsA<HTMLRTElement>(element)) {
     // Ruby text does not support float or position. This might change with
     // evolution of the specification.
     style.SetPosition(EPosition::kStatic);
@@ -307,7 +307,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
   if (style.Display() == EDisplay::kContents) {
     // See https://drafts.csswg.org/css-display/#unbox-html
     // Some of these elements are handled with other adjustments above.
-    if (IsA<HTMLBRElement>(element) || IsHTMLWBRElement(element) ||
+    if (IsA<HTMLBRElement>(element) || IsA<HTMLWBRElement>(element) ||
         IsA<HTMLMeterElement>(element) || IsA<HTMLProgressElement>(element) ||
         IsA<HTMLCanvasElement>(element) || IsHTMLMediaElement(element) ||
         IsA<HTMLInputElement>(element) || IsA<HTMLTextAreaElement>(element) ||
@@ -695,7 +695,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
 
     if (style.Display() == EDisplay::kContents &&
         (is_svg_root ||
-         (!IsA<SVGSVGElement>(element) && !IsSVGGElement(element) &&
+         (!IsA<SVGSVGElement>(element) && !IsA<SVGGElement>(element) &&
           !IsA<SVGUseElement>(element) && !IsA<SVGTSpanElement>(element)))) {
       // According to the CSS Display spec[1], nested <svg> elements, <g>,
       // <use>, and <tspan> elements are not rendered and their children are
